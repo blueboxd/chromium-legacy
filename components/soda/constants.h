@@ -17,7 +17,7 @@ extern const base::FilePath::CharType kSodaBinaryRelativePath[];
 
 // Location of the en_us SODA config file within the SODA installation
 // directory. Note: SODA is currently only available in English.
-extern const base::FilePath::CharType kSodaConfigFileRelativePath[];
+extern const base::FilePath::CharType kSodaEnUsConfigFileRelativePath[];
 
 // Get the absolute path of the SODA component directory.
 const base::FilePath GetSodaDirectory();

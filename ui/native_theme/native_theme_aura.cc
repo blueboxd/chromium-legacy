@@ -65,7 +65,7 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
   return s_native_theme.get();
 }
 #endif  // OS_WIN
-#endif  // !OS_MACOSX
+#endif  // !OS_APPLE
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeThemeAura:
@@ -101,14 +101,14 @@ NativeThemeAura* NativeThemeAura::web_instance() {
 }
 
 SkColor NativeThemeAura::FocusRingColorForBaseColor(SkColor base_color) const {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   DCHECK(features::IsFormControlsRefreshEnabled());
   // On Mac OSX, the system Accent Color setting is darkened a bit
   // for better contrast.
   return SkColorSetA(base_color, 166);
 #else
   return base_color;
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 }
 
 void NativeThemeAura::PaintMenuPopupBackground(

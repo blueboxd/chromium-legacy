@@ -1193,7 +1193,7 @@ TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   EXPECT_EQ(gfx::ScrollOffset(x_offset, y_offset), test_api.CurrentOffset());
 }
 
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 // Test that increasing the size of the viewport "below" scrolled content causes
 // the content to scroll up so that it still fills the viewport.

@@ -5,7 +5,10 @@
 #include "chrome/browser/speech/speech_recognition_service.h"
 
 #include "chrome/browser/service_sandbox_type.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -18,9 +21,7 @@ constexpr base::TimeDelta kIdleProcessTimeout = base::TimeDelta::FromSeconds(5);
 
 SpeechRecognitionService::SpeechRecognitionService(
     content::BrowserContext* context)
-#if !BUILDFLAG(ENABLE_SODA)
     : context_(context)
-#endif  // !BUILDFLAG(ENABLE_SODA)
 {
 }
 
@@ -72,6 +73,12 @@ void SpeechRecognitionService::LaunchIfNotRunning() {
   speech_recognition_service_.reset_on_idle_timeout(kIdleProcessTimeout);
 
   speech_recognition_service_client_.reset();
+
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+  DCHECK(prefs);
+  speech_recognition_service_->SetSodaPath(
+      prefs->GetFilePath(prefs::kSodaBinaryPath),
+      prefs->GetFilePath(prefs::kSodaEnUsConfigPath));
   speech_recognition_service_->BindSpeechRecognitionServiceClient(
       speech_recognition_service_client_.BindNewPipeAndPassRemote());
   OnNetworkServiceDisconnect();

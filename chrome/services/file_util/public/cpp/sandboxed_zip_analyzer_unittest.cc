@@ -258,7 +258,10 @@ TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
-  EXPECT_EQ(0, results.archived_binary.size());
+  ASSERT_EQ(1, results.archived_binary.size());
+  EXPECT_EQ(results.archived_binary[0].file_basename(), "simple_exe.txt");
+  EXPECT_FALSE(results.archived_binary[0].is_executable());
+  EXPECT_FALSE(results.archived_binary[0].is_archive());
 }
 
 TEST_F(SandboxedZipAnalyzerTest, OneUnsignedBinary) {

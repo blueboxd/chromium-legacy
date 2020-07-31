@@ -108,7 +108,6 @@ public class AwTestContainerView extends FrameLayout {
 
         public void readbackQuadrantColors(Callback<int[]> callback) {
             synchronized (mSyncLock) {
-                assert mQuadrantReadbackCallback == null;
                 mQuadrantReadbackCallback = callback;
             }
             super.requestRender();

@@ -5,10 +5,12 @@
 #ifndef REMOTING_BASE_PROTOBUF_HTTP_TEST_RESPONDER_H_
 #define REMOTING_BASE_PROTOBUF_HTTP_TEST_RESPONDER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/test/mock_callback.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -25,6 +27,9 @@ class ProtobufHttpStatus;
 // Helper class to send responses to Protobuf HTTP requests.
 class ProtobufHttpTestResponder final {
  public:
+  using MockInterceptor =
+      base::MockCallback<network::TestURLLoaderFactory::Interceptor>;
+
   ProtobufHttpTestResponder();
   ~ProtobufHttpTestResponder();
 
@@ -79,8 +84,19 @@ class ProtobufHttpTestResponder final {
 
   std::string GetMostRecentRequestUrl();
 
+  // Installs (if called for the first time) and returns a mock interceptor
+  // callback that you can add expectations:
+  //
+  //   EXPECT_CALL(test_responder_.GetMockInterceptor(), Run(_))
+  //       .WillOnce([](const ResourceRequest& request) {...});
+  //
+  // Note that if you call this without passing it to EXPECT_CALL() or ON_CALL()
+  // then the test will fail immediately as long as any request is sent.
+  MockInterceptor& GetMockInterceptor();
+
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
+  std::unique_ptr<MockInterceptor> mock_interceptor_;
 };
 
 }  // namespace remoting

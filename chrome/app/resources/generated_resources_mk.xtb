@@ -1121,6 +1121,7 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Белешките на заклучениот екран се зачувуваат автоматски во <ph name="LOCK_SCREEN_APP_NAME" />. Последната белешка ќе остане на заклучениот екран.</translation>
 <translation id="2353297238722298836">Камерата и микрофонот се дозволени</translation>
+<translation id="2355314311311231464">Обезбедувањето не успеа бидејќи не можеше да се преземат деталите за вашата сметка. Обидете се повторно. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Вклучување инстант врзување</translation>
 <translation id="2356070529366658676">Прашај</translation>
 <translation id="2357330829548294574">Отстранете <ph name="USER_NAME" /></translation>
@@ -1216,6 +1217,7 @@
 <translation id="2473195200299095979">Преведи ја страницата</translation>
 <translation id="2475982808118771221">Настана грешка</translation>
 <translation id="2476578072172137802">Поставки на локација</translation>
+<translation id="2476974672882258506">Исклучете го Windows за да се деинсталира <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Дозволи на медиумски датотеки за „<ph name="EXTENSION" />“</translation>
 <translation id="247949520305900375">Сподели го аудиото</translation>
 <translation id="248003956660572823">Лозинките не се зачувани</translation>
@@ -1306,6 +1308,7 @@
 <translation id="2572032849266859634">Доделен е пристап само за читање на <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Иконата ќе се гледа кога наставката може да дејствува на тековната страница. Користете ја наставката со кликање на иконата или со притискање <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Поставете како „Chromebox за состаноци“</translation>
+<translation id="2579232805407578790">Не можеше да се поврзе со серверот. Проверете ја мрежната врска и обидете се повторно. Ако сѐ уште имате проблем, рестартирајте го вашиот Chromebook. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Секогаш дозволи <ph name="HOST" /> да презема повеќе датотеки</translation>
 <translation id="258095186877893873">Долго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@
 <translation id="2836635946302913370">Администраторот го оневозможи најавувањето со ова корисничко име.</translation>
 <translation id="283669119850230892">За да ја користите мрежата <ph name="NETWORK_ID" />, прво завршете со поврзувањето на интернет подолу.</translation>
 <translation id="2838379631617906747">Се инсталира</translation>
+<translation id="2838835911926931318">Најавете се за да ги синхронизирате обележувачите, лозинките, историјата и друго на сите ваши уреди</translation>
 <translation id="2839032553903800133">Известувањата се блокирани</translation>
 <translation id="2841013758207633010">Време</translation>
 <translation id="2841837950101800123">Давател</translation>
@@ -1584,6 +1588,7 @@
     Порака од серверот: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Додајте Галерија на медиуми според Директориум</translation>
 <translation id="2910318910161511225">Поврзете се на мрежа и обидете се повторно</translation>
+<translation id="2910718431259223434">Нешто тргна наопаку. Обидете се повторно или контактирајте со сопственикот или администраторот на уредот. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Дозволете локациите да зачувуваат и читаат податоци за колачињата (препорачано)</translation>
 <translation id="2915102088417824677">Прикажи го дневникот на активности</translation>
 <translation id="2915873080513663243">Автоматско скенирање</translation>
@@ -2323,6 +2328,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Една екстензија е одобрена}one{# екстензија е одобрена}other{# екстензии се одобрени}}</translation>
 <translation id="3822559385185038546">Ова прокси го наметнува администраторот</translation>
 <translation id="3823310065043511710">За Linux, се препорачува најмалку <ph name="INSTALL_SIZE" /> слободен простор.</translation>
+<translation id="3824621460022590830">Токенот за регистрација на уредот е неважечки. Контактирајте со сопственикот или администраторот на уредот. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Администраторот оневозможил додавање повеќе сметки на Google</translation>
 <translation id="3827306204503227641">Продолжи да дозволуваш изолирани приклучоци</translation>
 <translation id="3827774300009121996">&amp;Цел екран</translation>
@@ -3276,6 +3282,7 @@
 <translation id="5079950360618752063">Користете ја предложената лозинка</translation>
 <translation id="508059534790499809">Освежете го билетот на Kerberos</translation>
 <translation id="5084230410268011727">Дозволи сајтовите да користат сензори за движење и светлина</translation>
+<translation id="5084328598860513926">Текот на обезбедување е прекинат. Обидете се повторно или контактирајте со сопственикот или администраторот на уредот. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Се проверуваат ажурирања</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Да се врати стандардната почетна страница?</translation>
@@ -3675,6 +3682,7 @@
 <translation id="557722062034137776">Ресетирањето на уредот нема да влијае врз вашите сметки на Google или врз податоците што се синхронизирани со овие сметки. Сепак, сите датотеки што се зачувани локално на уредот ќе се избришат.</translation>
 <translation id="5578059481725149024">Автоматско најавување</translation>
 <translation id="558170650521898289">Верификација на хардверски двигател на Microsoft Windows</translation>
+<translation id="5581972110672966454">Уредот не може да се приклучи на доменот. Обидете се повторно или контактирајте со сопственикот или администраторот на уредот. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Главно мени</translation>
 <translation id="5583640892426849032">Backspace-копче</translation>
 <translation id="5584088138253955452">Да се зачува корисничкото име?</translation>
@@ -3747,6 +3755,7 @@
 <translation id="5667546120811588575">Се поставува Google Play…</translation>
 <translation id="5669267381087807207">Се активира</translation>
 <translation id="5669691691057771421">Внесете го новиот PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Сликите се блокирани</translation>
 <translation id="5671658447180261823">Отстрани го предлогот <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Уредов ќе добива автоматски софтверски и безбедносни ажурирања до <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
@@ -5393,6 +5402,7 @@
 <translation id="7764225426217299476">Додај адреса</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> од <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Премести</translation>
+<translation id="7766082757934713382">Помага да се намали потрошениот сообраќај на мрежата со паузирање на автоматските апликации и ажурирањата на системот</translation>
 <translation id="7766807826975222231">Направете разгледување</translation>
 <translation id="7766838926148951335">Прифати ги дозволите</translation>
 <translation id="7768770796815395237">Промени</translation>
@@ -6307,6 +6317,7 @@
 <translation id="885701979325669005">Склад</translation>
 <translation id="8859057652521303089">Изберете го вашиот јазик:</translation>
 <translation id="8859174528519900719">Подрамка: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">„Условите за користење“ не можеше да се вчитаат</translation>
 <translation id="8859662783913000679">Сметка на родител</translation>
 <translation id="8862003515646449717">Префрлете се на брз прелистувач</translation>
 <translation id="8863753581171631212">Отвори го линкот во нов прозорец на <ph name="APP" /></translation>
@@ -6575,6 +6586,7 @@
 <translation id="920045321358709304">Пребарај на <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Сите офлајн податоци ќе се избришат</translation>
 <translation id="9201220332032049474">Опции за заклучување на екранот</translation>
+<translation id="9201842707396338580">Нешто тргна наопаку. Контактирајте со сопственикот или администраторот на уредот. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Профилирањето е овозможено</translation>
 <translation id="9203904171912129171">Изберете уред</translation>
 <translation id="9203962528777363226">Администраторот на уредов оневозможи додавање нови корисници</translation>
@@ -6646,6 +6658,7 @@
 <translation id="983511809958454316">Функцијава не е поддржана во VR</translation>
 <translation id="984275831282074731">Начини на плаќање</translation>
 <translation id="98515147261107953">Пејзаж</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Општо</translation>
 <translation id="987897973846887088">Нема слики на располагање</translation>
 <translation id="988978206646512040">Не е дозволена празна лозинка</translation>

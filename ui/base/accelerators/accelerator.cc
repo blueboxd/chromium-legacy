@@ -276,7 +276,7 @@ base::string16 Accelerator::GetShortcutText() const {
     shortcut_rtl.append(shortcut, 0, shortcut.length() - key_length - 1);
     shortcut.swap(shortcut_rtl);
   }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
   return shortcut;
 }
@@ -317,7 +317,7 @@ base::string16 Accelerator::KeyCodeToMacSymbol() const {
       return KeyCodeToName();
   }
 }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 base::string16 Accelerator::KeyCodeToName() const {
   int string_id = 0;

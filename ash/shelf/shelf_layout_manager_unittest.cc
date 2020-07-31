@@ -2700,10 +2700,8 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
 
   // ShelfLayoutManagerTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kShelfHotseat,
-         features::kDragFromShelfToHomeOrOverview},
-        {});
+    scoped_feature_list_.InitWithFeatures({chromeos::features::kShelfHotseat},
+                                          {});
     ShelfLayoutManagerTestBase::SetUp();
 
     TabletModeControllerTestApi().EnterTabletMode();

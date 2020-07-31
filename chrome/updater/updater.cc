@@ -12,6 +12,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_install.h"
 #include "chrome/updater/app/app_uninstall.h"
 #include "chrome/updater/app/app_wake.h"
 #include "chrome/updater/configurator.h"
@@ -25,12 +26,10 @@
 #if defined(OS_WIN)
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/app/server/win/service_main.h"
-#include "chrome/updater/win/app_install.h"
 #endif
 
 #if defined(OS_MAC)
 #include "chrome/updater/app/server/mac/server.h"
-#include "chrome/updater/mac/setup/app_install.h"
 #endif
 
 // Instructions For Windows.

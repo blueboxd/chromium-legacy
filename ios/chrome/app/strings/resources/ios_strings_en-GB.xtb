@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Cannot Save Image</translation>
 <translation id="1180526666083833456">Sync and personalise across devices.</translation>
 <translation id="1181037720776840403">Remove</translation>
+<translation id="1185569544548277362">New: You can make Chrome your default. <ph name="BEGIN_LINK" />Open Settings<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">New Search</translation>
 <translation id="1209206284964581585">Hide for now</translation>
 <translation id="1219674500290482172">Unable to connect to the Internet.</translation>
@@ -367,6 +368,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5407969256130905701">Discard changes</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="5416022985862681400">Last 7 days</translation>
+<translation id="543338862236136125">Edit password</translation>
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
@@ -638,6 +640,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tabs <ph name="FIRST_VISIBLE_TAB" /> through <ph name="LAST_VISIBLE_TAB" /> of <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">New</translation>
 <translation id="8532105204136943229">Year of Expiry</translation>
+<translation id="8533166274275423134">Opened elsewhere</translation>
 <translation id="8534481786647257214">Google+ post completed.</translation>
 <translation id="8548878600947630424">Find in page...</translation>
 <translation id="8574235780160508979">Chrome’s Terms of Service are changing on 31 March. <ph name="BEGIN_LINK" />Please review<ph name="END_LINK" /></translation>

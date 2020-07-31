@@ -10,6 +10,7 @@
 #include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -86,7 +87,10 @@ NSString* const kPreviousSessionInfoThermalState =
 // - A (boolean) describing whether or not low power mode is enabled.
 NSString* const kPreviousSessionInfoLowPowerMode =
     @"PreviousSessionInfoLowPowerMode";
-
+// - A (boolean) describing whether the last session was on Multi-Window enabled
+//   version of the application.
+NSString* const kPreviousSessionInfoMultiWindowEnabled =
+    @"PreviousSessionInfoMultiWindowEnabled";
 }  // namespace
 
 namespace previous_session_info_constants {
@@ -115,6 +119,7 @@ NSString* const kPreviousSessionInfoRestoringSession =
 @property(nonatomic, assign) BOOL didSeeMemoryWarningShortlyBeforeTerminating;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
+@property(nonatomic, assign) BOOL isMultiWindowEnabledSession;
 @property(nonatomic, assign) BOOL OSRestartedAfterPreviousSession;
 @property(nonatomic, strong) NSString* OSVersion;
 @property(nonatomic, strong) NSDate* sessionEndTime;
@@ -161,6 +166,11 @@ static PreviousSessionInfo* gSharedInstance = nil;
         base::SysUTF8ToNSString(version_info::GetVersionNumber());
     gSharedInstance.isFirstSessionAfterUpgrade =
         ![lastRanVersion isEqualToString:currentVersion];
+
+    // TODO(crbug.com/1109280): Remove after the migration to Multi-Window
+    // sessions is done.
+    gSharedInstance.isMultiWindowEnabledSession =
+        [defaults boolForKey:kPreviousSessionInfoMultiWindowEnabled];
 
     NSTimeInterval lastSystemStartTime =
         [defaults doubleForKey:previous_session_info_constants::kOSStartTime];
@@ -212,6 +222,12 @@ static PreviousSessionInfo* gSharedInstance = nil;
   // Set the current language.
   NSString* currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
   [defaults setObject:currentLanguage forKey:kLastRanLanguage];
+
+  // Set the current Multi-Window support state.
+  // TODO(crbug.com/1109280): Remove after the migration to Multi-Window
+  // sessions is done.
+  [defaults setBool:IsMultiwindowSupported()
+             forKey:kPreviousSessionInfoMultiWindowEnabled];
 
   // Clear the memory warning flag.
   [defaults
@@ -356,6 +372,11 @@ static PreviousSessionInfo* gSharedInstance = nil;
     --self.numberOfSessionsBeingRestored;
     if (self.numberOfSessionsBeingRestored == 0) {
       [self resetSessionRestorationFlag];
+      // Once the first patch of sessions is restored. Update the Multi-Window
+      // flag so it's not used again in the same run.
+      // TODO(crbug.com/1109280): Remove after the migration to Multi-Window
+      // sessions is done.
+      gSharedInstance.isMultiWindowEnabledSession = IsMultiwindowSupported();
     }
   }));
 }

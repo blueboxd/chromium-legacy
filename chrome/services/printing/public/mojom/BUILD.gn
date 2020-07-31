@@ -23,7 +23,11 @@ mojom("mojom") {
   ]
 
   if (is_chromeos) {
-    sources += [ "pdf_flattener.mojom" ]
+    sources += [
+      "pdf_flattener.mojom",
+      "pdf_thumbnailer.mojom",
+    ]
+    deps += [ "//skia/public/mojom" ]
   }
 
   if (is_win) {

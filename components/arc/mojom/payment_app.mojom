@@ -1,0 +1,62 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Next MinVersion: 1
+
+module arc.mojom;
+
+// After the browser calls IsPaymentImplemented(), ARC sends back this result
+// if there are no errors.
+struct IsPaymentImplementedValidResult {
+  // The list of activities with intent filter for
+  // org.chromium.intent.action.PAY action and "https://play.google.com/billing"
+  // in either "org.chromium.default_payment_method_name" or
+  // "org.chromium.payment_method_names" metadata. Other payment methods are
+  // ignored for now.
+  // Example activity name: "com.example.app.PaymentActivity".
+  array<string> activity_names;
+
+  // The list of services with intent filter for
+  // org.chromium.intent.action.IS_READY_TO_PAY. Example service name:
+  // "com.example.app.IsReadyToPayService".
+  array<string> service_names;
+};
+
+// After the browser calls IsPaymentImplemented(), ARC sends back this result.
+union IsPaymentImplementedResult {
+  IsPaymentImplementedValidResult valid;
+  string error;
+};
+
+// The service that runs in ARC and allows the browser to invoke the TWA payment
+// app that is installed in ARC, if it implements payment intents as described
+// in https://web.dev/android-payment-apps-overview/. At first, only
+// "https://play.google.com/billing" payment method is supported.
+//
+// --------------------      --------------------------------------------------
+// |     Browser      |      |                      ARC                       |
+// |                  |      |                                                |
+// | ---------------  |      |  --------------    -------    ---------------- |
+// | | Web Payment |<-|------|->| PaymentApp |<-->| TWA |<-->| Play Billing | |
+// | ---------------  |      |  --------------    -------    ---------------- |
+// |                  |      |                                                |
+// --------------------      --------------------------------------------------
+//
+// Next method ID: 1
+interface PaymentAppInstance {
+  // Called by the browser to check whether the TWA with |package_name| (e.g.,
+  // "com.example.app") in ARC has intent filters for
+  // org.chromium.intent.action.PAY and
+  // org.chromium.intent.action.IS_READY_TO_PAY with
+  // "https://play.google.com/billing" in either
+  // "org.chromium.default_payment_method_name" or
+  // "org.chromium.payment_method_names" metadata of the PAY intent filter.
+  // Other payment methods are ignored for now.
+  //
+  // Should not invoke any of the TWA activities or connect to any of its
+  // services, because this method may be invoked when off the record, e.g.,
+  // incognito mode or guest mode.
+  IsPaymentImplemented@0(string package_name)
+      => (IsPaymentImplementedResult response);
+};

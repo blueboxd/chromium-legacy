@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
 <translation id="2199719347983604670">Data from Chrome sync</translation>
 <translation id="2347208864470321755">When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Make Chrome your default</translation>
 <translation id="2574249610672786438">To see your tabs from wherever you use Chrome, sign in on all of your devices</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="257708665678654955">Would you like Google Chrome to offer to translate <ph name="LANGUAGE_NAME" /> pages from this site next time?</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
 <translation id="3522659714780527202">To see your tabs from wherever you use Chrome, turn on sync</translation>
+<translation id="3706101708757577809">You can now use Chrome any time that you tap links in messages, documents and other apps.</translation>
 <translation id="384394811301901750">Google Chrome can't use your camera at the moment.</translation>
 <translation id="3980220367029651214">You are switching sync accounts from <ph name="USER_EMAIL1" /> to <ph name="USER_EMAIL2" />. Your existing Chrome data is managed by <ph name="DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
@@ -44,6 +46,10 @@
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6648150602980899529">You are signing in with an account managed by <ph name="DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
 <translation id="6676840375528380067">Clear your Chrome data from this device?</translation>
+<translation id="6724102885918156196">To make Chrome your default:
+        1. Open Settings. 
+        2. Tap Default Browser App.
+        3. Select Chrome.</translation>
 <translation id="7165736900384873061">Start Using Google Chrome QR Scanner</translation>
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Move Chrome to your dock<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Open Settings</translation>

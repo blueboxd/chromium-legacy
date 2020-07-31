@@ -515,13 +515,15 @@ class OmniboxViewViews : public OmniboxView,
   // When ShouldHidePathQueryRefOnInteraction() is enabled, when a
   // navigation finishes, we unelide the URL if it was a full cross-document
   // navigation. Once the user interacts with the page, we create and run
-  // |elide_after_interaction_animation_| to elide the URL. After the first user
-  // interaction, |elide_after_interaction_animation_| doesn't run again until
+  // |elide_after_web_contents_interaction_animation_| to elide the URL. After
+  // the first user interaction,
+  // |elide_after_web_contents_interaction_animation_| doesn't run again until
   // it's re-created after the next navigation. There are 2 separate animations
   // (one for after-interaction and one hovering) so that the state of the
   // after-interaction animation can be queried to know when the user has or has
   // not already interacted with the page.
-  std::unique_ptr<ElideAnimation> elide_after_interaction_animation_;
+  std::unique_ptr<ElideAnimation>
+      elide_after_web_contents_interaction_animation_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   std::vector<gfx::Range> saved_temporary_selection_;

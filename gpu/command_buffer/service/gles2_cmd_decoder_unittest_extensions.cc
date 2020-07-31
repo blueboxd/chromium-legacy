@@ -23,17 +23,6 @@ using ::testing::Return;
 namespace gpu {
 namespace gles2 {
 
-// Class to use to test that functions which need feature flags or
-// extensions always return INVALID_OPERATION if the feature flags is not
-// enabled or extension is not present.
-class GLES2DecoderTestDisabledExtensions : public GLES2DecoderTest {
- public:
-  GLES2DecoderTestDisabledExtensions() = default;
-};
-INSTANTIATE_TEST_SUITE_P(Service,
-                         GLES2DecoderTestDisabledExtensions,
-                         ::testing::Bool());
-
 class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
  public:
   GLES2DecoderTestWithBlendEquationAdvanced() = default;
@@ -52,46 +41,6 @@ class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
 
 INSTANTIATE_TEST_SUITE_P(Service,
                          GLES2DecoderTestWithBlendEquationAdvanced,
-                         ::testing::Bool());
-
-class GLES2DecoderTestWithEXTMultisampleCompatibility
-    : public GLES2DecoderTest {
- public:
-  GLES2DecoderTestWithEXTMultisampleCompatibility() = default;
-
-  void SetUp() override {
-    InitState init;
-    init.gl_version = "OpenGL ES 3.1";
-    init.has_alpha = true;
-    init.has_depth = true;
-    init.request_alpha = true;
-    init.request_depth = true;
-    init.bind_generates_resource = true;
-    init.extensions = "GL_EXT_multisample_compatibility ";
-    InitDecoder(init);
-  }
-};
-INSTANTIATE_TEST_SUITE_P(Service,
-                         GLES2DecoderTestWithEXTMultisampleCompatibility,
-                         ::testing::Bool());
-
-class GLES2DecoderTestWithBlendFuncExtended : public GLES2DecoderTest {
- public:
-  GLES2DecoderTestWithBlendFuncExtended() = default;
-  void SetUp() override {
-    InitState init;
-    init.gl_version = "OpenGL ES 3.0";
-    init.has_alpha = true;
-    init.has_depth = true;
-    init.request_alpha = true;
-    init.request_depth = true;
-    init.bind_generates_resource = true;
-    init.extensions = "GL_EXT_blend_func_extended";
-    InitDecoder(init);
-  }
-};
-INSTANTIATE_TEST_SUITE_P(Service,
-                         GLES2DecoderTestWithBlendFuncExtended,
                          ::testing::Bool());
 
 class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
@@ -113,26 +62,6 @@ class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
 
 INSTANTIATE_TEST_SUITE_P(Service,
                          GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples,
-                         ::testing::Bool());
-
-class GLES2DecoderTestWithCHROMIUMRasterTransport : public GLES2DecoderTest {
- public:
-  GLES2DecoderTestWithCHROMIUMRasterTransport() = default;
-  void SetUp() override {
-    InitState init;
-    init.gl_version = "OpenGL ES 2.0";
-    init.has_alpha = true;
-    init.has_depth = true;
-    init.request_alpha = true;
-    init.request_depth = true;
-    init.bind_generates_resource = true;
-    init.extensions = "chromium_raster_transport";
-    InitDecoder(init);
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(Service,
-                         GLES2DecoderTestWithCHROMIUMRasterTransport,
                          ::testing::Bool());
 
 class GLES3DecoderTestWithEXTWindowRectangles : public GLES3DecoderTest {

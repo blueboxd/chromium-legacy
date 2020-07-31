@@ -2164,6 +2164,24 @@
     ]
   },
 
+  "DefaultSensorsSetting": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DefaultSensorsSetting": 1 },
+        "prefs": { "profile.managed_default_content_settings.sensors": { "value": 1 } },
+        "indicator_tests": [{ "pref": "profile.managed_default_content_settings.sensors", "selector": "[content-setting=sensors]", "value": "allow" }],
+        "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      },
+      {
+        "policies": { "DefaultSensorsSetting": 2 },
+        "prefs": { "profile.managed_default_content_settings.sensors": { "value": 2 } },
+        "indicator_tests": [{ "pref": "profile.managed_default_content_settings.sensors", "selector": "[content-setting=sensors]", "value": "block" }],
+        "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+
   "AudioCaptureAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
@@ -2560,6 +2578,42 @@
             "pref": "profile.managed_notifications_blocked_for_urls",
             "test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=notifications]').click();",
             "selector": "[content-exception=notifications]"
+          }
+        ],
+        "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+
+  "SensorsAllowedForUrls": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SensorsAllowedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_sensors_allowed_for_urls": {} },
+        "indicator_tests": [
+          {
+            "pref": "profile.sensors_allowed_for_urls",
+            "test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=sensors]').click();",
+            "selector": "[content-exception=sensors]"
+          }
+        ],
+        "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+
+  "SensorsBlockedForUrls": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SensorsBlockedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_sensors_blocked_for_urls": {} },
+        "indicator_tests": [
+          {
+            "pref": "profile.sensors_blocked_for_urls",
+            "test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=sensors]').click();",
+            "selector": "[content-exception=sensors]"
           }
         ],
         "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."

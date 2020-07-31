@@ -70,6 +70,7 @@
 #include "components/arc/midis/arc_midis_bridge.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
+#include "components/arc/pay/arc_payment_app_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/property/arc_property_bridge.h"
 #include "components/arc/rotation_lock/arc_rotation_lock_bridge.h"
@@ -195,6 +196,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(
       profile->GetPrefs());
   ArcOemCryptoBridge::GetForBrowserContext(profile);
+  ArcPaymentAppBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile)->SetUserIdHash(

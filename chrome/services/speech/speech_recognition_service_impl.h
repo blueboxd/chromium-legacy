@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICES_SPEECH_SPEECH_RECOGNITION_SERVICE_IMPL_H_
 #define CHROME_SERVICES_SPEECH_SPEECH_RECOGNITION_SERVICE_IMPL_H_
 
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -27,6 +28,8 @@ class SpeechRecognitionServiceImpl
                        context) override;
   void SetUrlLoaderFactory(mojo::PendingRemote<network::mojom::URLLoaderFactory>
                                url_loader_factory) override;
+  void SetSodaPath(const base::FilePath& binary_path,
+                   const base::FilePath& config_path) override;
   void BindSpeechRecognitionServiceClient(
       mojo::PendingRemote<media::mojom::SpeechRecognitionServiceClient> client)
       override;
@@ -53,6 +56,9 @@ class SpeechRecognitionServiceImpl
   mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   mojo::Remote<media::mojom::SpeechRecognitionServiceClient> client_;
+
+  base::FilePath binary_path_ = base::FilePath();
+  base::FilePath config_path_ = base::FilePath();
 
   base::WeakPtrFactory<SpeechRecognitionServiceImpl> weak_factory_{this};
 

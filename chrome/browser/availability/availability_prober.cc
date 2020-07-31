@@ -62,6 +62,8 @@ std::string NameForClient(AvailabilityProber::ClientName name) {
   switch (name) {
     case AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck:
       return "IsolatedPrerenderOriginCheck";
+    case AvailabilityProber::ClientName::kIsolatedPrerenderCanaryCheck:
+      return "IsolatedPrerenderCanaryCheck";
     default:
       NOTREACHED();
       return std::string();

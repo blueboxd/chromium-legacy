@@ -41,7 +41,6 @@ source_set("common") {
     "//remoting/base:authorization",
     "//remoting/host:common",
     "//remoting/host/native_messaging",
-    "//remoting/proto/remoting/v1:directory_grpc_library",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]

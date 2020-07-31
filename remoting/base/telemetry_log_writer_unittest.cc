@@ -12,16 +12,15 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-//#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "net/http/http_status_code.h"
 #include "remoting/base/chromoting_event.h"
 #include "remoting/base/fake_oauth_token_getter.h"
-#include "remoting/base/grpc_support/grpc_async_executor.h"
-#include "remoting/base/grpc_test_support/fake_client_async_response_reader.h"
-#include "remoting/proto/remoting/v1/telemetry_service.grpc.pb.h"
+#include "remoting/base/protobuf_http_status.h"
+#include "remoting/base/protobuf_http_test_responder.h"
+#include "remoting/proto/remoting/v1/telemetry_messages.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,92 +28,16 @@ namespace remoting {
 
 namespace {
 
-class MockTelemetryStub
-    : public apis::v1::RemotingTelemetryService::StubInterface {
- public:
-  ~MockTelemetryStub() override {
-    // Despite being passed around in a unique_ptr, instances of
-    // ClientAsyncResponseReaderInterface are expected to manage their own
-    // lifetimes. (default_deleter is specialized to be a noop for such
-    // instances.) Since only a small number of instances are created for each
-    // test, the easiest solution is to keep track of the created instances and
-    // delete them all during tear-down.
-    for (auto& deleter : deleters_) {
-      std::move(deleter).Run();
-    }
-  }
-  MOCK_METHOD(grpc::Status,
-              CreateEvent,
-              (grpc::ClientContext * context,
-               const apis::v1::CreateEventRequest& request,
-               apis::v1::CreateEventResponse* response),
-              (override));
-  MOCK_METHOD(grpc::Status,
-              CreateLogEntry,
-              (grpc::ClientContext * context,
-               const apis::v1::CreateLogEntryRequest& request,
-               apis::v1::CreateLogEntryResponse* response),
-              (override));
-
- private:
-  grpc::ClientAsyncResponseReaderInterface<apis::v1::CreateEventResponse>*
-  AsyncCreateEventRaw(grpc::ClientContext* context,
-                      const apis::v1::CreateEventRequest& request,
-                      grpc::CompletionQueue* cq) override {
-    return RegisterDeletable(
-        new test::FakeClientAsyncResponseReader<apis::v1::CreateEventResponse>(
-            base::BindOnce(&MockTelemetryStub::CreateEvent,
-                           base::Unretained(this), context, request),
-            cq, true));
-  }
-  grpc::ClientAsyncResponseReaderInterface<apis::v1::CreateEventResponse>*
-  PrepareAsyncCreateEventRaw(grpc::ClientContext* context,
-                             const apis::v1::CreateEventRequest& request,
-                             grpc::CompletionQueue* cq) override {
-    return RegisterDeletable(
-        new test::FakeClientAsyncResponseReader<apis::v1::CreateEventResponse>(
-            base::BindOnce(&MockTelemetryStub::CreateEvent,
-                           base::Unretained(this), context, request),
-            cq, false));
-  }
-  grpc::ClientAsyncResponseReaderInterface<apis::v1::CreateLogEntryResponse>*
-  AsyncCreateLogEntryRaw(grpc::ClientContext* context,
-                         const apis::v1::CreateLogEntryRequest& request,
-                         grpc::CompletionQueue* cq) override {
-    return RegisterDeletable(new test::FakeClientAsyncResponseReader<
-                             apis::v1::CreateLogEntryResponse>(
-        base::BindOnce(&MockTelemetryStub::CreateLogEntry,
-                       base::Unretained(this), context, request),
-        cq, true));
-  }
-  grpc::ClientAsyncResponseReaderInterface<apis::v1::CreateLogEntryResponse>*
-  PrepareAsyncCreateLogEntryRaw(grpc::ClientContext* context,
-                                const apis::v1::CreateLogEntryRequest& request,
-                                grpc::CompletionQueue* cq) override {
-    return RegisterDeletable(new test::FakeClientAsyncResponseReader<
-                             apis::v1::CreateLogEntryResponse>(
-        base::BindOnce(&MockTelemetryStub::CreateLogEntry,
-                       base::Unretained(this), context, request),
-        cq, false));
-  }
-
-  template <typename T>
-  T* RegisterDeletable(T* deletable) {
-    deleters_.push_back(base::BindOnce([](T* ptr) { delete ptr; }, deletable));
-    return deletable;
-  }
-
-  std::vector<base::OnceClosure> deleters_;
-};
-
 MATCHER_P(HasDurations, durations, "") {
-  if (!arg.has_payload() ||
-      static_cast<std::size_t>(arg.payload().events_size()) !=
+  apis::v1::CreateEventRequest request;
+  EXPECT_TRUE(ProtobufHttpTestResponder::ParseRequestMessage(arg, &request));
+  if (!request.has_payload() ||
+      static_cast<std::size_t>(request.payload().events_size()) !=
           durations.size()) {
     return false;
   }
   for (std::size_t i = 0; i < durations.size(); ++i) {
-    auto event = arg.payload().events(i);
+    auto event = request.payload().events(i);
     if (!event.has_session_duration() ||
         event.session_duration() != durations[i]) {
       return false;
@@ -132,36 +55,42 @@ std::array<int, sizeof...(Args)> MakeIntArray(Args&&... args) {
 // identified by their session_duration field. (Session duration is incremented
 // after each call to LogFakeEvent.)
 //
-// stub: The MockTelemetryStub on which to set the expectation.
+// responder: The ProtobufHttpTestResponder on which to set the expectation.
 // durations: The durations of the expected events, grouped with parentheses.
 //     E.g., (0) or (1, 2).
 //
 // Example usage:
-//     EXPECT_EVENTS(*mock_stub_ptr_, (1, 2)).WillOnce(kSucceed);
-#define EXPECT_EVENTS(stub, durations)                                      \
-  EXPECT_CALL((stub),                                                       \
-              CreateEvent(testing::_, HasDurations(MakeIntArray durations), \
-                          testing::NotNull()))
+//     EXPECT_EVENTS(test_responder_, (1, 2))
+//         .WillOnce(DoSucceed(&test_responder_));
+#define EXPECT_EVENTS(responder, durations)     \
+  EXPECT_CALL((responder.GetMockInterceptor()), \
+              Run(HasDurations(MakeIntArray durations)))
 
-// Constant success and failure actions to be passed to WillOnce and friends.
-const auto kSucceed =
-    testing::DoAll(testing::SetArgPointee<2>(apis::v1::CreateEventResponse()),
-                   testing::Return(grpc::Status()));
+// Creates a success action to be passed to WillOnce and friends.
+decltype(auto) DoSucceed(ProtobufHttpTestResponder* responder) {
+  return [responder](const network::ResourceRequest& request) {
+    return responder->AddResponse(request.url.spec(),
+                                  apis::v1::CreateEventResponse());
+  };
+}
 
-const auto kFail = testing::Return(
-    grpc::Status(grpc::UNAVAILABLE, "The service is unavailable."));
+// Creates a failure action to be passed to WillOnce and friends.
+decltype(auto) DoFail(ProtobufHttpTestResponder* responder) {
+  return [responder](const network::ResourceRequest& request) {
+    return responder->AddError(
+        request.url.spec(),
+        ProtobufHttpStatus(ProtobufHttpStatus::Code::UNAVAILABLE,
+                           "The service is unavailable."));
+  };
+}
 
 }  // namespace
 
 class TelemetryLogWriterTest : public testing::Test {
  public:
-  TelemetryLogWriterTest()
-      : mock_stub_ptr_(new testing::StrictMock<MockTelemetryStub>()),
-        log_writer_(
-            std::make_unique<FakeOAuthTokenGetter>(OAuthTokenGetter::SUCCESS,
-                                                   "dummy",
-                                                   "dummy"),
-            base::WrapUnique(mock_stub_ptr_)) {}
+  TelemetryLogWriterTest() {
+    log_writer_.Init(test_responder_.GetUrlLoaderFactory());
+  }
 
   ~TelemetryLogWriterTest() override {
     // It's an async process to create request to send all pending events.
@@ -199,8 +128,11 @@ class TelemetryLogWriterTest : public testing::Test {
     run_loop.Run();
   }
 
-  MockTelemetryStub* mock_stub_ptr_;
-  TelemetryLogWriter log_writer_;
+  ProtobufHttpTestResponder test_responder_;
+  TelemetryLogWriter log_writer_{
+      std::make_unique<FakeOAuthTokenGetter>(OAuthTokenGetter::SUCCESS,
+                                             "dummy",
+                                             "dummy")};
 
  private:
   // Incremented for each event to allow them to be distinguished.
@@ -211,28 +143,33 @@ class TelemetryLogWriterTest : public testing::Test {
 };
 
 TEST_F(TelemetryLogWriterTest, PostOneLogImmediately) {
-  EXPECT_EVENTS(*mock_stub_ptr_, (0)).WillOnce(kSucceed);
+  EXPECT_EVENTS(test_responder_, (0)).WillOnce(DoSucceed(&test_responder_));
   LogFakeEvent();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneLogAndHaveTwoPendingLogs) {
+  ::testing::InSequence sequence;
+
   // First one is sent right away. Second two are batched and sent once the
   // first request has completed.
-  EXPECT_EVENTS(*mock_stub_ptr_, (0)).WillOnce(kSucceed);
-  EXPECT_EVENTS(*mock_stub_ptr_, (1, 2)).WillOnce(kSucceed);
+  EXPECT_EVENTS(test_responder_, (0)).WillOnce(DoSucceed(&test_responder_));
+  EXPECT_EVENTS(test_responder_, (1, 2)).WillOnce(DoSucceed(&test_responder_));
   LogFakeEvent();
   LogFakeEvent();
   LogFakeEvent();
 }
 
 TEST_F(TelemetryLogWriterTest, PostLogFailedAndRetry) {
-  EXPECT_EVENTS(*mock_stub_ptr_, (0)).Times(5).WillRepeatedly(kFail);
+  EXPECT_EVENTS(test_responder_, (0))
+      .Times(5)
+      .WillRepeatedly(DoFail(&test_responder_));
   LogFakeEvent();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneLogFailedResendWithTwoPendingLogs) {
-  EXPECT_EVENTS(*mock_stub_ptr_, (0)).WillOnce(kFail);
-  EXPECT_EVENTS(*mock_stub_ptr_, (0, 1, 2)).WillOnce(kSucceed);
+  EXPECT_EVENTS(test_responder_, (0)).WillOnce(DoFail(&test_responder_));
+  EXPECT_EVENTS(test_responder_, (0, 1, 2))
+      .WillOnce(DoSucceed(&test_responder_));
   LogFakeEvent();
   LogFakeEvent();
   LogFakeEvent();
@@ -240,18 +177,22 @@ TEST_F(TelemetryLogWriterTest, PostOneLogFailedResendWithTwoPendingLogs) {
 
 TEST_F(TelemetryLogWriterTest, PostThreeLogsFailedAndResendWithOnePending) {
   // This tests the ordering of the resent log.
-  EXPECT_EVENTS(*mock_stub_ptr_, (0)).WillOnce(kFail);
-  EXPECT_EVENTS(*mock_stub_ptr_, (0, 1, 2))
+  EXPECT_EVENTS(test_responder_, (0)).WillOnce(DoFail(&test_responder_));
+  EXPECT_EVENTS(test_responder_, (0, 1, 2))
       .WillOnce(testing::DoAll(
-          testing::InvokeWithoutArgs([this]() { LogFakeEvent(); }), kFail));
-  EXPECT_EVENTS(*mock_stub_ptr_, (0, 1, 2, 3)).WillOnce(kSucceed);
+          testing::InvokeWithoutArgs([this]() { LogFakeEvent(); }),
+          DoFail(&test_responder_)));
+  EXPECT_EVENTS(test_responder_, (0, 1, 2, 3))
+      .WillOnce(DoSucceed(&test_responder_));
   LogFakeEvent();
   LogFakeEvent();
   LogFakeEvent();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneFailedThenSucceed) {
-  EXPECT_EVENTS(*mock_stub_ptr_, (0)).WillOnce(kFail).WillOnce(kSucceed);
+  EXPECT_EVENTS(test_responder_, (0))
+      .WillOnce(DoFail(&test_responder_))
+      .WillOnce(DoSucceed(&test_responder_));
   LogFakeEvent();
 }
 

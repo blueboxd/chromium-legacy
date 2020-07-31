@@ -9,11 +9,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
 #include "remoting/base/protobuf_http_status.h"
 #include "remoting/base/scoped_protobuf_http_request.h"
-#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
-#include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
+#include "remoting/signaling/ftl_services_context.h"
 
 namespace remoting {
 
@@ -21,7 +20,7 @@ constexpr base::TimeDelta FtlMessageReceptionChannel::kPongTimeout;
 
 FtlMessageReceptionChannel::FtlMessageReceptionChannel(
     SignalingTracker* signaling_tracker)
-    : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()),
+    : reconnect_retry_backoff_(&FtlServicesContext::GetBackoffPolicy()),
       signaling_tracker_(signaling_tracker) {
   DCHECK(signaling_tracker_);
 }
@@ -99,8 +98,7 @@ void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
   if (status.error_code() == ProtobufHttpStatus::Code::ABORTED ||
       status.error_code() == ProtobufHttpStatus::Code::UNAVAILABLE) {
     // These are 'soft' connection errors that should be retried.
-    // Other errors should be ignored.  See this file for more info:
-    // third_party/grpc/src/include/grpcpp/impl/codegen/status_code_enum.h
+    // Other errors should be ignored.
     RetryStartReceivingMessagesWithBackoff();
     return;
   }

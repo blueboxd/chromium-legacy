@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -201,6 +202,12 @@ class BrowserWithTestWindowTest : public testing::Test {
       std::unique_ptr<content::BrowserTaskEnvironment> task_environment,
       Browser::Type browser_type,
       bool hosted_app);
+
+  // Temporary directory to store profile data. This must outlive
+  // |task_environment_| to avoid leaking data across tests (see
+  // https://crbug.com/546640) and to avoid fatal failures if the directory is
+  // deleted too early, while backend tasks are still running.
+  base::ScopedTempDir temp_dir_;
 
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;

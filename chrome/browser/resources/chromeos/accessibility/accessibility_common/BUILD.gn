@@ -57,11 +57,14 @@ source_set("browser_tests") {
 
 js2gtest("accessibility_common_extjs_tests") {
   test_type = "extension"
-  sources = [ "autoclick_test.js" ]
+  sources = [
+    "accessibility_common_test.js",
+    "autoclick/autoclick_test.js",
+  ]
   gen_include_files = [
     "../common/testing/callback_helper.js",
     "../common/testing/e2e_test_base.js",
-    "mock_accessibility_private.js",
+    "../common/testing/mock_accessibility_private.js",
   ]
 
   # The test base classes generate C++ code with these deps.

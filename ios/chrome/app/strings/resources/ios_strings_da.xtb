@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Billedet kan ikke gemmes</translation>
 <translation id="1180526666083833456">Synkroniser og tilpas på flere enheder.</translation>
 <translation id="1181037720776840403">Fjern</translation>
+<translation id="1185569544548277362">Nyhed: Du kan gøre Chrome til din standardbrowser. <ph name="BEGIN_LINK" />Åbn Indstillinger<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Ny søgning</translation>
 <translation id="1209206284964581585">Skjul indtil videre</translation>
 <translation id="1219674500290482172">Der kunne ikke oprettes forbindelse til internettet.</translation>
@@ -367,6 +368,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5407969256130905701">Kassér ændringer</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
 <translation id="5416022985862681400">De seneste syv dage</translation>
+<translation id="543338862236136125">Rediger adgangskode</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
@@ -638,6 +640,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-fane <ph name="FIRST_VISIBLE_TAB" /> til <ph name="LAST_VISIBLE_TAB" /> af <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Ny</translation>
 <translation id="8532105204136943229">Udløbsår</translation>
+<translation id="8533166274275423134">Blev åbnet et andet sted</translation>
 <translation id="8534481786647257214">Indlæg delt på Google+.</translation>
 <translation id="8548878600947630424">Find på siden...</translation>
 <translation id="8574235780160508979">Servicevilkårene for Chrome ændres den 31. marts <ph name="BEGIN_LINK" />Gennemgå dem<ph name="END_LINK" /></translation>

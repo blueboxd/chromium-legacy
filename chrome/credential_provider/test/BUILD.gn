@@ -31,6 +31,7 @@ test("gcp_unittests") {
   ]
 
   deps = [
+    "../extension:common",
     "../gaiacp:common",
     "../gaiacp:gaia_credential_provider_idl",
     "../gaiacp:gaiacp_lib",
@@ -49,6 +50,7 @@ test("gcp_unittests") {
 
   data_deps = [
     "../eventlog:gcp_eventlog_provider",
+    "../extension:gcpw_extension",
     "../gaiacp:gaia1_0",
     "../setup:gcp_setup",
   ]

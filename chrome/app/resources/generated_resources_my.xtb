@@ -1122,6 +1122,7 @@
 <translation id="2352662711729498748">&lt; ၁ မီဂါဘိုက်</translation>
 <translation id="2352810082280059586">လော့ခ်မျက်နှာပြင်တွင် မှတ်သားထားသည့် မှတ်စုများကို <ph name="LOCK_SCREEN_APP_NAME" /> သို့ အလိုအလျောက် သိမ်းဆည်းပေးပါသည်။ သင်နောက်ဆုံးမှတ်သားထားသည့် မှတ်စုကို လော့ခ်မျက်နှာပြင်ပေါ်တွင် မြင်နိုင်ပါမည်။</translation>
 <translation id="2353297238722298836">ကင်မရာနှင့် မိုက်ခရိုဖုန်းကို သုံးခွင့်ပြုထားသည်</translation>
+<translation id="2355314311311231464">သင့်အကောင့် အသေးစိတ်များကို မရယူနိုင်သည့်အတွက် Provisioning မအောင်မြင်ပါ။ ထပ်စမ်းကြည့်ပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="2355604387869345912">'အလိုအလျောက် ချိတ်ဆက်မျှဝေခြင်း' ဖွင့်ရန်</translation>
 <translation id="2356070529366658676">မေး</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> ကို ဖယ်ရှားရန်</translation>
@@ -1217,6 +1218,7 @@
 <translation id="2473195200299095979">ဒီစာမျက်နှာကို ဘာသာပြန်ပေးရန်</translation>
 <translation id="2475982808118771221">အမှားတစ်ခု ဖြစ်ခဲ့သည်။</translation>
 <translation id="2476578072172137802">ဆိုက် ဆက်တင်များ</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" /> ကို ဖယ်ရှားရန် Windows ကို ပိတ်ပါ။</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" အတွက် မီဒီယာ-ဖိုင် ခွင့်ပြုချက်များ</translation>
 <translation id="247949520305900375">အသံမျှဝေပါ</translation>
 <translation id="248003956660572823">စကားဝှက်များကို သိမ်းမထားပါ</translation>
@@ -1307,6 +1309,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> သို့ ဖတ်ရန်သာလျှင် ဝင်ခွင့်ပြု၏။</translation>
 <translation id="2575247648642144396">လက်ရှိ စာမျက်နှာတွင် အိတ်စတန်းရှင်း လုပ်ဆောင်နိုင်စဉ်တွင် ဤအိုင်ကွန် မြင်ရပါမည်။ <ph name="EXTENSION_SHORTCUT" /> သို့မဟုတ် အိုင်ကွန်ကိုနှိပ်ကာ ဤအိတ်စတန်းရှင်းကို အသုံးပြုနိုင်ပါသည်။</translation>
 <translation id="257779572837908839">အစည်းအဝေးများအတွက် Chromebox အဖြစ် စနစ်ထည့်သွင်းရန်</translation>
+<translation id="2579232805407578790">ဆာဗာနှင့် ချိတ်ဆက်၍မရပါ။ သင့်ကွန်ရက်ချိတ်ဆက်မှုကို စစ်ဆေးပြီး ထပ်စမ်းကြည့်ပါ။ ပြဿနာဆက်ရှိနေပါက သင့် Chromebook ကို ပြန်စပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="2580889980133367162"><ph name="HOST" />အား ဖိုင် အများအပြား ဒေါင်းလုဒ် လုပ်မှုကို အမြဲတမ်း ခွင့်ပြုရန်</translation>
 <translation id="258095186877893873">ရှည်</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1526,6 +1529,7 @@
 <translation id="2836635946302913370">သင့်ကြီးကြပ်သူမှ ဤအသုံးပြုသူအမည်ဖြင့် ဝင်ရောက်ခြင်းကို ပိတ်လိုက်ပါပြီ။</translation>
 <translation id="283669119850230892">ကွန်ရက် <ph name="NETWORK_ID" /> အသုံးပြုရန်၊ အောက်ပါ အင်တာနက်သို့ ချိတ်ဆက်ခြင်း ပြီးမြောက်စေပါ။</translation>
 <translation id="2838379631617906747">တပ်ဆင်နေသည်...</translation>
+<translation id="2838835911926931318">သင့်စက်များအားလုံးပေါ်ရှိ သင်၏ လိပ်စာများ၊ စကားဝှက်များ၊ မှတ်တမ်းနှင့် အခြားအရာများကို စင့်ခ်လုပ်ရန်အတွက် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="2839032553903800133">အကြောင်းကြားချက်များ ပိတ်ထားသည်</translation>
 <translation id="2841013758207633010">အချိန်</translation>
 <translation id="2841837950101800123">ပံ့ပိုးပေးသူ</translation>
@@ -1585,6 +1589,7 @@
     ဆာဗာမက်ဆေ့ဂျ်− <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">မီဒီယာ ပြခန်းကို ဒါရိုက်ထရီ နားမှာ ထည့်ပေးရန်</translation>
 <translation id="2910318910161511225">ကွန်ရက်သို့ ချိတ်ဆက်ပြီး ထပ်စမ်းကြည့်ပါ</translation>
+<translation id="2910718431259223434">တစ်ခုခုမှားသွားသည်။ ထပ်စမ်းကြည့်ပါ သို့မဟုတ် သင့်စက်ပိုင်ရှင် သို့မဟုတ် စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="2913331724188855103">ဆိုဒ်များကို ကွက်ကီးများ ဖတ်ရန်နှင့် သိမ်းရန် ခွင့်ပြုသည် (အကြံပြုထား)</translation>
 <translation id="2915102088417824677">လုပ်ဆောင်ချက်မှတ်တမ်းကို ကြည့်ရန်</translation>
 <translation id="2915873080513663243">အလိုအလျောက် ရှာဖွေခြင်း</translation>
@@ -2324,6 +2329,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{နောက်ဆက်တွဲကို ခွင့်ပြုလိုက်သည်}other{နောက်ဆက်တွဲ # ခုကို ခွင့်ပြုလိုက်သည်}}</translation>
 <translation id="3822559385185038546">ဤပရောက်စီကို သင်၏ စီမံခန့်ခွဲသူက ပြဌာန်းထားခြင်းဖြစ်သည်</translation>
 <translation id="3823310065043511710">Linux အတွက် အနည်းဆုံး နေရာ <ph name="INSTALL_SIZE" /> ရှိရန် အကြံပြုပါသည်။</translation>
+<translation id="3824621460022590830">စက်စာရင်းသွင်းရန် တိုကင်နံပါတ် မမှန်ကန်ပါ။ သင့်စက်ပိုင်ရှင် သို့မဟုတ် စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="3826440694796503677">သင့်စီမံခန့်ခွဲသူသည် နောက်ထပ် Google အကောင့်များ ထည့်ခြင်းကို ပိတ်ထားသည်။</translation>
 <translation id="3827306204503227641">Unsandboxed ပလက်ဂင်များအား ဆက်လက်ခွင့်ပြုရန်</translation>
 <translation id="3827774300009121996">မျက်နှာပြင် အပြည့်</translation>
@@ -3276,6 +3282,7 @@
 <translation id="5079950360618752063">အကြံပြုထားသည့် စကားဝှက်ကို သုံးပါ</translation>
 <translation id="508059534790499809">Kerberos လက်မှတ်ကို ပြန်လည်စတင်ခြင်း</translation>
 <translation id="5084230410268011727">ဝဘ်ဆိုက်များကို လှုပ်ရှားမှုနှင့် အလင်းအာရုံခံကိရိယာများ အသုံးပြုခွင့်ပေးရန်</translation>
+<translation id="5084328598860513926">Provisioning အဆင့်ဆင့် ရပ်သွားသည်။ ထပ်စမ်းကြည့်ပါ သို့မဟုတ် သင့်စက်ပိုင်ရှင် သို့မဟုတ် စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="5085162214018721575">မွမ်းမံမှုများကို စစ်ကြည့်နေ</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">ပင်မစာမျက်နှာကို မူလအတိုင်း ပြန်ထားလိုပါသလား။</translation>
@@ -3675,6 +3682,7 @@
 <translation id="557722062034137776">သင့်စက်ပစ္စည်းကို ပြန်လည်သတ်မှတ်ခြင်းဖြင့် သင့် Google အကောင့်များ သို့မဟုတ် ၎င်းအကောင့်များသို့ စင့်ခ်လုပ်ထားသည့် ဒေတာများအား အကျိုးသက်ရောက်မည်မဟုတ်ပါ။ သို့သော်၊ သင့်စက်ပစ္စည်းတွင်း သိမ်းဆည်းထားသည့် ဖိုင်များအားလုံး ပျက်သွားမည်ဖြစ်သည်။</translation>
 <translation id="5578059481725149024">အော်တို လက်မှတ်ထိုးဝင်ရန်</translation>
 <translation id="558170650521898289">မိုက်ကရိုဆော့ဖ် ၐင်းဒိုး ဟာ့ဒ်ၐဲ ဒရိုက်ဘာ အတည်ပြုချက်</translation>
+<translation id="5581972110672966454">စက်ကို ဒိုမိန်းသို့ ချိတ်ဆက်၍မရပါ။ ထပ်စမ်းကြည့်ပါ သို့မဟုတ် သင့်စက်ပိုင်ရှင် သို့မဟုတ် စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="5582839680698949063">ပင်မမီနူး</translation>
 <translation id="5583640892426849032">နောက်ပြန်</translation>
 <translation id="5584088138253955452">အသုံးပြုသူအမည် သိမ်းမလား။</translation>
@@ -3748,6 +3756,7 @@
 <translation id="5667546120811588575">Google Play ကို စနစ်ထည့်သွင်းနေသည်...</translation>
 <translation id="5669267381087807207">အစပြုနေသည်</translation>
 <translation id="5669691691057771421">ပင်နံပါတ်အသစ်ကို ထည့်ပါ</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">ပုံများကို ပိတ်ထားသည်</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> အကြံပြုချက် ဖယ်ရှားရန်</translation>
 <translation id="567587836466137939">ဤစက်က <ph name="MONTH_AND_YEAR" /> အထိ ဆော့ဖ်ဝဲနှင့် လုံခြုံရေး အပ်ဒိတ်များကို အလိုအလျောက် ရရှိပါမည်။ <ph name="LINK_BEGIN" />ပိုမိုလေ့လာရန်<ph name="LINK_END" /></translation>
@@ -5391,6 +5400,7 @@
 <translation id="7764225426217299476">လိပ်စာများ ထည့်သွင်းပါ</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" />ထံမှ <ph name="DOWNLOAD_RECEIVED" />ရခဲ့သည်</translation>
 <translation id="7765158879357617694">ရွှေ့ရန်</translation>
+<translation id="7766082757934713382">အလိုအလျောက်အက်ပ်များနှင့် စနစ် အပ်ဒိတ်လုပ်ခြင်းများကို ခေတ္တရပ်ခြင်းဖြင့် ကွန်ရက်ဒေတာအသုံးပြုမှုကို ကူညီလျှော့ချသည်</translation>
 <translation id="7766807826975222231">လေ့လာ ကြည့်ရှုပါ</translation>
 <translation id="7766838926148951335">ခွင့်ပြုချက်များကို လက်ခံရန်</translation>
 <translation id="7768770796815395237">ပြောင်းရန်</translation>
@@ -6302,6 +6312,7 @@
 <translation id="885701979325669005">သိုလှောင်ခန်း</translation>
 <translation id="8859057652521303089">သင်၏ ဘာသာစကားကို ရွေးရန်:</translation>
 <translation id="8859174528519900719">ဘောင်ငယ်: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">ဝန်ဆောင်မှု စည်းမျဉ်းများကို ဖွင့်၍မရနိုင်ပါ</translation>
 <translation id="8859662783913000679">မိဘ အကောင့်</translation>
 <translation id="8862003515646449717">ပိုမြန်သော ဘရောင်ဇာသို့ ပြောင်းပါ</translation>
 <translation id="8863753581171631212"><ph name="APP" /> အသစ်တွင် လင့်ခ်ကို ဖွင့်ရန်</translation>
@@ -6570,6 +6581,7 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> တွင် ရှာဖွေရန်</translation>
 <translation id="9201023452444595544">အော့ဖ်လိုင်းဒေတာများအားလုံးကို ရှင်းလင်းလိုက်ပါမည်</translation>
 <translation id="9201220332032049474">မျက်နှာပြင် လော့ခ်ချရန် ရွေးချယ်စရာများ</translation>
+<translation id="9201842707396338580">တစ်ခုခုမှားသွားသည်။ သင့်စက်ပိုင်ရှင် သို့မဟုတ် စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ အမှားကုဒ် - <ph name="ERROR_CODE" />။</translation>
 <translation id="9203398526606335860">&amp;ပရိုဖိုင်ကြည့်မှု ဖွင့်ထား</translation>
 <translation id="9203904171912129171">စက်ပစ္စည်းတစ်ခု ရွေးချယ်ပါ</translation>
 <translation id="9203962528777363226">အသုံးပြုသူများ ထပ်ပေါင်းထည့်ရန် ဤစက်ပစ္စည်း ကြီးကြပ်သူမှ ပိတ်ထားပါသည်</translation>
@@ -6641,6 +6653,7 @@
 <translation id="983511809958454316">ဤဝန်ဆောင်မှုကို VR တွင် ပံ့ပိုးမထားပါ</translation>
 <translation id="984275831282074731">ငွေပေးချေ နည်းလမ်းများ</translation>
 <translation id="98515147261107953">ဘေးတိုက်</translation>
+<translation id="987068745968718743">Parallels Desktop - <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">အထွေထွေ</translation>
 <translation id="987897973846887088">မည်သည့်ပုံမျှ မရနိုင်ပါ</translation>
 <translation id="988978206646512040">လျှို့ဝှက်စကားစုကို ကွက်လပ်ချန်ထားခွင့် မရှိပါ</translation>

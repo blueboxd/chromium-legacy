@@ -1121,6 +1121,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Anteckningar på låsskärmen sparas automatiskt i <ph name="LOCK_SCREEN_APP_NAME" />. Den senaste anteckningen visas på låsskärmen.</translation>
 <translation id="2353297238722298836">Kamera och mikrofon är tillåtna</translation>
+<translation id="2355314311311231464">Administration misslyckades eftersom det inte gick att hämta dina kontouppgifter. Försök igen. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Aktivera direktinternetdelning</translation>
 <translation id="2356070529366658676">Fråga</translation>
 <translation id="2357330829548294574">Ta bort <ph name="USER_NAME" /></translation>
@@ -1216,6 +1217,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2473195200299095979">Översätt den här sidan</translation>
 <translation id="2475982808118771221">Det uppstod ett fel</translation>
 <translation id="2476578072172137802">Webbplatsinställningar</translation>
+<translation id="2476974672882258506">Avsluta Windows för att avinstallera <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Mediefilsbehörigheter för <ph name="EXTENSION" /></translation>
 <translation id="247949520305900375">Dela ljud</translation>
 <translation id="248003956660572823">Lösenorden har inte sparats</translation>
@@ -1306,6 +1308,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2572032849266859634">Skrivskyddad åtkomst till <ph name="VOLUME_NAME" /> har beviljats.</translation>
 <translation id="2575247648642144396">Den här ikonen visas när tillägget kan aktiveras för den aktuella sidan. Använd tillägget genom att klicka på ikonen eller genom att trycka på <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Konfigurera som Chromebox för möten</translation>
+<translation id="2579232805407578790">Det gick inte att ansluta till servern. Kontrollera nätverksanslutningen och försök igen. Starta om Chromebook om problemet kvarstår. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Tillåt alltid att <ph name="HOST" /> laddar flera filer</translation>
 <translation id="258095186877893873">Lång</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Plattform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2836635946302913370">Inloggningar med detta användarnamn har inaktiverats av administratören.</translation>
 <translation id="283669119850230892">För att kunna använda nätverket <ph name="NETWORK_ID" /> måste du först ansluta till Internet nedan.</translation>
 <translation id="2838379631617906747">Installerar</translation>
+<translation id="2838835911926931318">Logga in så synkroniseras bokmärken, lösenord, historik med mera på alla dina enheter</translation>
 <translation id="2839032553903800133">Aviseringar har blockerats</translation>
 <translation id="2841013758207633010">Tid</translation>
 <translation id="2841837950101800123">Leverantör</translation>
@@ -1584,6 +1588,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
     Meddelande från servern: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Lägg till mediegalleri efter katalog</translation>
 <translation id="2910318910161511225">Anslut till ett nätverk och försök igen</translation>
+<translation id="2910718431259223434">Något gick fel. Försök igen eller kontakta enhetens ägare eller administratör. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="2915102088417824677">Visa aktivitetslogg</translation>
 <translation id="2915873080513663243">Automatisk genomsökning</translation>
@@ -2323,6 +2328,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Ett tillägg har godkänts}other{# tillägg har godkänts}}</translation>
 <translation id="3822559385185038546">Administratören har gjort den här proxyn obligatorisk</translation>
 <translation id="3823310065043511710">Minst <ph name="INSTALL_SIZE" /> utrymme rekommenderas för Linux.</translation>
+<translation id="3824621460022590830">Token för enhetsregistrering är ogiltig. Kontakta enhetens ägare eller administratör. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Administratören har inaktiverat möjligheten att lägga till fler Google-konton</translation>
 <translation id="3827306204503227641">Fortsätt att tillåta pluginprogram utanför sandlådan</translation>
 <translation id="3827774300009121996">&amp;Helskärm</translation>
@@ -3276,6 +3282,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5079950360618752063">Använd det föreslagna lösenordet</translation>
 <translation id="508059534790499809">Uppdatera en Kerberos-biljett</translation>
 <translation id="5084230410268011727">Tillåt att webbplatser använder rörelse- och ljussensorer</translation>
+<translation id="5084328598860513926">Administrationsflödet avbröts. Försök igen eller kontakta enhetens ägare eller administratör. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Söker efter uppdateringar</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Vill du återställa standardinställningen för startsidan?</translation>
@@ -3675,6 +3682,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="557722062034137776">Dina Google-konton eller data som synkroniserats med dessa konton påverkas inte när du återställer enheten. Alla filer som sparas lokalt på enheten kommer dock att tas bort.</translation>
 <translation id="5578059481725149024">Autoinloggning</translation>
 <translation id="558170650521898289">Microsofts Verifiera Windows-maskinvarudrivrutin</translation>
+<translation id="5581972110672966454">Det gick inte att ansluta enheten till domänen. Försök igen eller kontakta enhetens ägare eller administratör. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Huvudmeny</translation>
 <translation id="5583640892426849032">Backsteg</translation>
 <translation id="5584088138253955452">Vill du spara användarnamnet?</translation>
@@ -3747,6 +3755,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5667546120811588575">Google Play konfigureras …</translation>
 <translation id="5669267381087807207">Aktiverar</translation>
 <translation id="5669691691057771421">Ange en ny pinkod</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Bilder har blockerats</translation>
 <translation id="5671658447180261823">Ta bort förslaget <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Den här enheten får automatiska program- och säkerhetsuppdateringar till och med <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
@@ -5393,6 +5402,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Flytta</translation>
+<translation id="7766082757934713382">Du kan minska användningen av nätverksdata genom att pausa automatiska app- och systemuppdateringar</translation>
 <translation id="7766807826975222231">Ta en rundtur</translation>
 <translation id="7766838926148951335">Godkänn behörigheterna</translation>
 <translation id="7768770796815395237">Ändra</translation>
@@ -6305,6 +6315,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8859057652521303089">Välj språk:</translation>
 <translation id="8859174528519900719">Underram: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Det gick inte att läsa in användarvillkoren</translation>
 <translation id="8859662783913000679">Föräldrakonto</translation>
 <translation id="8862003515646449717">Byt till en snabb webbläsare</translation>
 <translation id="8863753581171631212">Öppna länken i en ny <ph name="APP" /></translation>
@@ -6573,6 +6584,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="920045321358709304">Sök på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">All offlinedata raderas</translation>
 <translation id="9201220332032049474">Alternativ för skärmlås</translation>
+<translation id="9201842707396338580">Något gick fel. Kontakta enhetens ägare eller administratör. Felkod: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Profilering aktiverad</translation>
 <translation id="9203904171912129171">Välj en enhet</translation>
 <translation id="9203962528777363226">Administratören av den här enheten har inaktiverat nya användare från att läggas till</translation>
@@ -6644,6 +6656,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="983511809958454316">Den här funktionen stöds inte i VR-läget</translation>
 <translation id="984275831282074731">Betalningsmetoder</translation>
 <translation id="98515147261107953">Liggande</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Allmänt</translation>
 <translation id="987897973846887088">Det finns inga bilder</translation>
 <translation id="988978206646512040">Lösenfrasen får inte vara tom</translation>

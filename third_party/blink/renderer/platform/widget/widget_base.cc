@@ -224,7 +224,74 @@ void WidgetBase::GetWidgetInputHandler(
 }
 
 void WidgetBase::UpdateVisualProperties(
-    const VisualProperties& visual_properties) {
+    const VisualProperties& visual_properties_from_browser) {
+  TRACE_EVENT0("renderer", "WidgetBase::UpdateVisualProperties");
+
+  // UpdateVisualProperties is used to receive properties from the browser
+  // process for this WidgetBase. There are roughly 4 types of
+  // VisualProperties.
+  // TODO(danakj): Splitting these 4 types of properties apart and making them
+  // more explicit could be super useful to understanding this code.
+  // 1. Unique to each WidgetBase. Computed by the RenderWidgetHost and passed
+  //    to the WidgetBase which consumes it here.
+  //    Example: new_size.
+  // 2. Global properties, which are given to each WidgetBase (to maintain
+  //    the requirement that a WidgetBase is updated atomically). These
+  //    properties are usually the same for every WidgetBase, except when
+  //    device emulation changes them in the main frame WidgetBase only.
+  //    Example: screen_info.
+  // 3. Computed in the renderer of the main frame WebFrameWidgetBase (in blink
+  //    usually). Passed down through the waterfall dance to child frame
+  //    WebFrameWidgetBase. Here that step is performed by passing the value
+  //    along to all RemoteFrame objects that are below this WebFrameWidgetBase
+  //    in the frame tree. The main frame (top level) WebFrameWidgetBase ignores
+  //    this value from its RenderWidgetHost since it is controlled in the
+  //    renderer. Child frame WebFrameWidgetBases consume the value from their
+  //    RenderWidgetHost. Example: page_scale_factor.
+  // 4. Computed independently in the renderer for each WidgetBase (in blink
+  //    usually). Passed down from the parent to the child WidgetBases through
+  //    the waterfall dance, but the value only travels one step - the child
+  //    frame WebFrameWidgetBase would compute values for grandchild
+  //    WebFrameWidgetBases independently. Here the value is passed to child
+  //    frame RenderWidgets by passing the value along to all RemoteFrame
+  //    objects that are below this WebFrameWidgetBase in the frame tree. Each
+  //    WidgetBase consumes this value when it is received from its
+  //    RenderWidgetHost. Example: compositor_viewport_pixel_rect.
+  // For each of these properties:
+  //   If the WebView also knows these properties, each WebFrameWidgetBase
+  //   will pass them along to the WebView as it receives it, even if there
+  //   are multiple WebFrameWidgetBases related to the same WebView.
+  //   However when the main frame in the renderer is the source of truth,
+  //   then child widgets must not clobber that value! In all cases child frames
+  //   do not need to update state in the WebView when a local main frame is
+  //   present as it always sets the value first.
+  //   TODO(danakj): This does create a race if there are multiple
+  //   UpdateVisualProperties updates flowing through the WebFrameWidgetBase
+  //   tree at the same time, and it seems that only one WebFrameWidgetBase for
+  //   each WebView should be responsible for this update.
+  //
+  //   TODO(danakj): A more explicit API to give values from here to RenderView
+  //   and/or WebView would be nice. Also a more explicit API to give values to
+  //   the RemoteFrame in one go, instead of setting each property
+  //   independently, causing an update IPC from the
+  //   RenderFrameProxy/RemoteFrame for each one.
+  //
+  //   See also:
+  //   https://docs.google.com/document/d/1G_fR1D_0c1yke8CqDMddoKrDGr3gy5t_ImEH4hKNIII/edit#
+
+  blink::VisualProperties visual_properties = visual_properties_from_browser;
+  // Web tests can override the device scale factor in the renderer.
+  if (auto scale_factor = client_->GetDeviceScaleFactorForTesting()) {
+    visual_properties.screen_info.device_scale_factor = scale_factor;
+    visual_properties.compositor_viewport_pixel_rect =
+        gfx::Rect(gfx::ScaleToCeiledSize(
+            visual_properties.new_size,
+            visual_properties.screen_info.device_scale_factor));
+  }
+
+  LayerTreeHost()->SetBrowserControlsParams(
+      visual_properties.browser_controls_params);
+
   client_->UpdateVisualProperties(visual_properties);
 }
 

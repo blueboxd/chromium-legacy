@@ -17,7 +17,7 @@ constexpr base::FilePath::CharType kSodaInstallationRelativePath[] =
 constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
     FILE_PATH_LITERAL("SODAFiles/libsoda.so");
 
-constexpr base::FilePath::CharType kSodaConfigFileRelativePath[] =
+constexpr base::FilePath::CharType kSodaEnUsConfigFileRelativePath[] =
     FILE_PATH_LITERAL("SODAFiles/en_us/dictation.ascii_proto");
 
 const base::FilePath GetSodaDirectory() {
@@ -52,7 +52,7 @@ const base::FilePath GetSodaBinaryPath() {
 const base::FilePath GetSodaConfigPath() {
   base::FilePath soda_dir = GetLatestSodaDirectory();
   return soda_dir.empty() ? base::FilePath()
-                          : soda_dir.Append(kSodaConfigFileRelativePath);
+                          : soda_dir.Append(kSodaEnUsConfigFileRelativePath);
 }
 
 }  // namespace speech

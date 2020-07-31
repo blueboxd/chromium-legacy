@@ -103,6 +103,8 @@ source_set("wayland") {
     "host/wayland_shm.h",
     "host/wayland_shm_buffer.cc",
     "host/wayland_shm_buffer.h",
+    "host/wayland_subsurface.cc",
+    "host/wayland_subsurface.h",
     "host/wayland_surface.cc",
     "host/wayland_surface.h",
     "host/wayland_toplevel_window.cc",

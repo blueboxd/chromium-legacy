@@ -220,6 +220,7 @@
 <translation id="2744248271121720757">برای جستجوی فوری، روی کلمه‌ای ضربه بزنید یا اقدام‌های مرتبط را ببینید</translation>
 <translation id="2760989362628427051">روشن شدن طرح زمینه تیره وقتی طرح زمینه تیره دستگاه یا «بهینه‌سازی باتری» روشن است</translation>
 <translation id="2762000892062317888">هم‌اکنون</translation>
+<translation id="2771869497727323769">نمی‌توان پیوند نوشتار را ایجاد کرد. پیوند صفحه را در برنامه‌ای هم‌رسانی کنید.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="2779651927720337254">انجام نشد</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
@@ -387,6 +388,7 @@
 <translation id="4084712963632273211">‏از<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />توسط Google ارائه می‌شود<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
+<translation id="4108998448622696017">رویدادهای خطرناکی را که اتفاق می‌افتد شناسایی می‌کند و درباره آن‌ها به شما هشدار می‌دهد.</translation>
 <translation id="4116038641877404294">برای استفاده از صفحه‌ها در حالت آفلاین، آن‌ها را بارگیری کنید</translation>
 <translation id="4135200667068010335">فهرست دستگاه‌هایی که می‌توان با آن‌ها برگه هم‌رسانی کرد، بسته است.</translation>
 <translation id="4149994727733219643">نمای ساده‌شده برای صفحه‌های وب</translation>
@@ -459,6 +461,7 @@
 <translation id="4732120983431207637">گره‌گشای پشته</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4738836084190194332">آخرین همگام‌سازی: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">‏خطای TWA: <ph name="ERROR_CODE" /> در <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">باز کردن برگه جدید</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
@@ -508,6 +511,7 @@
 <translation id="5040262127954254034">حریم‌خصوصی</translation>
 <translation id="5087580092889165836">افزودن کارت</translation>
 <translation id="509429900233858213">خطایی روی داد.</translation>
+<translation id="5100748015044654621">پیوند نوشتار برجسته را در برنامه‌ای هم‌رسانی کنید</translation>
 <translation id="510275257476243843">۱ ساعت باقی‌مانده است</translation>
 <translation id="5123685120097942451">برگه ناشناس</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>
@@ -686,6 +690,7 @@
 <translation id="6398765197997659313">خروج از حالت تمام صفحه</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
+<translation id="6412673304250309937">‏نشانی‌های وب را با فهرست سایت‌های ناامنی که در Chrome ذخیره شده است مقایسه می‌کند. اگر سایتی تلاش کند گذرواژه شما را به‌سرقت ببرد، یا وقتی فایل مخربی بارگیری می‌کنید، Chrome ممکن است نشانی‌های وب را نیز به همراه بخش‌های کوچکی از محتوای صفحه، به «مرور ایمن» ارسال کند.</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="6427112570124116297">وب را ترجمه کنید</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>
@@ -973,6 +978,7 @@
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
 <translation id="8569404424186215731">از <ph name="DATE" /></translation>
 <translation id="8571213806525832805">۴ هفته گذشته</translation>
+<translation id="8572344201470131220">تصویر کپی شد</translation>
 <translation id="8583805026567836021">پاک‌سازی داده‌های حساب</translation>
 <translation id="860043288473659153">نام صاحب کارت</translation>
 <translation id="8616006591992756292">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
@@ -1000,6 +1006,7 @@
 <translation id="8854223127042600341">مشاهده فایل‌های آفلاین</translation>
 <translation id="889338405075704026">‏به تنظیمات Chrome بروید</translation>
 <translation id="8893398027601469503">‏از جدیدترین نسخه Chrome استفاده می‌کنید</translation>
+<translation id="8898822736010347272">‏نشانی‌های وب بعضی از صفحه‌هایی که بازدید می‌کنید، اطلاعات محدودی از سیستم، و برخی از محتوای صفحه را به Google ارسال می‌کند تا به کشف تهدیدهای جدید و محافظت از همه افراد در وب کمک کند.</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>
@@ -1014,6 +1021,7 @@
 <translation id="8988028529677883095">استفاده از تلفن به‌عنوان کلید امنیتی</translation>
 <translation id="8990209962746788689">‏کد QR ایجاد نمی‌شود</translation>
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>
+<translation id="8996847606757455498">انتخاب ارائه‌دهنده دیگر</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9028914725102941583">برای اشتراک‌گذاری بین دستگاه‌ها، «همگام‌سازی» را روشن کنید</translation>
 <translation id="9040142327097499898">اعلان‌ها مجاز هستند. مکان برای این دستگاه خاموش است.</translation>

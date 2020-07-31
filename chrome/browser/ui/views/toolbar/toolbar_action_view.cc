@@ -171,7 +171,8 @@ void ToolbarActionView::UpdateState() {
           .AsImageSkia());
 
   if (!icon.isNull())
-    SetImage(views::Button::STATE_NORMAL, icon);
+    SetImageModel(views::Button::STATE_NORMAL,
+                  ui::ImageModel::FromImageSkia(icon));
 
   SetTooltipText(view_controller_->GetTooltip(web_contents));
 

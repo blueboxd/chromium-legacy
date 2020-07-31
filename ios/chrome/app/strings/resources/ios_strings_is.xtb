@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Ekki er hægt að vista mynd</translation>
 <translation id="1180526666083833456">Hafðu allt samstillt og sérstillt í tækjunum þínum.</translation>
 <translation id="1181037720776840403">Fjarlægja</translation>
+<translation id="1185569544548277362">Nýtt: Þú getur gert Chrome að sjálfgefnum vafra. <ph name="BEGIN_LINK" />Opna stillingar<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Ný leit</translation>
 <translation id="1209206284964581585">Fela í bili</translation>
 <translation id="1219674500290482172">Ekki er hægt að tengjast internetinu.</translation>
@@ -367,6 +368,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5407969256130905701">Fleygja breytingum</translation>
 <translation id="5409365236829784218">Engin uppsett forrit geta opnað þessa skrá.</translation>
 <translation id="5416022985862681400">Undanfarnir 7 dagar</translation>
+<translation id="543338862236136125">Breyta aðgangsorði</translation>
 <translation id="5433691172869980887">Notandanafn afritað</translation>
 <translation id="54401264925851789">Öryggisupplýsingar síðu</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
@@ -638,6 +640,7 @@ Vefsvæði geta notað fótspor til að sjá vafranotkun þína á mismunandi ve
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Flipar <ph name="FIRST_VISIBLE_TAB" /> til og með <ph name="LAST_VISIBLE_TAB" /> af <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Nýtt</translation>
 <translation id="8532105204136943229">Gildir til ársins</translation>
+<translation id="8533166274275423134">Opnað annars staðar</translation>
 <translation id="8534481786647257214">Google+ færsla birt.</translation>
 <translation id="8548878600947630424">Finna á síðu...</translation>
 <translation id="8574235780160508979">Þjónustuskilmálar Chrome breytast 31. mars. <ph name="BEGIN_LINK" />Kynntu þér þá<ph name="END_LINK" /></translation>

@@ -361,9 +361,9 @@ java_group("android_webview_no_weblayer_java") {
     "//android_webview/support_library:support_lib_glue_java",
   ]
 
-  # If the R SDK isn't public yet, include the downstream code to support R.
-  if (!public_android_sdk && android_sdk_release == "r") {
-    deps += [ "//clank/android_webview/next:r_sdk_java" ]
+  # If the S SDK isn't public yet, include the downstream code to support S.
+  if (!public_android_sdk && android_sdk_release == "s") {
+    deps += [ "//clank/android_webview/next:s_sdk_java" ]
   }
 }
 

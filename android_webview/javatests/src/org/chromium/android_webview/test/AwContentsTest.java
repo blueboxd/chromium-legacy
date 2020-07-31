@@ -22,6 +22,7 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 
 import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -825,26 +826,21 @@ public class AwContentsTest {
                 mContentsClient.getOnPageFinishedHelper(), html, "text/html", false);
         mActivityTestRule.waitForVisualStateCallback(testView.getAwContents());
 
+        int[] lastQuadrantColors = null;
         // Poll for 10s in case raster is slow.
-        final Object lock = new Object();
-        final Object[] resultHolder = new Object[1];
         for (int i = 0; i < 100; ++i) {
+            final CallbackHelper callbackHelper = new CallbackHelper();
+            final Object[] resultHolder = new Object[1];
             mActivityTestRule.runOnUiThread(() -> {
                 testView.readbackQuadrantColors((int[] result) -> {
-                    synchronized (lock) {
-                        resultHolder[0] = result;
-                        lock.notifyAll();
-                    }
+                    resultHolder[0] = result;
+                    callbackHelper.notifyCalled();
                 });
             });
-            int[] quadrantColors;
-            synchronized (lock) {
-                while (resultHolder[0] == null) {
-                    lock.wait();
-                }
-                quadrantColors = (int[]) resultHolder[0];
-            }
-            if (Color.rgb(255, 0, 0) == quadrantColors[0]
+            callbackHelper.waitForFirst();
+            int[] quadrantColors = (int[]) resultHolder[0];
+            lastQuadrantColors = quadrantColors;
+            if (quadrantColors != null && Color.rgb(255, 0, 0) == quadrantColors[0]
                     && Color.rgb(0, 255, 0) == quadrantColors[1]
                     && Color.rgb(0, 0, 255) == quadrantColors[2]
                     && Color.rgb(128, 128, 128) == quadrantColors[3]) {
@@ -852,26 +848,26 @@ public class AwContentsTest {
             }
             Thread.sleep(100);
         }
+        Assert.assertNotNull(lastQuadrantColors);
         // If this test is failing for your CL, then chances are your change is breaking Android
         // WebView hardware rendering. Please build the "real" webview and check if this is the
         // case and if so, fix your CL.
-        int[] quadrantColors = (int[]) resultHolder[0];
-        Assert.assertEquals(Color.rgb(255, 0, 0), quadrantColors[0]);
-        Assert.assertEquals(Color.rgb(0, 255, 0), quadrantColors[1]);
-        Assert.assertEquals(Color.rgb(0, 0, 255), quadrantColors[2]);
-        Assert.assertEquals(Color.rgb(128, 128, 128), quadrantColors[3]);
+        Assert.assertEquals(Color.rgb(255, 0, 0), lastQuadrantColors[0]);
+        Assert.assertEquals(Color.rgb(0, 255, 0), lastQuadrantColors[1]);
+        Assert.assertEquals(Color.rgb(0, 0, 255), lastQuadrantColors[2]);
+        Assert.assertEquals(Color.rgb(128, 128, 128), lastQuadrantColors[3]);
     }
 
     @Test
     @Feature({"AndroidWebView"})
-    @SmallTest
+    @MediumTest
     public void testHardwareRenderingSmokeTest() throws Throwable {
         doHardwareRenderingSmokeTest();
     }
 
     @Test
     @Feature({"AndroidWebView"})
-    @SmallTest
+    @MediumTest
     @CommandLineFlags.Add({"enable-features=UseSkiaRenderer", "disable-oop-rasterization"})
     public void testHardwareRenderingSmokeTestSkiaRenderer() throws Throwable {
         doHardwareRenderingSmokeTest();

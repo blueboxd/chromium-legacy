@@ -220,6 +220,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="2744248271121720757">Az azonnali kereséshez koppintson a kívánt szóra, vagy tekintse meg a kapcsolódó műveleteket</translation>
 <translation id="2760989362628427051">Sötét téma bekapcsolása, amikor az eszköz sötét témája vagy Akkumulátorkímélő módja be van kapcsolva</translation>
 <translation id="2762000892062317888">éppen most</translation>
+<translation id="2771869497727323769">Nem lehet linket létrehozni a szöveghez. Ossza meg az oldal linkjét a kívánt alkalmazásban.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
 <translation id="2779651927720337254">sikertelen</translation>
 <translation id="2781151931089541271">1 másodperc van hátra</translation>
@@ -387,6 +388,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="4084712963632273211">A következőtől: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />megjelenítette a Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Törli az alkalmazásadatokat?</translation>
 <translation id="4099578267706723511">Használati statisztikák és hibajelentések küldésével segíthet a Google-nak a Chrome fejlesztésében.</translation>
+<translation id="4108998448622696017">Már a bekövetkezésük idején észleli a veszélyes eseményeket, és figyelmezteti Önt rájuk.</translation>
 <translation id="4116038641877404294">Töltse le az oldalakat offline használatra</translation>
 <translation id="4135200667068010335">Lap megosztására szolgáló eszközök listája bezárva.</translation>
 <translation id="4149994727733219643">Weboldalak egyszerűsített nézete</translation>
@@ -459,6 +461,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4738836084190194332">Utolsó szinkronizálás: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA-hiba: <ph name="ERROR_CODE" />, itt: <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Új lap megnyitása</translation>
 <translation id="4759238208242260848">Letöltések</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 letöltés befejeződött.}other{# letöltés befejeződött.}}</translation>
@@ -508,6 +511,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5040262127954254034">Adatvédelem</translation>
 <translation id="5087580092889165836">Kártya hozzáadása</translation>
 <translation id="509429900233858213">Hiba történt.</translation>
+<translation id="5100748015044654621">Ossza meg a kiemelt szöveg linkjét a kívánt alkalmazásban</translation>
 <translation id="510275257476243843">1 óra van hátra</translation>
 <translation id="5123685120097942451">Inkognitó lap</translation>
 <translation id="5127805178023152808">Szinkronizálás kikapcsolva</translation>
@@ -686,6 +690,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
 <translation id="6406506848690869874">Szinkronizálás</translation>
+<translation id="6412673304250309937">Ellenőrzi az URL-eket a Chrome-ban a nem biztonságos webhelyekről tárolt lista alapján. Ha egy webhely megpróbálja ellopni az Ön jelszavát, illetve ha Ön ártalmas fájlt tölt le, akkor a Chrome elküldheti az URL-eket is (az oldaltartalmak részleteivel együtt) a Biztonságos Böngészésnek.</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="6427112570124116297">Lefordíthatja az internetet</translation>
 <translation id="6433501201775827830">Keresőmotor kiválasztása</translation>
@@ -973,6 +978,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> óta</translation>
 <translation id="8571213806525832805">Az elmúlt négy hétből</translation>
+<translation id="8572344201470131220">Kép vágólapra másolva</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>
 <translation id="860043288473659153">Kártyatulajdonos neve</translation>
 <translation id="8616006591992756292">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
@@ -1000,6 +1006,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8854223127042600341">Offline fájlok megtekintése</translation>
 <translation id="889338405075704026">Ugrás a Chrome beállításaira</translation>
 <translation id="8893398027601469503">Ön a Chrome legfrissebb verzióját használja</translation>
+<translation id="8898822736010347272">Egyes felkeresett oldalak URL-jeit, korlátozott rendszer-információkat és bizonyos oldaltartalmakat küld el a Google-nak, hogy könnyebben felfedezhetők legyenek az internetezőkre leselkedő új veszélyek, és meg lehessen védeni a felhasználókat.</translation>
 <translation id="8909135823018751308">Megosztás...</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
 <translation id="8920114477895755567">Várakozás a szülői adatokra.</translation>
@@ -1014,6 +1021,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8988028529677883095">Telefon használata biztonsági kulcsként</translation>
 <translation id="8990209962746788689">Nem lehet létrehozni QR-kódot</translation>
 <translation id="8993760627012879038">Új lap megnyitása inkognitó módban</translation>
+<translation id="8996847606757455498">Másik szolgáltató választása</translation>
 <translation id="8998729206196772491">Egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="9028914725102941583">Szinkronizálás bekapcsolása az eszközök közötti megosztáshoz</translation>
 <translation id="9040142327097499898">Az értesítések engedélyezve vannak. A helyhozzáférés ki van kapcsolva az eszköznél.</translation>

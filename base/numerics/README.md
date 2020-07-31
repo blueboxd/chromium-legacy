@@ -252,6 +252,23 @@ promotions
 with the two differences being that *there is no default promotion to int*
 and *bitwise logical operations always return an unsigned of the wider type.*
 
+### Example
+
+```
+#include "base/numerics/checked_math.h"
+...
+CheckedNumeric<uint32_t> variable = 0;
+variable++;
+variable--;
+if (variable.ValueOrDie() == 0)
+  // Fine, |variable| still within valid range.
+
+variable--;
+variable++;
+if (variable.ValueOrDie() == 0)  // Breakpoint or configured CheckHandler
+  // Does not happen as variable underflowed.
+```
+
 ### Members
 
 The unary negation, increment, and decrement operators are supported, along

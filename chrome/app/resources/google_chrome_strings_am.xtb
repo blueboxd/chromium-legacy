@@ -42,6 +42,7 @@
 <translation id="1874309113135274312">Google Chrome ቅድመ-ይሁነታ (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ጊዜው አልፎበታል</translation>
 <translation id="1919130412786645364">የChrome በመለያ መግባትን ይፍቀዱ</translation>
+<translation id="195645108406520445">አዲሱን የእርስዎን የChrome ቦታ ያቀናብሩ</translation>
 <translation id="2063848847527508675">Chrome OS ዝማኔውን ለመተግበር ዳግም መጀመር አለበት።</translation>
 <translation id="2094919256425865063">የሆነው ሆኖ Chrome ይቁም?</translation>
 <translation id="2120620239521071941">ይሄ <ph name="ITEMS_COUNT" /> ንጥሎችን ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chrome ይግቡ።</translation>
@@ -141,7 +142,7 @@
 <translation id="4771048833395599659">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
 <translation id="479167709087336770">ይህ በ Google ፍለጋ ውስጥ ጥቅም ላይ ጋር ተመሳሳይ የፊደል አራሚ ይጠቀማል። በአሳሽ ውስጥ የሚተይቡት ጽሑፍ ወደ Google ይላካል። ይህን ባህሪ ሁልጊዜ በቅንብሮች ውስጥ መለወጥ ይችላሉ።</translation>
 <translation id="4891791193823137474">Google Chrome በጀርባ ውስጥ ይሂድ</translation>
-<translation id="489337168347244450">{NUM_DAYS,plural, =1{Chrome በሳምንት አንድ ጊዜ የማይፈለጉ ሶፍትዌሮች ካሉ ይፈትሻል። መጨረሻ የተፈተሸው፦ ከ1 ቀን በፊት።}one{Chrome በሳምንት አንድ ጊዜ የማይፈለጉ ሶፍትዌሮች ካሉ ይፈትሻል። መጨረሻ የተፈተሸው፦ ከ{NUM_DAYS} ቀናት በፊት።}other{Chrome በሳምንት አንድ ጊዜ የማይፈለጉ ሶፍትዌሮች ካሉ ይፈትሻል። መጨረሻ የተፈተሸው፦ ከ{NUM_DAYS} ቀናት በፊት።}}</translation>
+<translation id="489337168347244450">{NUM_DAYS,plural, =1{Chrome በሳምንት አንድ ጊዜ የማይፈለጉ ሶፍትዌሮች ካሉ ይፈትሻል። መጨረሻ የተፈተሸው፦ ከ1 ቀን በፊት።}one{Chrome በሳምንት አንድ ጊዜ የማይፈለጉ ሶፍትዌሮች ካሉ ይፈትሻል። መጨረሻ የተፈተሸው፦ ከ{NUM_DAYS} ቀኖች በፊት።}other{Chrome በሳምንት አንድ ጊዜ የማይፈለጉ ሶፍትዌሮች ካሉ ይፈትሻል። መጨረሻ የተፈተሸው፦ ከ{NUM_DAYS} ቀኖች በፊት።}}</translation>
 <translation id="4895437082222824641">አገናኝ በአዲስ የChrome &amp;ትር ውስጥ ክፈት</translation>
 <translation id="4953650215774548573">Google Chromeን እንደ ነባሪ አሳሽዎ አድርገው ያቀናብሩ</translation>
 <translation id="495931528404527476">በChrome ውስጥ</translation>

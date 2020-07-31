@@ -162,7 +162,6 @@ public class NewTabPageTest {
         scrimCoordinator.disableAnimationForTesting(false);
     }
 
-    @DisabledTest(message = "https://crbug.com/898165")
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})

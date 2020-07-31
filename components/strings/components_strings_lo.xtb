@@ -1646,6 +1646,7 @@
 <translation id="7791011319128895129">ບໍ່ທັນເຜີຍແຜ່ເທື່ອ</translation>
 <translation id="7791196057686275387">ບັນຈຸພັນ</translation>
 <translation id="7791543448312431591">ເພີ່ມ</translation>
+<translation id="7792318290931435557">ມຸມມອງໜ້າດຽວ</translation>
 <translation id="7798389633136518089">ລະເລີຍເພາະບໍ່ໄດ້ຕັ້ງຄ່ານະໂຍບາຍຈາກແຫຼ່ງທີ່ມາໃນລະບົບຄລາວ.</translation>
 <translation id="7800304661137206267">ການເຊື່ອມຕໍ່ມີລະຫັດດ້ວຍການໃຊ້ <ph name="CIPHER" />, ກັບ <ph name="MAC" /> ສໍາລັບການຮັບຮອງຂໍ້ຄວາມ ແລະ <ph name="KX" /> ເປັນກົນໄກແລກປ່ຽນຕົ້ນຕໍ.</translation>
 <translation id="7802523362929240268">ເວັບໄຊຖືກຕ້ອງຕາມກົດໝາຍ</translation>
@@ -1741,6 +1742,7 @@
 <translation id="8220146938470311105">C7/C6 (ຊອງຈົດໝາຍ)</translation>
 <translation id="8221250263817408492">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chromium ຂໍແນະນຳໃຫ້ໄປທີ່ <ph name="WEBSITE_1" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ ແລ້ວປ່ຽນມັນຕອນນີ້ເລີຍ.</translation>
 <translation id="8225771182978767009">ບຸກຄົນຜູ້ທີ່ຕັ້ງຄ່າຄອມພິວເຕີນີ້ໄດ້ເລືອກບລັອກເວັບໄຊນີ້ໄວ້.</translation>
+<translation id="8228419419708659934">ມຸມມອງສອງໜ້າ</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">ອຸນຫະພູມຂອງແພລດຟອມ</translation>
 <translation id="8238581221633243064">ເປີດໜ້າເວັບໃນແຖບບໍ່ເປີດເຜີຍຕົວຕົນໃໝ່</translation>

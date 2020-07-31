@@ -130,8 +130,10 @@ class CaptionControllerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest, ProfilePrefsAreRegistered) {
   EXPECT_FALSE(
       browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
-  EXPECT_EQ(base::FilePath(),
-            browser()->profile()->GetPrefs()->GetFilePath(prefs::kSODAPath));
+  EXPECT_EQ(base::FilePath(), browser()->profile()->GetPrefs()->GetFilePath(
+                                  prefs::kSodaBinaryPath));
+  EXPECT_EQ(base::FilePath(), browser()->profile()->GetPrefs()->GetFilePath(
+                                  prefs::kSodaEnUsConfigPath));
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
@@ -140,15 +142,19 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   SetLiveCaptionEnabled(true);
   EXPECT_TRUE(
       browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
-  EXPECT_EQ(base::FilePath(),
-            browser()->profile()->GetPrefs()->GetFilePath(prefs::kSODAPath));
+  EXPECT_EQ(base::FilePath(), browser()->profile()->GetPrefs()->GetFilePath(
+                                  prefs::kSodaBinaryPath));
+  EXPECT_EQ(base::FilePath(), browser()->profile()->GetPrefs()->GetFilePath(
+                                  prefs::kSodaEnUsConfigPath));
 
   // Ensure that live caption is also enabled in the incognito profile.
   Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
   EXPECT_TRUE(
       incognito_profile->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
-  EXPECT_EQ(base::FilePath(),
-            browser()->profile()->GetPrefs()->GetFilePath(prefs::kSODAPath));
+  EXPECT_EQ(base::FilePath(), browser()->profile()->GetPrefs()->GetFilePath(
+                                  prefs::kSodaBinaryPath));
+  EXPECT_EQ(base::FilePath(), browser()->profile()->GetPrefs()->GetFilePath(
+                                  prefs::kSodaEnUsConfigPath));
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest, LiveCaptionEnabledChanged) {

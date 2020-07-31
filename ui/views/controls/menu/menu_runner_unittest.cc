@@ -282,7 +282,7 @@ TEST_F(MenuRunnerTest, SpaceActivatesItem) {
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
 }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 // Tests that attempting to nest a menu within a drag-and-drop menu does not
 // cause a crash. Instead the drag and drop action should be canceled, and the

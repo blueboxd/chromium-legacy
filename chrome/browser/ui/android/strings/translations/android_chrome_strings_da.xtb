@@ -220,6 +220,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="2744248271121720757">Tryk på et ord for at søge øjeblikkeligt eller se relaterede handlinger</translation>
 <translation id="2760989362628427051">Aktivér mørkt tema, når enhedens mørke tema eller batterisparefunktion er aktiveret</translation>
 <translation id="2762000892062317888">lige nu</translation>
+<translation id="2771869497727323769">Der kan ikke oprettes et link til teksten. Del link til en side i en app.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2779651927720337254">mislykkedes</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
@@ -387,6 +388,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />leveret af Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vil du slette appdata?</translation>
 <translation id="4099578267706723511">Vær med til at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
+<translation id="4108998448622696017">Registrerer og advarer dig om skadelige hændelser, når de opstår.</translation>
 <translation id="4116038641877404294">Download sider for at bruge dem, når du er offline</translation>
 <translation id="4135200667068010335">Lukket liste over enheder, der skal deles en fane med.</translation>
 <translation id="4149994727733219643">Enkel visning af websider</translation>
@@ -459,6 +461,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4738836084190194332">Seneste synkronisering: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA-fejl: <ph name="ERROR_CODE" /> på <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Åbn en ny fane</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download er fuldført.}one{# download er fuldført.}other{# downloads er fuldført.}}</translation>
@@ -508,6 +511,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5040262127954254034">Privatliv</translation>
 <translation id="5087580092889165836">Tilføj kort</translation>
 <translation id="509429900233858213">Der opstod en fejl.</translation>
+<translation id="5100748015044654621">Del link til fremhævet tekst i en app</translation>
 <translation id="510275257476243843">1 time tilbage</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
@@ -686,6 +690,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6406506848690869874">Synkronisering</translation>
+<translation id="6412673304250309937">Tjekker webadresser ift. en liste over usikre websites, der er gemt i Chrome. Hvis et website forsøger at stjæle din adgangskode, eller når du downloader en skadelig fil, sender Chrome muligvis også webadresser, bl.a. mindre mængder sideindhold, til Beskyttet browsing.</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="6427112570124116297">Oversæt på nettet</translation>
 <translation id="6433501201775827830">Vælg en søgemaskine</translation>
@@ -973,6 +978,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8562452229998620586">Dine gemte adgangskoder vises her.</translation>
 <translation id="8569404424186215731">siden den <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Seneste 4 uger</translation>
+<translation id="8572344201470131220">Billedet blev kopieret</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
 <translation id="860043288473659153">Kortholderens navn</translation>
 <translation id="8616006591992756292">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8854223127042600341">Se dine offlinefiler</translation>
 <translation id="889338405075704026">Gå til Chrome-indstillinger</translation>
 <translation id="8893398027601469503">Du bruger den nyeste version af Chrome</translation>
+<translation id="8898822736010347272">Sender webadresser på visse sider, du besøger, begrænsede systemoplysninger og indhold fra visse sider til Google med henblik på at opdage nye trusler og beskytte brugerne på nettet.</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på oplysninger om forældre.</translation>
@@ -1014,6 +1021,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8988028529677883095">Brug telefonen som en sikkerhedsnøgle</translation>
 <translation id="8990209962746788689">QR-koden kan ikke oprettes</translation>
 <translation id="8993760627012879038">Åbn en ny fane i inkognitotilstand</translation>
+<translation id="8996847606757455498">Vælg en anden udbyder</translation>
 <translation id="8998729206196772491">Du er ved at logge ind med en konto, der administreres af <ph name="MANAGED_DOMAIN" />, hvilket giver administratoren kontrol over dine Chrome-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chrome, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
 <translation id="9028914725102941583">Aktivér synkronisering for at dele mellem enheder</translation>
 <translation id="9040142327097499898">Notifikationer er tilladt. Placering er deaktiveret for denne enhed.</translation>

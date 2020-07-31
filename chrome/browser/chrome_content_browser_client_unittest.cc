@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -150,7 +151,11 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   ASSERT_EQ("X", pieces[3]);
   pieces = base::SplitStringUsingSubstr(pieces[4], "_", base::KEEP_WHITESPACE,
                                         base::SPLIT_WANT_ALL);
-  ASSERT_EQ("10", pieces[0]);
+  {
+    int major, minor, patch;
+    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &patch);
+    ASSERT_EQ(base::StringPrintf("%d", major), pieces[0]);
+  }
   int value;
   ASSERT_TRUE(base::StringToInt(pieces[1], &value));
   ASSERT_LE(0, value);

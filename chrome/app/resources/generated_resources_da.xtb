@@ -1121,6 +1121,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Noter på låseskærmen gemmes automatisk i <ph name="LOCK_SCREEN_APP_NAME" />. Din seneste note forbliver på låseskærmen.</translation>
 <translation id="2353297238722298836">Der er givet adgang til kameraet og mikrofonen</translation>
+<translation id="2355314311311231464">Provisioneringen mislykkedes, fordi dine kontooplysninger ikke kunne hentes. Prøv igen. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Aktivér Automatisk netdeling</translation>
 <translation id="2356070529366658676">Spørg</translation>
 <translation id="2357330829548294574">Fjern <ph name="USER_NAME" /></translation>
@@ -1216,6 +1217,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2473195200299095979">Oversæt denne side</translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
 <translation id="2476578072172137802">Indstillinger for websites</translation>
+<translation id="2476974672882258506">Luk Windows ned for at afinstallere <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Mediefiltilladelser for "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Del lyd</translation>
 <translation id="248003956660572823">Adgangskoderne blev ikke gemt</translation>
@@ -1306,6 +1308,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2572032849266859634">Skrivebeskyttet adgang til <ph name="VOLUME_NAME" /> er blevet tildelt.</translation>
 <translation id="2575247648642144396">Dette ikon vil være synligt, når udvidelsen fungerer på den aktuelle side. Brug denne udvidelse ved at klikke på ikonet eller ved at trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Konfigurer til Chromebox til møder</translation>
+<translation id="2579232805407578790">Der kunne ikke oprettes forbindelse til serveren. Tjek din netværksforbindelse, og prøv igen. Genstart din Chromebook, hvis problemet fortsætter. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Tillad altid, at <ph name="HOST" /> downloader flere forskellige filer</translation>
 <translation id="258095186877893873">Lang</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /><ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" /> ) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2836635946302913370">Login med dette brugernavn er blevet deaktiveret af din administrator.</translation>
 <translation id="283669119850230892">Hvis du vil bruge netværket <ph name="NETWORK_ID" />, skal du først oprette forbindelse til internettet nedenfor.</translation>
 <translation id="2838379631617906747">Installerer</translation>
+<translation id="2838835911926931318">Log ind for at synkronisere dine bogmærker, dine adgangskoder, din historik og meget mere på alle dine enheder</translation>
 <translation id="2839032553903800133">Notifikationer blokeres</translation>
 <translation id="2841013758207633010">Tid</translation>
 <translation id="2841837950101800123">Udbyder</translation>
@@ -1584,6 +1588,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
     Servermeddelelse: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Tilføj mediegalleri efter mappe</translation>
 <translation id="2910318910161511225">Opret forbindelse til et netværk, og prøv igen</translation>
+<translation id="2910718431259223434">Noget gik galt. Prøv igen, eller kontakt enhedens ejer eller administrator. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Tillad, at websites gemmer og læser cookiedata (anbefales)</translation>
 <translation id="2915102088417824677">Se din aktivitetshistorik</translation>
 <translation id="2915873080513663243">Automatisk scanning</translation>
@@ -2323,6 +2328,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{En udvidelse er blevet godkendt}one{# udvidelse er blevet godkendt}other{# udvidelser er blevet godkendt}}</translation>
 <translation id="3822559385185038546">Denne proxy håndhæves af din administrator</translation>
 <translation id="3823310065043511710">Du bør have mindst <ph name="INSTALL_SIZE" /> ledig plads for at installere Linux.</translation>
+<translation id="3824621460022590830">Tokenet for tilmelding af enhed er ugyldigt. Kontakt enhedens ejer eller administrator. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Din administrator har deaktiveret muligheden for at tilføje flere Google-konti</translation>
 <translation id="3827306204503227641">Fortsæt med at tillade plugins, der ikke er gemt i sandbox</translation>
 <translation id="3827774300009121996">&amp;Fuld skærm</translation>
@@ -3276,6 +3282,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5079950360618752063">Brug den foreslåede adgangskode</translation>
 <translation id="508059534790499809">Opdater en Kerberos-billet</translation>
 <translation id="5084230410268011727">Tillad, at websites anvender bevægelses- og lyssensorer</translation>
+<translation id="5084328598860513926">Provisioneringsflowet blev afbrudt. Prøv igen, eller kontakt enhedens ejer eller administrator. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Søger efter opdateringer</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Vil du gendanne standardstartsiden?</translation>
@@ -3675,6 +3682,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="557722062034137776">Nulstilling af din enhed påvirker ikke dine Google-konti eller de data, der er synkroniseret til disse konti. Men alle filer, der er gemt lokalt på din enhed, slettes.</translation>
 <translation id="5578059481725149024">Automatisk login</translation>
 <translation id="558170650521898289">Verificering af Microsoft Windows-hardwaredriver</translation>
+<translation id="5581972110672966454">Enheden kunne ikke knyttes til domænet. Prøv igen, eller kontakt enhedens ejer eller administrator. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Hovedmenu</translation>
 <translation id="5583640892426849032">Returtast</translation>
 <translation id="5584088138253955452">Vil du gemme brugernavnet?</translation>
@@ -3747,6 +3755,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5667546120811588575">Konfigurerer Google Play...</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5669691691057771421">Angiv ny pinkode</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Billeder er blokeret</translation>
 <translation id="5671658447180261823">Fjern forslaget <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Denne enhed får automatiske software- og sikkerhedsopdateringer indtil <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
@@ -5394,6 +5403,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Flyt</translation>
+<translation id="7766082757934713382">Du kan reducere brugen af netværksdata ved at sætte automatiske app- og systemopdateringer på pause</translation>
 <translation id="7766807826975222231">Få en rundvisning</translation>
 <translation id="7766838926148951335">Acceptér tilladelser</translation>
 <translation id="7768770796815395237">Skift</translation>
@@ -6306,6 +6316,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="885701979325669005">Lagerplads</translation>
 <translation id="8859057652521303089">Vælg dit sprog:</translation>
 <translation id="8859174528519900719">Underramme: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Servicevilkårene kunne ikke indlæses</translation>
 <translation id="8859662783913000679">Forældrekonto</translation>
 <translation id="8862003515646449717">Skift til en hurtig browser</translation>
 <translation id="8863753581171631212">Åbn linket i et nyt <ph name="APP" />-vindue</translation>
@@ -6574,6 +6585,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="920045321358709304">Søg via <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Alle offlinedata ryddes</translation>
 <translation id="9201220332032049474">Valgmuligheder for skærmlås</translation>
+<translation id="9201842707396338580">Noget gik galt. Kontakt enhedens ejer eller administrator. Fejlkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Profilering aktiveret</translation>
 <translation id="9203904171912129171">Vælg en enhed</translation>
 <translation id="9203962528777363226">Administratoren af ​​denne enhed har deaktiveret tilføjelse af nye brugere</translation>
@@ -6645,6 +6657,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="983511809958454316">Denne funktion understøttes ikke i VR</translation>
 <translation id="984275831282074731">Betalingsmetoder</translation>
 <translation id="98515147261107953">Liggende</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Generelt</translation>
 <translation id="987897973846887088">Der er ingen tilgængelige billeder</translation>
 <translation id="988978206646512040">Tomme adgangssætninger er ikke tilladt</translation>

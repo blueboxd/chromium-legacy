@@ -1635,6 +1635,7 @@ Detalls addicionals:
 <translation id="7791011319128895129">No publicada</translation>
 <translation id="7791196057686275387">Embalat</translation>
 <translation id="7791543448312431591">Afegeix</translation>
+<translation id="7792318290931435557">Visualització d’una sola pàgina</translation>
 <translation id="7798389633136518089">S'ha ignorat perquè la política no s'ha establert al núvol.</translation>
 <translation id="7800304661137206267">La connexió està encriptada mitjançant <ph name="CIPHER" />, amb <ph name="MAC" /> per a l'autenticació de missatges i amb <ph name="KX" /> com a mecanisme d'intercanvi clau.</translation>
 <translation id="7802523362929240268">El lloc web és legítim</translation>
@@ -1730,6 +1731,7 @@ Detalls addicionals:
 <translation id="8220146938470311105">C7/C6 (sobre)</translation>
 <translation id="8221250263817408492">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que vagis a <ph name="WEBSITE_1" /> i a altres llocs web en què utilitzes aquesta contrasenya i que la canviïs ara.</translation>
 <translation id="8225771182978767009">La persona que ha configurat l'ordinador ha bloquejat aquest lloc.</translation>
+<translation id="8228419419708659934">Visualització de dues pàgines</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Temperatura de la plataforma</translation>
 <translation id="8238581221633243064">Obre la pàgina en una pestanya d'incògnit nova</translation>

@@ -259,6 +259,14 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     const url = getEntryURL(entry);
     fileManagerPrivateInternal.importCrostiniImage(url);
   });
+
+  apiFunctions.setHandleRequest(
+      'sharesheetHasTargets', function(entries, callback) {
+        var urls = entries.map(function(entry) {
+          return getEntryURL(entry);
+        });
+        fileManagerPrivateInternal.sharesheetHasTargets(urls, callback);
+      });
 });
 
 bindingUtil.registerEventArgumentMassager(

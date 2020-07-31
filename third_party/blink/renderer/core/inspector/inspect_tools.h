@@ -109,7 +109,7 @@ class SourceOrderTool : public InspectTool {
   bool HideOnMouseMove() override;
   int GetDataResourceId() override;
   void Draw(float scale) override;
-  void DrawNode(Node* node);
+  void DrawNode(Node* node, int source_order_position);
   void DrawParentNode();
   void Trace(Visitor* visitor) const override;
 

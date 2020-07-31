@@ -813,7 +813,7 @@
 <translation id="1970368523891847084">వీడియో మోడ్‌లోకి ప్రవేశించింది</translation>
 <translation id="197288927597451399">ఉంచు</translation>
 <translation id="1974043046396539880">CRL పంపిణీ పాయింట్‌లు</translation>
-<translation id="1974060860693918893">ఆధునిక</translation>
+<translation id="1974060860693918893">అధునాతన సెట్టింగ్‌లు</translation>
 <translation id="1974159333077206889">అన్ని స్పీకర్‌లతోనూ ఒకేలాంటి ఆడియో</translation>
 <translation id="1974821797477522211">నెట్‌వర్క్‌కి కనెక్ట్ చేయండి</translation>
 <translation id="1975841812214822307">తీసివేయి...</translation>
@@ -1877,7 +1877,7 @@
 <translation id="33022249435934718">GDI నిర్వహించేవి</translation>
 <translation id="3303260552072730022">పొడిగింపు పూర్తి స్క్రీన్‌ని ట్రిగ్గర్ చేసింది.</translation>
 <translation id="3303818374450886607">కాపీలు</translation>
-<translation id="3303855915957856445">శోధన ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
+<translation id="3303855915957856445">ఆ సెర్చ్ కోసం ఫలితాలు ఏవీ దొరకలేదు</translation>
 <translation id="3305389145870741612">ఆకృతీకరణ విధానాన్ని కొన్ని సెకెన్ల సమయం పడుతుంది. దయచేసి వేచి ఉండండి.</translation>
 <translation id="3305661444342691068">PDFను ప్రివ్యూలో తెరువు</translation>
 <translation id="3308116878371095290">కుక్కీలను సెట్ చేయడం నుండి ఈ పేజీ నిరోధించబడింది.</translation>
@@ -1943,7 +1943,7 @@
 <translation id="3402585168444815892">డెమో మోడ్‌కు ఎన్‌రోల్ అవుతోంది</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">ఈ సైట్ కోసం పాస్‌వర్డ్‌లు సేవ్ చేయబడలేదు</translation>
-<translation id="3405664148539009465">ఫాంట్‌లను అనుకూలీకరించు</translation>
+<translation id="3405664148539009465">ఫాంట్‌లను అనుకూలంగా మార్చు</translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950"> &amp;బుక్‌మార్క్‌ల బార్‌ను చూపు</translation>
 <translation id="340671561090997290">{NUM_EXTENSIONS,plural, =1{ఈ ఎక్స్‌టెన్షన్ ప్రమాదకరం కావచ్చు}other{ఈ ఎక్స్‌టెన్షన్‌లు ప్రమాదకరం కావచ్చు}}</translation>
@@ -3020,7 +3020,7 @@
 <translation id="4728558894243024398">ప్లాట్‌ఫారమ్</translation>
 <translation id="4730492586225682674">స్టైలస్ లాక్ స్క్రీన్‌పై తాజా గమనిక</translation>
 <translation id="4733793249294335256">స్థానం</translation>
-<translation id="473546211690256853">ఈ ఖాతా <ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
+<translation id="473546211690256853">ఈ ఖాతాను <ph name="DOMAIN" /> మేనేజ్ చేస్తోంది</translation>
 <translation id="4735803855089279419">ఈ పరికర ఐడెంటిఫైయర్‌లను గుర్తించడంలో సిస్టమ్ విఫలమైంది.</translation>
 <translation id="4736292055110123391">మీ బుక్‌మార్క్‌లు, పాస్‌వర్డ్‌‌లు, చరిత్ర మరియు మరిన్నింటిని మీ అన్ని పరికరాల్లోనూ సింక్ చేయండి</translation>
 <translation id="473775607612524610">అప్‌డేట్‌</translation>
@@ -6456,7 +6456,7 @@
 <translation id="9040661932550800571"><ph name="ORIGIN" /> కోసం పాస్‌వర్డ్‌ను అప్‌డేట్ చేయాలా?</translation>
 <translation id="9041692268811217999">మీ యంత్రంలో స్థానిక ఫైల్‌లకు యాక్సెస్‌ని మీ నిర్వాహకులు నిలిపివేసారు</translation>
 <translation id="904224458472510106">ఈ ఆపరేషన్‌ను రద్దు చేయలేరు</translation>
-<translation id="9042893549633094279">గోప్యత మరియు భద్రత</translation>
+<translation id="9042893549633094279">గోప్యత, సెక్యూరిటీ</translation>
 <translation id="904451693890288097">దయచేసి "<ph name="DEVICE_NAME" />" కోసం రహస్య కీని నమోదు చేయండి:</translation>
 <translation id="9044646465488564462">నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">మీరు సంప్రదించడానికి ప్రయత్నిస్తున్న పేజీ యొక్క వెబ్ చిరునామాను Googleకు పంపుతుంది</translation>
@@ -6580,7 +6580,7 @@
 <translation id="9214695392875603905">కప్ కేక్</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" జోడించబడింది</translation>
 <translation id="9215742531438648683">Google Play స్టోర్‌ను అన్ఇన్‌స్టాల్ చేయండి</translation>
-<translation id="9218430445555521422">డిఫాల్ట్‌లా సెట్ చేయండి</translation>
+<translation id="9218430445555521422">ఆటోమేటిక్ ఆప్షన్‌లా సెట్ చేయండి</translation>
 <translation id="9219103736887031265">చిత్రాలు</translation>
 <translation id="9220525904950070496">ఖాతాను తీసివేయండి</translation>
 <translation id="9220820413868316583">వేలిని తీసివేసి, మళ్లీ పెట్టండి.</translation>

@@ -6,7 +6,7 @@ for the Chromium project. This checklist is designed to be streamlined. See
 [contributing to Chromium][contributing] for a more thorough reference. The
 intended audience is software engineers who are unfamiliar with contributing to
 the Chromium project. Feel free to skip steps that are not applicable to the
-patch set you're currently uploading.
+patchset you're currently uploading.
 
 According to the Checklist Manifesto by Atul Gawande, checklists are a marvelous
 tool for ensuring consistent quality in the work you produce. Checklists also
@@ -134,16 +134,24 @@ build, so you might want to try re-building afterwards.
 
 Run `git cl upload`. Some useful options include:
 
-*   `--cq-dry-run` (or `-d`) will set the patchset to do a CQ Dry Run.
+*   `--cq-dry-run` (or `-d`) will set the patchset to do a CQ Dry Run. It is a
+    good idea to run try jobs for each new patchset with significant changes.
 *   `-r <chromium_username>` will add reviewers.
 *   `-b <bug_number>` automatically populates the bug reference line of the
-    commit message.
+    commit message. Use `-b None` is there is no relevant crbug.
 *   `--edit-description` will let you update the commit message.
+
+To help guide your reviewers, it is also recommended to provide a title for each
+patchset summarizing the changes and indicating whose comments the patchset
+addresses. Running `git cl upload` will upload a new patchset and prompt you for
+a brief patchset title. The title defaults to your most recent commit summary,
+so if you tend to squash all your commits into one, try to enter a new summary
+each time you upload. You can also modify the patchset title directly in Gerrit.
 
 ## 14. Check the CL again in Gerrit
 
 Run `git cl web` to go to the Gerrit URL associated with the current branch.
-Open the latest patch set and verify that all of the uploaded files are correct.
+Open the latest patchset and verify that all of the uploaded files are correct.
 Click `Expand All` to check over all of the individual line-by-line changes
 again. Basically do a self-review before asking your reviewers for a review.
 

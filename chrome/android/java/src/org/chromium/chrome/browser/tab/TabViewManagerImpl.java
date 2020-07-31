@@ -65,7 +65,10 @@ class TabViewManagerImpl implements TabViewManager, Comparator<TabViewProvider> 
     }
 
     private void initMarginSupplier() {
-        if (mTab.getActivity() == null || mMarginSupplier != null) return;
+        if (mTab.getActivity() == null || mTab.getActivity().isActivityFinishingOrDestroyed()
+                || mMarginSupplier != null) {
+            return;
+        }
 
         mMarginSupplier =
                 new BrowserControlsMarginSupplier(mTab.getActivity().getBrowserControlsManager());

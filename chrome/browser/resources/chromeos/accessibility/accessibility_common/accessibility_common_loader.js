@@ -24,6 +24,13 @@ class AccessibilityCommon {
   }
 
   /**
+   * @return {Magnifier}
+   */
+  getMagnifierForTest() {
+    return this.magnifier_;
+  }
+
+  /**
    * Initializes the AccessibilityCommon extension.
    * @private
    */

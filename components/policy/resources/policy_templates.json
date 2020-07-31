@@ -507,6 +507,7 @@
         'DefaultNotificationsSetting',
         'DefaultGeolocationSetting',
         'DefaultMediaStreamSetting',
+        'DefaultSensorsSetting',
         'DefaultWebBluetoothGuardSetting',
         'DefaultKeygenSetting',
         'DefaultWebUsbGuardSetting',
@@ -532,6 +533,8 @@
         'PopupsBlockedForUrls',
         'NotificationsAllowedForUrls',
         'NotificationsBlockedForUrls',
+        'SensorsAllowedForUrls',
+        'SensorsBlockedForUrls',
         "WebUsbAllowDevicesForUrls",
         'WebUsbAskForUrls',
         'WebUsbBlockedForUrls',
@@ -1750,11 +1753,11 @@
       'id': 648,
       'caption': '''Use a default referrer policy of no-referrer-when-downgrade.''',
       'tags': [],
-      'desc': '''This enterprise policy is for short-term adaptation and will be removed in M86.
+      'desc': '''This enterprise policy is for short-term adaptation and will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 88.
 
-      Chrome's default referrer policy is being strengthened from its current value of no-referrer-when-downgrade to the more secure strict-origin-when-cross-origin through a gradual rollout targeting M80 stable.
+      Chrome's default referrer policy is being strengthened from its current value of no-referrer-when-downgrade to the more secure strict-origin-when-cross-origin through a gradual rollout targeting Chrome 85 stable.
 
-      Before the rollout, this enterprise policy will have no effect. After the rollout, when this enterprise policy is enabled, Chrome's default referrer policy will be set to its pre-M80 value of no-referrer-when-downgrade.
+      Before the rollout, this enterprise policy will have no effect. After the rollout, when this enterprise policy is enabled, Chrome's default referrer policy will be set to its previous value of no-referrer-when-downgrade.
 
       This enterprise policy is disabled by default.''',
     },
@@ -5684,6 +5687,40 @@
           If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.''',
     },
     {
+      'name': 'DefaultSensorsSetting',
+      'owners': ['file://third_party/blink/renderer/modules/sensor/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2 ]
+      },
+      'items': [
+        {
+          'name': 'AllowSensors',
+          'value': 1,
+          'caption': '''Allow sites to access sensors''',
+        },
+        {
+          'name': 'BlockSensors',
+          'value': 2,
+          'caption': '''Do not allow any site to access sensors''',
+        }
+      ],
+      'supported_on': [],
+      'future_on': ['chrome.*', 'chrome_os', 'android'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 754,
+      'caption': '''Default sensors setting''',
+      'tags': [],
+      'desc': '''Setting the policy to 1 lets websites access and use sensors such as motion and light. Setting the policy to 2 denies acess to sensors.
+
+      Leaving it unset means <ph name="ALLOW_SENSORS_POLICY_NAME">AllowSensors</ph> applies, but users can change this setting.''',
+    },
+    {
       'name': 'DefaultWebUsbGuardSetting',
       'owners': ['reillyg@chromium.org', 'odejesush@chromium.org'],
       'type': 'int-enum',
@@ -6547,6 +6584,58 @@
       'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can't display notifications.
 
       Leaving the policy unset means <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME">DefaultJavaScriptSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'SensorsAllowedForUrls',
+      'owners': ['file://third_party/blink/renderer/modules/sensor/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [],
+      'future_on': ['chrome.*', 'chrome_os', 'android'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 755,
+      'caption': '''Allow access to sensors on these sites''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can access sensors like motion and light sensors.
+
+      Leaving the policy unset means <ph name="DEFAULT_SENSORS_SETTING_POLICY_NAME">DefaultSensorsSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
+
+      If the same URL pattern exists in both this policy and the <ph name="SENSORS_BLOCKED_FOR_URLS_POLICY_NAME">SensorsBlockedForUrls</ph> policy, the latter is prioritized and access to motion or light sensors will be blocked.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'SensorsBlockedForUrls',
+      'owners': ['file://third_party/blink/renderer/modules/sensor/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [],
+      'future_on': ['chrome.*', 'chrome_os', 'android'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 756,
+      'caption': '''Block access to sensors on these sites''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can't access sensors like motion and light sensors.
+
+      Leaving the policy unset means <ph name="DEFAULT_SENSORS_SETTING_POLICY_NAME">DefaultSensorsSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
+
+      If the same URL pattern exists in both this policy and the <ph name="SENSORS_ALLOWED_FOR_URLS_POLICY_NAME">SensorsAllowedForUrls</ph> policy, this policy is prioritized and access to motion or light sensors will be blocked.
 
       For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
@@ -23253,9 +23342,19 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'LegacySameSiteCookieBehaviorEnabledForDomainList',
       ],
     },
+    {
+      'id': 39,
+      'name': 'SensorsSettings',
+      'caption': '''Sensors settings''',
+      'policies': [
+        'DefaultSensorsSetting',
+        'SensorsAllowedForUrls',
+        'SensorsBlockedForUrls',
+      ],
+    },
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 753,
-  'highest_atomic_group_id_currently_used': 38
+  'highest_id_currently_used': 756,
+  'highest_atomic_group_id_currently_used': 39
 }

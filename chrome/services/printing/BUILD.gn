@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 source_set("lib") {
   sources = [
     "pdf_nup_converter.cc",
@@ -28,6 +30,13 @@ source_set("lib") {
     sources += [
       "pdf_flattener.cc",
       "pdf_flattener.h",
+      "pdf_thumbnailer.cc",
+      "pdf_thumbnailer.h",
+    ]
+
+    deps += [
+      "//pdf",
+      "//ui/gfx/codec",
     ]
   }
 
@@ -40,5 +49,18 @@ source_set("lib") {
     ]
 
     deps += [ "//skia" ]
+  }
+}
+
+if (is_chromeos) {
+  source_set("pdf_thumbnailer_test") {
+    testonly = true
+    sources = [ "pdf_thumbnailer_unittest.cc" ]
+
+    deps = [
+      ":lib",
+      "//skia",
+      "//testing/gtest",
+    ]
   }
 }

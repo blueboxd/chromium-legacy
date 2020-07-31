@@ -220,6 +220,7 @@
 <translation id="2744248271121720757">ක්ෂණිකව සෙවීමට හෝ අදාළ ක්‍රියාවන් බැලීමට වචනයක් තට්ටු කරන්න</translation>
 <translation id="2760989362628427051">ඔබේ උපාංගයේ බැටරි සුරැකුම හෝ අඳුරු තේමාව සක්‍රීයව තිබෙන විට අඳුරු තේමාව සක්‍රීය කරන්න</translation>
 <translation id="2762000892062317888">මේ දැන්</translation>
+<translation id="2771869497727323769">පෙළට සබැඳිය තැනිය නොහැකිය. යෙදුමක පිටුවට සබැඳිය බෙදා ගන්න.</translation>
 <translation id="2777555524387840389">තත්පර <ph name="SECONDS" />ක් ඉතිරියි</translation>
 <translation id="2779651927720337254">අසාර්ථකයි</translation>
 <translation id="2781151931089541271">තත්පර 1ක් ඉතිරියි</translation>
@@ -387,6 +388,7 @@
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> වෙතින් – <ph name="BEGIN_DEEMPHASIZED" />Google විසින් බෙදා හරින ලදි<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">යෙදුම් දත්ත මකා දමනවා ද?</translation>
 <translation id="4099578267706723511">Google වෙත භාවිත සංඛ්‍යාන සහ බිඳවැටීම් වාර්තා යැවීමෙන් Chrome වඩා යහපත් කිරීමට උදවු වන්න.</translation>
+<translation id="4108998448622696017">අනතුරුදායක සිදුවීම් සිදු වන විට ඒවා අනාවරණ කර ඔබට අවවාද කරයි.</translation>
 <translation id="4116038641877404294">පිටු නොබැඳිව භාවිතා කිරීමට බාගන්න</translation>
 <translation id="4135200667068010335">වසා ඇති පටිත්තක් බෙදා ගැනීම සඳහා වන උපාංග ලැයිස්තුව.</translation>
 <translation id="4149994727733219643">වෙබ් පිටු සඳහා සරල දසුනක්</translation>
@@ -459,6 +461,7 @@
 <translation id="4732120983431207637">එතීම ලිහන්නා</translation>
 <translation id="473775607612524610">යාවත්කාලීනය</translation>
 <translation id="4738836084190194332">අවසන් වරට සමමුහුර්ත කළේ: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA දෝෂය: <ph name="VIOLATED_URL" /> හි <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">නව ටැබයක් විවෘත කරන්න</translation>
 <translation id="4759238208242260848">බාගැනීම්</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{බාගැනීම් 1ක් සම්පූර්ණයි.}one{බාගැනීම් #ක් සම්පූර්ණයි.}other{බාගැනීම් #ක් සම්පූර්ණයි.}}</translation>
@@ -508,6 +511,7 @@
 <translation id="5040262127954254034">රහස්‍යතාවය</translation>
 <translation id="5087580092889165836">කාඩ්පත එක් කරන්න</translation>
 <translation id="509429900233858213">දෝශයක් ඇතිවිය.</translation>
+<translation id="5100748015044654621">යෙදුමක උද්දීපනය කළ පෙළට සබැඳිය බෙදා ගන්න</translation>
 <translation id="510275257476243843">පැය 1ක් ඉතිරියි</translation>
 <translation id="5123685120097942451">අප්‍රකට පටිත්ත</translation>
 <translation id="5127805178023152808">සමමුහුර්තකරණය අක්‍රියයි</translation>
@@ -686,6 +690,7 @@
 <translation id="6398765197997659313">සම්පුර්ණ තිරයෙන් ඉවත් වන්න</translation>
 <translation id="6404511346730675251">පිටු සලකුණ සංස්කරණය කරන්න</translation>
 <translation id="6406506848690869874">සමමුහුව</translation>
+<translation id="6412673304250309937">Chrome තුළ ගබඩා කර ඇති අනාරක්‍ෂිත වෙබ් අඩවි ලැයිස්තුවක් සමඟ URL පරීක්‍ෂා කරයි. වෙබ් අඩවියක් ඔබේ මුරපදය සොරා ගැනීමට උත්සාහ කරන්නේ නම්, හෝ ඔබ හානිකර ගොනුවක් බාගන්නා විට, Chrome පිටු අන්තර්ගතයේ කැබැලි ඇතුළුව ආරක්‍ෂිත බ්‍රවුස් කිරීම වෙත URL යැවීමටද හැකිය.</translation>
 <translation id="641643625718530986">මුද්‍රණය කරන්න...</translation>
 <translation id="6427112570124116297">වෙබ් අඩවිය පරිවර්තන කරන්න</translation>
 <translation id="6433501201775827830">ඔබේ සෙවුම් එන්ජිම තෝරා ගන්න</translation>
@@ -973,6 +978,7 @@
 <translation id="8562452229998620586">සුරැකි මුරපද මෙහි පෙන්වෙනු ඇත.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> සිට</translation>
 <translation id="8571213806525832805">පසුගිය සති 4</translation>
+<translation id="8572344201470131220">රූපය පිටපත් කරන ලදි</translation>
 <translation id="8583805026567836021">ගිණුම් දත්ත ඉවත් කරමින්</translation>
 <translation id="860043288473659153">කාඩ්පත් හිමිකරුගේ නම</translation>
 <translation id="8616006591992756292">ඔබේ Google ගිණුමට <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> හිදී බ්‍රවුස් කිරීමේ ඉතිහාසයේ වෙනත් ආකාරයන් තිබිය හැක.</translation>
@@ -1000,6 +1006,7 @@
 <translation id="8854223127042600341">ඔබේ නොබැඳි ගොනු බලන්න</translation>
 <translation id="889338405075704026">Chrome සැකසීම් වෙත යන්න</translation>
 <translation id="8893398027601469503">ඔබ Chrome හි නවතම අනුවාදය ධාවනය කරමින් සිටී</translation>
+<translation id="8898822736010347272">වෙබය මත නව තර්ජන සොයා ගෙන සියලු දෙනා ආරක්ෂා කිරීමට උදවු කිරීමට Google වෙත ඔබ පැමිණෙන සමහර පිටුවල URL, සීමිත පද්ධති තොරතුරු, සහ යම් පිටු අන්තර්ගතය යවයි.</translation>
 <translation id="8909135823018751308">බෙදාගන්න…</translation>
 <translation id="8912362522468806198">Google ගිණුම</translation>
 <translation id="8920114477895755567">මාපියන්ගේ විස්තර සඳහා පොරොත්තු වෙමින්</translation>
@@ -1014,6 +1021,7 @@
 <translation id="8988028529677883095">දුරකථනය ආරක්‍ෂක යතුරක් ලෙස භාවිත කරන්න</translation>
 <translation id="8990209962746788689">QR කේතය තැනිය නොහැකිය</translation>
 <translation id="8993760627012879038">අප්‍රකට ප්‍රකාරය තුළ නව ටැබයක් විවෘත කරන්න</translation>
+<translation id="8996847606757455498">වෙනත් සැපයුම්කරුවකු තෝරන්න</translation>
 <translation id="8998729206196772491">ඔබ <ph name="MANAGED_DOMAIN" /> මගින් කළමනාකරණය කරන ගිණුමක් සමගින් පුරමින් සහ එහි පරිපාලකට ඔබේ Chrome දත්තවල පාලනය දෙමින් සිටී. ඔබේ දත්ත මෙම ගිණුමට ස්ථිරව බැඳෙනු ඇත. Chrome වෙතින් වැරීම ඔබේ දත්ත මෙම උපාංගය වෙතින් මකනු ඇති නමුත්, ඔබේ දත්ත Google ගිණුම තුළ ගබඩා වී තිබෙනු ඇත.</translation>
 <translation id="9028914725102941583">උපාංග හරහා බෙදා ගැනීමට සමමුහුව ක්‍රියාත්මක කරන්න</translation>
 <translation id="9040142327097499898">දැනුම්දීම්වලට ඉඩ දේ. මෙම උපාංගය සඳහා ස්ථානය ක්‍රියා විරහිතයි.</translation>

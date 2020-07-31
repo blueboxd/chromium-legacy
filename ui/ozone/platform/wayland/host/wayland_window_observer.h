@@ -10,6 +10,7 @@
 namespace ui {
 
 class WaylandWindow;
+class WaylandSubsurface;
 
 // Observers for window management notifications.
 class WaylandWindowObserver : public base::CheckedObserver {
@@ -22,6 +23,14 @@ class WaylandWindowObserver : public base::CheckedObserver {
 
   // Called when |window| has been ack configured.
   virtual void OnWindowConfigured(WaylandWindow* window);
+
+  // Called when |window| adds |subsurface|.
+  virtual void OnSubsurfaceAdded(WaylandWindow* window,
+                                 WaylandSubsurface* subsurface);
+
+  // Called when |window| removes |subsurface|.
+  virtual void OnSubsurfaceRemoved(WaylandWindow* window,
+                                   WaylandSubsurface* subsurface);
 
  protected:
   ~WaylandWindowObserver() override;

@@ -684,22 +684,35 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       direction == kForColumns ? layout_grid->StyleRef().NamedGridColumnLines()
                                : layout_grid->StyleRef().NamedGridRowLines();
   LayoutUnit gap = layout_grid->GridGap(direction);
-  LayoutUnit firstOffset = tracks.front();
+  LayoutUnit first_offset = tracks.front();
+  const Vector<LayoutUnit>& alt_positions = direction == kForRows
+                                                ? layout_grid->ColumnPositions()
+                                                : layout_grid->RowPositions();
+  LayoutUnit alt_axis_pos = alt_positions.front();
 
   for (const auto& item : named_lines_map) {
     const String& name = item.key;
 
     for (const size_t index : item.value) {
-      std::unique_ptr<protocol::DictionaryValue> line =
-          protocol::DictionaryValue::create();
-
       LayoutUnit track = tracks.at(index);
-      line->setString("name", name);
 
       LayoutUnit gap_offset =
           index > 0 && index < tracks.size() - 1 ? gap / 2 : LayoutUnit();
-      line->setValue("offset", protocol::FundamentalValue::create(
-                                   (track - gap_offset - firstOffset) * scale));
+
+      LayoutUnit main_axis_pos = track - gap_offset - first_offset;
+      PhysicalOffset line_name_pos(main_axis_pos, alt_axis_pos);
+
+      if (direction == kForRows)
+        line_name_pos = Transpose(line_name_pos);
+
+      std::unique_ptr<protocol::DictionaryValue> line = BuildPosition(
+          LocalToAbsolutePoint(layout_grid, line_name_pos, scale));
+
+      line->setString("name", name);
+      // TODO (alexrudenko): offset should be removed once the frontend starts
+      // using absolute positions.
+      line->setValue("offset",
+                     protocol::FundamentalValue::create(main_axis_pos * scale));
 
       lines->pushValue(std::move(line));
     }
@@ -1188,8 +1201,10 @@ void InspectorHighlightBase::AppendPath(
 
 InspectorSourceOrderHighlight::InspectorSourceOrderHighlight(
     Node* node,
-    Color outline_color)
-    : InspectorHighlightBase(node) {
+    Color outline_color,
+    int source_order_position)
+    : InspectorHighlightBase(node),
+      source_order_position_(source_order_position) {
   FloatQuad content, padding, border, margin;
   if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
     return;
@@ -1201,6 +1216,7 @@ InspectorSourceOrderHighlight::AsProtocolValue() const {
   std::unique_ptr<protocol::DictionaryValue> object =
       protocol::DictionaryValue::create();
   object->setValue("paths", highlight_paths_->clone());
+  object->setInteger("sourceOrder", source_order_position_);
   return object;
 }
 

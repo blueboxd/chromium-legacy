@@ -11,7 +11,7 @@
 #include "remoting/base/directory_service_client.h"
 #include "remoting/base/passthrough_oauth_token_getter.h"
 #include "remoting/base/protobuf_http_status.h"
-#include "remoting/proto/remoting/v1/directory_service.pb.h"
+#include "remoting/proto/remoting/v1/directory_messages.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {

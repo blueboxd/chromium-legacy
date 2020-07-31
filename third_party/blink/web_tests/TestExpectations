@@ -992,6 +992,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/994172 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-007.html [ Pass Crash ]
 crbug.com/924142 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
 crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure Crash ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Crash Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-002.xht [ Failure ]
@@ -1214,15 +1215,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/inline-re
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/cascade/* [ Skip ]
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 
-# Flexbox in NG
-
-# Fail in NG flex, pass in legacy flex.
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
-crbug.com/846557 [ Mac ] virtual/layout_ng_flex_box/css3/flexbox/button.html [ Failure ]
-
-# Fail in both legacy flex and NG flex
-crbug.com/626703 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
-
 # Fieldset in NG
 #
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-breaks-001.html [ Crash Failure ]
@@ -1240,7 +1232,6 @@ crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-repl
 
 ### virtual/layout_ng_fieldset/fast/forms/fieldset/
 crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/fieldset-align.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/fieldset-legend-change.html [ Crash ]
 crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/legend-small-after-margin-before-border-horizontal-mode.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/legend-after-margin-with-before-border-horizontal-mode.html [ Failure ]
 

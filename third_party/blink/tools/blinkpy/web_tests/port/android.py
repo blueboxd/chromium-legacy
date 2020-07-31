@@ -88,11 +88,11 @@ ANDROID_WEB_TESTS_DIR = os.path.join(get_blink_dir(), 'web_tests', 'android')
 
 PRODUCTS_TO_EXPECTATION_FILE_PATHS = {
     ANDROID_WEBLAYER: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WeblayerWPTOverrideExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'WeblayerWPTExpectations'),
     ANDROID_WEBVIEW: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WebviewWPTOverrideExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'WebviewWPTExpectations'),
     CHROME_ANDROID: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'ClankWPTOverrideExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'ChromiumWPTExpectations'),
 }
 
 # Disabled WPT tests on Android

@@ -499,7 +499,7 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
   PressKey(ui::VKEY_END);
   EXPECT_EQ(6, combobox_->GetSelectedIndex());
 }
-#endif  // !OS_MACOSX
+#endif  // !OS_APPLE
 
 TEST_F(ComboboxTest, GetTextForRowTest) {
   std::set<int> separators;

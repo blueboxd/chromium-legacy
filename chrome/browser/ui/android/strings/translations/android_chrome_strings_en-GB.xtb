@@ -220,6 +220,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2744248271121720757">Tap a word to search instantly or see related actions</translation>
 <translation id="2760989362628427051">Turn on dark theme when your device's dark theme or Battery Saver is on</translation>
 <translation id="2762000892062317888">just now</translation>
+<translation id="2771869497727323769">Can't create link to text. Share link to page in an app.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2779651927720337254">failed</translation>
 <translation id="2781151931089541271">1 sec left</translation>
@@ -387,6 +388,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="4084712963632273211">From <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />delivered by Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Delete app data?</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
+<translation id="4108998448622696017">Detects and warns you about dangerous events when they happen.</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4135200667068010335">List of devices with which to share a tab is closed.</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
@@ -459,6 +461,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4732120983431207637">Stack unwinder</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4738836084190194332">Last synced: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA error: <ph name="ERROR_CODE" /> on <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Open a new tab</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download complete.}other{# downloads complete.}}</translation>
@@ -508,6 +511,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5087580092889165836">Add card</translation>
 <translation id="509429900233858213">An error occurred.</translation>
+<translation id="5100748015044654621">Share link to the highlighted text in an app</translation>
 <translation id="510275257476243843">1 hour left</translation>
 <translation id="5123685120097942451">Incognito tab</translation>
 <translation id="5127805178023152808">Sync is off</translation>
@@ -686,6 +690,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6398765197997659313">Exit full screen</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sync</translation>
+<translation id="6412673304250309937">Checks URLs with a list of unsafe sites stored in Chrome. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing.</translation>
 <translation id="641643625718530986">Print…</translation>
 <translation id="6427112570124116297">Translate the Web</translation>
 <translation id="6433501201775827830">Choose your search engine</translation>
@@ -973,6 +978,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
 <translation id="8569404424186215731">since <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Last 4 weeks</translation>
+<translation id="8572344201470131220">Image copied</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
 <translation id="860043288473659153">Cardholder name</translation>
 <translation id="8616006591992756292">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8854223127042600341">See your offline files</translation>
 <translation id="889338405075704026">Go to Chrome settings</translation>
 <translation id="8893398027601469503">You are running the latest version of Chrome</translation>
+<translation id="8898822736010347272">Sends URLs of some pages that you visit, limited system information and some page content to Google, to help discover new threats and protect everyone on the web.</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
@@ -1014,6 +1021,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8988028529677883095">Use phone as a security key</translation>
 <translation id="8990209962746788689">Can't create QR code</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
+<translation id="8996847606757455498">Choose another provider</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
 <translation id="9028914725102941583">Turn on sync to share across devices</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>

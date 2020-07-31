@@ -41,6 +41,7 @@
 #include "components/arc/mojom/notifications.mojom.h"
 #include "components/arc/mojom/obb_mounter.mojom.h"
 #include "components/arc/mojom/oemcrypto.mojom.h"
+#include "components/arc/mojom/payment_app.mojom.h"
 #include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/mojom/policy.mojom.h"
 #include "components/arc/mojom/power.mojom.h"
@@ -263,6 +264,12 @@ void ArcBridgeHostImpl::OnOemCryptoInstanceReady(
     mojo::PendingRemote<mojom::OemCryptoInstance> oemcrypto_remote) {
   OnInstanceReady(arc_bridge_service_->oemcrypto(),
                   std::move(oemcrypto_remote));
+}
+
+void ArcBridgeHostImpl::OnPaymentAppInstanceReady(
+    mojo::PendingRemote<mojom::PaymentAppInstance> payment_app_remote) {
+  OnInstanceReady(arc_bridge_service_->payment_app(),
+                  std::move(payment_app_remote));
 }
 
 void ArcBridgeHostImpl::OnPipInstanceReady(

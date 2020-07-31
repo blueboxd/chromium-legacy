@@ -220,6 +220,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2744248271121720757">Kliknij słowo, by szybko je wyszukać lub wyświetlić powiązane czynności</translation>
 <translation id="2760989362628427051">Włącz tryb ciemny, gdy urządzenie ma włączony tryb ciemny lub oszczędzanie baterii</translation>
 <translation id="2762000892062317888">przed chwilą</translation>
+<translation id="2771869497727323769">Nie udało się utworzyć linku do tekstu. Udostępnij link do strony w aplikacji.</translation>
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">Nie pobrano</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
@@ -387,6 +388,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="4084712963632273211">Opublikowane na <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />wyświetlone przez Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
+<translation id="4108998448622696017">Wykrywa niebezpieczne zdarzenia i natychmiast Cię o nich ostrzega.</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4135200667068010335">Lista urządzeń, którym udostępnisz kartę, jest zamknięta.</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
@@ -459,6 +461,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4732120983431207637">Moduł rozwijania stosu</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4738836084190194332">Ostatnia synchronizacja: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">Błąd TWA: <ph name="ERROR_CODE" /> na stronie <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Otwórz nową kartę</translation>
 <translation id="4759238208242260848">Pobrane pliki</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Ukończono pobieranie 1 pliku.}few{Ukończono pobieranie # plików.}many{Ukończono pobieranie # plików.}other{Ukończono pobieranie # pliku.}}</translation>
@@ -508,6 +511,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5040262127954254034">Prywatność</translation>
 <translation id="5087580092889165836">Dodaj kartę</translation>
 <translation id="509429900233858213">Wystąpił błąd.</translation>
+<translation id="5100748015044654621">Udostępnij link do podświetlonego tekstu w aplikacji</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
 <translation id="5123685120097942451">Karta incognito</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
@@ -686,6 +690,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
 <translation id="6404511346730675251">Edytuj zakładkę</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
+<translation id="6412673304250309937">Sprawdza, czy URL jest na liście potencjalnie niebezpiecznych stron zapisanej w Chrome. Jeśli strona próbuje wykraść Twoje hasło lub pobierasz szkodliwy plik, Chrome może też wysłać URL wraz z fragmentami zawartości strony do usługi Bezpieczne przeglądanie.</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6427112570124116297">Tłumacz internet</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
@@ -973,6 +978,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8562452229998620586">Tutaj pojawią się zapisane hasła.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>
+<translation id="8572344201470131220">Obraz został skopiowany</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
 <translation id="860043288473659153">Imię i nazwisko posiadacza karty</translation>
 <translation id="8616006591992756292">Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8854223127042600341">Zobacz pliki offline</translation>
 <translation id="889338405075704026">Otwórz ustawienia Chrome</translation>
 <translation id="8893398027601469503">Używasz najnowszej wersji Chrome</translation>
+<translation id="8898822736010347272">Wysyła do Google adresy URL niektórych odwiedzanych przez Ciebie stron, niektóre informacje o systemie i niektóre treści ze stron, by pomóc w wykrywaniu nowych zagrożeń i chronić wszystkich użytkowników internetu.</translation>
 <translation id="8909135823018751308">Udostępnij…</translation>
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8920114477895755567">Oczekiwanie na informacje o rodzicach.</translation>
@@ -1014,6 +1021,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8988028529677883095">Używaj telefonu jako klucza bezpieczeństwa</translation>
 <translation id="8990209962746788689">Nie udało się utworzyć kodu QR</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
+<translation id="8996847606757455498">Wybierz innego dostawcę</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="9028914725102941583">Aby udostępniać treści między urządzeniami, włącz synchronizację</translation>
 <translation id="9040142327097499898">Powiadomienia są włączone. Lokalizacja jest wyłączona na tym urządzeniu.</translation>

@@ -21,6 +21,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
+#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 
 namespace ui {
 
@@ -32,6 +33,11 @@ WaylandWindow::~WaylandWindow() {
   shutting_down_ = true;
 
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+
+  for (const auto& widget_subsurface : wayland_subsurfaces()) {
+    connection_->wayland_window_manager()->RemoveSubsurface(
+        GetWidget(), widget_subsurface.get());
+  }
   if (root_surface_)
     connection_->wayland_window_manager()->RemoveWindow(GetWidget());
 
@@ -467,6 +473,17 @@ std::unique_ptr<WaylandSurface> WaylandWindow::TakeWaylandSurface() {
   DCHECK(shutting_down_);
   DCHECK(root_surface_);
   return std::move(root_surface_);
+}
+
+bool WaylandWindow::RequestSubsurface() {
+  auto subsurface = std::make_unique<WaylandSubsurface>(connection_, this);
+  if (!subsurface->surface())
+    return false;
+  connection_->wayland_window_manager()->AddSubsurface(GetWidget(),
+                                                       subsurface.get());
+  auto result = wayland_subsurfaces_.emplace(std::move(subsurface));
+  DCHECK(result.second);
+  return true;
 }
 
 }  // namespace ui

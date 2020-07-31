@@ -140,4 +140,13 @@ std::string ProtobufHttpTestResponder::GetMostRecentRequestUrl() {
   return GetMostRecentPendingRequest().request.url.spec();
 }
 
+ProtobufHttpTestResponder::MockInterceptor&
+ProtobufHttpTestResponder::GetMockInterceptor() {
+  if (!mock_interceptor_) {
+    mock_interceptor_ = std::make_unique<MockInterceptor>();
+    test_url_loader_factory_.SetInterceptor(mock_interceptor_->Get());
+  }
+  return *mock_interceptor_;
+}
+
 }  // namespace remoting

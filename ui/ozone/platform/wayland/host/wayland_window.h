@@ -31,7 +31,10 @@ namespace ui {
 class BitmapCursorOzone;
 class OSExchangeData;
 class WaylandConnection;
+class WaylandSubsurface;
 class WaylandWindowDragController;
+
+using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
 
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
@@ -54,6 +57,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   void UpdateBufferScale(bool update_bounds);
 
   WaylandSurface* root_surface() const { return root_surface_.get(); }
+  const WidgetSubsurfaceSet& wayland_subsurfaces() const {
+    return wayland_subsurfaces_;
+  }
 
   void set_parent_window(WaylandWindow* parent_window) {
     parent_window_ = parent_window;
@@ -61,6 +67,10 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   WaylandWindow* parent_window() const { return parent_window_; }
 
   gfx::AcceleratedWidget GetWidget() const;
+
+  // Creates a WaylandSubsurface to put into |wayland_subsurfaces_|. Called if
+  // more subsurfaces are needed when a frame arrives.
+  bool RequestSubsurface();
 
   // Set whether this window has pointer focus and should dispatch mouse events.
   void SetPointerFocus(bool focus);
@@ -210,6 +220,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   WaylandWindow* child_window_ = nullptr;
 
   std::unique_ptr<WaylandSurface> root_surface_;
+  WidgetSubsurfaceSet wayland_subsurfaces_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;

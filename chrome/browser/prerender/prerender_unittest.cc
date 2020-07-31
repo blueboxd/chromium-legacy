@@ -27,6 +27,7 @@
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_test_util.h"
+#include "chrome/browser/prerender/chrome_prerender_manager_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -157,7 +158,9 @@ class UnitTestPrerenderManager : public PrerenderManager {
   using PrerenderManager::kNavigationRecordWindowMs;
 
   explicit UnitTestPrerenderManager(Profile* profile)
-      : PrerenderManager(profile) {
+      : PrerenderManager(
+            profile,
+            std::make_unique<ChromePrerenderManagerDelegate>(profile)) {
     set_rate_limit_enabled(false);
   }
 

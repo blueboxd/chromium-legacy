@@ -250,13 +250,6 @@
     "args": ["--enable-blink-features=LayoutNGFragmentTraversal"]
   },
   {
-    "prefix": "layout_ng_flex_box",
-    "bases": ["css3/flexbox",
-              "external/wpt/css/css-flexbox",
-              "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox"],
-    "args": ["--enable-blink-features=LayoutNGFlexBox"]
-  },
-  {
     "prefix": "layout_ng_fieldset",
     "bases": ["external/wpt/css/css-contain",
               "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain",

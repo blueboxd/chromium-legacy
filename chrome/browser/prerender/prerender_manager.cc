@@ -31,21 +31,15 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
-#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/predictors/loading_predictor.h"
-#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager_delegate.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prerender/browser/prerender_histograms.h"
 #include "components/prerender/browser/prerender_history.h"
@@ -143,8 +137,11 @@ struct PrerenderManager::NavigationRecord {
   FinalStatus final_status = FINAL_STATUS_UNKNOWN;
 };
 
-PrerenderManager::PrerenderManager(Profile* profile)
+PrerenderManager::PrerenderManager(
+    Profile* profile,
+    std::unique_ptr<PrerenderManagerDelegate> delegate)
     : profile_(profile),
+      delegate_(std::move(delegate)),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       prerender_history_(std::make_unique<PrerenderHistory>(kHistoryLength)),
       histograms_(std::make_unique<PrerenderHistograms>()),
@@ -288,23 +285,6 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
   PostCleanupTask();
 }
 
-void PrerenderManager::RecordNoStateFirstContentfulPaint(const GURL& url,
-                                                         bool is_no_store,
-                                                         bool was_hidden,
-                                                         base::TimeDelta time) {
-  base::TimeDelta prefetch_age;
-  Origin origin;
-  GetPrefetchInformation(url, &prefetch_age, nullptr /* final_status*/,
-                         &origin);
-  OnPrefetchUsed(url);
-
-  histograms_->RecordPrefetchFirstContentfulPaintTime(
-      origin, is_no_store, was_hidden, time, prefetch_age);
-  for (auto& observer : observers_) {
-    observer->OnFirstContentfulPaint();
-  }
-}
-
 bool PrerenderManager::IsWebContentsPrerendering(
     const WebContents* web_contents,
     Origin* origin) const {
@@ -374,7 +354,9 @@ PrerenderContents* PrerenderManager::GetPrerenderContents(
 PrerenderContents* PrerenderManager::GetPrerenderContentsForRoute(
     int child_id,
     int route_id) const {
-  WebContents* web_contents = tab_util::GetWebContentsByID(child_id, route_id);
+  WebContents* web_contents = nullptr;
+  RenderViewHost* render_view_host = RenderViewHost::FromID(child_id, route_id);
+  web_contents = WebContents::FromRenderViewHost(render_view_host);
   return web_contents ? GetPrerenderContents(web_contents) : nullptr;
 }
 
@@ -537,21 +519,7 @@ bool PrerenderManager::IsLowEndDevice() const {
 
 void PrerenderManager::MaybePreconnect(Origin origin,
                                        const GURL& url_arg) const {
-  if (!base::FeatureList::IsEnabled(features::kPrerenderFallbackToPreconnect)) {
-    return;
-  }
-
-  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile_);
-  if (cookie_settings->ShouldBlockThirdPartyCookies()) {
-    return;
-  }
-
-  auto* loading_predictor =
-      predictors::LoadingPredictorFactory::GetForProfile(profile_);
-  if (loading_predictor) {
-    loading_predictor->PrepareForPageLoad(
-        url_arg, predictors::HintOrigin::OMNIBOX_PRERENDER_FALLBACK, true);
-  }
+  delegate_->MaybePreconnect(url_arg);
 }
 
 std::unique_ptr<PrerenderHandle>
@@ -579,8 +547,7 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
 
   GURL url = url_arg;
 
-  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile_);
-  if (cookie_settings->ShouldBlockThirdPartyCookies()) {
+  if (delegate_->GetCookieSettings()->ShouldBlockThirdPartyCookies()) {
     SkipPrerenderContentsAndMaybePreconnect(
         url, origin, FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES);
     return nullptr;

@@ -111,6 +111,12 @@ NavigationControllerImpl::CreateNavigationThrottle(
   return throttle;
 }
 
+NavigationImpl* NavigationControllerImpl::GetNavigationImplFromHandle(
+    content::NavigationHandle* handle) {
+  auto iter = navigation_map_.find(handle);
+  return iter == navigation_map_.end() ? nullptr : iter->second.get();
+}
+
 #if defined(OS_ANDROID)
 void NavigationControllerImpl::SetNavigationControllerImpl(
     JNIEnv* env,

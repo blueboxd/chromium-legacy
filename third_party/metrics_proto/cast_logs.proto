@@ -251,7 +251,7 @@ message CastLogsProto {
   optional fixed32 virtual_release_track = 4;
 
   // Cast specific device information which is expected to change over time.
-  // Next tag: 12
+  // Next tag: 13
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
     // Next tag: 14
@@ -313,6 +313,9 @@ message CastLogsProto {
 
     // Optional field to log installed manifest version.
     optional uint32 installed_manifest_version = 11;
+
+    // Optional field to log the system bundle version.
+    optional string system_bundle_version = 12;
   }
   // The device sends this information at least once per day.
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;

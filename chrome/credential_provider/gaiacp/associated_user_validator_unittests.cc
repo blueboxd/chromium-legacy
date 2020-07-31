@@ -553,14 +553,13 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   base::subtle::ScopedTimeClockOverrides time_override(
       &TimeClockOverrideValue::NowOverride, nullptr, nullptr);
   if (is_last_login_stale && !internet_available) {
-    base::Time last_online_login = base::Time::Now();
-    base::string16 last_online_login_millis = base::NumberToString16(
-        last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
+    base::Time last_token_valid = base::Time::Now();
+    base::string16 last_token_valid_millis = base::NumberToString16(
+        last_token_valid.ToDeltaSinceWindowsEpoch().InMilliseconds());
     int validity_period_in_days = 10;
-    ASSERT_EQ(S_OK, SetUserProperty(
-                        (BSTR)sid,
-                        base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
-                        last_online_login_millis));
+    ASSERT_EQ(S_OK,
+              SetUserProperty((BSTR)sid, base::UTF8ToUTF16(kKeyLastTokenValid),
+                              last_token_valid_millis));
 
     if (cloud_policies_enabled) {
       user_policies.validity_period_days = validity_period_in_days;
@@ -571,10 +570,9 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
                           base::UTF8ToUTF16(kKeyValidityPeriodInDays),
                           validity_period_in_days_dword));
     }
-
     // Advance the time that is more than the offline validity period.
     TimeClockOverrideValue::current_time_ =
-        last_online_login + base::TimeDelta::FromDays(validity_period_in_days) +
+        last_token_valid + base::TimeDelta::FromDays(validity_period_in_days) +
         base::TimeDelta::FromMilliseconds(1);
   }
 

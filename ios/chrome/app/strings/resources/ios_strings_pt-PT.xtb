@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Não é Possível Guardar a Imagem</translation>
 <translation id="1180526666083833456">Sincronize e personalize entre dispositivos.</translation>
 <translation id="1181037720776840403">Remover</translation>
+<translation id="1185569544548277362">Novo: pode definir o Chrome como o navegador predefinido. <ph name="BEGIN_LINK" />Abra as Definições<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nova pesquisa</translation>
 <translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="1219674500290482172">Não é possível estabelecer ligação à Internet.</translation>
@@ -367,6 +368,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5407969256130905701">Rejeitar alterações</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
 <translation id="5416022985862681400">Últimos 7 dias</translation>
+<translation id="543338862236136125">Editar palavra-passe</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
 <translation id="54401264925851789">Informações de Segurança da Página</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>
@@ -638,6 +640,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8524799873541103884">Separadores <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novo</translation>
 <translation id="8532105204136943229">Ano de validade</translation>
+<translation id="8533166274275423134">Aberta noutro local</translation>
 <translation id="8534481786647257214">Publicação no Google+ concluído.</translation>
 <translation id="8548878600947630424">Localizar na página...</translation>
 <translation id="8574235780160508979">Os Termos de Utilização do Chrome vão ser alterados a 31 de março. <ph name="BEGIN_LINK" />Reveja-os<ph name="END_LINK" />.</translation>

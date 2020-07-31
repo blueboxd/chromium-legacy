@@ -137,6 +137,8 @@ void ContentRendererClientImpl::PrepareErrorPage(
   }
 
 #if defined(OS_ANDROID)
+  // This does nothing if |error_html| is non-null (which happens if the
+  // embedder injects an error page).
   android_system_error_page::PopulateErrorPageHtml(error, error_html);
 #endif
 }

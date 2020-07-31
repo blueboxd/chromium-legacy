@@ -1128,7 +1128,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
                 mPendingInitialTabCreation = true;
                 PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(() -> {
-                    createInitialTab();
+                    if (!isActivityFinishingOrDestroyed()) createInitialTab();
                 }, INITIAL_TAB_CREATION_TIMEOUT_MS);
             }
         } finally {

@@ -156,8 +156,9 @@ Refer to README.md for content description and update process.
  <item id="interest_feedv2_send" hash_code="85742023" type="0" content_hash_code="49706671" os_list="linux,windows" file_path="components/feed/core/v2/feed_network_impl.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" deprecated="2020-01-23" content_hash_code="78425687" file_path=""/>
+ <item id="isolated_prerender_canary_check" hash_code="60914954" type="0" content_hash_code="2991117" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_origin_prober.cc"/>
  <item id="isolated_prerender_loader" hash_code="2181152" type="0" content_hash_code="113933667" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_url_loader.cc"/>
- <item id="isolated_prerender_probe" hash_code="115160522" type="0" content_hash_code="10166713" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.cc"/>
+ <item id="isolated_prerender_probe" hash_code="115160522" type="0" content_hash_code="75211055" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_origin_prober.cc"/>
  <item id="kids_chrome_management_client_classify_url" hash_code="109987793" type="0" deprecated="2019-07-30" content_hash_code="112740597" file_path=""/>
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="load_autofill_gstatic_data" hash_code="119416099" type="0" content_hash_code="8433621" os_list="linux,windows" file_path="chrome/browser/autofill/autofill_gstatic_reader.cc"/>
@@ -264,6 +265,7 @@ Refer to README.md for content description and update process.
  <item id="remoting_ice_config_request" hash_code="88945310" type="0" content_hash_code="94742293" os_list="linux,windows" file_path="remoting/protocol/remoting_ice_config_request.cc"/>
  <item id="remoting_log_to_server" hash_code="99742369" type="0" content_hash_code="117118166" os_list="linux,windows" file_path="remoting/signaling/remoting_log_to_server.cc"/>
  <item id="remoting_register_support_host_request" hash_code="67117364" type="0" content_hash_code="15955284" os_list="linux,windows" file_path="remoting/host/remoting_register_support_host_request.cc"/>
+ <item id="remoting_telemetry_log_writer" hash_code="107268760" type="0" content_hash_code="81741595" os_list="linux,windows" file_path="remoting/base/telemetry_log_writer.cc"/>
  <item id="render_view_context_menu" hash_code="25844439" type="0" content_hash_code="69471170" os_list="linux,windows" file_path="chrome/browser/renderer_context_menu/render_view_context_menu.cc"/>
  <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_host_impl.cc"/>
  <item id="reporting" hash_code="109891200" type="0" content_hash_code="125758928" os_list="linux,windows" file_path="net/reporting/reporting_uploader.cc"/>

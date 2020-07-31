@@ -19,16 +19,14 @@ namespace {
 
 // Gets the file permissions required by the Speech On-Device API (SODA).
 std::vector<BrokerFilePermission> GetSodaFilePermissions(
-    base::FilePath latest_version_dir) {
+    base::FilePath soda_dir) {
   std::vector<BrokerFilePermission> permissions{
       BrokerFilePermission::ReadOnly("/dev/urandom")};
 
   // This may happen if a user doesn't have a SODA installation.
-  if (!latest_version_dir.empty()) {
+  if (!soda_dir.empty()) {
     permissions.push_back(BrokerFilePermission::ReadOnlyRecursive(
-        latest_version_dir.AsEndingWithSeparator().value()));
-    permissions.push_back(
-        BrokerFilePermission::ReadOnly(latest_version_dir.value()));
+        soda_dir.AsEndingWithSeparator().value()));
   }
 
   return permissions;

@@ -105,9 +105,9 @@ std::string WriteSavedFromPath(const std::string& file_contents,
 // DownloadStoredProperly() below for an example filter.
 class DownloadPersistedObserver : public DownloadHistory::Observer {
  public:
-  typedef base::Callback<bool(
-      DownloadItem* item,
-      const history::DownloadRow&)> PersistedFilter;
+  typedef base::RepeatingCallback<bool(DownloadItem* item,
+                                       const history::DownloadRow&)>
+      PersistedFilter;
 
   DownloadPersistedObserver(Profile* profile, const PersistedFilter& filter)
       : profile_(profile),
@@ -131,7 +131,6 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
     base::RunLoop run_loop;
     quit_waiting_callback_ = run_loop.QuitClosure();
     run_loop.Run();
-    quit_waiting_callback_ = base::Closure();
     return persisted_;
   }
 
@@ -139,13 +138,13 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
                         const history::DownloadRow& info) override {
     persisted_ = persisted_ || filter_.Run(item, info);
     if (persisted_ && !quit_waiting_callback_.is_null())
-      quit_waiting_callback_.Run();
+      std::move(quit_waiting_callback_).Run();
   }
 
  private:
   Profile* profile_;
   PersistedFilter filter_;
-  base::Closure quit_waiting_callback_;
+  base::OnceClosure quit_waiting_callback_;
   bool persisted_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPersistedObserver);
@@ -166,7 +165,6 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
     base::RunLoop run_loop;
     quit_waiting_callback_ = run_loop.QuitClosure();
     run_loop.Run();
-    quit_waiting_callback_ = base::Closure();
     return removed_;
   }
 
@@ -176,12 +174,12 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
   void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) override {
     removed_ = ids.find(download_id_) != ids.end();
     if (removed_ && !quit_waiting_callback_.is_null())
-      quit_waiting_callback_.Run();
+      std::move(quit_waiting_callback_).Run();
   }
 
  private:
   bool removed_;
-  base::Closure quit_waiting_callback_;
+  base::OnceClosure quit_waiting_callback_;
   int32_t download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRemovedObserver);
@@ -357,8 +355,9 @@ class SavePageBrowserTest : public InProcessBrowserTest {
                         save_page_type);
     DownloadPersistedObserver persisted(
         browser()->profile(),
-        base::Bind(&DownloadStoredProperly, url, *main_file_name,
-                   expected_number_of_files, history::DownloadState::COMPLETE));
+        base::BindRepeating(&DownloadStoredProperly, url, *main_file_name,
+                            expected_number_of_files,
+                            history::DownloadState::COMPLETE));
     base::RunLoop run_loop;
     content::SavePackageFinishedObserver observer(
         content::BrowserContext::GetDownloadManager(browser()->profile()),
@@ -468,9 +467,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadItemCreatedObserver creation_observer(manager);
-  DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
-      &DownloadStoredProperly, url, full_file_name, -1,
-      history::DownloadState::CANCELLED));
+  DownloadPersistedObserver persisted(
+      browser()->profile(),
+      base::BindRepeating(&DownloadStoredProperly, url, full_file_name, -1,
+                          history::DownloadState::CANCELLED));
   // -1 to disable number of files check; we don't update after cancel, and
   // we don't know when the single file completed in relationship to
   // the cancel.
@@ -666,9 +666,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
       std::string("Test page for saving page feature") + kAppendedExtension);
   base::FilePath dir =
       GetSaveDir().AppendASCII("Test page for saving page feature_files");
-  DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
-      &DownloadStoredProperly, url, full_file_name, 3,
-      history::DownloadState::COMPLETE));
+  DownloadPersistedObserver persisted(
+      browser()->profile(),
+      base::BindRepeating(&DownloadStoredProperly, url, full_file_name, 3,
+                          history::DownloadState::COMPLETE));
   base::RunLoop run_loop;
   content::SavePackageFinishedObserver observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
@@ -776,9 +777,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SavePageAsMHTML) {
       "Test page for saving page feature.mhtml"));
 
   SavePackageFilePicker::SetShouldPromptUser(true);
-  DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
-      &DownloadStoredProperly, url, full_file_name, -1,
-      history::DownloadState::COMPLETE));
+  DownloadPersistedObserver persisted(
+      browser()->profile(),
+      base::BindRepeating(&DownloadStoredProperly, url, full_file_name, -1,
+                          history::DownloadState::COMPLETE));
 
   FakeSelectFileDialog::Factory* select_file_dialog_factory =
       FakeSelectFileDialog::RegisterFactory();
@@ -876,8 +878,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
         embedded_test_server()->GetURL("/downloads/thisdayinhistory.xls");
     DownloadPersistedObserver persisted(
         browser()->profile(),
-        base::Bind(&DownloadStoredProperly, download_url, base::FilePath(), -1,
-                   history::DownloadState::COMPLETE));
+        base::BindRepeating(&DownloadStoredProperly, download_url,
+                            base::FilePath(), -1,
+                            history::DownloadState::COMPLETE));
 
     ui_test_utils::NavigateToURL(browser(), url);
 

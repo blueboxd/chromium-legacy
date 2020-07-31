@@ -23,6 +23,7 @@ class CORE_EXPORT LayoutNGFieldset final : public LayoutNGBlockFlow {
 
  protected:
   bool IsOfType(LayoutObjectType) const override;
+  void InvalidatePaint(const PaintInvalidatorContext& context) const final;
 };
 
 }  // namespace blink

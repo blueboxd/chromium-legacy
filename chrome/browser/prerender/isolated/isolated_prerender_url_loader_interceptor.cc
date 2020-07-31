@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_from_string_url_loader.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_origin_prober.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
@@ -140,14 +141,31 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kIsolatePrerendersMustProbeOrigin)) {
-    StartProbe(
-        url_.GetOrigin(),
+  Profile* profile = ProfileFromFrameTreeNodeID(frame_tree_node_id_);
+  if (!profile) {
+    DoNotInterceptNavigation();
+    return;
+  }
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile);
+  if (!service) {
+    DoNotInterceptNavigation();
+    return;
+  }
+
+  if (service->origin_prober()->ShouldProbeOrigins()) {
+    probe_start_time_ = base::TimeTicks::Now();
+    base::OnceClosure on_success_callback =
         base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::
                            EnsureCookiesCopiedAndInterceptPrefetchedNavigation,
-                       base::Unretained(this), tentative_resource_request,
-                       std::move(prefetch)));
+                       weak_factory_.GetWeakPtr(), tentative_resource_request,
+                       std::move(prefetch));
+
+    service->origin_prober()->Probe(
+        url_.GetOrigin(),
+        base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete,
+                       weak_factory_.GetWeakPtr(),
+                       std::move(on_success_callback)));
     return;
   }
 
@@ -193,7 +211,7 @@ void IsolatedPrerenderURLLoaderInterceptor::InterceptPrefetchedNavigation(
   }
 
   NotifyPrefetchStatusUpdate(
-      base::FeatureList::IsEnabled(features::kIsolatePrerendersMustProbeOrigin)
+      probe_start_time_.has_value()
           ? IsolatedPrerenderTabHelper::PrefetchStatus::
                 kPrefetchUsedProbeSuccess
           : IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedNoProbe);
@@ -229,81 +247,6 @@ void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
   NotifyPrefetchStatusUpdate(
       IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchNotUsedProbeFailed);
   DoNotInterceptNavigation();
-}
-
-void IsolatedPrerenderURLLoaderInterceptor::StartProbe(
-    const GURL& url,
-    base::OnceClosure on_success_callback) {
-  Profile* profile = ProfileFromFrameTreeNodeID(frame_tree_node_id_);
-  if (!profile) {
-    DoNotInterceptNavigation();
-    return;
-  }
-
-  DCHECK(url.SchemeIs(url::kHttpsScheme));
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("isolated_prerender_probe", R"(
-          semantics {
-            sender: "Isolated Prerender Probe Loader"
-            description:
-              "Verifies the end to end connection between Chrome and the "
-              "origin site that the user is currently navigating to. This is "
-              "done during a navigation that was previously prerendered over a "
-              "proxy to check that the site is not blocked by middleboxes. "
-              "Such prerenders will be used to prefetch render-blocking "
-              "content before being navigated by the user without impacting "
-              "privacy."
-            trigger:
-              "Used for sites off of Google SRPs (Search Result Pages) only "
-              "for Lite mode users when the feature is enabled."
-            data: "None."
-            destination: WEBSITE
-          }
-          policy {
-            cookies_allowed: NO
-            setting:
-              "Users can control Lite mode on Android via the settings menu. "
-              "Lite mode is not available on iOS, and on desktop only for "
-              "developer testing."
-            policy_exception_justification: "Not implemented."
-        })");
-
-  probe_start_time_ = base::TimeTicks::Now();
-
-  AvailabilityProber::TimeoutPolicy timeout_policy;
-  timeout_policy.base_timeout = IsolatedPrerenderProbeTimeout();
-  AvailabilityProber::RetryPolicy retry_policy;
-  retry_policy.max_retries = 0;
-
-  origin_prober_ = std::make_unique<AvailabilityProber>(
-      this,
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess(),
-      profile->GetPrefs(),
-      AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck, url,
-      AvailabilityProber::HttpMethod::kHead, net::HttpRequestHeaders(),
-      retry_policy, timeout_policy, traffic_annotation,
-      0 /* max_cache_entries */,
-      base::TimeDelta::FromSeconds(0) /* revalidate_cache_after */);
-  // Unretained is safe here because |this| owns |origin_prober_|.
-  origin_prober_->SetOnCompleteCallback(
-      base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete,
-                     base::Unretained(this), std::move(on_success_callback)));
-  origin_prober_->SendNowIfInactive(false /* send_only_in_foreground */);
-}
-
-bool IsolatedPrerenderURLLoaderInterceptor::ShouldSendNextProbe() {
-  return true;
-}
-
-bool IsolatedPrerenderURLLoaderInterceptor::IsResponseSuccess(
-    net::Error net_error,
-    const network::mojom::URLResponseHead* head,
-    std::unique_ptr<std::string> body) {
-  // Any response from the origin is good enough, we expect a net error if the
-  // site is blocked.
-  return net_error == net::OK;
 }
 
 std::unique_ptr<PrefetchedMainframeResponseContainer>

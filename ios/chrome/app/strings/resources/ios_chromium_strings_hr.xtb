@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromium nije uspio provjeriti vaše zaporke. Provjerite internetsku vezu.</translation>
 <translation id="3639997914391704523">Chromium može provjeriti vaše zaporke kad se prijavite Google računom.</translation>
 <translation id="3805899903892079518">Chromium nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
+<translation id="4166206055865952171">Postavljanje Chromiuma kao zadanog preglednika</translation>
 <translation id="4555020257205549924">Kada je ta značajka uključena, Chromium će ponuditi prijevod stranica napisanih na drugim jezicima pomoću Google prevoditelja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Uključite Chromiumov skener</translation>
 <translation id="4787850887676698916">Ovdje će se prikazati kartice koje ste otvorili u Chromiumu na svojim ostalim uređajima.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Chromium će vam pružiti više ako mu omogućite pristup lokaciji.</translation>
 <translation id="6820823224820483452">Chromium nije uspio provjeriti sve zaporke. Pokušajte ponovo sutra.</translation>
 <translation id="7099326575020694068">Chromium ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
+<translation id="7118091470949186573">Sad možete koristiti Chromium svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="7173114856073700355">Otvorite Postavke</translation>
 <translation id="7208566199746267865">Chromium vam štedi vrijeme sinkronizacijom vaših računa na webu. Račune možete dodavati i uklanjati u postavkama.</translation>
 <translation id="7269362888766543920">Neki programski dodaci uzrokuju rušenje Chromiuma. Pokušajte ih deinstalirati.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Da biste postavili Chromium kao zadani preglednik:
+        1. Otvorite Postavke. 
+        2. Dodirnite opciju Zadana aplikacija preglednika.
+        3. Odaberite Chromium.</translation>
 <translation id="7357211569052832586">Odabrani podaci uklonjeni su iz Chromiuma i sa sinkroniziranih uređaja. Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjerice pretraživanja i aktivnosti s drugih Googleovih usluga, na stranici history.google.com.</translation>
 <translation id="7400689562045506105">Upotrebljavajte Chromium svugdje</translation>
 <translation id="766897673682622022">Vaša je zaporka ugrožena zbog povrede podataka. Chromium preporučuje da je odmah promijenite.</translation>

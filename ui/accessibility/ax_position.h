@@ -823,6 +823,38 @@ class AXPosition {
     }
   }
 
+  bool AtStartOfAXTree() const {
+    if (IsNullPosition())
+      return false;
+
+    if (AtStartOfAnchor()) {
+      AXPositionInstance previous_anchor = CreatePreviousAnchorPosition();
+
+      // Consider the start of the document as the start of an AXTree.
+      if (previous_anchor->IsNullPosition())
+        return true;
+      else
+        return previous_anchor->tree_id() != tree_id();
+    }
+    return false;
+  }
+
+  bool AtEndOfAXTree() const {
+    if (IsNullPosition())
+      return false;
+
+    if (AtEndOfAnchor()) {
+      AXPositionInstance next_anchor = CreateNextAnchorPosition();
+
+      // Consider the end of the document as the end of an AXTree.
+      if (next_anchor->IsNullPosition())
+        return true;
+      else
+        return next_anchor->tree_id() != tree_id();
+    }
+    return false;
+  }
+
   AXBoundaryType GetFormatStartBoundaryType() const {
     // Since formats are stored on text anchors, the start of a format boundary
     // must be at the start of an anchor.
@@ -1669,6 +1701,63 @@ class AXPosition {
     return CreateNullPosition();
   }
 
+  AXPositionInstance CreatePositionAtStartOfAXTree() const {
+    if (IsNullPosition() || AtStartOfAXTree())
+      return Clone();
+
+    // First check for positions on nodes which are AXTree boundaries, but where
+    // the text position on that node is not at the start of the anchor.
+    if (CreatePositionAtStartOfAnchor()->AtStartOfAXTree())
+      return CreatePositionAtStartOfAnchor();
+
+    // Iterate over tree positions until a boundary is reached.
+    AXPositionInstance previous_position = AsTreePosition();
+    do {
+      previous_position = previous_position->CreatePreviousAnchorPosition();
+    } while (!previous_position->AtStartOfAXTree());
+
+    // This method should not cross tree boundaries.
+    DCHECK_EQ(previous_position->tree_id(), tree_id());
+
+    if (IsTextPosition())
+      previous_position = previous_position->AsTextPosition();
+    return previous_position;
+  }
+
+  AXPositionInstance CreatePositionAtEndOfAXTree() const {
+    if (IsNullPosition() || AtEndOfAXTree())
+      return Clone();
+
+    // First check for positions on nodes which are AXTree boundaries, but where
+    // the text position on that node is not at the end of the anchor.
+    if (CreatePositionAtEndOfAnchor()->AtEndOfAXTree())
+      return CreatePositionAtEndOfAnchor();
+
+    // Iterate over tree positions until a boundary is reached.
+    AXPositionInstance next_position = AsTreePosition();
+    do {
+      next_position = next_position->CreateNextAnchorPosition()
+                          ->CreatePositionAtEndOfAnchor();
+    } while (!next_position->AtEndOfAXTree());
+
+    // This method should not cross tree boundaries.
+    DCHECK_EQ(next_position->tree_id(), tree_id());
+
+    if (IsTextPosition())
+      next_position = next_position->AsTextPosition();
+    return next_position->CreatePositionAtEndOfAnchor();
+  }
+
+  // "document" is defined here as a single, top-level, navigatable unit from
+  //  a user's perspective. This means that all iframes are part of a single
+  // "document" that contains the top-level navigatable page. So this method
+  // will break out of an iframe and return a position at the start of the
+  // top-level document.
+  //
+  // Note that this definition is different than HTML's definition of
+  // "document", where each iframe has its own document object. For a similar
+  // method that stops at iframe boundaries, see
+  // CreatePositionAtStartOfAXTree().
   AXPositionInstance CreatePositionAtStartOfDocument() const {
     AXPositionInstance position =
         AsTreePosition()->CreateDocumentAncestorPosition();
@@ -1680,6 +1769,15 @@ class AXPosition {
     return position;
   }
 
+  // "document" is defined here as a single, top-level, navigatable unit from
+  //  a user's perspective. This means that all iframes are part of a single
+  // "document" that contains the top-level navigatable page. So this method
+  // will break out of an iframe and return a position at the end of the
+  // top-level document.
+  //
+  // Note that this definition is different than HTML's definition of
+  // "document", where each iframe has its own document object. For a similar
+  // method that stops at iframe boundaries, see CreatePositionAtEndOfAXTree().
   AXPositionInstance CreatePositionAtEndOfDocument() const {
     AXPositionInstance position =
         AsTreePosition()->CreateDocumentAncestorPosition();

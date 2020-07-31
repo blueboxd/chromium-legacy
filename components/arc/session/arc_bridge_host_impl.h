@@ -109,6 +109,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
                                      obb_mounter_remote) override;
   void OnOemCryptoInstanceReady(
       mojo::PendingRemote<mojom::OemCryptoInstance> oemcrypto_remote) override;
+  void OnPaymentAppInstanceReady(mojo::PendingRemote<mojom::PaymentAppInstance>
+                                     payment_app_remote) override;
   void OnPipInstanceReady(
       mojo::PendingRemote<mojom::PipInstance> policy_remote) override;
   void OnPolicyInstanceReady(

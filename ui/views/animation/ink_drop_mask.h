@@ -9,9 +9,6 @@
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/gfx/geometry/insets_f.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
 
 class SkPath;
@@ -39,44 +36,6 @@ class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
   ui::Layer layer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropMask);
-};
-
-// A rectangular ink drop mask with rounded corners.
-class VIEWS_EXPORT RoundRectInkDropMask : public InkDropMask {
- public:
-  RoundRectInkDropMask(const gfx::Size& layer_size,
-                       const gfx::InsetsF& mask_insets,
-                       float corner_radius);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(InkDropMaskTest, RoundRectInkDropMaskPaintsRect);
-
-  // InkDropMask:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-
-  gfx::InsetsF mask_insets_;
-  float corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundRectInkDropMask);
-};
-
-// A circular ink drop mask.
-class VIEWS_EXPORT CircleInkDropMask : public InkDropMask {
- public:
-  CircleInkDropMask(const gfx::Size& layer_size,
-                    const gfx::Point& mask_center,
-                    int mask_radius);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(InkDropMaskTest, CircleInkDropMaskPaintsCircle);
-
-  // InkDropMask:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-
-  gfx::Point mask_center_;
-  int mask_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(CircleInkDropMask);
 };
 
 // An ink-drop mask that paints a specified path.

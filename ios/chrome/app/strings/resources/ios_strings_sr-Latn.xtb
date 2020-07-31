@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Nije moguće sačuvati sliku</translation>
 <translation id="1180526666083833456">Sinhronizujte i personalizujte sadržaj na svim uređajima.</translation>
 <translation id="1181037720776840403">Ukloni</translation>
+<translation id="1185569544548277362">Novo: Možete da postavite Chrome za podrazumevani pregledač. <ph name="BEGIN_LINK" />Otvori Podešavanja<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nova pretraga</translation>
 <translation id="1209206284964581585">Sakrij za sada</translation>
 <translation id="1219674500290482172">Povezivanje sa internetom nije moguće.</translation>
@@ -367,6 +368,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5407969256130905701">Odbaci promene</translation>
 <translation id="5409365236829784218">Nije instalirana nijedna aplikacija za otvaranje ove datoteke.</translation>
 <translation id="5416022985862681400">Poslednjih 7 dana</translation>
+<translation id="543338862236136125">Izmenite lozinku</translation>
 <translation id="5433691172869980887">Korisničko ime je kopirano</translation>
 <translation id="54401264925851789">Informacije o bezbednosti stranice</translation>
 <translation id="5443952882982198570">Kreditne kartice</translation>
@@ -638,6 +640,7 @@ Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na
 <translation id="8524799873541103884">Kartice <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> do <ph name="LAST_VISIBLE_TAB" /> od <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novo</translation>
 <translation id="8532105204136943229">Godina isteka</translation>
+<translation id="8533166274275423134">Otvoreno negde drugde</translation>
 <translation id="8534481786647257214">Google+ post je dovršen.</translation>
 <translation id="8548878600947630424">Pronađi na stranici...</translation>
 <translation id="8574235780160508979">Chrome uslovi korišćenja usluge se menjaju 31. marta. <ph name="BEGIN_LINK" />Pregledajte<ph name="END_LINK" /></translation>

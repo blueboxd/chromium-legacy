@@ -145,8 +145,8 @@ class AX_EXPORT AXNode final {
   // include any text field roles.
   bool IsText() const;
 
-  // Returns true if the node has any line break related roles or is the child a
-  // node with line break related roles.
+  // Returns true if the node has any line break related roles or is the child
+  // of a node with line break related roles.
   bool IsLineBreak() const;
 
   // Set the node's accessibility data. This may be done during initialization

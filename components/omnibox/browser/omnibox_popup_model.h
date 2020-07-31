@@ -65,23 +65,22 @@ class OmniboxPopupModel {
     // FOCUSED_BUTTON_KEYWORD state, which is only for button focus.
     KEYWORD = 2,
 
-    // FOCUSED_BUTTON_REMOVE_SUGGESTION state means the Remove Suggestion (X)
-    // button is focused. Pressing enter will attempt to remove this suggestion.
-    FOCUSED_BUTTON_REMOVE_SUGGESTION = 3,
-
     // FOCUSED_BUTTON_KEYWORD is used when the keyword button is in focus, not
     // actually in Keyword Mode. This is currently only used if deciated button
     // row is enabled
-    FOCUSED_BUTTON_KEYWORD = 4,
+    FOCUSED_BUTTON_KEYWORD = 3,
 
     // FOCUSED_BUTTON_TAB_SWITCH state means the Switch Tab button is focused.
     // Pressing enter will switch to the tab match.
-    FOCUSED_BUTTON_TAB_SWITCH = 5,
+    FOCUSED_BUTTON_TAB_SWITCH = 4,
 
     // FOCUSED_BUTTON_PEDAL state means a Pedal button is in focus. This is
     // currently only used when dedicated button row and pedals are enabled.
-    FOCUSED_BUTTON_PEDAL = 6,
+    FOCUSED_BUTTON_PEDAL = 5,
 
+    // FOCUSED_BUTTON_REMOVE_SUGGESTION state means the Remove Suggestion (X)
+    // button is focused. Pressing enter will attempt to remove this suggestion.
+    FOCUSED_BUTTON_REMOVE_SUGGESTION = 6,
   };
 
   struct Selection {

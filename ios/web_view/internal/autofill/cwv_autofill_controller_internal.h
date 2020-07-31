@@ -16,26 +16,43 @@ namespace autofill {
 class WebViewAutofillClientIOS;
 }  // namespace autofill
 
+namespace ios_web_view {
+class WebViewPasswordManagerClient;
+class WebViewPasswordManagerDriver;
+}  // namespace ios_web_view
+
+namespace password_manager {
+class PasswordManager;
+}  // namespace password_manager
+
 namespace web {
 class WebState;
 }  // namespace web
 
 @class AutofillAgent;
-@class CWVPasswordController;
 @class JsAutofillManager;
 @class JsSuggestionManager;
+@class SharedPasswordController;
 
 @interface CWVAutofillController ()
 
-- (instancetype)initWithWebState:(web::WebState*)webState
-                  autofillClient:
-                      (std::unique_ptr<autofill::WebViewAutofillClientIOS>)
-                          autofillClient
-                   autofillAgent:(AutofillAgent*)autofillAgent
-               JSAutofillManager:(JsAutofillManager*)JSAutofillManager
-             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-              passwordController:(CWVPasswordController*)passwordController
-               applicationLocale:(const std::string&)applicationLocale
+- (instancetype)
+         initWithWebState:(web::WebState*)webState
+           autofillClient:(std::unique_ptr<autofill::WebViewAutofillClientIOS>)
+                              autofillClient
+            autofillAgent:(AutofillAgent*)autofillAgent
+        JSAutofillManager:(JsAutofillManager*)JSAutofillManager
+      JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
+          passwordManager:(std::unique_ptr<password_manager::PasswordManager>)
+                              passwordManager
+    passwordManagerClient:
+        (std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>)
+            passwordManagerClient
+    passwordManagerDriver:
+        (std::unique_ptr<ios_web_view::WebViewPasswordManagerDriver>)
+            passwordManagerDriver
+       passwordController:(SharedPasswordController*)passwordController
+        applicationLocale:(const std::string&)applicationLocale
     NS_DESIGNATED_INITIALIZER;
 
 @end

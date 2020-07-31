@@ -842,13 +842,12 @@ static void DuplicateMedium(CLIPFORMAT source_clipformat,
 
 DataObjectImpl::StoredDataInfo::StoredDataInfo(const FORMATETC& format_etc,
                                                STGMEDIUM* medium)
-    : format_etc(format_etc), medium(medium), owns_medium(true) {}
+    : format_etc(format_etc), medium(medium) {}
 
 DataObjectImpl::StoredDataInfo::~StoredDataInfo() {
-  if (owns_medium) {
-    ReleaseStgMedium(medium);
-    delete medium;
-  }
+  ReleaseStgMedium(medium);
+  delete medium;
+
   if (downloader.get())
     downloader->Stop();
 }
@@ -991,12 +990,6 @@ HRESULT DataObjectImpl::SetData(
   auto info = std::make_unique<DataObjectImpl::StoredDataInfo>(*format_etc,
                                                                local_medium);
   info->medium->tymed = format_etc->tymed;
-
-  // Since the medium is copied if |should_release| is false, it should be
-  // released whether that flag is true or not.
-  // TODO(crbug.com/1107806): Remove owns_medium, because its value is always
-  // true.
-  info->owns_medium = true;
 
   // Make newly added data appear first.
   // TODO(dcheng): Make various setters agree whether elements should be

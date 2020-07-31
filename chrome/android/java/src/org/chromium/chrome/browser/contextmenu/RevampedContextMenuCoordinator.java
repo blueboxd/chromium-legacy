@@ -150,6 +150,9 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         mListView.setOnItemClickListener((p, v, pos, id) -> {
             assert id != INVALID_ITEM_ID;
 
+            // Do not start any action when the activity is on the way to destruction.
+            // See https://crbug.com/990987
+            if (activity.isFinishing() || activity.isDestroyed()) return;
             onItemClicked.onResult((int) id);
             mDialog.dismiss();
         });

@@ -209,7 +209,7 @@ TEST_F(MetricsReporterTest, OpenAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.Open"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedOnCard, 1);
   histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
 }
@@ -225,7 +225,7 @@ TEST_F(MetricsReporterTest, OpenInNewTabAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedOpenInNewTab, 1);
   histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
 }
@@ -242,7 +242,7 @@ TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.OpenInNewIncognitoTab"));
   histogram_.ExpectUniqueSample(
-      "ContentSuggestions.Feed.UserAction",
+      "ContentSuggestions.Feed.UserActions",
       FeedUserActionType::kTappedOpenInNewIncognitoTab, 1);
   histogram_.ExpectTotalCount("NewTabPage.ContentSuggestions.Opened", 0);
 }
@@ -258,7 +258,7 @@ TEST_F(MetricsReporterTest, SendFeedbackAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.SendFeedback"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedSendFeedback, 1);
 }
 
@@ -273,7 +273,7 @@ TEST_F(MetricsReporterTest, DownloadAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.Download"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedDownload, 1);
 }
 
@@ -288,7 +288,7 @@ TEST_F(MetricsReporterTest, LearnMoreAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.LearnMore"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedLearnMore, 1);
 }
 
@@ -303,7 +303,7 @@ TEST_F(MetricsReporterTest, RemoveAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.HideStory"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedHideStory, 1);
 }
 
@@ -318,7 +318,7 @@ TEST_F(MetricsReporterTest, NotInterestedInAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.NotInterestedIn"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedNotInterestedIn, 1);
 }
 
@@ -333,7 +333,7 @@ TEST_F(MetricsReporterTest, ManageInterestsAction) {
   EXPECT_EQ(want, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.ManageInterests"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedManageInterests, 1);
 }
 
@@ -344,7 +344,7 @@ TEST_F(MetricsReporterTest, ContextMenuOpened) {
   EXPECT_EQ(want_empty, ReportedEngagementType());
   EXPECT_EQ(1, user_actions_.GetActionCount(
                    "ContentSuggestions.Feed.CardAction.ContextMenu"));
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kOpenedContextMenu, 1);
 }
 
@@ -353,7 +353,7 @@ TEST_F(MetricsReporterTest, SurfaceOpened) {
 
   std::map<FeedEngagementType, int> want_empty;
   EXPECT_EQ(want_empty, ReportedEngagementType());
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kOpenedFeedSurface, 1);
 }
 

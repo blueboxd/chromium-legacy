@@ -16,6 +16,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
+#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
@@ -615,6 +616,29 @@ void WaylandBufferManagerHost::OnWindowConfigured(WaylandWindow* window) {
   it->second->OnSurfaceConfigured();
 }
 
+void WaylandBufferManagerHost::OnSubsurfaceAdded(
+    WaylandWindow* window,
+    WaylandSubsurface* subsurface) {
+  DCHECK(subsurface);
+  surfaces_[subsurface->wayland_surface()] = std::make_unique<Surface>(
+      subsurface->wayland_surface(), connection_, this);
+  // WaylandSubsurface is always configured.
+  surfaces_[subsurface->wayland_surface()]->OnSurfaceConfigured();
+}
+
+void WaylandBufferManagerHost::OnSubsurfaceRemoved(
+    WaylandWindow* window,
+    WaylandSubsurface* subsurface) {
+  DCHECK(subsurface);
+  auto it = surfaces_.find(subsurface->wayland_surface());
+  DCHECK(it != surfaces_.end());
+  if (it->second->HasBuffers()) {
+    it->second->OnSurfaceRemoved();
+    surface_graveyard_.emplace_back(std::move(it->second));
+  }
+  surfaces_.erase(it);
+}
+
 void WaylandBufferManagerHost::SetTerminateGpuCallback(
     base::OnceCallback<void(std::string)> terminate_callback) {
   terminate_gpu_cb_ = std::move(terminate_callback);
@@ -799,6 +823,12 @@ void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
       destroyed_count = surface->DestroyBuffer(buffer_id);
       if (!surface->HasBuffers() && !surface->HasSurface())
         surfaces_.erase(window->root_surface());
+    }
+    const auto& subsurfaces = window->wayland_subsurfaces();
+    for (const auto& it : subsurfaces) {
+      Surface* subsurface = GetSurface((*it).wayland_surface());
+      if (subsurface)
+        destroyed_count += subsurface->DestroyBuffer(buffer_id);
     }
   } else {
     // Case 3)

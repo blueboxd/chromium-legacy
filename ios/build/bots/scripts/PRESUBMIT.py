@@ -14,7 +14,7 @@ def _RunTestRunnerUnitTests(input_api, output_api):
   # all test files are fixed.
   files = [
       'coverage_util_test.py',
-      # 'iossim_util_test.py',
+      'iossim_util_test.py',
       'run_test.py',
       'shard_util_test.py',
       'standard_json_util_test.py',

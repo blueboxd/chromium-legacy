@@ -226,7 +226,6 @@ static_library("protocol") {
     "//net",
     "//remoting/base",
     "//remoting/codec:decoder",
-    "//remoting/proto/remoting/v1:network_traversal_grpc_library",
     "//remoting/proto/remoting/v1:network_traversal_proto",
     "//remoting/signaling",
     "//third_party/boringssl",
@@ -374,7 +373,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//net:test_support",
-    "//remoting/proto/remoting/v1:network_traversal_grpc_library",
+    "//remoting/proto/remoting/v1:network_traversal_proto",
     "//testing/gmock",
     "//testing/gtest",
   ]

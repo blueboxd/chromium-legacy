@@ -1204,8 +1204,11 @@ const char kAccessibilityFocusHighlightEnabled[] =
 const char kLiveCaptionEnabled[] =
     "accessibility.captions.live_caption_enabled";
 
-// The file path of the SODA installation directory.
-const char kSODAPath[] = "accessibility.captions.soda_path";
+// The file path of the Speech On-Device API (SODA) binary.
+const char kSodaBinaryPath[] = "accessibility.captions.soda_binary_path";
+
+// The file path of the en-us Speech On-Device API (SODA) configuration file.
+const char kSodaEnUsConfigPath[] = "accessibility.captions.soda_config_path";
 #endif
 
 #if defined(OS_MAC)

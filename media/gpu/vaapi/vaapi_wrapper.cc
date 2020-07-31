@@ -285,9 +285,7 @@ bool IsVAProfileSupported(VAProfile va_profile) {
                       }) != kMediaToVAProfileMap.end();
 }
 
-bool IsBlockedDriver(const std::string& va_vendor_string,
-                     VaapiWrapper::CodecMode mode,
-                     VAProfile va_profile) {
+bool IsBlockedDriver(VaapiWrapper::CodecMode mode, VAProfile va_profile) {
   if (!IsModeEncoding(mode))
     return false;
 
@@ -325,7 +323,7 @@ class VADisplayState {
 
   base::Lock* va_lock() { return &va_lock_; }
   VADisplay va_display() const { return va_display_; }
-  const std::string& va_vendor_string() const { return va_vendor_string_; }
+  VAImplementation implementation_type() const { return implementation_type_; }
 
   void SetDrmFd(base::PlatformFile fd) { drm_fd_.reset(HANDLE_EINTR(dup(fd))); }
 
@@ -348,14 +346,14 @@ class VADisplayState {
   // Drm fd used to obtain access to the driver interface by VA.
   base::ScopedFD drm_fd_;
 
-  // The VADisplay handle.
+  // The VADisplay handle. Valid between Initialize() and Deinitialize().
   VADisplay va_display_;
 
-  // True if vaInitialize() has been called successfully.
+  // True if vaInitialize() has been called successfully, until Deinitialize().
   bool va_initialized_;
 
-  // String acquired by vaQueryVendorString().
-  std::string va_vendor_string_;
+  // Enumerated version of vaQueryVendorString(). Valid after Initialize().
+  VAImplementation implementation_type_ = VAImplementation::kInvalid;
 
   DISALLOW_COPY_AND_ASSIGN(VADisplayState);
 };
@@ -454,11 +452,12 @@ bool VADisplayState::InitializeOnce() {
 
   va_initialized_ = true;
 
-  va_vendor_string_ = vaQueryVendorString(va_display_);
-  DLOG_IF(WARNING, va_vendor_string_.empty())
+  const std::string va_vendor_string = vaQueryVendorString(va_display_);
+  DLOG_IF(WARNING, va_vendor_string.empty())
       << "Vendor string empty or error reading.";
   DVLOG(1) << "VAAPI version: " << major_version << "." << minor_version << " "
-           << va_vendor_string_;
+           << va_vendor_string;
+  implementation_type_ = VendorStringToImplementationType(va_vendor_string);
 
   // The VAAPI version is determined from what is loaded on the system by
   // calling vaInitialize(). Since the libva is now ABI-compatible, relax the
@@ -492,7 +491,6 @@ VAStatus VADisplayState::Deinitialize() {
     va_res = vaTerminate(va_display_);
   va_initialized_ = false;
   va_display_ = nullptr;
-  va_vendor_string_ = "";
   return va_res;
 }
 
@@ -668,8 +666,6 @@ class VASupportedProfiles {
   };
   static const VASupportedProfiles& Get();
 
-  VAImplementation implementation_type() const { return implementation_type_; }
-
   // Determines if |mode| supports |va_profile| (and |va_entrypoint| if defined
   // and valid). If so, returns a const pointer to its ProfileInfo, otherwise
   // returns nullptr.
@@ -701,8 +697,6 @@ class VASupportedProfiles {
                               VAEntrypoint entrypoint,
                               std::vector<VAConfigAttrib>& required_attribs,
                               ProfileInfo* profile_info) const;
-
-  VAImplementation implementation_type_ = VAImplementation::kInvalid;
 
   std::vector<ProfileInfo> supported_profiles_[VaapiWrapper::kCodecModeMax];
   static_assert(std::extent<decltype(supported_profiles_)>() ==
@@ -742,8 +736,6 @@ VASupportedProfiles::VASupportedProfiles()
   if (!display_state->Initialize())
     return;
 
-  implementation_type_ =
-      VendorStringToImplementationType(display_state->va_vendor_string());
   VADisplay va_display = display_state->va_display();
   DCHECK(va_display) << "VADisplayState hasn't been properly Initialize()d";
 
@@ -759,8 +751,6 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
 
   const std::vector<VAProfile> va_profiles =
       GetSupportedVAProfiles(va_lock, va_display);
-  const std::string& va_vendor_string =
-      VADisplayState::Get()->va_vendor_string();
 
   constexpr VaapiWrapper::CodecMode kWrapperModes[] = {
       VaapiWrapper::kDecode, VaapiWrapper::kEncode,
@@ -772,7 +762,7 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
     std::vector<ProfileInfo> supported_profile_infos;
 
     for (const auto& va_profile : va_profiles) {
-      if (IsBlockedDriver(va_vendor_string, mode, va_profile))
+      if (IsBlockedDriver(mode, va_profile))
         continue;
 
       if ((mode != VaapiWrapper::kVideoProcess) &&
@@ -923,7 +913,8 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
 
   // Now work around some driver misreporting for JPEG decoding.
   if (va_profile == VAProfileJPEGBaseline && entrypoint == VAEntrypointVLD) {
-    if (implementation_type_ == VAImplementation::kMesaGallium) {
+    if (VADisplayState::Get()->implementation_type() ==
+        VAImplementation::kMesaGallium) {
       // TODO(andrescj): the VAAPI state tracker in mesa does not report
       // VA_RT_FORMAT_YUV422 as being supported for JPEG decoding. However, it
       // is happy to allocate YUYV surfaces
@@ -1050,8 +1041,7 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
   supported_formats_.resize(static_cast<size_t>(num_image_formats));
 
   // Now work around some driver misreporting.
-  if (VendorStringToImplementationType(
-          VADisplayState::Get()->va_vendor_string()) ==
+  if (VADisplayState::Get()->implementation_type() ==
       VAImplementation::kMesaGallium) {
     // TODO(andrescj): considering that the VAAPI state tracker in mesa can
     // convert from NV12 to IYUV when doing vaGetImage(), it's reasonable to
@@ -1102,7 +1092,7 @@ NativePixmapAndSizeInfo::~NativePixmapAndSizeInfo() = default;
 
 // static
 VAImplementation VaapiWrapper::GetImplementationType() {
-  return VASupportedProfiles::Get().implementation_type();
+  return VADisplayState::Get()->implementation_type();
 }
 
 // static

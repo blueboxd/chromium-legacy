@@ -230,7 +230,13 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
 
 // Test Learn Mode by pressing a few keys in Learn Mode. Only available while
 // logged in.
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LearnModeHardwareKeys DISABLED_LearnModeHardwareKeys
+#else
+#define MAYBE_LearnModeHardwareKeys LearnModeHardwareKeys
+#endif
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
+                       MAYBE_LearnModeHardwareKeys) {
   EnableChromeVox();
   sm_.Call([this]() {
     extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(

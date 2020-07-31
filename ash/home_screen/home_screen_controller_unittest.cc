@@ -39,15 +39,11 @@ class HomeScreenControllerTest : public AshTestBase,
                                  public testing::WithParamInterface<bool> {
  public:
   HomeScreenControllerTest() {
-    if (IsWindowDragFromShelfEnabled()) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kDragFromShelfToHomeOrOverview}, {});
-    } else {
+    if (!IsWindowDragFromShelfEnabled()) {
       // The feature verified by this test is only enabled if drag from shelf to
-      // home or overview is disabled.
+      // home or overview (which is controlled by hotseat flag) is disabled.
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kDragFromShelfToHomeOrOverview,
-               chromeos::features::kShelfHotseat});
+          {}, {chromeos::features::kShelfHotseat});
     }
   }
   ~HomeScreenControllerTest() override = default;

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.LensUtils.IntentType;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -437,7 +438,8 @@ public class LensUtilsTest {
     /**
      * Test {@link LensUtils#isInShoppingAllowlist(url)} method for url in domain allowlist.
      */
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST
                     + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:allowlistEntries/shopping-site-2"})
@@ -452,7 +454,8 @@ public class LensUtilsTest {
     /**
      * Test {@link LensUtils#isInShoppingAllowlist(url)} method for url with shopping url patterns.
      */
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST
                     + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:shoppingUrlPatterns/^shopping-site.*"})
@@ -470,6 +473,7 @@ public class LensUtilsTest {
      */
     @Test
     @SmallTest
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
     public void isInShoppingAllowlistWithDefaultShoppingUrlPatternTest() {
         final String googleShoppingItemUrl = "https://www.google.com/shopping/product_1";
         final String googleShoppingPageUrl = "https://www.google.com/search?=8893t5/tbm=shop/dress";

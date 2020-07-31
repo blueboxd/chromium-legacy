@@ -798,8 +798,8 @@ void ShelfLayoutManagerTestBase::TestHomeLauncherGestureHandler(
   ASSERT_TRUE(gesture_handler);
   ASSERT_FALSE(gesture_handler->GetActiveWindow());
 
-  // Tests that after kDragFromShelfToHomeOrOverview flag is enabled, the home
-  // launcher gesture handler does not handle the scroll up events any more.
+  // Tests that the home launcher gesture handler does not handle the scroll up
+  // events any more.
   ShelfLayoutManager* manager = GetShelfLayoutManager();
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));

@@ -17,12 +17,12 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab/jni_headers/WebContentsStateBridge_jni.h"
-#include "components/embedder_support/android/browser_context/browser_context_handle.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_command.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
@@ -347,13 +347,10 @@ ScopedJavaLocalRef<jobject> WriteNavigationsAsByteBuffer(
 }
 
 // Restores a WebContents from the passed in state.
-WebContents* RestoreContentsFromByteBuffer(
-    content::BrowserContext* regular_browser_context,
-    content::BrowserContext* otr_browser_context,
-    void* data,
-    int size,
-    int saved_state_version,
-    bool initially_hidden) {
+WebContents* RestoreContentsFromByteBuffer(void* data,
+                                           int size,
+                                           int saved_state_version,
+                                           bool initially_hidden) {
   bool is_off_the_record;
   int current_entry_index;
   std::vector<sessions::SerializedNavigationEntry> navigations;
@@ -363,14 +360,15 @@ WebContents* RestoreContentsFromByteBuffer(
   if (!success)
     return nullptr;
 
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   std::vector<std::unique_ptr<content::NavigationEntry>> entries =
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
-          navigations, regular_browser_context);
+          navigations, profile);
 
-  content::BrowserContext* browser_context =
-      is_off_the_record ? otr_browser_context : regular_browser_context;
+  if (is_off_the_record)
+    profile = profile->GetOffTheRecordProfile();
+  WebContents::CreateParams params(profile);
 
-  WebContents::CreateParams params(browser_context);
   params.initially_hidden = initially_hidden;
   std::unique_ptr<WebContents> web_contents(WebContents::Create(params));
   web_contents->GetController().Restore(
@@ -478,8 +476,6 @@ ScopedJavaLocalRef<jstring> WebContentsState::GetVirtualUrlFromByteBuffer(
 
 ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
     JNIEnv* env,
-    content::BrowserContext* browser_context,
-    content::BrowserContext* otr_browser_context,
     jobject state,
     jint saved_state_version,
     jboolean initially_hidden) {
@@ -491,8 +487,7 @@ ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
     return ScopedJavaLocalRef<jobject>();
 
   WebContents* web_contents = ::RestoreContentsFromByteBuffer(
-      browser_context, otr_browser_context, data, size, saved_state_version,
-      initially_hidden);
+      data, size, saved_state_version, initially_hidden);
 
   if (web_contents)
     return web_contents->GetJavaWebContents();
@@ -503,7 +498,6 @@ ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
 ScopedJavaLocalRef<jobject>
 WebContentsState::CreateSingleNavigationStateAsByteBuffer(
     JNIEnv* env,
-    content::BrowserContext* browser_context,
     jstring url,
     jstring referrer_url,
     jint referrer_policy,
@@ -525,7 +519,8 @@ WebContentsState::CreateSingleNavigationStateAsByteBuffer(
           initiator_origin, ui::PAGE_TRANSITION_LINK,
           true,  // is_renderer_initiated
           "",    // extra_headers
-          browser_context, nullptr /* blob_url_loader_factory */));
+          ProfileManager::GetActiveUserProfile(),
+          nullptr /* blob_url_loader_factory */));
 
   std::vector<content::NavigationEntry*> navigations(1);
   navigations[0] = entry.get();
@@ -538,18 +533,11 @@ WebContentsState::CreateSingleNavigationStateAsByteBuffer(
 static ScopedJavaLocalRef<jobject>
 JNI_WebContentsStateBridge_RestoreContentsFromByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jbrowser_context,
-    const JavaParamRef<jobject>& jotr_browser_context,
     const JavaParamRef<jobject>& state,
     jint saved_state_version,
     jboolean initially_hidden) {
-  content::BrowserContext* browser_context =
-      browser_context::BrowserContextFromJavaHandle(jbrowser_context);
-  content::BrowserContext* otr_browser_context =
-      browser_context::BrowserContextFromJavaHandle(jotr_browser_context);
   return WebContentsState::RestoreContentsFromByteBuffer(
-      env, browser_context, otr_browser_context, state, saved_state_version,
-      initially_hidden);
+      env, state, saved_state_version, initially_hidden);
 }
 
 static ScopedJavaLocalRef<jobject>
@@ -584,17 +572,14 @@ JNI_WebContentsStateBridge_DeleteNavigationEntries(
 static ScopedJavaLocalRef<jobject>
 JNI_WebContentsStateBridge_CreateSingleNavigationStateAsByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jbrowser_context,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& referrer_url,
     jint referrer_policy,
     const JavaParamRef<jobject>& initiator_origin,
     jboolean is_off_the_record) {
-  content::BrowserContext* browser_context =
-      browser_context::BrowserContextFromJavaHandle(jbrowser_context);
   return WebContentsState::CreateSingleNavigationStateAsByteBuffer(
-      env, browser_context, url, referrer_url, referrer_policy,
-      initiator_origin, is_off_the_record);
+      env, url, referrer_url, referrer_policy, initiator_origin,
+      is_off_the_record);
 }
 
 static ScopedJavaLocalRef<jstring>

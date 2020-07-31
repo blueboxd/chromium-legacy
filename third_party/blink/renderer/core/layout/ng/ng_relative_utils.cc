@@ -21,19 +21,27 @@ LogicalOffset ComputeRelativeOffset(
   if (child_style.GetPosition() != EPosition::kRelative)
     return LogicalOffset();
 
-  base::Optional<LayoutUnit> left, right, top, bottom;
-
   const PhysicalSize physical_size = ToPhysicalSize(
       available_size, container_writing_direction.GetWritingMode());
 
-  if (!child_style.Left().IsAuto())
-    left = MinimumValueForLength(child_style.Left(), physical_size.width);
-  if (!child_style.Right().IsAuto())
-    right = MinimumValueForLength(child_style.Right(), physical_size.width);
-  if (!child_style.Top().IsAuto())
-    top = MinimumValueForLength(child_style.Top(), physical_size.height);
-  if (!child_style.Bottom().IsAuto())
-    bottom = MinimumValueForLength(child_style.Bottom(), physical_size.height);
+  // Helper function to correctly resolve insets.
+  auto ResolveInset = [](const Length& length,
+                         LayoutUnit size) -> base::Optional<LayoutUnit> {
+    if (length.IsAuto())
+      return base::nullopt;
+    if (length.IsPercentOrCalc() && size == kIndefiniteSize)
+      return base::nullopt;
+    return MinimumValueForLength(length, size);
+  };
+
+  base::Optional<LayoutUnit> left =
+      ResolveInset(child_style.Left(), physical_size.width);
+  base::Optional<LayoutUnit> right =
+      ResolveInset(child_style.Right(), physical_size.width);
+  base::Optional<LayoutUnit> top =
+      ResolveInset(child_style.Top(), physical_size.height);
+  base::Optional<LayoutUnit> bottom =
+      ResolveInset(child_style.Bottom(), physical_size.height);
 
   // Common case optimization.
   if (!left && !right && !top && !bottom)

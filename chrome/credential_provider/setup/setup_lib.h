@@ -30,6 +30,13 @@ extern const char kDisableStats[];
 
 }  // namespace switches
 
+// Installs GCPW Extension service. If there is an already GCPW extension, it is
+// stopped and deleted initially.
+DWORD InstallGCPWExtension(const base::FilePath& extension_exe_path);
+
+// Uninstalls GCPW Extension service by stopping and deleting the service.
+DWORD UninstallGCPWExtension();
+
 // Does a full install of GCP.  |installer_path| is the full path to the
 // installer exe and |product_version| is the version of GCP being installed.
 HRESULT DoInstall(const base::FilePath& installer_path,
@@ -48,11 +55,6 @@ HRESULT DoUninstall(const base::FilePath& installer_path,
 // This new process will wait for this one to exit before continuing so that
 // files are not locked and can be deleted correctly.
 HRESULT RelaunchUninstaller(const base::FilePath& installer_path);
-
-// Returns the basenames of the files that are installed by setup.  This is
-// used in tests to validate that files are correctly installed.
-void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
-                               size_t* count);
 
 // Enable or disable stats and crash report collection. Returns 0 on success
 // and -1 on failure.

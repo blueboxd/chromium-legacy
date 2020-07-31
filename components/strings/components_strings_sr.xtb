@@ -1645,6 +1645,7 @@
 <translation id="7791011319128895129">Необјављено</translation>
 <translation id="7791196057686275387">Балирање</translation>
 <translation id="7791543448312431591">Додај</translation>
+<translation id="7792318290931435557">Приказ једне странице</translation>
 <translation id="7798389633136518089">Занемарено јер смернице није подесио извор из клауда.</translation>
 <translation id="7800304661137206267">Веза је шифрована помоћу <ph name="CIPHER" />, са <ph name="MAC" /> за потврду идентитета поруке и <ph name="KX" /> као механизмом за размену кључева.</translation>
 <translation id="7802523362929240268">Сајт је легитиман</translation>
@@ -1740,6 +1741,7 @@
 <translation id="8220146938470311105">C7/C6 (коверат)</translation>
 <translation id="8221250263817408492">Управо сте унели лозинку на обмањујућем сајту. Chromium вам препоручује да одете на <ph name="WEBSITE_1" />, као и на друге сајтове где користите ову лозинку, и да је одмах промените.</translation>
 <translation id="8225771182978767009">Особа која је подесила овај рачунар је одлучила да блокира овај сајт.</translation>
+<translation id="8228419419708659934">Приказ на две странице</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Температура платформе</translation>
 <translation id="8238581221633243064">Отворите страницу на новој картици без архивирања</translation>

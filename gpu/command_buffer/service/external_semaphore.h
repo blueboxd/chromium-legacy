@@ -39,24 +39,20 @@ class ExternalSemaphore {
 
   void Reset();
 
-  // Take the GL semaphore. The ownership is transferred to caller. The caller
-  // is responsible for releasing it.
-  unsigned int TakeGLSemaphore();
+  // Get the GL semaphore. The ownership is not transferred to caller.
+  unsigned int GetGLSemaphore();
 
   // Get a VkSemaphore. The ownership is not transferred to caller.
   VkSemaphore GetVkSemaphore();
+
+  // Take the VkSemaphore. The ownership is transferred to caller. The caller is
+  // responsible for releasing it.
+  VkSemaphore TakeVkSemaphore();
 
   bool is_valid() const { return context_provider_ && handle_.is_valid(); }
   SemaphoreHandle handle() { return handle_.Duplicate(); }
 
  private:
-  // GL semaphore cannot be shared between passthrough GL contexts,
-  // since gl contexts are not created with the same global shared group with
-  // passthrough. So we cannot reuse GL semaphores safely.
-  // TODO(penghuang): share GL semaphore across GL contexts and reuse
-  // GL semaphores.
-  unsigned int GetGLSemaphore();
-
   viz::VulkanContextProvider* context_provider_ = nullptr;
   VkSemaphore semaphore_ = VK_NULL_HANDLE;
   SemaphoreHandle handle_;

@@ -660,9 +660,7 @@ public class TabModelImpl extends TabModelJniBridge {
         if (mTabContentManager != null) mTabContentManager.removeTabThumbnail(tab.getId());
         mTabSaver.removeTabFromQueues(tab);
 
-        if (!isIncognito()) {
-            HistoricalTabSaver.createHistoricalTab(tab, getProfile().getOriginalProfile());
-        }
+        if (!isIncognito()) HistoricalTabSaver.createHistoricalTab(tab);
 
         for (TabModelObserver obs : mObservers) obs.didCloseTab(tab.getId(), tab.isIncognito());
         if (notifyTabClosureCommitted) {

@@ -19,6 +19,7 @@
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#import "components/password_manager/ios/shared_password_controller.h"
 #include "components/url_formatter/elide_url.h"
 #include "google_apis/google_api_keys.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -50,7 +51,6 @@
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
-#import "ios/web_view/internal/passwords/cwv_password_controller.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
@@ -659,22 +659,31 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   auto passwordManager = std::make_unique<password_manager::PasswordManager>(
       passwordManagerClient.get());
   auto passwordManagerDriver =
-      std::make_unique<ios_web_view::WebViewPasswordManagerDriver>();
-  CWVPasswordController* passwordController = [[CWVPasswordController alloc]
-           initWithWebState:_webState.get()
-            passwordManager:std::move(passwordManager)
-      passwordManagerClient:std::move(passwordManagerClient)
-      passwordManagerDriver:std::move(passwordManagerDriver)];
+      std::make_unique<ios_web_view::WebViewPasswordManagerDriver>(
+          passwordManager.get());
+
+  PasswordFormHelper* formHelper =
+      [[PasswordFormHelper alloc] initWithWebState:_webState.get()];
+  PasswordSuggestionHelper* suggestionHelper =
+      [[PasswordSuggestionHelper alloc] init];
+  SharedPasswordController* passwordController =
+      [[SharedPasswordController alloc] initWithWebState:_webState.get()
+                                                 manager:passwordManager.get()
+                                              formHelper:formHelper
+                                        suggestionHelper:suggestionHelper];
 
   return [[CWVAutofillController alloc]
-         initWithWebState:_webState.get()
-           autofillClient:std::move(autofillClient)
-            autofillAgent:autofillAgent
-        JSAutofillManager:JSAutofillManager
-      JSSuggestionManager:JSSuggestionManager
-       passwordController:passwordController
-        applicationLocale:ios_web_view::ApplicationContext::GetInstance()
-                              ->GetApplicationLocale()];
+           initWithWebState:_webState.get()
+             autofillClient:std::move(autofillClient)
+              autofillAgent:autofillAgent
+          JSAutofillManager:JSAutofillManager
+        JSSuggestionManager:JSSuggestionManager
+            passwordManager:std::move(passwordManager)
+      passwordManagerClient:std::move(passwordManagerClient)
+      passwordManagerDriver:std::move(passwordManagerDriver)
+         passwordController:passwordController
+          applicationLocale:ios_web_view::ApplicationContext::GetInstance()
+                                ->GetApplicationLocale()];
 }
 
 #pragma mark - Preserving and Restoring State

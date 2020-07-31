@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">ບໍ່​ສາ​ມາດ​ບັນ​ທຶກ​ຮູບ​ໄດ້</translation>
 <translation id="1180526666083833456">ຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງໃຫ້ເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນ.</translation>
 <translation id="1181037720776840403">ລຶບອອກ</translation>
+<translation id="1185569544548277362">ໃໝ່: ທ່ານສາມາດເຮັດໃຫ້ Chrome ເປັນໂປຣແກຣມເລີ່ມຕົ້ນໄດ້. <ph name="BEGIN_LINK" />ເປີດການຕັ້ງຄ່າ<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">ການຊອກຫາໃໝ່</translation>
 <translation id="1209206284964581585">ເຊື່ອງສຳລັບຕອນນີ້</translation>
 <translation id="1219674500290482172">ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບອິນເຕີເນັດໄດ້.</translation>
@@ -367,6 +368,7 @@
 <translation id="5407969256130905701">ຍົກເລີກການປ່ຽນແປງ</translation>
 <translation id="5409365236829784218">ບໍ່​ມີ​ແອັບ​ພ​ລິ​ເຄ​ຊັນ​ຕິດ​ຕັ້ງ​ໄວ້​ທີ່​ສາ​ມາດ​ເປີດ​ໄຟ​ລ໌​ນີ້​ໄດ້.</translation>
 <translation id="5416022985862681400">7 ມື້ຫຼ້າສຸດ</translation>
+<translation id="543338862236136125">ແກ້ໄຂລະຫັດຜ່ານ</translation>
 <translation id="5433691172869980887">ສຳເນົາຊື່ຜູ້ໃຊ້ແລ້ວ</translation>
 <translation id="54401264925851789">ຂໍ້ມູນຄວາມປອດໄພໜ້າ</translation>
 <translation id="5443952882982198570">ບັດເຄຣດິດ</translation>
@@ -638,6 +640,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> ແຖບ <ph name="FIRST_VISIBLE_TAB" /> ຜ່ານ <ph name="LAST_VISIBLE_TAB" /> ໃນ <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">ໃໝ່</translation>
 <translation id="8532105204136943229">ປີ​ຫມົດ​ອາ​ຍຸ​</translation>
+<translation id="8533166274275423134">ເປີດຢູ່ບ່ອນອື່ນແລ້ວ</translation>
 <translation id="8534481786647257214">ການ​ໂພ​ສ​ທ໌ Google+ ສຳ​ເລັດ.</translation>
 <translation id="8548878600947630424">ຊອກ​ຫາ​ຢູ່​ໃນ​ຫນ້າ​...</translation>
 <translation id="8574235780160508979">ຂໍ້ກຳນົດການບໍລິການຂອງ Chrome ຈະປ່ຽນແປງໃນວັນທີ 31 ເດືອນມີນາ. <ph name="BEGIN_LINK" />ກະລຸນາກວດເບິ່ງ<ph name="END_LINK" /></translation>

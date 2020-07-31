@@ -36,6 +36,9 @@ cast_source_set("renderer") {
     "cast_url_loader_throttle_provider.h",
     "cast_websocket_handshake_throttle_provider.cc",
     "cast_websocket_handshake_throttle_provider.h",
+    "identification_settings_manager.cc",
+    "identification_settings_manager.h",
+    "identification_settings_manager_store.h",
     "js_channel_bindings.cc",
     "js_channel_bindings.h",
     "native_bindings_helper.cc",
@@ -56,6 +59,7 @@ cast_source_set("renderer") {
 
   deps = [
     "//base",
+    "//base/util/ranges",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/common",
@@ -76,6 +80,7 @@ cast_source_set("renderer") {
     "//media",
     "//media/remoting:remoting_constants",
     "//media/remoting:remoting_renderer",
+    "//net",
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//v8",

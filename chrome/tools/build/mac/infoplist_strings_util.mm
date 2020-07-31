@@ -234,22 +234,15 @@ int main(int argc, char* const argv[]) {
 
       uint32_t name_id = IDS_PRODUCT_NAME;
       const char* name_id_str = "IDS_PRODUCT_NAME";
-      uint32_t short_name_id = IDS_APP_MENU_PRODUCT_NAME;
-      const char* short_name_id_str = "IDS_APP_MENU_PRODUCT_NAME";
       if (strcmp(app_type, kAppType_Helper) == 0) {
         name_id = IDS_HELPER_NAME;
         name_id_str = "IDS_HELPER_NAME";
-        short_name_id = IDS_SHORT_HELPER_NAME;
-        short_name_id_str = "IDS_SHORT_HELPER_NAME";
       }
 
       // Fetch the strings.
       NSString* name =
             LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
                                    name_id, name_id_str);
-      NSString* short_name =
-            LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
-                                   short_name_id, short_name_id_str);
       NSString* copyright_format =
           LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
                                  IDS_ABOUT_VERSION_COPYRIGHT,
@@ -271,9 +264,7 @@ int main(int argc, char* const argv[]) {
 
       // Generate the InfoPlist.strings file contents.
       NSDictionary<NSString*, NSString*>* infoplist_strings = @{
-        @"CFBundleDisplayName" : name,
         @"CFBundleGetInfoString" : get_info,
-        @"CFBundleName" : short_name,
         @"NSHumanReadableCopyright" : copyright,
         @"NSLocationUsageDescription" : permission_reason,
         @"NSMicrophoneUsageDescription" : permission_reason,

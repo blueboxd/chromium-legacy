@@ -220,6 +220,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="2744248271121720757">Toca unha palabra para realizar buscas de forma instantánea ou ver accións relacionadas</translation>
 <translation id="2760989362628427051">Activa o tema escuro cando o teu dispositivo teña activado o tema escuro ou a función Aforro de batería</translation>
 <translation id="2762000892062317888">agora</translation>
+<translation id="2771869497727323769">Non se puido crear unha ligazón ao texto. Comparte a ligazón á páxina a través dunha aplicación.</translation>
 <translation id="2777555524387840389">Quedan <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">produciuse un erro</translation>
 <translation id="2781151931089541271">Queda 1 segundo</translation>
@@ -387,6 +388,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4084712963632273211">Contido publicado por <ph name="PUBLISHER_ORIGIN" /> e <ph name="BEGIN_DEEMPHASIZED" />ofrecido por Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Queres eliminar os datos da aplicación?</translation>
 <translation id="4099578267706723511">Axúdanos a mellorar Chrome enviando estatísticas de uso e informes de erros a Google.</translation>
+<translation id="4108998448622696017">Móstrache unha advertencia cando detecta eventos perigosos.</translation>
 <translation id="4116038641877404294">Descarga as páxinas para velas cando non teñas conexión</translation>
 <translation id="4135200667068010335">A lista de dispositivos cos que compartir unha pestana está pechada.</translation>
 <translation id="4149994727733219643">Vista simplificada de páxinas web</translation>
@@ -459,6 +461,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4732120983431207637">Recuperador de pillas</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">Produciuse un erro de TWA: <ph name="ERROR_CODE" /> en <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Abrir unha nova pestana</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 descarga completada.}other{# descargas completadas.}}</translation>
@@ -508,6 +511,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5087580092889165836">Engadir tarxeta</translation>
 <translation id="509429900233858213">Produciuse un erro.</translation>
+<translation id="5100748015044654621">Comparte a ligazón ao texto destacado a través dunha aplicación</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5123685120097942451">Pestana do modo de incógnito</translation>
 <translation id="5127805178023152808">A sincronización está desactivada</translation>
@@ -686,6 +690,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6398765197997659313">Saír do modo de pantalla completa</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
+<translation id="6412673304250309937">Comproba enderezos URL cunha lista de sitios non seguros almacenada en Chrome. Se un sitio tenta roubarche o contrasinal ou se descargas un ficheiro daniño, Chrome tamén pode comprobar os enderezos URL, entre os que se inclúen fragmentos de contido das páxinas, a través da función Navegación segura.</translation>
 <translation id="641643625718530986">Imprimir...</translation>
 <translation id="6427112570124116297">Traduce a Web</translation>
 <translation id="6433501201775827830">Selecciona o motor de busca</translation>
@@ -973,6 +978,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8562452229998620586">Os contrasinais gardados aparecerán aquí.</translation>
 <translation id="8569404424186215731">desde o <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas 4 semanas</translation>
+<translation id="8572344201470131220">Copiouse a imaxe</translation>
 <translation id="8583805026567836021">Borrando datos da conta</translation>
 <translation id="860043288473659153">Nome do titular da tarxeta</translation>
 <translation id="8616006591992756292">É posible que a túa conta de Google teña outras formas do historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8854223127042600341">Consultar os teus ficheiros sen conexión</translation>
 <translation id="889338405075704026">Ir á configuración de Chrome</translation>
 <translation id="8893398027601469503">Estás executando a última versión de Chrome</translation>
+<translation id="8898822736010347272">Envía os URL dalgunhas páxinas que visites, información limitada do sistema e certo contido das páxinas a Google para axudar a descubrir novas ameazas e protexer a todos os usuarios da Web.</translation>
 <translation id="8909135823018751308">Compartir...</translation>
 <translation id="8912362522468806198">Conta de Google</translation>
 <translation id="8920114477895755567">Agardando pola información dos pais.</translation>
@@ -1014,6 +1021,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8988028529677883095">Usar o teléfono como chave de seguranza</translation>
 <translation id="8990209962746788689">Non se puido crear o código QR</translation>
 <translation id="8993760627012879038">Abrir unha nova pestana no modo de incógnito</translation>
+<translation id="8996847606757455498">Escoller outro provedor</translation>
 <translation id="8998729206196772491">Estás iniciando sesión cunha conta xestionada por <ph name="MANAGED_DOMAIN" /> e proporcionándolle ao seu administrador o control dos teus datos de Chrome, que quedarán ligados permanentemente a esta conta. Se pechas sesión en Chrome, eliminaranse os teus datos deste dispositivo, pero seguirán almacenados na túa conta de Google.</translation>
 <translation id="9028914725102941583">Activa a sincronización para compartir contido entre varios dispositivos</translation>
 <translation id="9040142327097499898">Pódense mostrar notificacións. A localización está desactivada neste dispositivo.</translation>

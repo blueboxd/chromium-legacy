@@ -916,6 +916,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 
     buffer->params.reset(
         zwp_linux_dmabuf_v1_create_params(globals_.linux_dmabuf.get()));
+    uint64_t modifier = gbm_bo_get_modifier(buffer->bo.get());
     for (size_t i = 0;
          i < static_cast<size_t>(gbm_bo_get_plane_count(buffer->bo.get()));
          ++i) {
@@ -923,7 +924,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
       uint32_t stride = gbm_bo_get_stride_for_plane(buffer->bo.get(), i);
       uint32_t offset = gbm_bo_get_offset(buffer->bo.get(), i);
       zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
-                                     stride, 0, 0);
+                                     stride, modifier >> 32, modifier);
     }
     uint32_t flags = 0;
     if (y_invert)
@@ -948,6 +949,10 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
         gbm_bo_get_stride_for_plane(buffer->bo.get(), 0),
         EGL_DMA_BUF_PLANE0_OFFSET_EXT,
         0,
+        EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
+        modifier,
+        EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT,
+        modifier >> 32,
         EGL_NONE};
     EGLImageKHR image = eglCreateImageKHR(
         eglGetCurrentDisplay(), EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,

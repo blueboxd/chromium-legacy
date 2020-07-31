@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/updater/win/app_install.h"
+#include "chrome/updater/app/app_install.h"
 
 #include <memory>
 #include <string>

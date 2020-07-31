@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -87,7 +86,7 @@ public class WebContentsStateBridgeTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Return a null contents state but don't crash.
             Assert.assertNull(WebContentsStateBridge.restoreContentsFromByteBuffer(
-                    tabState.contentsState, Profile.getLastUsedRegularProfile(), false));
+                    tabState.contentsState, false));
         });
     }
 }

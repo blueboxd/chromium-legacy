@@ -119,7 +119,7 @@ void Registry::ForgetFileSystem(const ProviderId& provider_id,
           provider_id.ToString(), &file_systems_per_extension))
     return;  // Nothing to forget.
 
-  file_systems_per_extension->RemoveWithoutPathExpansion(file_system_id, NULL);
+  file_systems_per_extension->RemoveKey(file_system_id);
   if (file_systems_per_extension->empty())
     dict_update->Remove(provider_id.ToString(), NULL);
 }

@@ -1159,7 +1159,13 @@ void VaapiVideoDecodeAccelerator::RecycleVASurface(
 // static
 VideoDecodeAccelerator::SupportedProfiles
 VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
-  return VaapiWrapper::GetSupportedDecodeProfiles();
+  VideoDecodeAccelerator::SupportedProfiles profiles =
+      VaapiWrapper::GetSupportedDecodeProfiles();
+  // VaVDA never supported VP9 Profile 2, but VaapiWrapper does. Filter it out.
+  base::EraseIf(profiles, [](const auto& profile) {
+    return profile.profile == VP9PROFILE_PROFILE2;
+  });
+  return profiles;
 }
 
 VaapiVideoDecodeAccelerator::BufferAllocationMode

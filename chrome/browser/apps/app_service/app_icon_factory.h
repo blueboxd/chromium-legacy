@@ -53,7 +53,8 @@ enum IconEffects : uint32_t {
 // Returns a callback that converts compressed data to an ImageSkia.
 base::OnceCallback<void(std::vector<uint8_t> compressed_data)>
 CompressedDataToImageSkiaCallback(
-    base::OnceCallback<void(gfx::ImageSkia)> callback);
+    base::OnceCallback<void(gfx::ImageSkia)> callback,
+    float icon_scale);
 
 // Encode the ImageSkia to the compressed PNG data with the image's 1.0f scale
 // factor representation. Return the encoded PNG data.

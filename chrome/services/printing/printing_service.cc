@@ -11,6 +11,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/services/printing/pdf_flattener.h"
+#include "chrome/services/printing/pdf_thumbnailer.h"
 #endif
 
 #if defined(OS_WIN)
@@ -43,6 +44,12 @@ void PrintingService::BindPdfToPwgRasterConverter(
 void PrintingService::BindPdfFlattener(
     mojo::PendingReceiver<mojom::PdfFlattener> receiver) {
   mojo::MakeSelfOwnedReceiver(std::make_unique<printing::PdfFlattener>(),
+                              std::move(receiver));
+}
+
+void PrintingService::BindPdfThumbnailer(
+    mojo::PendingReceiver<mojom::PdfThumbnailer> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<printing::PdfThumbnailer>(),
                               std::move(receiver));
 }
 #endif  // defined(OS_CHROMEOS)

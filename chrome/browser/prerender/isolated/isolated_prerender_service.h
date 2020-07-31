@@ -17,6 +17,7 @@
 
 class Profile;
 class IsolatedPrerenderProxyConfigurator;
+class IsolatedPrerenderOriginProber;
 class IsolatedPrerenderSubresourceManager;
 class PrefetchedMainframeResponseContainer;
 
@@ -34,6 +35,10 @@ class IsolatedPrerenderService
 
   IsolatedPrerenderProxyConfigurator* proxy_configurator() {
     return proxy_configurator_.get();
+  }
+
+  IsolatedPrerenderOriginProber* origin_prober() {
+    return origin_prober_.get();
   }
 
   // This call is forwarded to all |IsolatedPrerenderSubresourceManager| in
@@ -87,6 +92,9 @@ class IsolatedPrerenderService
 
   // The custom proxy configurator for Isolated Prerenders.
   std::unique_ptr<IsolatedPrerenderProxyConfigurator> proxy_configurator_;
+
+  // The origin prober class which manages all logic for origin probing.
+  std::unique_ptr<IsolatedPrerenderOriginProber> origin_prober_;
 
   // Map of prerender URL to its manager. Kept at the browser level since NSPs
   // are done in a separate WebContents from the one they are created in.

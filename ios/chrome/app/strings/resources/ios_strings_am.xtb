@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">ምስሉን ማስቀመጥ አልተቻለም</translation>
 <translation id="1180526666083833456">በመላ መሣሪያዎች ላይ ያስምሩና ግላዊነት ያላብሱ።</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
+<translation id="1185569544548277362">አዲስ፦ Chromeን የእርስዎ ነባሪ ማድረግ ይችላሉ። <ph name="BEGIN_LINK" />ቅንብሮችን ይክፈቱ<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">አዲስ ፍለጋ</translation>
 <translation id="1209206284964581585">ለአሁን ደብቅ</translation>
 <translation id="1219674500290482172">ከበይነመረቡ ጋር መገናኘት አልተቻለም</translation>
@@ -367,6 +368,7 @@
 <translation id="5407969256130905701">ለውጦችን አስወግድ</translation>
 <translation id="5409365236829784218">ይህን ፋይል መክፈት የሚችሉ መተግበሪያዎች አልተጫኑም።</translation>
 <translation id="5416022985862681400">ባለፉት 7 ቀኖች</translation>
+<translation id="543338862236136125">የይለፍ ቃል አርትዕ</translation>
 <translation id="5433691172869980887">የተጠቃሚ ስም ተቀድቷል</translation>
 <translation id="54401264925851789">የገጽ ደህንነት መረጃ</translation>
 <translation id="5443952882982198570">ክሬዲት ካርዶች</translation>
@@ -638,6 +640,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8524799873541103884">ከ<ph name="NUMBER_OF_OPEN_TABS" /> <ph name="INCOGNITO" /> ትሮች ውስጥ ከ<ph name="FIRST_VISIBLE_TAB" /> እስከ <ph name="LAST_VISIBLE_TAB" /> ያሉት</translation>
 <translation id="8529767659511976195">አዲስ</translation>
 <translation id="8532105204136943229">ጊዜው የሚያልፍበት ዓመት</translation>
+<translation id="8533166274275423134">ሌላ ቦታ ተከፍቷል</translation>
 <translation id="8534481786647257214">የGoogle+ ልጥፍ ተጠናቅቋል።</translation>
 <translation id="8548878600947630424">በዚህ ገጽ ውስጥ አግኝ...</translation>
 <translation id="8574235780160508979">የChrome አገልግሎት ውል ማርች 31 ላይ ይቀየራል። <ph name="BEGIN_LINK" />እባክዎ ይገምግሙ<ph name="END_LINK" /></translation>

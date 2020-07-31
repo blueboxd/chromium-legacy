@@ -15,7 +15,6 @@ class SerializedNavigationEntry;
 }
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -54,8 +53,6 @@ class WebContentsState {
   // Restores a WebContents from the passed in state.
   static base::android::ScopedJavaLocalRef<jobject>
   RestoreContentsFromByteBuffer(JNIEnv* env,
-                                content::BrowserContext* browser_context,
-                                content::BrowserContext* otr_browser_context,
                                 jobject state,
                                 jint saved_state_version,
                                 jboolean initially_hidden);
@@ -65,7 +62,6 @@ class WebContentsState {
   static base::android::ScopedJavaLocalRef<jobject>
   CreateSingleNavigationStateAsByteBuffer(
       JNIEnv* env,
-      content::BrowserContext* browser_context,
       jstring url,
       jstring referrer_url,
       jint referrer_policy,

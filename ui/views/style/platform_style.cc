@@ -72,7 +72,7 @@ gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
   return gfx::Range(cursor_position, previous_grapheme_index);
 }
 
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 #if !BUILDFLAG(ENABLE_DESKTOP_AURA) || !defined(OS_LINUX)
 // static

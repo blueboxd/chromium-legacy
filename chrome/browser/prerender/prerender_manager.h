@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_manager_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prerender/browser/prerender_config.h"
 #include "components/prerender/browser/prerender_histograms.h"
@@ -92,7 +93,8 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   };
 
   // Owned by a Profile object for the lifetime of the profile.
-  explicit PrerenderManager(Profile* profile);
+  PrerenderManager(Profile* profile,
+                   std::unique_ptr<PrerenderManagerDelegate> delegate);
   ~PrerenderManager() override;
 
   // From KeyedService:
@@ -166,24 +168,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // active prerenders when prerendering should be cancelled.
   virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
                                         FinalStatus final_status);
-
-  // Called to record the time to First Contentful Paint for all pages that were
-  // not prerendered.
-  //
-  // As part of recording, determines whether the load had previously matched
-  // the criteria for triggering a NoStatePrefetch. In the prerendering
-  // experimental group such triggering makes the page prerendered, while in the
-  // group doing only 'simple loads' it would have been a noop.
-  //
-  // Must not be called for prefetch loads themselves (which are never painted
-  // anyway). The |is_no_store| must be true iff the main resource has a
-  // "no-store" cache control HTTP header. The |was_hidden| tells whether the
-  // the page was hidden at least once between starting the load and registering
-  // the FCP.
-  void RecordNoStateFirstContentfulPaint(const GURL& url,
-                                         bool is_no_store,
-                                         bool was_hidden,
-                                         base::TimeDelta time);
 
   static PrerenderManagerMode GetMode() { return mode_; }
   static void SetMode(PrerenderManagerMode mode) { mode_ = mode; }
@@ -530,6 +514,10 @@ class PrerenderManager : public content::RenderProcessHostObserver,
 
   // The profile that owns this PrerenderManager.
   Profile* profile_;
+
+  // The delegate that allows content embedder to override the logic in this
+  // class.
+  std::unique_ptr<PrerenderManagerDelegate> delegate_;
 
   // All running prerenders. Sorted by expiry time, in ascending order.
   PrerenderDataVector active_prerenders_;

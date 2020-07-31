@@ -10,8 +10,10 @@
 
 namespace credential_provider {
 // Time parameters to control validity of the offline session.
-extern const char kKeyLastSuccessfulOnlineLoginMillis[];
+extern const char kKeyLastTokenValid[];
 extern const char kKeyValidityPeriodInDays[];
+// DEPRECATED
+extern const char kKeyLastSuccessfulOnlineLoginMillis[];
 // Registry parameters for gcpw.
 extern const wchar_t kKeyAcceptTos[];
 // Registry parameter controlling whether features related to GEM

@@ -1088,29 +1088,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   }
 }
 
-// Check that a prefetch followed by a load produces the appropriate
-// histograms. Note that other histogram testing is done in
-// browser/page_load_metrics, in particular, testing the combinations of
-// Warm/Cold and Cacheable/NoCacheable.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHistograms) {
-  PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
-
-  test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
-      test_utils::FirstContentfulPaintManagerWaiter::Create(
-          GetPrerenderManager());
-  ui_test_utils::NavigateToURL(current_browser(),
-                               src_server()->GetURL(kPrefetchPage));
-  fcp_waiter->Wait();
-
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_NoStatePrefetchResponseTypes", 2);
-  histogram_tester().ExpectTotalCount("Prerender.websame_PrefetchAge", 1);
-}
-
 // Checks the prefetch of an img tag.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchImage) {
   GURL main_page_url = GetURLWithReplacement(

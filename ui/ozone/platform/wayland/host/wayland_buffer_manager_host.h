@@ -29,6 +29,7 @@
 namespace ui {
 
 class WaylandConnection;
+class WaylandSubsurface;
 class WaylandWindow;
 class WaylandSurface;
 
@@ -83,6 +84,10 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   void OnWindowAdded(WaylandWindow* window) override;
   void OnWindowRemoved(WaylandWindow* window) override;
   void OnWindowConfigured(WaylandWindow* window) override;
+  void OnSubsurfaceAdded(WaylandWindow* window,
+                         WaylandSubsurface* subsurface) override;
+  void OnSubsurfaceRemoved(WaylandWindow* window,
+                           WaylandSubsurface* subsurface) override;
 
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);

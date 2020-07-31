@@ -50,7 +50,8 @@ void CaptionController::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kLiveCaptionEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterFilePathPref(prefs::kSODAPath, base::FilePath());
+  registry->RegisterFilePathPref(prefs::kSodaBinaryPath, base::FilePath());
+  registry->RegisterFilePathPref(prefs::kSodaEnUsConfigPath, base::FilePath());
 }
 
 void CaptionController::Init() {

@@ -1647,6 +1647,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7791011319128895129">Óútgefið</translation>
 <translation id="7791196057686275387">Rúlla</translation>
 <translation id="7791543448312431591">Bæta við</translation>
+<translation id="7792318290931435557">Birta eina síðu</translation>
 <translation id="7798389633136518089">Hunsað þar sem reglan er ekki stillt í skýinu.</translation>
 <translation id="7800304661137206267">Tengingin er dulkóðuð með <ph name="CIPHER" />, <ph name="MAC" /> er notað fyrir skilaboðasannvottun og <ph name="KX" /> sem aðferð til að skiptast á lyklum.</translation>
 <translation id="7802523362929240268">Vefsvæðið er traust</translation>
@@ -1742,6 +1743,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8220146938470311105">C7/C6 (umslag)</translation>
 <translation id="8221250263817408492">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chromium mælir með því að þú farir á <ph name="WEBSITE_1" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð og breytir því núna.</translation>
 <translation id="8225771182978767009">Sá sem setti upp þessa tölvu valdi að loka fyrir þetta vefsvæði.</translation>
+<translation id="8228419419708659934">Birta tvær síður</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Hitastig grunns</translation>
 <translation id="8238581221633243064">Opna síðu í nýjum huliðsflipa</translation>

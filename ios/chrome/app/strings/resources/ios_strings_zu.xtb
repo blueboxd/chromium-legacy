@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Ayikwazi ukulondoloza isithombe</translation>
 <translation id="1180526666083833456">Vumelanisa uphinde wenze kube ngekwakho kumadivayisi.</translation>
 <translation id="1181037720776840403">Susa</translation>
+<translation id="1185569544548277362">Okusha: Ungenza i-Chrome ibe ngokuzenzakalelayo kwakho. <ph name="BEGIN_LINK" />Vula Amasethingi<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Ukusesha okusha</translation>
 <translation id="1209206284964581585">Fihla okwamanje</translation>
 <translation id="1219674500290482172">Ayikwazi ukuxhuma ku-inthanethi</translation>
@@ -367,6 +368,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="5407969256130905701">Lahla izinguquko</translation>
 <translation id="5409365236829784218">Azikho izinhlelo zokusebenza ezingafakwa ezingavula leli fayela.</translation>
 <translation id="5416022985862681400">Izinsuku ezingu-7 zokugcina</translation>
+<translation id="543338862236136125">Hlela iphasiwedi</translation>
 <translation id="5433691172869980887">Igama lomsebenzisi likopishiwe</translation>
 <translation id="54401264925851789">Ulwazi lekhasi lokuvikela</translation>
 <translation id="5443952882982198570">Amakhadi wesikweletu</translation>
@@ -638,6 +640,7 @@ Amasayithi angasebenzisa amakhukhi ukubona umsebenzi wakho wokuphequlula kumasay
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Amathebhu <ph name="FIRST_VISIBLE_TAB" /> nge-<ph name="LAST_VISIBLE_TAB" /> kwangu-<ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Okusha</translation>
 <translation id="8532105204136943229">Unyaka wokuphelelwa yisikhathi</translation>
+<translation id="8533166274275423134">Ivuliwe Kwenye Indawo</translation>
 <translation id="8534481786647257214">Okuthunyelwe kwe-Google+ kuqedile.</translation>
 <translation id="8548878600947630424">Thola kukhasi....</translation>
 <translation id="8574235780160508979">Imigomo yesevisi ye-Chrome iyashintsha ngomhla kaMashi 31. <ph name="BEGIN_LINK" />Sicela ubuyekeze<ph name="END_LINK" /></translation>

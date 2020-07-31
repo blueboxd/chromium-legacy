@@ -968,10 +968,25 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
     request->hmac_secret = false;
   }
 
-  if (request->attestation_preference !=
-          AttestationConveyancePreference::kNone &&
-      !authenticator->SupportsEnterpriseAttestation()) {
-    request->attestation_preference = AttestationConveyancePreference::kNone;
+  if (!authenticator->SupportsEnterpriseAttestation()) {
+    switch (request->attestation_preference) {
+      case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
+        // If enterprise attestation is approved by policy then downgrade to
+        // "direct" if not supported. Otherwise we have the strange behaviour
+        // that kEnterpriseApprovedByBrowser turns into "none" on Windows
+        // without EP support, or macOS/Chrome OS platform authenticators, but
+        // "direct" elsewhere.
+        request->attestation_preference =
+            AttestationConveyancePreference::kDirect;
+        break;
+      case AttestationConveyancePreference::
+          kEnterpriseIfRPListedOnAuthenticator:
+        request->attestation_preference =
+            AttestationConveyancePreference::kNone;
+        break;
+      default:
+        break;
+    }
   }
 }
 

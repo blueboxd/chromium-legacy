@@ -91,6 +91,15 @@ class ToolbarController {
         cr.ui.Command);
 
     /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.invokeSharesheetCommand_ = assertInstanceof(
+        queryRequiredElement(
+            '#invoke-sharesheet', assert(this.toolbar_.ownerDocument.body)),
+        cr.ui.Command);
+
+    /**
      * @private {!HTMLElement}
      * @const
      */
@@ -135,6 +144,16 @@ class ToolbarController {
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
+
+    // Using CHANGE_THROTTLED because updateSharesheetCommand_() uses async
+    // API and can update the state out-of-order specially when updating to
+    // an empty selection.
+    this.selectionHandler_.addEventListener(
+        FileSelectionHandler.EventType.CHANGE_THROTTLED,
+        this.updateSharesheetCommand_.bind(this));
+
+    chrome.fileManagerPrivate.onAppsUpdated.addListener(
+        this.updateSharesheetCommand_.bind(this));
 
     this.cancelSelectionButton_.addEventListener(
         'click', this.onCancelSelectionButtonClicked_.bind(this));
@@ -291,5 +310,11 @@ class ToolbarController {
    */
   onToolbarButtonsMutated_() {
     this.locationLine_.truncate();
+  }
+
+  /** @private */
+  updateSharesheetCommand_() {
+    this.invokeSharesheetCommand_.canExecuteChange(
+        this.listContainer_.currentList);
   }
 }

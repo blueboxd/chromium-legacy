@@ -4902,11 +4902,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(media::kUseFakeDeviceForMediaStream)},
 
-    {"ash-drag-window-from-shelf",
-     flag_descriptions::kAshDragWindowFromShelfName,
-     flag_descriptions::kAshDragWindowFromShelfDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kDragFromShelfToHomeOrOverview)},
-
     {"intent-picker-pwa-persistence",
      flag_descriptions::kIntentPickerPWAPersistenceName,
      flag_descriptions::kIntentPickerPWAPersistenceDescription, kOsCrOS,

@@ -1121,6 +1121,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Poznámky na uzamknutej obrazovke sa automaticky ukladajú do aplikácie <ph name="LOCK_SCREEN_APP_NAME" />. Na uzamknutej obrazovke zostane posledná poznámka.</translation>
 <translation id="2353297238722298836">Kamera a mikrofón sú povolené</translation>
+<translation id="2355314311311231464">Poskytovanie bolo neúspešné, pretože sa nepodarilo načítať podrobnosti o vašom účte. Skúste to znova. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Zapnúť dynamický tethering</translation>
 <translation id="2356070529366658676">Opýtať sa</translation>
 <translation id="2357330829548294574">Odobrať používateľa <ph name="USER_NAME" /></translation>
@@ -1215,6 +1216,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2473195200299095979">Preložiť túto stránku</translation>
 <translation id="2475982808118771221">Vyskytla sa chyba</translation>
 <translation id="2476578072172137802">Nastavenia webu</translation>
+<translation id="2476974672882258506">Ak si chcete nainštalovať aplikáciu <ph name="PARALLELS_DESKTOP" />, vypnite Windows.</translation>
 <translation id="2478176599153288112">Povolenia súborov médií pre rozšírenie <ph name="EXTENSION" /></translation>
 <translation id="247949520305900375">Zdieľať zvuk</translation>
 <translation id="248003956660572823">Heslá neboli uložené</translation>
@@ -1305,6 +1307,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2572032849266859634">Bol udelený prístup k médiu <ph name="VOLUME_NAME" /> s povolením iba na čítanie.</translation>
 <translation id="2575247648642144396">Ikona sa zobrazí, keď sa na aktuálnej stránke bude dať použiť rozšírenie. Rozšírenie použijete kliknutím na ikonu alebo stlačením klávesov <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Nastaviť ako Chromebox pre videokonferencie</translation>
+<translation id="2579232805407578790">Nepodarilo sa pripojiť k serveru. Skontrolujte pripojenie k sieti a skúste to znova. Ak problém pretrváva, reštartujte svoj Chromebook. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Vždy povoliť hostiteľovi <ph name="HOST" /> sťahovať viacero súborov</translation>
 <translation id="258095186877893873">Dlhé</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1524,6 +1527,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2836635946302913370">Správca zakázal prihlasovanie pomocou tohto používateľského mena.</translation>
 <translation id="283669119850230892">Ak chcete používať sieť <ph name="NETWORK_ID" /> , musíte najskôr v časti uvedenej nižšie dokončiť pripojenie k internetu.</translation>
 <translation id="2838379631617906747">Inštalácia</translation>
+<translation id="2838835911926931318">Prihláste sa a synchronizujte si tak všetky záložky, heslá, históriu a ďalší obsah vo všetkých svojich zariadeniach</translation>
 <translation id="2839032553903800133">Boli zablokované upozornenia</translation>
 <translation id="2841013758207633010">Čas</translation>
 <translation id="2841837950101800123">Poskytovateľ</translation>
@@ -1583,6 +1587,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
     Správa zo servera: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Pridať galériu médií podľa adresára</translation>
 <translation id="2910318910161511225">Pripojte sa k sieti a skúste to znova</translation>
+<translation id="2910718431259223434">Vyskytol sa problém. Skúste to znova alebo kontaktujte vlastníka či správcu zariadenia. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Povoliť webom ukladať a čítať súbory cookie (odporučané)</translation>
 <translation id="2915102088417824677">Zobraziť denník aktivít</translation>
 <translation id="2915873080513663243">Automatické prehľadávanie</translation>
@@ -2322,6 +2327,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Rozšírenie bolo schválené}few{Boli schválené # rozšírenia}many{# extensions have been approved}other{Bolo schválených # rozšírení}}</translation>
 <translation id="3822559385185038546">Tento proxy server je vynútený správcom</translation>
 <translation id="3823310065043511710">Na používanie systému Linux sa vyžaduje minimálne <ph name="INSTALL_SIZE" /> voľného priestoru.</translation>
+<translation id="3824621460022590830">Token registrácie zariadenia je neplatný. Kontaktujte vlastníka či správcu zariadenia. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Váš správca zakázal pridávanie ďalších účtov Google</translation>
 <translation id="3827306204503227641">Pokračovať v povoľovaní doplnkov, ktoré nie sú v karanténe</translation>
 <translation id="3827774300009121996">&amp;Celá obrazovka</translation>
@@ -3275,6 +3281,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5079950360618752063">Použiť navrhované heslo</translation>
 <translation id="508059534790499809">Obnovenie tiketu Kerberos</translation>
 <translation id="5084230410268011727">Povoliť webom používať senzory pohybu a svetla</translation>
+<translation id="5084328598860513926">Poskytovanie bolo prerušené. Skúste to znova alebo kontaktujte vlastníka či správcu zariadenia. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Prebieha kontrola aktualizácií</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Obnoviť predvolenú domovskú stránku?</translation>
@@ -3674,6 +3681,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="557722062034137776">Obnovenie vášho zariadenia neovplyvní účty Google ani údaje synchronizované do týchto účtov. Všetky súbory uložené miestne v zariadení sa však odstránia.</translation>
 <translation id="5578059481725149024">Automaticky prihlasovať</translation>
 <translation id="558170650521898289">Overovanie ovládačov hardvéru systému Microsoft Windows</translation>
+<translation id="5581972110672966454">Zariadenie sa nepodarilo pripojiť k doméne. Skúste to znova alebo kontaktujte vlastníka či správcu zariadenia. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Hlavná ponuka</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Chcete uložiť používateľské meno?</translation>
@@ -3746,6 +3754,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5667546120811588575">Nastavuje sa služba Google Play...</translation>
 <translation id="5669267381087807207">Aktivuje sa</translation>
 <translation id="5669691691057771421">Zadanie nového kódu PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Boli zablokované obrázky</translation>
 <translation id="5671658447180261823">Odstrániť návrh <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Toto zariadenie bude do obdobia <ph name="MONTH_AND_YEAR" /> dostávať automatické aktualizácie softvéru a zabezpečenia. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
@@ -5392,6 +5401,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7764225426217299476">Pridať adresu</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Presunúť</translation>
+<translation id="7766082757934713382">Pomáha znížiť spotrebu sieťových dát pozastavením automatických aktualizácií aplikácií a systému</translation>
 <translation id="7766807826975222231">Spustiť prehliadku</translation>
 <translation id="7766838926148951335">Prijať povolenia</translation>
 <translation id="7768770796815395237">Zmeniť</translation>
@@ -6303,6 +6313,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="885701979325669005">Úložisko</translation>
 <translation id="8859057652521303089">Vyberte svoj jazyk:</translation>
 <translation id="8859174528519900719">Podrámec: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Zmluvné podmienky sa nepodarilo načítať</translation>
 <translation id="8859662783913000679">Účet rodiča</translation>
 <translation id="8862003515646449717">Prepnite na rýchly prehliadač</translation>
 <translation id="8863753581171631212">Otvoriť odkaz v novom okne aplikácie <ph name="APP" /></translation>
@@ -6571,6 +6582,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="920045321358709304">Hľadať vyhľadávačom <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Budú vymazané všetky offline údaje</translation>
 <translation id="9201220332032049474">Možnosti zámky obrazovky</translation>
+<translation id="9201842707396338580">Vyskytol sa problém. Kontaktujte vlastníka či správcu zariadenia. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Profilovanie povolené</translation>
 <translation id="9203904171912129171">Výber zariadenia</translation>
 <translation id="9203962528777363226">Správca tohto zariadenia zakázal pridávanie nových používateľov</translation>
@@ -6642,6 +6654,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="983511809958454316">Táto funkcia nie je v režime VR podporovaná</translation>
 <translation id="984275831282074731">Spôsoby platby</translation>
 <translation id="98515147261107953">Na šírku</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Všeobecné</translation>
 <translation id="987897973846887088">K dispozícii nie sú žiadne obrázky</translation>
 <translation id="988978206646512040">Prístupová fráza nemôže byť prázdna</translation>

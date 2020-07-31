@@ -190,6 +190,8 @@ if (enable_pdf) {
       "ppapi_migration/image.h",
       "ppapi_migration/input_event_conversions.cc",
       "ppapi_migration/input_event_conversions.h",
+      "ppapi_migration/value_conversions.cc",
+      "ppapi_migration/value_conversions.h",
     ]
 
     configs += [ ":pdf_common_config" ]

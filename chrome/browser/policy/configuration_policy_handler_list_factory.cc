@@ -399,6 +399,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSharedClipboardEnabled,
     prefs::kSharedClipboardEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kDefaultSensorsSetting,
+    prefs::kManagedDefaultSensorsSetting,
+    base::Value::Type::INTEGER },
+  { key::kSensorsAllowedForUrls,
+    prefs::kManagedSensorsAllowedForUrls,
+    base::Value::Type::LIST },
+  { key::kSensorsBlockedForUrls,
+    prefs::kManagedSensorsBlockedForUrls,
+    base::Value::Type::LIST },
 
   // First run import.
   { key::kImportBookmarks,

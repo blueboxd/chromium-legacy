@@ -62,7 +62,7 @@ class WaylandSurface {
 
  private:
   WaylandConnection* const connection_;
-  WaylandWindow* root_window_ = nullptr;
+  WaylandWindow* const root_window_;
   wl::Object<wl_surface> surface_;
 
   // Wayland's scale factor for the output that this window currently belongs

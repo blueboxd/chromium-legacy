@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromium gat ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
 <translation id="3639997914391704523">Chromium getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum</translation>
 <translation id="3805899903892079518">Chromium hefur ekki aðgang að myndunum þínum eða myndskeiðum. Veittu aðgang í iOS Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="4166206055865952171">Gerðu Chromium að sjálfgefnum vafra</translation>
 <translation id="4555020257205549924">Þegar þessi eiginleiki er virkur mun Chromium bjóðast til að þýða vefsíður sem eru ritaðar á öðru tungumáli með Google Translate. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Kveiktu á Chromium skanna</translation>
 <translation id="4787850887676698916">Flipar sem þú hefur opnað í Chromium í öðrum tækjum birtast hér.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Fáðu betri upplifun í Chromium út frá staðsetningu þinni.</translation>
 <translation id="6820823224820483452">Chromium gat ekki athugað öll aðgangsorð. Reyndu aftur á morgun.</translation>
 <translation id="7099326575020694068">Chromium getur ekki notað myndavélina á tvískiptum skjá</translation>
+<translation id="7118091470949186573">Núna getur þú notað Chromium hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
 <translation id="7173114856073700355">Opna stillingar</translation>
 <translation id="7208566199746267865">Chromium sparar þér tíma með því að færa reikningana þína yfir á vefinn. Þú getur bætt við reikningum eða fjarlægt þá í stillingum.</translation>
 <translation id="7269362888766543920">Einhverjar viðbætur valda því að Chromium hrynur. Prófaðu að fjarlægja þær.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Til að gera Chromium að sjálfgefnum vafra:
+        1. Farðu í „Stillingar“. 
+        2. Ýttu á „Default Browser App“ (sjálfgefið vafraforrit).
+        3. Veldu Chromium.</translation>
 <translation id="7357211569052832586">Völdu gögnin hafa verið fjarlægð af Chromium og samstilltum tækjum. Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil, svo sem yfir leit og virkni í annarri þjónustu Google, á history.google.com.</translation>
 <translation id="7400689562045506105">Notaðu Chromium hvar sem er</translation>
 <translation id="766897673682622022">Aðgangsorðið þitt var afhjúpað vegna öryggisbrots. Chromium mælir með því að þú breytir aðgangsorðinu núna.</translation>

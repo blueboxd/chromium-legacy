@@ -289,8 +289,8 @@ TEST_P(ContextualTooltipTest, DragHandleNudgeMetrics) {
   // Tracker should remain active when exiting the nudge state via kOther
   // but should reset visibility. Tracker should be deactivated after gesture is
   // performed.
-  contextual_tooltip::LogNudgeDismissedMetrics(TooltipType::kInAppToHome,
-                                               DismissNudgeReason::kOther);
+  contextual_tooltip::MaybeLogNudgeDismissedMetrics(TooltipType::kInAppToHome,
+                                                    DismissNudgeReason::kOther);
   EXPECT_TRUE(
       CanRecordGesturePerformedMetricForTesting(TooltipType::kInAppToHome));
   EXPECT_FALSE(CanRecordNudgeHiddenMetricForTesting(TooltipType::kInAppToHome));

@@ -573,6 +573,10 @@ void WebFrameWidgetImpl::ResetZoomLevelForTesting() {
   NOTREACHED();
 }
 
+void WebFrameWidgetImpl::SetDeviceScaleFactorForTesting(float factor) {
+  NOTREACHED();
+}
+
 void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
     mojom::blink::IntrinsicSizingInfoPtr sizing_info) {
   GetAssociatedFrameWidgetHost()->IntrinsicSizingInfoChanged(

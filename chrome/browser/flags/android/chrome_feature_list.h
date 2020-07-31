@@ -50,6 +50,8 @@ extern const base::Feature kContactsPickerSelectAll;
 extern const base::Feature kContentIndexingDownloadHome;
 extern const base::Feature kContentIndexingNTP;
 extern const base::Feature kContextMenuCopyImage;
+extern const base::Feature kContextMenuEnableLensShoppingAllowlist;
+extern const base::Feature kContextMenuPerformanceInfo;
 extern const base::Feature kContextMenuSearchWithGoogleLens;
 extern const base::Feature kContextMenuShopWithGoogleLens;
 extern const base::Feature kContextMenuSearchAndShopWithGoogleLens;

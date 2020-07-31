@@ -679,6 +679,11 @@ message ClientDownloadRequest {
 
     // Indicates if the given file is password protected.
     optional bool is_encrypted = 7;
+
+    // Only used on the client side, since filtering for executable files
+    // happens after the utility process has finished analyzing the archive.
+    optional bool is_executable = 8;
+    optional bool is_archive = 9;
   }
 
   repeated ArchivedBinary archived_binary = 22;

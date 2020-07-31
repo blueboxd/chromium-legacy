@@ -15,9 +15,9 @@
 #include "remoting/base/protobuf_http_request.h"
 #include "remoting/base/protobuf_http_request_config.h"
 #include "remoting/base/protobuf_http_status.h"
-#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
-#include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/signaling/ftl_services_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
@@ -80,11 +80,7 @@ class FtlRegistrationManager::RegistrationClientImpl final
   void CancelPendingRequests() override;
 
  private:
-  using Registration =
-      google::internal::communications::instantmessaging::v1::Registration;
-
   ProtobufHttpClient http_client_;
-  std::unique_ptr<Registration::Stub> registration_stub_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationClientImpl);
 };
@@ -92,7 +88,7 @@ class FtlRegistrationManager::RegistrationClientImpl final
 FtlRegistrationManager::RegistrationClientImpl::RegistrationClientImpl(
     OAuthTokenGetter* token_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : http_client_(FtlGrpcContext::GetServerEndpoint(),
+    : http_client_(FtlServicesContext::GetServerEndpoint(),
                    token_getter,
                    url_loader_factory) {}
 
@@ -133,7 +129,7 @@ FtlRegistrationManager::FtlRegistrationManager(
     std::unique_ptr<FtlDeviceIdProvider> device_id_provider)
     : registration_client_(std::move(registration_client)),
       device_id_provider_(std::move(device_id_provider)),
-      sign_in_backoff_(&FtlGrpcContext::GetBackoffPolicy()) {
+      sign_in_backoff_(&FtlServicesContext::GetBackoffPolicy()) {
   DCHECK(device_id_provider_);
 }
 
@@ -171,8 +167,8 @@ std::string FtlRegistrationManager::GetFtlAuthToken() const {
 
 void FtlRegistrationManager::DoSignInGaia(DoneCallback on_done) {
   ftl::SignInGaiaRequest request;
-  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader();
-  request.set_app(FtlGrpcContext::GetChromotingAppIdentifier());
+  *request.mutable_header() = FtlServicesContext::CreateRequestHeader();
+  request.set_app(FtlServicesContext::GetChromotingAppIdentifier());
   request.set_mode(ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT);
 
   *request.mutable_register_data()->mutable_device_id() =

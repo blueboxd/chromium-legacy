@@ -1118,6 +1118,7 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Белешке на закључаном екрану се аутоматски чувају у апликацији <ph name="LOCK_SCREEN_APP_NAME" />. Најновија белешка ће остати на закључаном екрану.</translation>
 <translation id="2353297238722298836">Камера и микрофон су дозвољени</translation>
+<translation id="2355314311311231464">Додела није успела јер преузимање детаља о налогу није успело. Пробајте поново. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Укључи тренутно привезивање</translation>
 <translation id="2356070529366658676">Питај</translation>
 <translation id="2357330829548294574">Уклоните корисника <ph name="USER_NAME" /></translation>
@@ -1213,6 +1214,7 @@
 <translation id="2473195200299095979">Преведите ову страницу</translation>
 <translation id="2475982808118771221">Дошло је до грешке</translation>
 <translation id="2476578072172137802">Подешавања сајта</translation>
+<translation id="2476974672882258506">Искључите Windows да бисте деинсталирали <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Дозволе за медијске датотеке за „<ph name="EXTENSION" />“</translation>
 <translation id="247949520305900375">Дели звук</translation>
 <translation id="248003956660572823">Лозинке нису сачуване</translation>
@@ -1303,6 +1305,7 @@
 <translation id="2572032849266859634">Одобрен је приступ за <ph name="VOLUME_NAME" /> само за читање.</translation>
 <translation id="2575247648642144396">Ова икона ће бити видљива када додатак буде могао да функционише на тренутној страници. Користите овај додатак кликом на икону или притиском на <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Подеси као Chromebox за састанке</translation>
+<translation id="2579232805407578790">Повезивање са сервером није успело. Проверите мрежну везу и пробајте поново. Ако се проблем настави, рестартујте Chromebook. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Увек дозволи хосту <ph name="HOST" /> да преузима више датотека</translation>
 <translation id="258095186877893873">Дуго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1522,6 +1525,7 @@
 <translation id="2836635946302913370">Администратор је онемогућио пријављивање помоћу овог корисничког имена.</translation>
 <translation id="283669119850230892">Да бисте користили мрежу <ph name="NETWORK_ID" />, најпре успоставите везу са интернетом у наставку.</translation>
 <translation id="2838379631617906747">Инсталира се</translation>
+<translation id="2838835911926931318">Пријавите се да бисте синхронизовали обележиваче, лозинке, историју и друго на свим уређајима</translation>
 <translation id="2839032553903800133">Обавештења су блокирана</translation>
 <translation id="2841013758207633010">Време</translation>
 <translation id="2841837950101800123">Добављач</translation>
@@ -1581,6 +1585,7 @@
     Порука сервера: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Додавање галерије медија према директоријуму</translation>
 <translation id="2910318910161511225">Повежите се на мрежу и пробајте поново</translation>
+<translation id="2910718431259223434">Дошло је до грешке. Пробајте поново или се обратите администратору. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Дозволи сајтовима да чувају и читају податке колачића (препоручује се)</translation>
 <translation id="2915102088417824677">Прикажи евиденцију активности</translation>
 <translation id="2915873080513663243">Аутоматско прелажење садржаја</translation>
@@ -2320,6 +2325,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Додатак је одобрен}one{# додатак је одобрен}few{# додатка су одобрена}other{# додатака је одобрено}}</translation>
 <translation id="3822559385185038546">Администратор је наметнуо овај прокси</translation>
 <translation id="3823310065043511710">За Linux се препоручује најмање <ph name="INSTALL_SIZE" /> простора.</translation>
+<translation id="3824621460022590830">Токен за регистрацију уређаја је неважећи. Обратите се власнику уређаја или администратору. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Администратор је онемогућио додавање још Google налога</translation>
 <translation id="3827306204503227641">Настави да дозвољаваш додатне компоненте које су изван заштићеног окружења</translation>
 <translation id="3827774300009121996">&amp;Цео екран</translation>
@@ -3273,6 +3279,7 @@
 <translation id="5079950360618752063">Користите предложену лозинку</translation>
 <translation id="508059534790499809">Освежи Kerberos тикет</translation>
 <translation id="5084230410268011727">Дозволи сајтовима да користе сензоре за покрет и светло</translation>
+<translation id="5084328598860513926">Ток доделе је прекинут. Пробајте поново или се обратите администратору. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Тражење ажурирања</translation>
 <translation id="5086082738160935172">Уређај са интерфејсом за људе</translation>
 <translation id="5086874064903147617">Желите да вратите подразумевану почетну страницу?</translation>
@@ -3672,6 +3679,7 @@
 <translation id="557722062034137776">Враћање уређаја на почетна подешавања не утиче на Google налоге нити било какве податке синхронизоване са њима. Међутим, све датотеке које су локално сачуване на уређају ће бити избрисане.</translation>
 <translation id="5578059481725149024">Аутоматско пријављивање</translation>
 <translation id="558170650521898289">Верификација управљачких програма за хардвер у Microsoft Windows-у</translation>
+<translation id="5581972110672966454">Придруживање домену није успело. Пробајте поново или се обратите администратору. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Главни мени</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Желите ли да сачувате корисничко име?</translation>
@@ -3745,6 +3753,7 @@
 <translation id="5667546120811588575">Google Play се подешава…</translation>
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5669691691057771421">Унесите нови PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Слике су блокиране</translation>
 <translation id="5671658447180261823">Уклони предлог <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Овај уређај ће добијати аутоматска ажурирања софтвера и безбедносна ажурирања до: <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
@@ -5391,6 +5400,7 @@
 <translation id="7764225426217299476">Додајте адресу</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> са <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Премести</translation>
+<translation id="7766082757934713382">Паузирањем аутоматских ажурирања апликација и система помаже да се смањи потрошња података на мрежи</translation>
 <translation id="7766807826975222231">Крени у обилазак</translation>
 <translation id="7766838926148951335">Прихвати дозволе</translation>
 <translation id="7768770796815395237">Промените</translation>
@@ -6303,6 +6313,7 @@
 <translation id="885701979325669005">Меморијски простор</translation>
 <translation id="8859057652521303089">Изаберите језик:</translation>
 <translation id="8859174528519900719">Подоквир: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Учитавање услова коришћења услуге није успело</translation>
 <translation id="8859662783913000679">Налог родитеља</translation>
 <translation id="8862003515646449717">Пређите на брз прегледач</translation>
 <translation id="8863753581171631212">Отвори линк у новом <ph name="APP" /> прозору</translation>
@@ -6571,6 +6582,7 @@
 <translation id="920045321358709304">Претражи <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Бришу се сви офлајн подаци</translation>
 <translation id="9201220332032049474">Опције закључавања екрана</translation>
+<translation id="9201842707396338580">Дошло је до грешке. Обратите се власнику уређаја или администратору. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Профилисање је омогућено</translation>
 <translation id="9203904171912129171">Изаберите уређај</translation>
 <translation id="9203962528777363226">Администратор овог уређаја је онемогућио додавање нових корисника</translation>
@@ -6642,6 +6654,7 @@
 <translation id="983511809958454316">Ова функција није подржана у ВР-у</translation>
 <translation id="984275831282074731">Начини плаћања</translation>
 <translation id="98515147261107953">Хоризонтално</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Опште</translation>
 <translation id="987897973846887088">Нема доступних слика</translation>
 <translation id="988978206646512040">Поље за приступну фразу не може да буде празно</translation>

@@ -502,10 +502,8 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
     SetUserProperty((BSTR)sid, kUserEmail, L"");
   }
 
-  ASSERT_EQ(S_OK,
-            SetUserProperty(
-                OLE2CW(sid),
-                base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis), L"0"));
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid),
+                                  base::UTF8ToUTF16(kKeyLastTokenValid), L"0"));
   if (is_offline_validity_expired) {
     // Setting validity period to zero enforces gcpw login irrespective of
     // whether internet is available or not.
@@ -629,10 +627,9 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
     // Set token handle to a non-empty value in registry.
     ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserTokenHandle,
                                     L"non-empty-token-handle"));
-    ASSERT_EQ(S_OK, SetUserProperty(
-                        OLE2CW(sid),
-                        base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
-                        L"0"));
+    ASSERT_EQ(S_OK,
+              SetUserProperty(OLE2CW(sid),
+                              base::UTF8ToUTF16(kKeyLastTokenValid), L"0"));
     if (is_offline_validity_expired) {
       // Setting validity period to zero enforces gcpw login irrespective of
       // whether internet is available or not.

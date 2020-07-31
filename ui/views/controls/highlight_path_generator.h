@@ -26,8 +26,6 @@ class View;
 // effects.
 class VIEWS_EXPORT HighlightPathGenerator {
  public:
-  // TODO(http://crbug.com/1056490): Remove this constructor in favor of the one
-  // that takes |insets|.
   HighlightPathGenerator();
   explicit HighlightPathGenerator(const gfx::Insets& insets);
   virtual ~HighlightPathGenerator();
@@ -133,15 +131,11 @@ class VIEWS_EXPORT PillHighlightPathGenerator : public HighlightPathGenerator {
       delete;
 
   // HighlightPathGenerator:
-  SkPath GetHighlightPath(const View* view) override;
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override;
 };
 
 void VIEWS_EXPORT InstallPillHighlightPathGenerator(View* view);
 
-// TODO(http://crbug.com/1056490): Investigate if we can make |radius| optional
-// for FixedSizeCircleHighlightPathGenerator and
-// RoundRectHighlightPathGenerator, and combine them with
-// CircleHighlightPathGenerator and PillHighlightPathGenerator respectively.
 // Sets a centered fixed-size circular highlight path.
 class VIEWS_EXPORT FixedSizeCircleHighlightPathGenerator
     : public HighlightPathGenerator {

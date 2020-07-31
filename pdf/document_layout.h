@@ -14,6 +14,10 @@
 #include "ppapi/cpp/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+class Value;
+}
+
 namespace pp {
 class Var;
 }  // namespace pp
@@ -48,8 +52,8 @@ class DocumentLayout final {
       return !(lhs == rhs);
     }
 
-    // Serializes layout options to a pp::Var.
-    pp::Var ToVar() const;
+    // Serializes layout options to a base::Value.
+    base::Value ToValue() const;
 
     // Deserializes layout options from a pp::Var.
     void FromVar(const pp::Var& var);

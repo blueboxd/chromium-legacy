@@ -31,18 +31,17 @@
 #include "base/win/win_util.h"
 #include "build/build_config.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/extension/extension_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/setup/gcpw_files.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
-
-constexpr base::FilePath::CharType kCredentialProviderSetupExe[] =
-    FILE_PATH_LITERAL("gcp_setup.exe");
 
 class GcpSetupTest : public ::testing::Test {
  protected:
@@ -107,9 +106,11 @@ class GcpSetupTest : public ::testing::Test {
   std::unique_ptr<base::ScopedPathOverride> dll_path_override_;
   base::FilePath module_path_;
   base::string16 product_version_;
+  FakeGCPWFiles fake_gcpw_files_;
   FakeOSUserManager fake_os_user_manager_;
   FakeOSProcessManager fake_os_process_manager_;
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
+  FakeOSServiceManager fake_os_service_manager_;
   FakesForTesting fakes_;
 };
 
@@ -158,12 +159,22 @@ void GcpSetupTest::ExpectAllFilesToExist(
   base::FilePath root = installed_path_for_version(product_version);
   EXPECT_EQ(exist, base::PathExists(root));
 
-  const base::FilePath::CharType* const* filenames;
-  size_t number_of_files;
-  GetInstalledFileBasenames(&filenames, &number_of_files);
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_READ));
+  DWORD copy_extension_reg;
+  key.ReadValueDW(extension::kEnableGCPWExtension, &copy_extension_reg);
+  bool extension_found = false;
+  auto install_files = GCPWFiles::Get()->GetEffectiveInstallFiles();
 
-  for (size_t i = 0; i < number_of_files; ++i)
-    EXPECT_EQ(exist, base::PathExists(root.Append(filenames[i])));
+  for (auto& install_file : install_files) {
+    if (kCredentialProviderExtensionExe.find(install_file) !=
+        base::FilePath::StringType::npos)
+      extension_found = true;
+    EXPECT_EQ(exist, base::PathExists(root.Append(install_file)));
+  }
+
+  EXPECT_EQ(copy_extension_reg == 1, extension_found);
 }
 
 void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
@@ -284,6 +295,30 @@ TEST_F(GcpSetupTest, DoInstall) {
       fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
 }
 
+TEST_F(GcpSetupTest, DoInstallWithExtension) {
+  logging::ResetEventSourceForTesting();
+
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                                      KEY_SET_VALUE | KEY_WOW64_32KEY));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(extension::kEnableGCPWExtension, 1));
+
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+  ExpectAllFilesToExist(true, product_version());
+  ExpectCredentialProviderToBeRegistered(true, product_version());
+  ExpectRequiredRegistryEntriesToBePresent();
+
+  EXPECT_FALSE(
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
+  EXPECT_FALSE(fake_scoped_lsa_policy_factory()
+                   ->private_data()[kLsaKeyGaiaPassword]
+                   .empty());
+  EXPECT_EQ(
+      kDefaultGaiaAccountName,
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
+}
+
 TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
   logging::ResetEventSourceForTesting();
 
@@ -350,12 +385,10 @@ TEST_F(GcpSetupTest, DoInstallOverOldLockedInstall) {
   ExpectAllFilesToExist(true, product_version());
 
   // The locked file will still exist, the others are gone.
-  const base::FilePath::CharType* const* filenames;
-  size_t count;
-  GetInstalledFileBasenames(&filenames, &count);
-  for (size_t i = 0; i < count; ++i) {
+  auto install_files = GCPWFiles::Get()->GetEffectiveInstallFiles();
+  for (auto& install_file : install_files) {
     const base::FilePath path =
-        installed_path_for_version(old_version).Append(filenames[i]);
+        installed_path_for_version(old_version).Append(install_file);
     EXPECT_EQ(path == dll_path, base::PathExists(path));
   }
 }
@@ -386,12 +419,11 @@ TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
   ExpectAllFilesToExist(true, product_version());
 
   // The locked file will still exist, the others are gone.
-  const base::FilePath::CharType* const* filenames;
-  size_t count;
-  GetInstalledFileBasenames(&filenames, &count);
-  for (size_t i = 0; i < count; ++i) {
+  auto install_files = GCPWFiles::Get()->GetEffectiveInstallFiles();
+
+  for (auto& install_file : install_files) {
     const base::FilePath path =
-        installed_path_for_version(old_version).Append(filenames[i]);
+        installed_path_for_version(old_version).Append(install_file);
     EXPECT_EQ(path == dll_path, base::PathExists(path));
   }
 
@@ -409,6 +441,34 @@ TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
 
 TEST_F(GcpSetupTest, DoUninstall) {
   logging::ResetEventSourceForTesting();
+
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+  CreateSentinelFileToSimulateCrash(product_version());
+  logging::ResetEventSourceForTesting();
+
+  ASSERT_EQ(S_OK,
+            DoUninstall(module_path(), installed_path(), fakes_for_testing()));
+  ExpectAllFilesToExist(false, product_version());
+  ExpectSentinelFileToNotExist(product_version());
+  ExpectCredentialProviderToBeRegistered(false, product_version());
+  EXPECT_TRUE(
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
+  EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                  ->private_data()[kLsaKeyGaiaPassword]
+                  .empty());
+  EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                  ->private_data()[kLsaKeyGaiaUsername]
+                  .empty());
+}
+
+TEST_F(GcpSetupTest, DoUninstallWithExtension) {
+  logging::ResetEventSourceForTesting();
+
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                                      KEY_SET_VALUE | KEY_WOW64_32KEY));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(extension::kEnableGCPWExtension, 1));
 
   ASSERT_EQ(S_OK,
             DoInstall(module_path(), product_version(), fakes_for_testing()));

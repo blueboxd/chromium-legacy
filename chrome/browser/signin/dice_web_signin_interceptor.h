@@ -112,6 +112,8 @@ class DiceWebSigninInterceptor : public KeyedService,
                            InterceptionInProgress);
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
                            NoInterceptionWithOneAccount);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
+                           ProfileCreationDisallowed);
 
   // Cancels any current signin interception and resets the interceptor to its
   // initial state.

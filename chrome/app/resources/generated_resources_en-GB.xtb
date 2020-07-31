@@ -1121,6 +1121,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Lock screen notes are automatically saved to <ph name="LOCK_SCREEN_APP_NAME" />. Your most recent note will remain on the lock screen.</translation>
 <translation id="2353297238722298836">Camera and microphone allowed</translation>
+<translation id="2355314311311231464">Provisioning failed because your account details could not be retrieved. Try again. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Turn on Instant Tethering</translation>
 <translation id="2356070529366658676">Ask</translation>
 <translation id="2357330829548294574">Remove <ph name="USER_NAME" /></translation>
@@ -1216,6 +1217,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2473195200299095979">Translate this page</translation>
 <translation id="2475982808118771221">An error occurred</translation>
 <translation id="2476578072172137802">Site settings</translation>
+<translation id="2476974672882258506">Shut down Windows to uninstall <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Media-File Permissions for "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Share audio</translation>
 <translation id="248003956660572823">Passwords not saved</translation>
@@ -1306,6 +1308,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2572032849266859634">Read-only access to <ph name="VOLUME_NAME" /> has been granted.</translation>
 <translation id="2575247648642144396">This icon will be visible when the extension can act on the current page. Use this extension by clicking on the icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Set up as Chromebox for meetings</translation>
+<translation id="2579232805407578790">Couldn’t connect with the server. Please check your network connection and try again. If the problem persists, restart your Chromebook. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Always allow <ph name="HOST" /> to download multiple files</translation>
 <translation id="258095186877893873">Long</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2836635946302913370">Signing in with this username has been disabled by your administrator.</translation>
 <translation id="283669119850230892">To use the network <ph name="NETWORK_ID" />, first complete your connection to the Internet below.</translation>
 <translation id="2838379631617906747">Installing</translation>
+<translation id="2838835911926931318">Sign in to sync your bookmarks, passwords, history and more on all your devices</translation>
 <translation id="2839032553903800133">Notifications blocked</translation>
 <translation id="2841013758207633010">Time</translation>
 <translation id="2841837950101800123">Provider</translation>
@@ -1584,6 +1588,7 @@ You can manage this account’s settings by installing the Family Link app on yo
     Server message: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Add Media Gallery by Directory</translation>
 <translation id="2910318910161511225">Connect to a network and try again</translation>
+<translation id="2910718431259223434">Something went wrong. Please try again or contact your device owner or administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2915102088417824677">View activity log</translation>
 <translation id="2915873080513663243">Auto-scan</translation>
@@ -2323,6 +2328,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{An extension has been approved}other{# extensions have been approved}}</translation>
 <translation id="3822559385185038546">This proxy is enforced by your administrator</translation>
 <translation id="3823310065043511710">At least <ph name="INSTALL_SIZE" /> of space is recommended for Linux.</translation>
+<translation id="3824621460022590830">Device enrolment token is invalid. Please contact your device owner or administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Your administrator has disabled the addition of more Google accounts</translation>
 <translation id="3827306204503227641">Continue allowing unsandboxed plug-ins</translation>
 <translation id="3827774300009121996">&amp;Full Screen</translation>
@@ -3276,6 +3282,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5079950360618752063">Use suggested password</translation>
 <translation id="508059534790499809">Refresh a Kerberos ticket</translation>
 <translation id="5084230410268011727">Allow sites to use motion and light sensors</translation>
+<translation id="5084328598860513926">Provisioning flow was interrupted. Please try again or contact your device owner or administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Checking for updates</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Restore default homepage?</translation>
@@ -3675,6 +3682,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="557722062034137776">Resetting your device will not affect your Google accounts or any data synced to these accounts. However, all files saved locally on your device will be deleted.</translation>
 <translation id="5578059481725149024">Auto sign-in</translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
+<translation id="5581972110672966454">Can't join the device to the domain. Please try again or contact your device owner or administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Main menu</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Save username?</translation>
@@ -3747,6 +3755,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5667546120811588575">Setting up Google Play…</translation>
 <translation id="5669267381087807207">Activating</translation>
 <translation id="5669691691057771421">Enter new PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Images blocked</translation>
 <translation id="5671658447180261823">Remove the suggestion <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">This device will get automatic software and security updates until <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
@@ -5393,6 +5402,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> from <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Move</translation>
+<translation id="7766082757934713382">Helps reduce network data usage by pausing automatic app and system updates</translation>
 <translation id="7766807826975222231">Take a tour</translation>
 <translation id="7766838926148951335">Accept permissions</translation>
 <translation id="7768770796815395237">Change</translation>
@@ -6305,6 +6315,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="885701979325669005">Storage</translation>
 <translation id="8859057652521303089">Select your language:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Terms of Service could not be loaded</translation>
 <translation id="8859662783913000679">Parent account</translation>
 <translation id="8862003515646449717">Switch to a fast browser</translation>
 <translation id="8863753581171631212">Open link in new <ph name="APP" /></translation>
@@ -6573,6 +6584,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="920045321358709304">Search <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Any offline data will be cleared</translation>
 <translation id="9201220332032049474">Screen lock options</translation>
+<translation id="9201842707396338580">Something went wrong. Please contact your device owner or administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Profiling enabled</translation>
 <translation id="9203904171912129171">Select a device</translation>
 <translation id="9203962528777363226">The administrator of this device has disabled new users from being added</translation>
@@ -6644,6 +6656,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="983511809958454316">This feature is not supported in VR</translation>
 <translation id="984275831282074731">Payment methods</translation>
 <translation id="98515147261107953">Landscape</translation>
+<translation id="987068745968718743">Parallels desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">General</translation>
 <translation id="987897973846887088">No images available</translation>
 <translation id="988978206646512040">Empty passphrase is not allowed</translation>

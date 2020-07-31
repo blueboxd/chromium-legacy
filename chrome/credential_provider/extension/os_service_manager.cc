@@ -26,7 +26,7 @@ DWORD OSServiceManager::InstallService(
     const base::FilePath& service_binary_path,
     ScopedScHandle* sc_handle) {
   ScopedScHandle scm_handle(
-      ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
+      ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE));
   if (!scm_handle.IsValid())
     return ::GetLastError();
 

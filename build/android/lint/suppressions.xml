@@ -381,10 +381,6 @@ Still reading?
     <ignore regexp="android_webview/tools/automated_ui_tests/java/res/layout/"/>
     <!-- 1: resource in //ui because it's used by multiple deps. -->
     <ignore regexp="The resource `R.drawable.*_expand_.*` appears to be unused"/>
-    <!-- 3: WebView uses some //components/browser_ui resources, but not all (crbug.com/1099842). -->
-    <ignore regexp="components/browser_ui/styles/"/>
-    <ignore regexp="components/browser_ui/widget/"/>
-    <ignore regexp="webview_.*__lint.*components/browser_ui/strings/android/browser_ui_strings_grd"/>
     <!-- 1 resource used by android tv to generate resources.zip file -->
     <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
     <!-- 1 string used by Android's policies system, pulled from app directly -->

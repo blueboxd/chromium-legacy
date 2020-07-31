@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">O Chromium não conseguiu verificar as suas palavras-passe. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="3639997914391704523">O Chromium pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="3805899903892079518">O Chromium não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
+<translation id="4166206055865952171">Defina o Chromium como o navegador predefinido</translation>
 <translation id="4555020257205549924">Se esta funcionalidade estiver ativada, o Chromium oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Ative o leitor do Chromium</translation>
 <translation id="4787850887676698916">Os separadores que abriu no Chromium nos seus outros dispositivos são apresentados aqui.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Obtenha uma melhor experiência no Chromium com base na sua localização.</translation>
 <translation id="6820823224820483452">O Chromium não conseguiu verificar todas as palavras-passe. Tente novamente amanhã.</translation>
 <translation id="7099326575020694068">O Chromium não pode utilizar a câmara no modo Vista dividida</translation>
+<translation id="7118091470949186573">Agora, pode utilizar o Chromium sempre que tocar em links de mensagens, documentos e outras apps.</translation>
 <translation id="7173114856073700355">Abrir Definições</translation>
 <translation id="7208566199746267865">O Chromium poupa o seu tempo ao trazer as suas contas para a Web. Pode adicionar ou remover contas nas Definições.</translation>
 <translation id="7269362888766543920">Alguns suplementos provocam falhas no sistema do Chromium. Tente desinstalá-los.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Para definir o Chromium como o navegador predefinido:
+        1. Abra as Definições. 
+        2. Toque em App de navegador predefinida.
+        3. Selecione o Chromium.</translation>
 <translation id="7357211569052832586">Os dados selecionados foram removidos do Chromium e dos dispositivos sincronizados. A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em history.google.com.</translation>
 <translation id="7400689562045506105">Utilizar o Chromium em todas as plataformas</translation>
 <translation id="766897673682622022">A sua palavra-passe foi exposta numa violação de dados. O Chromium recomenda a alteração da palavra-passe agora.</translation>

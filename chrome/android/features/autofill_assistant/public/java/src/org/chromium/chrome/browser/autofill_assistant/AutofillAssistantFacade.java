@@ -98,7 +98,7 @@ public class AutofillAssistantFacade {
         waitForTabWithWebContents(activity, tab -> {
             AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntry(
                     tab, (moduleEntry) -> {
-                        if (moduleEntry == null) {
+                        if (moduleEntry == null || activity.isActivityFinishingOrDestroyed()) {
                             AutofillAssistantMetrics.recordDropOut(
                                     DropOutReason.DFM_INSTALL_FAILED);
                             return;

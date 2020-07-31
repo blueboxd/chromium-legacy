@@ -484,7 +484,7 @@ class GFX_EXPORT RenderText {
   virtual SizeF GetStringSizeF() = 0;
 
   // Returns the size of the line containing |caret|.
-  virtual Size GetLineSize(const SelectionModel& caret) = 0;
+  virtual SizeF GetLineSizeF(const SelectionModel& caret) = 0;
 
   // Returns the sum of all the line widths.
   float TotalLineWidth();

@@ -679,7 +679,7 @@ TEST_F(FocusTraversalTest, FullKeyboardToggle) {
   EXPECT_EQ(THUMBNAIL_CONTAINER_ID,
             GetFocusManager()->GetFocusedView()->GetID());
 }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   const int kDisabledIDs[] = {

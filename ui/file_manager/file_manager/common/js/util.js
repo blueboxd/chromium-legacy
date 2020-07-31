@@ -1687,3 +1687,9 @@ util.hasOverflow = (element) => {
   return element.clientWidth < element.scrollWidth ||
       element.clientHeight < element.scrollHeight;
 };
+
+/** @return {boolean} */
+util.isSharesheetEnabled = () => {
+  return loadTimeData.valueExists('SHARESHEET_ENABLED') &&
+      loadTimeData.getBoolean('SHARESHEET_ENABLED');
+};

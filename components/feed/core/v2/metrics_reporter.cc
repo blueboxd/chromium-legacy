@@ -43,7 +43,7 @@ void ReportContentSuggestionsOpened(int index_in_stream) {
 }
 
 void ReportUserActionHistogram(FeedUserActionType action_type) {
-  base::UmaHistogramEnumeration("ContentSuggestions.Feed.UserAction",
+  base::UmaHistogramEnumeration("ContentSuggestions.Feed.UserActions",
                                 action_type);
 }
 

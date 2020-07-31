@@ -85,15 +85,15 @@ source_set("base") {
     "//base",
     "//net",
     "//remoting/proto",
-    "//remoting/proto/remoting/v1:directory_proto",
-    "//remoting/proto/remoting/v1:telemetry_grpc_library",
+    "//remoting/proto/remoting/v1:chromoting_event_proto",
     "//third_party/protobuf:protobuf_lite",
   ]
   deps = [
     ":protobuf_http_client_messages_proto",
     "//base/third_party/dynamic_annotations",
     "//google_apis",
-    "//remoting/base/grpc_support",
+    "//remoting/proto/remoting/v1:directory_proto",
+    "//remoting/proto/remoting/v1:telemetry_messages",
     "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -126,8 +126,6 @@ source_set("authorization") {
     "//google_apis",
     "//net",
   ]
-
-  deps = [ "//remoting/proto/remoting/v1:directory_grpc_library" ]
 }
 
 source_set("breakpad") {

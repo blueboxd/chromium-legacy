@@ -219,10 +219,9 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     ServiceNotFound(service_name, interface_name, std::move(interface_pipe));
   }
 
-  // standalone::mojom::Connector implementation:
   void RegisterServiceInstance(
       const std::string& service_name,
-      mojo::PendingRemote<mojom::ExternalService> service_remote) override {
+      mojo::PendingRemote<mojom::ExternalService> service_remote) {
     if (services_.find(service_name) != services_.end()) {
       LOG(ERROR) << "Duplicate service " << service_name;
       return;
@@ -248,6 +247,16 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     info_entry.name = service_name;
     info_entry.connect_time = base::TimeTicks::Now();
     info_entry.disconnect_time = base::TimeTicks();
+  }
+
+  // standalone::mojom::Connector implementation:
+  void RegisterServiceInstances(
+      std::vector<chromecast::external_mojo::mojom::ServiceInstanceInfoPtr>
+          service_instances_info) override {
+    for (auto& instance_info_ptr : service_instances_info) {
+      RegisterServiceInstance(instance_info_ptr->service_name,
+                              std::move(instance_info_ptr->service_remote));
+    }
   }
 
   void BindInterface(const std::string& service_name,

@@ -209,7 +209,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // RenderText:
   const base::string16& GetDisplayText() override;
   SizeF GetStringSizeF() override;
-  Size GetLineSize(const SelectionModel& caret) override;
+  SizeF GetLineSizeF(const SelectionModel& caret) override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   size_t GetLineContainingCaret(const SelectionModel& caret) override;

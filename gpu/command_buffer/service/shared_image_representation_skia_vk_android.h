@@ -70,7 +70,6 @@ class SharedImageRepresentationSkiaVkAndroid
   int surface_msaa_count_ = 0;
   sk_sp<SkSurface> surface_;
   scoped_refptr<SharedContextState> context_state_;
-  VkSemaphore begin_access_semaphore_ = VK_NULL_HANDLE;
   VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
 };
 

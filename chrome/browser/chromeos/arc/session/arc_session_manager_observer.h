@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_SESSION_ARC_SESSION_MANAGER_OBSERVER_H_
 
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "components/arc/session/arc_stop_reason.h"
 
 namespace arc {
+
+enum class ArcStopReason;
 
 // Observer for those services outside of ARC which want to know ARC events.
 class ArcSessionManagerObserver {

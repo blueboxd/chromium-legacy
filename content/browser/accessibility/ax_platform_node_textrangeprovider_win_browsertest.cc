@@ -2488,4 +2488,62 @@ IN_PROC_BROWSER_TEST_F(
   AssertMoveByUnitForMarkup(TextUnit_Format, html_markup, format_units);
 }
 
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       IframeSelect) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-cross-process.html");
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Text in iframe");
+
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "Text in iframe");
+  ASSERT_NE(nullptr, node);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text in iframe");
+
+  // First select text entirely in the iframe. To prevent test timeouts, only
+  // validate the next selection, which spans outside of the iframe.
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->Select());
+
+  // Move the endpoint so it spans outside of the text range and ensure
+  // selection still works.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Document,
+      /*count*/ 1,
+      /*expected_text*/ L"Text in iframe\nAfter frame",
+      /*expected_count*/ 1);
+
+  // Validiate this selection with a waiter.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kDocumentSelectionChanged);
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->Select());
+
+  waiter.WaitForNotification();
+  ui::AXTree::Selection selection = node->GetUnignoredSelection();
+  EXPECT_EQ(selection.anchor_object_id, node->GetId());
+  EXPECT_EQ(selection.anchor_offset, 0);
+  EXPECT_EQ(selection.focus_object_id, node->GetId());
+  EXPECT_EQ(selection.focus_offset, 14);
+
+  // Now move the start position to outside of the iframe and select.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Document,
+      /*count*/ -1,
+      /*expected_text*/ L"Before frame\nText in iframe\nAfter frame",
+      /*expected_count*/ -1);
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->Select());
+
+  // Now move the end position so it's inside of the iframe.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ -12,
+      /*expected_text*/ L"Before frame\nText in ifram",
+      /*expected_count*/ -12);
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->Select());
+}
+
 }  // namespace content

@@ -291,6 +291,12 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     kPathFillTypeCount  // used to specify the size of storage arrays
   };
 
+  enum class GPUFallbackToCPUScenario {
+    kLargePatternDrawnToGPU = 0,
+    kGetImageData = 1,
+    kMaxValue = kGetImageData
+  };
+
   struct UsageCounters {
     int num_draw_calls[kDrawCallTypeCount];  // use DrawCallType enum as index
     float bounding_box_perimeter_draw_calls[kDrawCallTypeCount];

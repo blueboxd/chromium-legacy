@@ -97,7 +97,6 @@ class DataObjectImpl : public DownloadFileObserver,
   struct StoredDataInfo {
     FORMATETC format_etc;
     STGMEDIUM* medium;
-    bool owns_medium;
     std::unique_ptr<DownloadFileProvider> downloader;
 
     StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium);

@@ -13,17 +13,12 @@
 #include "build/build_config.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/common/origin_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -98,8 +93,10 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
   // trials are enabled. In these field trials, OmniboxViewViews handles elision
   // of scheme and trivial subdomains because they are shown/hidden based on
   // user interactions with the omnibox.
-  if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
-      OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+  if (base::FeatureList::IsEnabled(
+          omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover) ||
+      base::FeatureList::IsEnabled(
+          omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction)) {
     format_types &= ~url_formatter::kFormatUrlOmitHTTP;
     format_types &= ~url_formatter::kFormatUrlOmitHTTPS;
     format_types &= ~url_formatter::kFormatUrlOmitTrivialSubdomains;

@@ -513,32 +513,10 @@ TEST_F(OverviewControllerTest, ObserverCallsMatch) {
   }
 }
 
-// Parameterized test depending on whether kDragFromShelfToHomeOrOverview is
-// enabled.
-class OverviewControllerTestWithDragFromShelfToHomeOrOverview
-    : public OverviewControllerTest,
-      public testing::WithParamInterface<bool> {
- public:
-  OverviewControllerTestWithDragFromShelfToHomeOrOverview() {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kDragFromShelfToHomeOrOverview);
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {features::kDragFromShelfToHomeOrOverview,
-               chromeos::features::kShelfHotseat});
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Tests which animation for overview is used in tablet if all windows
 // are minimized, and that if overview is exited from the home launcher all
 // windows are minimized.
-TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
-       OverviewEnterExitAnimationTablet) {
+TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
   TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
@@ -555,7 +533,8 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
 
   // Exit to home launcher using either fade out or slide out animation. This
   // should minimize all windows.
-  const bool is_homerview_enabled = GetParam();
+  const bool is_homerview_enabled =
+      ash::features::IsDragFromShelfToHomeOrOverviewEnabled();
   Shell::Get()->overview_controller()->EndOverview(
       is_homerview_enabled ? OverviewEnterExitType::kFadeOutExit
                            : OverviewEnterExitType::kSlideOutExit);
@@ -575,8 +554,7 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
 
 // Tests that the slide and fade animations are not used to enter or exit
 // overview in clamshell.
-TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
-       OverviewEnterExitAnimationClamshell) {
+TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
   TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
   const gfx::Rect bounds(200, 200);
@@ -600,8 +578,7 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
   EXPECT_FALSE(observer.last_animation_was_fade());
 }
 
-TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
-       WallpaperAnimationTiming) {
+TEST_F(OverviewControllerTest, WallpaperAnimationTiming) {
   const gfx::Rect bounds(200, 200);
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(bounds));
@@ -610,7 +587,8 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  const bool is_homerview_enabled = GetParam();
+  const bool is_homerview_enabled =
+      ash::features::IsDragFromShelfToHomeOrOverviewEnabled();
   Shell::Get()->overview_controller()->StartOverview(
       is_homerview_enabled ? OverviewEnterExitType::kFadeInEnter
                            : OverviewEnterExitType::kSlideInEnter);
@@ -623,8 +601,7 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
 
 // Tests that overview session exits cleanly if exit is requested before
 // previous enter animations finish.
-TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
-       OverviewExitWhileStillEntering) {
+TEST_F(OverviewControllerTest, OverviewExitWhileStillEntering) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   // Ensure calls to SetEnabledForTest complete.
   base::RunLoop().RunUntilIdle();
@@ -642,7 +619,8 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
 
   // Exit to home launcher using either fade out or slide out animation. This
   // should minimize all windows.
-  const bool is_homerview_enabled = GetParam();
+  const bool is_homerview_enabled =
+      ash::features::IsDragFromShelfToHomeOrOverviewEnabled();
   TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
   Shell::Get()->overview_controller()->EndOverview(
       is_homerview_enabled ? OverviewEnterExitType::kFadeOutExit
@@ -657,11 +635,6 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    OverviewControllerTestWithDragFromShelfToHomeOrOverview,
-    testing::Bool());
 
 class OverviewVirtualKeyboardTest : public OverviewControllerTest {
  protected:

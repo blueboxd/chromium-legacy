@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/system/statistics_provider.h"
@@ -52,6 +53,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
       base::FeatureList::IsEnabled(chromeos::features::kFilesTransferDetails));
   dict->SetBoolean("ZIP_NO_NACL", base::FeatureList::IsEnabled(
                                       chromeos::features::kFilesZipNoNaCl));
+  dict->SetBoolean("SHARESHEET_ENABLED",
+                   base::FeatureList::IsEnabled(features::kSharesheet));
 
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 

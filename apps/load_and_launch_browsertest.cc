@@ -44,7 +44,7 @@ constexpr char kTestExtensionId[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
 // work for the same reason --app-id doesn't. See http://crbug.com/148465
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_LoadAndLaunchAppChromeRunning \
         DISABLED_LoadAndLaunchAppChromeRunning
 #else
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
 // work for the same reason --app-id doesn't. See http://crbug.com/148465
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_LoadAndLaunchAppWithFile DISABLED_LoadAndLaunchAppWithFile
 #else
 #define MAYBE_LoadAndLaunchAppWithFile LoadAndLaunchAppWithFile

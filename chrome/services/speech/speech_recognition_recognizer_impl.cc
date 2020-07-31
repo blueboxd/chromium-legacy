@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
-#include "components/soda/constants.h"
+#include "base/files/file_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/bind_to_current_loop.h"
@@ -52,11 +52,13 @@ SpeechRecognitionRecognizerImpl::~SpeechRecognitionRecognizerImpl() = default;
 void SpeechRecognitionRecognizerImpl::Create(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
-    base::WeakPtr<SpeechRecognitionServiceImpl>
-        speech_recognition_service_impl) {
+    base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
+    const base::FilePath& binary_path,
+    const base::FilePath& config_path) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<SpeechRecognitionRecognizerImpl>(
-          std::move(remote), std::move(speech_recognition_service_impl)),
+          std::move(remote), std::move(speech_recognition_service_impl),
+          binary_path, config_path),
       std::move(receiver));
 }
 
@@ -77,13 +79,16 @@ void SpeechRecognitionRecognizerImpl::OnRecognitionEvent(
 
 SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
-    base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl)
-    : client_remote_(std::move(remote)) {
+    base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
+    const base::FilePath& binary_path,
+    const base::FilePath& config_path)
+    : client_remote_(std::move(remote)), config_path_(config_path) {
   recognition_event_callback_ = media::BindToCurrentLoop(
       base::Bind(&SpeechRecognitionRecognizerImpl::OnRecognitionEvent,
                  weak_factory_.GetWeakPtr()));
 #if BUILDFLAG(ENABLE_SODA)
-  soda_client_ = std::make_unique<soda::SodaClient>(GetSodaBinaryPath());
+  DCHECK(base::PathExists(binary_path));
+  soda_client_ = std::make_unique<soda::SodaClient>(binary_path);
 #else
   cloud_client_ = std::make_unique<CloudSpeechRecognitionClient>(
       recognition_event_callback(), std::move(speech_recognition_service_impl));
@@ -121,11 +126,12 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
 
 #if BUILDFLAG(ENABLE_SODA)
   DCHECK(soda_client_);
+  DCHECK(base::PathExists(config_path_));
   if (!soda_client_->IsInitialized() ||
       soda_client_->DidAudioPropertyChange(sample_rate, channel_count)) {
     // Initialize the SODA instance.
-    auto config_file_path = GetSodaConfigPath().value();
     auto api_key = google_apis::GetSodaAPIKey();
+    auto config_file_path = config_path_.value();
     SodaConfig config;
     config.channel_count = channel_count;
     config.sample_rate = sample_rate;

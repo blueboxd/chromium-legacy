@@ -1121,6 +1121,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Les notes de la pantalla de bloqueig es desen automàticament a <ph name="LOCK_SCREEN_APP_NAME" />. La nota més recent romandrà a la pantalla de bloqueig.</translation>
 <translation id="2353297238722298836">La càmera i el micròfon es poden utilitzar</translation>
+<translation id="2355314311311231464">S'ha produït un problema amb el proveïment perquè no s'ha pogut recuperar la informació del compte. Torna-ho a provar. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Activa la compartició de xarxa instantània</translation>
 <translation id="2356070529366658676">Pregunta-ho</translation>
 <translation id="2357330829548294574">Suprimeix <ph name="USER_NAME" /></translation>
@@ -1215,6 +1216,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2473195200299095979">Tradueix aquesta pàgina</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
 <translation id="2476578072172137802">Configuració del lloc web</translation>
+<translation id="2476974672882258506">Apaga Windows per desinstal·lar <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Permisos de fitxer multimèdia per a "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Comparteix l'àudio</translation>
 <translation id="248003956660572823">Les contrasenyes no s'han desat</translation>
@@ -1305,6 +1307,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2572032849266859634">S'ha concedit accés només de lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Aquesta icona serà visible quan les extensions puguin actuar a la pàgina actual. Per fer servir aquesta extensió, feu clic a la icona o premeu <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Estableix com a Chromebox per a reunions</translation>
+<translation id="2579232805407578790">No s'ha pogut connectar amb el servidor. Comprova la connexió a la xarxa i torna-ho a provar. Si el problema continua, reinicia el Chromebook. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Permet sempre que <ph name="HOST" /> baixi diversos fitxers</translation>
 <translation id="258095186877893873">Llarg</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1524,6 +1527,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2836635946302913370">L'administrador ha desactivat l'inici de sessió amb aquest nom d'usuari.</translation>
 <translation id="283669119850230892">Per fer servir la xarxa <ph name="NETWORK_ID" />, primer cal establir la connexió a Internet a continuació.</translation>
 <translation id="2838379631617906747">S'està instal·lant</translation>
+<translation id="2838835911926931318">Inicia la sessió per sincronitzar les adreces d'interès, les contrasenyes, l'historial i altres elements en tots els dispositius</translation>
 <translation id="2839032553903800133">Notificacions bloquejades</translation>
 <translation id="2841013758207633010">Hora</translation>
 <translation id="2841837950101800123">Proveïdor</translation>
@@ -1583,6 +1587,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
     Missatge del servidor: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Addició d'una galeria multimèdia per directori</translation>
 <translation id="2910318910161511225">Connecta't a una xarxa i torna-ho a provar</translation>
+<translation id="2910718431259223434">S'ha produït un error. Torna-ho a provar o contacta amb el propietari o l'administrador del dispositiu. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Permet que els llocs web desin i llegeixin les dades de les galetes (opció recomanada)</translation>
 <translation id="2915102088417824677">Mostra el registre d'activitat</translation>
 <translation id="2915873080513663243">Cerca automàtica</translation>
@@ -2322,6 +2327,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{S'ha aprovat una extensió}other{S'han aprovat # extensions}}</translation>
 <translation id="3822559385185038546">L'administrador aplica aquest servidor intermediari</translation>
 <translation id="3823310065043511710">Es recomana tenir almenys <ph name="INSTALL_SIZE" /> d'espai lliure per a Linux.</translation>
+<translation id="3824621460022590830">El testimoni d'inscripció de dispositius no és vàlid. Contacta amb el propietari o l'administrador del dispositiu. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">El teu administrador ha desactivat l'opció d'afegir més Comptes de Google</translation>
 <translation id="3827306204503227641">Continua permetent els connectors de fora de la zona de proves</translation>
 <translation id="3827774300009121996">&amp;Pantalla completa</translation>
@@ -3274,6 +3280,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5079950360618752063">Utilitza la contrasenya suggerida</translation>
 <translation id="508059534790499809">Actualitza un tiquet de Kerberos</translation>
 <translation id="5084230410268011727">Permet que els llocs web utilitzin els sensors de moviment i de llum</translation>
+<translation id="5084328598860513926">El flux de proveïment s'ha interromput. Torna-ho a provar o contacta amb el propietari o l'administrador del dispositiu. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">S'està comprovant si hi ha actualitzacions</translation>
 <translation id="5086082738160935172">Dispositiu d'interfície humana</translation>
 <translation id="5086874064903147617">Vols restaurar la pàgina d'inici predeterminada?</translation>
@@ -3674,6 +3681,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="557722062034137776">Si restabliu el dispositiu, no es produirà cap canvi als vostres comptes de Google ni a les dades sincronitzades en aquests comptes. No obstant això, se suprimiran tots els fitxers desats localment al dispositiu.</translation>
 <translation id="5578059481725149024">Inici de sessió automàtic</translation>
 <translation id="558170650521898289">Verificació de programes de control de maquinari de Microsoft Windows</translation>
+<translation id="5581972110672966454">No es pot connectar el dispositiu al domini. Torna-ho a provar o contacta amb el propietari o l'administrador del dispositiu. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Menú principal</translation>
 <translation id="5583640892426849032">Retrocés</translation>
 <translation id="5584088138253955452">Vols desar el nom d'usuari?</translation>
@@ -3747,6 +3755,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5667546120811588575">S'està configurant Google Play...</translation>
 <translation id="5669267381087807207">Activant</translation>
 <translation id="5669691691057771421">Introdueix el PIN nou</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">S'han bloquejat les imatges</translation>
 <translation id="5671658447180261823">Suprimeix el suggeriment <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Aquest dispositiu rebrà actualitzacions automàtiques de programari i seguretat fins a: <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
@@ -5393,6 +5402,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Mou</translation>
+<translation id="7766082757934713382">Ajuda a reduir l'ús de dades de la xarxa en pausar les actualitzacions automàtiques d'aplicacions i del sistema</translation>
 <translation id="7766807826975222231">Visita guiada</translation>
 <translation id="7766838926148951335">Accepta els permisos</translation>
 <translation id="7768770796815395237">Canvia</translation>
@@ -6305,6 +6315,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="885701979325669005">Emmagatzematge</translation>
 <translation id="8859057652521303089">Seleccioneu el vostre idioma:</translation>
 <translation id="8859174528519900719">Submarc: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">No s'han pogut carregar les condicions del servei</translation>
 <translation id="8859662783913000679">Compte parental</translation>
 <translation id="8862003515646449717">Canvia a un navegador ràpid</translation>
 <translation id="8863753581171631212">Obre l'enllaç en una finestra nova de l'aplicació <ph name="APP" /></translation>
@@ -6573,6 +6584,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="920045321358709304">Cerca <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">S'esborraran totes les dades sense connexió</translation>
 <translation id="9201220332032049474">Opcions de bloqueig de pantalla</translation>
+<translation id="9201842707396338580">S'ha produït un error. Contacta amb el propietari o l'administrador del dispositiu. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">Creació de &amp;perfils activada</translation>
 <translation id="9203904171912129171">Selecciona un dispositiu</translation>
 <translation id="9203962528777363226">L'administrador d'aquest dispositiu ha desactivat la possibilitat d'afegir-hi usuaris nous</translation>
@@ -6644,6 +6656,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="983511809958454316">Aquesta funció no s'admet en el mode RV</translation>
 <translation id="984275831282074731">Formes de pagament</translation>
 <translation id="98515147261107953">Horitzontal</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">General</translation>
 <translation id="987897973846887088">No hi ha cap imatge disponible</translation>
 <translation id="988978206646512040">No es permeten les frases de contrasenya buides</translation>

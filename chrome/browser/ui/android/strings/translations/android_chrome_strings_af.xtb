@@ -220,6 +220,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="2744248271121720757">Tik op 'n woord om oombliklik te soek of sien verwante handelinge</translation>
 <translation id="2760989362628427051">Skakel Donkertema aan wanneer jou toestel se Donkertema of Batterybespaarder aan is</translation>
 <translation id="2762000892062317888">sopas</translation>
+<translation id="2771869497727323769">Kan nie skakel na teks skep nie. Deel skakel na bladsy in 'n program.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekondes oor</translation>
 <translation id="2779651927720337254">misluk</translation>
 <translation id="2781151931089541271">1 sekonde oor</translation>
@@ -387,6 +388,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="4084712963632273211">Vanaf <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />afgelewer deur Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vee programdata uit?</translation>
 <translation id="4099578267706723511">Help om Chrome te verbeter deur gebruikstatistiek en omvalverslae na Google te stuur.</translation>
+<translation id="4108998448622696017">Bespeur en waarsku jou oor gevaarlike gevalle wanneer hulle plaasvind.</translation>
 <translation id="4116038641877404294">Laai bladsye af om hulle vanlyn te gebruik</translation>
 <translation id="4135200667068010335">Lys toestelle om 'n oortjie mee te deel, is toegemaak.</translation>
 <translation id="4149994727733219643">Vereenvoudigde aansig vir webbladsye</translation>
@@ -459,6 +461,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4732120983431207637">Stapellosdraaier</translation>
 <translation id="473775607612524610">Dateer op</translation>
 <translation id="4738836084190194332">Laas gesinkroniseer: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA-fout: <ph name="ERROR_CODE" /> op <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Maak 'n nuwe oortjie oop</translation>
 <translation id="4759238208242260848">Aflaaie</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 aflaai is voltooi.}other{# aflaaie is voltooi.}}</translation>
@@ -508,6 +511,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5040262127954254034">Privaatheid</translation>
 <translation id="5087580092889165836">Voeg kaart by</translation>
 <translation id="509429900233858213">'n Fout het voorgekom.</translation>
+<translation id="5100748015044654621">Deel skakel na die gemerkte teks in 'n program</translation>
 <translation id="510275257476243843">1 uur oor</translation>
 <translation id="5123685120097942451">Incognito-oortjie</translation>
 <translation id="5127805178023152808">Sinkronisering is af</translation>
@@ -686,6 +690,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6398765197997659313">Gaan by volskerm uit</translation>
 <translation id="6404511346730675251">Wysig boekmerk</translation>
 <translation id="6406506848690869874">Sinkronisering</translation>
+<translation id="6412673304250309937">Vergelyk URL'e met 'n lys onveilige werwe wat in Chrome geberg word. As 'n werf probeer om jou wagwoord te steel, of wanneer jy 'n skadelike lêer aflaai, sal Chrome dalk ook URL'e, insluitend stukkies bladsyinhoud, na Veiligblaai toe stuur.</translation>
 <translation id="641643625718530986">Druk tans uit …</translation>
 <translation id="6427112570124116297">Vertaal die Web</translation>
 <translation id="6433501201775827830">Kies jou soekenjin</translation>
@@ -973,6 +978,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8562452229998620586">Gestoorde wagwoorde sal hier verskyn.</translation>
 <translation id="8569404424186215731">sedert <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Afgelope vier weke</translation>
+<translation id="8572344201470131220">Prent is gekopieer</translation>
 <translation id="8583805026567836021">Vee tans rekeningdata uit</translation>
 <translation id="860043288473659153">Kaarthouernaam</translation>
 <translation id="8616006591992756292">Jou Google-rekening kan dalk ander vorme van blaaigeskiedenis hê by <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -1000,6 +1006,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8854223127042600341">Sien jou vanlyn lêers</translation>
 <translation id="889338405075704026">Gaan na Chrome-instellings</translation>
 <translation id="8893398027601469503">Jy gebruik tans die jongste weergawe van Chrome</translation>
+<translation id="8898822736010347272">Stuur URL'e van sommige bladsye wat jy besoek, beperkte stelselinligting en sekere bladsyinhoud na Google toe om te help om nuwe bedreigings te ontdek en almal op die web te beskerm.</translation>
 <translation id="8909135823018751308">Deel …</translation>
 <translation id="8912362522468806198">Google-rekening</translation>
 <translation id="8920114477895755567">Wag tans vir besonderhede van ouers.</translation>
@@ -1014,6 +1021,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8988028529677883095">Gebruik foon as 'n sekuriteitsleutel</translation>
 <translation id="8990209962746788689">Kan nie QR-kode skep nie</translation>
 <translation id="8993760627012879038">Maak 'n nuwe oortjie in incognitomodus oop</translation>
+<translation id="8996847606757455498">Kies 'n ander verskaffer</translation>
 <translation id="8998729206196772491">Jy meld tans aan met 'n rekening wat deur <ph name="MANAGED_DOMAIN" /> bestuur word en gee sy administrateur beheer oor jou Chrome-data. Jou data sal permanent met hierdie rekening verbind word. As jy by Chrome afmeld, sal jou data van hierdie toestel af uitgevee word, maar dit sal steeds in jou Google-rekening geberg word.</translation>
 <translation id="9028914725102941583">Skakel sinkronisering aan om tussen toestelle te deel</translation>
 <translation id="9040142327097499898">Kennisgewings word toegelaat. Ligging is af vir hierdie toestel.</translation>

@@ -25,6 +25,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -41,6 +42,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
+#include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -697,17 +699,36 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
   }
 
   void NavigateToURLAndWaitForTitle(const GURL& url,
-                                    const std::string& expected_title,
-                                    int32_t num_navigations) {
+                                    const std::string& expected_title) {
     content::TitleWatcher title_watcher(
         browser()->tab_strip_model()->GetActiveWebContents(),
         base::ASCIIToUTF16(expected_title));
 
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-        browser(), url, num_navigations);
+    ui_test_utils::NavigateToURL(browser(), url);
 
     EXPECT_EQ(base::ASCIIToUTF16(expected_title),
               title_watcher.WaitAndGetTitle());
+  }
+
+  void NavigateAndWaitForFailureWithAutoReload(const GURL& url) {
+    content::WebContents* const web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Expect the first navigation to fail with a committed error page.
+    content::TestNavigationManager first_navigation(web_contents, url);
+    web_contents->GetController().LoadURL(url, content::Referrer(),
+                                          ui::PAGE_TRANSITION_TYPED,
+                                          /*extra_headers=*/std::string());
+    first_navigation.WaitForNavigationFinished();
+    EXPECT_TRUE(first_navigation.was_committed());
+    EXPECT_FALSE(first_navigation.was_successful());
+
+    // Expect a second navigation to result from a failed auto-reload attempt.
+    // This should not be committed.
+    content::TestNavigationManager failed_auto_reload_navigation(web_contents,
+                                                                 url);
+    failed_auto_reload_navigation.WaitForNavigationFinished();
+    EXPECT_FALSE(failed_auto_reload_navigation.was_committed());
   }
 
   int32_t interceptor_requests() const { return requests_; }
@@ -729,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, MAYBE_AutoReload) {
   GURL test_url("http://error.page.auto.reload");
   const int32_t kRequestsToFail = 2;
   InstallInterceptor(test_url, kRequestsToFail);
-  NavigateToURLAndWaitForTitle(test_url, "Test One", kRequestsToFail + 1);
+  NavigateToURLAndWaitForTitle(test_url, "Test One");
   // Note that the interceptor updates these variables on the IO thread,
   // but this function reads them on the main thread. The requests have to be
   // created (on the IO thread) before NavigateToURLAndWaitForTitle returns or
@@ -742,8 +763,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   GURL test_url("http://error.page.auto.reload");
   const int32_t kRequestsToFail = 3;
   InstallInterceptor(test_url, kRequestsToFail);
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), test_url, 2);
+
+  // Wait for the error page and first autoreload.
+  NavigateAndWaitForFailureWithAutoReload(test_url);
 
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(2, interceptor_requests());
@@ -772,33 +794,31 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
   GURL test_url("http://error.page.auto.reload");
   InstallInterceptor(test_url, 2);
 
-  // Wait for the error page and first autoreload, which happens immediately.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), test_url, 2);
+  // Wait for the error page and first autoreload.
+  NavigateAndWaitForFailureWithAutoReload(test_url);
 
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(2, interceptor_requests());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  const base::string16 kExpectedTitle = base::ASCIIToUTF16("Test One");
+  content::TitleWatcher title_watcher(web_contents, kExpectedTitle);
+
+  // Same-document navigation on an error page should not interrupt the
+  // scheduled auto-reload which should still be pending on the WebContents.
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.location='#';"), base::NullCallback());
-  content::WaitForLoadStop(web_contents);
 
-  // Same-document navigation on an error page should not have resulted in a
-  // new navigation, so no new requests should have been issued.
-  EXPECT_EQ(2, interceptor_failures());
-  EXPECT_EQ(2, interceptor_requests());
-
-  // Wait for the second auto reload, which succeeds.
-  content::TestNavigationObserver observer2(web_contents, 1);
-  observer2.Wait();
+  // Wait for the second auto reload to happen. It will succeed and update the
+  // WebContents' title.
+  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
 
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(3, interceptor_requests());
 }
 
-// Make sure that an error page that is providing it's own HTML has auto-reloads
+// Make sure that an error page that is providing its own HTML has auto-reloads
 // disabled.
 IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
                        CustomErrorPageDoesNotAutoReload) {
@@ -818,17 +838,24 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
       net::ERR_CONNECTION_RESET);
   // Wait for the custom error page to load.
   error_observer.Wait();
-  // Wait for a short time (since the first reload would happen immediately
-  // after the error loads), after that we should see no interceptor requests or
-  // failures for reloads, since this error page shouldn't reload.
-  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  // Spin a RunLoop to give any scheduled error page auto-reload task ample time
+  // to run. None should run due to this being a custom error page, so there
+  // we should observe no intercepted requests during the wait.
+  base::RunLoop wait_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, wait_loop.QuitClosure(),
+      error_page::NetErrorAutoReloader::GetNextReloadDelayForTesting(
+          /*reload_count=*/0) *
+          2);
+  wait_loop.Run();
   EXPECT_EQ(0, interceptor_failures());
   EXPECT_EQ(0, interceptor_requests());
 
-  // Navigate to the page manually, this will trigger a regular error page, make
-  // sure autoreloads are enabled at this point.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), test_url,
-                                                            2);
+  // Navigate to the page manually to trigger a new error page navigation, and
+  // make sure auto-reloads are enabled at this point.
+  NavigateAndWaitForFailureWithAutoReload(test_url);
+
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(2, interceptor_requests());
 }

@@ -1094,17 +1094,17 @@ TEST_F(GcpGaiaCredentialBaseTest,
   std::vector<base::string16> reauth_sids;
   reauth_sids.push_back((BSTR)first_sid);
 
-  // Move the current time beyond staleness time period.
-  base::Time last_online_login = base::Time::Now();
-  base::string16 last_online_login_millis = base::NumberToString16(
-      last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
+  // Set the current time same as last token valid timestamp.
+  base::Time last_token_valid = base::Time::Now();
+  base::string16 last_token_valid_millis = base::NumberToString16(
+      last_token_valid.ToDeltaSinceWindowsEpoch().InMilliseconds());
   int validity_period_in_days = 10;
   DWORD validity_period_in_days_dword =
       static_cast<DWORD>(validity_period_in_days);
-  ASSERT_EQ(S_OK, SetUserProperty((BSTR)first_sid,
-                                  base::UTF8ToUTF16(std::string(
-                                      kKeyLastSuccessfulOnlineLoginMillis)),
-                                  last_online_login_millis));
+  ASSERT_EQ(S_OK,
+            SetUserProperty((BSTR)first_sid,
+                            base::UTF8ToUTF16(std::string(kKeyLastTokenValid)),
+                            last_token_valid_millis));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
                       base::UTF8ToUTF16(std::string(kKeyValidityPeriodInDays)),
                       validity_period_in_days_dword));
@@ -1115,6 +1115,8 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
 
   // Create with valid token handle response and sign in the anonymous
   // credential with the user that should still be valid.
@@ -1132,11 +1134,12 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Internet should be disabled for stale online login verifications to be
   // considered.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   fake_internet_checker()->SetHasInternetConnection(
       FakeInternetAvailabilityChecker::kHicForceNo);
   // Advance the time that is more than the offline validity period.
   BaseTimeClockOverrideValue::current_time_ =
-      last_online_login + base::TimeDelta::FromDays(validity_period_in_days) +
+      base::Time::Now() + base::TimeDelta::FromDays(validity_period_in_days) +
       base::TimeDelta::FromMilliseconds(1);
   base::subtle::ScopedTimeClockOverrides time_override(
       &BaseTimeClockOverrideValue::NowOverride, nullptr, nullptr);
@@ -1171,18 +1174,17 @@ TEST_F(GcpGaiaCredentialBaseTest,
   EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
-  wchar_t latest_online_login_millis[512];
-  ULONG latest_online_login_size = base::size(latest_online_login_millis);
+  wchar_t latest_token_valid_millis[512];
+  ULONG latest_token_valid_size = base::size(latest_token_valid_millis);
   ASSERT_EQ(S_OK, GetUserProperty(
-                      OLE2W(first_sid),
-                      base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
-                      latest_online_login_millis, &latest_online_login_size));
-  int64_t latest_online_login_millis_int64;
-  base::StringToInt64(latest_online_login_millis,
-                      &latest_online_login_millis_int64);
+                      OLE2W(first_sid), base::UTF8ToUTF16(kKeyLastTokenValid),
+                      latest_token_valid_millis, &latest_token_valid_size));
+  int64_t latest_token_valid_millis_int64;
+  base::StringToInt64(latest_token_valid_millis,
+                      &latest_token_valid_millis_int64);
 
   long difference =
-      latest_online_login_millis_int64 -
+      latest_token_valid_millis_int64 -
       BaseTimeClockOverrideValue::current_time_.ToDeltaSinceWindowsEpoch()
           .InMilliseconds();
   ASSERT_EQ(0, difference);

@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Obrázok sa nedá uložiť</translation>
 <translation id="1180526666083833456">Synchronizujte a prispôsobujte obsah v rôznych zariadeniach.</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
+<translation id="1185569544548277362">Novinka: Chrome si môžete nastaviť ako predvolený prehliadač. <ph name="BEGIN_LINK" />Otvoriť Nastavenia<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nové vyhľadávanie</translation>
 <translation id="1209206284964581585">Skryť</translation>
 <translation id="1219674500290482172">Nepodarilo sa pripojiť k internetu.</translation>
@@ -367,6 +368,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5407969256130905701">Zahodiť zmeny</translation>
 <translation id="5409365236829784218">Nie sú nainštalované žiadne aplikácie, ktoré dokážu otvoriť tento súbor.</translation>
 <translation id="5416022985862681400">Posledných 7 dní</translation>
+<translation id="543338862236136125">Upraviť heslo</translation>
 <translation id="5433691172869980887">Používateľské meno bolo skopírované</translation>
 <translation id="54401264925851789">Informácie o zabezpečení stránky</translation>
 <translation id="5443952882982198570">Kreditné karty</translation>
@@ -638,6 +640,7 @@ Na základe súborov cookie si môžu zobraziť vašu históriu prehliadania v 
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> – karty <ph name="FIRST_VISIBLE_TAB" /> až <ph name="LAST_VISIBLE_TAB" /> z <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Nové</translation>
 <translation id="8532105204136943229">Rok vypršania platnosti</translation>
+<translation id="8533166274275423134">Otvorené inde</translation>
 <translation id="8534481786647257214">Príspevok bol uverejnený v Google+.</translation>
 <translation id="8548878600947630424">Nájsť na stránke...</translation>
 <translation id="8574235780160508979">Zmluvné podmienky prehliadača Chrome sa 31. marca zmenia. <ph name="BEGIN_LINK" />Prehliadnuť si nové zmluvné podmienky<ph name="END_LINK" /></translation>

@@ -4,7 +4,10 @@
 
 #include "ash/test_shell_delegate.h"
 
+#include <memory>
+
 #include "ash/accessibility/default_accessibility_delegate.h"
+#include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
@@ -18,6 +21,11 @@ TestShellDelegate::~TestShellDelegate() = default;
 
 bool TestShellDelegate::CanShowWindowForUser(const aura::Window* window) const {
   return true;
+}
+
+std::unique_ptr<CaptureModeDelegate>
+TestShellDelegate::CreateCaptureModeDelegate() const {
+  return std::make_unique<TestCaptureModeDelegate>();
 }
 
 std::unique_ptr<ScreenshotDelegate>

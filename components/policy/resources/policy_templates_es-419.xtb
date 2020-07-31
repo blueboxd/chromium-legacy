@@ -664,7 +664,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 
       Cuando se configura esta política con una lista no vacía:
       Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual del dispositivo, no se aplicarán restricciones y se revocarán las restricciones existentes.
-      Si al menos una de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual, se seleccionará la entrada más resistente cuya versión sea la mayor y más cercana a la actual.
+      Si al menos una de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual, se seleccionará la entrada cuya versión sea la mayor y más cercana a la actual.
       En caso de conflicto, se le dará preferencia a la versión con el menor valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />, y se aplicará la política conforme a esa entrada.
 
       Si la versión actual se vuelve obsoleta durante la sesión de usuario y la red actual limita las actualizaciones automáticas, se mostrará una notificación en pantalla solicitando la actualización del dispositivo en el período especificado en el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> de la notificación.

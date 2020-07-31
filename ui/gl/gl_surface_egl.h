@@ -113,6 +113,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsEGLFlexibleSurfaceCompatibilitySupported();
   static bool IsRobustResourceInitSupported();
   static bool IsDisplayTextureShareGroupSupported();
+  static bool IsDisplaySemaphoreShareGroupSupported();
   static bool IsCreateContextClientArraysSupported();
   static bool IsAndroidNativeFenceSyncSupported();
   static bool IsPixelFormatFloatSupported();

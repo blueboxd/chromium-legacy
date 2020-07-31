@@ -1405,21 +1405,17 @@ SizeF RenderTextHarfBuzz::GetStringSizeF() {
   return total_size_;
 }
 
-Size RenderTextHarfBuzz::GetLineSize(const SelectionModel& caret) {
-  const auto to_size = [](const internal::Line& line) {
-    return Size(base::ClampCeil(line.size.width()), line.size.height());
-  };
-
+SizeF RenderTextHarfBuzz::GetLineSizeF(const SelectionModel& caret) {
   const internal::ShapedText* shaped_text = GetShapedText();
   const auto& caret_run = GetRunContainingCaret(caret);
   for (const auto& line : shaped_text->lines()) {
     for (const internal::LineSegment& segment : line.segments) {
       if (segment.run == caret_run)
-        return to_size(line);
+        return line.size;
     }
   }
 
-  return to_size(shaped_text->lines().back());
+  return shaped_text->lines().back().size;
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {

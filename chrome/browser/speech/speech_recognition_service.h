@@ -38,10 +38,8 @@ class SpeechRecognitionService
   // Launches the speech recognition service in a sandboxed utility process.
   void LaunchIfNotRunning();
 
-#if !BUILDFLAG(ENABLE_SODA)
   // The browser context associated with the keyed service.
   content::BrowserContext* const context_;
-#endif  // !BUILDFLAG(ENABLE_SODA)
 
   // The remote to the speech recognition service. The browser will not launch a
   // new speech recognition service process if this remote is already bound.

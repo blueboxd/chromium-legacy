@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">„Chromium“ nepavyko patikrinti jūsų slaptažodžių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="3639997914391704523">„Chromium“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą.</translation>
 <translation id="3805899903892079518">„Chromium“ nepasiekia nuotraukų ar vaizdo įr. Įgalinkite prieigą apsil. „iOS“ nustatymai“ &gt; „Privatumas“ &gt; „Nuotraukos“.</translation>
+<translation id="4166206055865952171">„Chromium“ nustatymas numatytąja naršykle</translation>
 <translation id="4555020257205549924">Kai ši funkcija bus įjungta, „Chromium“ siūlys versti kitomis kalbomis parašytus puslapius naudojant „Google“ vertėją. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Įjunkite „Chromium“ skaitytuvą</translation>
 <translation id="4787850887676698916">Čia bus rodomi kituose įrenginiuose atidaryti „Chromium“ skirtukai.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Gaukite geresnių funkcijų naudodami vietove pagrįstą „Chromium“.</translation>
 <translation id="6820823224820483452">„Chromium“ nepavyko patikrinti visų slaptažodžių. Rytoj bandykite dar kartą.</translation>
 <translation id="7099326575020694068">„Chromium“ negali naudoti fotoaparato padalyto rodinio režimu</translation>
+<translation id="7118091470949186573">Dabar galite naudoti „Chromium“ bet kada palietę nuorodas pranešimuose, dokumentuose ir kitose programose.</translation>
 <translation id="7173114856073700355">Atidaryti nustatymus</translation>
 <translation id="7208566199746267865">„Chromium“ taupo laiką naudodama paskyras žiniatinklyje. Paskyras galite pridėti arba pašalinti nustatymuose.</translation>
 <translation id="7269362888766543920">Naudojant kai kuriuos priedus „Chromium“ užstringa. Pabandykite juos pašalinti.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Jei norite nustatyti „Chromium“ kaip numatytąją naršyklę, atlikite toliau nurodytus veiksmus.
+        1. Atidarykite „Nustatymų“ skiltį. 
+        2. Palieskite „Numatytoji naršyklės programa“.
+        3. Pasirinkite „Chromium“.</translation>
 <translation id="7357211569052832586">Pasirinkti duomenys pašalinti iš „Chromium“ ir sinchronizuojamų įrenginių. Adresu history.google.com gali būti pateikta kitų formų jūsų „Google“ paskyros istorija, pvz., paieškos ir veikla kitose „Google“ paslaugose.</translation>
 <translation id="7400689562045506105">„Chromium“ naudojimas visuose įrenginiuose</translation>
 <translation id="766897673682622022">Jūsų slaptažodis atskleistas įvykus duomenų saugos pažeidimui. „Chromium“ rekomenduoja dabar pakeisti slaptažodį.</translation>

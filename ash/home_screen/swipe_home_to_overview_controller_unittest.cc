@@ -22,7 +22,6 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_utils.h"
@@ -45,10 +44,7 @@ gfx::RectF GetShelfBoundsInFloat() {
 
 class SwipeHomeToOverviewControllerTest : public AshTestBase {
  public:
-  SwipeHomeToOverviewControllerTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDragFromShelfToHomeOrOverview}, {});
-  }
+  SwipeHomeToOverviewControllerTest() {}
   ~SwipeHomeToOverviewControllerTest() override = default;
 
   // AshTestBase:
@@ -142,7 +138,6 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
  private:
   std::unique_ptr<SwipeHomeToOverviewController> home_to_overview_controller_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SwipeHomeToOverviewControllerTest);
 };
 

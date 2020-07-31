@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Impos. gardar imaxe</translation>
 <translation id="1180526666083833456">Sincroniza e personaliza o contido nos dispositivos.</translation>
 <translation id="1181037720776840403">Eliminar</translation>
+<translation id="1185569544548277362">Novidade: xa podes facer que Chrome sexa o teu navegador predeterminado. <ph name="BEGIN_LINK" />Abrir Configuración<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nova busca</translation>
 <translation id="1209206284964581585">Ocultar por agora</translation>
 <translation id="1219674500290482172">Non se puido conectar a Internet.</translation>
@@ -367,6 +368,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5407969256130905701">Descartar cambios</translation>
 <translation id="5409365236829784218">Ningunha aplicación instalada que poida abrir este ficheiro.</translation>
 <translation id="5416022985862681400">Últimos 7 días</translation>
+<translation id="543338862236136125">Editar contrasinal</translation>
 <translation id="5433691172869980887">Copiouse o nome de usuario</translation>
 <translation id="54401264925851789">Información de seguranza da páxina</translation>
 <translation id="5443952882982198570">Tarxetas de crédito</translation>
@@ -638,6 +640,7 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="8524799873541103884">Etiquetas de <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novidade</translation>
 <translation id="8532105204136943229">Ano caducidade</translation>
+<translation id="8533166274275423134">Opción aberta noutro lugar</translation>
 <translation id="8534481786647257214">Completouse a publicación en Google+.</translation>
 <translation id="8548878600947630424">Buscar na páxina...</translation>
 <translation id="8574235780160508979">As Condicións de servizo de Chrome cambiarán o 31 de marzo. <ph name="BEGIN_LINK" />Revísaas<ph name="END_LINK" /></translation>

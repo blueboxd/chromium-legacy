@@ -431,6 +431,7 @@ void SourceOrderTool::Draw(float scale) {
   DrawParentNode();
 
   // Draw child outlines and labels.
+  int position_number = 1;
   for (Node& child_node : NodeTraversal::ChildrenOf(*node_)) {
     // Don't draw if it's not an element or is not the direct child of the
     // parent node.
@@ -445,19 +446,20 @@ void SourceOrderTool::Draw(float scale) {
       if (display_none || visibility_hidden)
         continue;
     }
-    DrawNode(&child_node);
+    DrawNode(&child_node, position_number);
+    position_number++;
   }
 }
 
-void SourceOrderTool::DrawNode(Node* node) {
+void SourceOrderTool::DrawNode(Node* node, int source_order_position) {
   InspectorSourceOrderHighlight highlight(
-      node, source_order_config_->child_outline_color);
+      node, source_order_config_->child_outline_color, source_order_position);
   overlay_->EvaluateInOverlay("drawSourceOrder", highlight.AsProtocolValue());
 }
 
 void SourceOrderTool::DrawParentNode() {
   InspectorSourceOrderHighlight highlight(
-      node_.Get(), source_order_config_->parent_outline_color);
+      node_.Get(), source_order_config_->parent_outline_color, 0);
   overlay_->EvaluateInOverlay("drawSourceOrder", highlight.AsProtocolValue());
 }
 
@@ -476,7 +478,7 @@ int SourceOrderTool::GetDataResourceId() {
 std::unique_ptr<protocol::DictionaryValue>
 SourceOrderTool::GetNodeInspectorSourceOrderHighlightAsJson() const {
   InspectorSourceOrderHighlight highlight(
-      node_.Get(), source_order_config_->parent_outline_color);
+      node_.Get(), source_order_config_->parent_outline_color, 0);
   return highlight.AsProtocolValue();
 }
 

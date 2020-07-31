@@ -3450,11 +3450,6 @@ const char kArcUsbStorageUIName[] = "Enable ARC USB Storage UI";
 const char kArcUsbStorageUIDescription[] =
     "Enable experimental UI for controlling ARC access to USB storage devices.";
 
-const char kAshDragWindowFromShelfName[] =
-    "Enable dragging a window from shelf to overview or home screen.";
-const char kAshDragWindowFromShelfDescription[] =
-    "Enable dragging a window from shelf to overview or home screen.";
-
 const char kAshEnablePipRoundedCornersName[] =
     "Enable Picture-in-Picture rounded corners.";
 const char kAshEnablePipRoundedCornersDescription[] =

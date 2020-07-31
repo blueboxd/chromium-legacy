@@ -11,38 +11,52 @@ import test_runner
 LOGGER = logging.getLogger(__name__)
 
 
+def _compose_simulator_name(platform, version):
+  """Composes the name of simulator of platform and version strings."""
+  return '%s %s test simulator' % (platform, version)
+
+
 def get_simulator_list():
   """Gets list of available simulator as a dictionary."""
   return json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', '-j']))
 
 
 def get_simulator(platform, version):
-  """Gets a simulator or creates a new one if not exist by platform and version
+  """Gets a simulator or creates a new one if not exist by platform and version.
 
-    Returns:
-      A udid of a simulator device.
+  Args:
+    platform: (str) A platform name, e.g. "iPhone 11 Pro"
+    version: (str) A version name, e.g. "13.4"
+
+  Returns:
+    A udid of a simulator device.
   """
-  udids = get_simulator_udids_by_platform_and_sdk(platform, version)
+  udids = get_simulator_udids_by_platform_and_version(platform, version)
   if udids:
     return udids[0]
-  simctl_list = get_simulator_list()
-  return create_device_by_platform_and_version(
-      get_simulator_runtime_by_platform(simctl_list, platform), version)
+  return create_device_by_platform_and_version(platform, version)
 
 
-def get_simulator_runtime_by_platform(simulators, platform):
-  """Gets runtime identifier for platform.
+def get_simulator_device_type_by_platform(simulators, platform):
+  """Gets device type identifier for platform.
 
   Args:
     simulators: (dict) A list of available simulators.
     platform: (str) A platform name, e.g. "iPhone 11 Pro"
+
+  Returns:
+    Simulator device type identifier string of the platform.
+    e.g. 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro'
+
+  Raises:
+    test_runner.SimulatorNotFoundError when the platform can't be found.
   """
-  for device in simulators['devicetypes']:
-    if device['name'] == platform:
-      return device['identifier']
+  for devicetype in simulators['devicetypes']:
+    if devicetype['name'] == platform:
+      return devicetype['identifier']
   raise test_runner.SimulatorNotFoundError(
-      'Not found device "%s" in devicetypes %s' % (platform,
-                                                   simulators['devicetypes']))
+      'Not found device "%s" in devicetypes %s' %
+      (platform, simulators['devicetypes']))
 
 
 def get_simulator_runtime_by_version(simulators, version):
@@ -50,13 +64,20 @@ def get_simulator_runtime_by_version(simulators, version):
 
   Args:
     simulators: (dict) A list of available simulators.
-    version: (str) A version name, e.g. "13.2.2"
+    version: (str) A version name, e.g. "13.4"
+
+  Returns:
+    Simulator runtime identifier string of the version.
+    e.g. 'com.apple.CoreSimulator.SimRuntime.iOS-13-4'
+
+  Raises:
+    test_runner.SimulatorNotFoundError when the version can't be found.
   """
   for runtime in simulators['runtimes']:
     if runtime['version'] == version and 'iOS' in runtime['name']:
       return runtime['identifier']
-  raise test_runner.SimulatorNotFoundError(
-      'Not found "%s" SDK in runtimes %s' % (version, simulators['runtimes']))
+  raise test_runner.SimulatorNotFoundError('Not found "%s" SDK in runtimes %s' %
+                                           (version, simulators['runtimes']))
 
 
 def get_simulator_runtime_by_device_udid(simulator_udid):
@@ -75,7 +96,7 @@ def get_simulator_runtime_by_device_udid(simulator_udid):
                                                             simulator_list))
 
 
-def get_simulator_udids_by_platform_and_sdk(platform, version):
+def get_simulator_udids_by_platform_and_version(platform, version):
   """Gets list of simulators UDID based on platform name and iOS version.
 
     Args:
@@ -87,7 +108,7 @@ def get_simulator_udids_by_platform_and_sdk(platform, version):
   sdk_id = get_simulator_runtime_by_version(simulators, version)
   results = []
   for device in devices.get(sdk_id, []):
-    if device['name'] == platform:
+    if device['name'] == _compose_simulator_name(platform, version):
       results.append(device['udid'])
   return results
 
@@ -99,14 +120,20 @@ def create_device_by_platform_and_version(platform, version):
       platform: (str) A platform name, e.g. "iPhone 11"
       version: (str) A version name, e.g. "13.2.2"
   """
-  name = '%s test' % platform
+  name = _compose_simulator_name(platform, version)
   LOGGER.info('Creating simulator %s', name)
-  udid = subprocess.check_output([
-      'xcrun', 'simctl', 'create', name, platform,
-      get_simulator_runtime_by_version(get_simulator_list(), version)
-  ]).rstrip()
-  LOGGER.info('Created simulator with UDID: %s', udid)
-  return udid
+  simulators = get_simulator_list()
+  device_type = get_simulator_device_type_by_platform(simulators, platform)
+  runtime = get_simulator_runtime_by_version(simulators, version)
+  try:
+    udid = subprocess.check_output(
+        ['xcrun', 'simctl', 'create', name, device_type, runtime],
+        stderr=subprocess.STDOUT).rstrip()
+    LOGGER.info('Created simulator with UDID: %s', udid)
+    return udid
+  except subprocess.CalledProcessError as e:
+    LOGGER.error('Error when creating simulator "%s": %s' % (name, e.output))
+    raise e
 
 
 def delete_simulator_by_udid(udid):

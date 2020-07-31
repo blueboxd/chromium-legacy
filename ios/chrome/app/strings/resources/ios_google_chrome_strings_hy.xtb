@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chrome-ը հաստատեց, որ <ph name="ISSUER" />-ն է թողարկել վեբկայքի վկայագիրը:</translation>
 <translation id="2199719347983604670">Տվյալներ Chrome Sync-ից</translation>
 <translation id="2347208864470321755">Եթե միացնեք այս գործառույթը, Chrome-ը կառաջարկի թարգմանել այլ լեզուներով ներկայացված էջերը Google Translate-ի միջոցով: <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Դարձրեք Chrome-ը ձեր կանխադրված դիտարկիչը</translation>
 <translation id="2574249610672786438">Chrome-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար մտեք հաշիվ բոլոր սարքերում։</translation>
 <translation id="2576431527583832481">Chrome-ը բարելավվել է: Մատչելի է նոր տարբերակ:</translation>
 <translation id="257708665678654955">Ուզո՞ւմ եք, որ Google Chrome-ն այսուհետ առաջարկի թարգմանել այս կայքի <ph name="LANGUAGE_NAME" /> էջերը:</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Մուտք գործել Chrome</translation>
 <translation id="3345341804167540816">Օգտագործեք Chrome-ն ամենուրեք</translation>
 <translation id="3522659714780527202">Chrome-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար միացրեք համաժամացումը։</translation>
+<translation id="3706101708757577809">Այժմ հաղորդագրություններում, փաստաթղթերում և այլ հավելվածներում առկա հղումները կարող եք բացել Chrome-ում։</translation>
 <translation id="384394811301901750">Այս պահին Google Chrome-ը չի կարող օգտագործել ձեր ֆոտոխցիկը</translation>
 <translation id="3980220367029651214">Դուք փոխարկում եք համաժամացվող հաշիվները՝ անցնելով <ph name="USER_EMAIL1" /> հաշվից <ph name="USER_EMAIL2" /> հաշիվ: Chrome-ի ձեր առկա տվյալները կառավարվում են <ph name="DOMAIN" /> տիրույթի կողմից: Այս սարքում պահված տվյալները կջնջվեն, սակայն կպահպանվեն ձեր <ph name="USER_EMAIL1" /> հաշվում:</translation>
 <translation id="3988789688219830639">Google Chrome-ին հասանելի չեն ձեր լուսանկարները կամ տեսանյութերը: Անցեք iOS Կարգավորումներ &gt; Գաղտնիություն &gt; Լուսանկարներ (Settings &gt; Privacy &gt; Photos) և միացրեք մուտքի թույլտվությունը:</translation>
@@ -44,6 +46,10 @@
 <translation id="6600954340915313787">Պատճենվել է Chrome-ում</translation>
 <translation id="6648150602980899529">Դուք մուտք եք գործում <ph name="DOMAIN" /> տիրույթի կողմից կառավարվող հաշիվ` դրա ադմինիստրատորին թույլ տալով վերահսկել ձեր Chrome-ի տվյալները: Ձեր տվյալները մշտապես կկապվեն այս հաշվի հետ: Եթե դուրս գաք Chrome-ից, այս սարքում պահված տվյալները կջնջվեն, սակայն կպահպանվեն ձեր Google հաշվում:</translation>
 <translation id="6676840375528380067">Հեռացնե՞լ Chrome-ի տվյալները այս սարքից</translation>
+<translation id="6724102885918156196">Chrome-ը ձեր կանխադրված դիտարկիչը դարձնելու համար՝
+        1. Բացեք կարգավորումները։ 
+        2. Հպեք «Դիտարկիչի կանխադրված հավելված»։
+        3. Ընտրեք Chrome-ը։</translation>
 <translation id="7165736900384873061">Ինչպես օգտագործել Google Chrome QR սկաները</translation>
 <translation id="7172660552945675509">Խորհուրդ․ <ph name="BEGIN_LINK" />տեղափոխել Chrome-ը Dock վահանակ<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Բացել կարգավորումները</translation>

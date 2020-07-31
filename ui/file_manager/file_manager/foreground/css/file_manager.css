@@ -800,6 +800,20 @@ body.check-select .dialog-header #share-menu-button > .icon {
   background-image: url(../images/files/ui/share.svg);
 }
 
+.dialog-header:not(.files-ng) #sharesheet-buttonn > .icon {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/share_white.png) 1x,
+      url(../images/files/ui/2x/share_white.png) 2x);
+}
+
+.dialog-header.files-ng #sharesheet-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/share_ng.svg);
+}
+
+body.check-select .dialog-header #sharesheet-button > .icon {
+  background-image: url(../images/files/ui/share.svg);
+}
+
 .dialog-header:not(.files-ng) #delete-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/delete_white.png) 1x,

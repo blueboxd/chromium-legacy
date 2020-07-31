@@ -8,12 +8,13 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
-#include "components/omnibox/browser/location_bar_model_impl.h"
 #include "weblayer/public/url_bar_controller.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
+
+class LocationBarModelImpl;
 
 namespace content {
 class WebContents;

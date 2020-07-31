@@ -80,6 +80,10 @@ const PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedSerialAskForUrls, ContentSettingsType::SERIAL_GUARD,
          CONTENT_SETTING_ASK},
         {prefs::kManagedSerialBlockedForUrls, ContentSettingsType::SERIAL_GUARD,
+         CONTENT_SETTING_BLOCK},
+        {prefs::kManagedSensorsAllowedForUrls, ContentSettingsType::SENSORS,
+         CONTENT_SETTING_ALLOW},
+        {prefs::kManagedSensorsBlockedForUrls, ContentSettingsType::SENSORS,
          CONTENT_SETTING_BLOCK}};
 
 class VectorRuleIterator : public RuleIterator {
@@ -141,7 +145,8 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
         {ContentSettingsType::LEGACY_COOKIE_ACCESS,
          prefs::kManagedDefaultLegacyCookieAccessSetting},
         {ContentSettingsType::SERIAL_GUARD,
-         prefs::kManagedDefaultSerialGuardSetting}};
+         prefs::kManagedDefaultSerialGuardSetting},
+        {ContentSettingsType::SENSORS, prefs::kManagedDefaultSensorsSetting}};
 
 // static
 void PolicyProvider::RegisterProfilePrefs(
@@ -169,6 +174,8 @@ void PolicyProvider::RegisterProfilePrefs(
       prefs::kManagedLegacyCookieAccessAllowedForDomains);
   registry->RegisterListPref(prefs::kManagedSerialAskForUrls);
   registry->RegisterListPref(prefs::kManagedSerialBlockedForUrls);
+  registry->RegisterListPref(prefs::kManagedSensorsAllowedForUrls);
+  registry->RegisterListPref(prefs::kManagedSensorsBlockedForUrls);
 
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
@@ -199,6 +206,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kManagedDefaultLegacyCookieAccessSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultSerialGuardSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultSensorsSetting,
                                 CONTENT_SETTING_DEFAULT);
 }
 
@@ -237,6 +246,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
                              callback);
   pref_change_registrar_.Add(prefs::kManagedSerialAskForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedSerialBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedSensorsAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedSensorsBlockedForUrls, callback);
 
   // The following preferences are only used to indicate if a default content
   // setting is managed and to hold the managed default setting value. If the
@@ -267,6 +278,7 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
                              callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultSerialGuardSetting,
                              callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultSensorsSetting, callback);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -569,7 +581,9 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
       name == prefs::kManagedWebUsbBlockedForUrls ||
       name == prefs::kManagedLegacyCookieAccessAllowedForDomains ||
       name == prefs::kManagedSerialAskForUrls ||
-      name == prefs::kManagedSerialBlockedForUrls) {
+      name == prefs::kManagedSerialBlockedForUrls ||
+      name == prefs::kManagedSensorsAllowedForUrls ||
+      name == prefs::kManagedSensorsBlockedForUrls) {
     ReadManagedContentSettings(true);
     ReadManagedDefaultSettings();
   }

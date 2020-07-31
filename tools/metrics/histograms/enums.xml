@@ -8271,6 +8271,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="WebAPK notification permission enabled"/>
 </enum>
 
+<enum name="BooleanWillReadFrequently">
+  <int value="0" label="Not initialized to be read frequently"/>
+  <int value="1" label="Initialized to be read frequently"/>
+</enum>
+
 <enum name="BooleanWiped">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
@@ -8666,6 +8671,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="Sub-pixel text anti-aliasing support"/>
   <int value="6" label="drawImage called with a texture backed source image"/>
   <int value="7" label="Running on low-end device"/>
+</enum>
+
+<enum name="CanvasGPUFallbackToCPUScenario">
+  <int value="0" label="Large pattern drawn onto a GPU canvas"/>
+  <int value="1" label="Slow getImageData on GPU canvases"/>
 </enum>
 
 <enum name="CanvasHibernationEvent">
@@ -11905,7 +11915,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="kTimeout"/>
   <int value="6" label="kActiveWindowChanged"/>
   <int value="7" label="kNavigationEntryChanged"/>
-  <int value="8" label="kBackGestureStarted"/>
+  <int value="8" label="kBackGestureStarted (OBSOLETE)"/>
   <int value="9" label="kUserSessionInactive"/>
 </enum>
 
@@ -13357,6 +13367,27 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="4" label="COMPATIBILITY_CHECK_FAILED"/>
   <int value="5" label="NOT_FOUND"/>
   <int value="6" label="UPDATE_IN_PROGRESS"/>
+</enum>
+
+<enum name="CrosCrashSenderRemoveReason">
+<!-- TotalRemoval should be the total of other values -->
+
+  <int value="0" label="TotalRemoval"/>
+  <int value="1" label="NotOfficialImage"/>
+<!-- NoMetricsConsent is included only for completeness; if we don't have
+metrics consent we also won't be able to send UMA metrics. -->
+
+  <int value="2" label="NoMetricsConsent"/>
+  <int value="3" label="ProcessingFileExists"/>
+  <int value="4" label="LargeMetaFile"/>
+  <int value="5" label="UnparseableMetaFile"/>
+  <int value="6" label="PayloadUnspecified"/>
+  <int value="7" label="PayloadAbsolute"/>
+  <int value="8" label="PayloadNonexistent"/>
+  <int value="9" label="PayloadKindUnknown"/>
+  <int value="10" label="OSVersionTooOld"/>
+  <int value="11" label="OldIncompleteMeta"/>
+  <int value="12" label="FinishedUploading"/>
 </enum>
 
 <enum name="CrosDictationToggleDictationMethod">
@@ -21303,6 +21334,9 @@ Called by update_document_policy_enum.py.-->
   <int value="751" label="DefaultSerialGuardSetting"/>
   <int value="752" label="SerialAskForUrls"/>
   <int value="753" label="SerialBlockedForUrls"/>
+  <int value="754" label="DefaultSensorsSetting"/>
+  <int value="755" label="SensorsAllowedForUrls"/>
+  <int value="756" label="SensorsBlockedForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -24075,6 +24109,7 @@ Called by update_extension_histograms.py.-->
   <int value="1493"
       label="AUTOTESTPRIVATE_STOPTHROUGHPUTTRACKERDATACOLLECTION"/>
   <int value="1494" label="INPUTMETHODPRIVATE_GETAUTOCORRECTRANGE"/>
+  <int value="1495" label="FILEMANAGERPRIVATEINTERNAL_SHARESHEETHASTARGETS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -55823,6 +55858,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="36" label="Display"/>
   <int value="37" label="ActiveDirectoryManagement"/>
   <int value="38" label="LegacySameSiteCookieBehaviorSettings"/>
+  <int value="39" label="SensorsSettings"/>
 </enum>
 
 <enum name="PolicyLoadStatus">

@@ -3071,28 +3071,9 @@ TEST_P(OverviewSessionTest, EatKeysDuringStartAnimation) {
   EXPECT_TRUE(test_event_handler.HasSeenEvent());
 }
 
-// The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
-// enabled.
-class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {
- public:
-  OverviewSessionWithDragFromShelfFeatureTest() = default;
-  ~OverviewSessionWithDragFromShelfFeatureTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDragFromShelfToHomeOrOverview);
-    OverviewSessionTest::SetUp();
-    EnterTabletMode();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewSessionWithDragFromShelfFeatureTest);
-};
-
 // Tests that in tablet mode, tapping on the background will go to home screen.
-TEST_P(OverviewSessionWithDragFromShelfFeatureTest, TapOnBackgroundGoToHome) {
+TEST_P(OverviewSessionTest, TapOnBackgroundGoToHome) {
+  EnterTabletMode();
   UpdateDisplay("800x600");
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   WindowState* window_state = WindowState::Get(window.get());
@@ -3119,8 +3100,8 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, TapOnBackgroundGoToHome) {
 
 // Tests that in tablet mode, tapping on the background in split view mode will
 // be no-op.
-TEST_P(OverviewSessionWithDragFromShelfFeatureTest,
-       TapOnBackgroundInSplitView) {
+TEST_P(OverviewSessionTest, TapOnBackgroundInSplitView) {
+  EnterTabletMode();
   UpdateDisplay("800x600");
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
 
@@ -3143,7 +3124,8 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest,
 }
 
 // Tests starting the overview session using kFadeInEnter type.
-TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeIn) {
+TEST_P(OverviewSessionTest, FadeIn) {
+  EnterTabletMode();
   // Create a minimized window.
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   WindowState::Get(window.get())->Minimize();
@@ -3181,7 +3163,8 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeIn) {
 }
 
 // Tests exiting the overview session using kFadeOutExit type.
-TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeOutExit) {
+TEST_P(OverviewSessionTest, FadeOutExit) {
+  EnterTabletMode();
   // Create a test window.
   std::unique_ptr<views::Widget> test_widget(CreateTestWidget());
   ToggleOverview();
@@ -7621,8 +7604,5 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
     testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(All,
-                         OverviewSessionWithDragFromShelfFeatureTest,
-                         testing::Bool());
 
 }  // namespace ash

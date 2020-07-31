@@ -220,6 +220,7 @@
 <translation id="2744248271121720757">Докоснете дума, за да извършите незабавно търсене, или вижте свързаните действия</translation>
 <translation id="2760989362628427051">Включване на тъмната тема, когато тъмната тема на устройството или режимът за запазване на батерията в него са включени</translation>
 <translation id="2762000892062317888">току-що</translation>
+<translation id="2771869497727323769">Не може да се създаде връзка към текста. Споделете връзка към страница в приложение.</translation>
 <translation id="2777555524387840389">Остават <ph name="SECONDS" /> сек</translation>
 <translation id="2779651927720337254">неуспешно</translation>
 <translation id="2781151931089541271">Остава 1 сек</translation>
@@ -387,6 +388,7 @@
 <translation id="4084712963632273211">От <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />показва се от Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Да се изтрият ли данните на приложенията?</translation>
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
+<translation id="4108998448622696017">Открива опасни събития, когато се случват, и ви предупреждава за тях.</translation>
 <translation id="4116038641877404294">Изтеглете страниците, за да ги използвате офлайн</translation>
 <translation id="4135200667068010335">Списъкът с устройства, с които да се сподели даден раздел, е затворен.</translation>
 <translation id="4149994727733219643">Опростен изглед на уеб страниците</translation>
@@ -459,6 +461,7 @@
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="4738836084190194332">Последно синхронизиране: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA грешка: <ph name="ERROR_CODE" /> в <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Отваряне на нов раздел</translation>
 <translation id="4759238208242260848">Изтегляния</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 изтегляне завърши.}other{# изтегляния завършиха.}}</translation>
@@ -508,6 +511,7 @@
 <translation id="5040262127954254034">Поверителност</translation>
 <translation id="5087580092889165836">Добавяне на карта</translation>
 <translation id="509429900233858213">Възникна грешка.</translation>
+<translation id="5100748015044654621">Споделяне на връзка към откроения текст в приложение</translation>
 <translation id="510275257476243843">Остава 1 час</translation>
 <translation id="5123685120097942451">Раздел в режим „инкогнито“</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
@@ -686,6 +690,7 @@
 <translation id="6398765197997659313">Изход от цял екран</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
+<translation id="6412673304250309937">Проверка на URL адресите в съхраняван в Chrome списък с опасни сайтове. Ако сайт се опита да открадне паролата ви или изтеглите опасен файл от сайт, Chrome може също така да изпрати до „Безопасно сърфиране“ URL адресите и част от съдържанието на страницата.</translation>
 <translation id="641643625718530986">Печат…</translation>
 <translation id="6427112570124116297">Превод на всичко в мрежата</translation>
 <translation id="6433501201775827830">Изберете машина за търсене</translation>
@@ -973,6 +978,7 @@
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
 <translation id="8569404424186215731">от <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Последните 4 седмици</translation>
+<translation id="8572344201470131220">Изображението е копирано</translation>
 <translation id="8583805026567836021">Данните от профила се изчистват</translation>
 <translation id="860043288473659153">Име на титуляря на картата</translation>
 <translation id="8616006591992756292">В профила ви в Google може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@
 <translation id="8854223127042600341">Преглед на офлайн файловете ви</translation>
 <translation id="889338405075704026">Към настройките за Chrome</translation>
 <translation id="8893398027601469503">Използвате най-новата версия на Chrome</translation>
+<translation id="8898822736010347272">Изпраща до Google URL адресите на някои от посетените от вас страници, ограничена системна информация и част от съдържанието на страниците, за да помага за откриването на нови заплахи и да защитава всички потребители на мрежата.</translation>
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8920114477895755567">Изчакват се подробности за родителите.</translation>
@@ -1014,6 +1021,7 @@
 <translation id="8988028529677883095">Използване на телефон като ключ за сигурност</translation>
 <translation id="8990209962746788689">Не може да се създаде QR код</translation>
 <translation id="8993760627012879038">Отваряне на нов раздел в режим „инкогнито“</translation>
+<translation id="8996847606757455498">Избиране на друг доставчик</translation>
 <translation id="8998729206196772491">Влизате с профил, управляван от <ph name="MANAGED_DOMAIN" />, и предоставяте на администратора му контрол върху данните си в Chrome. Те ще се свържат за постоянно с този профил. При излизане от профила в браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
 <translation id="9028914725102941583">Включете синхронизирането, за да споделяте на всички устройства</translation>
 <translation id="9040142327097499898">Известията са разрешени. Местоположението е изключено за това устройство.</translation>

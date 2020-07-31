@@ -410,56 +410,82 @@ grid-with-line-names{
       "areaNames": {},
       "rowLineNameOffsets": [
         {
+          "x": 0,
+          "y": 205,
           "name": "article",
           "offset": 205
         },
         {
+          "x": 0,
+          "y": 0,
           "name": "header",
           "offset": 0
         },
         {
+          "x": 0,
+          "y": 205,
           "name": "main",
           "offset": 205
         },
         {
+          "x": 0,
+          "y": 830,
           "name": "end",
           "offset": 830
         },
         {
+          "x": 0,
+          "y": 205,
           "name": "section",
           "offset": 205
         },
         {
+          "x": 0,
+          "y": 415,
           "name": "section",
           "offset": 415
         },
         {
+          "x": 0,
+          "y": 625,
           "name": "section",
           "offset": 625
         },
         {
+          "x": 0,
+          "y": 205,
           "name": "images",
           "offset": 205
         }
       ],
       "columnLineNameOffsets": [
         {
+          "x": 105,
+          "y": 0,
           "name": "header",
           "offset": 105
         },
         {
+          "x": 105,
+          "y": 0,
           "name": "content-start",
           "offset": 105
         },
         {
+          "x": 640,
+          "y": 0,
           "name": "fullpage-end",
           "offset": 640
         },
         {
+          "x": 0,
+          "y": 0,
           "name": "fullpage-start",
           "offset": 0
         },
         {
+          "x": 615,
+          "y": 0,
           "name": "content-end",
           "offset": 615
         }

@@ -28,6 +28,13 @@ void SpeechRecognitionServiceImpl::SetUrlLoaderFactory(
                      base::Unretained(this)));
 }
 
+void SpeechRecognitionServiceImpl::SetSodaPath(
+    const base::FilePath& binary_path,
+    const base::FilePath& config_path) {
+  binary_path_ = binary_path;
+  config_path_ = config_path;
+}
+
 void SpeechRecognitionServiceImpl::BindSpeechRecognitionServiceClient(
     mojo::PendingRemote<media::mojom::SpeechRecognitionServiceClient> client) {
   client_ = mojo::Remote<media::mojom::SpeechRecognitionServiceClient>(
@@ -48,7 +55,8 @@ void SpeechRecognitionServiceImpl::BindRecognizer(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
     BindRecognizerCallback callback) {
   SpeechRecognitionRecognizerImpl::Create(
-      std::move(receiver), std::move(client), weak_factory_.GetWeakPtr());
+      std::move(receiver), std::move(client), weak_factory_.GetWeakPtr(),
+      binary_path_, config_path_);
   std::move(callback).Run(
       SpeechRecognitionRecognizerImpl::IsMultichannelSupported());
 }

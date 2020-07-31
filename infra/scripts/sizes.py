@@ -27,7 +27,8 @@ import build_directory
 
 
 SRC_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..'))
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+print SRC_DIR
 
 # Add Catapult to the path so we can import the chartjson-histogramset
 # conversion.

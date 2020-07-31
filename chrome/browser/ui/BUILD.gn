@@ -1821,6 +1821,8 @@ static_library("ui") {
       "ash/chrome_accessibility_delegate.h",
       "ash/chrome_browser_main_extra_parts_ash.cc",
       "ash/chrome_browser_main_extra_parts_ash.h",
+      "ash/chrome_capture_mode_delegate.cc",
+      "ash/chrome_capture_mode_delegate.h",
       "ash/chrome_launcher_prefs.cc",
       "ash/chrome_launcher_prefs.h",
       "ash/chrome_new_window_client.cc",

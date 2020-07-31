@@ -178,7 +178,35 @@ void ExternalConnectorImpl::RegisterService(
     const std::string& service_name,
     mojo::PendingRemote<external_mojo::mojom::ExternalService> service_remote) {
   BindConnectorIfNecessary();
-  connector_->RegisterServiceInstance(service_name, std::move(service_remote));
+  auto service_instance_info =
+      chromecast::external_mojo::mojom::ServiceInstanceInfo::New(
+          service_name, std::move(service_remote));
+  std::vector<chromecast::external_mojo::mojom::ServiceInstanceInfoPtr> v;
+  v.emplace_back(std::move(service_instance_info));
+  connector_->RegisterServiceInstances(std::move(v));
+}
+
+void ExternalConnectorImpl::RegisterServices(
+    const std::vector<std::string>& service_names,
+    const std::vector<ExternalService*>& services) {
+  CHECK(service_names.size() == services.size());
+  std::vector<chromecast::external_mojo::mojom::ServiceInstanceInfoPtr>
+      service_instances_info;
+  service_instances_info.reserve(services.size());
+  for (size_t i = 0; i < services.size(); ++i) {
+    service_instances_info.emplace_back(
+        chromecast::external_mojo::mojom::ServiceInstanceInfo::New(
+            service_names[i], services[i]->GetReceiver()));
+  }
+
+  RegisterServices(std::move(service_instances_info));
+}
+
+void ExternalConnectorImpl::RegisterServices(
+    std::vector<chromecast::external_mojo::mojom::ServiceInstanceInfoPtr>
+        service_instances_info) {
+  BindConnectorIfNecessary();
+  connector_->RegisterServiceInstances(std::move(service_instances_info));
 }
 
 void ExternalConnectorImpl::QueryServiceList(

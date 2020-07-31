@@ -171,9 +171,13 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
 }
 
 bool SessionRestorationBrowserAgent::RestoreSession() {
-  NSString* path =
-      base::SysUTF8ToNSString(GetSessionStoragePath().AsUTF8Unsafe());
   PreviousSessionInfo* session_info = [PreviousSessionInfo sharedInstance];
+  BOOL is_previous_session_multi_window =
+      session_info.isMultiWindowEnabledSession;
+  BOOL force_single_window =
+      IsMultiwindowSupported() && !is_previous_session_multi_window;
+  NSString* path = base::SysUTF8ToNSString(
+      GetSessionStoragePath(force_single_window).AsUTF8Unsafe());
   auto scoped_restore = [session_info startSessionRestoration];
   SessionIOS* session = [session_service_ loadSessionFromDirectory:path];
   SessionWindowIOS* session_window = nil;
@@ -194,8 +198,8 @@ void SessionRestorationBrowserAgent::SaveSession(bool immediately) {
   if (!CanSaveSession())
     return;
 
-  NSString* path =
-      base::SysUTF8ToNSString(GetSessionStoragePath().AsUTF8Unsafe());
+  NSString* path = base::SysUTF8ToNSString(
+      GetSessionStoragePath(/*force_single_window=*/false).AsUTF8Unsafe());
   [session_service_ saveSession:session_ios_factory_
                       directory:path
                     immediately:immediately];
@@ -234,9 +238,11 @@ void SessionRestorationBrowserAgent::WebStateActivatedAt(
   SaveSession(/*immediately=*/false);
 }
 
-base::FilePath SessionRestorationBrowserAgent::GetSessionStoragePath() {
+base::FilePath SessionRestorationBrowserAgent::GetSessionStoragePath(
+    bool force_single_window) {
   base::FilePath path = browser_state_->GetStatePath();
-  if (IsMultiwindowSupported() && !session_identifier_.empty()) {
+  if (!force_single_window && IsMultiwindowSupported() &&
+      !session_identifier_.empty()) {
     path = path.Append(kSessionDirectory)
                .Append(session_identifier_)
                .AsEndingWithSeparator();

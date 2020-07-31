@@ -27,7 +27,7 @@
 #include "remoting/base/protobuf_http_test_responder.h"
 #include "remoting/base/scoped_protobuf_http_request.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
-#include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/signaling/ftl_services_context.h"
 #include "remoting/signaling/message_reception_channel.h"
 #include "remoting/signaling/registration_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"

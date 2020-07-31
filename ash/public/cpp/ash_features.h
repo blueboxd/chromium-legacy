@@ -21,6 +21,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
 // certain devices.
 ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
 
+// Enables the Capture Mode feature which is an enhanced screenshot and screen
+// capture user experience.
+ASH_PUBLIC_EXPORT extern const base::Feature kCaptureMode;
+
 // Enables contextual nudges for gesture education.
 ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
 
@@ -135,12 +139,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kShelfAppScaling;
 // may have choppier app list animations while in this mode. crbug.com/765292.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableBackgroundBlur;
 
-// Enables dragging from shelf to enter home screen or overview feature.
-// Only for tablet mode.
-// TODO(https://crbug.com/992642): Remove this after this feature is fully
-// launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
-
 // When enabled, shelf navigation controls and the overview tray item will be
 // removed from the shelf in tablet mode (unless otherwise specified by user
 // preferences, or policy).
@@ -175,6 +173,8 @@ ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
 ASH_PUBLIC_EXPORT bool IsPerDeskShelfEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
+
+ASH_PUBLIC_EXPORT bool IsCaptureModeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 

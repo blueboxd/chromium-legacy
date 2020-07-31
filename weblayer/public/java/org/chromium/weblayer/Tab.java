@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IClientNavigation;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.IGoogleAccountsCallbackClient;
@@ -781,6 +782,12 @@ public class Tab {
         public boolean onBackToSafety() {
             StrictModeWorkaround.apply();
             return mCallback.onBackToSafety();
+        }
+        @Override
+        public String getErrorPageContent(IClientNavigation navigation) {
+            StrictModeWorkaround.apply();
+            ErrorPage errorPage = mCallback.getErrorPage((Navigation) navigation);
+            return errorPage == null ? null : errorPage.htmlContent;
         }
     }
 

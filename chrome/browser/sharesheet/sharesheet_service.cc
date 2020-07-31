@@ -120,4 +120,12 @@ SharesheetServiceDelegate* SharesheetService::GetDelegate(
   return nullptr;
 }
 
+bool SharesheetService::HasShareTargets(apps::mojom::IntentPtr intent) {
+  auto& actions = sharesheet_action_cache_->GetShareActions();
+  std::vector<apps::AppIdAndActivityName> app_id_and_activities =
+      app_service_proxy_->GetAppsForIntent(intent);
+
+  return !actions.empty() || !app_id_and_activities.empty();
+}
+
 }  // namespace sharesheet

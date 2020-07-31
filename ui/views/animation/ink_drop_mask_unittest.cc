@@ -13,46 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkRect.h"
 #include "ui/compositor/paint_context.h"
 
 namespace views {
-
-TEST(InkDropMaskTest, RoundRectInkDropMaskPaintsRect) {
-  gfx::Size layer_size(10, 10);
-  RoundRectInkDropMask mask(layer_size, gfx::InsetsF(0.f, 0.f), 0.f);
-
-  auto list = base::MakeRefCounted<cc::DisplayItemList>();
-  gfx::Rect draw_rect(layer_size);
-  mask.OnPaintLayer(ui::PaintContext(list.get(), 1.f, draw_rect, false));
-  // OnPaintLayer() scales and then draws the rectangle, so it results in two
-  // ops.
-  EXPECT_EQ(2u, list->num_paint_ops()) << list->ToString();
-
-  sk_sp<cc::PaintRecord> record = list->ReleaseAsRecord();
-  const auto* scale_op = record->GetOpAtForTesting<cc::ScaleOp>(0);
-  ASSERT_NE(nullptr, scale_op);
-  EXPECT_EQ(1.0f, scale_op->sx);
-  EXPECT_EQ(1.0f, scale_op->sy);
-  const auto* draw_op = record->GetOpAtForTesting<cc::DrawRectOp>(1);
-  ASSERT_NE(nullptr, draw_op);
-  EXPECT_EQ(gfx::RectToSkRect(draw_rect), draw_op->rect);
-}
-
-TEST(InkDropMaskTest, CircleInkDropMaskPaintsCircle) {
-  gfx::Size layer_size(10, 10);
-  CircleInkDropMask mask(layer_size, gfx::Point(5, 5), 2);
-
-  auto list = base::MakeRefCounted<cc::DisplayItemList>();
-  mask.OnPaintLayer(
-      ui::PaintContext(list.get(), 1.f, gfx::Rect(layer_size), false));
-  EXPECT_EQ(1u, list->num_paint_ops()) << list->ToString();
-
-  sk_sp<cc::PaintRecord> record = list->ReleaseAsRecord();
-  const auto* draw_op = record->GetOpAtForTesting<cc::DrawOvalOp>(0);
-  ASSERT_NE(nullptr, draw_op);
-  EXPECT_EQ(SkRect::MakeXYWH(3, 3, 4, 4), draw_op->oval);
-}
 
 TEST(InkDropMaskTest, PathInkDropMaskPaintsTriangle) {
   gfx::Size layer_size(10, 10);

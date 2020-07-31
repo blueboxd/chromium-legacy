@@ -224,7 +224,8 @@ public class PictureInPictureController {
             }
         };
 
-        activity.getFullscreenManager().addObserver(fullscreenListener);
+        FullscreenManager fullscreenManager = activity.getFullscreenManager();
+        fullscreenManager.addObserver(fullscreenListener);
         activityTab.addObserver(tabObserver);
         tabModelSelector.addObserver(tabModelSelectorObserver);
         webContents.addObserver(webContentsObserver);
@@ -235,7 +236,7 @@ public class PictureInPictureController {
                 activityTab.removeObserver(tabObserver);
                 tabModelSelector.removeObserver(tabModelSelectorObserver);
                 webContents.removeObserver(webContentsObserver);
-                activity.getFullscreenManager().removeObserver(fullscreenListener);
+                fullscreenManager.removeObserver(fullscreenListener);
             }
         });
 

@@ -16,6 +16,9 @@
 #include "weblayer/browser/weblayer_security_blocking_page_factory.h"
 #include "weblayer/public/browser.h"
 #include "weblayer/public/browser_observer.h"
+#include "weblayer/public/error_page.h"
+#include "weblayer/public/error_page_delegate.h"
+#include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
 #include "weblayer/test/load_completion_observer.h"
@@ -52,6 +55,24 @@ class NewTabWaiter : public BrowserObserver {
   ScopedObserver<Browser, BrowserObserver> observer_{this};
 };
 #endif
+
+class TestErrorPageDelegate : public ErrorPageDelegate {
+ public:
+  bool was_get_error_page_content_called() const {
+    return was_get_error_page_content_called_;
+  }
+
+  // ErrorPageDelegate:
+  bool OnBackToSafety() override { return false; }
+  std::unique_ptr<ErrorPage> GetErrorPageContent(
+      Navigation* navigation) override {
+    was_get_error_page_content_called_ = true;
+    return std::make_unique<ErrorPage>();
+  }
+
+ private:
+  bool was_get_error_page_content_called_ = false;
+};
 
 }  // namespace
 
@@ -353,6 +374,16 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, BadClockInterstitial) {
   // Now navigating to a page with an expired cert should cause the bad clock
   // interstitial to appear.
   NavigateToPageWithExpiredCertExpectBadClockInterstitial();
+}
+
+// Verifies an error page is not requested for an ssl error.
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, ErrorPageNotCalledForMismatch) {
+  TestErrorPageDelegate error_page_delegate;
+  shell()->tab()->SetErrorPageDelegate(&error_page_delegate);
+  NavigateToOkPage();
+  EXPECT_FALSE(error_page_delegate.was_get_error_page_content_called());
+  NavigateToPageWithMismatchedCertExpectSSLInterstitial();
+  EXPECT_FALSE(error_page_delegate.was_get_error_page_content_called());
 }
 
 }  // namespace weblayer

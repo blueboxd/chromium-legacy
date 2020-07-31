@@ -24,7 +24,6 @@
 #include "chrome/browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/portal_page_load_metrics_observer.h"
@@ -141,12 +140,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     if (portal_observer)
       tracker->AddObserver(std::move(portal_observer));
 
-    std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-        no_state_prefetch_observer =
-            NoStatePrefetchPageLoadMetricsObserver::CreateIfNeeded(
-                web_contents());
-    if (no_state_prefetch_observer)
-      tracker->AddObserver(std::move(no_state_prefetch_observer));
 #if defined(OS_ANDROID)
     tracker->AddObserver(std::make_unique<AndroidPageLoadMetricsObserver>());
 #endif  // OS_ANDROID

@@ -241,7 +241,7 @@ def _RunTestWithAshChrome(args, forward_args):
     # files (lock file + socket) have been created in the |XDG_RUNTIME_DIR|.
     # TODO(crbug.com/1107966): Figure out a more reliable hook to determine the
     # status of ash-chrome, likely through mojo connection.
-    time_to_wait = 2
+    time_to_wait = 5
     time_counter = 0
     while len(os.listdir(tmp_xdg_dir_name)) < 2:
       time.sleep(0.5)

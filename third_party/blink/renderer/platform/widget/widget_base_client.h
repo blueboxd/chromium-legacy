@@ -168,6 +168,9 @@ class WidgetBaseClient {
   virtual void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                  const gfx::Rect& window_screen_rect) = 0;
 
+  // Return the overriden device scale factor for testing.
+  virtual float GetDeviceScaleFactorForTesting() { return 0.f; }
+
   // Test-specific methods below this point.
   virtual void ScheduleAnimationForWebTests() {}
 };

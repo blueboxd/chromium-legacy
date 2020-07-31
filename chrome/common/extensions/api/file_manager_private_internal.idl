@@ -39,6 +39,7 @@ namespace fileManagerPrivateInternal {
   callback InstallLinuxPackageCallback =
       void(fileManagerPrivate.InstallLinuxPackageResponse response);
   callback GetThumbnailCallback = void(DOMString ThumbnailDataUrl);
+  callback BooleanCallback = void(boolean result);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -108,5 +109,6 @@ namespace fileManagerPrivateInternal {
     static void getThumbnail(DOMString url,
                              boolean cropToSquare,
                              GetThumbnailCallback callback);
+    static void sharesheetHasTargets(DOMString[] urls, BooleanCallback callback);
   };
 };

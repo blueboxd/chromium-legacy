@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/clipboard/clipboard_history.h"
+#include "ash/clipboard/clipboard_history_helper.h"
 #include "ash/clipboard/clipboard_history_menu_model_adapter.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -35,35 +36,7 @@ namespace ash {
 
 namespace {
 
-base::string16 GetLabelForClipboardData(const ui::ClipboardData& item) {
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kBitmap)) {
-    return ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        IDS_CLIPBOARD_MENU_IMAGE);
-  }
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kText))
-    return base::UTF8ToUTF16(item.text());
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kHtml))
-    return base::UTF8ToUTF16(item.markup_data());
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kRtf)) {
-    return ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        IDS_CLIPBOARD_MENU_RTF_CONTENT);
-  }
-  if (item.format() &
-      static_cast<int>(ui::ClipboardInternalFormat::kBookmark)) {
-    return base::UTF8ToUTF16(item.bookmark_title());
-  }
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kWeb)) {
-    return ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        IDS_CLIPBOARD_MENU_WEB_SMART_PASTE);
-  }
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kCustom)) {
-    // TODO(crbug/1108901): Handle file manager case.
-    // TODO(crbug/1108902): Handle fallback case.
-    return base::UTF8ToUTF16("<CUSTOM DATA>");
-  }
-  return base::string16();
-}
-
+// TODO(dmblack): Move to clipboard_history_helper.
 ui::ImageModel GetImageModelForClipboardData(const ui::ClipboardData& item) {
   if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kBitmap)) {
     // TODO(newcomer): Show a smaller version of the bitmap.
@@ -190,7 +163,7 @@ void ClipboardHistoryController::ShowMenu() {
           IDS_CLIPBOARD_MENU_CLIPBOARD));
   int index = 0;
   for (const auto& item : clipboard_items_) {
-    menu_model->AddItemWithIcon(index++, GetLabelForClipboardData(item),
+    menu_model->AddItemWithIcon(index++, clipboard::helper::GetLabel(item),
                                 GetImageModelForClipboardData(item));
   }
   menu_model->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);

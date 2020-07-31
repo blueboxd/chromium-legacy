@@ -19,7 +19,9 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
+#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/test/mock_pointer.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_keyboard.h"
@@ -2088,6 +2090,43 @@ TEST_P(WaylandWindowTest, DoesNotGrabPopupIfNoSeat) {
   auto* test_popup = GetPopupByWidget(popup->GetWidget());
   ASSERT_TRUE(test_popup);
   EXPECT_EQ(test_popup->grab_serial(), 0u);
+}
+
+TEST_P(WaylandWindowTest, OneWaylandSubsurface) {
+  VerifyAndClearExpectations();
+
+  std::unique_ptr<WaylandWindow> window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kWindow, gfx::kNullAcceleratedWidget,
+      gfx::Rect(0, 0, 640, 480), &delegate_);
+  EXPECT_TRUE(window);
+
+  gfx::Rect subsurface_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  bool result = window->RequestSubsurface();
+  EXPECT_TRUE(result);
+
+  WaylandSubsurface* wayland_subsurface =
+      window->wayland_subsurfaces().begin()->get();
+
+  Sync();
+
+  auto* mock_surface_root_window = server_.GetObject<wl::MockSurface>(
+      window->root_surface()->GetSurfaceId());
+  auto* mock_surface_subsurface = server_.GetObject<wl::MockSurface>(
+      wayland_subsurface->wayland_surface()->GetSurfaceId());
+  EXPECT_TRUE(mock_surface_subsurface);
+  wayland_subsurface->ConfigureAndShowSurface(
+      gfx::OVERLAY_TRANSFORM_NONE, subsurface_bounds, true, nullptr, nullptr);
+  connection_->ScheduleFlush();
+
+  Sync();
+
+  auto* test_subsurface = mock_surface_subsurface->sub_surface();
+  EXPECT_TRUE(test_subsurface);
+  auto* parent_resource = mock_surface_root_window->resource();
+  EXPECT_EQ(parent_resource, test_subsurface->parent_resource());
+
+  EXPECT_EQ(test_subsurface->position(), subsurface_bounds.origin());
+  EXPECT_TRUE(test_subsurface->sync());
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

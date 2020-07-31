@@ -113,6 +113,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   bool ScrollFocusedEditableElementIntoView() override;
   void SetZoomLevelForTesting(double zoom_level) override;
   void ResetZoomLevelForTesting() override;
+  void SetDeviceScaleFactorForTesting(float factor) override;
 
   Frame* FocusedCoreFrame() const;
 

@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
@@ -1312,44 +1311,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       0);
   histogram_tester_->ExpectTotalCount(
       internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       NoStatePrefetchObserverCacheable) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/title1.html"));
-
-  waiter->Wait();
-
-  histogram_tester_->ExpectTotalCount(
-      "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 0);
-  histogram_tester_->ExpectTotalCount(
-      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
-  histogram_tester_->ExpectTotalCount(
-      "PageLoad.PaintTiming.ParseStartToFirstContentfulPaint", 1);
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       NoStatePrefetchObserverNoStore) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/nostore.html"));
-
-  waiter->Wait();
-
-  histogram_tester_->ExpectTotalCount(
-      "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 1);
-  histogram_tester_->ExpectTotalCount(
-      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {

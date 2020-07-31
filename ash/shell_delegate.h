@@ -30,6 +30,7 @@ class OSExchangeData;
 namespace ash {
 
 class AccessibilityDelegate;
+class CaptureModeDelegate;
 class ScreenshotDelegate;
 class BackGestureContextualNudgeDelegate;
 class BackGestureContextualNudgeController;
@@ -38,11 +39,15 @@ class BackGestureContextualNudgeController;
 class ASH_EXPORT ShellDelegate {
  public:
   // The Shell owns the delegate.
-  virtual ~ShellDelegate() {}
+  virtual ~ShellDelegate() = default;
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
   virtual bool CanShowWindowForUser(const aura::Window* window) const = 0;
+
+  // Creates and returns the delegate of the Capture Mode feature.
+  virtual std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
+      const = 0;
 
   // TODO(jamescook): Replace with a mojo-compatible interface.
   virtual std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() = 0;

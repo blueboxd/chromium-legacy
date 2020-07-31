@@ -1121,6 +1121,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Glósur á lásskjá eru sjálfkrafa vistaðar í <ph name="LOCK_SCREEN_APP_NAME" />. Nýjustu glósurnar birtast áfram á lásskjánum.</translation>
 <translation id="2353297238722298836">Myndavél og hljóðnemi eru leyfð</translation>
+<translation id="2355314311311231464">Úthlutun mistókst vegna þess að ekki var hægt að sækja reikningsupplýsingarnar þínar. Reyndu aftur. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Kveikja á skynditjóðrun</translation>
 <translation id="2356070529366658676">Spyrja</translation>
 <translation id="2357330829548294574">Fjarlægja <ph name="USER_NAME" /></translation>
@@ -1216,6 +1217,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2473195200299095979">Þýða þessa síðu</translation>
 <translation id="2475982808118771221">Villa kom upp</translation>
 <translation id="2476578072172137802">Stillingar vefsvæðis</translation>
+<translation id="2476974672882258506">Lokaðu Windows til að fjarlægja <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Heimildir margmiðlunarskráa fyrir „<ph name="EXTENSION" />“</translation>
 <translation id="247949520305900375">Deila hljóði</translation>
 <translation id="248003956660572823">Aðgangsorð eru ekki vistuð</translation>
@@ -1306,6 +1308,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2572032849266859634">Skrifvarinn aðgangur að <ph name="VOLUME_NAME" /> hefur verið veittur.</translation>
 <translation id="2575247648642144396">Þetta tákn verður sýnilegt þegar hægt er að nota viðbótina á síðunni sem er opin. Notaðu viðbótina með því að smella á táknið eða ýta á <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Setja upp Chromebox fyrir fundi</translation>
+<translation id="2579232805407578790">Ekki tókst að tengjast við netþjóninn. Athugaðu nettenginguna og reyndu aftur. Endurræstu Chromebook ef vandamálið er ennþá til staðar. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Leyfa <ph name="HOST" /> alltaf að sækja margar skrár</translation>
 <translation id="258095186877893873">Löng</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (kerfi <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2836635946302913370">Kerfisstjóri hefur lokað á innskráningu með þessu notandanafni.</translation>
 <translation id="283669119850230892">Til að nota netið <ph name="NETWORK_ID" /> þarftu fyrst að ljúka við tenginguna við internetið hér fyrir neðan.</translation>
 <translation id="2838379631617906747">Setur upp</translation>
+<translation id="2838835911926931318">Skráðu þig inn til að samstilla bókamerkin þín, aðgangsorðin, ferilinn og annað milli allra tækjanna þinna.</translation>
 <translation id="2839032553903800133">Tilkynningar útilokaðar</translation>
 <translation id="2841013758207633010">Tími</translation>
 <translation id="2841837950101800123">Útgefandi</translation>
@@ -1584,6 +1588,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
     Skilaboð frá þjóni: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Bæta efnissafni við eftir möppu</translation>
 <translation id="2910318910161511225">Tengstu neti og reyndu aftur</translation>
+<translation id="2910718431259223434">Eitthvað fór úrskeiðis. Reyndu aftur eða hafðu samband við eiganda tækisins þíns eða kerfisstjóra. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Leyfa vefsvæðum að vista og lesa fótsporagögn (ráðlagt)</translation>
 <translation id="2915102088417824677">Skoða notkunarskrá</translation>
 <translation id="2915873080513663243">Sjálfvirk skönnun</translation>
@@ -2323,6 +2328,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Viðbót var samþykkt}one{# viðbót var samþykkt}other{# viðbætur voru samþykktar}}</translation>
 <translation id="3822559385185038546">Kerfisstjórinn valdi stillingar þessa staðgengilsþjóns</translation>
 <translation id="3823310065043511710">Mælt er með að minnsta kosti <ph name="INSTALL_SIZE" /> af lausu plássi til að nota Linux.</translation>
+<translation id="3824621460022590830">Lykill fyrir skráningu tækis er ógildur. Hafðu samband við eiganda tækisins eða stjórnanda. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Kerfisstjóri hefur lokað fyrir að bæta við fleiri Google reikningum</translation>
 <translation id="3827306204503227641">Halda áfram að leyfa óafmarkaðar viðbætur</translation>
 <translation id="3827774300009121996">Allur skjárinn</translation>
@@ -3276,6 +3282,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5079950360618752063">Nota tillögu að aðgangsorði</translation>
 <translation id="508059534790499809">Endurnýja Kerberos-miða</translation>
 <translation id="5084230410268011727">Leyfa vefsvæðum að nota hreyfi- og birtuskynjara</translation>
+<translation id="5084328598860513926">Úthlutunaraðferð var trufluð. Reyndu aftur eða hafðu samband við eiganda tækisins þíns eða kerfisstjóra. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Leitar að uppfærslum</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Endurheimta sjálfgefna heimasíðu?</translation>
@@ -3675,6 +3682,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="557722062034137776">Endurstilling tækisins hefur engin áhrif á Google reikningana þína eða gögn sem samstillt hafa verið við reikningana. Öllum skrám sem vistaðar hafa verið í tækinu verður hins vegar eytt.</translation>
 <translation id="5578059481725149024">Sjálfvirk innskráning</translation>
 <translation id="558170650521898289">Staðfesting Microsoft Windows vélbúnaðarrekla</translation>
+<translation id="5581972110672966454">Ekki hægt að tengja tækið við lén. Reyndu aftur eða hafðu samband við eiganda tækisins þíns eða kerfisstjóra. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Aðalvalmynd</translation>
 <translation id="5583640892426849032">Bakklykill</translation>
 <translation id="5584088138253955452">Vista notandanafn?</translation>
@@ -3747,6 +3755,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5667546120811588575">Setur Google Play upp...</translation>
 <translation id="5669267381087807207">Virkjar</translation>
 <translation id="5669691691057771421">Sláðu inn nýtt PIN-númer</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Lokað á myndir</translation>
 <translation id="5671658447180261823">Fjarlægja tillöguna <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Þetta tæki fær sjálfvirkar hugbúnaðar- og öryggisuppfærslur til <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
@@ -5393,6 +5402,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7764225426217299476">Bæta við heimilisfangi</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> frá <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Færa</translation>
+<translation id="7766082757934713382">Hjálpar til við að minnka gagnanotkun á neti með því að setja sjálfvirkar forrita- og kerfisuppfærslur í bið</translation>
 <translation id="7766807826975222231">Skoða kynningu</translation>
 <translation id="7766838926148951335">Samþykkja heimildir</translation>
 <translation id="7768770796815395237">Breyta</translation>
@@ -6304,6 +6314,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="885701979325669005">Geymslurými</translation>
 <translation id="8859057652521303089">Veldu tungumál:</translation>
 <translation id="8859174528519900719">Undirrammi: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Ekki var hægt að hlaða þjónustuskilmálum</translation>
 <translation id="8859662783913000679">Reikningur foreldris</translation>
 <translation id="8862003515646449717">Skiptu yfir í hraðvirkari vafra</translation>
 <translation id="8863753581171631212">Opna tengil í <ph name="APP" /> í nýjum glugga</translation>
@@ -6572,6 +6583,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="920045321358709304">Leita á <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Öllum ónettengdum gögnum verður eytt</translation>
 <translation id="9201220332032049474">Valkostir skjálæsingar</translation>
+<translation id="9201842707396338580">Eitthvað fór úrskeiðis. Hafðu samband við eiganda tækisins eða stjórnanda. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">Kveikt á hegðunarskráningu</translation>
 <translation id="9203904171912129171">Velja tæki</translation>
 <translation id="9203962528777363226">Stjórnandi þessa tækis hefur slökkt á því að hægt sé að bæta við nýjum notendum</translation>
@@ -6643,6 +6655,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="983511809958454316">Þessi eiginleiki er ekki studdur í sýndarveruleika</translation>
 <translation id="984275831282074731">Greiðslumátar</translation>
 <translation id="98515147261107953">Langsnið</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Almennt</translation>
 <translation id="987897973846887088">Engar myndir til staðar</translation>
 <translation id="988978206646512040">Ekki er leyft að hafa autt aðgangsorð</translation>

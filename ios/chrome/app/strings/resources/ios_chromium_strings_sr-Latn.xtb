@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromium nije uspeo da vam proveri lozinke. Proverite internet vezu.</translation>
 <translation id="3639997914391704523">Chromium može da vam proverava lozinke kada se prijavite pomoću Google naloga.</translation>
 <translation id="3805899903892079518">Chromium ne može da pristupa slikama ili video snimcima. Omogućite pristup u iOS Settings (Podešavanja iOS-a) &gt; Privacy (Privatnost) &gt; Photos (Slike).</translation>
+<translation id="4166206055865952171">Postavite Chromium za podrazumevani pregledač</translation>
 <translation id="4555020257205549924">Kada je ova funkcija uključena, Chromium će nuditi da prevodi stranice napisane na drugim jezicima pomoću Google prevodioca. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Uključite Chromium skener</translation>
 <translation id="4787850887676698916">Ovde će se prikazati kartice koje ste otvorili u Chromium-u na drugim uređajima.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Poboljšajte doživljaj u Chromium-u na osnovu lokacije.</translation>
 <translation id="6820823224820483452">Chromium nije uspeo da proveri sve lozinke. Probajte ponovo sutra.</translation>
 <translation id="7099326575020694068">Chromium ne može da koristi kameru u režimu podeljenog prikaza</translation>
+<translation id="7118091470949186573">Sada možete da koristite Chromium svaki put kada dodirnete linkove u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="7173114856073700355">Otvori Podešavanja</translation>
 <translation id="7208566199746267865">Chromium vam štedi vreme tako što postavlja naloge na veb. Možete da dodajete ili uklanjate naloge u podešavanjima.</translation>
 <translation id="7269362888766543920">Neki programski dodaci izazivaju otkazivanje Chromium-a. Probajte da ih deinstalirate.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Da biste postavili Chromium za podrazumevani pregledač:
+        1. Otvorite Podešavanja. 
+        2. Dodirnite Podrazumevana aplikacija za pregledanje.
+        3. Izaberite Chromium.</translation>
 <translation id="7357211569052832586">Izabrani podaci su uklonjeni iz Chromium-a i sa sinhronizovanih uređaja. Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i aktivnosti u drugim Google uslugama na history.google.com.</translation>
 <translation id="7400689562045506105">Koristite Chromium svuda</translation>
 <translation id="766897673682622022">Vaša lozinka je otkrivena pri upadu u podatke. Chromium preporučuje da odmah promenite lozinku.</translation>

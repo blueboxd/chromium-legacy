@@ -888,7 +888,7 @@
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-lacros-compile-rel': 'lacros_on_linux_release_bot',
-      'linux-lacros-rel': 'lacros_on_linux_release_bot',
+      'linux-lacros-fyi-rel': 'lacros_on_linux_release_bot',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-perfetto-rel': 'perfetto_release_trybot',

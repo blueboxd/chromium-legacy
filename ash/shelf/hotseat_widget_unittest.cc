@@ -1688,10 +1688,6 @@ TEST_P(HotseatWidgetTest, HotseatFlushWithScreenBottomInClamshell) {
 // Tests that when hotseat and drag-window-to-overview features are both
 // enabled, HomeLauncherGestureHandler can receive and process events properly.
 TEST_P(HotseatWidgetTest, DragActiveWindowInTabletMode) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -1729,10 +1725,6 @@ TEST_P(HotseatWidgetTest, DragActiveWindowInTabletMode) {
 // enabled, hotseat is not extended after dragging a window to overview, and
 // then activating the window.
 TEST_P(HotseatWidgetTest, ExitingOvervieHidesHotseat) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
   const ShelfAutoHideBehavior auto_hide_behavior = shelf_auto_hide_behavior();
   GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
   TabletModeControllerTestApi().EnterTabletMode();
@@ -1783,10 +1775,6 @@ TEST_P(HotseatWidgetTest, ExitingOvervieHidesHotseat) {
 // Tests that failing to drag the maximized window to overview mode results in
 // an extended hotseat.
 TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
   const ShelfAutoHideBehavior auto_hide_behavior = shelf_auto_hide_behavior();
   GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
   TabletModeControllerTestApi().EnterTabletMode();

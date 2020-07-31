@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/credential_provider/extension/os_service_manager.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/device_policies_manager.h"
@@ -28,6 +29,7 @@
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 #include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
+#include "chrome/credential_provider/setup/gcpw_files.h"
 
 namespace base {
 class WaitableEvent;
@@ -620,6 +622,37 @@ class FakeDevicePoliciesManager : public DevicePoliciesManager {
   DevicePoliciesManager* original_manager_ = nullptr;
   DevicePolicies device_policies_;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeGCPWFiles : public GCPWFiles {
+ public:
+  FakeGCPWFiles();
+  ~FakeGCPWFiles() override;
+
+  std::vector<base::FilePath::StringType> GetEffectiveInstallFiles() override;
+
+ private:
+  GCPWFiles* original_files = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeOSServiceManager : public extension::OSServiceManager {
+ public:
+  FakeOSServiceManager();
+  ~FakeOSServiceManager() override;
+
+  DWORD GetServiceStatus(SERVICE_STATUS* service_status) override;
+
+  DWORD InstallService(const base::FilePath& service_binary_path,
+                       extension::ScopedScHandle* sc_handle) override;
+
+ private:
+  extension::OSServiceManager* os_service_manager_ = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace credential_provider
 

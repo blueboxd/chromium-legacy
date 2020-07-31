@@ -34,8 +34,11 @@ void CopyArchivedBinaries(
   int limit = FileTypePolicies::GetInstance()->GetMaxArchivedBinariesToReport();
 
   dest_binaries->Clear();
-  for (int i = 0; i < limit && i < src_binaries.size(); i++) {
-    *dest_binaries->Add() = src_binaries[i];
+  for (int i = 0; dest_binaries->size() < limit && i < src_binaries.size();
+       i++) {
+    if (src_binaries[i].is_executable() || src_binaries[i].is_archive()) {
+      *dest_binaries->Add() = src_binaries[i];
+    }
   }
 }
 

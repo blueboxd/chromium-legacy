@@ -95,8 +95,9 @@ class SessionRestorationBrowserAgent
 
   // The path to use for all session storage reads and writes. If multi-window
   // is enabled, the session ID for this agent is used to determine this path;
-  // otherwise it is the state path of the associated browser state.
-  base::FilePath GetSessionStoragePath();
+  // otherwise or if |force_single_window| is true, the state path of the
+  // associated browser state will be returned.
+  base::FilePath GetSessionStoragePath(bool force_single_window = false);
 
   // The service object which handles the actual saving of sessions.
   SessionServiceIOS* session_service_;

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
 namespace blink {
 
@@ -118,6 +118,17 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
 
 bool LayoutNGFieldset::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGFieldset || LayoutNGBlockFlow::IsOfType(type);
+}
+
+void LayoutNGFieldset::InvalidatePaint(
+    const PaintInvalidatorContext& context) const {
+  // Fieldset's box decoration painting depends on the legend geometry.
+  const LayoutBox* legend_box = LayoutFieldset::FindInFlowLegend(*this);
+  if (legend_box && legend_box->ShouldCheckGeometryForPaintInvalidation()) {
+    GetMutableForPainting().SetShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kGeometry);
+  }
+  LayoutNGBlockFlow::InvalidatePaint(context);
 }
 
 }  // namespace blink

@@ -706,8 +706,13 @@ void BaseRenderingContext2D::fillRect(double x,
   if (IsAccelerated() &&
       GetState().HasPattern(CanvasRenderingContext2DState::kFillPaintType) &&
       !GetState().PatternIsAccelerated(
-          CanvasRenderingContext2DState::kFillPaintType))
+          CanvasRenderingContext2DState::kFillPaintType)) {
     DisableAcceleration();
+    base::UmaHistogramEnumeration(
+        "Blink.Canvas.GPUFallbackToCPU",
+        GPUFallbackToCPUScenario::kLargePatternDrawnToGPU);
+  }
+
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawRect(rect, *flags); },
@@ -1631,8 +1636,11 @@ ImageData* BaseRenderingContext2D::getImageData(
   // uses CPU rendering from the start in such cases. (crbug.com/1090180)
   if (!RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
     // GetImagedata is faster in Unaccelerated canvases
-    if (IsAccelerated())
+    if (IsAccelerated()) {
       DisableAcceleration();
+      base::UmaHistogramEnumeration("Blink.Canvas.GPUFallbackToCPU",
+                                    GPUFallbackToCPUScenario::kGetImageData);
+    }
   }
 
   size_t size_in_bytes;

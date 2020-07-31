@@ -296,8 +296,8 @@ int InspectorDOMAgent::Bind(Node* node, NodeToIdMap* nodes_map) {
   return id;
 }
 
-void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
-  int id = nodes_map->at(node);
+void InspectorDOMAgent::Unbind(Node* node) {
+  int id = document_node_to_id_map_->at(node);
   if (!id)
     return;
 
@@ -310,30 +310,30 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
   if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
     Document* content_document = frame_owner->contentDocument();
     if (content_document)
-      Unbind(content_document, nodes_map);
+      Unbind(content_document);
   }
 
   if (ShadowRoot* root = node->GetShadowRoot())
-    Unbind(root, nodes_map);
+    Unbind(root);
 
   auto* element = DynamicTo<Element>(node);
   if (element) {
     if (element->GetPseudoElement(kPseudoIdBefore))
-      Unbind(element->GetPseudoElement(kPseudoIdBefore), nodes_map);
+      Unbind(element->GetPseudoElement(kPseudoIdBefore));
     if (element->GetPseudoElement(kPseudoIdAfter))
-      Unbind(element->GetPseudoElement(kPseudoIdAfter), nodes_map);
+      Unbind(element->GetPseudoElement(kPseudoIdAfter));
     if (element->GetPseudoElement(kPseudoIdMarker))
-      Unbind(element->GetPseudoElement(kPseudoIdMarker), nodes_map);
+      Unbind(element->GetPseudoElement(kPseudoIdMarker));
 
     if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
       if (link_element->IsImport() && link_element->import())
-        Unbind(link_element->import(), nodes_map);
+        Unbind(link_element->import());
     }
   }
 
   if (dom_listener_)
     dom_listener_->WillRemoveDOMNode(node);
-  nodes_map->erase(node);
+  document_node_to_id_map_->erase(node);
 
   bool children_requested = children_requested_.Contains(id);
   if (children_requested) {
@@ -341,12 +341,11 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
     children_requested_.erase(id);
     Node* child = InnerFirstChild(node);
     while (child) {
-      Unbind(child, nodes_map);
+      Unbind(child);
       child = InnerNextSibling(child);
     }
   }
-  if (nodes_map == document_node_to_id_map_.Get())
-    cached_child_count_.erase(id);
+  cached_child_count_.erase(id);
 }
 
 Response InspectorDOMAgent::AssertNode(int node_id, Node*& node) {
@@ -1847,7 +1846,7 @@ void InspectorDOMAgent::InvalidateFrameOwnerElement(
   // Re-add frame owner element together with its new children.
   int parent_id = document_node_to_id_map_->at(InnerParentNode(frame_owner));
   GetFrontend()->childNodeRemoved(parent_id, frame_owner_id);
-  Unbind(frame_owner, document_node_to_id_map_.Get());
+  Unbind(frame_owner);
 
   std::unique_ptr<protocol::DOM::Node> value =
       BuildObjectForNode(frame_owner, 0, false, document_node_to_id_map_.Get());
@@ -1877,7 +1876,7 @@ void InspectorDOMAgent::DidInsertDOMNode(Node* node) {
     return;
 
   // We could be attaching existing subtree. Forget the bindings.
-  Unbind(node, document_node_to_id_map_.Get());
+  Unbind(node);
 
   ContainerNode* parent = node->parentNode();
   if (!parent)
@@ -1926,7 +1925,7 @@ void InspectorDOMAgent::DOMNodeRemoved(Node* node) {
     GetFrontend()->childNodeRemoved(parent_id,
                                     document_node_to_id_map_->at(node));
   }
-  Unbind(node, document_node_to_id_map_.Get());
+  Unbind(node);
 }
 
 void InspectorDOMAgent::WillModifyDOMAttr(Element*,
@@ -2083,7 +2082,7 @@ void InspectorDOMAgent::FrameOwnerContentUpdated(
   if (!frame_owner->contentDocument()) {
     // frame_owner does not point to frame at this point, so Unbind it
     // explicitly.
-    Unbind(frame->GetDocument(), document_node_to_id_map_.Get());
+    Unbind(frame->GetDocument());
   }
 
   // Revalidating owner can serialize empty frame owner - that's what we are
@@ -2118,7 +2117,7 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
   int parent_id = document_node_to_id_map_->at(parent);
   DCHECK(parent_id);
 
-  Unbind(pseudo_element, document_node_to_id_map_.Get());
+  Unbind(pseudo_element);
   GetFrontend()->pseudoElementRemoved(parent_id, pseudo_element_id);
 }
 

@@ -188,6 +188,7 @@ bool g_egl_ext_colorspace_display_p3_passthrough = false;
 bool g_egl_flexible_surface_compatibility_supported = false;
 bool g_egl_robust_resource_init_supported = false;
 bool g_egl_display_texture_share_group_supported = false;
+bool g_egl_display_semaphore_share_group_supported = false;
 bool g_egl_create_context_client_arrays_supported = false;
 bool g_egl_android_native_fence_sync_supported = false;
 bool g_egl_ext_pixel_format_float_supported = false;
@@ -943,6 +944,8 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
 
   g_egl_display_texture_share_group_supported =
       HasEGLExtension("EGL_ANGLE_display_texture_share_group");
+  g_egl_display_semaphore_share_group_supported =
+      HasEGLExtension("EGL_ANGLE_display_semaphore_share_group");
   g_egl_create_context_client_arrays_supported =
       HasEGLExtension("EGL_ANGLE_create_context_client_arrays");
   g_egl_robust_resource_init_supported =
@@ -1113,6 +1116,10 @@ bool GLSurfaceEGL::IsRobustResourceInitSupported() {
 
 bool GLSurfaceEGL::IsDisplayTextureShareGroupSupported() {
   return g_egl_display_texture_share_group_supported;
+}
+
+bool GLSurfaceEGL::IsDisplaySemaphoreShareGroupSupported() {
+  return g_egl_display_semaphore_share_group_supported;
 }
 
 bool GLSurfaceEGL::IsCreateContextClientArraysSupported() {

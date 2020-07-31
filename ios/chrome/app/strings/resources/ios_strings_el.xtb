@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Αδύνατη αποθ.εικόνας</translation>
 <translation id="1180526666083833456">Συγχρονισμός και εξατομίκευση σε όλες τις συσκευές.</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
+<translation id="1185569544548277362">Νέο: Μπορείτε να κάνετε το Chrome το προεπιλεγμένο πρόγραμμα περιήγησής σας. <ph name="BEGIN_LINK" />Άνοιγμα ρυθμίσεων<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Νέα αναζήτηση</translation>
 <translation id="1209206284964581585">Προσωρινή απόκρυψη</translation>
 <translation id="1219674500290482172">Δεν είναι δυνατή η σύνδεση στο διαδίκτυο.</translation>
@@ -367,6 +368,7 @@
 <translation id="5407969256130905701">Απόρριψη αλλαγών</translation>
 <translation id="5409365236829784218">Δεν υπάρχουν εγκατεστ. εφαρμογές για το άνοιγμα του αρχείου</translation>
 <translation id="5416022985862681400">Τελευταίες 7 ημέρες</translation>
+<translation id="543338862236136125">Επεξεργασία κωδικού πρόσβασης</translation>
 <translation id="5433691172869980887">Το όνομα χρήστη αντιγράφηκε</translation>
 <translation id="54401264925851789">Πληροφορίες ασφάλειας σελίδας</translation>
 <translation id="5443952882982198570">Πιστωτικές κάρτες</translation>
@@ -639,6 +641,7 @@
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Καρτέλες <ph name="FIRST_VISIBLE_TAB" /> έως <ph name="LAST_VISIBLE_TAB" /> από <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Νέο</translation>
 <translation id="8532105204136943229">Έτος λήξης</translation>
+<translation id="8533166274275423134">Άνοιξε άλλου</translation>
 <translation id="8534481786647257214">Η ανάρτηση Google+ ολοκληρώθηκε.</translation>
 <translation id="8548878600947630424">Εύρεση στη σελίδα...</translation>
 <translation id="8574235780160508979">Οι Όροι Παροχής Υπηρεσιών του Chrome θα αλλάξουν στις 31 Μαρτίου. <ph name="BEGIN_LINK" />Αναθεωρήστε το περιεχόμενο<ph name="END_LINK" /></translation>

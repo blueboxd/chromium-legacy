@@ -32,6 +32,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/platform_font.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -1105,8 +1106,9 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
               base::ClampCeil(Clamp(xspan.GetMin()));
     }
   }
+  Size line_size = gfx::ToCeiledSize(GetLineSizeF(caret));
   return Rect(ToViewPoint(PointF(x, 0), caret_affinity),
-              Size(width, GetLineSize(caret).height()));
+              Size(width, line_size.height()));
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {

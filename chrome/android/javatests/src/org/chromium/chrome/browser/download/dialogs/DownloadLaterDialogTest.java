@@ -13,7 +13,9 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,14 +34,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -56,8 +56,7 @@ public class DownloadLaterDialogTest {
     private static final long INVALID_START_TIME = -1;
 
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private DownloadLaterDialogCoordinator mDialogCoordinator;
     private PropertyModel mModel;
@@ -85,9 +84,9 @@ public class DownloadLaterDialogTest {
         MockitoAnnotations.initMocks(this);
         when(mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS))
                 .thenReturn(DownloadLaterPromptStatus.SHOW_INITIAL);
+        doNothing().when(mPrefService).setInteger(anyString(), anyInt());
 
         mActivityTestRule.startMainActivityOnBlankPage();
-
         mDialogCoordinator = new DownloadLaterDialogCoordinator(mDateTimePicker);
         mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                          .with(DownloadLaterDialogProperties.CONTROLLER, mDialogCoordinator)
@@ -115,7 +114,6 @@ public class DownloadLaterDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "Crash on Android P bots without crashlog crbug.com/1101413")
     public void testShowDialogThenDismiss() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             showDialog();
@@ -127,7 +125,6 @@ public class DownloadLaterDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "Crash on Android P bots without crashlog crbug.com/1101413")
     public void testSelectRadioButton() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             showDialog();

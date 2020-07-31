@@ -61,7 +61,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   void SetBackgroundColor(SkColor background_color);
 

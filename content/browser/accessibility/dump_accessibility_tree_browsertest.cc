@@ -420,6 +420,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("combobox-optgroup.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySvgStyleElement) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-style-element.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAomBusy) {
   RunAomTest(FILE_PATH_LITERAL("aom-busy.html"));
 }

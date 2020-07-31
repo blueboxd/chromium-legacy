@@ -43,6 +43,12 @@ public final class ErrorPageCallbackProxy {
         return mClient.onBackToSafety();
     }
 
+    @CalledByNative
+    private String getErrorPageContent(NavigationImpl navigation) throws RemoteException {
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 86) return null;
+        return mClient.getErrorPageContent(navigation.getClientNavigation());
+    }
+
     @NativeMethods
     interface Natives {
         long createErrorPageCallbackProxy(ErrorPageCallbackProxy proxy, long tab);

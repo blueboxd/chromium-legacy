@@ -9,26 +9,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/enterprise_memory_limit_pref_observer.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/memory/swap_thrashing_monitor.h"
-#endif
-
 ChromeBrowserMainExtraPartsMemory::ChromeBrowserMainExtraPartsMemory() = default;
 
 ChromeBrowserMainExtraPartsMemory::~ChromeBrowserMainExtraPartsMemory() =
     default;
 
 void ChromeBrowserMainExtraPartsMemory::PostBrowserStart() {
-#if defined(OS_WIN)
-  // Start the swap thrashing monitor if it's enabled.
-  //
-  // TODO(sebmarchand): Delay the initialization of this monitor once we start
-  // using this feature by default, this is currently enabled at startup to make
-  // it easier to experiment with this monitor.
-  if (base::FeatureList::IsEnabled(features::kSwapThrashingMonitor))
-    memory::SwapThrashingMonitor::Initialize();
-#endif
-
   // The MemoryPressureMonitor might not be available in some tests.
   if (base::MemoryPressureMonitor::Get() &&
       memory::EnterpriseMemoryLimitPrefObserver::PlatformIsSupported()) {

@@ -482,7 +482,9 @@ bool IsPartOfDetailsSubpage(mojom::SearchResultType type,
 
 std::string GetDetailsSubpageUrl(const std::string& url_to_modify,
                                  const std::string& guid) {
-  return base::StringPrintf("%s?guid=%s", url_to_modify.c_str(), guid.c_str());
+  return base::StringPrintf(
+      "%s%sguid=%s", url_to_modify.c_str(),
+      url_to_modify.find('?') == std::string::npos ? "?" : "&", guid.c_str());
 }
 
 }  // namespace

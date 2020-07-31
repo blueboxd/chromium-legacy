@@ -318,12 +318,10 @@ static_library("common") {
     "//media",
     "//remoting/base",
     "//remoting/base:authorization",
-    "//remoting/base/grpc_support",
     "//remoting/host/file_transfer:common",
     "//remoting/host/input_monitor",
     "//remoting/host/security_key",
-    "//remoting/proto/remoting/v1:directory_grpc_library",
-    "//remoting/proto/remoting/v1:remote_support_host_grpc_library",
+    "//remoting/proto/remoting/v1:remote_support_host_messages",
     "//remoting/protocol",
     "//remoting/resources",
     "//services/network:network_service",
@@ -339,6 +337,7 @@ static_library("common") {
   public_deps = [
     "//ipc",
     "//remoting/proto",
+    "//remoting/proto/remoting/v1:directory_proto",
   ]
 
   if (is_posix) {
@@ -543,7 +542,6 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/grpc:grpcpp",
   ]
 
   if (is_linux && !is_chromeos) {

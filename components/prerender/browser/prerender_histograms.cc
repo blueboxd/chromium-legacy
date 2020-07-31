@@ -26,10 +26,6 @@ std::string GetHistogramName(Origin origin, const std::string& name) {
                               name);
 }
 
-const char* FirstContentfulPaintHiddenName(bool was_hidden) {
-  return was_hidden ? ".Hidden" : ".Visible";
-}
-
 }  // namespace
 
 PrerenderHistograms::PrerenderHistograms() {}
@@ -96,41 +92,6 @@ void PrerenderHistograms::RecordNetworkBytesConsumed(
   base::UmaHistogramCustomCounts(ComposeHistogramName("", "NetworkBytesWasted"),
                                  prerender_bytes, kHistogramMin, kHistogramMax,
                                  kBucketCount);
-}
-
-void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
-    Origin origin,
-    bool is_no_store,
-    bool was_hidden,
-    base::TimeDelta time,
-    base::TimeDelta prefetch_age) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!prefetch_age.is_zero()) {
-    DCHECK_NE(origin, ORIGIN_NONE);
-    base::UmaHistogramCustomTimes(GetHistogramName(origin, "PrefetchAge"),
-                                  prefetch_age,
-                                  base::TimeDelta::FromMilliseconds(10),
-                                  base::TimeDelta::FromMinutes(30), 50);
-  }
-
-  std::string histogram_base_name;
-  if (prefetch_age.is_zero()) {
-    histogram_base_name = "PrefetchTTFCP.Reference";
-  } else {
-    histogram_base_name = prefetch_age < base::TimeDelta::FromMinutes(
-                                             net::HttpCache::kPrefetchReuseMins)
-                              ? "PrefetchTTFCP.Warm"
-                              : "PrefetchTTFCP.Cold";
-  }
-
-  histogram_base_name += is_no_store ? ".NoStore" : ".Cacheable";
-  histogram_base_name += FirstContentfulPaintHiddenName(was_hidden);
-  std::string histogram_name = GetHistogramName(origin, histogram_base_name);
-
-  base::UmaHistogramCustomTimes(histogram_name, time,
-                                base::TimeDelta::FromMilliseconds(10),
-                                base::TimeDelta::FromMinutes(2), 50);
 }
 
 }  // namespace prerender

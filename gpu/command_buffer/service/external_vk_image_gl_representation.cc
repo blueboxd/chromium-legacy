@@ -58,13 +58,12 @@ void ExternalVkImageGLRepresentationShared::AcquireTexture(
     ExternalSemaphore* semaphore,
     GLuint texture_id,
     VkImageLayout src_layout) {
-  GLuint gl_semaphore = semaphore->TakeGLSemaphore();
+  GLuint gl_semaphore = semaphore->GetGLSemaphore();
   if (gl_semaphore) {
     GLenum gl_layout = ToGLImageLayout(src_layout);
     auto* api = gl::g_current_gl_context;
     api->glWaitSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1, &texture_id,
                               &gl_layout);
-    api->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
   }
 }
 
@@ -83,7 +82,7 @@ ExternalSemaphore ExternalVkImageGLRepresentationShared::ReleaseTexture(
     return {};
   }
 
-  GLuint gl_semaphore = semaphore.TakeGLSemaphore();
+  GLuint gl_semaphore = semaphore.GetGLSemaphore();
   if (!gl_semaphore) {
     // TODO(crbug.com/933452): We should be able to semaphore_handle this
     // failure more gracefully rather than shutting down the whole process.
@@ -97,7 +96,6 @@ ExternalSemaphore ExternalVkImageGLRepresentationShared::ReleaseTexture(
   auto* api = gl::g_current_gl_context;
   api->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1, &texture_id,
                               &gl_layout);
-  api->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
   // Base on the spec, the glSignalSemaphoreEXT() call just inserts signal
   // semaphore command in the gl context. It may or may not flush the context
   // which depends on the implementation. So to make it safe, we always call

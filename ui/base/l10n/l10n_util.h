@@ -20,7 +20,7 @@
 
 #if defined(OS_APPLE)
 #include "ui/base/l10n/l10n_util_mac.h"
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 namespace l10n_util {
 

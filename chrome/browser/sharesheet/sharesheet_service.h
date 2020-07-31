@@ -47,6 +47,7 @@ class SharesheetService : public KeyedService {
                         apps::mojom::IntentPtr intent,
                         views::View* share_action_view);
   SharesheetServiceDelegate* GetDelegate(uint32_t delegate_id);
+  bool HasShareTargets(apps::mojom::IntentPtr intent);
 
  private:
   uint32_t delegate_counter_ = 0;

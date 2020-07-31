@@ -1646,6 +1646,7 @@ Yderligere oplysninger:
 <translation id="7791011319128895129">Ikke udgivet</translation>
 <translation id="7791196057686275387">Bale</translation>
 <translation id="7791543448312431591">Tilføj</translation>
+<translation id="7792318290931435557">Enkeltsidevisning</translation>
 <translation id="7798389633136518089">Politikken blev ignoreret, da den ikke er angivet af en skytjeneste.</translation>
 <translation id="7800304661137206267">Forbindelsen er krypteret ved hjælp af <ph name="CIPHER" /> med <ph name="MAC" /> til meddelelsesgodkendelse og <ph name="KX" /> som hovedudvekslingsmekanisme.</translation>
 <translation id="7802523362929240268">Websitet er pålideligt</translation>
@@ -1741,6 +1742,7 @@ Yderligere oplysninger:
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8221250263817408492">Du har lige angivet din adgangskode på et vildledende website. Chromium anbefaler, at du straks går til <ph name="WEBSITE_1" /> og eventuelle andre websites, hvor du har brugt denne adgangskode, og ændrer adgangskoden.</translation>
 <translation id="8225771182978767009">Den person, der har konfigureret denne computer, har valgt at blokere dette website.</translation>
+<translation id="8228419419708659934">Tosidet visning</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Platformstemperatur</translation>
 <translation id="8238581221633243064">Åbn siden på en ny inkognitofane</translation>

@@ -21,7 +21,19 @@
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+
+namespace {
+
+bool IsProfileCreationAllowed() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
+}
+
+}  // namespace
 
 DiceWebSigninInterceptor::DiceWebSigninInterceptor(
     Profile* profile,
@@ -76,9 +88,10 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
     return;
   }
 
-  if (identity_manager_->GetAccountsWithRefreshTokens().size() <= 1u) {
+  if (identity_manager_->GetAccountsWithRefreshTokens().size() <= 1u ||
+      !IsProfileCreationAllowed()) {
     // Enterprise and multi-user bubbles are only shown if there are multiple
-    // accounts.
+    // accounts and profile creation is allowed.
     Reset();
     return;
   }

@@ -51,7 +51,7 @@ std::unique_ptr<media::VideoEncoder> CreateAcceleratedVideoEncoder() {
           gpu_factories, std::move(task_runner)));
 }
 
-std::unique_ptr<media::VpxVideoEncoder> CreateVpxVideoEncoder() {
+std::unique_ptr<media::VideoEncoder> CreateVpxVideoEncoder() {
 #if BUILDFLAG(ENABLE_LIBVPX)
   return std::make_unique<media::VpxVideoEncoder>();
 #else

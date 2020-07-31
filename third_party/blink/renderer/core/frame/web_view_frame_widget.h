@@ -82,6 +82,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   void SetZoomLevelForTesting(double zoom_level) override;
   void ResetZoomLevelForTesting() override;
+  void SetDeviceScaleFactorForTesting(float factor) override;
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }
@@ -115,6 +116,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void FocusChanged(bool enabled) override;
+  float GetDeviceScaleFactorForTesting() override;
 
   void Trace(Visitor*) const override;
 
@@ -129,6 +131,11 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   // to keep the override if the browser passes along VisualProperties with the
   // real device scale factor. A value of -INFINITY means this is ignored.
   double zoom_level_for_testing_ = -INFINITY;
+
+  // Web tests override the device scale factor in the renderer with this. We
+  // store it to keep the override if the browser passes along VisualProperties
+  // with the real device scale factor. A value of 0.f means this is ignored.
+  float device_scale_factor_for_testing_ = 0;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;
 

@@ -233,8 +233,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             if (params.isVideo()) {
                 histogramName = "ContextMenu.SelectedOptionAndroid.Video";
             } else if (params.isImage()) {
+                if (LensUtils.isInShoppingAllowlist(params.getPageUrl())) {
+                    String shoppingHistogramName = params.isAnchor()
+                            ? "ContextMenu.SelectedOptionAndroid.ImageLink.ShoppingDomain"
+                            : "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain";
+                    RecordHistogram.recordEnumeratedHistogram(
+                            shoppingHistogramName, action, Action.NUM_ENTRIES);
+                }
                 histogramName = params.isAnchor() ? "ContextMenu.SelectedOptionAndroid.ImageLink"
                                                   : "ContextMenu.SelectedOptionAndroid.Image";
+
             } else {
                 assert params.isAnchor();
                 histogramName = "ContextMenu.SelectedOptionAndroid.Link";
@@ -950,7 +958,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private Map<String, Boolean> getSearchByImageMenuItemsToShowAndRecordMetrics(
             Context context, String pageUrl) {
         // If Google Lens feature is not supported, show search by image menu item.
-        if (!LensUtils.enableGoogleLensFeature()) {
+        if (!LensUtils.isGoogleLensFeatureEnabled()) {
             // TODO(yusuyoutube): Cleanup. Remove repetition.
             return Collections.unmodifiableMap(new HashMap<String, Boolean>() {
                 {
@@ -1023,7 +1031,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         // In Lens Shopping Menu Item experiment, fallback to Search image with Google Lens
         // When the url is not in domain allowlist and AGSA version is equal to or greater than the
         // minimum shopping supported version.
-        if (LensUtils.enableGoogleLensShoppingFeature()
+        if (LensUtils.isGoogleLensShoppingFeatureEnabled()
                 && !GSAState.getInstance(context).isAgsaVersionBelowMinimum(
                         versionName, LensUtils.getMinimumAgsaVersionForLensShoppingSupport())) {
             if (LensUtils.isInShoppingAllowlist(pageUrl)) {

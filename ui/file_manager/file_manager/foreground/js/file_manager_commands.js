@@ -1545,7 +1545,8 @@ CommandHandler.COMMANDS_['more-actions'] = new class extends Command {
 
   /** @override */
   canExecute(event, fileManager) {
-    const canExecute = fileManager.taskController.canExecuteMoreActions();
+    const canExecute = fileManager.taskController.canExecuteMoreActions() &&
+        !util.isSharesheetEnabled();
     event.canExecute = canExecute;
     event.command.setHidden(!canExecute);
   }
@@ -1564,6 +1565,41 @@ CommandHandler.COMMANDS_['show-submenu'] = new class extends Command {
     const canExecute = fileManager.taskController.canExecuteShowOverflow();
     event.canExecute = canExecute;
     event.command.setHidden(!canExecute);
+  }
+};
+
+
+/**
+ * Invoke Sharesheet.
+ */
+CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends Command {
+  execute(event, fileManager) {
+    // TODO(crbug.com/1097623): Implement this.
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    const entries = fileManager.selectionHandler.selection.entries;
+
+    if (!util.isSharesheetEnabled() || !entries || entries.length === 0 ||
+        entries.some(entry => entry.isDirectory)) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      event.command.disabled = true;
+      return;
+    }
+
+    event.canExecute = true;
+    event.command.disabled = true;
+    chrome.fileManagerPrivate.sharesheetHasTargets(entries, hasTargets => {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.message);
+        return;
+      }
+      event.command.setHidden(!hasTargets);
+      event.canExecute = hasTargets;
+      event.command.disabled = !hasTargets;
+    });
   }
 };
 

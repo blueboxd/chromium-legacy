@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/grpc/grpc_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("ftl_messages") {
@@ -10,9 +9,4 @@ proto_library("ftl_messages") {
     "chromoting_message.proto",
     "ftl_messages.proto",
   ]
-}
-
-cc_grpc_library("ftl_grpc_library") {
-  sources = [ "ftl_services.proto" ]
-  deps = [ ":ftl_messages" ]
 }

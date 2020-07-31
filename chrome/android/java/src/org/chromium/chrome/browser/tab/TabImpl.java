@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewHelper;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
@@ -1403,7 +1402,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             assert webContentsState != null;
 
             WebContents webContents = WebContentsStateBridge.restoreContentsFromByteBuffer(
-                    webContentsState, Profile.getLastUsedRegularProfile(), isHidden());
+                    webContentsState, isHidden());
             if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show

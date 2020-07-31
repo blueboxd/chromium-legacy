@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chrome kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Chrome'i sünkroonimise teave</translation>
 <translation id="2347208864470321755">Kui see funktsioon on sisse lülitatud, pakub Chrome võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Chrome vaikebrauserina</translation>
 <translation id="2574249610672786438">Selleks et näha vahelehti kõikjalt, kus Chrome'i kasutate, logige kõigisse oma seadmetesse sisse</translation>
 <translation id="2576431527583832481">Chrome muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="257708665678654955">Kas soovite, et Google Chrome pakuks järgmisel korral sellel saidil <ph name="LANGUAGE_NAME" /> keeles olevate lehtede tõlkimise võimalust?</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3345341804167540816">Chrome'i kasutamine kõikjal</translation>
 <translation id="3522659714780527202">Selleks et näha vahelehti kõikjalt, kus Chrome'i kasutate, lülitage sisse sünkroonimine</translation>
+<translation id="3706101708757577809">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
 <translation id="384394811301901750">Chrome ei saa praegu kaamerat kasutada</translation>
 <translation id="3980220367029651214">Vahetate kontode sünkroonimise kontolt <ph name="USER_EMAIL1" /> kontole <ph name="USER_EMAIL2" />. Olemasolevaid Chrome'i andmeid haldab domeen <ph name="DOMAIN" />. See kustutab teie andmed sellest seadmest, kuid teie andmed jäävad alles kontole <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome'il pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdep. valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
@@ -44,6 +46,10 @@
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
 <translation id="6648150602980899529">Logite sisse kontoga, mida haldab <ph name="DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="6676840375528380067">Kas kustutada sellest seadmest Chrome'i andmed?</translation>
+<translation id="6724102885918156196">Chrome'i vaikebrauseriks määramiseks tehke järgmist.
+        1. Avage menüü Seaded. 
+        2. Puudutage valikut Vaikebrauserirakendus.
+        3. Valige Chrome.</translation>
 <translation id="7165736900384873061">Google Chrome'i QR-skanneri kasutamise alustamine</translation>
 <translation id="7172660552945675509">Nõuanne: <ph name="BEGIN_LINK" />lisage Chrome dokki<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Ava seaded</translation>

@@ -22,7 +22,7 @@
 #include "remoting/base/protobuf_http_status.h"
 #include "remoting/base/scoped_protobuf_http_request.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
-#include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/signaling/ftl_services_context.h"
 #include "remoting/signaling/mock_signaling_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -228,7 +228,7 @@ TEST_F(FtlMessageReceptionChannelTest,
                                         ""));
 
             ASSERT_EQ(1, GetRetryFailureCount());
-            ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
+            ASSERT_NEAR(FtlServicesContext::kBackoffInitialDelay.InSecondsF(),
                         GetTimeUntilRetry().InSecondsF(), 0.5);
 
             // This will make the channel reopen the stream.
@@ -370,7 +370,7 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
                 FtlMessageReceptionChannel::kPongTimeout);
 
             ASSERT_EQ(1, GetRetryFailureCount());
-            ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
+            ASSERT_NEAR(FtlServicesContext::kBackoffInitialDelay.InSecondsF(),
                         GetTimeUntilRetry().InSecondsF(), 0.5);
 
             // This will make the channel reopen the stream.
@@ -462,7 +462,7 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
             base::TimeDelta time_until_retry = GetTimeUntilRetry();
 
             base::TimeDelta max_delay_diff =
-                time_until_retry - FtlGrpcContext::kBackoffMaxDelay;
+                time_until_retry - FtlServicesContext::kBackoffMaxDelay;
 
             // Adjust for fuzziness.
             if (max_delay_diff.magnitude() <
@@ -499,7 +499,7 @@ TEST_F(FtlMessageReceptionChannelTest,
                                         ""));
 
             ASSERT_EQ(1, GetRetryFailureCount());
-            ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
+            ASSERT_NEAR(FtlServicesContext::kBackoffInitialDelay.InSecondsF(),
                         GetTimeUntilRetry().InSecondsF(), 0.5);
           },
           &old_stream))

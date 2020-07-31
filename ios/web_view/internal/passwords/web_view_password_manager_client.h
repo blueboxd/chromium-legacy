@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
+#include "components/password_manager/ios/password_manager_client_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -26,28 +27,6 @@
 #include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "url/gurl.h"
-
-@protocol CWVPasswordManagerClientDelegate <NSObject>
-
-@property(readonly, nonatomic)
-    password_manager::PasswordManager* passwordManager;
-
-// Returns the current URL of the main frame.
-@property(readonly, nonatomic) const GURL& lastCommittedURL;
-
-// Shows UI to prompt the user to save the password.
-- (void)showSavePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToSave;
-
-// Shows UI to prompt the user to update the password.
-- (void)showUpdatePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToUpdate;
-
-// Shows UI to notify the user about auto sign in.
-- (void)showAutosigninNotification:
-    (std::unique_ptr<autofill::PasswordForm>)formSignedIn;
-
-@end
 
 namespace ios_web_view {
 // An //ios/web_view implementation of password_manager::PasswordManagerClient.
@@ -130,13 +109,11 @@ class WebViewPasswordManagerClient
   bool IsNewTabPage() const override;
   password_manager::FieldInfoManager* GetFieldInfoManager() const override;
 
-  void set_delegate(id<CWVPasswordManagerClientDelegate> delegate) {
-    delegate_ = delegate;
-  }
+  void set_bridge(id<PasswordManagerClientBridge> bridge) { bridge_ = bridge; }
   const syncer::SyncService* GetSyncService();
 
  private:
-  __weak id<CWVPasswordManagerClientDelegate> delegate_;
+  __weak id<PasswordManagerClientBridge> bridge_;
 
   web::WebState* web_state_;
   syncer::SyncService* sync_service_;

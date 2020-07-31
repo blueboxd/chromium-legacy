@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">इमेज सेव्ह करू शकत नाही</translation>
 <translation id="1180526666083833456">डिव्हाइसवर सिंक आणि पर्सनलाइझ करा</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
+<translation id="1185569544548277362">नवीन: तुम्ही Chrome ला तुमचे डीफॉल्ट बनवू शकता. <ph name="BEGIN_LINK" />सेटिंग्ज उघडा<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">नवीन शोध</translation>
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
 <translation id="1219674500290482172">इंटरनेटशी कनेक्ट करण्यात अक्षम.</translation>
@@ -368,6 +369,7 @@
 <translation id="5407969256130905701">बदल काढून टाका</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही ॲप्लिकेशन इंस्टॉल केलेले नाहीत.</translation>
 <translation id="5416022985862681400">मागील सात दिवस</translation>
+<translation id="543338862236136125">पासवर्ड संपादित करा</translation>
 <translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
 <translation id="5443952882982198570">क्रेडिट कार्ड</translation>
@@ -639,6 +641,7 @@
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> पैकी <ph name="LAST_VISIBLE_TAB" /> ते <ph name="FIRST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> टॅब</translation>
 <translation id="8529767659511976195">नवीन</translation>
 <translation id="8532105204136943229">कालबाह्य होण्याचे वर्ष</translation>
+<translation id="8533166274275423134">दुसऱ्या ठिकाणी उघडले आहे</translation>
 <translation id="8534481786647257214">Google+ पोस्ट पूर्ण केले.</translation>
 <translation id="8548878600947630424">पृष्ठामध्ये शोधा...</translation>
 <translation id="8574235780160508979">Chrome च्या सेवा अटी ३१ मार्च रोजी बदलणार आहेत. <ph name="BEGIN_LINK" />कृपया पुनरावलोकन करा<ph name="END_LINK" /></translation>

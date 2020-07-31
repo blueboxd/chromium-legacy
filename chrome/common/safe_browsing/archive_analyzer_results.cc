@@ -152,9 +152,10 @@ void UpdateArchiveAnalyzerResultsWithFile(base::FilePath path,
         results->archived_binary.Add();
     archived_archive->set_download_type(ClientDownloadRequest::ARCHIVE);
     archived_archive->set_is_encrypted(is_encrypted);
+    archived_archive->set_is_archive(true);
     SetLengthAndDigestForContainedFile(path, file, file_length,
                                        archived_archive);
-  } else if (current_entry_is_executable) {
+  } else {
 #if defined(OS_MAC)
     // This check prevents running analysis on .app files since they are
     // really just directories and will cause binary feature extraction
@@ -164,20 +165,21 @@ void UpdateArchiveAnalyzerResultsWithFile(base::FilePath path,
     } else {
 #endif  // OS_MAC
       DVLOG(2) << "Downloaded a zipped executable: " << path.value();
-      results->has_executable = true;
+      results->has_executable |= current_entry_is_executable;
       ClientDownloadRequest::ArchivedBinary* archived_binary =
           results->archived_binary.Add();
       archived_binary->set_is_encrypted(is_encrypted);
       archived_binary->set_download_type(
           download_type_util::GetDownloadType(path));
+      archived_binary->set_is_executable(current_entry_is_executable);
       SetLengthAndDigestForContainedFile(path, file, file_length,
                                          archived_binary);
-      AnalyzeContainedBinary(binary_feature_extractor, file, archived_binary);
+      if (current_entry_is_executable) {
+        AnalyzeContainedBinary(binary_feature_extractor, file, archived_binary);
+      }
 #if defined(OS_MAC)
     }
 #endif  // OS_MAC
-  } else {
-    DVLOG(3) << "Ignoring non-binary file: " << path.value();
   }
 
   base::UmaHistogramSparse(

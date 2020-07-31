@@ -214,22 +214,31 @@ AssociatedUserValidator::~AssociatedUserValidator() = default;
 
 bool AssociatedUserValidator::IsOnlineLoginStale(
     const base::string16& sid) const {
-  wchar_t last_login_millis[512];
-  ULONG last_login_size = base::size(last_login_millis);
-  HRESULT hr = GetUserProperty(
-      sid, base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
-      last_login_millis, &last_login_size);
+  wchar_t last_token_valid_millis[512];
+  ULONG last_token_valid_size = base::size(last_token_valid_millis);
+  HRESULT hr = GetUserProperty(sid, base::UTF8ToUTF16(kKeyLastTokenValid),
+                               last_token_valid_millis, &last_token_valid_size);
 
   if (FAILED(hr)) {
-    LOGFN(VERBOSE) << "GetUserProperty for "
-                   << kKeyLastSuccessfulOnlineLoginMillis
+    LOGFN(VERBOSE) << "GetUserProperty for " << kKeyLastTokenValid
                    << " failed. hr=" << putHR(hr);
-    // Fallback to the less obstructive option to not enforce login via google
-    // when fetching the registry entry fails.
-    return false;
+    // DEPRECATED FLOW. Keeping it for backward compatibility.
+    HRESULT hr = GetUserProperty(
+        sid, base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+        last_token_valid_millis, &last_token_valid_size);
+
+    if (FAILED(hr)) {
+      LOGFN(VERBOSE) << "GetUserProperty for "
+                     << kKeyLastSuccessfulOnlineLoginMillis
+                     << " failed. hr=" << putHR(hr);
+      // Fallback to the less obstructive option to not enforce
+      // login via google when fetching the registry entry fails.
+      return false;
+    }
   }
-  int64_t last_login_millis_int64;
-  base::StringToInt64(last_login_millis, &last_login_millis_int64);
+
+  int64_t last_token_valid_millis_int64;
+  base::StringToInt64(last_token_valid_millis, &last_token_valid_millis_int64);
 
   DWORD validity_period_days;
   if (UserPoliciesManager::Get()->CloudPoliciesEnabled()) {
@@ -252,7 +261,7 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
       kDayInMillis * static_cast<int64_t>(validity_period_days);
   int64_t time_delta_from_last_login =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds() -
-      last_login_millis_int64;
+      last_token_valid_millis_int64;
   return time_delta_from_last_login >= validity_period_in_millis;
 }
 
@@ -626,6 +635,14 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
     validity_it->second->last_update = now > validity_it->second->last_update
                                            ? validity_it->second->last_update
                                            : now;
+  }
+
+  if (validity_it->second->is_valid) {
+    // Update the last token valid timestamp.
+    int64_t current_time = static_cast<int64_t>(
+        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+    SetUserProperty(sid, base::UTF8ToUTF16(kKeyLastTokenValid),
+                    base::NumberToString16(current_time));
   }
 
   return validity_it->second->is_valid;

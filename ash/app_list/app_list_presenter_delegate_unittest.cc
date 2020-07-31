@@ -3530,21 +3530,12 @@ TEST_F(AppListPresenterDelegateLayoutTest, SwitchPageInFullscreen) {
 }
 
 // Test a variety of behaviors for home launcher (app list in tablet mode).
-// Parameterized on whether gesture navigation flags are enabled.
 class AppListPresenterDelegateHomeLauncherTest
     : public AppListPresenterDelegateTest {
  public:
   AppListPresenterDelegateHomeLauncherTest() {
-    if (GetParam()) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kEnableBackgroundBlur,
-           features::kDragFromShelfToHomeOrOverview},
-          {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kEnableBackgroundBlur},
-          {features::kDragFromShelfToHomeOrOverview});
-    }
+    scoped_feature_list_.InitWithFeatures({features::kEnableBackgroundBlur},
+                                          {});
   }
   ~AppListPresenterDelegateHomeLauncherTest() override = default;
 
@@ -3588,10 +3579,6 @@ class AppListPresenterDelegateHomeLauncherTest
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateHomeLauncherTest);
 };
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         AppListPresenterDelegateHomeLauncherTest,
-                         testing::Bool());
 
 // Verifies that mouse dragging AppListView is enabled.
 TEST_P(AppListPresenterDelegateHomeLauncherTest, MouseDragAppList) {

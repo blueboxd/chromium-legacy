@@ -93,7 +93,8 @@ class ArImageTransport {
 
  private:
   std::unique_ptr<vr::WebXrSharedBuffer> CreateBuffer();
-  void ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
+  // Returns true if the buffer was resized and its sync token updated.
+  bool ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
                           const gfx::Size& size,
                           vr::WebXrSharedBuffer* buffer);
   void ResizeSurface(const gfx::Size& size);

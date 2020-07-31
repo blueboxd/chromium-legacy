@@ -1215,6 +1215,13 @@ interface Functions {
   // Called when the user selects an Android picker app in file selector.
   static void selectAndroidPickerApp(AndroidApp androidApp,
                                      SimpleCallback callback);
+
+  // Return true if sharesheet contains share targets for entries.
+  // |entries| Array of selected entries
+  // |callback|
+  [nocompile]
+  static void sharesheetHasTargets([instanceof=Entry] object[] entries,
+                           BooleanCallback callback);
 };
 
 interface Events {

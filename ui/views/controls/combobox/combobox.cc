@@ -448,7 +448,7 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
     case ui::VKEY_SPACE:
       show_menu = true;
       break;
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
     default:
       return false;
   }

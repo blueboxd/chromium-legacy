@@ -112,6 +112,9 @@ class TabListRecyclerView
         }
     }
 
+    // TODO(crbug.com/1076538, crbug.com/1095948): Use this ItemAnimator instead of
+    // |mOriginalAnimator|, when crbug.com/1095948 has a real fix.
+    @SuppressWarnings("unused")
     private class RemoveItemAnimator extends DefaultItemAnimator {
         @Override
         public boolean animateRemove(ViewHolder holder) {
@@ -145,8 +148,7 @@ class TabListRecyclerView
     private ImageView mShadowImageView;
     private int mShadowTopOffset;
     private TabListOnScrollListener mScrollListener;
-
-    private final RemoveItemAnimator mRemoveItemAnimator = new RemoveItemAnimator();
+    private RecyclerView.ItemAnimator mOriginalAnimator;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -172,6 +174,7 @@ class TabListRecyclerView
         registerDynamicView();
 
         // Stop all the animations to make all the items show up and scroll to position immediately.
+        mOriginalAnimator = getItemAnimator();
         setItemAnimator(null);
     }
 
@@ -199,7 +202,7 @@ class TabListRecyclerView
                 mFadeInAnimator = null;
                 mListener.finishedShowing();
                 // Restore the original value.
-                setItemAnimator(mRemoveItemAnimator);
+                setItemAnimator(mOriginalAnimator);
                 setShadowVisibility(computeVerticalScrollOffset() > 0);
                 if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();

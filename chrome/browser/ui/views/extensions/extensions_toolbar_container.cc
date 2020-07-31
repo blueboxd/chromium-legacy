@@ -660,9 +660,10 @@ void ExtensionsToolbarContainer::SetExtensionIconVisibility(
                            return GetViewForId(action_id) == GetViewForId(id);
                          });
   ToolbarActionView* extension_view = GetViewForId(*it);
-  extension_view->SetImage(
+  extension_view->SetImageModel(
       views::Button::STATE_NORMAL,
-      visible ? GetExtensionIcon(extension_view) : gfx::ImageSkia());
+      visible ? ui::ImageModel::FromImageSkia(GetExtensionIcon(extension_view))
+              : ui::ImageModel());
 }
 
 void ExtensionsToolbarContainer::UpdateContainerVisibility() {

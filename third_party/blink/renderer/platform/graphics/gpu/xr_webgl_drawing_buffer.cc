@@ -220,6 +220,16 @@ void XRWebGLDrawingBuffer::UseSharedBuffer(
 
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
+  // Ensure that the mailbox holder is ready to use, the following actions need
+  // to be sequenced after setup steps that were done through a different
+  // process's GPU command buffer context.
+  //
+  // TODO(https://crbug.com/1111526): Investigate handling context loss and
+  // recovery for cases where these assumptions may not be accurate.
+  DCHECK(buffer_mailbox_holder.sync_token.HasData());
+  DCHECK(!buffer_mailbox_holder.mailbox.IsZero());
+  gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder.sync_token.GetConstData());
+
   // Create a texture backed by the shared buffer image.
   DCHECK(!shared_buffer_texture_id_);
   DCHECK(buffer_mailbox_holder.mailbox.IsSharedImage());

@@ -149,6 +149,20 @@ without specifying <code>'extraHeaders'</code> in
 </ul>
 </p>
 
+<p class="note">
+<strong>Note:</strong> Modifying the <code>Origin</code> request header might
+not work as intended and may result in unexpected errors in the response's
+<a href="https://fetch.spec.whatwg.org/#cors-check">CORS checks</a>. This is
+because while extensions can only modify the
+<a href="https://fetch.spec.whatwg.org/#origin-header">Origin</a> request
+header, they can't change the <code>request origin</code> or initiator, which is
+a concept defined in the Fetch spec to represent who initiates the request. In
+such a scenario, the server may allow the CORS access for the modified request
+and put the header's <code>Origin</code> into the
+<code>Access-Control-Allow-Origin</code> header in the response. But it won't
+match the immutable <code>request origin</code> and result in a CORS failure.
+</p>
+
 <p>
 <span class="availability">Starting from Chrome 72</span>, if you need to
 modify responses before
@@ -181,7 +195,7 @@ removed without specifying <code>'extraHeaders'</code> in
 <strong>Note:</strong> Specifying <code>'extraHeaders'</code> in
 <code>opt_extraInfoSpec</code> may have a negative impact on performance, hence
 it should only be used when really necessary.
-<p>
+</p>
 
 <p>
 The webRequest API only exposes requests that the extension has

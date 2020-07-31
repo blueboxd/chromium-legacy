@@ -1118,6 +1118,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Beleške na zaključanom ekranu se automatski čuvaju u aplikaciji <ph name="LOCK_SCREEN_APP_NAME" />. Najnovija beleška će ostati na zaključanom ekranu.</translation>
 <translation id="2353297238722298836">Kamera i mikrofon su dozvoljeni</translation>
+<translation id="2355314311311231464">Dodela nije uspela jer preuzimanje detalja o nalogu nije uspelo. Probajte ponovo. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Uključi trenutno privezivanje</translation>
 <translation id="2356070529366658676">Pitaj</translation>
 <translation id="2357330829548294574">Uklonite korisnika <ph name="USER_NAME" /></translation>
@@ -1213,6 +1214,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2473195200299095979">Prevedite ovu stranicu</translation>
 <translation id="2475982808118771221">Došlo je do greške</translation>
 <translation id="2476578072172137802">Podešavanja sajta</translation>
+<translation id="2476974672882258506">Isključite Windows da biste deinstalirali <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Dozvole za medijske datoteke za „<ph name="EXTENSION" />“</translation>
 <translation id="247949520305900375">Deli zvuk</translation>
 <translation id="248003956660572823">Lozinke nisu sačuvane</translation>
@@ -1303,6 +1305,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2572032849266859634">Odobren je pristup za <ph name="VOLUME_NAME" /> samo za čitanje.</translation>
 <translation id="2575247648642144396">Ova ikona će biti vidljiva kada dodatak bude mogao da funkcioniše na trenutnoj stranici. Koristite ovaj dodatak klikom na ikonu ili pritiskom na <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Podesi kao Chromebox za sastanke</translation>
+<translation id="2579232805407578790">Povezivanje sa serverom nije uspelo. Proverite mrežnu vezu i probajte ponovo. Ako se problem nastavi, restartujte Chromebook. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Uvek dozvoli hostu <ph name="HOST" /> da preuzima više datoteka</translation>
 <translation id="258095186877893873">Dugo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1522,6 +1525,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2836635946302913370">Administrator je onemogućio prijavljivanje pomoću ovog korisničkog imena.</translation>
 <translation id="283669119850230892">Da biste koristili mrežu <ph name="NETWORK_ID" />, najpre uspostavite vezu sa internetom u nastavku.</translation>
 <translation id="2838379631617906747">Instalira se</translation>
+<translation id="2838835911926931318">Prijavite se da biste sinhronizovali obeleživače, lozinke, istoriju i drugo na svim uređajima</translation>
 <translation id="2839032553903800133">Obaveštenja su blokirana</translation>
 <translation id="2841013758207633010">Vreme</translation>
 <translation id="2841837950101800123">Dobavljač</translation>
@@ -1581,6 +1585,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
     Poruka servera: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Dodavanje galerije medija prema direktorijumu</translation>
 <translation id="2910318910161511225">Povežite se na mrežu i probajte ponovo</translation>
+<translation id="2910718431259223434">Došlo je do greške. Probajte ponovo ili se obratite administratoru. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Dozvoli sajtovima da čuvaju i čitaju podatke kolačića (preporučuje se)</translation>
 <translation id="2915102088417824677">Prikaži evidenciju aktivnosti</translation>
 <translation id="2915873080513663243">Automatsko prelaženje sadržaja</translation>
@@ -2320,6 +2325,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Dodatak je odobren}one{# dodatak je odobren}few{# dodatka su odobrena}other{# dodataka je odobreno}}</translation>
 <translation id="3822559385185038546">Administrator je nametnuo ovaj proksi</translation>
 <translation id="3823310065043511710">Za Linux se preporučuje najmanje <ph name="INSTALL_SIZE" /> prostora.</translation>
+<translation id="3824621460022590830">Token za registraciju uređaja je nevažeći. Obratite se vlasniku uređaja ili administratoru. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Administrator je onemogućio dodavanje još Google naloga</translation>
 <translation id="3827306204503227641">Nastavi da dozvoljavaš dodatne komponente koje su izvan zaštićenog okruženja</translation>
 <translation id="3827774300009121996">&amp;Ceo ekran</translation>
@@ -3273,6 +3279,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5079950360618752063">Koristite predloženu lozinku</translation>
 <translation id="508059534790499809">Osveži Kerberos tiket</translation>
 <translation id="5084230410268011727">Dozvoli sajtovima da koriste senzore za pokret i svetlo</translation>
+<translation id="5084328598860513926">Tok dodele je prekinut. Probajte ponovo ili se obratite administratoru. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Traženje ažuriranja</translation>
 <translation id="5086082738160935172">Uređaj sa interfejsom za ljude</translation>
 <translation id="5086874064903147617">Želite da vratite podrazumevanu početnu stranicu?</translation>
@@ -3672,6 +3679,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="557722062034137776">Vraćanje uređaja na početna podešavanja ne utiče na Google naloge niti bilo kakve podatke sinhronizovane sa njima. Međutim, sve datoteke koje su lokalno sačuvane na uređaju će biti izbrisane.</translation>
 <translation id="5578059481725149024">Automatsko prijavljivanje</translation>
 <translation id="558170650521898289">Verifikacija upravljačkih programa za hardver u Microsoft Windows-u</translation>
+<translation id="5581972110672966454">Pridruživanje domenu nije uspelo. Probajte ponovo ili se obratite administratoru. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Glavni meni</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Želite li da sačuvate korisničko ime?</translation>
@@ -3745,6 +3753,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5667546120811588575">Google Play se podešava…</translation>
 <translation id="5669267381087807207">Aktiviranje</translation>
 <translation id="5669691691057771421">Unesite novi PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Slike su blokirane</translation>
 <translation id="5671658447180261823">Ukloni predlog <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Ovaj uređaj će dobijati automatska ažuriranja softvera i bezbednosna ažuriranja do: <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
@@ -5391,6 +5400,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7764225426217299476">Dodajte adresu</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Premesti</translation>
+<translation id="7766082757934713382">Pauziranjem automatskih ažuriranja aplikacija i sistema pomaže da se smanji potrošnja podataka na mreži</translation>
 <translation id="7766807826975222231">Kreni u obilazak</translation>
 <translation id="7766838926148951335">Prihvati dozvole</translation>
 <translation id="7768770796815395237">Promenite</translation>
@@ -6303,6 +6313,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="885701979325669005">Memorijski prostor</translation>
 <translation id="8859057652521303089">Izaberite jezik:</translation>
 <translation id="8859174528519900719">Podokvir: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Učitavanje uslova korišćenja usluge nije uspelo</translation>
 <translation id="8859662783913000679">Nalog roditelja</translation>
 <translation id="8862003515646449717">Pređite na brz pregledač</translation>
 <translation id="8863753581171631212">Otvori link u novom <ph name="APP" /> prozoru</translation>
@@ -6571,6 +6582,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="920045321358709304">Pretraži <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Brišu se svi oflajn podaci</translation>
 <translation id="9201220332032049474">Opcije zaključavanja ekrana</translation>
+<translation id="9201842707396338580">Došlo je do greške. Obratite se vlasniku uređaja ili administratoru. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Profilisanje je omogućeno</translation>
 <translation id="9203904171912129171">Izaberite uređaj</translation>
 <translation id="9203962528777363226">Administrator ovog uređaja je onemogućio dodavanje novih korisnika</translation>
@@ -6642,6 +6654,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="983511809958454316">Ova funkcija nije podržana u VR-u</translation>
 <translation id="984275831282074731">Načini plaćanja</translation>
 <translation id="98515147261107953">Horizontalno</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Opšte</translation>
 <translation id="987897973846887088">Nema dostupnih slika</translation>
 <translation id="988978206646512040">Polje za pristupnu frazu ne može da bude prazno</translation>

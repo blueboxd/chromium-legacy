@@ -28,6 +28,8 @@ class PrintingService : public mojom::PrintingService {
 #if defined(OS_CHROMEOS)
   void BindPdfFlattener(
       mojo::PendingReceiver<mojom::PdfFlattener> receiver) override;
+  void BindPdfThumbnailer(
+      mojo::PendingReceiver<mojom::PdfThumbnailer> receiver) override;
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_WIN)
   void BindPdfToEmfConverterFactory(

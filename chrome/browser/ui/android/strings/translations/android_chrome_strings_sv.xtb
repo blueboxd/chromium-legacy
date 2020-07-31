@@ -220,6 +220,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2744248271121720757">Tryck på ett ord om du vill söka direkt eller visa relaterade åtgärder</translation>
 <translation id="2760989362628427051">Aktivera mörkt tema när batterisparläget eller mörkt tema aktiveras på enheten</translation>
 <translation id="2762000892062317888">nyss</translation>
+<translation id="2771869497727323769">Det gick inte att länka till text. Dela länk till en sida i en app.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2779651927720337254">misslyckades</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
@@ -387,6 +388,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="4084712963632273211">Från <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />via Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vill du ta bort appdata?</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
+<translation id="4108998448622696017">Identifierar och varnar dig om farliga händelser som inträffar.</translation>
 <translation id="4116038641877404294">Ladda ned sidor så att du kan använda dem offline</translation>
 <translation id="4135200667068010335">Listan över enheter som fliken kan delas med är stängd.</translation>
 <translation id="4149994727733219643">Förenklad vy för webbsidor</translation>
@@ -459,6 +461,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="4738836084190194332">Synkroniserades senast: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA-fel: <ph name="ERROR_CODE" /> på <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Öppna en ny flik</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedladdning har slutförts.}other{# nedladdningar har slutförts.}}</translation>
@@ -508,6 +511,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5040262127954254034">Sekretess</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
 <translation id="509429900233858213">Det har uppstått ett fel.</translation>
+<translation id="5100748015044654621">Dela länk till markerad text i en app</translation>
 <translation id="510275257476243843">1 timme kvar</translation>
 <translation id="5123685120097942451">Inkognitoflik</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
@@ -686,6 +690,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
+<translation id="6412673304250309937">Kontrollera webbadresser mot en lista över osäkra webbplatser i Chrome. Om du utsätts för försök att kapa ditt lösenord på en webbplats eller om du laddar ned en skadlig fil kan webbadresserna skickas från Chrome till Säker webbsökning tillsammans med delar av sidinnehållet.</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6427112570124116297">Översätt webbsidor</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
@@ -973,6 +978,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
 <translation id="8569404424186215731">sedan <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Senaste fyra veckorna</translation>
+<translation id="8572344201470131220">Bilden har kopierats</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
 <translation id="860043288473659153">Namn på kortinnehavare</translation>
 <translation id="8616006591992756292">Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8854223127042600341">Se dina offlinefiler</translation>
 <translation id="889338405075704026">Öppna Chrome-inställningarna</translation>
 <translation id="8893398027601469503">Du har den senaste versionen av Chrome</translation>
+<translation id="8898822736010347272">Skickar webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll till Google för att upptäcka och blockera nya hot och skydda alla användare på internet.</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
@@ -1014,6 +1021,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8988028529677883095">Använd telefonen som säkerhetsnyckel</translation>
 <translation id="8990209962746788689">Det gick inte att skapa QR-koden</translation>
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
+<translation id="8996847606757455498">Välj en annan leverantör</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9028914725102941583">Aktivera synkronisering om du vill dela mellan enheter</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>

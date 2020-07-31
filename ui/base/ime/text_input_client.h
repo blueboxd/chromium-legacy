@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
@@ -266,6 +267,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
       const base::string16& active_composition_text,
       bool is_composition_committed) = 0;
 #endif
+
+  // Called before ui::InputMethod dispatches a not-consumed event to PostIME
+  // phase. This method gives TextInputClient a chance to intercept event
+  // dispatching.
+  virtual void OnDispatchingKeyEventPostIME(ui::KeyEvent* event) {}
 };
 
 }  // namespace ui

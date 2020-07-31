@@ -1121,6 +1121,7 @@
 <translation id="2352662711729498748">&lt;1 ՄԲ</translation>
 <translation id="2352810082280059586">Կողպէկրանի ծանուցումներն ավտոմատ պահվում են <ph name="LOCK_SCREEN_APP_NAME" /> հավելվածում: Ձեր վերջին նշումը կպահպանվի կողպէկրանի վրա:</translation>
 <translation id="2353297238722298836">Տեսախցիկի ու խոսափողի օգտագործումը թույլատրված է</translation>
+<translation id="2355314311311231464">Համաժամացումը ձախողվեց, քանի որ ձեր հաշվի տվյալները չհաջողվեց բեռնել։ Նորից փորձեք։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="2355604387869345912">Միացնել մուտքի ակնթարթային կետը</translation>
 <translation id="2356070529366658676">Հարցնել</translation>
 <translation id="2357330829548294574">Հեռացնել <ph name="USER_NAME" />-ին</translation>
@@ -1216,6 +1217,7 @@
 <translation id="2473195200299095979">Թարգմանել այս էջը</translation>
 <translation id="2475982808118771221">Սխալ առաջացավ</translation>
 <translation id="2476578072172137802">Կայքի կարգավորումներ</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" />-ն ապատեղադրելու համար ավարտեք Windows-ի հետ աշխատանքը։</translation>
 <translation id="2478176599153288112">Մեդիա ֆայլերի օգտագործման թույլտվություններ «<ph name="EXTENSION" />»-ի համար</translation>
 <translation id="247949520305900375">Տարածել ձայնը</translation>
 <translation id="248003956660572823">Գաղտնաբառերը չեն պահվել</translation>
@@ -1306,6 +1308,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />-ին միայն կարդալու հնարավորություն է շնորհվել:</translation>
 <translation id="2575247648642144396">Այս պատկերակը կցուցադրվի, եթե ընդլայնումը կարող է աշխատել բեռնված էջում: Օգտագործեք այս ընդլայնումը՝ սեղմելով պատկերակի կամ <ph name="EXTENSION_SHORTCUT" />:</translation>
 <translation id="257779572837908839">Կարգավորել «Chromebox տեսաժողովների համար» ռեժիմը</translation>
+<translation id="2579232805407578790">Չհաջողվեց միանալ սերվերին։ Ստուգեք կապը և նորից փորձեք։ Եթե խնդիրը չվերանա, վերագործարկեք Chromebook-ը։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="2580889980133367162">Միշտ թույլ տալ <ph name="HOST" />-ին ներբեռնել մի քանի ֆայլ</translation>
 <translation id="258095186877893873">Երկար</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (հենք՝ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@
 <translation id="2836635946302913370">Այս օգտանունով մուտքը կասեցվել է ձեր ադմինիստրատորի կողմից:</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> ցանցն օգտագործելու համար նախ կապակցվեք համացանցին:</translation>
 <translation id="2838379631617906747">Տեղադրվում է</translation>
+<translation id="2838835911926931318">Մուտք գործեք՝ ձեր էջանիշները, գաղտնաբառերը, պատմությունը և մյուս կարգավորումները ձեր բոլոր սարքերում համաժամացնելու համար</translation>
 <translation id="2839032553903800133">Ծանուցումներն արգելափակված են</translation>
 <translation id="2841013758207633010">Ժամանակ</translation>
 <translation id="2841837950101800123">Մատակարար</translation>
@@ -1584,6 +1588,7 @@
     Սերվերի հաղորդագրությունը՝ <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Մեդիա սրահի ավելացում գրացուցակից</translation>
 <translation id="2910318910161511225">Միացեք ցանցին և կրկին փորձեք</translation>
+<translation id="2910718431259223434">Սխալ առաջացավ։ Փորձեք նորից կամ կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="2913331724188855103">Թույլատրել կայքերին պահել և կարդալ քուքիների տվյալները (խորհուրդ է տրվում)</translation>
 <translation id="2915102088417824677">Դիտել գործողությունների մատյանը</translation>
 <translation id="2915873080513663243">Ավտոմատ սկանավորում</translation>
@@ -2323,6 +2328,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Ընդլայնումը հաստատվեց}one{# ընդլայնում հաստատվեց}other{# ընդլայնում հաստատվեց}}</translation>
 <translation id="3822559385185038546">Այս միջնորդ սերվերը պարտադրաբար միացվել է ադմինիստրատորի կողմից</translation>
 <translation id="3823310065043511710">Լինուքսը տեղադրելու համար խորհուրդ է տրվում ունենալ նվազագույնը <ph name="INSTALL_SIZE" /> ազատ տարածք։</translation>
+<translation id="3824621460022590830">Սարքերի գրանցման թոքենն անվավեր է։ Կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="3826440694796503677">Ադմինիստրատորն անջատել է այլ Google հաշիվներ ավելացնելու հնարավորությունը</translation>
 <translation id="3827306204503227641">Շարունակել թույլատրել չպաշտպանված միջավայրից դուրս փլագինները</translation>
 <translation id="3827774300009121996">&amp;Լիաէկրան</translation>
@@ -3277,6 +3283,7 @@
 <translation id="5079950360618752063">Օգտագործել առաջարկված գաղտնաբառը</translation>
 <translation id="508059534790499809">Թարմացնել Kerberos տոմսը</translation>
 <translation id="5084230410268011727">Թույլատրել կայքերին օգտագործել շարժման և լուսավորության սենսորները</translation>
+<translation id="5084328598860513926">Համաժամացումն ընդհատվել է։ Փորձեք նորից կամ կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="5085162214018721575">Թարմացումների ստուգում</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Վերականգնե՞լ կանխադրված գլխավոր էջը</translation>
@@ -3678,6 +3685,7 @@
 <translation id="557722062034137776">Սարքի վերակայումը չի վնասի ձեր Google հաշիվները կամ այդ հաշիվների հետ համաժամացված տվյալները, սակայն սարքում պահված ֆայլերը կջնջվեն:</translation>
 <translation id="5578059481725149024">Ավտոմատ մուտք</translation>
 <translation id="558170650521898289">Microsoft Windows-ի սարքակազմի սարքավարի հաստատում</translation>
+<translation id="5581972110672966454">Չհաջողվեց միացնել սարքը տիրույթին։ Փորձեք նորից կամ կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="5582839680698949063">Հիմնական ընտրացանկ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Պահե՞լ օգտանունը</translation>
@@ -3750,6 +3758,7 @@
 <translation id="5667546120811588575">Google Play-ի կարգավորում...</translation>
 <translation id="5669267381087807207">Ակտիվացում</translation>
 <translation id="5669691691057771421">Մուտքագրեք նոր PIN կոդը</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Պատկերներն արգելափակված են</translation>
 <translation id="5671658447180261823">Հեռացնել «<ph name="SUGGESTION_NAME" />» առաջարկը</translation>
 <translation id="567587836466137939">Մինչև <ph name="MONTH_AND_YEAR" /> սարքը կստանա ծրագրային և անվտանգության կարգավորումների ավտոմատ թարմացումներ։ <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
@@ -5396,6 +5405,7 @@
 <translation id="7764225426217299476">Ավելացնել հասցե</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" />՝ <ph name="DOWNLOAD_DOMAIN" />-ից</translation>
 <translation id="7765158879357617694">Տեղափոխել</translation>
+<translation id="7766082757934713382">Օգնում է նվազեցնել թրաֆիկի օգտագործումը՝ հավելվածների և համակարգի ավտոմատ թարմացումները դադարեցնելու միջոցով</translation>
 <translation id="7766807826975222231">Կատարել շրջայց</translation>
 <translation id="7766838926148951335">Ընդունել</translation>
 <translation id="7768770796815395237">Փոխել</translation>
@@ -6306,6 +6316,7 @@
 <translation id="885701979325669005">Պահեստ</translation>
 <translation id="8859057652521303089">Ընտրեք լեզուն`</translation>
 <translation id="8859174528519900719">Ենթաշրջանակ՝ <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Չհաջողվեց բեռնել օգտագործման պայմանները</translation>
 <translation id="8859662783913000679">Ծնողի հաշիվը</translation>
 <translation id="8862003515646449717">Ընտրեք արագ դիտարկիչ</translation>
 <translation id="8863753581171631212">Բացել հղումը <ph name="APP" />-ի նոր պատուհանում</translation>
@@ -6574,6 +6585,7 @@
 <translation id="920045321358709304">Որոնել <ph name="SEARCH_ENGINE" />-ում</translation>
 <translation id="9201023452444595544">Անցանց ռեժիմում պահված բոլոր տվյալները կջնջվեն</translation>
 <translation id="9201220332032049474">Էկրանի կողպման տարբերակներ</translation>
+<translation id="9201842707396338580">Սխալ առաջացավ։ Կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="9203398526606335860">&amp;Տվյալների հավաքումը միացված է</translation>
 <translation id="9203904171912129171">Ընտրեք սարքը</translation>
 <translation id="9203962528777363226">Այս կայքի ադմինիստրատորն արգելել է նոր օգտատերերի ավելացումը</translation>
@@ -6645,6 +6657,7 @@
 <translation id="983511809958454316">Այս գործառույթը չի աջակցվում VR ռեժիմում</translation>
 <translation id="984275831282074731">Վճարման եղանակներ</translation>
 <translation id="98515147261107953">Հորիզոնական</translation>
+<translation id="987068745968718743">Parallels Desktop՝ <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Ընդհանուր</translation>
 <translation id="987897973846887088">Պատկերներ չկան</translation>
 <translation id="988978206646512040">Անցաբառի դաշտը չի կարող դատարկ լինել</translation>

@@ -225,7 +225,7 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
     SafeBrowsingService* sb_service,
     Profile* profile)
     : PasswordProtectionService(sb_service->database_manager(),
-                                sb_service->GetURLLoaderFactory(),
+                                sb_service->GetURLLoaderFactory(profile),
                                 HistoryServiceFactory::GetForProfile(
                                     profile,
                                     ServiceAccessType::EXPLICIT_ACCESS)),

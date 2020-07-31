@@ -10,6 +10,7 @@ mojom("mojom") {
     "application_media_capabilities.mojom",
     "constants.mojom",
     "feature_manager.mojom",
+    "identification_settings.mojom",
     "js_channel.mojom",
     "media_caps.mojom",
     "memory_pressure.mojom",
@@ -19,5 +20,8 @@ mojom("mojom") {
     "service_connector.mojom",
   ]
 
-  public_deps = [ "//mojo/public/mojom/base" ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+  ]
 }

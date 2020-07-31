@@ -123,6 +123,7 @@ void ChromotingClientRuntime::InitializeOnNetworkThread() {
   url_loader_factory_owner_ =
       std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
           url_requester_);
+  log_writer_->Init(url_loader_factory_owner_->GetURLLoaderFactory());
 }
 
 }  // namespace remoting

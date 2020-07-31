@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">ရုပ်ပုံကို မသိမ်းဆည်းနိုင်ပါ။</translation>
 <translation id="1180526666083833456">ကိရိယာများတွင် စင့်ခ်လုပ်ပြီး ပုဂ္ဂိုလ်ရေးသီးသန့် ပြင်ဆင်ပါ။</translation>
 <translation id="1181037720776840403">ဖယ်ရှားရန်</translation>
+<translation id="1185569544548277362">အသစ် - Chrome ကို သင့်မူရင်းအဖြစ် သတ်မှတ်နိုင်သည်။ <ph name="BEGIN_LINK" />ဆက်တင်များ ဖွင့်ရန်<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">ရှာဖွေမှု အသစ်</translation>
 <translation id="1209206284964581585">ယခု ဖျောက်ထားပါ</translation>
 <translation id="1219674500290482172">အင်တာနက်သို့ ချိတ်ဆက်၍ မရနိုင်ပါ</translation>
@@ -367,6 +368,7 @@
 <translation id="5407969256130905701">အပြောင်းအလဲများကို ဖယ်ပစ်ရန်</translation>
 <translation id="5409365236829784218">ဤဖိုင်ကိုဖွင့်နိုင်သည့် အပလီကေးရှင်းများ တပ်ဆင်ထားခြင်းမရှိပါ။</translation>
 <translation id="5416022985862681400">ပြီးခဲ့သည့် ၇ ရက်</translation>
+<translation id="543338862236136125">စကားဝှက်ကို တည်းဖြတ်ခြင်း</translation>
 <translation id="5433691172869980887">အသုံးပြုသူအမည်ကို ကူးပြီးပါပြီ</translation>
 <translation id="54401264925851789">စာမျက်နှာ လုံခြုံမှု အချက်အလက်</translation>
 <translation id="5443952882982198570">ခရက်ဒစ်ကတ်များ</translation>
@@ -637,6 +639,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ၏<ph name="LAST_VISIBLE_TAB" /> ကိုဖြတ်၍<ph name="FIRST_VISIBLE_TAB" />  <ph name="INCOGNITO" /> တက်များ</translation>
 <translation id="8529767659511976195">အသစ်</translation>
 <translation id="8532105204136943229">သက်တမ်း ကုန်ဆုံးမှုနှစ်</translation>
+<translation id="8533166274275423134">အခြားတစ်နေရာတွင် ဖွင့်ထားသည်</translation>
 <translation id="8534481786647257214">Google+ မှာ တင်ပြခြင်း ပြီးစီးပါပြီ။</translation>
 <translation id="8548878600947630424">...စာမျက်နှာတွင်ရှာပါ</translation>
 <translation id="8574235780160508979">'Chrome ၏ ဝန်ဆောင်မှု စည်းမျဉ်းများ' ကို မတ် ၃၁ တွင် ပြောင်းပါမည်။ <ph name="BEGIN_LINK" />ပြန်ကြည့်ပေးပါ<ph name="END_LINK" /></translation>

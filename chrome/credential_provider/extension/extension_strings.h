@@ -14,6 +14,9 @@ extern const wchar_t kGCPWExtensionServiceName[];
 // Description of the GCPW extension service.
 extern const wchar_t kGCPWExtensionServiceDescription[];
 
+// Registry which controls whether to install GCPW Extension.
+extern const wchar_t kEnableGCPWExtension[];
+
 }  // namespace extension
 }  // namespace credential_provider
 

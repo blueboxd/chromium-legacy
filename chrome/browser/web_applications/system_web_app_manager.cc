@@ -168,10 +168,11 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   }
 
 #if !defined(OFFICIAL_BUILD)
-  infos.emplace(SystemAppType::SAMPLE,
-                SystemAppInfo("Sample", GURL("chrome://sample-system-web-app"),
-                              base::BindRepeating(
-                                  &CreateWebAppInfoForSampleSystemWebApp)));
+  infos.emplace(
+      SystemAppType::SAMPLE,
+      SystemAppInfo(
+          "Sample", GURL("chrome://sample-system-web-app/pwa.html"),
+          base::BindRepeating(&CreateWebAppInfoForSampleSystemWebApp)));
   // Frobulate is the name for Sample Origin Trial API, and has no impact on the
   // Web App's functionality. Here we use it to demonstrate how to enable origin
   // trials for a System Web App.

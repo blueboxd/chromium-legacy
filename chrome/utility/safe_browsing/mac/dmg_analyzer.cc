@@ -191,6 +191,7 @@ void AnalyzeDMGFile(DMGIterator* iterator, ArchiveAnalyzerResults* results) {
       if (feature_extractor.ExtractFeatures(stream.get(), binary)) {
         binary->set_download_type(
             ClientDownloadRequest_DownloadType_MAC_EXECUTABLE);
+        binary->set_is_executable(true);
         results->has_executable = true;
       } else {
         results->archived_binary.RemoveLast();

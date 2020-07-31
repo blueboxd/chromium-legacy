@@ -320,7 +320,7 @@ class CORE_EXPORT InspectorDOMAgent final
   // Node-related methods.
   typedef HeapHashMap<Member<Node>, int> NodeToIdMap;
   int Bind(Node*, NodeToIdMap*);
-  void Unbind(Node*, NodeToIdMap*);
+  void Unbind(Node*);
 
   protocol::Response AssertEditableNode(int node_id, Node*&);
   protocol::Response AssertEditableChildNode(Element* parent_element,

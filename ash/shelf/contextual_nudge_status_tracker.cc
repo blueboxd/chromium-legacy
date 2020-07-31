@@ -52,33 +52,34 @@ ContextualNudgeStatusTracker::~ContextualNudgeStatusTracker() = default;
 void ContextualNudgeStatusTracker::HandleNudgeShown(
     base::TimeTicks shown_time) {
   nudge_shown_time_ = shown_time;
-  has_nudge_been_shown_ = true;
-  visible_ = true;
+  gesture_time_recorded_ = false;
+  dismissal_reason_recorded_ = false;
 }
 
 void ContextualNudgeStatusTracker::HandleGesturePerformed(
     base::TimeTicks hide_time) {
-  if (visible_) {
-    LogNudgeDismissedMetrics(
+  if (gesture_time_recorded_)
+    return;
+
+  if (!dismissal_reason_recorded_) {
+    MaybeLogNudgeDismissedMetrics(
         contextual_tooltip::DismissNudgeReason::kPerformedGesture);
   }
 
-  if (!has_nudge_been_shown_)
-    return;
   base::TimeDelta time_since_show = hide_time - nudge_shown_time_;
   base::UmaHistogramCustomTimes(
       GetTimeDeltaHistogramName(type_), time_since_show,
       base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromSeconds(kMaxHistogramTime), kMaxHistogramTime);
-  has_nudge_been_shown_ = false;
+  gesture_time_recorded_ = true;
 }
 
-void ContextualNudgeStatusTracker::LogNudgeDismissedMetrics(
+void ContextualNudgeStatusTracker::MaybeLogNudgeDismissedMetrics(
     contextual_tooltip::DismissNudgeReason reason) {
-  if (!visible_ || !has_nudge_been_shown_)
+  if (dismissal_reason_recorded_)
     return;
   base::UmaHistogramEnumeration(GetEnumHistogramName(type_), reason);
-  visible_ = false;
+  dismissal_reason_recorded_ = true;
 }
 
 }  // namespace ash

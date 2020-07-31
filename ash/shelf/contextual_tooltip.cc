@@ -241,8 +241,9 @@ void HandleGesturePerformed(PrefService* prefs, TooltipType type) {
   GetStatusTracker(type)->HandleGesturePerformed(base::TimeTicks::Now());
 }
 
-void LogNudgeDismissedMetrics(TooltipType type, DismissNudgeReason reason) {
-  GetStatusTracker(type)->LogNudgeDismissedMetrics(reason);
+void MaybeLogNudgeDismissedMetrics(TooltipType type,
+                                   DismissNudgeReason reason) {
+  GetStatusTracker(type)->MaybeLogNudgeDismissedMetrics(reason);
 }
 
 void SetDragHandleNudgeDisabledForHiddenShelf(bool nudge_disabled) {
@@ -278,11 +279,11 @@ void ClearStatusTrackerTableForTesting() {
 }
 
 ASH_EXPORT bool CanRecordGesturePerformedMetricForTesting(TooltipType type) {
-  return GetStatusTracker(type)->has_nudge_been_shown();
+  return !GetStatusTracker(type)->gesture_time_recorded();
 }
 
 ASH_EXPORT bool CanRecordNudgeHiddenMetricForTesting(TooltipType type) {
-  return GetStatusTracker(type)->visible();
+  return GetStatusTracker(type)->can_record_dismiss_metrics();
 }
 
 }  // namespace contextual_tooltip

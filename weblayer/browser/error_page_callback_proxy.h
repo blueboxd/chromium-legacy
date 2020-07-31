@@ -24,6 +24,8 @@ class ErrorPageCallbackProxy : public ErrorPageDelegate {
 
   // ErrorPageDelegate:
   bool OnBackToSafety() override;
+  std::unique_ptr<ErrorPage> GetErrorPageContent(
+      Navigation* navigation) override;
 
  private:
   Tab* tab_;

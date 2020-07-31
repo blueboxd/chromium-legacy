@@ -1,5 +1,7 @@
 # System WebView Shell
 
+![WebView Shell](images/webview_shell.png)
+
 WebView team maintains a "shell"&mdash;a thin interface over the WebView
 APIs&mdash;to exercise WebView functionality. The System WebView Shell (AKA
 "shell browser," "WebView shell") is a standalone app implemented [in

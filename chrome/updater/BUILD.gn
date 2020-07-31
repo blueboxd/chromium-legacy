@@ -218,6 +218,50 @@ if (is_win || is_mac) {
     output = "$target_gen_dir/updater_version.h"
   }
 
+  # This build target is defined to minimize the impact of -Wno-missing-braces
+  # compiler switch. In the future it might be possible to isolate the
+  # dependency of ATL in the UI so ATL headers are not visible in the
+  # compilation units outside the UI itself.
+  # TODO(sorin): https://crbug.com/1014311
+  source_set("app_install") {
+    sources = [ "app/app_install.h" ]
+
+    if (is_mac) {
+      sources += [ "mac/setup/app_install.cc" ]
+    }
+
+    if (is_win) {
+      sources += [ "win/app_install.cc" ]
+    }
+
+    deps = [
+      ":lib",
+      "//base",
+      "//chrome/updater:base",
+      "//chrome/updater:version_header",
+    ]
+    if (is_mac) {
+      deps += [ "//chrome/updater/mac:updater_setup_sources" ]
+    }
+
+    if (is_win) {
+      deps += [
+        "//base:i18n",
+        "//chrome/updater/win:install_progress_observer",
+        "//chrome/updater/win:lib",
+        "//chrome/updater/win/ui",
+        "//components/prefs",
+        "//components/update_client",
+      ]
+    }
+
+    allow_circular_includes_from = [ ":lib" ]
+
+    if (is_win) {
+      cflags_cc = [ "-Wno-missing-braces" ]
+    }
+  }
+
   test("updater_tests") {
     testonly = true
 

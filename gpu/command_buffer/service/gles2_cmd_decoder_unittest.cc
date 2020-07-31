@@ -1881,15 +1881,6 @@ void GLES3DecoderWithShaderTest::SetUp() {
   SetupDefaultProgram();
 }
 
-void GLES3DecoderRGBBackbufferTest::SetUp() {
-  InitState init;
-  init.gl_version = "OpenGL ES 3.0";
-  init.bind_generates_resource = true;
-  init.context_type = CONTEXT_TYPE_OPENGLES3;
-  InitDecoder(init);
-  SetupDefaultProgram();
-}
-
 INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest, ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(Service,
@@ -1922,10 +1913,6 @@ INSTANTIATE_TEST_SUITE_P(Service,
 
 INSTANTIATE_TEST_SUITE_P(Service,
                          GLES3DecoderManualInitTest,
-                         ::testing::Bool());
-
-INSTANTIATE_TEST_SUITE_P(Service,
-                         GLES3DecoderRGBBackbufferTest,
                          ::testing::Bool());
 
 }  // namespace gles2

@@ -32,7 +32,9 @@ class SpeechRecognitionRecognizerImpl
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
           remote,
       base::WeakPtr<SpeechRecognitionServiceImpl>
-          speech_recognition_service_impl);
+          speech_recognition_service_impl,
+      const base::FilePath& binary_path,
+      const base::FilePath& config_path);
   ~SpeechRecognitionRecognizerImpl() override;
 
   static void Create(
@@ -40,7 +42,9 @@ class SpeechRecognitionRecognizerImpl
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
           remote,
       base::WeakPtr<SpeechRecognitionServiceImpl>
-          speech_recognition_service_impl);
+          speech_recognition_service_impl,
+      const base::FilePath& binary_path,
+      const base::FilePath& config_path);
 
   static bool IsMultichannelSupported();
 
@@ -72,6 +76,8 @@ class SpeechRecognitionRecognizerImpl
   // which passes the transcribed audio back to the caller via the speech
   // recognition event client remote.
   OnRecognitionEventCallback recognition_event_callback_;
+
+  base::FilePath config_path_;
 
   base::WeakPtrFactory<SpeechRecognitionRecognizerImpl> weak_factory_{this};
 

@@ -140,6 +140,8 @@ class DownloadDeepScanningBrowserTest
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
     SetDlpPolicy(CheckContentComplianceValues::CHECK_DOWNLOADS);
     SetMalwarePolicy(SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
+    SetAllowPasswordProtectedFilesPolicy(
+        AllowPasswordProtectedFilesValues::ALLOW_NONE);
   }
 
   void WaitForDownloadToFinish() {
@@ -593,7 +595,7 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
                        DangerousHostNotMalwareScanned) {
-  // The file is SAFE according to the metadata check
+  // The file is DANGEROUS_HOST according to the metadata check
   ClientDownloadResponse metadata_response;
   metadata_response.set_verdict(ClientDownloadResponse::DANGEROUS_HOST);
   ExpectMetadataResponse(metadata_response);
@@ -629,6 +631,30 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
   EXPECT_EQ(item->GetDangerType(),
             download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST);
   EXPECT_EQ(item->GetState(), download::DownloadItem::IN_PROGRESS);
+}
+
+IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
+                       PasswordProtectedTxtFilesAreBlocked) {
+  // The file is SAFE according to the metadata check
+  ClientDownloadResponse metadata_response;
+  metadata_response.set_verdict(ClientDownloadResponse::SAFE);
+  ExpectMetadataResponse(metadata_response);
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/download_protection/encrypted_txt.zip");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  WaitForDownloadToFinish();
+
+  // The file should be blocked for containing a password protected file.
+  ASSERT_EQ(download_items().size(), 1u);
+  download::DownloadItem* item = *download_items().begin();
+  EXPECT_EQ(item->GetDangerType(),
+            download::DownloadDangerType::
+                DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED);
+  EXPECT_EQ(item->GetState(), download::DownloadItem::INTERRUPTED);
 }
 
 class WhitelistedUrlDeepScanningBrowserTest

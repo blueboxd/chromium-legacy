@@ -75,6 +75,7 @@
 #include "weblayer/browser/http_auth_handler_impl.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/navigation_error_navigation_throttle.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -571,6 +572,10 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
     // behavior) should be added before MetricsNavigationThrottle.
     throttles.push_back(
         page_load_metrics::MetricsNavigationThrottle::Create(handle));
+    if (TabImpl::FromWebContents(handle->GetWebContents())) {
+      throttles.push_back(
+          std::make_unique<NavigationErrorNavigationThrottle>(handle));
+    }
   }
 
   // The next highest priority throttle *must* be this as it's responsible for

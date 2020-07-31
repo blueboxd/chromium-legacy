@@ -43,6 +43,11 @@ class ExternalConnectorImpl : public ExternalConnector {
       const std::string& service_name,
       mojo::PendingRemote<external_mojo::mojom::ExternalService> service_remote)
       override;
+  void RegisterServices(const std::vector<std::string>& service_names,
+                        const std::vector<ExternalService*>& services) override;
+  void RegisterServices(
+      std::vector<chromecast::external_mojo::mojom::ServiceInstanceInfoPtr>
+          service_instances_info) override;
   void BindInterface(const std::string& service_name,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,

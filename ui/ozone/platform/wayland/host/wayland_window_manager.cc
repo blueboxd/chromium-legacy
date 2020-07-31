@@ -110,6 +110,24 @@ void WaylandWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
     observer.OnWindowRemoved(window);
 }
 
+void WaylandWindowManager::AddSubsurface(gfx::AcceleratedWidget widget,
+                                         WaylandSubsurface* subsurface) {
+  auto* window = window_map_[widget];
+  DCHECK(window);
+
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnSubsurfaceAdded(window, subsurface);
+}
+
+void WaylandWindowManager::RemoveSubsurface(gfx::AcceleratedWidget widget,
+                                            WaylandSubsurface* subsurface) {
+  auto* window = window_map_[widget];
+  DCHECK(window);
+
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnSubsurfaceRemoved(window, subsurface);
+}
+
 std::vector<WaylandWindow*> WaylandWindowManager::GetAllWindows() const {
   std::vector<WaylandWindow*> result;
   for (auto entry : window_map_)

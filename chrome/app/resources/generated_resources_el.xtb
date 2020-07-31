@@ -1121,6 +1121,7 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Οι σημειώσεις στην οθόνη κλειδώματος αποθηκεύονται αυτόματα στο <ph name="LOCK_SCREEN_APP_NAME" />. Η πιο πρόσφατη σημείωση θα παραμείνει στην οθόνη κλειδώματος.</translation>
 <translation id="2353297238722298836">Η κάμερα και το μικρόφωνο επιτρέπονται</translation>
+<translation id="2355314311311231464">Η παροχή απέτυχε επειδή δεν ήταν δυνατή η ανάκτηση των λεπτομερειών του λογαριασμού σας. Δοκιμάστε ξανά. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Ενεργοποίηση Άμεσης σύνδεσης</translation>
 <translation id="2356070529366658676">Να γίνεται ερώτηση</translation>
 <translation id="2357330829548294574">Κατάργηση <ph name="USER_NAME" /></translation>
@@ -1216,6 +1217,7 @@
 <translation id="2473195200299095979">Μετάφραση αυτής της σελίδας</translation>
 <translation id="2475982808118771221">Παρουσιάστηκε σφάλμα</translation>
 <translation id="2476578072172137802">Ρυθμίσεις ιστότοπου</translation>
+<translation id="2476974672882258506">Τερματίστε τα Windows για την απεγκατάσταση του <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Άδειες αρχείων πολυμέσων για την επέκταση "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Κοινοποίηση ήχου</translation>
 <translation id="248003956660572823">Οι κωδικοί πρόσβασης δεν αποθηκεύτηκαν</translation>
@@ -1306,6 +1308,7 @@
 <translation id="2572032849266859634">Παραχωρήθηκε πρόσβαση ανάγνωσης σε <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Αυτό το εικονίδιο θα είναι ορατό όταν η επέκταση μπορεί να λειτουργήσει στην τρέχουσα σελίδα. Χρησιμοποιήστε αυτήν την επέκταση κάνοντας κλικ στο εικονίδιο ή πατώντας <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Ρύθμιση ως Chromebox για συνεδριάσεις</translation>
+<translation id="2579232805407578790">Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. Ελέγξτε τη σύνδεση δικτύου σας και δοκιμάστε ξανά. Εάν το πρόβλημα παραμένει, επανεκκινήστε το Chromebook. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Να επιτρέπεται πάντα στον κεντρικό υπολογιστή <ph name="HOST" /> η λήψη πολλών αρχείων</translation>
 <translation id="258095186877893873">Μακρά</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Πλατφόρμα <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1528,7 @@
 <translation id="2836635946302913370">Η σύνδεση με αυτό το όνομα χρήστη έχει απενεργοποιηθεί από τον διαχειριστή σας.</translation>
 <translation id="283669119850230892">Για τη χρήση του δικτύου <ph name="NETWORK_ID" />, πρώτα ολοκληρώστε τη σύνδεσή σας στο διαδίκτυο παρακάτω.</translation>
 <translation id="2838379631617906747">Γίνεται Εγκατάσταση</translation>
+<translation id="2838835911926931318">Συνδεθείτε για να συγχρονίσετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης, το ιστορικό σας και άλλα σε όλες τις συσκευές σας.</translation>
 <translation id="2839032553903800133">Οι ειδοποιήσεις έχουν αποκλειστεί</translation>
 <translation id="2841013758207633010">Ώρα</translation>
 <translation id="2841837950101800123">Πάροχος</translation>
@@ -1584,6 +1588,7 @@
     μήνυμα διακομιστή: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Προσθήκη συλλογής μέσων από τον κατάλογο</translation>
 <translation id="2910318910161511225">Συνδεθείτε σε ένα δίκτυο και δοκιμάστε ξανά</translation>
+<translation id="2910718431259223434">Κάτι δεν πήγε καλά. Δοκιμάστε ξανά ή επικοινωνήστε με τον κάτοχο ή τον διαχειριστή της συσκευής σας. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Να επιτρέπεται στους ιστότοπους η αποθήκευση και η ανάγνωση δεδομένων cookie (συνιστάται)</translation>
 <translation id="2915102088417824677">Προβολή αρχείου καταγραφής δραστηριοτήτων</translation>
 <translation id="2915873080513663243">Αυτόματη σάρωση</translation>
@@ -2323,6 +2328,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Μια επέκταση εγκρίθηκε}other{# επεκτάσεις εγκρίθηκαν}}</translation>
 <translation id="3822559385185038546">Αυτός ο διακομιστής μεσολάβησης επιβάλλεται από τον διαχειριστή σας</translation>
 <translation id="3823310065043511710">Για το Linux συνιστώνται τουλάχιστον <ph name="INSTALL_SIZE" /> αποθηκευτικού χώρου.</translation>
+<translation id="3824621460022590830">Το διακριτικό εγγραφής συσκευής δεν είναι έγκυρο. Επικοινωνήστε με τον κάτοχο ή τον διαχειριστή της συσκευής σας. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Ο διαχειριστής έχει απενεργοποιήσει τη δυνατότητα προσθήκης περισσότερων Λογαριασμών Google</translation>
 <translation id="3827306204503227641">Συνέχιση εκτέλεσης προσθηκών εκτός περιβάλλοντος δοκιμών</translation>
 <translation id="3827774300009121996">&amp;Πλήρης Οθόνη</translation>
@@ -3276,6 +3282,7 @@
 <translation id="5079950360618752063">Χρήση προτεινόμενου κωδικού πρόσβασης</translation>
 <translation id="508059534790499809">Ανανέωση ενός εισιτηρίου Kerberos</translation>
 <translation id="5084230410268011727">Να επιτρέπεται στους ιστοτόπους να χρησιμοποιούν αισθητήρες κίνησης και φωτός</translation>
+<translation id="5084328598860513926">Η ροή παροχής διακόπηκε. Δοκιμάστε ξανά ή επικοινωνήστε με τον κάτοχο ή τον διαχειριστή της συσκευής σας. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Έλεγχος για ενημερώσεις</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Επαναφορά προεπιλεγμένης αρχικής σελίδας;</translation>
@@ -3675,6 +3682,7 @@
 <translation id="557722062034137776">Η επαναφορά της συσκευής σας δεν θα επηρεάσει τους Λογαριασμούς σας Google ή τυχόν δεδομένα που έχετε συγχρονίσει σε αυτούς τους λογαριασμούς. Ωστόσο, όλα τα αρχεία που έχουν αποθηκευτεί τοπικά στη συσκευή σας θα διαγραφούν.</translation>
 <translation id="5578059481725149024">Αυτόματη σύνδεση</translation>
 <translation id="558170650521898289">Επαλήθευση προγράμματος οδήγησης υλικού των Microsoft Windows</translation>
+<translation id="5581972110672966454">Δεν είναι δυνατή η σύνδεση της συσκευής στον τομέα. Δοκιμάστε ξανά ή επικοινωνήστε με τον κάτοχο ή τον διαχειριστή της συσκευής σας. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Κύριο μενού</translation>
 <translation id="5583640892426849032">Πλήκτρο Backspace</translation>
 <translation id="5584088138253955452">Αποθήκευση ονόματος χρήστη;</translation>
@@ -3748,6 +3756,7 @@
 <translation id="5667546120811588575">Ρύθμιση του Google Play…</translation>
 <translation id="5669267381087807207">Ενεργοπ.</translation>
 <translation id="5669691691057771421">Εισαγωγή νέου κωδικού PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Οι εικόνες αποκλείστηκαν</translation>
 <translation id="5671658447180261823">Κατάργηση της πρότασης <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Αυτή η συσκευή θα λαμβάνει αυτόματες ενημερώσεις λογισμικού και ασφαλείας έως τον <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
@@ -5394,6 +5403,7 @@
 <translation id="7764225426217299476">Προσθήκη διεύθυνσης</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> από <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Μεταφορά</translation>
+<translation id="7766082757934713382">Συμβάλλει στη μείωση της χρήσης δεδομένων δικτύου θέτοντας σε παύση τις αυτόματες ενημερώσεις εφαρμογών και συστήματος.</translation>
 <translation id="7766807826975222231">Κάντε μια περιήγηση</translation>
 <translation id="7766838926148951335">Αποδοχή αδειών</translation>
 <translation id="7768770796815395237">Αλλαγή</translation>
@@ -6304,6 +6314,7 @@
 <translation id="885701979325669005">Αποθήκευση</translation>
 <translation id="8859057652521303089">Επιλέξτε τη γλώσσα σας:</translation>
 <translation id="8859174528519900719">Υποπλαίσιο: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Δεν ήταν δυνατή η φόρτωση των Όρων Παροχής Υπηρεσιών.</translation>
 <translation id="8859662783913000679">Λογαριασμός γονέα</translation>
 <translation id="8862003515646449717">Εναλλαγή σε ένα γρήγορο πρόγραμμα περιήγησης</translation>
 <translation id="8863753581171631212">Άνοιγμα συνδέσμου σε νέο παράθυρο <ph name="APP" /></translation>
@@ -6572,6 +6583,7 @@
 <translation id="920045321358709304">Αναζήτηση <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Όλα τα δεδομένα εκτός σύνδεσης θα διαγραφούν</translation>
 <translation id="9201220332032049474">Επιλογές κλειδώματος οθόνης</translation>
+<translation id="9201842707396338580">Κάτι δεν πήγε καλά. Επικοινωνήστε με τον κάτοχο ή τον διαχειριστή της συσκευής σας. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">Ενεργοποιημένη &amp;δυνατότητα δημιουργίας προφίλ</translation>
 <translation id="9203904171912129171">Επιλέξτε μια συσκευή</translation>
 <translation id="9203962528777363226">Ο διαχειριστής αυτής της συσκευής έχει απενεργοποιήσει την προσθήκη νέων χρηστών</translation>
@@ -6643,6 +6655,7 @@
 <translation id="983511809958454316">Αυτή η λειτουργία δεν υποστηρίζεται σε VR</translation>
 <translation id="984275831282074731">Τρόποι πληρωμής</translation>
 <translation id="98515147261107953">Οριζόντια</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Γενικά</translation>
 <translation id="987897973846887088">Δεν υπάρχουν διαθέσιμες εικόνες</translation>
 <translation id="988978206646512040">Δεν επιτρέπεται να είναι κενή η φράση πρόσβασης</translation>

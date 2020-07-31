@@ -800,7 +800,28 @@ HRESULT AXPlatformNodeTextRangeProviderWin::Select() {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_SELECT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
-  AXNodeRange new_selection_range(start_->Clone(), end_->Clone());
+  AXPositionInstance selection_start = start_->Clone();
+  AXPositionInstance selection_end = end_->Clone();
+
+  // Blink only supports selections within a single tree. So if start_ and  end_
+  // are in different trees, we can't directly pass them to the render process
+  // for selection.
+  if (selection_start->tree_id() != selection_end->tree_id()) {
+    // Prioritize the end position's tree, as a selection's focus object is the
+    // end of a selection.
+    selection_start = selection_end->CreatePositionAtStartOfAXTree();
+  }
+
+  DCHECK(!selection_start->IsNullPosition());
+  DCHECK(!selection_end->IsNullPosition());
+  DCHECK_EQ(selection_start->tree_id(), selection_end->tree_id());
+
+  AXPlatformNodeDelegate* delegate =
+      GetDelegate(selection_start->tree_id(), selection_start->anchor_id());
+  DCHECK(delegate);
+
+  AXNodeRange new_selection_range(std::move(selection_start),
+                                  std::move(selection_end));
   RemoveFocusFromPreviousSelectionIfNeeded(new_selection_range);
 
   AXActionData action_data;
@@ -809,7 +830,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::Select() {
   action_data.focus_node_id = new_selection_range.focus()->anchor_id();
   action_data.focus_offset = new_selection_range.focus()->text_offset();
   action_data.action = ax::mojom::Action::kSetSelection;
-  owner()->GetDelegate()->AccessibilityPerformAction(action_data);
+
+  delegate->AccessibilityPerformAction(action_data);
   return S_OK;
 }
 

@@ -232,10 +232,10 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
   }
 
   if (is_stale_login) {
-    ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid,
-                                    base::UTF8ToUTF16(std::string(
-                                        kKeyLastSuccessfulOnlineLoginMillis)),
-                                    L"0"));
+    ASSERT_EQ(S_OK,
+              SetUserProperty(
+                  (BSTR)sid, base::UTF8ToUTF16(std::string(kKeyLastTokenValid)),
+                  L"0"));
     ASSERT_EQ(S_OK,
               SetGlobalFlagForTesting(
                   base::UTF8ToUTF16(std::string(kKeyValidityPeriodInDays)),

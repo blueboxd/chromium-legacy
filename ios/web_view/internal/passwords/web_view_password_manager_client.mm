@@ -108,9 +108,9 @@ bool WebViewPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   }
 
   if (update_password) {
-    [delegate_ showUpdatePasswordInfoBar:std::move(form_to_save)];
+    [bridge_ showUpdatePasswordInfoBar:std::move(form_to_save) manual:NO];
   } else {
-    [delegate_ showSavePasswordInfoBar:std::move(form_to_save)];
+    [bridge_ showSavePasswordInfoBar:std::move(form_to_save) manual:NO];
   }
 
   return true;
@@ -159,7 +159,7 @@ bool WebViewPasswordManagerClient::IsIncognito() const {
 
 const password_manager::PasswordManager*
 WebViewPasswordManagerClient::GetPasswordManager() const {
-  return delegate_.passwordManager;
+  return bridge_.passwordManager;
 }
 
 const password_manager::PasswordFeatureManager*
@@ -184,7 +184,7 @@ void WebViewPasswordManagerClient::NotifyUserAutoSignin(
     const url::Origin& origin) {
   DCHECK(!local_forms.empty());
   helper_.NotifyUserAutoSignin();
-  [delegate_ showAutosigninNotification:std::move(local_forms[0])];
+  // TODO(crbug.com/865114): Implement remaining logic.
 }
 
 void WebViewPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
@@ -215,11 +215,11 @@ bool WebViewPasswordManagerClient::IsCommittedMainFrameSecure() const {
 }
 
 const GURL& WebViewPasswordManagerClient::GetLastCommittedURL() const {
-  return delegate_.lastCommittedURL;
+  return bridge_.lastCommittedURL;
 }
 
 url::Origin WebViewPasswordManagerClient::GetLastCommittedOrigin() const {
-  return url::Origin::Create(delegate_.lastCommittedURL);
+  return url::Origin::Create(bridge_.lastCommittedURL);
 }
 
 const password_manager::CredentialsFilter*
@@ -253,7 +253,7 @@ WebViewPasswordManagerClient::GetURLLoaderFactory() {
 }
 
 void WebViewPasswordManagerClient::UpdateFormManagers() {
-  delegate_.passwordManager->UpdateFormManagers();
+  bridge_.passwordManager->UpdateFormManagers();
 }
 
 bool WebViewPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {

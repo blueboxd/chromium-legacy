@@ -192,6 +192,9 @@ class WebFrameWidget : public WebWidget {
   // Remove the override for zoom level.
   virtual void ResetZoomLevelForTesting() = 0;
 
+  // Override the device scale factor for testing.
+  virtual void SetDeviceScaleFactorForTesting(float factor) = 0;
+
  private:
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetBase is the only concrete subclass that implements

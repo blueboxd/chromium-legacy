@@ -2452,13 +2452,6 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
         kKeyIsAdJoinedUser,
         base::Value(OSUserManager::Get()->IsUserDomainJoined(sid) ? "true"
                                                                   : "false"));
-    // Update the time at which the login attempt happened. This would help
-    // track the last time an online login happened via GCPW.
-    int64_t current_time = static_cast<int64_t>(
-        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
-    authentication_results_->SetKey(
-        kKeyLastSuccessfulOnlineLoginMillis,
-        base::Value(base::NumberToString(current_time)));
   }
 
   base::string16 sid = OLE2CW(user_sid_);

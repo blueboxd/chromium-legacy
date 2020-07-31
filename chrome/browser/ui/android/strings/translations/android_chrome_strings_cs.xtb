@@ -387,6 +387,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="4084712963632273211">Zdroj: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />poskytováno společností Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vymazat data aplikace?</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky o využívání a zprávy o selhání.</translation>
+<translation id="4108998448622696017">Rozpoznává nebezpečné události a upozorňuje vás na ně, když k nim dojde.</translation>
 <translation id="4116038641877404294">Stáhněte si stránky k použití offline</translation>
 <translation id="4135200667068010335">Seznam zařízení, se kterými se má karta sdílet, je zavřený.</translation>
 <translation id="4149994727733219643">Zjednodušené zobrazení webových stránek</translation>
@@ -686,6 +687,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
+<translation id="6412673304250309937">Kontroluje adresy URL oproti seznamu nebezpečných webů uloženému v Chromu. Pokud se web pokusí odcizit vám heslo nebo když stáhnete škodlivý soubor, může Chrome Bezpečnému prohlížení odeslat také adresy URL, včetně částí obsahu stránky.</translation>
 <translation id="641643625718530986">Tisk…</translation>
 <translation id="6427112570124116297">Přeložte si web</translation>
 <translation id="6433501201775827830">Vyberte vyhledávač</translation>
@@ -1000,6 +1002,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8854223127042600341">Zobrazte si soubory offline</translation>
 <translation id="889338405075704026">Přejít do nastavení Chromu</translation>
 <translation id="8893398027601469503">Používáte nejnovější verzi Chromu</translation>
+<translation id="8898822736010347272">Odesílá adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek do Googlu a pomáhá tak objevovat nové hrozby a chránit všechny uživatele internetu.</translation>
 <translation id="8909135823018751308">Sdílet…</translation>
 <translation id="8912362522468806198">Účet Google</translation>
 <translation id="8920114477895755567">Čekáme na podrobnosti o rodičích.</translation>

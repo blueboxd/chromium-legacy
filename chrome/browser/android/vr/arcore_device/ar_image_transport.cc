@@ -135,13 +135,13 @@ GLuint ArImageTransport::GetCameraTextureId() {
   return camera_texture_id_arcore_;
 }
 
-void ArImageTransport::ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
+bool ArImageTransport::ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
                                           const gfx::Size& size,
                                           vr::WebXrSharedBuffer* buffer) {
   DCHECK(IsOnGlThread());
 
   if (buffer->size == size)
-    return;
+    return false;
 
   TRACE_EVENT0("gpu", __FUNCTION__);
   // Unbind previous image (if any).
@@ -181,7 +181,7 @@ void ArImageTransport::ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
   bool ret = img->Initialize(ahb.get(), false /* preserved */);
   if (!ret) {
     DLOG(WARNING) << __FUNCTION__ << ": ERROR: failed to initialize image!";
-    return;
+    return false;
   }
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, buffer->local_texture);
   img->BindTexImage(GL_TEXTURE_EXTERNAL_OES);
@@ -191,6 +191,7 @@ void ArImageTransport::ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
   DVLOG(1) << __FUNCTION__ << ": resized to " << size.width() << "x"
            << size.height();
   buffer->size = size;
+  return true;
 }
 
 std::unique_ptr<vr::WebXrSharedBuffer> ArImageTransport::CreateBuffer() {
@@ -215,8 +216,21 @@ gpu::MailboxHolder ArImageTransport::TransferFrame(
   vr::WebXrSharedBuffer* shared_buffer =
       webxr->GetAnimatingFrame()->shared_buffer.get();
   ResizeSharedBuffer(webxr, frame_size, shared_buffer);
+  // Sanity check that the lazily created/resized buffer looks valid.
+  DCHECK(!shared_buffer->mailbox_holder.mailbox.IsZero());
+  DCHECK(shared_buffer->local_glimage);
+  DCHECK_EQ(shared_buffer->local_glimage->GetSize(), frame_size);
 
-  mailbox_bridge_->GenSyncToken(&shared_buffer->mailbox_holder.sync_token);
+  // We don't need to create a sync token here. ResizeSharedBuffer has created
+  // one on reallocation, including initial buffer creation, and we can use
+  // that. The shared image interface internally uses its own command buffer ID
+  // and separate sync token release count namespace, and we must not overwrite
+  // that. We don't need a new sync token when reusing a correctly-sized buffer,
+  // it's only eligible for reuse after all reads from it are complete, meaning
+  // that it's transitioned through "processing" and "rendering" states back
+  // to "animating".
+  DCHECK(shared_buffer->mailbox_holder.sync_token.HasData());
+
   return shared_buffer->mailbox_holder;
 }
 
@@ -233,7 +247,19 @@ gpu::MailboxHolder ArImageTransport::TransferCameraImageFrame(
 
   vr::WebXrSharedBuffer* camera_image_shared_buffer =
       webxr->GetAnimatingFrame()->camera_image_shared_buffer.get();
-  ResizeSharedBuffer(webxr, frame_size, camera_image_shared_buffer);
+  bool was_resized =
+      ResizeSharedBuffer(webxr, frame_size, camera_image_shared_buffer);
+  if (was_resized) {
+    // Ensure that the following GPU command buffer actions are sequenced after
+    // the shared buffer operations. The shared image interface uses a separate
+    // command buffer stream.
+    DCHECK(camera_image_shared_buffer->mailbox_holder.sync_token.HasData());
+    WaitSyncToken(camera_image_shared_buffer->mailbox_holder.sync_token);
+  }
+  // Sanity checks for the camera image buffer.
+  DCHECK(!camera_image_shared_buffer->mailbox_holder.mailbox.IsZero());
+  DCHECK(camera_image_shared_buffer->local_glimage);
+  DCHECK_EQ(camera_image_shared_buffer->local_glimage->GetSize(), frame_size);
 
   // Temporarily change drawing buffer to the camera image buffer.
   if (!camera_image_fbo_) {

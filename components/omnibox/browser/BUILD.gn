@@ -83,8 +83,6 @@ jumbo_static_library("browser") {
     "autocomplete_classifier.h",
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
-    "autocomplete_input.cc",
-    "autocomplete_input.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
     "autocomplete_match_classification.cc",
@@ -99,7 +97,6 @@ jumbo_static_library("browser") {
     "autocomplete_provider_debouncer.h",
     "autocomplete_result.cc",
     "autocomplete_result.h",
-    "autocomplete_scheme_classifier.h",
     "base_search_provider.cc",
     "base_search_provider.h",
     "bookmark_provider.cc",
@@ -132,11 +129,6 @@ jumbo_static_library("browser") {
     "keyword_provider.h",
     "local_history_zero_suggest_provider.cc",
     "local_history_zero_suggest_provider.h",
-    "location_bar_model.h",
-    "location_bar_model_delegate.cc",
-    "location_bar_model_delegate.h",
-    "location_bar_model_impl.cc",
-    "location_bar_model_impl.h",
     "match_compare.h",
     "omnibox_client.cc",
     "omnibox_client.h",
@@ -211,9 +203,8 @@ jumbo_static_library("browser") {
     "zero_suggest_provider.h",
   ]
 
-  defines = [ "OMNIBOX_BROWSER_IMPLEMENTATION" ]
-
   public_deps = [
+    ":location_bar",
     "//base",
     "//base:i18n",
     "//components/history/core/browser",
@@ -263,6 +254,54 @@ jumbo_static_library("browser") {
     deps += [ ":vector_icons" ]
   }
 
+  if (!is_ios) {
+    deps += [ "//components/keyed_service/content" ]
+  }
+
+  if (is_android) {
+    deps += [ ":jni_headers" ]
+  }
+}
+
+# A target that contains the minimal amount of code necessary for displaying a
+# smart location bar. This code provides special processing of URLs without
+# bringing in many extra dependencies.
+static_library("location_bar") {
+  sources = [
+    "autocomplete_input.cc",
+    "autocomplete_input.h",
+    "autocomplete_scheme_classifier.h",
+    "location_bar_model.h",
+    "location_bar_model_delegate.cc",
+    "location_bar_model_delegate.h",
+    "location_bar_model_impl.cc",
+    "location_bar_model_impl.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/omnibox/common",
+    "//components/security_state/core",
+    "//third_party/metrics_proto",
+    "//url",
+  ]
+  deps = [
+    ":buildflags",
+    "//components/dom_distiller/core:core",
+    "//components/search_engines",
+    "//components/strings",
+    "//components/url_formatter",
+    "//net",
+    "//third_party/protobuf:protobuf_lite",
+    "//third_party/re2",
+    "//ui/base",
+    "//ui/gfx",
+  ]
+
+  if ((!is_android || enable_vr) && !is_ios) {
+    deps += [ ":vector_icons" ]
+  }
+
   if (is_android) {
     sources += [
       "autocomplete_scheme_classifier_android.cc",
@@ -270,10 +309,6 @@ jumbo_static_library("browser") {
       "omnibox_url_emphasizer.cc",
     ]
     deps += [ ":jni_headers" ]
-  }
-
-  if (!is_ios) {
-    deps += [ "//components/keyed_service/content" ]
   }
 }
 

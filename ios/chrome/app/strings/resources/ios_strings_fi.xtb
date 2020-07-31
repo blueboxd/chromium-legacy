@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Kuvaa ei voi tall.</translation>
 <translation id="1180526666083833456">Synkronoi ja yksilöi kaikilla laitteilla.</translation>
 <translation id="1181037720776840403">Poista</translation>
+<translation id="1185569544548277362">Uutta: Voit tehdä Chromesta oletusselaimesi. <ph name="BEGIN_LINK" />Avaa asetukset<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Uusi haku</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
 <translation id="1219674500290482172">Internetyhteyttä ei voi muodostaa.</translation>
@@ -367,6 +368,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5407969256130905701">Hylkää muutokset</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
 <translation id="5416022985862681400">Viimeiset 7 päivää</translation>
+<translation id="543338862236136125">Muokkaa salasanaa</translation>
 <translation id="5433691172869980887">Käyttäjänimi kopioitu</translation>
 <translation id="54401264925851789">Sivun suojaustiedot</translation>
 <translation id="5443952882982198570">Luottokortit</translation>
@@ -638,6 +640,7 @@ Sivustot voivat nähdä selaustoimintaasi eri sivustoilta evästeiden kautta esi
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-välilehdet: <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" />/<ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Uusi</translation>
 <translation id="8532105204136943229">Voimassa (vuosi)</translation>
+<translation id="8533166274275423134">Avoinna muualla</translation>
 <translation id="8534481786647257214">Google+ -viesti julkaistu.</translation>
 <translation id="8548878600947630424">Haku sivulta...</translation>
 <translation id="8574235780160508979">Chromen käyttöehdot muuttuvat 31.3. <ph name="BEGIN_LINK" />Lue ehdot<ph name="END_LINK" /></translation>

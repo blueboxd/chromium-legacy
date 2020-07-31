@@ -1646,6 +1646,7 @@
 <translation id="7791011319128895129">Չթողարկված</translation>
 <translation id="7791196057686275387">Սեղմում</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
+<translation id="7792318290931435557">Դիտել մեկ էջով</translation>
 <translation id="7798389633136518089">Անտեսվում է, քանի որ կանոնը չի սահմանվել ամպային աղբյուրի կողմից։</translation>
 <translation id="7800304661137206267">Հաղորդագրությունների իսկորոշման համար օգտագործվում է <ph name="CIPHER" />՝ <ph name="MAC" />-ով, բանալիների փոխանակման համար օգտագործվում է <ph name="KX" />:</translation>
 <translation id="7802523362929240268">Կայքը անվտանգ է</translation>
@@ -1741,6 +1742,7 @@
 <translation id="8220146938470311105">C7/C6 (ծրար)</translation>
 <translation id="8221250263817408492">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Խորհուրդ ենք տալիս փոխել ձեր գաղտնաբառը, որն օգտագործում եք <ph name="WEBSITE_1" /> և այլ կայքերում։</translation>
 <translation id="8225771182978767009">Անձն, ով կարգավորել է այս համակարգիչը, նշել է, որպեսզի այս կայքն արգելափակվի:</translation>
+<translation id="8228419419708659934">Դիտել երկու էջով</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Հարթակի ջերմաստիճանը</translation>
 <translation id="8238581221633243064">Բացել էջը նոր ինկոգնիտո ներդիրում</translation>

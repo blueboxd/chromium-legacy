@@ -123,17 +123,19 @@ void RecordNudgeMetrics(
     HomeToOverviewNudgeController::HideTransition transition) {
   switch (transition) {
     case (HomeToOverviewNudgeController::HideTransition::kUserTap):
-      LogNudgeDismissedMetrics(contextual_tooltip::TooltipType::kHomeToOverview,
-                               contextual_tooltip::DismissNudgeReason::kTap);
+      MaybeLogNudgeDismissedMetrics(
+          contextual_tooltip::TooltipType::kHomeToOverview,
+          contextual_tooltip::DismissNudgeReason::kTap);
       break;
     case (HomeToOverviewNudgeController::HideTransition::kNudgeTimeout):
-      LogNudgeDismissedMetrics(
+      MaybeLogNudgeDismissedMetrics(
           contextual_tooltip::TooltipType::kHomeToOverview,
           contextual_tooltip::DismissNudgeReason::kTimeout);
       break;
     case (HomeToOverviewNudgeController::HideTransition::kShelfStateChange):
-      LogNudgeDismissedMetrics(contextual_tooltip::TooltipType::kHomeToOverview,
-                               contextual_tooltip::DismissNudgeReason::kOther);
+      MaybeLogNudgeDismissedMetrics(
+          contextual_tooltip::TooltipType::kHomeToOverview,
+          contextual_tooltip::DismissNudgeReason::kOther);
       break;
   }
 }

@@ -949,6 +949,7 @@ message SystemProfileProto {
     ON_DEVICE_HEAD_SUGGEST = 25;
     CROS_SMART_DIM = 26;
     ZXCVBN_DATA = 27;
+    AUTOFILL_REGEX_CONSTANTS = 28;
   }
 
   // Information about what Chrome components are registered and at which

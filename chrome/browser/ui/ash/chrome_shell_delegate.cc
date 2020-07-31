@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
+#include "chrome/browser/ui/ash/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
@@ -63,6 +64,11 @@ bool ChromeShellDelegate::CanShowWindowForUser(
     const aura::Window* window) const {
   return ::CanShowWindowForUser(window,
                                 base::BindRepeating(&GetActiveBrowserContext));
+}
+
+std::unique_ptr<ash::CaptureModeDelegate>
+ChromeShellDelegate::CreateCaptureModeDelegate() const {
+  return std::make_unique<ChromeCaptureModeDelegate>();
 }
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {

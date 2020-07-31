@@ -87,6 +87,12 @@ enum class DeviceBatteryState {
 // session.
 @property(nonatomic, assign, readonly) BOOL OSRestartedAfterPreviousSession;
 
+// Whether the previous session was on Multi Window enabled version of the
+// application.
+// TODO(crbug.com/1109280): Remove after the migration to Multi-Window sessions
+// is done.
+@property(nonatomic, assign, readonly) BOOL isMultiWindowEnabledSession;
+
 // The OS version during the previous session or nil if no previous session data
 // is available.
 @property(nonatomic, strong, readonly) NSString* OSVersion;

@@ -1120,6 +1120,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">As notas da pantalla de bloqueo gárdanse automaticamente na aplicación <ph name="LOCK_SCREEN_APP_NAME" />. A túa nota máis recente permanecerá na pantalla de bloqueo.</translation>
 <translation id="2353297238722298836">Permítense a cámara e o micrófono</translation>
+<translation id="2355314311311231464">Produciuse un erro no abastecemento porque non se puideron recuperar os detalles da túa conta. Téntao de novo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Activar Conexión compartida instantánea</translation>
 <translation id="2356070529366658676">Preguntar</translation>
 <translation id="2357330829548294574">Quitar <ph name="USER_NAME" /></translation>
@@ -1215,6 +1216,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2473195200299095979">Traducir esta páxina</translation>
 <translation id="2475982808118771221">Produciuse un erro</translation>
 <translation id="2476578072172137802">Configuración do sitio</translation>
+<translation id="2476974672882258506">Para desinstalar <ph name="PARALLELS_DESKTOP" />, pecha Windows.</translation>
 <translation id="2478176599153288112">Permisos de ficheiros multimedia para "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Compartir audio</translation>
 <translation id="248003956660572823">Non se gardaron os contrasinais</translation>
@@ -1305,6 +1307,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2572032849266859634">Concedeuse acceso de só lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Esta icona estará visible cando a extensión se poida utilizar na páxina actual. Para utilizar a extensión, fai clic na icona ou preme <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reunións</translation>
+<translation id="2579232805407578790">Non se puido establecer conexión co servidor. Comproba a conexión de rede e téntao de novo. Se o problema persiste, reinicia o Chromebook. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Permitir sempre a <ph name="HOST" /> descargar varios ficheiros</translation>
 <translation id="258095186877893873">Longo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1524,6 +1527,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2836635946302913370">O administrador desactivou o inicio de sesión con este nome de usuario.</translation>
 <translation id="283669119850230892">Para utilizar a rede <ph name="NETWORK_ID" />, primeiro completa a túa conexión a Internet a continuación.</translation>
 <translation id="2838379631617906747">Instalando</translation>
+<translation id="2838835911926931318">Inicia sesión para sincronizar os marcadores, os contrasinais, o historial e moito máis en todos os teus dispositivos</translation>
 <translation id="2839032553903800133">As notificacións están bloqueadas</translation>
 <translation id="2841013758207633010">Hora</translation>
 <translation id="2841837950101800123">Provedor</translation>
@@ -1583,6 +1587,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
     Mensaxe do servidor: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Engadir galería multimedia por directorio</translation>
 <translation id="2910318910161511225">Conéctate a unha rede e téntao de novo</translation>
+<translation id="2910718431259223434">Produciuse un erro. Téntao de novo ou ponte en contacto co propietario ou co administrador do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Permitir que os sitios garden e lean datos de cookies (recomendado)</translation>
 <translation id="2915102088417824677">Consultar rexistro de actividade</translation>
 <translation id="2915873080513663243">Exploración automática</translation>
@@ -2322,6 +2327,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Aprobouse 1 extensión}other{Aprobáronse # extensións}}</translation>
 <translation id="3822559385185038546">A configuración deste proxy aplícaa o teu administrador</translation>
 <translation id="3823310065043511710">É recomendable dispoñer polo menos de <ph name="INSTALL_SIZE" /> de espazo para Linux.</translation>
+<translation id="3824621460022590830">O token de inscrición do dispositivo non é válido. Ponte en contacto co propietario ou co administrador do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">O teu administrador desactivou a opción de engadir máis Contas de Google</translation>
 <translation id="3827306204503227641">Continuar permitindo os plugins non incluídos no illamento de procesos</translation>
 <translation id="3827774300009121996">&amp;Pantalla completa</translation>
@@ -3275,6 +3281,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5079950360618752063">Utilizar contrasinal suxerido</translation>
 <translation id="508059534790499809">Actualizar un tícket de Kerberos</translation>
 <translation id="5084230410268011727">Permitir que os sitios utilicen sensores de movemento e de luz</translation>
+<translation id="5084328598860513926">Interrompeuse o fluxo de abastecemento. Téntao de novo ou ponte en contacto co propietario ou co administrador do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Comprobando se hai actualizacións</translation>
 <translation id="5086082738160935172">Dispositivo de interface humana</translation>
 <translation id="5086874064903147617">Queres restaurar a páxina de inicio predeterminada?</translation>
@@ -3674,6 +3681,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="557722062034137776">Restablecer o dispositivo non afectará ás túas contas de Google nin a ningún dos datos sincronizados con esas contas. Non obstante, eliminaranse todos os ficheiros gardados localmente no teu dispositivo.</translation>
 <translation id="5578059481725149024">Inicio de sesión automático</translation>
 <translation id="558170650521898289">Verificación do controlador de hardware de Microsoft Windows</translation>
+<translation id="5581972110672966454">O dispositivo non se puido vincular ao dominio. Téntao de novo ou ponte en contacto co propietario ou co administrador do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Menú principal</translation>
 <translation id="5583640892426849032">Retroceso</translation>
 <translation id="5584088138253955452">Queres gardar o nome de usuario?</translation>
@@ -3746,6 +3754,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5667546120811588575">Configurando Google Play...</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5669691691057771421">Introducir novo PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Imaxes bloqueadas</translation>
 <translation id="5671658447180261823">Quitar a suxestión: <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Este dispositivo recibirá actualizacións automáticas de software e de seguranza ata <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
@@ -5392,6 +5401,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7764225426217299476">Engadir enderezo</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Mover</translation>
+<translation id="7766082757934713382">Contribúe a reducir o uso de datos da rede ao poñer en pausa as actualizacións automáticas de aplicacións e do sistema</translation>
 <translation id="7766807826975222231">Realizar un percorrido</translation>
 <translation id="7766838926148951335">Aceptar permisos</translation>
 <translation id="7768770796815395237">Cambiar</translation>
@@ -6303,6 +6313,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="885701979325669005">Almacenamento</translation>
 <translation id="8859057652521303089">Selecciona o teu idioma:</translation>
 <translation id="8859174528519900719">Submarco: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Non se puideron cargar as Condicións de servizo</translation>
 <translation id="8859662783913000679">Conta parental</translation>
 <translation id="8862003515646449717">Cambiar a un navegador rápido</translation>
 <translation id="8863753581171631212">Abrir ligazón na nova aplicación <ph name="APP" /></translation>
@@ -6571,6 +6582,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="920045321358709304">Realizar a busca en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Todos os datos sen conexión borraranse</translation>
 <translation id="9201220332032049474">Opcións de bloqueo da pantalla</translation>
+<translation id="9201842707396338580">Produciuse un erro. Ponte en contacto co propietario ou co administrador do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">Creación de &amp;perfís activada</translation>
 <translation id="9203904171912129171">Seleccionar un dispositivo</translation>
 <translation id="9203962528777363226">O administrador deste dispositivo impediu que se engadisen novos usuarios</translation>
@@ -6642,6 +6654,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="983511809958454316">Esta función non é compatible coa RV</translation>
 <translation id="984275831282074731">Métodos de pago</translation>
 <translation id="98515147261107953">Horizontal</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Xeral</translation>
 <translation id="987897973846887088">Non hai imaxes dispoñibles</translation>
 <translation id="988978206646512040">A frase de acceso non pode estar baleira</translation>

@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Gagal Simpan Imej</translation>
 <translation id="1180526666083833456">Segerakkan dan peribadikan pada semua peranti.</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
+<translation id="1185569544548277362">Baharu: Anda membuat Chrome menjadi penyemak imbas lalai anda. <ph name="BEGIN_LINK" />Buka Tetapan<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Carian Baharu</translation>
 <translation id="1209206284964581585">Sorok sementara</translation>
 <translation id="1219674500290482172">Tidak dapat menyambung ke Internet.</translation>
@@ -367,6 +368,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5407969256130905701">Buang Perubahan</translation>
 <translation id="5409365236829784218">Tiada aplikasi dipasang yang boleh membuka fail ini.</translation>
 <translation id="5416022985862681400">7 Hari Terakhir</translation>
+<translation id="543338862236136125">Edit kata laluan</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="54401264925851789">Maklumat Halaman Keselamatan</translation>
 <translation id="5443952882982198570">Kad Kredit</translation>
@@ -638,6 +640,7 @@ Tapak boleh menggunakan kuki untuk melihat aktiviti penyemakan imbas anda merent
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tab <ph name="FIRST_VISIBLE_TAB" /> melalui <ph name="LAST_VISIBLE_TAB" /> daripada <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Baharu</translation>
 <translation id="8532105204136943229">Tahun Tamat Tempoh</translation>
+<translation id="8533166274275423134">Dibuka Di Tempat Lain</translation>
 <translation id="8534481786647257214">Catatan Google+ selesai.</translation>
 <translation id="8548878600947630424">Cari dalam halaman...</translation>
 <translation id="8574235780160508979">Syarat Perkhidmatan Chrome akan berubah pada 31 Mac. <ph name="BEGIN_LINK" />Sila semak<ph name="END_LINK" /></translation>

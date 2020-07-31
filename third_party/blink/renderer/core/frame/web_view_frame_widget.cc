@@ -174,6 +174,10 @@ void WebViewFrameWidget::FocusChanged(bool enable) {
   Client()->FocusChanged(enable);
 }
 
+float WebViewFrameWidget::GetDeviceScaleFactorForTesting() {
+  return device_scale_factor_for_testing_;
+}
+
 bool WebViewFrameWidget::ShouldHandleImeEvents() {
   return HasFocus();
 }
@@ -262,6 +266,21 @@ void WebViewFrameWidget::SetZoomLevelForTesting(double zoom_level) {
 void WebViewFrameWidget::ResetZoomLevelForTesting() {
   zoom_level_for_testing_ = -INFINITY;
   SetZoomLevel(0);
+}
+
+void WebViewFrameWidget::SetDeviceScaleFactorForTesting(float factor) {
+  DCHECK_GE(factor, 0.f);
+
+  device_scale_factor_for_testing_ = factor;
+
+  // Receiving a 0 is used to reset between tests, it removes the override in
+  // order to listen to the browser for the next test.
+  if (!factor)
+    return;
+
+  // We are changing the device scale factor from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
 }
 
 void WebViewFrameWidget::SetZoomLevel(double zoom_level) {

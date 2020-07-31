@@ -90,11 +90,10 @@ class LauncherDragTest : public LauncherDragClamshellModeTest,
     tablet_mode_ = GetParam();
 
     // Drag from top to close app list in tablet mode is disabled if
-    // kDragFromShelfToHomeOrOverview feature is enabled.
+    // shelf hotseat feature is enabled.
     if (tablet_mode_) {
-      scoped_features_.InitWithFeatures(
-          {}, {ash::features::kDragFromShelfToHomeOrOverview,
-               chromeos::features::kShelfHotseat});
+      scoped_features_.InitWithFeatures({},
+                                        {chromeos::features::kShelfHotseat});
     }
   }
   ~LauncherDragTest() override = default;

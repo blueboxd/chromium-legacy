@@ -18,7 +18,6 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -209,12 +208,6 @@ std::unique_ptr<views::InkDropRipple> FrameCaptionButton::CreateInkDropRipple()
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetInkdropInsets(size()), GetInkDropCenterBasedOnLastEvent(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropMask> FrameCaptionButton::CreateInkDropMask()
-    const {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      size(), GetInkdropInsets(size()), ink_drop_corner_radius_);
 }
 
 void FrameCaptionButton::SetBackgroundColor(SkColor background_color) {

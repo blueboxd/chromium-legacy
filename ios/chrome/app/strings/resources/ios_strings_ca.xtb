@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">No es pot desar.</translation>
 <translation id="1180526666083833456">Sincronitza i personalitza el contingut en tots els dispositius.</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
+<translation id="1185569544548277362">Novetat: ara pots establir Chrome com a navegador predeterminat. <ph name="BEGIN_LINK" />Obre Configuració<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Cerca nova</translation>
 <translation id="1209206284964581585">Amaga per ara</translation>
 <translation id="1219674500290482172">No es pot connectar a Internet.</translation>
@@ -367,6 +368,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5407969256130905701">Descarta els canvis</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
 <translation id="5416022985862681400">7 darrers dies</translation>
+<translation id="543338862236136125">Edita la contrasenya</translation>
 <translation id="5433691172869980887">S'ha copiat el nom d'usuari</translation>
 <translation id="54401264925851789">Informació de seguretat de la pàgina</translation>
 <translation id="5443952882982198570">Targetes de crèdit</translation>
@@ -638,6 +640,7 @@ Els llocs web poden fer servir galetes per veure la teva activitat de navegació
 <translation id="8524799873541103884">Pestanyes <ph name="INCOGNITO" />: de <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> d'un total de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novetat</translation>
 <translation id="8532105204136943229">Any de caducitat</translation>
+<translation id="8533166274275423134">S'ha obert en un altre lloc</translation>
 <translation id="8534481786647257214">S'ha completat la publicació a Google+.</translation>
 <translation id="8548878600947630424">Cerca a la pàgina...</translation>
 <translation id="8574235780160508979">Les condicions del servei de Chrome canviaran el 31 de març. <ph name="BEGIN_LINK" />Revisa-les<ph name="END_LINK" /></translation>

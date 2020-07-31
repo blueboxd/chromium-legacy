@@ -59,6 +59,8 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
@@ -2030,14 +2032,24 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   Document* document = GetDocument();
   if (!document || !document->GetFrame())
     return false;
+
   auto* element = DynamicTo<Element>(node);
   if (element && node->isConnected()) {
     const ComputedStyle* style = element->EnsureComputedStyle();
     if (!style)
       return false;
-    return style->Display() == EDisplay::kNone ||
-           style->Visibility() != EVisibility::kVisible;
+
+    if (style->Display() == EDisplay::kNone ||
+        style->Visibility() != EVisibility::kVisible) {
+      return true;
+    }
+
+    // Style elements in SVG are not display: none, unlike HTML style elements,
+    // but they are still hidden from all users.
+    if (IsA<SVGElement>(element))
+      return IsA<SVGStyleElement>(element);
   }
+
   return false;
 }
 

@@ -23,6 +23,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -916,6 +917,11 @@ void Shell::Init(
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   accessibility_controller_ = std::make_unique<AccessibilityControllerImpl>();
   toast_manager_ = std::make_unique<ToastManagerImpl>();
+
+  if (features::IsCaptureModeEnabled()) {
+    capture_mode_controller_ = std::make_unique<CaptureModeController>(
+        shell_delegate_->CreateCaptureModeDelegate());
+  }
 
   // Accelerometer file reader starts listening to tablet mode controller.
   AccelerometerReader::GetInstance()->StartListenToTabletModeController();

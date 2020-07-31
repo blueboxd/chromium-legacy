@@ -35,6 +35,7 @@
 #include "components/arc/mojom/net.mojom.h"
 #include "components/arc/mojom/obb_mounter.mojom.h"
 #include "components/arc/mojom/oemcrypto.mojom.h"
+#include "components/arc/mojom/payment_app.mojom.h"
 #include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/mojom/policy.mojom.h"
 #include "components/arc/mojom/power.mojom.h"

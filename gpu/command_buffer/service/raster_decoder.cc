@@ -260,8 +260,7 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
 
     if (!begin_semaphores.empty()) {
       bool result = output_surface_->wait(begin_semaphores.size(),
-                                          begin_semaphores.data(),
-                                          /*deleteSemaphoresAfterWait=*/false);
+                                          begin_semaphores.data());
       DCHECK(result);
     }
 
@@ -2300,9 +2299,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
           &begin_semaphores, &end_semaphores);
 
   if (!begin_semaphores.empty()) {
-    bool result = dest_scoped_access->surface()->wait(
-        begin_semaphores.size(), begin_semaphores.data(),
-        /*deleteSemaphoresAfterWait=*/false);
+    bool result = dest_scoped_access->surface()->wait(begin_semaphores.size(),
+                                                      begin_semaphores.data());
     DCHECK(result);
   }
 
@@ -2424,9 +2422,8 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   }
 
   if (!begin_semaphores.empty()) {
-    bool result = dest_scoped_access->surface()->wait(
-        begin_semaphores.size(), begin_semaphores.data(),
-        /*deleteSemaphoresAfterWait=*/false);
+    bool result = dest_scoped_access->surface()->wait(begin_semaphores.size(),
+                                                      begin_semaphores.data());
     if (!result) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
                          "Unable to obtain write access to dest shared image.");
@@ -2532,8 +2529,7 @@ void RasterDecoderImpl::DoReadbackImagePixelsINTERNAL(
 
   if (!begin_semaphores.empty()) {
     bool result = shared_context_state_->gr_context()->wait(
-        begin_semaphores.size(), begin_semaphores.data(),
-        /*deleteSemaphoresAfterWait=*/false);
+        begin_semaphores.size(), begin_semaphores.data());
     DCHECK(result);
   }
 
@@ -2698,8 +2694,7 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
   auto* dest_surface = dest_scoped_access->surface();
   if (!begin_semaphores.empty()) {
     bool result =
-        dest_surface->wait(begin_semaphores.size(), begin_semaphores.data(),
-                           /*deleteSemaphoresAfterWait=*/false);
+        dest_surface->wait(begin_semaphores.size(), begin_semaphores.data());
     DCHECK(result);
   }
 
@@ -2895,8 +2890,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
 
   if (!begin_semaphores.empty()) {
     bool result =
-        sk_surface_->wait(begin_semaphores.size(), begin_semaphores.data(),
-                          /*deleteSemaphoresAfterWait=*/false);
+        sk_surface_->wait(begin_semaphores.size(), begin_semaphores.data());
     DCHECK(result);
   }
 

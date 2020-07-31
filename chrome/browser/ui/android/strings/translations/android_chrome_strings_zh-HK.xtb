@@ -387,6 +387,7 @@
 <translation id="4084712963632273211">發佈者：<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />由 Google 提供<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
+<translation id="4108998448622696017">偵測並在危險事件發生時發出警告。</translation>
 <translation id="4116038641877404294">下載網頁，以便在離線時使用</translation>
 <translation id="4135200667068010335">要共用分頁嘅裝置清單閂咗。</translation>
 <translation id="4149994727733219643">使用簡化檢視模式查看網頁</translation>
@@ -686,6 +687,7 @@
 <translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6406506848690869874">同步處理</translation>
+<translation id="6412673304250309937">使用儲存在 Chrome 中的不安全網站清單來檢查網址。如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chrome 亦可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能。</translation>
 <translation id="641643625718530986">列印…</translation>
 <translation id="6427112570124116297">翻譯網頁</translation>
 <translation id="6433501201775827830">選取您的搜尋引擎</translation>
@@ -1000,6 +1002,7 @@
 <translation id="8854223127042600341">查看離線檔案</translation>
 <translation id="889338405075704026">前往 Chrome 設定</translation>
 <translation id="8893398027601469503">您正在使用最新版本的 Chrome</translation>
+<translation id="8898822736010347272">向 Google 傳送部分您瀏覽網頁的網址、特定的系統資料及部分網頁內容，以協助探索新威脅，並保護所有網絡使用者。</translation>
 <translation id="8909135823018751308">共用…</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8920114477895755567">正在等候家長的詳細資訊。</translation>

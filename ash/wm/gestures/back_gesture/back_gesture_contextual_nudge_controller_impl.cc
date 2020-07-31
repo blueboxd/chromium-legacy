@@ -41,9 +41,6 @@ BackGestureContextualNudgeControllerImpl::
 void BackGestureContextualNudgeControllerImpl::OnBackGestureStarted() {
   if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
-    contextual_tooltip::LogNudgeDismissedMetrics(
-        contextual_tooltip::TooltipType::kBackGesture,
-        contextual_tooltip::DismissNudgeReason::kBackGestureStarted);
   }
 }
 
@@ -54,6 +51,12 @@ void BackGestureContextualNudgeControllerImpl::OnActiveUserSessionChanged(
 
 void BackGestureContextualNudgeControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    contextual_tooltip::MaybeLogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kUserSessionInactive);
+  }
   UpdateWindowMonitoring(/*can_show_nudge_immediately=*/true);
 }
 
@@ -62,6 +65,10 @@ void BackGestureContextualNudgeControllerImpl::OnTabletModeStarted() {
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletModeEnded() {
+  contextual_tooltip::MaybeLogNudgeDismissedMetrics(
+      contextual_tooltip::TooltipType::kBackGesture,
+      contextual_tooltip::DismissNudgeReason::kSwitchToClamshell);
+
   UpdateWindowMonitoring(/*can_show_nudge_immediately=*/false);
 }
 
@@ -80,7 +87,7 @@ void BackGestureContextualNudgeControllerImpl::OnWindowActivated(
   // is currently being shown, cancel the animation.
   if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
-    contextual_tooltip::LogNudgeDismissedMetrics(
+    contextual_tooltip::MaybeLogNudgeDismissedMetrics(
         contextual_tooltip::TooltipType::kBackGesture,
         contextual_tooltip::DismissNudgeReason::kActiveWindowChanged);
   }
@@ -98,7 +105,7 @@ void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
   // currently being shown, cancel the animation.
   if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
-    contextual_tooltip::LogNudgeDismissedMetrics(
+    contextual_tooltip::MaybeLogNudgeDismissedMetrics(
         contextual_tooltip::TooltipType::kBackGesture,
         contextual_tooltip::DismissNudgeReason::kNavigationEntryChanged);
   }
@@ -109,9 +116,21 @@ void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
 void BackGestureContextualNudgeControllerImpl::OnShelfConfigUpdated() {
   bool updated_shelf_control_visibility =
       ShelfConfig::Get()->shelf_controls_shown();
+  bool tablet_mode = ShelfConfig::Get()->in_tablet_mode();
+
   if (shelf_control_visible_ == updated_shelf_control_visibility)
     return;
+
   shelf_control_visible_ = updated_shelf_control_visibility;
+
+  // Metrics for hiding nudge when exiting tablet mode is handled by
+  // OnTabletModeEnded.
+  if (tablet_mode && shelf_control_visible_) {
+    contextual_tooltip::MaybeLogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kOther);
+  }
+
   if (!nudge_ || !shelf_control_visible_)
     return;
   nudge_->CancelAnimationOrFadeOutToHide();
@@ -193,24 +212,14 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring(
   if (nudge_) {
     nudge_->CancelAnimationOrFadeOutToHide();
 
-    if (!Shell::Get()->IsInTabletMode()) {
-      contextual_tooltip::LogNudgeDismissedMetrics(
-          contextual_tooltip::TooltipType::kBackGesture,
-          contextual_tooltip::DismissNudgeReason::kSwitchToClamshell);
-    } else if (Shell::Get()->session_controller()->GetSessionState() !=
-               session_manager::SessionState::ACTIVE) {
-      contextual_tooltip::LogNudgeDismissedMetrics(
-          contextual_tooltip::TooltipType::kBackGesture,
-          contextual_tooltip::DismissNudgeReason::kUserSessionInactive);
-    } else {
-      contextual_tooltip::LogNudgeDismissedMetrics(
-          contextual_tooltip::TooltipType::kBackGesture,
-          contextual_tooltip::DismissNudgeReason::kOther);
-    }
+    contextual_tooltip::MaybeLogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kOther);
   }
 }
 
 void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
+  // TODO(crbug/1101105) Reimplement kTimeout metric for back gesture nudge.
   const bool count_as_shown = nudge_->ShouldNudgeCountAsShown();
   // UpdateWindowMonitoring() might attempt to cancel any in-progress nudge,
   // which would switch the nudge into an invalid state. Reset the nudge before
@@ -222,9 +231,6 @@ void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
   if (count_as_shown) {
     contextual_tooltip::HandleNudgeShown(
         GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
-    contextual_tooltip::LogNudgeDismissedMetrics(
-        contextual_tooltip::TooltipType::kBackGesture,
-        contextual_tooltip::DismissNudgeReason::kTimeout);
     UpdateWindowMonitoring(/*can_show_nudge_immediately=*/false);
 
     // Set a timer to monitoring windows and show nudge ui again.

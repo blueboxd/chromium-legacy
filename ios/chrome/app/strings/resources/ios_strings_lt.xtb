@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Nepav. išs. vaizdo</translation>
 <translation id="1180526666083833456">Sinchronizuojama ir suasmeninama įvairiuose įrenginiuose.</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
+<translation id="1185569544548277362">Naujiena: galite nustatyti „Chrome“ kaip numatytąją naršyklę. <ph name="BEGIN_LINK" />Atidaryti skiltį „Nustatymai“<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nauja paieška</translation>
 <translation id="1209206284964581585">Slėpti dabar</translation>
 <translation id="1219674500290482172">Nepavyksta prisijungti prie interneto.</translation>
@@ -367,6 +368,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5407969256130905701">Atmesti pakeitimus</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
 <translation id="5416022985862681400">Pastarosios 7 dienos</translation>
+<translation id="543338862236136125">Redaguoti slaptažodį</translation>
 <translation id="5433691172869980887">Naudotojo vardas nukopijuotas</translation>
 <translation id="54401264925851789">Puslapio saugos informacija</translation>
 <translation id="5443952882982198570">Kredito kortelės</translation>
@@ -638,6 +640,7 @@ Svetainės gali naudoti slapukus, kad sužinotų apie naršymo veiklą skirtingo
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> skirtukai: <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" /> iš <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Nauja</translation>
 <translation id="8532105204136943229">Gal. pab. metai</translation>
+<translation id="8533166274275423134">Atidaryta kitur</translation>
 <translation id="8534481786647257214">„Google+“ įrašas paskelbtas.</translation>
 <translation id="8548878600947630424">Ieškoti puslapyje...</translation>
 <translation id="8574235780160508979">Kovo 31 dieną bus pakeistos „Chrome“ paslaugų teikimo sąlygos. <ph name="BEGIN_LINK" />Peržiūrėkite<ph name="END_LINK" /></translation>

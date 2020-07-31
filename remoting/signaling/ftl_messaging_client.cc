@@ -17,8 +17,8 @@
 #include "remoting/base/protobuf_http_request_config.h"
 #include "remoting/base/protobuf_http_status.h"
 #include "remoting/base/protobuf_http_stream_request.h"
-#include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_message_reception_channel.h"
+#include "remoting/signaling/ftl_services_context.h"
 #include "remoting/signaling/registration_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -126,7 +126,7 @@ FtlMessagingClient::FtlMessagingClient(
     SignalingTracker* signaling_tracker)
     : FtlMessagingClient(
           std::make_unique<ProtobufHttpClient>(
-              FtlGrpcContext::GetServerEndpoint(),
+              FtlServicesContext::GetServerEndpoint(),
               token_getter,
               url_loader_factory),
           registration_manager,
@@ -158,7 +158,7 @@ FtlMessagingClient::RegisterMessageCallback(const MessageCallback& callback) {
 
 void FtlMessagingClient::PullMessages(DoneCallback on_done) {
   auto request = std::make_unique<ftl::PullMessagesRequest>();
-  *request->mutable_header() = FtlGrpcContext::CreateRequestHeader(
+  *request->mutable_header() = FtlServicesContext::CreateRequestHeader(
       registration_manager_->GetFtlAuthToken());
   // We use the same annotation, as PullMessages is just the non-streaming
   // version of ReceiveMessages.
@@ -173,10 +173,11 @@ void FtlMessagingClient::SendMessage(
     const ftl::ChromotingMessage& message,
     DoneCallback on_done) {
   auto request = std::make_unique<ftl::InboxSendRequest>();
-  *request->mutable_header() = FtlGrpcContext::CreateRequestHeader(
+  *request->mutable_header() = FtlServicesContext::CreateRequestHeader(
       registration_manager_->GetFtlAuthToken());
   request->set_time_to_live(kInboxMessageTtl.InMicroseconds());
-  *request->mutable_dest_id() = FtlGrpcContext::CreateIdFromString(destination);
+  *request->mutable_dest_id() =
+      FtlServicesContext::CreateIdFromString(destination);
 
   std::string serialized_message;
   bool succeeded = message.SerializeToString(&serialized_message);
@@ -240,7 +241,7 @@ void FtlMessagingClient::OnPullMessagesResponse(
   }
 
   ftl::AckMessagesRequest ack_request;
-  *ack_request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+  *ack_request.mutable_header() = FtlServicesContext::CreateRequestHeader(
       registration_manager_->GetFtlAuthToken());
   for (const auto& message : response->messages()) {
     RunMessageCallbacks(message);
@@ -288,7 +289,7 @@ FtlMessagingClient::OpenReceiveMessagesStream(
         void(std::unique_ptr<ftl::ReceiveMessagesResponse>)>& on_incoming_msg,
     base::OnceCallback<void(const ProtobufHttpStatus&)> on_channel_closed) {
   auto request = std::make_unique<ftl::ReceiveMessagesRequest>();
-  *request->mutable_header() = FtlGrpcContext::CreateRequestHeader(
+  *request->mutable_header() = FtlServicesContext::CreateRequestHeader(
       registration_manager_->GetFtlAuthToken());
 
   auto config = std::make_unique<ProtobufHttpRequestConfig>(
@@ -337,7 +338,7 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
 void FtlMessagingClient::OnMessageReceived(const ftl::InboxMessage& message) {
   RunMessageCallbacks(message);
   ftl::AckMessagesRequest ack_request;
-  *ack_request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+  *ack_request.mutable_header() = FtlServicesContext::CreateRequestHeader(
       registration_manager_->GetFtlAuthToken());
   AddMessageToAckRequest(message, &ack_request);
   AckMessages(ack_request, base::DoNothing());

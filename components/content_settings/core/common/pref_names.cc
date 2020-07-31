@@ -45,6 +45,8 @@ const char kManagedDefaultPluginsSetting[] =
     "profile.managed_default_content_settings.plugins";
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
+const char kManagedDefaultSensorsSetting[] =
+    "profile.managed_default_content_settings.sensors";
 const char kManagedDefaultWebBluetoothGuardSetting[] =
     "profile.managed_default_content_settings.web_bluetooth_guard";
 const char kManagedDefaultWebUsbGuardSetting[] =
@@ -88,6 +90,10 @@ const char kManagedPopupsAllowedForUrls[] =
     "profile.managed_popups_allowed_for_urls";
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
+const char kManagedSensorsAllowedForUrls[] =
+    "profile.managed_sensors_allowed_for_urls";
+const char kManagedSensorsBlockedForUrls[] =
+    "profile.managed_sensors_blocked_for_urls";
 const char kManagedWebUsbAllowDevicesForUrls[] =
     "profile.managed_web_usb_allow_devices_for_urls";
 const char kManagedWebUsbAskForUrls[] = "profile.managed_web_usb_ask_for_urls";

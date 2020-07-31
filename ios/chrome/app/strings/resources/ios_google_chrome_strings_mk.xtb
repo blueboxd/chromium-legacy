@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chrome потврди дека <ph name="ISSUER" /> го издал сертификатот за веб-сајтов.</translation>
 <translation id="2199719347983604670">Податоци од „Синхронизација на Chrome“</translation>
 <translation id="2347208864470321755">Кога оваа функција е вклучена, Chrome ќе нуди да преведува страници што се напишани на други јазици користејќи Google Translate. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Поставете го Chrome како стандарден прелистувач</translation>
 <translation id="2574249610672786438">За да ги гледате картичките секаде каде што користите Chrome, најавете се на сите ваши уреди</translation>
 <translation id="2576431527583832481">Chrome тукушто се подобри! Достапна е нова верзија.</translation>
 <translation id="257708665678654955">Дали сакате Google Chrome следниот пат да ви понуди да преведува страници од <ph name="LANGUAGE_NAME" /> од овој сајт?</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Најави се на Chrome</translation>
 <translation id="3345341804167540816">Користете го Chrome секаде</translation>
 <translation id="3522659714780527202">За да ги гледате картичките секаде каде што користите Chrome, вклучете синхронизација</translation>
+<translation id="3706101708757577809">Сега може да го користите Chrome секогаш кога ќе допрете линкови во пораките, документите и другите апликации.</translation>
 <translation id="384394811301901750">Google Chrome не може да ја користи камерата сега</translation>
 <translation id="3980220367029651214">Ги заменувате сметките за синхронизација од <ph name="USER_EMAIL1" /> на <ph name="USER_EMAIL2" />. Вашите постоечки податоци на Chrome се управувани од <ph name="DOMAIN" />. Ова ќе ги избрише податоците од уредов, но тие ќе останат на <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome нема пристап до фотографиите или видеата. Овозможете пристап во Поставки на iOS &gt; Приватност &gt; Фотографии.</translation>
@@ -44,6 +46,10 @@
 <translation id="6600954340915313787">Копирано на Chrome</translation>
 <translation id="6648150602980899529">Се најавувате со сметка управувана од <ph name="DOMAIN" /> и му давате контрола на нејзиниот администратор над податоците на Chrome. Вашите податоци ќе бидат трајно врзани за оваа сметка. Одјавувањето од Chrome ќе ги избрише податоците од уредов, но тие ќе останат зачувани на сметката на Google.</translation>
 <translation id="6676840375528380067">Да се избришат податоците на Chrome од уредов?</translation>
+<translation id="6724102885918156196">За да го поставите Chrome како стандарден прелистувач:
+        1. Отворете „Поставки“. 
+        2. Допрете „Стандардна апликација за прелистување“.
+        3. Изберете Chrome.</translation>
 <translation id="7165736900384873061">Започнете со користење на QR-скенерот на Google Chrome</translation>
 <translation id="7172660552945675509">Совет: <ph name="BEGIN_LINK" />преместете го Chrome во приклучокот<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Отвори „Поставки“</translation>

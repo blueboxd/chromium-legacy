@@ -16,6 +16,7 @@
 namespace ui {
 
 class WaylandWindow;
+class WaylandSubsurface;
 
 // Stores and returns WaylandWindows. Clients that are interested in knowing
 // when a new window is added or removed, but set self as an observer.
@@ -63,6 +64,10 @@ class WaylandWindowManager {
 
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
+  void AddSubsurface(gfx::AcceleratedWidget widget,
+                     WaylandSubsurface* subsurface);
+  void RemoveSubsurface(gfx::AcceleratedWidget widget,
+                        WaylandSubsurface* subsurface);
 
  private:
   base::ObserverList<WaylandWindowObserver> observers_;

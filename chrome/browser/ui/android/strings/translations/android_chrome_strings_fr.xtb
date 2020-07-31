@@ -387,6 +387,7 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />proposé par Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Supprimer les données de l'application ?</translation>
 <translation id="4099578267706723511">Envoyer des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome</translation>
+<translation id="4108998448622696017">Il détecte les événements dangereux et vous en informe lorsqu'ils surviennent.</translation>
 <translation id="4116038641877404294">Téléchargez des pages pour y accéder hors connexion</translation>
 <translation id="4135200667068010335">La liste des appareils avec lesquels vous pouvez partager un onglet est fermée.</translation>
 <translation id="4149994727733219643">Vue simplifiée pour les pages Web</translation>
@@ -686,6 +687,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
+<translation id="6412673304250309937">Il vérifie les URL d'après une liste de sites dangereux stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la fonctionnalité de navigation sécurisée.</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6427112570124116297">Traduire le Web</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
@@ -1000,6 +1002,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8854223127042600341">Consultez vos fichiers hors connexion</translation>
 <translation id="889338405075704026">Accéder aux paramètres Chrome</translation>
 <translation id="8893398027601469503">Vous utilisez la dernière version de Chrome</translation>
+<translation id="8898822736010347272">Les URL de certaines pages que vous consultez, ainsi que des informations système limitées et une partie du contenu de certaines pages sont envoyées à Google, à la fois pour identifier les nouvelles menaces et pour protéger tous les utilisateurs sur le Web.</translation>
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>

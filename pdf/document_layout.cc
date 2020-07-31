@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/values.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
@@ -48,11 +49,11 @@ DocumentLayout::Options& DocumentLayout::Options::operator=(
 
 DocumentLayout::Options::~Options() = default;
 
-pp::Var DocumentLayout::Options::ToVar() const {
-  pp::VarDictionary dictionary;
-  dictionary.Set(kDefaultPageOrientation,
-                 static_cast<int32_t>(default_page_orientation_));
-  dictionary.Set(kTwoUpViewEnabled, two_up_view_enabled_);
+base::Value DocumentLayout::Options::ToValue() const {
+  base::Value dictionary(base::Value::Type::DICTIONARY);
+  dictionary.SetIntKey(kDefaultPageOrientation,
+                       static_cast<int32_t>(default_page_orientation_));
+  dictionary.SetBoolKey(kTwoUpViewEnabled, two_up_view_enabled_);
   return dictionary;
 }
 

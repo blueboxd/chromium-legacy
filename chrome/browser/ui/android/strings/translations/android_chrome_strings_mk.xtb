@@ -220,6 +220,7 @@
 <translation id="2744248271121720757">Допрете даден збор за да пребарувате веднаш или за да видите слични дејства</translation>
 <translation id="2760989362628427051">Вклучува темна тема кога е вклучена темната тема или „Штедачот на батерија“ на уредот</translation>
 <translation id="2762000892062317888">пред малку</translation>
+<translation id="2771869497727323769">Не може да се создаде линк до текстот. Споделете го линкот до страницата во апликација.</translation>
 <translation id="2777555524387840389">Останаа <ph name="SECONDS" /> секунди</translation>
 <translation id="2779651927720337254">не успеа</translation>
 <translation id="2781151931089541271">Остана 1 секунда</translation>
@@ -387,6 +388,7 @@
 <translation id="4084712963632273211">Од <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />испорачано од Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Избриши ги податоците на апликацијата?</translation>
 <translation id="4099578267706723511">Помогнете да го подобриме Google Chrome со автоматско испраќање статистика за користење и извештаи за падови до Google.</translation>
+<translation id="4108998448622696017">Открива опасни настани и ве предупредува кога ќе се случат.</translation>
 <translation id="4116038641877404294">Преземете ги страниците за да ги користите офлајн</translation>
 <translation id="4135200667068010335">Списокот со уреди за споделување картичка е затворен.</translation>
 <translation id="4149994727733219643">Поедноставен приказ за веб-страници</translation>
@@ -459,6 +461,7 @@
 <translation id="4732120983431207637">Модул за продолжување претходни задачи</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4738836084190194332">Последна синхронизација: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA грешка: <ph name="ERROR_CODE" /> на <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Отворете нова картичка</translation>
 <translation id="4759238208242260848">Преземања</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 преземање е завршено.}one{# преземање е завршено.}other{# преземања се завршени.}}</translation>
@@ -508,6 +511,7 @@
 <translation id="5040262127954254034">Приватност</translation>
 <translation id="5087580092889165836">Додај картичка</translation>
 <translation id="509429900233858213">Настана грешка.</translation>
+<translation id="5100748015044654621">Споделете го линкот до нагласениот текст во апликација</translation>
 <translation id="510275257476243843">Остана 1 час</translation>
 <translation id="5123685120097942451">Картичка инкогнито</translation>
 <translation id="5127805178023152808">Синхронизацијата е исклучена</translation>
@@ -686,6 +690,7 @@
 <translation id="6398765197997659313">Излези од цел екран</translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
+<translation id="6412673304250309937">Ги проверува URL-адресите во список со небезбедни сајтови меморирани во Chrome. Ако некој сајт се обиде да ви ја украде лозинката или кога ќе преземете штетна датотека, Chrome може да испрати и URL-адреси, вклучувајќи и делови од содржините на страницата, во „Безбедно прелистување“.</translation>
 <translation id="641643625718530986">Печати...</translation>
 <translation id="6427112570124116297">Преведете го интернетот</translation>
 <translation id="6433501201775827830">Изберете пребарувач</translation>
@@ -973,6 +978,7 @@
 <translation id="8562452229998620586">Зачуваните лозинки ќе се појават тука.</translation>
 <translation id="8569404424186215731">од <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Изминатите 4 седмици</translation>
+<translation id="8572344201470131220">Сликата е копирана</translation>
 <translation id="8583805026567836021">Чистење податоци за сметка</translation>
 <translation id="860043288473659153">Име на сопственикот на картичката</translation>
 <translation id="8616006591992756292">Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -1000,6 +1006,7 @@
 <translation id="8854223127042600341">Погледнете ги вашите офлајн датотеки</translation>
 <translation id="889338405075704026">Одете во „Поставки за Chrome“</translation>
 <translation id="8893398027601469503">Ја користите најновата верзија на Chrome</translation>
+<translation id="8898822736010347272">Испраќа URL-адреси до Google од некои страници што ги посетувате, како и ограничени податоци за системот и некои содржини од страниците за да помогне да се откријат нови закани и да се заштитат сите на интернет.</translation>
 <translation id="8909135823018751308">Сподели…</translation>
 <translation id="8912362522468806198">Сметка на Google</translation>
 <translation id="8920114477895755567">Се чекаат детали за родителите.</translation>
@@ -1014,6 +1021,7 @@
 <translation id="8988028529677883095">Користете го телефонот како безбедносен клуч</translation>
 <translation id="8990209962746788689">Не може да се создаде QR-код</translation>
 <translation id="8993760627012879038">Отворете нова картичка во режим инкогнито</translation>
+<translation id="8996847606757455498">Изберете друг оператор</translation>
 <translation id="8998729206196772491">Се најавувате со сметка управувана од <ph name="MANAGED_DOMAIN" /> и му давате контрола над податоците на Chrome на нејзиниот администратор. Вашите податоци ќе бидат трајно врзани за оваа сметка. Одјавувањето од Chrome ќе ги избрише податоците од уредов, но тие ќе останат зачувани на сметката на Google.</translation>
 <translation id="9028914725102941583">Вклучете ја синхронизацијата за да споделувате на сите уреди</translation>
 <translation id="9040142327097499898">Дозволени се известувања. Локацијата е исклучена за уредов.</translation>

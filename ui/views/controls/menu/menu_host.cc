@@ -78,7 +78,7 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
 
   DISALLOW_COPY_AND_ASSIGN(PreMenuEventDispatchHandler);
 };
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 void TransferGesture(Widget* source, Widget* target) {
 #if defined(OS_APPLE)

@@ -36,6 +36,12 @@ static_assert(base::size(kSODAPublicKeySHA256) == crypto::kSHA256Length,
 
 const char kSODAManifestName[] = "SODA Library";
 
+constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
+    FILE_PATH_LITERAL("SODAFiles/libsoda.so");
+
+constexpr base::FilePath::CharType kSodaEnUsConfigFileRelativePath[] =
+    FILE_PATH_LITERAL("SODAFiles/en_us/dictation.ascii_proto");
+
 }  // namespace
 
 SODAComponentInstallerPolicy::SODAComponentInstallerPolicy(
@@ -122,8 +128,10 @@ std::vector<std::string> SODAComponentInstallerPolicy::GetMimeTypes() const {
 void UpdateSODAInstallDirPref(PrefService* prefs,
                               const base::FilePath& install_dir) {
 #if !defined(OS_ANDROID)
-  prefs->SetFilePath(prefs::kSODAPath,
-                     install_dir.Append(speech::kSodaBinaryRelativePath));
+  prefs->SetFilePath(prefs::kSodaBinaryPath,
+                     install_dir.Append(kSodaBinaryRelativePath));
+  prefs->SetFilePath(prefs::kSodaEnUsConfigPath,
+                     install_dir.Append(kSodaEnUsConfigFileRelativePath));
 #endif
 }
 
@@ -150,13 +158,15 @@ void RegisterSODAComponent(ComponentUpdateService* cus,
   } else {
     // Register and uninstall the SODA component to delete the previously
     // installed SODA files.
-    if (!prefs->GetFilePath(prefs::kSODAPath).empty()) {
+    if (!prefs->GetFilePath(prefs::kSodaBinaryPath).empty()) {
       installer->Register(
           cus,
           base::BindOnce(
               [](ComponentUpdateService* cus, PrefService* prefs) {
                 if (component_updater::UninstallSODAComponent(cus, prefs)) {
-                  prefs->SetFilePath(prefs::kSODAPath, base::FilePath());
+                  prefs->SetFilePath(prefs::kSodaBinaryPath, base::FilePath());
+                  prefs->SetFilePath(prefs::kSodaEnUsConfigPath,
+                                     base::FilePath());
                 }
               },
               cus, prefs));

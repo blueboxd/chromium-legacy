@@ -1277,7 +1277,7 @@ void VideoResourceUpdater::RecycleResource(uint32_t plane_resource_id,
   if (resource_it == all_resources_.end())
     return;
 
-  if (context_provider_ && sync_token.HasData()) {
+  if ((raster_context_provider_ || context_provider_) && sync_token.HasData()) {
     auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
                                         : context_provider_->ContextGL();
     gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());

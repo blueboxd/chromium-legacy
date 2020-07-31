@@ -34,6 +34,7 @@
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/graphics.h"
+#include "pdf/ppapi_migration/value_conversions.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -1130,7 +1131,7 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
   dimensions.Set(kType, kJSDocumentDimensionsType);
   dimensions.Set(kJSDocumentWidth, pp::Var(layout.size().width()));
   dimensions.Set(kJSDocumentHeight, pp::Var(layout.size().height()));
-  dimensions.Set(kJSLayoutOptions, layout.options().ToVar());
+  dimensions.Set(kJSLayoutOptions, VarFromValue(layout.options().ToValue()));
   pp::VarArray page_dimensions_array;
   for (size_t i = 0; i < layout.page_count(); ++i) {
     const pp::Rect& page_rect = layout.page_rect(i);

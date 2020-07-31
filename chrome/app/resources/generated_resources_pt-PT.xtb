@@ -1121,6 +1121,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2352662711729498748">&lt;1 MB</translation>
 <translation id="2352810082280059586">As notas do ecrã de bloqueio são automaticamente guardadas na aplicação <ph name="LOCK_SCREEN_APP_NAME" />. A nota mais recente permanece no ecrã de bloqueio.</translation>
 <translation id="2353297238722298836">Câmara e microfone permitidos</translation>
+<translation id="2355314311311231464">A Administração de contas falhou porque não foi possível obter os detalhes da sua conta. Tente novamente. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Ativar Ligação (à Internet) via telemóvel instantânea</translation>
 <translation id="2356070529366658676">Perguntar</translation>
 <translation id="2357330829548294574">Remover <ph name="USER_NAME" /></translation>
@@ -1215,6 +1216,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2473195200299095979">Traduzir esta página</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2476578072172137802">Definições de sites</translation>
+<translation id="2476974672882258506">Encerre o Windows para desinstalar o <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">Autorizações de ficheiros multimédia para "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Partilhar áudio</translation>
 <translation id="248003956660572823">Palavras-passe não guardadas</translation>
@@ -1305,6 +1307,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2572032849266859634">Autorizações só de leitura concedidas a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Este ícone estará visível quando a extensão puder agir na página atual. Clique no ícone ou prima <ph name="EXTENSION_SHORTCUT" /> para utilizar esta extensão.</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reuniões</translation>
+<translation id="2579232805407578790">Não foi possível estabelecer ligação ao servidor. Verifique a sua ligação de rede e tente novamente. Se o problema persistir, reinicie o Chromebook. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Permitir sempre que o <ph name="HOST" /> transfira vários ficheiros</translation>
 <translation id="258095186877893873">Longo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1524,6 +1527,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2836635946302913370">O início de sessão com este nome de utilizador foi desativado pelo seu gestor.</translation>
 <translation id="283669119850230892">Para utilizar a rede <ph name="NETWORK_ID" />, conclua primeiro a sua ligação à internet abaixo.</translation>
 <translation id="2838379631617906747">A instalar</translation>
+<translation id="2838835911926931318">Inicie sessão para sincronizar os marcadores, as palavras-passe, o histórico e muito mais em todos os seus dispositivos.</translation>
 <translation id="2839032553903800133">Notificações bloqueadas</translation>
 <translation id="2841013758207633010">Tempo</translation>
 <translation id="2841837950101800123">Fornecedor</translation>
@@ -1583,6 +1587,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
     Mensagem do servidor: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Adicionar Galeria Multimédia por Diretório</translation>
 <translation id="2910318910161511225">Estabeleça ligação a uma rede e tente novamente.</translation>
+<translation id="2910718431259223434">Ocorreu um erro. Tente novamente ou contacte o proprietário ou o gestor do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
 <translation id="2915102088417824677">Ver o registo de atividade</translation>
 <translation id="2915873080513663243">Análise automática</translation>
@@ -2323,6 +2328,7 @@ Pretende pará-lo?</translation>
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Uma extensão foi aprovada}other{# extensões foram aprovadas}}</translation>
 <translation id="3822559385185038546">Este proxy é imposto pelo gestor</translation>
 <translation id="3823310065043511710">Recomenda-se, pelo menos, <ph name="INSTALL_SIZE" /> de espaço para o Linux.</translation>
+<translation id="3824621460022590830">O token de inscrição de dispositivo é inválido. Contacte o proprietário ou o gestor do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">O seu administrador desativou a adição de mais Contas Google.</translation>
 <translation id="3827306204503227641">Continuar a permitir plug-ins sem isolamento de processos</translation>
 <translation id="3827774300009121996">&amp;Ecrã inteiro</translation>
@@ -3276,6 +3282,7 @@ Pretende pará-lo?</translation>
 <translation id="5079950360618752063">Utilizar palavra-passe sugerida</translation>
 <translation id="508059534790499809">Atualize uma permissão Kerberos</translation>
 <translation id="5084230410268011727">Autorizar que os sites utilizem sensores de movimento e de luz</translation>
+<translation id="5084328598860513926">O fluxo de Administração de contas foi interrompido. Tente novamente ou contacte o proprietário ou o gestor do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">A verificar existência de atualizações</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Pretende restaurar a página inicial predefinida?</translation>
@@ -3675,6 +3682,7 @@ Pretende pará-lo?</translation>
 <translation id="557722062034137776">A reposição do dispositivo não afetará as suas Contas Google nem quaisquer dados sincronizados com essas contas. No entanto, todos os ficheiros guardados localmente no seu dispositivo serão eliminados.</translation>
 <translation id="5578059481725149024">Início de sessão automático</translation>
 <translation id="558170650521898289">Verificação de controladores de hardware Microsoft Windows</translation>
+<translation id="5581972110672966454">Não é possível associar o dispositivo ao domínio. Tente novamente ou contacte o proprietário ou o gestor do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Menu principal</translation>
 <translation id="5583640892426849032">Retrocesso</translation>
 <translation id="5584088138253955452">Pretende guardar o nome de utilizador?</translation>
@@ -3748,6 +3756,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5667546120811588575">A configurar o Google Play...</translation>
 <translation id="5669267381087807207">A activar</translation>
 <translation id="5669691691057771421">Introduzir o novo PIN</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Imagens bloqueadas</translation>
 <translation id="5671658447180261823">Remover a sugestão <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">Este dispositivo receberá atualizações automáticas de software e segurança até <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
@@ -5394,6 +5403,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Mover</translation>
+<translation id="7766082757934713382">Ajuda a reduzir a utilização de dados de rede ao colocar em pausa as atualizações automáticas do sistema e de apps.</translation>
 <translation id="7766807826975222231">Faça uma visita guiada</translation>
 <translation id="7766838926148951335">Aceitar autorizações</translation>
 <translation id="7768770796815395237">Alterar</translation>
@@ -6305,6 +6315,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="8859057652521303089">Selecionar idioma:</translation>
 <translation id="8859174528519900719">Subestrutura: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Não foi possível carregar os Termos de Utilização</translation>
 <translation id="8859662783913000679">Conta parental</translation>
 <translation id="8862003515646449717">Mude para um navegador rápido</translation>
 <translation id="8863753581171631212">Abrir link numa nova janela da aplicação <ph name="APP" /></translation>
@@ -6573,6 +6584,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="920045321358709304">Pesquisar no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Todos os dados offline serão limpos.</translation>
 <translation id="9201220332032049474">Opções do bloqueio de ecrã</translation>
+<translation id="9201842707396338580">Ocorreu um erro. Contacte o proprietário ou o gestor do dispositivo. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">Criação de &amp;perfis ativada</translation>
 <translation id="9203904171912129171">Selecionar um dispositivo</translation>
 <translation id="9203962528777363226">O gestor deste dispositivo desativou a adição de novos utilizadores</translation>
@@ -6644,6 +6656,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="983511809958454316">Esta funcionalidade não é compatível com RV</translation>
 <translation id="984275831282074731">Métodos de pagamento</translation>
 <translation id="98515147261107953">Horizontal</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Geral</translation>
 <translation id="987897973846887088">Nenhuma imagem disponível.</translation>
 <translation id="988978206646512040">Não é permitida uma frase de acesso vazia</translation>

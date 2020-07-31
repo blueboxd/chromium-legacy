@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -44,6 +45,11 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
 
 ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(
     ui::KeyEvent* event) {
+  if (text_input_client_) {
+    text_input_client_->OnDispatchingKeyEventPostIME(event);
+    if (event->handled())
+      return EventDispatchDetails();
+  }
   return delegate_->DispatchKeyEventPostIME(event);
 }
 

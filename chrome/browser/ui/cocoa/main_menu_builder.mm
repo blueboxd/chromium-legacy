@@ -30,6 +30,9 @@ base::scoped_nsobject<NSMenuItem> BuildAppMenu(
     const base::string16& product_name,
     bool is_pwa) {
   base::scoped_nsobject<NSMenuItem> item =
+      // NB: The IDS_APP_MENU_PRODUCT_NAME string is not actually used to
+      // determine what is displayed in bold in the menu bar as the app menu
+      // title. The Info.plist's CFBundleName value is what is actually used.
       Item(IDS_APP_MENU_PRODUCT_NAME)
           .tag(IDC_CHROME_MENU)
           .submenu({

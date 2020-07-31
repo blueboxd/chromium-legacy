@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "media/mojo/mojom/media_types.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 
 // The main interface a client uses to interact with a speech recognition
@@ -29,6 +30,11 @@ interface SpeechRecognitionService {
   // Sets the URL loader factory used to create network requests.
   SetUrlLoaderFactory(
       pending_remote<network.mojom.URLLoaderFactory> url_loader_factory);
+
+  // Sets the file path to the Speech On-Device API (SODA) binary and
+  // the config file for the language pack.
+  SetSodaPath(mojo_base.mojom.FilePath binary_path,
+      mojo_base.mojom.FilePath config_path);
 
   // Binds the speech recognition service client used by the speech
   // recognition service to send messages back to the client.

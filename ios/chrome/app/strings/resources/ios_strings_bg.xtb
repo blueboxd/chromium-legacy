@@ -23,6 +23,7 @@
 <translation id="1176932207622159128">Изобр. не може да се запази</translation>
 <translation id="1180526666083833456">Синхронизиране и персонализиране на всички устройства.</translation>
 <translation id="1181037720776840403">Премахване</translation>
+<translation id="1185569544548277362">Ново: Можете да зададете Chrome като браузъра си по подразбиране. <ph name="BEGIN_LINK" />Отваряне на настройките<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Ново търсене</translation>
 <translation id="1209206284964581585">Скриване засега</translation>
 <translation id="1219674500290482172">Не може да се установи връзка с интернет.</translation>
@@ -367,6 +368,7 @@
 <translation id="5407969256130905701">Отхвърляне на промените</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
 <translation id="5416022985862681400">Последните 7 дни</translation>
+<translation id="543338862236136125">Редактиране на паролата</translation>
 <translation id="5433691172869980887">Потребителското име е копирано</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
 <translation id="5443952882982198570">Кредитни карти</translation>
@@ -638,6 +640,7 @@
 <translation id="8524799873541103884">Раздели в режим „<ph name="INCOGNITO" />“: <ph name="FIRST_VISIBLE_TAB" /> до <ph name="LAST_VISIBLE_TAB" /> от общо <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Ново</translation>
 <translation id="8532105204136943229">Година на валидност</translation>
+<translation id="8533166274275423134">Отворено другаде</translation>
 <translation id="8534481786647257214">Публикацията в Google+ е завършена.</translation>
 <translation id="8548878600947630424">Търсене в страницата...</translation>
 <translation id="8574235780160508979">Общите условия на Chrome ще бъдат променени на 31 март. <ph name="BEGIN_LINK" />Моля, прегледайте ги<ph name="END_LINK" /></translation>

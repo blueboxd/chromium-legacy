@@ -30,6 +30,7 @@ def RunBundleTool(args):
   return build_utils.CheckOutput(
       args,
       print_stderr=True,
+      fail_on_output=False,
       stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
 

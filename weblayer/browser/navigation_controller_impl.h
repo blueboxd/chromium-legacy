@@ -22,10 +22,12 @@
 #endif
 
 namespace content {
+class NavigationHandle;
 class NavigationThrottle;
 }
 
 namespace weblayer {
+class NavigationImpl;
 class TabImpl;
 
 class NavigationControllerImpl : public NavigationController,
@@ -37,6 +39,10 @@ class NavigationControllerImpl : public NavigationController,
   // Creates the NavigationThrottle used to ensure WebContents::Stop() is called
   // at safe times. See NavigationControllerImpl for details.
   std::unique_ptr<content::NavigationThrottle> CreateNavigationThrottle(
+      content::NavigationHandle* handle);
+
+  // Returns the NavigationImpl for |handle|, or null if there isn't one.
+  NavigationImpl* GetNavigationImplFromHandle(
       content::NavigationHandle* handle);
 
 #if defined(OS_ANDROID)

@@ -132,6 +132,7 @@
       <command id="open-with" label="$i18n{OPEN_WITH_BUTTON_LABEL}">
       <command id="more-actions" label="$i18n{MORE_ACTIONS_BUTTON_LABEL}">
       <command id="show-submenu" label="$i18n{MORE_ACTIONS_BUTTON_LABEL}">
+      <command id="invoke-sharesheet" label="$i18n{MORE_ACTIONS_BUTTON_LABEL}">
       <command id="go-to-file-location"
                label="$i18n{GO_TO_FILE_LOCATION_BUTTON_LABEL}">
       <command id="zip-selection"
@@ -185,6 +186,10 @@
                   visibleif="full-page" class="hide-on-toolbar" sub-menu="#tasks-menu" hidden></cr-menu-item>
         <cr-menu-item command="#more-actions"
                   visibleif="full-page" class="hide-on-toolbar" sub-menu="#share-menu" hidden></cr-menu-item>
+        <cr-menu-item command="#invoke-sharesheet"
+                  visibleif="full-page" class="hide-on-toolbar">
+                    $i18n{SHARE_BUTTON_TOOLTIP}
+                  </cr-menu-item>
         <cr-menu-item command="#go-to-file-location"
                   visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
         <hr id="tasks-separator" visibleif="full-page" class="hide-on-toolbar" hidden>
@@ -367,6 +372,14 @@
           <files-toggle-ripple></files-toggle-ripple>
           <div class="icon"></div>
         </button>
+        <cr-button id="sharesheet-button" class="icon-button menu-button" tabindex="0" hidden
+                aria-label="$i18n{SHARE_BUTTON_TOOLTIP}"
+                visibleif="full-page"
+                command="#invoke-sharesheet"
+                has-tooltip>
+          <files-ripple></files-ripple>
+          <div class="icon"></div>
+        </cr-button>
         <cr-button id="delete-button" class="icon-button menu-button" tabindex="0" hidden
                 aria-label="$i18n{DELETE_BUTTON_LABEL}"
                 visibleif="full-page"

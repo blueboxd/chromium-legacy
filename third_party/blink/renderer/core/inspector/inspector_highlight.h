@@ -116,9 +116,12 @@ class CORE_EXPORT InspectorSourceOrderHighlight
   STACK_ALLOCATED();
 
  public:
-  InspectorSourceOrderHighlight(Node*, Color);
+  InspectorSourceOrderHighlight(Node*, Color, int source_order_position);
   static InspectorSourceOrderConfig DefaultConfig();
   std::unique_ptr<protocol::DictionaryValue> AsProtocolValue() const override;
+
+ private:
+  int source_order_position_;
 };
 
 class CORE_EXPORT InspectorHighlight : public InspectorHighlightBase {

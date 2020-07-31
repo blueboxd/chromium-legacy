@@ -41,6 +41,7 @@ if (is_chromeos) {
       "midis.mojom",
       "net.mojom",
       "obb_mounter.mojom",
+      "payment_app.mojom",
       "pip.mojom",
       "policy.mojom",
       "power.mojom",

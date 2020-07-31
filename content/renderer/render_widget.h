@@ -581,11 +581,6 @@ class CONTENT_EXPORT RenderWidget
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
 
-  // Web tests override the device scale factor in the renderer with this. We
-  // store it to keep the override if the browser passes along VisualProperties
-  // with the real device scale factor. A value of 0.f means this is ignored.
-  float device_scale_factor_for_testing_ = 0;
-
   // The size of the RenderWidget in DIPs. This may differ from the viewport
   // set in the compositor, as the viewport can be a subset of the RenderWidget
   // in such cases as:

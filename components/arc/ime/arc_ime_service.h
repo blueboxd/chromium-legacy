@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/arc/ime/arc_ime_bridge.h"
+#include "components/arc/ime/key_event_result_receiver.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
@@ -153,6 +154,7 @@ class ArcImeService : public KeyedService,
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const base::string16& autocorrect_text,
                            const gfx::Range& range) override;
+  void OnDispatchingKeyEventPostIME(ui::KeyEvent* event) override;
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.
@@ -202,6 +204,8 @@ class ArcImeService : public KeyedService,
   bool last_ime_blocked_ = false;
 
   aura::Window* focused_arc_window_ = nullptr;
+
+  std::unique_ptr<KeyEventResultReceiver> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcImeService);
 };

@@ -1049,6 +1049,13 @@ chrome.fileManagerPrivate.getAndroidPickerApps = function(extensions, callback) 
  */
 chrome.fileManagerPrivate.selectAndroidPickerApp = function(androidApp, callback) {};
 
+/**
+ * Return true if sharesheet contains share targets for entries.
+ * @param {!Array<!Entry>} entries
+ * @param {function((boolean|undefined))} callback
+ */
+chrome.fileManagerPrivate.sharesheetHasTargets = function(entries, callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 

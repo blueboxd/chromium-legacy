@@ -463,75 +463,7 @@ void RenderWidget::OnClose() {
 }
 
 void RenderWidget::UpdateVisualProperties(
-    const blink::VisualProperties& visual_properties_from_browser) {
-  TRACE_EVENT0("renderer", "RenderWidget::UpdateVisualProperties");
-
-  // UpdateVisualProperties is used to receive properties from the browser
-  // process for this RenderWidget. There are roughly 4 types of
-  // VisualProperties.
-  // TODO(danakj): Splitting these 4 types of properties apart and making them
-  // more explicit could be super useful to understanding this code.
-  // 1. Unique to each RenderWidget. Computed by the RenderWidgetHost and passed
-  //    to the RenderWidget which consumes it here.
-  //    Example: new_size.
-  // 2. Global properties, which are given to each RenderWidget (to maintain
-  //    the requirement that a RenderWidget is updated atomically). These
-  //    properties are usually the same for every RenderWidget, except when
-  //    device emulation changes them in the main frame RenderWidget only.
-  //    Example: screen_info.
-  // 3. Computed in the renderer of the main frame RenderWidget (in blink
-  //    usually). Passed down through the waterfall dance to child frame
-  //    RenderWidgets. Here that step is performed by passing the value along
-  //    to all RenderFrameProxy objects that are below this RenderWidgets in the
-  //    frame tree. The main frame (top level) RenderWidget ignores this value
-  //    from its RenderWidgetHost since it is controlled in the renderer. Child
-  //    frame RenderWidgets consume the value from their RenderWidgetHost.
-  //    Example: page_scale_factor.
-  // 4. Computed independently in the renderer for each RenderWidget (in blink
-  //    usually). Passed down from the parent to the child RenderWidgets through
-  //    the waterfall dance, but the value only travels one step - the child
-  //    frame RenderWidget would compute values for grandchild RenderWidgets
-  //    independently. Here the value is passed to child frame RenderWidgets by
-  //    passing the value along to all RenderFrameProxy objects that are below
-  //    this RenderWidget in the frame tree. Each RenderWidget consumes this
-  //    value when it is received from its RenderWidgetHost.
-  //    Example: compositor_viewport_pixel_rect.
-  // For each of these properties:
-  //   If the RenderView/WebView also knows these properties, each RenderWidget
-  //   will pass them along to the RenderView as it receives it, even if there
-  //   are multiple RenderWidgets related to the same RenderView.
-  //   However when the main frame in the renderer is the source of truth,
-  //   then child widgets must not clobber that value! In all cases child frames
-  //   do not need to update state in the RenderView when a local main frame is
-  //   present as it always sets the value first.
-  //   TODO(danakj): This does create a race if there are multiple
-  //   UpdateVisualProperties updates flowing through the RenderWidget tree at
-  //   the same time, and it seems that only one RenderWidget for each
-  //   RenderView should be responsible for this update.
-  //
-  //   This operation is done by going through RenderFrameImpl to pass the value
-  //   to the RenderViewImpl. While this class does not use RenderViewImpl
-  //   directly, it speaks through the RenderFrameImpl::*OnRenderView() methods.
-  //   TODO(danakj): A more explicit API to give values from here to RenderView
-  //   and/or WebView would be nice. Also a more explicit API to give values to
-  //   the RenderFrameProxy in one go, instead of setting each property
-  //   independently, causing an update IPC from the RenderFrameProxy for each
-  //   one.
-  //
-  //   See also:
-  //   https://docs.google.com/document/d/1G_fR1D_0c1yke8CqDMddoKrDGr3gy5t_ImEH4hKNIII/edit#
-
-  blink::VisualProperties visual_properties = visual_properties_from_browser;
-  // Web tests can override the device scale factor in the renderer.
-  if (device_scale_factor_for_testing_) {
-    visual_properties.screen_info.device_scale_factor =
-        device_scale_factor_for_testing_;
-    visual_properties.compositor_viewport_pixel_rect =
-        gfx::Rect(gfx::ScaleToCeiledSize(
-            visual_properties.new_size,
-            visual_properties.screen_info.device_scale_factor));
-  }
-
+    const blink::VisualProperties& visual_properties) {
   // Inform the rendering thread of the color space indicating the presence of
   // HDR capabilities. The HDR bit happens to be globally true/false for all
   // browser windows (on Windows OS) and thus would be the same for all
@@ -561,9 +493,6 @@ void RenderWidget::UpdateVisualProperties(
 
     browser_controls_params_ = visual_properties.browser_controls_params;
   }
-
-  layer_tree_host_->SetBrowserControlsParams(
-      visual_properties.browser_controls_params);
 
   if (!auto_resize_mode_) {
     if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
@@ -1833,18 +1762,13 @@ blink::WebHitTestResult RenderWidget::GetHitTestResultAtPoint(
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
-  DCHECK_GE(factor, 0.f);
+  DCHECK(for_frame());
+  GetFrameWidget()->SetDeviceScaleFactorForTesting(factor);
 
   // Receiving a 0 is used to reset between tests, it removes the override in
   // order to listen to the browser for the next test.
-  if (!factor) {
-    device_scale_factor_for_testing_ = 0;
+  if (!factor)
     return;
-  }
-
-  // We are changing the device scale factor from the renderer, so allocate a
-  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  layer_tree_host_->RequestNewLocalSurfaceId();
 
   blink::ScreenInfo info = screen_info_;
   info.device_scale_factor = factor;
@@ -1859,9 +1783,6 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
       ComputePreferCompositingToLCDText(compositor_deps_,
                                         screen_info_.device_scale_factor));
-
-  // Make sure to override any future OnSynchronizeVisualProperties IPCs.
-  device_scale_factor_for_testing_ = factor;
 }
 
 void RenderWidget::SetDeviceColorSpaceForTesting(

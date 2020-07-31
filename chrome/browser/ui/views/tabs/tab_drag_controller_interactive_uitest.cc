@@ -254,9 +254,6 @@ void TabDragControllerTest::AddTabsAndResetBrowser(Browser* browser,
   }
   browser->window()->Show();
   StopAnimating(GetTabStripForBrowser(browser));
-  BrowserView::GetBrowserViewForBrowser(browser)
-      ->GetWidget()
-      ->LayoutRootViewIfNecessary();
   ResetIDs(browser->tab_strip_model(), 0);
 }
 

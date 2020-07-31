@@ -38,6 +38,7 @@
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -165,8 +166,8 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering() const {
-  return prerender::PrerenderContents::FromWebContents(web_contents()) !=
-         nullptr;
+  return prerender::ChromePrerenderContentsDelegate::FromWebContents(
+             web_contents()) != nullptr;
 }
 
 bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
@@ -178,7 +179,8 @@ bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
 }
 
 bool PageLoadMetricsEmbedder::IsPrerender(content::WebContents* web_contents) {
-  return prerender::PrerenderContents::FromWebContents(web_contents);
+  return prerender::ChromePrerenderContentsDelegate::FromWebContents(
+      web_contents);
 }
 
 bool PageLoadMetricsEmbedder::IsExtensionUrl(const GURL& url) {

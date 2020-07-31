@@ -5,8 +5,8 @@
 import("//build/config/chromeos/args.gni")
 import("//build/config/features.gni")
 
-assert(is_linux)
+assert(is_linux || is_chromeos)
 
 declare_args() {
-  use_bundled_fontconfig = is_linux && !is_chromeos_device
+  use_bundled_fontconfig = (is_linux || is_chromeos) && !is_chromeos_device
 }

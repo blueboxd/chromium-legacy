@@ -362,8 +362,8 @@ void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
     out->clear();
 }
 
-int URLRequestHttpJob::NotifyConnectedCallback() {
-  return URLRequestJob::NotifyConnected();
+int URLRequestHttpJob::NotifyConnectedCallback(const TransportInfo& info) {
+  return URLRequestJob::NotifyConnected(info);
 }
 
 void URLRequestHttpJob::NotifyHeadersComplete() {

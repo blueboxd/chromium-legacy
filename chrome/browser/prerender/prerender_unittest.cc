@@ -309,7 +309,8 @@ DummyPrerenderContents::DummyPrerenderContents(
     Origin origin,
     const base::Optional<url::Origin>& initiator_origin,
     FinalStatus expected_final_status)
-    : PrerenderContents(test_prerender_manager,
+    : PrerenderContents(std::make_unique<ChromePrerenderContentsDelegate>(),
+                        test_prerender_manager,
                         nullptr,
                         url,
                         Referrer(),

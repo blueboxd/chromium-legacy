@@ -8,8 +8,8 @@
 #include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
@@ -162,13 +162,13 @@ id<GREYMatcher> TitleOfTestPage() {
   // Sign-in promo should be visible with cold state.
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
                                         closeButton:NO];
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
-  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
   // Sign-in promo should be visible with warm state.
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                                         closeButton:NO];
   [self closeRecentTabs];
-  [SigninEarlGreyUtils removeFakeIdentity:fakeIdentity];
+  [SigninEarlGrey removeFakeIdentity:fakeIdentity];
 }
 
 // Tests that the sign-in promo can be reloaded correctly while being hidden.
@@ -189,8 +189,8 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoNotVisible];
 
   // Add an account.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
-  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Tap on "Other Devices", to show the sign-in promo.
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
@@ -198,7 +198,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                                         closeButton:NO];
   [self closeRecentTabs];
-  [SigninEarlGreyUtils removeFakeIdentity:fakeIdentity];
+  [SigninEarlGrey removeFakeIdentity:fakeIdentity];
 }
 
 // Tests that the VC can be dismissed by swiping down.
@@ -234,7 +234,7 @@ id<GREYMatcher> TitleOfTestPage() {
 // Tests that the Recent Tabs can be opened while signed in (prevent regression
 // for https://crbug.com/1056613).
 - (void)testOpenWhileSignedIn {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   OpenRecentTabsPanel();

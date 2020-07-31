@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/mac/foundation_util.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
@@ -113,7 +114,12 @@ void SessionStorageBuilder::ExtractSessionState(
   web_state->certificate_policy_cache_ = std::move(cert_policy_cache);
   web::SerializableUserDataManager::FromWebState(web_state)
       ->AddSerializableUserData(storage.userData);
-  web_state->SetUserAgent(storage.userAgentType);
+  UserAgentType user_agent_type = storage.userAgentType;
+  if (user_agent_type == UserAgentType::AUTOMATIC &&
+      !features::UseWebClientDefaultUserAgent()) {
+    user_agent_type = UserAgentType::MOBILE;
+  }
+  web_state->SetUserAgent(user_agent_type);
 }
 
 }  // namespace web

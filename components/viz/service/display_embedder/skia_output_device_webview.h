@@ -58,8 +58,6 @@ class SkiaOutputDeviceWebView : public SkiaOutputDevice {
   gfx::ColorSpace color_space_;
   unsigned int last_frame_buffer_object_ = -1;
 
-  bool supports_alpha_ = false;
-
   base::WeakPtrFactory<SkiaOutputDeviceWebView> weak_ptr_factory_{this};
 };
 

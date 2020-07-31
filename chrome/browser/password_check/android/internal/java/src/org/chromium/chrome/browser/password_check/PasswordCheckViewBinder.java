@@ -71,6 +71,10 @@ class PasswordCheckViewBinder {
                 return new PasswordCheckViewHolder(parent,
                         R.layout.password_check_compromised_credential_item,
                         PasswordCheckViewBinder::bindCredentialView);
+            case ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT:
+                return new PasswordCheckViewHolder(parent,
+                        R.layout.password_check_compromised_credential_with_script_item,
+                        PasswordCheckViewBinder::bindCredentialView);
         }
         assert false : "Cannot create view for ItemType: " + itemType;
         return null;
@@ -113,6 +117,10 @@ class PasswordCheckViewBinder {
             reason.setText(credential.isPhished()
                             ? R.string.password_check_credential_row_reason_phished
                             : R.string.password_check_credential_row_reason_leaked);
+            if (credential.hasScript()) {
+                assert view.findViewById(R.id.credential_change_button_with_script) != null;
+                assert view.findViewById(R.id.script_button_explanation) != null;
+            }
 
             ListMenuButton more = view.findViewById(R.id.credential_menu_button);
             more.setDelegate(() -> {

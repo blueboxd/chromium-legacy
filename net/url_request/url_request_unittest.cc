@@ -57,6 +57,8 @@
 #include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/hash_value.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -66,6 +68,7 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
+#include "net/base/transport_info.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
@@ -166,6 +169,8 @@ using net::test::IsError;
 using net::test::IsOk;
 using net::test_server::RegisterDefaultHandlers;
 using testing::AnyOf;
+using testing::ElementsAre;
+using testing::IsEmpty;
 
 using base::ASCIIToUTF16;
 using base::Time;
@@ -1485,7 +1490,7 @@ TEST_F(URLRequestTest, NotifyDelegateConnectedSkippedOnEarlyFailure) {
   request->Start();
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(delegate.connected_count(), 0);
+  EXPECT_THAT(delegate.transports(), IsEmpty());
 }
 
 // This test verifies that URLRequest::Delegate's OnConnected() callback
@@ -1503,7 +1508,10 @@ TEST_F(URLRequestTest, NotifyDelegateConnectedOnce) {
   request->Start();
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(delegate.connected_count(), 1);
+  TransportInfo expected_transport;
+  expected_transport.endpoint =
+      IPEndPoint(IPAddress::IPv4Localhost(), test_server.port());
+  EXPECT_THAT(delegate.transports(), ElementsAre(expected_transport));
 }
 
 // This test verifies that URLRequest::Delegate's OnConnected() callback is
@@ -1523,13 +1531,17 @@ TEST_F(URLRequestTest, NotifyDelegateConnectedOnEachRedirect) {
   request->Start();
   delegate.RunUntilRedirect();
 
-  EXPECT_EQ(delegate.connected_count(), 1);
+  TransportInfo expected_transport;
+  expected_transport.endpoint =
+      IPEndPoint(IPAddress::IPv4Localhost(), test_server.port());
+  EXPECT_THAT(delegate.transports(), ElementsAre(expected_transport));
 
   request->FollowDeferredRedirect(/*removed_headers=*/{},
                                   /*modified_headers=*/{});
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(delegate.connected_count(), 2);
+  EXPECT_THAT(delegate.transports(),
+              ElementsAre(expected_transport, expected_transport));
 }
 
 // This test verifies that when the URLRequest Delegate returns an error from
@@ -1548,7 +1560,11 @@ TEST_F(URLRequestTest, NotifyDelegateConnectedReturnError) {
   request->Start();
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(delegate.connected_count(), 1);
+  TransportInfo expected_transport;
+  expected_transport.endpoint =
+      IPEndPoint(IPAddress::IPv4Localhost(), test_server.port());
+  EXPECT_THAT(delegate.transports(), ElementsAre(expected_transport));
+
   EXPECT_TRUE(delegate.request_failed());
   EXPECT_THAT(delegate.request_status(), IsError(ERR_NOT_IMPLEMENTED));
 }

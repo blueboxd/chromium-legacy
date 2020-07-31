@@ -64,8 +64,10 @@ void OutputPresenter::Image::BeginWriteSkia() {
       gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
   DCHECK(scoped_skia_write_access_);
   if (!begin_semaphores.empty()) {
-    scoped_skia_write_access_->surface()->wait(begin_semaphores.size(),
-                                               begin_semaphores.data());
+    scoped_skia_write_access_->surface()->wait(
+        begin_semaphores.size(),
+        begin_semaphores.data(),
+        /*deleteSemaphoresAfterWait=*/false);
   }
 }
 

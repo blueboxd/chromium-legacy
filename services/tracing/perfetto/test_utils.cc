@@ -410,6 +410,9 @@ MockProducer::MockProducer(const std::string& producer_name,
 
 MockProducer::~MockProducer() = default;
 
+RebindableTaskRunner::RebindableTaskRunner() = default;
+RebindableTaskRunner::~RebindableTaskRunner() = default;
+
 void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
   PerfettoTracedProcess::Get()
       ->GetTaskRunner()
@@ -418,6 +421,24 @@ void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
                          base::BindOnce(&TestDataSource::WritePacketBigly,
                                         base::Unretained(data_source())),
                          std::move(on_write_complete));
+}
+
+bool RebindableTaskRunner::PostDelayedTask(const base::Location& from_here,
+                                           base::OnceClosure task,
+                                           base::TimeDelta delay) {
+  return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
+}
+
+bool RebindableTaskRunner::PostNonNestableDelayedTask(
+    const base::Location& from_here,
+    base::OnceClosure task,
+    base::TimeDelta delay) {
+  return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
+                                                  delay);
+}
+
+bool RebindableTaskRunner::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 }  // namespace tracing

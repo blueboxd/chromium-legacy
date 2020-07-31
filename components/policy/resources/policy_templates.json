@@ -15293,43 +15293,56 @@
       'device_only': True,
       'type': 'dict',
       'schema': {
-        'type': 'array',
-        'items': {
-          'type': 'object',
-          'properties': {
-            'chromeos_version': {
-              'description': '''Minimum allowed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version''',
-              'type': 'string',
-            },
-            'warning_period': {
-              'description': '''Time in days after which the user will be signed out if <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version is less than the specified <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph>''',
-              'type': 'integer',
-              'minimum': 0,
-            },
-            'aue_warning_period': {
-              'description': '''Time in days after auto update expiration post which the user will be signed out if <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version is less than the specified <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph>''',
-              'type': 'integer',
-              'minimum': 0,
+        'type': 'object',
+        'properties': {
+          'requirements': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'chromeos_version': {
+                  'description': '''Minimum allowed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version''',
+                  'type': 'string',
+                },
+                'warning_period': {
+                  'description': '''Time in days after which the user will be signed out if <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version is less than the specified <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph>''',
+                  'type': 'integer',
+                  'minimum': 0,
+                },
+                'aue_warning_period': {
+                  'description': '''Time in days after auto update expiration post which the user will be signed out if <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version is less than the specified <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph>''',
+                  'type': 'integer',
+                  'minimum': 0,
+                },
+              },
+              'required': ['chromeos_version'],
             },
           },
-          'required': ['chromeos_version'],
-        },
+          'unmanaged_user_restricted': {
+            'description': '''A boolean flag indicating whether unmanaged user sessions should receive notifications and force log out if update is required as per this policy.''',
+            'type': 'boolean'
+          }
+        }
       },
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': [
-        {
-          "chromeos_version" : "12215",
-          "warning_period" : 0,
-          "aue_warning_period" : 14
-        }, {
-          "chromeos_version" : "13315.60.12",
-          "warning_period" : 10,
-          "aue_warning_period" : 21
-        }
-      ],
+      'example_value': {
+        "requirements":
+        [
+          {
+            "chromeos_version" : "12215",
+            "warning_period" : 0,
+            "aue_warning_period" : 14
+          }, {
+            "chromeos_version" : "13315.60.12",
+            "warning_period" : 10,
+            "aue_warning_period" : 21
+          }
+        ],
+        "unmanaged_user_restricted": True
+      },
       'id': 670,
       'caption': '''Configure minimum allowed Chrome OS version for the device.''',
       'tags': [],
@@ -15349,10 +15362,13 @@
       If the current version becomes obsolete during user session and the device has reached auto update expiration, an on-screen notification is shown to return the device within <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph>.
       If the device is found to have reached auto update expiration at the time of login with expired <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph>, the device is blocked for any user to sign in.
 
+      Unmanaged user sessions do not receive notifications and force log out if <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME">unmanaged_user_restricted</ph> is unset or set to False.
+
       If this policy is not set or set to empty, no restrictions are applied, already existing restrictions are revoked and user can sign in regardless of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version.
 
       Here <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> can be either an exact version like '13305.0.0' or a version prefix, like '13305'.
-      The <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> and <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph> are optional values specified in number of days. Default value for them is 0 days, which means that there is no warning period.''',
+      The <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> and <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph> are optional values specified in number of days. Default value for them is 0 days, which means that there is no warning period.
+      The <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME">unmanaged_user_restricted</ph> is an optional property with default value as False.''',
     },
     {
       'name': 'DeviceMinimumVersionAueMessage',

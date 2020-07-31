@@ -5,9 +5,9 @@
 #include "base/ios/ios_util.h"
 #include "base/macros.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -63,7 +63,7 @@ using chrome_test_util::SettingsDoneButton;
   // Note: URL-keyed anonymized data collection is turned on as part of the
   // flow to Sign in to Chrome and Turn sync on. This matches the main user
   // flow that enables UKM.
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
   [ChromeEarlGrey waitForSyncInitialized:YES
                              syncTimeout:syncher::kSyncUKMOperationsTimeout];
 
@@ -93,8 +93,8 @@ using chrome_test_util::SettingsDoneButton;
   // Note: URL-keyed anonymized data collection is turned off as part of the
   // flow to Sign out of Chrome and Turn sync off. This matches the main user
   // flow that disables UKM.
-  if (![SigninEarlGreyUtilsAppInterface isSignedOut]) {
-    [SigninEarlGreyUtilsAppInterface signOut];
+  if (![SigninEarlGreyAppInterface isSignedOut]) {
+    [SigninEarlGreyAppInterface signOut];
   }
 
   [ChromeEarlGrey waitForSyncInitialized:NO
@@ -274,7 +274,7 @@ using chrome_test_util::SettingsDoneButton;
 // Corresponds to ConsentAddedButNoSyncCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
 - (void)testConsentAddedButNoSync {
-  [SigninEarlGreyUtilsAppInterface signOut];
+  [SigninEarlGreyAppInterface signOut];
   [MetricsAppInterface setMetricsAndCrashReportingForTesting:NO];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
@@ -283,7 +283,7 @@ using chrome_test_util::SettingsDoneButton;
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 }
@@ -347,7 +347,7 @@ using chrome_test_util::SettingsDoneButton;
 #endif
   const uint64_t clientID1 = [MetricsAppInterface UKMClientID];
 
-  [SigninEarlGreyUtilsAppInterface signOut];
+  [SigninEarlGreyAppInterface signOut];
 
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
@@ -356,7 +356,7 @@ using chrome_test_util::SettingsDoneButton;
                      @"Client ID was not reset.");
 
   const uint64_t clientID2 = [MetricsAppInterface UKMClientID];
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
 
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");

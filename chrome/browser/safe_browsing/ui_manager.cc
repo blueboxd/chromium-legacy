@@ -14,6 +14,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -110,8 +111,10 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   prerender::PrerenderContents* prerender_contents =
-      web_contents ? prerender::PrerenderContents::FromWebContents(web_contents)
-                   : nullptr;
+      web_contents
+          ? prerender::ChromePrerenderContentsDelegate::FromWebContents(
+                web_contents)
+          : nullptr;
   if (!web_contents || prerender_contents) {
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);

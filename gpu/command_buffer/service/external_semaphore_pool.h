@@ -13,13 +13,15 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/external_semaphore.h"
 
-namespace gpu {
+namespace viz {
+class VulkanContextProvider;
+}
 
-class SharedContextState;
+namespace gpu {
 
 class ExternalSemaphorePool {
  public:
-  explicit ExternalSemaphorePool(SharedContextState* shared_context_state);
+  explicit ExternalSemaphorePool(viz::VulkanContextProvider* context_provider);
   ~ExternalSemaphorePool();
 
   ExternalSemaphorePool(const ExternalSemaphorePool&) = delete;
@@ -41,7 +43,7 @@ class ExternalSemaphorePool {
       std::vector<ExternalSemaphore> semaphores);
 
  private:
-  SharedContextState* const shared_context_state_;
+  viz::VulkanContextProvider* const context_provider_;
   base::circular_deque<ExternalSemaphore> semaphores_;
   base::WeakPtrFactory<ExternalSemaphorePool> weak_ptr_factory_{this};
 };

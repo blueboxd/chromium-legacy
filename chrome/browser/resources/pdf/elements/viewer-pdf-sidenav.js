@@ -1,0 +1,58 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import './shared-vars.js';
+import '../pdf_viewer_shared_style.js';
+import './icons.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+export class ViewerPdfSidenavElement extends PolymerElement {
+  static get is() {
+    return 'viewer-pdf-sidenav';
+  }
+
+  static get template() {
+    return html`{__html_template__}`;
+  }
+
+  static get properties() {
+    return {
+      /** @private */
+      thumbnailView_: {
+        type: Boolean,
+        value: true,
+      },
+    };
+  }
+
+  /** @private */
+  onThumbnailClick_() {
+    this.thumbnailView_ = true;
+  }
+
+  /** @private */
+  onOutlineClick_() {
+    this.thumbnailView_ = false;
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  outlineButtonClass_() {
+    return this.thumbnailView_ ? '' : 'selected';
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  thumbnailButtonClass_() {
+    return this.thumbnailView_ ? 'selected' : '';
+  }
+}
+
+customElements.define(ViewerPdfSidenavElement.is, ViewerPdfSidenavElement);

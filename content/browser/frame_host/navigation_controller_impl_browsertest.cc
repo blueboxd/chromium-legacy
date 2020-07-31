@@ -7211,6 +7211,10 @@ IN_PROC_BROWSER_TEST_P(
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
+  // The test below only makes sense for same-site same-RFH navigations, so we
+  // need to ensure that we won't trigger a same-site cross-RFH navigation.
+  DisableProactiveBrowsingInstanceSwapFor(root->current_frame_host());
+
   GURL same_document_url(
       embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
   EXPECT_TRUE(NavigateToURL(shell(), same_document_url));
@@ -7254,6 +7258,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // Navigate to a simple page and then perform a same document navigation.
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  // The test below only makes sense for same-site same-RFH navigations, so we
+  // need to ensure that we won't trigger a same-site cross-RFH navigation.
+  DisableProactiveBrowsingInstanceSwapFor(root->current_frame_host());
 
   GURL same_document_url(
       embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
@@ -7320,6 +7328,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
     history_commit_observer.Wait();
     EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
   }
+
+  // The test below only makes sense for same-site same-RFH navigations, so we
+  // need to ensure that we won't trigger a same-site cross-RFH navigation.
+  DisableProactiveBrowsingInstanceSwapFor(root->current_frame_host());
 
   // 2. Perform a same-document navigation forward.
   {

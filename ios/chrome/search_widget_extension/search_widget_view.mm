@@ -210,9 +210,8 @@ const CGFloat kMaxContentSize = 421;
   return [self actionContentHeight] + [self copiedURLSectionHeight];
 }
 
-- (void)setCopiedContentType:(CopiedContentType)type
-                  copiedText:(NSString*)copiedText {
-  [self.copiedURLSection setCopiedContentType:type copiedText:copiedText];
+- (void)setCopiedContentType:(CopiedContentType)type {
+  [self.copiedURLSection setCopiedContentType:type];
 }
 
 @end

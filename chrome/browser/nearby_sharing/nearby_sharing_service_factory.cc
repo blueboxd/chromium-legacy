@@ -59,15 +59,16 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
+  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
   Profile* profile = Profile::FromBrowserContext(context);
   PrefService* pref_service = profile->GetPrefs();
   auto nearby_connections_manager =
-      std::make_unique<NearbyConnectionsManagerImpl>(
-          &NearbyProcessManager::GetInstance(), profile);
+      std::make_unique<NearbyConnectionsManagerImpl>(&process_manager, profile);
 
   NS_LOG(VERBOSE) << __func__ << ": creating NearbySharingService.";
   return new NearbySharingServiceImpl(pref_service, profile,
-                                      std::move(nearby_connections_manager));
+                                      std::move(nearby_connections_manager),
+                                      &process_manager);
 }
 
 content::BrowserContext* NearbySharingServiceFactory::GetBrowserContextToUse(

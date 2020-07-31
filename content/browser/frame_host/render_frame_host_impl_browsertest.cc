@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1304,7 +1305,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, FastNavigationAbort) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  // Now make a navigation.
+  // This test only makes sense for navigations that stay in the same
+  // RenderFrame, otherwise the document.open() will run on the previous
+  // page's RenderFrame, and the navigation won't get aborted. We need to
+  // ensure that we won't trigger a same-site cross-RFH navigation.
+  // TODO(crbug.com/1099193): This should also work on cross-RFH same-site
+  // navigations.
+  DisableProactiveBrowsingInstanceSwapFor(
+      shell()->web_contents()->GetMainFrame());
+
+  // Now make a navigation. |observer| will make a document.open() call at
+  // ReadyToCommit time - see
+  // NavigationHandleGrabber::SendingNavigationCommitted(). The navigation
+  // should get aborted because of the document.open() in the navigating RFH.
   NavigationHandleGrabber observer(shell()->web_contents());
   const base::string16 title = base::ASCIIToUTF16("done");
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
@@ -1671,6 +1684,7 @@ class DidFinishNavigationObserver : public WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTest,
     EarlyInterfaceRequestsFromNewDocumentDispatchedAfterNavigationFinished) {
+  WebContents* web_contents = shell()->web_contents();
   const GURL first_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
 
@@ -1692,7 +1706,7 @@ IN_PROC_BROWSER_TEST_F(
   // Replace the |interface_broker_receiver| argument in the next
   // DidCommitProvisionalLoad message coming from the renderer with the
   // rigged |interface_broker_with_pending_requests| from above.
-  ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
+  ScopedFakeInterfaceBrokerRequestInjector injector(web_contents);
   injector.set_fake_receiver_for_next_commit(
       std::move(interface_broker_receiver_with_pending_receiver));
 
@@ -1700,23 +1714,29 @@ IN_PROC_BROWSER_TEST_F(
   // dispatched to the RenderFrameHost, WebContentsObserver::DidFinishNavigation
   // will have already been invoked.
   bool did_finish_navigation = false;
-  auto* main_rfh = shell()->web_contents()->GetMainFrame();
+
+  // Start the same-process navigation.
+  TestNavigationManager navigation_manager(web_contents, second_url);
+  shell()->LoadURL(second_url);
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  auto* committing_rfh =
+      navigation_manager.GetNavigationHandle()->GetRenderFrameHost();
+
   DidFinishNavigationObserver navigation_finish_observer(
-      main_rfh, base::BindLambdaForTesting([&did_finish_navigation]() {
+      committing_rfh, base::BindLambdaForTesting([&did_finish_navigation]() {
         did_finish_navigation = true;
       }));
 
   base::RunLoop wait_until_interface_request_is_dispatched;
   ScopedInterfaceRequestMonitor monitor(
-      main_rfh, mojom::FrameHostTestInterface::Name_,
+      committing_rfh, mojom::FrameHostTestInterface::Name_,
       base::BindLambdaForTesting([&]() {
         EXPECT_TRUE(did_finish_navigation);
         wait_until_interface_request_is_dispatched.Quit();
       }));
 
-  // Start the same-process navigation.
-  ASSERT_TRUE(NavigateToURL(shell(), second_url));
-  EXPECT_EQ(main_rfh, shell()->web_contents()->GetMainFrame());
+  // Finish the navigation.
+  navigation_manager.WaitForNavigationFinished();
   EXPECT_EQ(second_url, injector.url_of_last_commit());
   EXPECT_TRUE(injector.original_receiver_of_last_commit().is_valid());
 
@@ -1758,6 +1778,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     ASSERT_EQ(first_url, injector.url_of_last_commit());
     ASSERT_TRUE(injector.original_receiver_of_last_commit().is_valid());
   }
+
+  // The test below only works for same-RFH navigations, so we need to ensure
+  // that we won't trigger a same-site cross-RFH navigation.
+  DisableProactiveBrowsingInstanceSwapFor(
+      shell()->web_contents()->GetMainFrame());
 
   // Prepare an interface receiver for FrameHostTestInterface.
   mojo::Remote<mojom::FrameHostTestInterface> test_interface;
@@ -2316,6 +2341,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
         wait_until_connection_error_loop_1.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl1));
   }
+
+  // The test below only makes sense for same-RFH navigations, so we need to
+  // ensure that we won't trigger a same-site cross-RFH navigation.
+  DisableProactiveBrowsingInstanceSwapFor(
+      shell()->web_contents()->GetMainFrame());
 
   {
     ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
@@ -3998,8 +4028,6 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
   GURL url2(embedded_test_server()->GetURL("/document2"));
 
   WebContents* web_contents = shell()->web_contents();
-  RenderFrameHostImpl* rfhi =
-      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
 
   base::RunLoop loop_until_onload;
   DocumentOnLoadObserver onload_observer(web_contents,
@@ -4007,7 +4035,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
   shell()->LoadURL(url1);
   loop_until_onload.Run();
 
-  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
+  EXPECT_TRUE(static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame())
+                  ->IsDOMContentLoaded());
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   // Expect that the loading state will be reset after a navigation.
@@ -4021,8 +4050,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
       "Content-Type: text/html; charset=utf-8\r\n"
       "\r\n");
   navigation_observer.WaitForNavigationFinished();
-
-  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
+  EXPECT_FALSE(static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame())
+                   ->IsDOMContentLoaded());
   EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 

@@ -1154,13 +1154,10 @@ std::string Controller::GetDebugContext() {
 
   dict.SetKey("status", base::Value(status_message_));
   if (trigger_context_) {
-    google::protobuf::RepeatedPtrField<ScriptParameterProto> parameters_proto;
-    trigger_context_->AddParameters(&parameters_proto);
     std::vector<base::Value> parameters_js;
-    for (const auto& parameter_proto : parameters_proto) {
+    for (const auto& parameter : trigger_context_->GetParameters()) {
       base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
-      parameter_js.SetKey(parameter_proto.name(),
-                          base::Value(parameter_proto.value()));
+      parameter_js.SetKey(parameter.first, base::Value(parameter.second));
       parameters_js.push_back(std::move(parameter_js));
     }
     dict.SetKey("parameters", base::Value(parameters_js));

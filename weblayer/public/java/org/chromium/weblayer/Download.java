@@ -129,6 +129,24 @@ public class Download extends IClientDownload.Stub {
     }
 
     /**
+     * Returns the file name for the download that should be displayed to the user.
+     *
+     * @since 86
+     */
+    @NonNull
+    public File getFileNameToReportToUser() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return new File(mDownloadImpl.getFileNameToReportToUser());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Returns the effective MIME type of downloaded content.
      */
     @NonNull

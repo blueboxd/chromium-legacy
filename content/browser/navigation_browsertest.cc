@@ -334,11 +334,19 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     EXPECT_FALSE(observer.last_initiator_routing_id());
   }
 
-  // The RenderFrameHost should not have changed.
-  EXPECT_EQ(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
-                             ->GetFrameTree()
-                             ->root()
-                             ->current_frame_host());
+  RenderFrameHost* second_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+
+  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
+    // is enabled, the navigation will result in a new RFH.
+    EXPECT_NE(initial_rfh, second_rfh);
+  } else {
+    EXPECT_EQ(initial_rfh, second_rfh);
+  }
 
   // Perform a cross-site navigation.
   {
@@ -352,10 +360,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
   }
 
   // The RenderFrameHost should have changed.
-  EXPECT_NE(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
-                             ->GetFrameTree()
-                             ->root()
-                             ->current_frame_host());
+  EXPECT_NE(second_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root()
+                            ->current_frame_host());
 }
 
 // Ensure that renderer initiated same-site navigations work.
@@ -378,6 +386,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
           ->root()
           ->current_frame_host();
 
+  auto initial_rfh_routing_id = GlobalFrameRoutingId(
+      initial_rfh->GetProcess()->GetID(), initial_rfh->GetRoutingID());
+
   // Simulate clicking on a same-site link.
   {
     TestNavigationObserver observer(shell()->web_contents());
@@ -394,16 +405,34 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     RenderFrameHost* main_rfh = shell()->web_contents()->GetMainFrame();
     EXPECT_EQ(main_rfh->GetLastCommittedOrigin(),
               observer.last_initiator_origin());
-    EXPECT_EQ(GlobalFrameRoutingId(main_rfh->GetProcess()->GetID(),
-                                   main_rfh->GetRoutingID()),
-              observer.last_initiator_routing_id());
+
+    if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+      // If same-site ProactivelySwapBrowsingInstance or main-frame
+      // RenderDocument is enabled, the navigation will result in a new RFH, so
+      // we need to compare with |initial_rfh|.
+      EXPECT_NE(main_rfh, initial_rfh);
+      EXPECT_EQ(initial_rfh_routing_id, observer.last_initiator_routing_id());
+    } else {
+      EXPECT_EQ(main_rfh, initial_rfh);
+      EXPECT_EQ(GlobalFrameRoutingId(main_rfh->GetProcess()->GetID(),
+                                     main_rfh->GetRoutingID()),
+                observer.last_initiator_routing_id());
+    }
   }
 
-  // The RenderFrameHost should not have changed.
-  EXPECT_EQ(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
-                             ->GetFrameTree()
-                             ->root()
-                             ->current_frame_host());
+  RenderFrameHost* second_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+
+  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
+    // is enabled, the navigation will result in a new RFH.
+    EXPECT_NE(initial_rfh, second_rfh);
+  } else {
+    EXPECT_EQ(initial_rfh, second_rfh);
+  }
 }
 
 // Ensure that renderer initiated cross-site navigations work.

@@ -84,4 +84,10 @@ const CGFloat kImageMargin = 196;
   [self.delegate popupMenuViewControllerWillDismiss:self];
 }
 
+- (void)preferredContentSizeDidChangeForChildContentContainer:
+    (id<UIContentContainer>)container {
+  [self.delegate
+      containedViewControllerContentSizeChangedForPopupMenuViewController:self];
+}
+
 @end

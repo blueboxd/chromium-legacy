@@ -2657,6 +2657,9 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-line-breaking-003.html [ Failure 
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 
+# WebRTC: Perfect Negotiation is flaky in Unified Plan.
+# This will be fixed when crbug.com/1060083 is fixed.
+crbug.com/1060083 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Pass Failure Timeout ]
 # WebRTC: Perfect Negotiation times out in Plan B. This is expected.
 crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
 

@@ -37,9 +37,9 @@ import java.util.Collections;
 @RunWith(BaseRobolectricTestRunner.class)
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
-            new CompromisedCredential("https://m.a.xyz/", "Ana", "password", false);
+            new CompromisedCredential("https://m.a.xyz/", "Ana", "password", false, false);
     private static final CompromisedCredential BOB =
-            new CompromisedCredential("https://www.b.ch/", "Baub", "DoneSth", true);
+            new CompromisedCredential("https://www.b.ch/", "Baub", "DoneSth", true, false);
 
     @Mock
     private PasswordCheckComponentUi.Delegate mDelegate;

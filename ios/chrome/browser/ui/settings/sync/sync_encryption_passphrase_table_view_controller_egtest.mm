@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -28,7 +28,7 @@ using chrome_test_util::NavigationBarCancelButton;
 - (void)testShowSyncPassphraseAndDismiss {
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:@"hello"];
   // Signin.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGrey openNewTab];
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(

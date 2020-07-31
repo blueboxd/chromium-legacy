@@ -17,12 +17,14 @@ import '../icons.m.js';
 import '../settings_shared_css.m.js';
 import '../settings_vars_css.m.js';
 import './passwords_shared_css.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ShowPasswordBehavior} from './show_password_behavior.js';
+import {loadTimeData} from '../i18n_setup.js';
 
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+import {ShowPasswordBehavior} from './show_password_behavior.js';
 
 Polymer({
   is: 'password-edit-dialog',
@@ -33,11 +35,49 @@ Polymer({
 
   properties: {
     shouldShowStorageDetails: {type: Boolean, value: false},
+
+    /** @private */
+    editPasswordsInSettings_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('editPasswordsInSettings');
+      }
+    },
+
+    /**
+     * Check if editPasswordsInSettings flag is true and entry isn't federation
+     * credential.
+     * @private
+     * */
+    isEditDialog_: {
+      type: Boolean,
+      computed: 'computeIsEditDialog_(editPasswordsInSettings_, entry)'
+    },
+
+    /**
+     * Whether the input is invalid.
+     * @private
+     */
+    inputInvalid_: Boolean,
   },
+
+  /** @private {?PasswordManagerProxy} */
+  passwordManager_: null,
 
   /** @override */
   attached() {
+    this.passwordManager_ = PasswordManagerImpl.getInstance();
     this.$.dialog.showModal();
+  },
+
+  /**
+   * Helper function that checks if editPasswordsInSettings flag is true and
+   * entry isn't federation credential.
+   * @return {boolean}
+   * @private
+   * */
+  computeIsEditDialog_() {
+    return this.editPasswordsInSettings_ && !this.entry.federationText;
   },
 
   /** Closes the dialog. */
@@ -46,11 +86,38 @@ Polymer({
   },
 
   /**
-   * Handler for tapping the 'done' button. Should just dismiss the dialog.
+   * Handler for tapping the 'cancel' button. Should just dismiss the dialog.
+   * @private
+   */
+  onCancel_() {
+    this.close();
+  },
+
+  /**
+   * Handler for tapping the 'done' or 'save' button depending on isEditDialog_.
+   * For 'save' button it should save new password. After pressing action button
+   * button the edit dialog should be closed.
    * @private
    */
   onActionButtonTap_() {
-    this.close();
+    if (this.isEditDialog_) {
+      this.passwordManager_
+          .changeSavedPassword(
+              this.entry.getAnyId(), this.$.passwordInput.value)
+          .finally(() => {
+            this.close();
+          });
+    } else {
+      this.close();
+    }
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getActionButtonName_() {
+    return this.isEditDialog_ ? this.i18n('save') : this.i18n('done');
   },
 
   /** Manually de-select texts for readonly inputs. */
@@ -69,5 +136,24 @@ Polymer({
     return this.entry.isPresentInAccount() ?
         this.i18n('passwordStoredInAccount') :
         this.i18n('passwordStoredOnDevice');
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getTitle_() {
+    // TODO(crbug.com/377410): Change strings like
+    // 'editCompromisedPasswordTitle' to 'editPasswordTitle'.
+    return this.isEditDialog_ ? this.i18n('editCompromisedPasswordTitle') :
+                                this.i18n('passwordDetailsTitle');
+  },
+
+  /**
+   * @return {string} The text to be displayed as the dialog's footnote.
+   * @private
+   */
+  getFootnote_() {
+    return this.i18n('editCompromisedPasswordFootnote', this.entry.urls.shown);
   }
 });

@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":viewer-page-indicator",
     ":viewer-page-selector",
     ":viewer-password-screen",
+    ":viewer-pdf-sidenav",
     ":viewer-pdf-toolbar",
     ":viewer-pdf-toolbar-new",
     ":viewer-toolbar-dropdown",
@@ -94,6 +95,13 @@ js_library("viewer-password-screen") {
   ]
 }
 
+js_library("viewer-pdf-sidenav") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+  ]
+}
+
 js_library("viewer-pdf-toolbar") {
   deps = [
     ":viewer-annotations-bar",
@@ -148,6 +156,7 @@ html_to_js("web_components") {
     "viewer-page-indicator.js",
     "viewer-page-selector.js",
     "viewer-password-screen.js",
+    "viewer-pdf-sidenav.js",
     "viewer-pdf-toolbar.js",
     "viewer-pdf-toolbar-new.js",
     "viewer-toolbar-dropdown.js",

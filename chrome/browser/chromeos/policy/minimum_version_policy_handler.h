@@ -44,9 +44,11 @@ class MinimumVersionPolicyHandler
       public chromeos::NetworkStateHandlerObserver,
       public chromeos::UpdateEngineClient::Observer {
  public:
+  static const char kRequirements[];
   static const char kChromeOsVersion[];
   static const char kWarningPeriod[];
   static const char kEolWarningPeriod[];
+  static const char kUnmanagedUserRestricted[];
 
   class Observer {
    public:
@@ -69,8 +71,8 @@ class MinimumVersionPolicyHandler
     // Checks if a user is logged in.
     virtual bool IsUserLoggedIn() const = 0;
 
-    // Checks if the user logged in is a managed user.
-    virtual bool IsUserManaged() const = 0;
+    // Checks if the user logged in is managed and not a child user.
+    virtual bool IsUserEnterpriseManaged() const = 0;
 
     // Checks if we are currently on the login screen.
     virtual bool IsLoginSessionState() const = 0;
@@ -156,7 +158,9 @@ class MinimumVersionPolicyHandler
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Show notification on managed user login if it is the last day to deadline.
+  // Show notification on login if the user is managed or
+  // |unmanaged_user_restricted_| is set to true if it is the last day to
+  // deadline.
   void MaybeShowNotificationOnLogin();
 
   // Returns true if an update is required and the device has reached
@@ -252,6 +256,10 @@ class MinimumVersionPolicyHandler
   // set to nullptr if the current version is higher than the minimum required
   // version in all the configurations.
   std::unique_ptr<MinimumVersionRequirement> state_;
+
+  // If this flag is true, unmanaged user sessions receive update required
+  // notifications and are force logged out when deadline is reached.
+  bool unmanaged_user_restricted_ = false;
 
   bool eol_reached_ = false;
 

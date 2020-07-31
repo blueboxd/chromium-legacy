@@ -1773,6 +1773,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
       UserState* state = FindStateForUser(
           view->auth_user()->current_user().basic_user_info.account_id);
       uint32_t to_update_auth;
+      bool show_pinpad = false;
       if (state->force_online_sign_in) {
         to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
       } else if (state->disable_auth) {
@@ -1789,16 +1790,16 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         // not interfere with PIN entry.
         const bool is_keyboard_visible_for_view =
             GetKeyboardControllerForView() ? keyboard_shown_ : false;
-        if ((state->show_pin || state->show_pin_pad_for_password) &&
-            !is_keyboard_visible_for_view) {
+        show_pinpad = !is_keyboard_visible_for_view &&
+                      (state->show_pin || state->show_pin_pad_for_password);
+        if (state->show_pin)
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
-        }
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
         if (state->fingerprint_state != FingerprintState::UNAVAILABLE)
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
       }
-      view->auth_user()->SetAuthMethods(to_update_auth, state->show_pin);
+      view->auth_user()->SetAuthMethods(to_update_auth, show_pinpad);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(true /*enabled*/, animate);
     }
@@ -1809,7 +1810,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
       return;
     if (view->auth_user()) {
       view->auth_user()->SetAuthMethods(LoginAuthUserView::AUTH_NONE,
-                                        false /*can_use_pin*/);
+                                        false /*show_pinpad*/);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(false /*enabled*/, animate);
     }

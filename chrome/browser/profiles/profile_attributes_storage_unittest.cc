@@ -931,12 +931,7 @@ TEST_F(ProfileAttributesStorageTest, ProfileThemeColors) {
   base::Optional<ProfileThemeColors> actual_colors =
       entry->GetProfileThemeColors();
   ASSERT_TRUE(actual_colors.has_value());
-  EXPECT_EQ(colors.profile_highlight_color,
-            actual_colors->profile_highlight_color);
-  EXPECT_EQ(colors.default_avatar_fill_color,
-            actual_colors->default_avatar_fill_color);
-  EXPECT_EQ(colors.default_avatar_stroke_color,
-            actual_colors->default_avatar_stroke_color);
+  EXPECT_EQ(colors, actual_colors);
 
   entry->SetProfileThemeColors(base::nullopt);
   EXPECT_EQ(base::nullopt, entry->GetProfileThemeColors());

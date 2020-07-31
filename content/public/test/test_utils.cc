@@ -220,6 +220,17 @@ bool CanSameSiteMainFrameNavigationsChangeSiteInstances() {
   return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
 }
 
+void DisableProactiveBrowsingInstanceSwapFor(RenderFrameHost* rfh) {
+  if (!CanSameSiteMainFrameNavigationsChangeSiteInstances())
+    return;
+  // If the RFH is not a main frame, navigations on it will never result in a
+  // proactive BrowsingInstance swap, so we shouldn't really call it on main
+  // frames.
+  DCHECK(!rfh->GetParent());
+  static_cast<RenderFrameHostImpl*>(rfh)
+      ->DisableProactiveBrowsingInstanceSwapForTesting();
+}
+
 GURL GetWebUIURL(const std::string& host) {
   return GURL(GetWebUIURLString(host));
 }

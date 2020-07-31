@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -253,7 +254,8 @@ bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
   // Do not create the throttle if no apps can be installed.
   // Do not create the throttle in incognito or for a prerender navigation.
   if (web_contents->GetBrowserContext()->IsOffTheRecord() ||
-      prerender::PrerenderContents::FromWebContents(web_contents) != nullptr) {
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(
+          web_contents) != nullptr) {
     return false;
   }
 

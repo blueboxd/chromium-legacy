@@ -117,9 +117,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // edge of the caption buttons.
   int MinimizeButtonX() const;
 
-  // Returns whether the toolbar is currently visible.
-  bool IsToolbarVisible() const;
-
   bool ShowCustomIcon() const;
   bool ShowCustomTitle() const;
   bool ShowSystemIcon() const;

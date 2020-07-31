@@ -81,7 +81,7 @@ static_library("libxslt") {
   public_configs = [ ":libxslt_config" ]
 
   cflags = []
-  if (is_linux || is_android || is_fuchsia) {
+  if (is_linux || is_chromeos || is_android || is_fuchsia) {
     include_dirs = [ "linux" ]
   } else if (is_win) {
     include_dirs = [ "win32" ]

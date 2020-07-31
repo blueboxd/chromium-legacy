@@ -12,6 +12,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
 import './nearby_device.js';
 import './nearby_preview.js';
+import './nearby_share_target_types.mojom-lite.js';
 import './nearby_share.mojom-lite.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';

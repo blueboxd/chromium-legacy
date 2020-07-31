@@ -80,10 +80,11 @@ bool BeginRecording(const std::string& data64,
     g_tracing_session = perfetto::Tracing::NewTrace().release();
     g_tracing_session->Setup(tracing::GetDefaultPerfettoConfig(trace_config));
 
-    auto shared_callback(std::make_shared<WebUIDataSource::GotDataCallback>(
-        std::move(callback)));
+    auto shared_callback = base::MakeRefCounted<
+        base::RefCountedData<WebUIDataSource::GotDataCallback>>(
+        std::move(callback));
     g_tracing_session->SetOnStartCallback([shared_callback] {
-      OnRecordingEnabledAck(std::move(*shared_callback));
+      OnRecordingEnabledAck(std::move(shared_callback->data));
     });
     g_tracing_session->Start();
     return true;
@@ -104,8 +105,9 @@ bool GetTraceBufferUsage(WebUIDataSource::GotDataCallback callback) {
   if (g_tracing_session) {
     // |callback| is move-only, so in order to pass it through a copied lambda
     // we need to temporarily move it on the heap.
-    auto shared_callback(std::make_shared<WebUIDataSource::GotDataCallback>(
-        std::move(callback)));
+    auto shared_callback = base::MakeRefCounted<
+        base::RefCountedData<WebUIDataSource::GotDataCallback>>(
+        std::move(callback));
     g_tracing_session->GetTraceStats(
         [shared_callback](
             perfetto::TracingSession::GetTraceStatsCallbackArgs args) {
@@ -117,7 +119,7 @@ bool GetTraceBufferUsage(WebUIDataSource::GotDataCallback callback) {
             double percent_full = tracing::GetTraceBufferUsage(trace_stats);
             usage = base::NumberToString(percent_full);
           }
-          std::move(*shared_callback)
+          std::move(shared_callback->data)
               .Run(base::RefCountedString::TakeString(&usage));
         });
     return true;

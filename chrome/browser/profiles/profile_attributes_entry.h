@@ -46,6 +46,10 @@ struct ProfileThemeColors {
   SkColor profile_highlight_color;
   SkColor default_avatar_fill_color;
   SkColor default_avatar_stroke_color;
+
+  // Equality operators for testing.
+  bool operator==(const ProfileThemeColors& other) const;
+  bool operator!=(const ProfileThemeColors& other) const;
 };
 
 class ProfileAttributesEntry {

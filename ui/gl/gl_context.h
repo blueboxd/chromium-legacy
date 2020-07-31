@@ -82,7 +82,6 @@ struct GL_EXPORT GLContextAttribs {
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
   bool global_texture_share_group = false;
-  bool global_semaphore_share_group = false;
   bool robust_resource_initialization = false;
   bool robust_buffer_access = false;
   int client_major_es_version = 3;

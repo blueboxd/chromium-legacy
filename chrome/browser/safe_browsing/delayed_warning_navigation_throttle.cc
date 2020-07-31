@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/delayed_warning_navigation_throttle.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "components/safe_browsing/core/features.h"
@@ -29,7 +30,8 @@ DelayedWarningNavigationThrottle::MaybeCreateNavigationThrottle(
     content::NavigationHandle* navigation_handle) {
   // If the tab is being prerendered, stop here before it breaks metrics.
   content::WebContents* web_contents = navigation_handle->GetWebContents();
-  if (prerender::PrerenderContents::FromWebContents(web_contents)) {
+  if (prerender::ChromePrerenderContentsDelegate::FromWebContents(
+          web_contents)) {
     return nullptr;
   }
 

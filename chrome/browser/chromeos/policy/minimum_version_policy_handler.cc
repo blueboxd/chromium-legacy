@@ -102,10 +102,13 @@ void ResetRelaunchNotification() {
 
 }  // namespace
 
+const char MinimumVersionPolicyHandler::kRequirements[] = "requirements";
 const char MinimumVersionPolicyHandler::kChromeOsVersion[] = "chromeos_version";
 const char MinimumVersionPolicyHandler::kWarningPeriod[] = "warning_period";
 const char MinimumVersionPolicyHandler::kEolWarningPeriod[] =
     "aue_warning_period";
+const char MinimumVersionPolicyHandler::kUnmanagedUserRestricted[] =
+    "unmanaged_user_restricted";
 
 MinimumVersionRequirement::MinimumVersionRequirement(
     const base::Version version,
@@ -218,16 +221,23 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
     return;
   }
 
-  const base::ListValue* entries;
-  std::vector<std::unique_ptr<MinimumVersionRequirement>> configs;
-  if (!cros_settings_->GetList(chromeos::kDeviceMinimumVersion, &entries) ||
-      !entries->GetSize()) {
-    // Reset state and hide update required screen if policy is not set or set
-    // to empty list.
+  const base::DictionaryValue* policy_value;
+  if (!cros_settings_->GetDictionary(chromeos::kDeviceMinimumVersion,
+                                     &policy_value)) {
+    VLOG(1) << "Revoke policy - policy is unset or value is incorrect.";
     HandleUpdateNotRequired();
     return;
   }
+  const base::Value* entries = policy_value->FindListKey(kRequirements);
+  if (!entries || entries->GetList().empty()) {
+    VLOG(1) << "Revoke policy - empty policy requirements.";
+    HandleUpdateNotRequired();
+    return;
+  }
+  auto restricted = policy_value->FindBoolKey(kUnmanagedUserRestricted);
+  unmanaged_user_restricted_ = restricted.value_or(false);
 
+  std::vector<std::unique_ptr<MinimumVersionRequirement>> configs;
   for (const auto& item : entries->GetList()) {
     const base::DictionaryValue* dict;
     if (item.GetAsDictionary(&dict)) {
@@ -458,7 +468,8 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
     base::TimeDelta warning) {
   const NetworkStatus status = GetCurrentNetworkStatus();
   if ((!eol_reached_ && status == NetworkStatus::kAllowed) ||
-      !delegate_->IsUserLoggedIn() || !delegate_->IsUserManaged()) {
+      !delegate_->IsUserLoggedIn() ||
+      (!delegate_->IsUserEnterpriseManaged() && !unmanaged_user_restricted_)) {
     return;
   }
 
@@ -611,9 +622,12 @@ void MinimumVersionPolicyHandler::OnDeadlineReached() {
   if (delegate_->IsLoginSessionState() && !delegate_->IsLoginInProgress()) {
     // Show update required screen over the login screen.
     delegate_->ShowUpdateRequiredScreen();
-  } else if (delegate_->IsUserLoggedIn() && delegate_->IsUserManaged()) {
+  } else if (delegate_->IsUserLoggedIn() &&
+             (delegate_->IsUserEnterpriseManaged() ||
+              unmanaged_user_restricted_)) {
     // Terminate the current user session to show update required
-    // screen on the login screen if user is managed.
+    // screen on the login screen if the user is managed or
+    // |unmanaged_user_restricted_| is set to true.
     delegate_->RestartToLoginScreen();
   }
   // No action is required if -

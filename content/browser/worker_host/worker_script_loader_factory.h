@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/common/tokens/worker_tokens.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace network {
 class SharedURLLoaderFactory;

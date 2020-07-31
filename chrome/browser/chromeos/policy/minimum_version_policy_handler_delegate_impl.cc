@@ -41,7 +41,7 @@ bool MinimumVersionPolicyHandlerDelegateImpl::IsUserLoggedIn() const {
          user_manager::UserManager::Get()->IsUserLoggedIn();
 }
 
-bool MinimumVersionPolicyHandlerDelegateImpl::IsUserManaged() const {
+bool MinimumVersionPolicyHandlerDelegateImpl::IsUserEnterpriseManaged() const {
   if (!IsUserLoggedIn())
     return false;
   Profile* const profile = ProfileManager::GetPrimaryUserProfile();
@@ -50,7 +50,8 @@ bool MinimumVersionPolicyHandlerDelegateImpl::IsUserManaged() const {
   // TODO(https://crbug.com/1048607): Handle the case when |IsUserLoggedIn|
   // returns true after Auth success but |IsManaged| returns false before user
   // policy fetched.
-  return profile->GetProfilePolicyConnector()->IsManaged();
+  return profile->GetProfilePolicyConnector()->IsManaged() &&
+         !profile->IsChild();
 }
 
 bool MinimumVersionPolicyHandlerDelegateImpl::IsLoginSessionState() const {

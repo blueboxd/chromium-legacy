@@ -16,26 +16,54 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAreArray;
 
-ClientContextProto CreateClientContextProto() {
-  ClientContextProto context;
-  context.mutable_chrome()->set_chrome_version("v");
-  auto* device_context = context.mutable_device_context();
-  device_context->mutable_version()->set_sdk_int(1);
-  device_context->set_manufacturer("ma");
-  device_context->set_model("mo");
-  return context;
-}
+class ProtocolUtilsTest : public testing::Test {
+ protected:
+  ProtocolUtilsTest() {
+    client_context_proto_.set_experiment_ids("1,2,3");
+    client_context_proto_.set_is_cct(true);
+    client_context_proto_.mutable_chrome()->set_chrome_version("v");
+    auto* device_context = client_context_proto_.mutable_device_context();
+    device_context->mutable_version()->set_sdk_int(1);
+    device_context->set_manufacturer("ma");
+    device_context->set_model("mo");
+    client_context_proto_.set_is_onboarding_shown(false);
+    client_context_proto_.set_is_direct_action(false);
+    client_context_proto_.set_accounts_matching_status(
+        ClientContextProto::UNKNOWN);
+  }
+  ~ProtocolUtilsTest() override {}
+
+  ClientContextProto client_context_proto_;
+};
 
 void AssertClientContext(const ClientContextProto& context) {
+  EXPECT_EQ("1,2,3", context.experiment_ids());
+  EXPECT_TRUE(context.is_cct());
   EXPECT_EQ("v", context.chrome().chrome_version());
   EXPECT_EQ(1, context.device_context().version().sdk_int());
   EXPECT_EQ("ma", context.device_context().manufacturer());
   EXPECT_EQ("mo", context.device_context().model());
+  EXPECT_FALSE(context.is_onboarding_shown());
+  EXPECT_FALSE(context.is_direct_action());
+  EXPECT_THAT(context.accounts_matching_status(),
+              Eq(ClientContextProto::UNKNOWN));
 }
 
-TEST(ProtocolUtilsTest, ScriptMissingPath) {
+void AssertScriptParameters(
+    const google::protobuf::RepeatedPtrField<ScriptParameterProto>& actual,
+    const std::map<std::string, std::string>& expected) {
+  std::map<std::string, std::string> actual_as_map;
+  for (const auto& actual_parameter : actual) {
+    actual_as_map[actual_parameter.name()] = actual_parameter.value();
+  }
+  EXPECT_THAT(actual_as_map, UnorderedElementsAreArray(expected));
+}
+
+TEST_F(ProtocolUtilsTest, ScriptMissingPath) {
   SupportedScriptProto script;
   script.mutable_presentation()->mutable_chip()->set_text("missing path");
   std::vector<std::unique_ptr<Script>> scripts;
@@ -44,7 +72,7 @@ TEST(ProtocolUtilsTest, ScriptMissingPath) {
   EXPECT_THAT(scripts, IsEmpty());
 }
 
-TEST(ProtocolUtilsTest, MinimalValidScript) {
+TEST_F(ProtocolUtilsTest, MinimalValidScript) {
   SupportedScriptProto script;
   script.set_path("path");
   script.mutable_presentation()->mutable_chip()->set_text("name");
@@ -57,7 +85,7 @@ TEST(ProtocolUtilsTest, MinimalValidScript) {
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
 
-TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
+TEST_F(ProtocolUtilsTest, AllowInterruptsWithNoName) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
@@ -74,7 +102,7 @@ TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
   EXPECT_TRUE(scripts[0]->handle.interrupt);
 }
 
-TEST(ProtocolUtilsTest, InterruptsCannotBeAutostart) {
+TEST_F(ProtocolUtilsTest, InterruptsCannotBeAutostart) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
@@ -89,244 +117,59 @@ TEST(ProtocolUtilsTest, InterruptsCannotBeAutostart) {
   EXPECT_TRUE(scripts[0]->handle.interrupt);
 }
 
-TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  parameters["c"] = "d";
-  TriggerContextImpl trigger_context(parameters, "1,2,3");
-  trigger_context.SetCCT(true);
-
+TEST_F(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
+  std::map<std::string, std::string> parameters = {{"key_a", "value_a"},
+                                                   {"key_b", "value_b"}};
   ScriptActionRequestProto request;
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
-          "script_path", GURL("http://example.com/"), trigger_context,
-          "global_payload", "script_payload", CreateClientContextProto(),
-          "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
-  EXPECT_TRUE(request.client_context().is_cct());
-  EXPECT_FALSE(request.client_context().is_onboarding_shown());
-  EXPECT_FALSE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::UNKNOWN));
+          "script_path", GURL("http://example.com/"), "global_payload",
+          "script_payload", client_context_proto_, parameters)));
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
   EXPECT_THAT(initial.query().script_path(), ElementsAre("script_path"));
   EXPECT_EQ(initial.query().url(), "http://example.com/");
-  ASSERT_EQ(2, initial.script_parameters_size());
-  EXPECT_EQ("a", initial.script_parameters(0).name());
-  EXPECT_EQ("b", initial.script_parameters(0).value());
-  EXPECT_EQ("c", initial.script_parameters(1).name());
-  EXPECT_EQ("d", initial.script_parameters(1).value());
+  AssertScriptParameters(initial.script_parameters(), parameters);
+
+  AssertClientContext(request.client_context());
   EXPECT_EQ("global_payload", request.global_payload());
   EXPECT_EQ("script_payload", request.script_payload());
 }
 
-TEST(ProtocolUtilsTest, TestCreateInitialScriptActionsRequestFlags) {
-  std::map<std::string, std::string> parameters;
-
-  ScriptActionRequestProto request;
-
-  // With flags.
-  TriggerContextImpl trigger_context_flags(parameters, std::string());
-  trigger_context_flags.SetCCT(true);
-  trigger_context_flags.SetOnboardingShown(true);
-  trigger_context_flags.SetDirectAction(true);
-  trigger_context_flags.SetCallerAccountHash("accountsha");
-
-  EXPECT_TRUE(
-      request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
-          "script_path", GURL("http://example.com/"), trigger_context_flags,
-          "global_payload", "script_payload", CreateClientContextProto(),
-          "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_TRUE(request.client_context().is_cct());
-  EXPECT_TRUE(request.client_context().is_onboarding_shown());
-  EXPECT_TRUE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::ACCOUNTS_MATCHING));
-
-  // Without flags.
-  TriggerContextImpl trigger_context_no_flags(parameters, std::string());
-
-  EXPECT_TRUE(
-      request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
-          "script_path", GURL("http://example.com/"), trigger_context_no_flags,
-          "global_payload", "script_payload", CreateClientContextProto(),
-          "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_FALSE(request.client_context().is_cct());
-  EXPECT_FALSE(request.client_context().is_onboarding_shown());
-  EXPECT_FALSE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::UNKNOWN));
-}
-
-TEST(ProtocolUtilsTest,
-     TestCreateInitialScriptActionsRequestAccountsNotMatching) {
-  std::map<std::string, std::string> parameters;
-
-  ScriptActionRequestProto request;
-
-  // With flags.
-  TriggerContextImpl trigger_context_flags(parameters, std::string());
-  trigger_context_flags.SetCCT(true);
-  trigger_context_flags.SetOnboardingShown(true);
-  trigger_context_flags.SetDirectAction(true);
-  trigger_context_flags.SetCallerAccountHash("accountsha");
-
-  EXPECT_TRUE(
-      request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
-          "script_path", GURL("http://example.com/"), trigger_context_flags,
-          "global_payload", "script_payload", CreateClientContextProto(),
-          "differentaccountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_TRUE(request.client_context().is_cct());
-  EXPECT_TRUE(request.client_context().is_onboarding_shown());
-  EXPECT_TRUE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::ACCOUNTS_NOT_MATCHING));
-}
-
-TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  parameters["c"] = "d";
-  TriggerContextImpl trigger_context(parameters, "1,2,3");
-
+TEST_F(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
   ScriptActionRequestProto request;
   std::vector<ProcessedActionProto> processed_actions;
   processed_actions.emplace_back(ProcessedActionProto());
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
-          trigger_context, "global_payload", "script_payload",
-          processed_actions, CreateClientContextProto(), "accountsha")));
+          "global_payload", "script_payload", processed_actions,
+          client_context_proto_)));
 
   AssertClientContext(request.client_context());
-  EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
   EXPECT_EQ(1, request.next_request().processed_actions().size());
 }
 
-TEST(ProtocolUtilsTest, TestCreateNextScriptActionsRequestFlags) {
-  std::map<std::string, std::string> parameters;
-
-  std::vector<ProcessedActionProto> processed_actions;
-  processed_actions.emplace_back(ProcessedActionProto());
-
-  ScriptActionRequestProto request;
-
-  // With flags.
-  TriggerContextImpl trigger_context_flags(parameters, std::string());
-  trigger_context_flags.SetCCT(true);
-  trigger_context_flags.SetOnboardingShown(true);
-  trigger_context_flags.SetDirectAction(true);
-  trigger_context_flags.SetCallerAccountHash("accountsha");
-
-  EXPECT_TRUE(
-      request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
-          trigger_context_flags, "global_payload", "script_payload",
-          processed_actions, CreateClientContextProto(), "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_TRUE(request.client_context().is_cct());
-  EXPECT_TRUE(request.client_context().is_onboarding_shown());
-  EXPECT_TRUE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::ACCOUNTS_MATCHING));
-
-  // Without flags.
-  TriggerContextImpl trigger_context_no_flags(parameters, std::string());
-
-  EXPECT_TRUE(
-      request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
-          trigger_context_no_flags, "global_payload", "script_payload",
-          processed_actions, CreateClientContextProto(), "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_FALSE(request.client_context().is_cct());
-  EXPECT_FALSE(request.client_context().is_onboarding_shown());
-  EXPECT_FALSE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::UNKNOWN));
-}
-
-TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  parameters["c"] = "d";
-  TriggerContextImpl trigger_context(parameters, "1,2,3");
-  trigger_context.SetDirectAction(true);
+TEST_F(ProtocolUtilsTest, CreateGetScriptsRequest) {
+  std::map<std::string, std::string> parameters = {{"key_a", "value_a"},
+                                                   {"key_b", "value_b"}};
 
   SupportsScriptRequestProto request;
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
-      GURL("http://example.com/"), trigger_context, CreateClientContextProto(),
-      "accountsha")));
+      GURL("http://example.com/"), client_context_proto_, parameters)));
 
   AssertClientContext(request.client_context());
-  EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
-  EXPECT_FALSE(request.client_context().is_cct());
-  EXPECT_FALSE(request.client_context().is_onboarding_shown());
-  EXPECT_TRUE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::UNKNOWN));
-
+  AssertScriptParameters(request.script_parameters(), parameters);
   EXPECT_EQ("http://example.com/", request.url());
-  ASSERT_EQ(2, request.script_parameters_size());
-  EXPECT_EQ("a", request.script_parameters(0).name());
-  EXPECT_EQ("b", request.script_parameters(0).value());
-  EXPECT_EQ("c", request.script_parameters(1).name());
-  EXPECT_EQ("d", request.script_parameters(1).value());
 }
 
-TEST(ProtocolUtilsTest, TestCreateGetScriptsRequestFlags) {
-  std::map<std::string, std::string> parameters;
-  SupportsScriptRequestProto request;
-
-  // With flags.
-  TriggerContextImpl trigger_context_flags(parameters, std::string());
-  trigger_context_flags.SetCCT(true);
-  trigger_context_flags.SetOnboardingShown(true);
-  trigger_context_flags.SetDirectAction(true);
-  trigger_context_flags.SetCallerAccountHash("accountsha");
-
-  EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
-      GURL("http://example.com/"), trigger_context_flags,
-      CreateClientContextProto(), "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_TRUE(request.client_context().is_cct());
-  EXPECT_TRUE(request.client_context().is_onboarding_shown());
-  EXPECT_TRUE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::ACCOUNTS_MATCHING));
-
-  // Without flags.
-  TriggerContextImpl trigger_context_no_flags(parameters, std::string());
-
-  EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
-      GURL("http://example.com/"), trigger_context_no_flags,
-      CreateClientContextProto(), "accountsha")));
-
-  AssertClientContext(request.client_context());
-  EXPECT_FALSE(request.client_context().is_cct());
-  EXPECT_FALSE(request.client_context().is_onboarding_shown());
-  EXPECT_FALSE(request.client_context().is_direct_action());
-  EXPECT_THAT(request.client_context().accounts_matching_status(),
-              Eq(ClientContextProto::UNKNOWN));
-}
-
-TEST(ProtocolUtilsTest, AddScriptIgnoreInvalid) {
+TEST_F(ProtocolUtilsTest, AddScriptIgnoreInvalid) {
   SupportedScriptProto script_proto;
   std::vector<std::unique_ptr<Script>> scripts;
   ProtocolUtils::AddScript(script_proto, &scripts);
   EXPECT_TRUE(scripts.empty());
 }
 
-TEST(ProtocolUtilsTest, AddScriptWithChip) {
+TEST_F(ProtocolUtilsTest, AddScriptWithChip) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
@@ -346,7 +189,7 @@ TEST(ProtocolUtilsTest, AddScriptWithChip) {
   EXPECT_NE(nullptr, script->precondition);
 }
 
-TEST(ProtocolUtilsTest, AddScriptWithDirectAction) {
+TEST_F(ProtocolUtilsTest, AddScriptWithDirectAction) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
@@ -365,7 +208,7 @@ TEST(ProtocolUtilsTest, AddScriptWithDirectAction) {
   EXPECT_NE(nullptr, script->precondition);
 }
 
-TEST(ProtocolUtilsTest, AddAutostartableScript) {
+TEST_F(ProtocolUtilsTest, AddAutostartableScript) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
@@ -384,7 +227,7 @@ TEST(ProtocolUtilsTest, AddAutostartableScript) {
   EXPECT_NE(nullptr, script->precondition);
 }
 
-TEST(ProtocolUtilsTest, SkipAutostartableScriptWithoutName) {
+TEST_F(ProtocolUtilsTest, SkipAutostartableScriptWithoutName) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
@@ -396,7 +239,7 @@ TEST(ProtocolUtilsTest, SkipAutostartableScriptWithoutName) {
   EXPECT_THAT(scripts, IsEmpty());
 }
 
-TEST(ProtocolUtilsTest, ParseActionsParseError) {
+TEST_F(ProtocolUtilsTest, ParseActionsParseError) {
   bool unused;
   std::vector<std::unique_ptr<Action>> unused_actions;
   std::vector<std::unique_ptr<Script>> unused_scripts;
@@ -405,7 +248,7 @@ TEST(ProtocolUtilsTest, ParseActionsParseError) {
                                            &unused));
 }
 
-TEST(ProtocolUtilsTest, ParseActionsValid) {
+TEST_F(ProtocolUtilsTest, ParseActionsValid) {
   ActionsResponseProto proto;
   proto.set_global_payload("global_payload");
   proto.set_script_payload("script_payload");
@@ -431,7 +274,7 @@ TEST(ProtocolUtilsTest, ParseActionsValid) {
   EXPECT_TRUE(scripts.empty());
 }
 
-TEST(ProtocolUtilsTest, ParseActionsEmptyUpdateScriptList) {
+TEST_F(ProtocolUtilsTest, ParseActionsEmptyUpdateScriptList) {
   ActionsResponseProto proto;
   proto.mutable_update_script_list();
 
@@ -450,7 +293,7 @@ TEST(ProtocolUtilsTest, ParseActionsEmptyUpdateScriptList) {
   EXPECT_TRUE(scripts.empty());
 }
 
-TEST(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
+TEST_F(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
   ActionsResponseProto proto;
   auto* script_list = proto.mutable_update_script_list();
   auto* script_a = script_list->add_scripts();

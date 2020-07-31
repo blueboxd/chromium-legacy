@@ -17,10 +17,9 @@
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_client_impl.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/services/sharing/public/cpp/advertisement.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "components/prefs/pref_service.h"
@@ -124,11 +123,13 @@ std::string ConnectionsStatusToString(
 NearbySharingServiceImpl::NearbySharingServiceImpl(
     PrefService* prefs,
     Profile* profile,
-    std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
+    std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
+    NearbyProcessManager* process_manager)
     : prefs_(prefs),
       profile_(profile),
       settings_(prefs),
       nearby_connections_manager_(std::move(nearby_connections_manager)),
+      process_manager_(process_manager),
       http_client_factory_(std::make_unique<NearbyShareClientFactoryImpl>(
           IdentityManagerFactory::GetForProfile(profile),
           profile->GetURLLoaderFactory(),
@@ -144,13 +145,12 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);
 
-  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
-  nearby_process_observer_.Add(&process_manager);
+  nearby_process_observer_.Add(process_manager_);
 
-  if (process_manager.IsActiveProfile(profile_)) {
+  if (process_manager_->IsActiveProfile(profile_)) {
     // TODO(crbug.com/1084576): Initialize NearbyConnectionsManager with
     // NearbyConnectionsMojom from |process_manager|:
-    // process_manager.GetOrStartNearbyConnections(profile_)
+    // process_manager_->GetOrStartNearbyConnections(profile_)
   }
 
   settings_.AddSettingsObserver(settings_receiver_.BindNewPipeAndPassRemote());
@@ -318,14 +318,12 @@ void NearbySharingServiceImpl::OnNearbyProfileChanged(Profile* profile) {
 }
 
 void NearbySharingServiceImpl::OnNearbyProcessStarted() {
-  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
-  if (process_manager.IsActiveProfile(profile_))
+  if (process_manager_->IsActiveProfile(profile_))
     NS_LOG(VERBOSE) << __func__ << ": Nearby process started!";
 }
 
 void NearbySharingServiceImpl::OnNearbyProcessStopped() {
-  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
-  if (process_manager.IsActiveProfile(profile_)) {
+  if (process_manager_->IsActiveProfile(profile_)) {
     // TODO(crbug.com/1084576): Check if process should be running and restart
     // it after a delay.
   }
@@ -336,7 +334,17 @@ void NearbySharingServiceImpl::OnIncomingConnection(
     const std::vector<uint8_t>& endpoint_info,
     NearbyConnection* connection) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(connection);
   // TODO(crbug/1085068): Handle incoming connection; use CertificateManager
+
+  // TODO(himanshujaju) - Update placeholder implementation
+  ShareTarget share_target;
+  incoming_share_target_info_map_[share_target.id].set_connection(connection);
+  connection->RegisterForDisconnection(
+      base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
+                     weak_ptr_factory_.GetWeakPtr(), share_target));
+
+  ReceiveIntroduction(std::move(share_target), /*token=*/base::nullopt);
 }
 
 void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
@@ -671,12 +679,81 @@ void NearbySharingServiceImpl::StopAdvertising() {
 void NearbySharingServiceImpl::OnIncomingTransferUpdate(
     const ShareTarget& share_target,
     TransferMetadata metadata) {
-  // TODO(himanshujaju) - Implement.
+  if (metadata.status() != TransferMetadata::Status::kCancelled &&
+      metadata.status() != TransferMetadata::Status::kRejected) {
+    last_incoming_metadata_ = std::make_pair(share_target, metadata);
+  } else {
+    last_incoming_metadata_ = base::nullopt;
+  }
+
+  // TODO(himanshujaju) - Handle is_final_status()
+
+  base::ObserverList<TransferUpdateCallback>& transfer_callbacks =
+      foreground_receive_callbacks_.might_have_observers()
+          ? foreground_receive_callbacks_
+          : background_receive_callbacks_;
+
+  for (TransferUpdateCallback& callback : transfer_callbacks) {
+    callback.OnTransferUpdate(share_target, metadata);
+  }
+}
+
+void NearbySharingServiceImpl::WriteResponse(
+    NearbyConnection& connection,
+    sharing::nearby::ConnectionResponseFrame::Status status) {
+  sharing::nearby::Frame frame;
+  sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
+  v1_frame->mutable_connection_response()->set_status(status);
+
+  std::vector<uint8_t> data(frame.ByteSize());
+  frame.SerializeToArray(data.data(), frame.ByteSize());
+
+  connection.Write(std::move(data), base::DoNothing());
+}
+
+void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
+                                    TransferMetadata::Status status) {
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING) << __func__ << ": Fail invoked for unknown share target.";
+    return;
+  }
+
+  // TODO(himanshujaju) - Create alarm and cancel in RegisterForDisconnection().
+
+  // Send response to remote device.
+  sharing::nearby::ConnectionResponseFrame::Status response_status;
+  switch (status) {
+    case TransferMetadata::Status::kNotEnoughSpace:
+      response_status =
+          sharing::nearby::ConnectionResponseFrame::NOT_ENOUGH_SPACE;
+      break;
+
+    case TransferMetadata::Status::kUnsupportedAttachmentType:
+      response_status =
+          sharing::nearby::ConnectionResponseFrame::UNSUPPORTED_ATTACHMENT_TYPE;
+      break;
+
+    case TransferMetadata::Status::kTimedOut:
+      response_status = sharing::nearby::ConnectionResponseFrame::TIMED_OUT;
+      break;
+
+    default:
+      response_status = sharing::nearby::ConnectionResponseFrame::UNKNOWN;
+      break;
+  }
+
+  WriteResponse(*connection, response_status);
+
+  if (incoming_share_target_info_map_.count(share_target.id)) {
+    OnIncomingTransferUpdate(
+        share_target, TransferMetadataBuilder().set_status(status).build());
+  }
 }
 
 void NearbySharingServiceImpl::ReceiveIntroduction(
-    const ShareTarget& share_target,
-    const std::string& token) {
+    ShareTarget share_target,
+    base::Optional<std::string> token) {
   NS_LOG(INFO) << __func__ << ": Receiving introduction from "
                << share_target.device_name;
 
@@ -689,20 +766,29 @@ void NearbySharingServiceImpl::ReceiveIntroduction(
   }
 
   auto frames_reader = std::make_unique<IncomingFramesReader>(
-      &NearbyProcessManager::GetInstance(), profile_, connection);
+      process_manager_, profile_, connection);
 
   frames_reader->ReadFrame(
       sharing::mojom::V1Frame::Tag::INTRODUCTION,
       base::BindOnce(&NearbySharingServiceImpl::OnReceivedIntroduction,
-                     weak_ptr_factory_.GetWeakPtr(), connection,
-                     std::move(frames_reader)),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
+                     std::move(token), std::move(frames_reader)),
       kReadFramesTimeout);
 }
 
 void NearbySharingServiceImpl::OnReceivedIntroduction(
-    NearbyConnection* connection,
+    ShareTarget share_target,
+    base::Optional<std::string> token,
     std::unique_ptr<IncomingFramesReader> frames_reader,
     base::Optional<sharing::mojom::V1FramePtr> frame) {
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING)
+        << __func__
+        << ": Ignore received introduction, due to no connection established.";
+    return;
+  }
+
   if (!frame) {
     connection->Close();
     NS_LOG(WARNING) << __func__ << ": Invalid introduction frame";
@@ -710,7 +796,86 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
   }
 
   NS_LOG(INFO) << __func__ << ": Successfully read the introduction frame.";
-  // TODO(himanshujaju) - Implement OnReceiveIntroduction
+
+  sharing::mojom::IntroductionFramePtr introduction_frame =
+      std::move((*frame)->get_introduction());
+  for (const auto& file : introduction_frame->file_metadata) {
+    if (file->size <= 0) {
+      Fail(share_target, TransferMetadata::Status::kUnsupportedAttachmentType);
+      NS_LOG(WARNING)
+          << __func__
+          << ": Ignore introduction, due to invalid attachment size";
+      return;
+    }
+
+    NS_LOG(VERBOSE) << __func__ << "Found file attachment " << file->name
+                    << " of type " << file->type << " with mimeType "
+                    << file->mime_type;
+    FileAttachment attachment(file->name, file->type, file->size,
+                              /*file_path=*/base::nullopt, file->mime_type);
+    // TODO(himanshujaju) - setAttachmentPayloadId();
+    share_target.file_attachments.push_back(std::move(attachment));
+  }
+
+  for (const auto& text : introduction_frame->text_metadata) {
+    if (text->size <= 0) {
+      Fail(share_target, TransferMetadata::Status::kUnsupportedAttachmentType);
+      NS_LOG(WARNING)
+          << __func__
+          << ": Ignore introduction, due to invalid attachment size";
+      return;
+    }
+
+    NS_LOG(VERBOSE) << __func__ << "Found text attachment " << text->text_title
+                    << " of type " << text->type;
+    TextAttachment attachment(text->text_title, text->type, text->size);
+    // TODO(himanshujaju) - setAttachmentPayloadId();
+    share_target.text_attachments.push_back(std::move(attachment));
+  }
+
+  if (!share_target.has_attachments()) {
+    NS_LOG(WARNING) << __func__
+                    << ": No attachment is found for this share target. It can "
+                       "be result of unrecognizable attachment type";
+    Fail(share_target, TransferMetadata::Status::kUnsupportedAttachmentType);
+
+    NS_LOG(VERBOSE) << __func__
+                    << ": We don't support the attachments sent by the sender. "
+                       "We have informed "
+                    << share_target.device_name;
+    return;
+  }
+
+  // TODO(himanshujaju) - Check for out of storage.
+
+  // TODO(himanshujaju) - Alarm for mutual acceptance timeout.
+
+  OnIncomingTransferUpdate(
+      share_target,
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingLocalConfirmation)
+          .build());
+
+  if (!incoming_share_target_info_map_.count(share_target.id)) {
+    connection->Close();
+    NS_LOG(VERBOSE) << __func__
+                    << ": IncomingShareTarget not found, disconnecting "
+                    << share_target.device_name;
+    return;
+  }
+
+  // TODO(himanshujaju) - register for disconnection & start reader thread.
+}
+
+void NearbySharingServiceImpl::UnregisterShareTarget(
+    const ShareTarget& share_target) {
+  if (share_target.is_incoming) {
+    incoming_share_target_info_map_.erase(share_target.id);
+    nearby_connections_manager_->ClearIncomingPayloads();
+  } else {
+    // TODO(crbug.com/1084644) - Clear from outgoing map.
+  }
+  // TODO(himanshujaju) - mutual acceptance timeout alarm.
 }
 
 IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
@@ -724,7 +889,7 @@ NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
 }
 
 OutgoingShareTargetInfo& NearbySharingServiceImpl::GetOutgoingShareTargetInfo(
-    ShareTarget share_target) {
+    const ShareTarget& share_target) {
   return outgoing_share_target_info_map_[share_target.id];
 }
 

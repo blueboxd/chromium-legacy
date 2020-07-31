@@ -67,7 +67,7 @@ class MinimumVersionPolicyHandlerTest
   bool IsKioskMode() const;
   bool IsEnterpriseManaged() const;
   base::Version GetCurrentVersion() const;
-  bool IsUserManaged() const;
+  bool IsUserEnterpriseManaged() const;
   bool IsUserLoggedIn() const;
   bool IsLoginInProgress() const;
   MOCK_METHOD0(ShowUpdateRequiredScreen, void());
@@ -88,6 +88,9 @@ class MinimumVersionPolicyHandlerTest
   base::Value CreateRequirement(const std::string& version,
                                 int warning,
                                 int eol_warning) const;
+
+  base::Value CreatePolicyValue(base::Value requirements,
+                                bool unmanaged_user_restricted);
 
   void VerifyUpdateRequiredNotification(const base::string16& expected_title,
                                         const base::string16& expected_message);
@@ -184,7 +187,7 @@ bool MinimumVersionPolicyHandlerTest::IsEnterpriseManaged() const {
   return true;
 }
 
-bool MinimumVersionPolicyHandlerTest::IsUserManaged() const {
+bool MinimumVersionPolicyHandlerTest::IsUserEnterpriseManaged() const {
   return user_managed_;
 }
 
@@ -222,6 +225,17 @@ base::Value MinimumVersionPolicyHandlerTest::CreateRequirement(
   return dict;
 }
 
+base::Value MinimumVersionPolicyHandlerTest::CreatePolicyValue(
+    base::Value requirements,
+    bool unmanaged_user_restricted) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey(MinimumVersionPolicyHandler::kRequirements,
+              std::move(requirements));
+  dict.SetBoolKey(MinimumVersionPolicyHandler::kUnmanagedUserRestricted,
+                  unmanaged_user_restricted);
+  return dict;
+}
+
 void MinimumVersionPolicyHandlerTest::VerifyUpdateRequiredNotification(
     const base::string16& expected_title,
     const base::string16& expected_message) {
@@ -243,19 +257,18 @@ TEST_F(MinimumVersionPolicyHandlerTest, RequirementsNotMetState) {
       CreateRequirement(kNewVersion, kShortWarning, kNoWarning);
   auto strongest_requirement = MinimumVersionRequirement::CreateInstanceIfValid(
       &base::Value::AsDictionaryValue(new_version_short_warning));
-  base::Value newer_version_long_warning =
-      CreateRequirement(kNewerVersion, kLongWarning, kNoWarning);
-  base::Value newest_version_no_warning =
-      CreateRequirement(kNewestVersion, kNoWarning, kNoWarning);
 
   requirement_list.Append(std::move(new_version_short_warning));
-  requirement_list.Append(std::move(newer_version_long_warning));
-  requirement_list.Append(std::move(newest_version_no_warning));
+  requirement_list.Append(
+      CreateRequirement(kNewerVersion, kLongWarning, kNoWarning));
+  requirement_list.Append(
+      CreateRequirement(kNewestVersion, kNoWarning, kNoWarning));
 
   // Set new value for pref and check that requirements are not satisfied.
   // The state in |MinimumVersionPolicyHandler| should be equal to the strongest
   // requirement as defined in the policy description.
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
 
   EXPECT_FALSE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
   EXPECT_TRUE(GetState());
@@ -300,7 +313,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, CriticalUpdates) {
   // Set new value for pref and check that requirements are not satisfied.
   // As the warning time is set to zero, the user should be logged out of the
   // session.
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
   // Start the run loop to wait for EOL status fetch.
   run_loop.Run();
   EXPECT_FALSE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
@@ -338,7 +352,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, CriticalUpdatesUnmanagedUser) {
 
   // Set new value for pref and check that requirements are not satisfied.
   // Unmanaged user should not be logged out of the session.
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
   // Start the run loop to wait for EOL status fetch.
   run_loop.Run();
   EXPECT_FALSE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
@@ -361,7 +376,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, RequirementsMetState) {
 
   // Set new value for pref and check that requirements are still satisfied
   // as none of the requirements has version greater than current version.
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
   EXPECT_TRUE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
   EXPECT_FALSE(GetState());
 }
@@ -384,7 +400,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, DeadlineTimerExpired) {
   base::Value requirement_list(base::Value::Type::LIST);
   requirement_list.Append(
       CreateRequirement(kNewVersion, kLongWarning, kLongWarning));
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
 
   run_loop.Run();
   EXPECT_TRUE(
@@ -422,7 +439,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, NoNetworkNotifications) {
   base::Value requirement_list(base::Value::Type::LIST);
   requirement_list.Append(
       CreateRequirement(kNewVersion, kLongWarning, kLongWarning));
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
 
   run_loop.Run();
   EXPECT_TRUE(
@@ -472,7 +490,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
   base::Value requirement_list(base::Value::Type::LIST);
   requirement_list.Append(
       CreateRequirement(kNewVersion, kLongWarning, kLongWarning));
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
   run_loop.Run();
   EXPECT_TRUE(
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
@@ -513,7 +532,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
   base::Value requirement_list(base::Value::Type::LIST);
   requirement_list.Append(
       CreateRequirement(kNewVersion, kLongWarning, kLongWarning));
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
   run_loop.Run();
   EXPECT_TRUE(
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
@@ -571,7 +591,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, LastHourEolNotifications) {
   base::Value requirement_list(base::Value::Type::LIST);
   requirement_list.Append(
       CreateRequirement(kNewVersion, kShortWarning, kShortWarning));
-  SetPolicyPref(std::move(requirement_list));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
   run_loop.Run();
   EXPECT_TRUE(
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());

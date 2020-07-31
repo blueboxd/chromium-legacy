@@ -141,12 +141,27 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT(origin);
   VISIT(use_count);
   VISIT(use_date);
+  VISIT_REP(name_honorific);
   VISIT_REP(name_first);
   VISIT_REP(name_middle);
+  VISIT_REP(name_last_first);
+  VISIT_REP(name_last_conjuction);
+  VISIT_REP(name_last_second);
   VISIT_REP(name_last);
   VISIT_REP(name_full);
+
+  VISIT_REP(name_honorific_status);
+  VISIT_REP(name_first_status);
+  VISIT_REP(name_middle_status);
+  VISIT_REP(name_last_first_status);
+  VISIT_REP(name_last_conjuction_status);
+  VISIT_REP(name_last_second_status);
+  VISIT_REP(name_last_status);
+  VISIT_REP(name_full_status);
+
   VISIT_REP(email_address);
   VISIT(company_name);
+
   VISIT(address_home_line1);
   VISIT(address_home_line2);
   VISIT(address_home_city);
@@ -156,6 +171,25 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT(address_home_street_address);
   VISIT(address_home_sorting_code);
   VISIT(address_home_dependent_locality);
+  VISIT(address_home_thoroughfare_name);
+  VISIT(address_home_thoroughfare_number);
+  VISIT(address_home_dependent_thoroughfare_name);
+  VISIT(address_home_premise_name);
+  VISIT(address_home_subpremise_name);
+
+  VISIT_ENUM(address_home_city_status);
+  VISIT_ENUM(address_home_state_status);
+  VISIT_ENUM(address_home_zip_status);
+  VISIT_ENUM(address_home_country_status);
+  VISIT_ENUM(address_home_street_address_status);
+  VISIT_ENUM(address_home_sorting_code_status);
+  VISIT_ENUM(address_home_dependent_locality_status);
+  VISIT_ENUM(address_home_thoroughfare_name_status);
+  VISIT_ENUM(address_home_thoroughfare_number_status);
+  VISIT_ENUM(address_home_dependent_thoroughfare_name_status);
+  VISIT_ENUM(address_home_premise_name_status);
+  VISIT_ENUM(address_home_subpremise_name_status);
+
   VISIT(address_home_language_code);
   VISIT_REP(phone_home_whole_number);
   VISIT(validity_state_bitfield);

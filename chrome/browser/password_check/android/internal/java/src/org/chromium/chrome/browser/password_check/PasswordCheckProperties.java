@@ -55,7 +55,8 @@ class PasswordCheckProperties {
         private HeaderProperties() {}
     }
 
-    @IntDef({ItemType.HEADER, ItemType.COMPROMISED_CREDENTIAL})
+    @IntDef({ItemType.HEADER, ItemType.COMPROMISED_CREDENTIAL,
+            ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -67,6 +68,12 @@ class PasswordCheckProperties {
          * A section containing a user's name and password.
          */
         int COMPROMISED_CREDENTIAL = 2;
+
+        /**
+         * A section containing a user's name and password for a domain where a password change
+         * script is available.
+         */
+        int COMPROMISED_CREDENTIAL_WITH_SCRIPT = 3;
     }
 
     /**

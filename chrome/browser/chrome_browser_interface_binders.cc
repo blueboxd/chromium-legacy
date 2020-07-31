@@ -20,6 +20,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_processor_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -284,7 +285,7 @@ void BindPrerenderCanceler(
     return;
 
   auto* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (!prerender_contents)
     return;
   prerender_contents->AddPrerenderCancelerReceiver(std::move(receiver));

@@ -114,6 +114,7 @@ TEST_F(MetricKitSubscriberTest, Metrics) {
     tester.ExpectBucketCount("IOS.MetricKit.TimeToFirstDraw", 5, 2);
     tester.ExpectBucketCount("IOS.MetricKit.TimeToFirstDraw", 15, 4);
 
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
     if (base::ios::IsRunningOnIOS14OrLater()) {
       tester.ExpectTotalCount("IOS.MetricKit.BackgroundExitData", 71);
       tester.ExpectBucketCount("IOS.MetricKit.BackgroundExitData", 2, 1);
@@ -135,6 +136,7 @@ TEST_F(MetricKitSubscriberTest, Metrics) {
       tester.ExpectBucketCount("IOS.MetricKit.ForegroundExitData", 8, 18);
       tester.ExpectBucketCount("IOS.MetricKit.ForegroundExitData", 2, 19);
     }
+#endif
   }
 }
 

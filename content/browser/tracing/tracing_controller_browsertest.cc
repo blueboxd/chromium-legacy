@@ -352,6 +352,7 @@ class TracingControllerTest : public ContentBrowserTest {
 #define MAYBE_EnableAndStopTracingWithEmptyFile \
   DISABLED_EnableAndStopTracingWithEmptyFile
 #define MAYBE_DoubleStopTracing DISABLED_DoubleStopTracing
+#define MAYBE_ProcessesPresentInTrace DISABLED_ProcessesPresentInTrace
 #else
 #define MAYBE_EnableAndStopTracing EnableAndStopTracing
 #define MAYBE_DisableRecordingStoresMetadata DisableRecordingStoresMetadata
@@ -362,6 +363,7 @@ class TracingControllerTest : public ContentBrowserTest {
 #define MAYBE_EnableAndStopTracingWithEmptyFile \
   EnableAndStopTracingWithEmptyFile
 #define MAYBE_DoubleStopTracing DoubleStopTracing
+#define MAYBE_ProcessesPresentInTrace ProcessesPresentInTrace
 #endif
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
@@ -501,10 +503,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_SystemTraceEvents) {
   EXPECT_TRUE(last_data().find("systemTraceEvents") != std::string::npos);
 }
 
-// TODO(crbug.com/1107612): Disabled due to flakiness. Also fails consistently
-// on Android Asan (crbug.com/1045519).
-IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       DISABLED_ProcessesPresentInTrace) {
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_ProcessesPresentInTrace) {
   TestStartAndStopTracingString();
   EXPECT_TRUE(last_data().find("CrBrowserMain") != std::string::npos);
   EXPECT_TRUE(last_data().find("CrRendererMain") != std::string::npos);

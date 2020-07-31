@@ -1292,6 +1292,12 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
     const GURL& destination_url,
     bool is_reload,
     bool should_replace_current_entry) {
+  auto* current_rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host_.get());
+  // If we've disabled proactive BrowsingInstance swap for this RenderFrameHost,
+  // we should not try to do a proactive swap.
+  if (current_rfhi->IsProactiveBrowsingInstanceSwapDisabledForTesting())
+    return ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled;
   // We should only do proactive swap when either the flag is enabled, or if
   // it's needed for the back-forward cache (and the bfcache flag is enabled).
   if (!IsProactivelySwapBrowsingInstanceEnabled() &&
@@ -1355,11 +1361,10 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
   if (is_reload)
     return ShouldSwapBrowsingInstance::kNo_Reload;
 
-  if (IsCurrentlySameSite(
-          static_cast<RenderFrameHostImpl*>(render_frame_host_.get()),
-          destination_url)) {
-    if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled())
+  if (IsCurrentlySameSite(current_rfhi, destination_url)) {
+    if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled()) {
       return ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap;
+    }
     return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
   }
 

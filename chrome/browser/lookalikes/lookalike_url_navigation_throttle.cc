@@ -22,6 +22,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/safety_tips_config.h"
@@ -255,7 +256,8 @@ LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
     content::NavigationHandle* navigation_handle) {
   // If the tab is being prerendered, stop here before it breaks metrics
   content::WebContents* web_contents = navigation_handle->GetWebContents();
-  if (prerender::PrerenderContents::FromWebContents(web_contents)) {
+  if (prerender::ChromePrerenderContentsDelegate::FromWebContents(
+          web_contents)) {
     return nullptr;
   }
 

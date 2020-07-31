@@ -14,7 +14,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/shared_worker_service.h"
-#include "third_party/blink/public/common/tokens/worker_tokens.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class Profile;
 

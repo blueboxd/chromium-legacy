@@ -34,6 +34,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom-test-utils.h"
 #include "content/common/frame_messages.h"
 #include "content/common/page_messages.h"
@@ -1230,10 +1231,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangePageScale) {
   EXPECT_CALL(observer, OnPageScaleFactorChanged(::testing::FloatEq(1.5)));
   observer.WaitForPageScaleUpdate();
 
-  // Navigate to reset the page scale factor.
-  shell()->LoadURL(embedded_test_server()->GetURL("/title2.html"));
-  EXPECT_CALL(observer, OnPageScaleFactorChanged(::testing::_));
-  observer.WaitForPageScaleUpdate();
+  if (!CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // Navigate to reset the page scale factor. We'll only get the
+    // OnPageScaleFactorChanged if we reuse the same RenderFrameHost, which will
+    // not happen if ProactivelySwapBrowsingInstance or RenderDocument is
+    // enabled for same-site main frame navigations.
+    shell()->LoadURL(embedded_test_server()->GetURL("/title2.html"));
+    EXPECT_CALL(observer, OnPageScaleFactorChanged(::testing::_));
+    observer.WaitForPageScaleUpdate();
+  }
 }
 
 // Test that a direct navigation to a view-source URL works.

@@ -107,6 +107,7 @@ const MockTransaction kNoFilterTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Length: 30\n",  // Intentionally wrong.
@@ -127,6 +128,7 @@ const MockTransaction kNoFilterTransactionWithInvalidLength = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Length: +30\n",  // Invalid
@@ -147,6 +149,7 @@ const MockTransaction kGZipTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Encoding: gzip\n"
@@ -169,6 +172,7 @@ const MockTransaction kGzipSlowTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Encoding: gzip\n",
@@ -190,6 +194,7 @@ const MockTransaction kRedirectTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 302 Found",
     "Cache-Control: max-age=10000\n"
     "Location: http://www.google.com/destination\n"
@@ -212,6 +217,7 @@ const MockTransaction kEmptyBodyGzipTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Content-Encoding: gzip\n",
     base::Time(),
@@ -232,6 +238,7 @@ const MockTransaction kInvalidContentGZipTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Content-Encoding: gzip\n"
     "Content-Length: 21\n",
@@ -253,6 +260,7 @@ const MockTransaction kBrotliSlowTransaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Encoding: br\n"

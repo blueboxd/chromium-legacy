@@ -36,6 +36,7 @@ class HttpResponseInfo;
 class HttpTransaction;
 class HttpUserAgentSettings;
 class SSLPrivateKey;
+struct TransportInfo;
 class UploadDataStream;
 
 // A URLRequestJob subclass that is built on top of HttpTransaction. It
@@ -122,7 +123,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // This just forwards the call to URLRequestJob::NotifyConnected().
   // We need it because that method is protected and cannot be bound in a
   // callback in this class.
-  int NotifyConnectedCallback();
+  int NotifyConnectedCallback(const TransportInfo& info);
 
   void RestartTransactionWithAuth(const AuthCredentials& credentials);
 

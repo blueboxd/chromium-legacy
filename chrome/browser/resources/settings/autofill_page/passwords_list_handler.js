@@ -87,6 +87,16 @@ Polymer({
       }
     },
 
+    /**
+     * Check if editPasswordsInSettings flag is true and entry isn't federation
+     * credential.
+     * @private
+     * */
+    isEditDialog_: {
+      type: Boolean,
+      computed: 'computeIsEditDialog_(editPasswordsInSettings_, activePassword)'
+    },
+
     /** @private */
     showPasswordEditDialog_: {type: Boolean, value: false},
 
@@ -102,7 +112,6 @@ Polymer({
      * @private {?HTMLElement}
      */
     activeDialogAnchor_: {type: Object, value: null},
-
 
     /**
      * The message displayed in the toast following a password removal.
@@ -131,6 +140,17 @@ Polymer({
   },
 
   /**
+   * Helper function that checks if editPasswordsInSettings flag is true and
+   * entry isn't federation credential.
+   * @return {boolean}
+   * @private
+   * */
+  computeIsEditDialog_() {
+    return this.editPasswordsInSettings_ &&
+        (!this.activePassword || !this.activePassword.entry.federationText);
+  },
+
+  /**
    * Closes the toast manager.
    */
   onSavedPasswordOrExceptionRemoved() {
@@ -151,14 +171,23 @@ Polymer({
   },
 
   /**
-   * Shows the edit password dialog.
    * @param {!Event} e
    * @private
    */
   onMenuEditPasswordTap_(e) {
+    // TODO(crbug.com/377410): Add authentication if isEditDialog_ is true.
     e.preventDefault();
     this.$.menu.close();
     this.showPasswordEditDialog_ = true;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getMenuEditPasswordName_() {
+    return this.isEditDialog_ ? this.i18n('editCompromisedPassword') :
+                                this.i18n('passwordViewDetails');
   },
 
   /** @private */

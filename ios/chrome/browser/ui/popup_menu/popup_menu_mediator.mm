@@ -771,34 +771,58 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 // Creates the menu items for the search menu.
 - (void)createSearchMenuItems {
-  NSMutableArray* items = [NSMutableArray array];
+  self.items = @[ [self searchMenuStaticItems] ];
 
-  // The consumer is expecting an array of arrays of items. Each sub array
-  // represent a section in the popup menu. Having one sub array means having
-  // all the items in the same section.
-  PopupMenuToolsItem* copiedContentItem = nil;
   ClipboardRecentContent* clipboardRecentContent =
       ClipboardRecentContent::GetInstance();
 
-  if (search_engines::SupportsSearchByImage(self.templateURLService) &&
-      clipboardRecentContent->HasRecentImageFromClipboard()) {
-    copiedContentItem = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
-        PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
-        kToolsMenuCopiedImageSearch);
-  } else if (clipboardRecentContent->GetRecentURLFromClipboard()) {
-    copiedContentItem = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
-        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-  } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
-    copiedContentItem = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
-        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-  }
-  if (copiedContentItem) {
-    [items addObject:@[ copiedContentItem ]];
-  }
+  std::set<ClipboardContentType> clipboard_types;
+  clipboard_types.insert(ClipboardContentType::URL);
+  clipboard_types.insert(ClipboardContentType::Text);
+  clipboard_types.insert(ClipboardContentType::Image);
 
+  clipboardRecentContent->HasRecentContentFromClipboard(
+      clipboard_types,
+      base::BindOnce(^(std::set<ClipboardContentType> matched_types) {
+        __block NSMutableArray* items = [NSMutableArray array];
+        // The consumer is expecting an array of arrays of items. Each sub array
+        // represent a section in the popup menu. Having one sub array means
+        // having all the items in the same section.
+        PopupMenuToolsItem* copiedContentItem = nil;
+        if (search_engines::SupportsSearchByImage(self.templateURLService) &&
+            matched_types.find(ClipboardContentType::Image) !=
+                matched_types.end()) {
+          copiedContentItem = CreateTableViewItem(
+              IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
+              PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
+              kToolsMenuCopiedImageSearch);
+        } else if (matched_types.find(ClipboardContentType::URL) !=
+                   matched_types.end()) {
+          copiedContentItem = CreateTableViewItem(
+              IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
+              @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+        } else if (matched_types.find(ClipboardContentType::Text) !=
+                   matched_types.end()) {
+          copiedContentItem = CreateTableViewItem(
+              IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
+              @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+        }
+        if (copiedContentItem) {
+          [items addObject:@[ copiedContentItem ]];
+        }
+
+        [items addObject:[self searchMenuStaticItems]];
+        self.items = items;
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [self.popupMenu setPopupMenuItems:self.items];
+        });
+      }));
+}
+
+// Creates and returns the search menu items that are static (i.e. always in
+// the search menu).
+- (NSArray<TableViewItem<PopupMenuItem>*>*)searchMenuStaticItems {
   PopupMenuToolsItem* QRCodeSearch = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_QR_SCANNER, PopupMenuActionQRCodeSearch,
       @"popup_menu_qr_scanner", kToolsMenuQRCodeSearch);
@@ -812,10 +836,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_SEARCH, PopupMenuActionIncognitoSearch,
       @"popup_menu_new_incognito_tab", kToolsMenuIncognitoSearch);
 
-  [items
-      addObject:@[ newSearch, newIncognitoSearch, voiceSearch, QRCodeSearch ]];
-
-  self.items = items;
+  return @[ newSearch, newIncognitoSearch, voiceSearch, QRCodeSearch ];
 }
 
 // Creates the menu items for the tools menu.

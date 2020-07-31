@@ -38,13 +38,8 @@ TriggerContextImpl::TriggerContextImpl(
 
 TriggerContextImpl::~TriggerContextImpl() = default;
 
-void TriggerContextImpl::AddParameters(
-    google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const {
-  for (const auto& param_entry : parameters_) {
-    ScriptParameterProto* parameter = dest->Add();
-    parameter->set_name(param_entry.first);
-    parameter->set_value(param_entry.second);
-  }
+std::map<std::string, std::string> TriggerContextImpl::GetParameters() const {
+  return parameters_;
 }
 
 base::Optional<std::string> TriggerContextImpl::GetParameter(
@@ -91,11 +86,14 @@ MergedTriggerContext::MergedTriggerContext(
 
 MergedTriggerContext::~MergedTriggerContext() {}
 
-void MergedTriggerContext::AddParameters(
-    google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const {
+std::map<std::string, std::string> MergedTriggerContext::GetParameters() const {
+  std::map<std::string, std::string> merged_parameters;
   for (const TriggerContext* context : contexts_) {
-    context->AddParameters(dest);
+    for (const auto& parameter : context->GetParameters()) {
+      merged_parameters.insert(parameter);
+    }
   }
+  return merged_parameters;
 }
 
 base::Optional<std::string> MergedTriggerContext::GetParameter(

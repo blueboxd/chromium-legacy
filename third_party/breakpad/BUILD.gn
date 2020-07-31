@@ -471,7 +471,7 @@ if (is_mac) {
   }
 }
 
-if (is_linux || is_android) {
+if (is_linux || is_chromeos || is_android) {
   if (current_toolchain == host_toolchain) {
     executable("symupload") {
       sources = [

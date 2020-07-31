@@ -1138,6 +1138,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return back_forward_cache_disabled_reasons_;
   }
 
+  // Prevents this frame to do a proactive BrowsingInstance swap (for all
+  // navigations on this frame - cross-site and same-site).
+  void DisableProactiveBrowsingInstanceSwapForTesting();
+
+  bool IsProactiveBrowsingInstanceSwapDisabledForTesting() const {
+    return is_proactive_browsing_instance_swap_disabled_for_testing_;
+  }
+
   void AddServiceWorkerContainerHost(
       const std::string& uuid,
       base::WeakPtr<ServiceWorkerContainerHost> host);
@@ -1879,8 +1887,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // IPC Message handlers.
   void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
-  void OnVisualStateResponse(uint64_t id);
-
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnSelectionChanged(const base::string16& text,
@@ -2500,8 +2506,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The http status code of the last committed navigation.
   int last_http_status_code_ = 0;
 
-  std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
-
   // Local root subframes directly own their RenderWidgetHost.
   // Please see comments about the GetLocalRenderWidgetHost() function.
   // TODO(kenrb): Later this will also be used on the top-level frame, when
@@ -2942,6 +2946,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The reasons given in BackForwardCache::DisableForRenderFrameHost. This is a
   // breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
   std::set<std::string> back_forward_cache_disabled_reasons_;
+
+  // Whether proactive BrowsingInstance swap is disabled for this frame or not.
+  // Note that even if this is false, proactive BrowsingInstance swap still
+  // might not happen on navigations on this frame due to other reasons.
+  // Should only be used for testing purposes.
+  bool is_proactive_browsing_instance_swap_disabled_for_testing_ = false;
 
   // This used to re-commit when restoring from the BackForwardCache, with the
   // same params as the original navigation.

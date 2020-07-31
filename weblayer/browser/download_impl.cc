@@ -54,6 +54,13 @@ base::android::ScopedJavaLocalRef<jstring> DownloadImpl::GetLocation(
       base::android::ConvertUTF8ToJavaString(env, GetLocation().value()));
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+DownloadImpl::GetFileNameToReportToUser(JNIEnv* env) {
+  return base::android::ScopedJavaLocalRef<jstring>(
+      base::android::ConvertUTF8ToJavaString(
+          env, GetFileNameToReportToUser().value()));
+}
+
 base::android::ScopedJavaLocalRef<jstring> DownloadImpl::GetMimeTypeImpl(
     JNIEnv* env) {
   return base::android::ScopedJavaLocalRef<jstring>(
@@ -115,6 +122,10 @@ void DownloadImpl::Cancel() {
 
 base::FilePath DownloadImpl::GetLocation() {
   return item_->GetTargetFilePath();
+}
+
+base::FilePath DownloadImpl::GetFileNameToReportToUser() {
+  return item_->GetFileNameToReportUser();
 }
 
 std::string DownloadImpl::GetMimeType() {

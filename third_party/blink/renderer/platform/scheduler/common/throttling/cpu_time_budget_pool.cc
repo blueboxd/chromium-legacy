@@ -23,7 +23,6 @@ CPUTimeBudgetPool::CPUTimeBudgetPool(
     : BudgetPool(name, budget_pool_controller),
       current_budget_level_(base::TimeDelta(),
                             "RendererScheduler.BackgroundBudgetMs",
-                            budget_pool_controller,
                             tracing_controller,
                             TimeDeltaToMilliseconds),
       last_checkpoint_(now),

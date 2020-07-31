@@ -30,6 +30,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
+#include "net/base/transport_info.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
@@ -876,7 +877,11 @@ int HttpNetworkTransaction::DoInitStreamComplete(int result) {
 
   // Fire off notification that we have successfully connected.
   if (!connected_callback_.is_null()) {
-    result = connected_callback_.Run();
+    TransportType type = TransportType::kDirect;
+    if (!proxy_info_.is_direct()) {
+      type = TransportType::kProxied;
+    }
+    result = connected_callback_.Run(TransportInfo(type, remote_endpoint_));
     DCHECK_NE(result, ERR_IO_PENDING);
   }
 

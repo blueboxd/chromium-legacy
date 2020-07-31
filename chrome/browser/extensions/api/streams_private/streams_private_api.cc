@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,7 +46,7 @@ void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
   // continue. This is because plugins cancel prerender, see
   // http://crbug.com/343590.
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_DOWNLOAD);
     return;

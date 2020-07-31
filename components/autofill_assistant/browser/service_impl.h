@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
+#include "components/autofill_assistant/browser/client_context.h"
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -33,8 +34,8 @@ class Client;
 // TODO(b/158998456): Add unit tests.
 class ServiceImpl : public Service {
  public:
-  // Convenience method for creating a service from a client.
-  // |client| must remain valid for the lifetime of the service instance.
+  // Convenience method for creating a service. |context| and |client| must
+  // remain valid for the lifetime of the service instance.
   static std::unique_ptr<ServiceImpl> Create(content::BrowserContext* context,
                                              Client* client);
 
@@ -44,20 +45,14 @@ class ServiceImpl : public Service {
   ServiceImpl(const std::string& api_key,
               const GURL& server_url,
               content::BrowserContext* context,
-              AccessTokenFetcher* token_fetcher,
-              const std::string& locale,
-              const std::string& country_code,
-              const DeviceContext& device_context,
-              const Client* client);
+              std::unique_ptr<ClientContext> client_context,
+              AccessTokenFetcher* access_token_fetcher);
   // Same as above, but allows overriding authentication settings.
   ServiceImpl(const std::string& api_key,
               const GURL& server_url,
               content::BrowserContext* context,
-              AccessTokenFetcher* token_fetcher,
-              const std::string& locale,
-              const std::string& country_code,
-              const DeviceContext& device_context,
-              const Client* client,
+              std::unique_ptr<ClientContext> client_context,
+              AccessTokenFetcher* access_token_fetcher,
               bool auth_enabled);
   ~ServiceImpl() override;
 
@@ -115,16 +110,6 @@ class ServiceImpl : public Service {
   // in |loaders_|.
   void FetchAccessToken();
   void OnFetchAccessToken(bool success, const std::string& access_token);
-  std::string GetClientAccountHash() const;
-
-  // Creates and fills a client context protobuf message.
-  static ClientContextProto CreateClientContext(
-      const std::string& locale,
-      const std::string& country_code,
-      const DeviceContext& device_context);
-  // Updates the subset of |client_context_| fields that may change during a
-  // flow.
-  void UpdateMutableClientContextFields();
 
   content::BrowserContext* context_;
   GURL script_server_url_;
@@ -135,6 +120,9 @@ class ServiceImpl : public Service {
 
   // API key to add to the URL of unauthenticated requests.
   std::string api_key_;
+
+  // The client context to send to the backend.
+  std::unique_ptr<ClientContext> client_context_;
 
   // Pointer must remain valid for the lifetime of the Service instance.
   AccessTokenFetcher* access_token_fetcher_;
@@ -148,12 +136,6 @@ class ServiceImpl : public Service {
   // An OAuth 2 token. Empty if not fetched yet or if the token has been
   // invalidated.
   std::string access_token_;
-
-  // The client context is cached here to avoid having to recreate it for
-  // every message.
-  ClientContextProto client_context_;
-
-  const Client* client_;
 
   base::WeakPtrFactory<ServiceImpl> weak_ptr_factory_;
 

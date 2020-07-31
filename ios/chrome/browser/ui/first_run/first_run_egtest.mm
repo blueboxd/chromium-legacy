@@ -5,8 +5,8 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -122,8 +122,8 @@ id<GREYMatcher> SkipSigninButton() {
 
 // Signs in to an account and then taps the Advanced link to go to settings.
 - (void)testSignInAndTapSettingsLink {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
-  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Launch First Run and accept tems of services.
   [FirstRunAppInterface showFirstRunUI];
@@ -141,7 +141,7 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
       performAction:grey_tap()];
 
-  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
 
   GREYAssertTrue([FirstRunAppInterface isSyncFirstSetupComplete],
                  @"Sync should have finished its original setup");

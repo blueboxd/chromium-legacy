@@ -48,12 +48,17 @@ if (!history.state || !history.state.route || !history.state.step) {
   switch (path) {
     case `/${Routes.NEW_PROFILE}`:
       history.replaceState(
-          {route: Routes.NEW_PROFILE, step: computeStep(Routes.NEW_PROFILE)},
+          {
+            route: Routes.NEW_PROFILE,
+            step: computeStep(Routes.NEW_PROFILE),
+            isFirst: true,
+          },
           '', path);
       break;
     default:
       history.replaceState(
-          {route: Routes.MAIN, step: computeStep(Routes.MAIN)}, '', '/');
+          {route: Routes.MAIN, step: computeStep(Routes.MAIN), isFirst: true},
+          '', '/');
   }
 }
 
@@ -83,16 +88,24 @@ export function navigateTo(route) {
       {
         route: route,
         step: computeStep(route),
+        isFirst: false,
       },
       '', route === Routes.MAIN ? '/' : `/${route}`);
   notifyObservers();
 }
 
 /**
- * Navigates to the previous route.
+ * Navigates to the previous route if it belongs to the profile picker
+ * otherwise to the main route.
  */
 export function navigateToPreviousRoute() {
-  // TODO(crbug.com/1063856): Add implementation.
+  // This can happen if the profile creation flow is opened directly from the
+  // profile menu.
+  if (history.state.isFirst) {
+    navigateTo(Routes.MAIN);
+  } else {
+    window.history.back();
+  }
 }
 
 /** @polymerBehavior */

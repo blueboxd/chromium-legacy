@@ -166,6 +166,8 @@ component("net") {
     "base/sockaddr_storage.cc",
     "base/sockaddr_storage.h",
     "base/sys_addrinfo.h",
+    "base/transport_info.cc",
+    "base/transport_info.h",
     "base/url_util.cc",
     "base/url_util.h",
     "cert/asn1_util.cc",

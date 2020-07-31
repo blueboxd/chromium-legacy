@@ -27,8 +27,10 @@
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/outgoing_share_target_info.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
+#include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
+#include "chrome/services/sharing/public/proto/wire_format.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -53,7 +55,8 @@ class NearbySharingServiceImpl
   explicit NearbySharingServiceImpl(
       PrefService* prefs,
       Profile* profile,
-      std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager);
+      std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
+      NearbyProcessManager* process_manager);
   ~NearbySharingServiceImpl() override;
 
   // NearbySharingService:
@@ -127,25 +130,33 @@ class NearbySharingServiceImpl
   void InvalidateReceiveSurfaceState();
   void InvalidateAdvertisingState();
   void StopAdvertising();
+  void WriteResponse(
+      NearbyConnection& connection,
+      sharing::nearby::ConnectionResponseFrame::Status reponse_status);
+  void Fail(const ShareTarget& share_target, TransferMetadata::Status status);
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
                                 TransferMetadata metadata);
-  void ReceiveIntroduction(const ShareTarget& share_target,
-                           const std::string& token);
+  void ReceiveIntroduction(ShareTarget share_target,
+                           base::Optional<std::string> token);
   void OnReceivedIntroduction(
-      NearbyConnection* connection,
+      ShareTarget share_target,
+      base::Optional<std::string> token,
       std::unique_ptr<IncomingFramesReader> frames_reader,
       base::Optional<sharing::mojom::V1FramePtr> frame);
+  void UnregisterShareTarget(const ShareTarget& share_target);
 
   IncomingShareTargetInfo& GetIncomingShareTargetInfo(
       const ShareTarget& share_target);
   NearbyConnection* GetIncomingConnection(const ShareTarget& share_target);
-  OutgoingShareTargetInfo& GetOutgoingShareTargetInfo(ShareTarget share_target);
+  OutgoingShareTargetInfo& GetOutgoingShareTargetInfo(
+      const ShareTarget& share_target);
   void ClearOutgoingShareTargetInfoMap();
 
   PrefService* prefs_;
   Profile* profile_;
   NearbyShareSettings settings_;
   std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
+  NearbyProcessManager* process_manager_;
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;

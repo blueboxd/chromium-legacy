@@ -104,9 +104,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   ~LoginAuthUserView() override;
 
   // Set the displayed set of auth methods. |auth_methods| contains or-ed
-  // together AuthMethod values. |can_use_pin| should be true if the user can
-  // authenticate using PIN, even if the PIN keyboard is not displayed.
-  void SetAuthMethods(uint32_t auth_methods, bool can_use_pin);
+  // together AuthMethod values. |show_pinpad| determines whether the pin pad
+  // should be visible.
+  void SetAuthMethods(uint32_t auth_methods, bool show_pinpad);
   AuthMethods auth_methods() const { return auth_methods_; }
 
   // Add an easy unlock icon.
@@ -184,10 +184,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   void AttemptAuthenticateWithChallengeResponse();
 
   AuthMethods auth_methods_ = AUTH_NONE;
-  // True if the user's password might be a PIN. PIN is hashed differently from
-  // password. The PIN keyboard may not always be visible even when the user
-  // wants to submit a PIN, eg. the virtual keyboard hides the PIN keyboard.
-  bool can_use_pin_ = false;
+
+  // Whether to show the pinpad. Sometimes hidden by the on screen keyboard
+  bool show_pinpad_ = false;
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
   NonAccessibleView* password_view_container_ = nullptr;

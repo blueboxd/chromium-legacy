@@ -400,8 +400,7 @@ bool ExternalVkImageBacking::BeginAccess(
     GLuint texture_id = texture_passthrough_
                             ? texture_passthrough_->service_id()
                             : texture_->service_id();
-    if (!gl::GLContext::GetCurrent())
-      context_state()->MakeCurrent(/*gl_surface=*/nullptr, /*needs_gl=*/true);
+    context_state()->MakeCurrent(/*gl_surface=*/nullptr, /*needs_gl=*/true);
 
     GrVkImageInfo info;
     auto result = backend_texture_.getVkImageInfo(&info);
@@ -483,8 +482,7 @@ void ExternalVkImageBacking::EndAccess(bool readonly,
     GLuint texture_id = texture_passthrough_
                             ? texture_passthrough_->service_id()
                             : texture_->service_id();
-    if (!gl::GLContext::GetCurrent())
-      context_state()->MakeCurrent(/*gl_surface=*/nullptr, /*needs_gl=*/true);
+    context_state()->MakeCurrent(/*gl_surface=*/nullptr, /*needs_gl=*/true);
     std::vector<ExternalSemaphore> external_semaphores;
     BeginAccessInternal(true, &external_semaphores);
     DCHECK_LE(external_semaphores.size(), 1u);
@@ -540,18 +538,10 @@ void ExternalVkImageBacking::AddSemaphoresToPendingListOrRelease(
     // signalling but have not been signalled. In that case, we have to release
     // them via fence helper to make sure all submitted GPU works is finished
     // before releasing them.
-    // |context_state_| is out live fence_helper, so it is safe to use
-    // base::Unretained(context_state_).
-    fence_helper()->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-        [](SharedContextState* shared_context_state,
-           std::vector<ExternalSemaphore>, VulkanDeviceQueue* device_queue,
-           bool device_lost) {
-          if (!gl::GLContext::GetCurrent()) {
-            shared_context_state->MakeCurrent(/*surface=*/nullptr,
-                                              /*needs_gl=*/true);
-          }
-        },
-        base::Unretained(context_state_), std::move(semaphores)));
+    fence_helper()->EnqueueCleanupTaskForSubmittedWork(
+        base::BindOnce([](std::vector<ExternalSemaphore>,
+                          VulkanDeviceQueue* device_queue, bool device_lost) {},
+                       std::move(semaphores)));
   }
 }
 

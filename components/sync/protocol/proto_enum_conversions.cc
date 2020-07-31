@@ -47,6 +47,22 @@ const char* ProtoEnumToString(sync_pb::AppSpecifics::LaunchType launch_type) {
 }
 
 const char* ProtoEnumToString(
+    sync_pb::AutofillProfileSpecifics::VerificationStatus status) {
+  ASSERT_ENUM_BOUNDS(sync_pb::AutofillProfileSpecifics, VerificationStatus,
+                     VERIFICATION_STATUS_UNSPECIFIED, USER_VERIFIED);
+  switch (status) {
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics,
+              VERIFICATION_STATUS_UNSPECIFIED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, PARSED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, FORMATTED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, OBSERVED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, USER_VERIFIED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::AutofillWalletSpecifics, WalletInfoType, UNKNOWN,
                      CREDIT_CARD_CLOUD_TOKEN_DATA);

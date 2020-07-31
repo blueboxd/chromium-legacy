@@ -45,7 +45,7 @@ config("config") {
 # is believed to work.
 # MSAN builds are flaky with assembler. crbug.com/685168
 
-use_assembler = (is_win || is_linux) &&
+use_assembler = (is_win || is_linux || is_chromeos) &&
                 (current_cpu == "x86" || current_cpu == "x64") && !is_msan
 
 # This IF statement will make the targets visible only on specific builds,
@@ -55,7 +55,7 @@ if (use_assembler) {
   if (!is_component_build) {
     if (is_apple) {
       asm_defines += [ "WELS_PRIVATE_EXTERN=private_extern" ]
-    } else if (is_linux || is_android || is_fuchsia) {
+    } else if (is_linux || is_chromeos || is_android || is_fuchsia) {
       asm_defines += [ "WELS_PRIVATE_EXTERN=hidden" ]
     }
   }
@@ -74,7 +74,7 @@ if (use_assembler) {
         ]
       } else if (is_win) {
         defines += [ "WIN64" ]
-      } else if (is_linux) {
+      } else if (is_linux || is_chromeos) {
         defines += [ "UNIX64" ]
       }
     }
@@ -95,7 +95,7 @@ if (use_assembler) {
         ]
       } else if (is_win) {
         defines += [ "WIN64" ]
-      } else if (is_linux) {
+      } else if (is_linux || is_chromeos) {
         defines += [ "UNIX64" ]
       }
     }
@@ -116,12 +116,12 @@ if (use_assembler) {
         ]
       } else if (is_win) {
         defines += [ "WIN64" ]
-      } else if (is_linux) {
+      } else if (is_linux || is_chromeos) {
         defines += [ "UNIX64" ]
       }
     }
   }
-}  # if (is_win || is_linux)
+}  # if (is_win || is_linux || is_chromeos)
 
 source_set("common") {
   sources = openh264_common_sources

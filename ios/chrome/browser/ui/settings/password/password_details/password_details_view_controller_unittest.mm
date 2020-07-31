@@ -185,19 +185,15 @@ TEST_F(PasswordDetailsViewControllerTest, TestCompromisedPassword) {
 
 // Tests that password is shown/hidden.
 TEST_F(PasswordDetailsViewControllerTest, TestShowHidePassword) {
-  // TODO(crbug.com/1111183): Investigate why this is failing on iOS14.
-  if (base::ios::IsRunningOnIOS14OrLater()) {
-    return;
-  }
   SetPassword();
-
   CheckEditCellText(kMaskedPassword, 0, 2);
 
   NSIndexPath* indexOfPassword = [NSIndexPath indexPathForRow:2 inSection:0];
   TableViewTextEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<TableViewTextEditCell>(
-          [controller().tableView cellForRowAtIndexPath:indexOfPassword]);
-  ASSERT_TRUE(textFieldCell != nil);
+      base::mac::ObjCCastStrict<TableViewTextEditCell>([controller()
+                      tableView:controller().tableView
+          cellForRowAtIndexPath:indexOfPassword]);
+  EXPECT_TRUE(textFieldCell);
   [textFieldCell.identifyingIconButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 
@@ -213,11 +209,6 @@ TEST_F(PasswordDetailsViewControllerTest, TestShowHidePassword) {
 
 // Tests that passwords was not shown in case reauth failed.
 TEST_F(PasswordDetailsViewControllerTest, TestShowPasswordReauthFailed) {
-  // TODO(crbug.com/1111183): Investigate why this is failing on iOS14.
-  if (base::ios::IsRunningOnIOS14OrLater()) {
-    return;
-  }
-
   SetPassword();
 
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -225,9 +216,10 @@ TEST_F(PasswordDetailsViewControllerTest, TestShowPasswordReauthFailed) {
   reauth().expectedResult = ReauthenticationResult::kFailure;
   NSIndexPath* indexOfPassword = [NSIndexPath indexPathForRow:2 inSection:0];
   TableViewTextEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<TableViewTextEditCell>(
-          [controller().tableView cellForRowAtIndexPath:indexOfPassword]);
-  ASSERT_TRUE(textFieldCell != nil);
+      base::mac::ObjCCastStrict<TableViewTextEditCell>([controller()
+                      tableView:controller().tableView
+          cellForRowAtIndexPath:indexOfPassword]);
+  EXPECT_TRUE(textFieldCell);
   [textFieldCell.identifyingIconButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 

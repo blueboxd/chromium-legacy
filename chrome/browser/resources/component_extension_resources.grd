@@ -136,6 +136,7 @@
         </if>
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-page-selector.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-password-screen.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PDF_SIDENAV_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-sidenav.js" use_base_dir="false" type="BINDATA"/>
         <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-toolbar.js" use_base_dir="false" type="BINDATA" preprocess="true"/>
         <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_NEW_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-toolbar-new.js" use_base_dir="false" type="BINDATA" preprocess="true"/>
         <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-toolbar-dropdown.js" use_base_dir="false" type="BINDATA" />

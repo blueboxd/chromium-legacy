@@ -93,14 +93,13 @@ class StateTracer {
   DISALLOW_NEW();
 
  public:
-  StateTracer(const char* name, const void* object)
-      : name_(name), object_(object), slice_is_open_(false) {
+  explicit StateTracer(const char* name) : name_(name), slice_is_open_(false) {
     internal::ValidateTracingCategory(category);
   }
 
   ~StateTracer() {
     if (slice_is_open_)
-      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(object_));
+      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(this));
   }
 
   // String will be copied before leaving this function.
@@ -122,25 +121,23 @@ class StateTracer {
  private:
   void TraceImpl(const char* state, bool need_copy) {
     if (slice_is_open_) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(object_));
+      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(this));
       slice_is_open_ = false;
     }
     if (!state || !is_enabled())
       return;
 
     if (need_copy) {
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_,
-                                        TRACE_ID_LOCAL(object_), "state",
-                                        TRACE_STR_COPY(state));
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_, TRACE_ID_LOCAL(this),
+                                        "state", TRACE_STR_COPY(state));
     } else {
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
-          category, name_, TRACE_ID_LOCAL(object_), "state", state);
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_, TRACE_ID_LOCAL(this),
+                                        "state", state);
     }
     slice_is_open_ = true;
   }
 
   const char* const name_;    // Not owned.
-  const void* const object_;  // Not owned.
 
   // We have to track whether slice is open to avoid confusion since assignment,
   // "absent" state and OnTraceLogEnabled can happen anytime.
@@ -160,11 +157,10 @@ class TraceableState : public TraceableVariable, private StateTracer<category> {
 
   TraceableState(T initial_state,
                  const char* name,
-                 const void* object,
                  TraceableVariableController* controller,
                  ConverterFuncPtr converter)
       : TraceableVariable(controller),
-        StateTracer<category>(name, object),
+        StateTracer<category>(name),
         converter_(converter),
         state_(initial_state) {
     Trace();
@@ -227,12 +223,10 @@ class TraceableCounter : public TraceableVariable {
 
   TraceableCounter(T initial_value,
                    const char* name,
-                   const void* object,
                    TraceableVariableController* controller,
                    ConverterFuncPtr converter)
       : TraceableVariable(controller),
         name_(name),
-        object_(object),
         converter_(converter),
         value_(initial_value) {
     internal::ValidateTracingCategory(category);
@@ -241,16 +235,10 @@ class TraceableCounter : public TraceableVariable {
 
   TraceableCounter(T initial_value,
                    const char* name,
-                   const void* object,
                    TraceableVariableController* controller)
-      : TraceableVariable(controller),
-        name_(name),
-        object_(object),
-        converter_([](const T& value) { return static_cast<double>(value); }),
-        value_(initial_value) {
-    internal::ValidateTracingCategory(category);
-    Trace();
-  }
+      : TraceableCounter(initial_value, name, controller, [](const T& value) {
+          return static_cast<double>(value);
+        }) {}
 
   TraceableCounter& operator=(const T& value) {
     value_ = value;
@@ -281,12 +269,11 @@ class TraceableCounter : public TraceableVariable {
   void OnTraceLogEnabled() final { Trace(); }
 
   void Trace() const {
-    TRACE_COUNTER_ID1(category, name_, object_, converter_(value_));
+    TRACE_COUNTER_ID1(category, name_, this, converter_(value_));
   }
 
  private:
   const char* const name_;    // Not owned.
-  const void* const object_;  // Not owned.
   const ConverterFuncPtr converter_;
 
   T value_;

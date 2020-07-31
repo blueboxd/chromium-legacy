@@ -92,6 +92,7 @@
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
     ContentSuggestionsHeaderViewController* headerController;
+@property(nonatomic, strong) PrefBackedBoolean* contentSuggestionsVisible;
 
 @end
 
@@ -120,10 +121,11 @@
           ->GetPrefs();
   bool contentSuggestionsEnabled =
       prefs->GetBoolean(prefs::kArticlesForYouEnabled);
-  bool contentSuggestionsVisible =
-      prefs->GetBoolean(feed::prefs::kArticlesListVisible);
+  self.contentSuggestionsVisible = [[PrefBackedBoolean alloc]
+      initWithPrefService:prefs
+                 prefName:feed::prefs::kArticlesListVisible];
   if (contentSuggestionsEnabled) {
-    if (contentSuggestionsVisible) {
+    if ([self.contentSuggestionsVisible value]) {
       ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
     } else {
       ntp_home::RecordNTPImpression(ntp_home::REMOTE_COLLAPSED);
@@ -197,9 +199,7 @@
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
   self.contentSuggestionsMediator.contentArticlesExpanded =
-      [[PrefBackedBoolean alloc]
-          initWithPrefService:prefs
-                     prefName:feed::prefs::kArticlesListVisible];
+      self.contentSuggestionsVisible;
 
   self.headerController.promoCanShow =
       [self.contentSuggestionsMediator notificationPromo]->CanShow();
@@ -365,6 +365,9 @@
 #pragma mark - DiscoverFeedMenuCommands
 
 - (void)openDiscoverFeedMenu:(UIView*)menuButton {
+  [self.alertCoordinator stop];
+  self.alertCoordinator = nil;
+
   self.alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.suggestionsViewController
                          browser:self.browser
@@ -373,6 +376,27 @@
                             rect:menuButton.frame
                             view:menuButton.superview];
   __weak ContentSuggestionsCoordinator* weakSelf = self;
+
+  if ([self.contentSuggestionsVisible value]) {
+    [self.alertCoordinator
+        addItemWithTitle:l10n_util::GetNSString(
+                             IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM)
+                  action:^{
+                    [weakSelf.contentSuggestionsVisible setValue:NO];
+                    [weakSelf.contentSuggestionsMediator reloadAllData];
+                  }
+                   style:UIAlertActionStyleDestructive];
+  } else {
+    [self.alertCoordinator
+        addItemWithTitle:l10n_util::GetNSString(
+                             IDS_IOS_DISCOVER_FEED_MENU_TURN_ON_ITEM)
+                  action:^{
+                    [weakSelf.contentSuggestionsVisible setValue:YES];
+                    [weakSelf.contentSuggestionsMediator reloadAllData];
+                  }
+                   style:UIAlertActionStyleDefault];
+  }
+
   [self.alertCoordinator
       addItemWithTitle:l10n_util::GetNSString(
                            IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM)

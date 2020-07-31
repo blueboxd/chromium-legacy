@@ -60,6 +60,7 @@ struct RedirectInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
 class SSLPrivateKey;
+struct TransportInfo;
 class UploadDataStream;
 class URLRequestContext;
 class URLRequestJob;
@@ -116,13 +117,14 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
    public:
     // Called each time a connection is obtained, before any data is sent.
     //
+    // |request| is never nullptr. Caller retains ownership.
+    //
+    // |info| describes the newly-obtained connection.
+    //
     // This may be called several times if the request creates multiple HTTP
     // transactions, e.g. if the request is redirected. It may also be called
     // several times per transaction, e.g. if the connection is retried, after
     // each HTTP auth challenge, or for split HTTP range requests.
-    //
-    // The delegate may call request->GetTransactionRemoteEndpoint() to
-    // determine where the latest connection terminates.
     //
     // If this returns an error, the request fails with the given error.
     // Otherwise the request continues unimpeded.
@@ -130,7 +132,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     //
     // TODO(crbug.com/591068): Allow ERR_IO_PENDING for a potentially-slow
     // CORS-RFC1918 preflight check.
-    virtual int OnConnected(URLRequest* request);
+    virtual int OnConnected(URLRequest* request, const TransportInfo& info);
 
     // Called upon receiving a redirect.  The delegate may call the request's
     // Cancel method to prevent the redirect from being followed.  Since there
@@ -789,7 +791,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
-  int NotifyConnected();
+  int NotifyConnected(const TransportInfo& info);
   void NotifyAuthRequired(std::unique_ptr<AuthChallengeInfo> auth_info);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
   void NotifySSLCertificateError(int net_error,

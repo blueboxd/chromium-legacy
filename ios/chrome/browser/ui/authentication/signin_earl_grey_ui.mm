@@ -6,8 +6,8 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -38,7 +38,7 @@ using chrome_test_util::SignOutAccountsButton;
 
 + (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
               isManagedAccount:(BOOL)isManagedAccount {
-  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
@@ -49,13 +49,13 @@ using chrome_test_util::SignOutAccountsButton;
   }
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
   // Assumes that the identity chooser is visible.
   [[EarlGrey
-      selectElementWithMatcher:[SigninEarlGreyUtilsAppInterface
+      selectElementWithMatcher:[SigninEarlGreyAppInterface
                                    identityCellMatcherForEmail:userEmail]]
       performAction:grey_tap()];
 }
@@ -74,7 +74,7 @@ using chrome_test_util::SignOutAccountsButton;
   ScopedSynchronizationDisabler disabler;
   id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
-  [SigninEarlGreyUtils waitForMatcher:acceptButton];
+  [SigninEarlGrey waitForMatcher:acceptButton];
   [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
 }
 
@@ -224,7 +224,7 @@ using chrome_test_util::SignOutAccountsButton;
   [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils checkSignedOut];
+  [SigninEarlGrey checkSignedOut];
 }
 
 + (void)tapRemoveAccountFromDeviceWithFakeIdentity:

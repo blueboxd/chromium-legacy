@@ -18,4 +18,5 @@ interface IDownload {
   int getError() = 7;
   String getMimeType() = 8;
   void disableNotification() = 9;
+  String getFileNameToReportToUser() = 10;
 }

@@ -91,6 +91,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
@@ -945,7 +946,8 @@ bool URLHasExtensionBackgroundPermission(
 mojo::PendingRemote<prerender::mojom::PrerenderCanceler> GetPrerenderCanceler(
     base::OnceCallback<content::WebContents*()> wc_getter) {
   mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler;
-  prerender::PrerenderContents::FromWebContents(std::move(wc_getter).Run())
+  prerender::ChromePrerenderContentsDelegate::FromWebContents(
+      std::move(wc_getter).Run())
       ->AddPrerenderCancelerReceiver(canceler.InitWithNewPipeAndPassReceiver());
   return canceler;
 }
@@ -980,7 +982,7 @@ void LaunchURL(const GURL& url,
 
   // Do not launch external requests attached to unswapped prerenders.
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
     return;
@@ -2869,7 +2871,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
 
   // If the tab is being prerendered, cancel the prerender and the request.
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
     if (!callback.is_null()) {
@@ -2960,7 +2962,7 @@ base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(
         prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED);
@@ -3141,7 +3143,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
-  DCHECK(!prerender::PrerenderContents::FromWebContents(web_contents));
+  DCHECK(!prerender::ChromePrerenderContentsDelegate::FromWebContents(
+      web_contents));
 
   BlockedWindowParams blocked_params(
       target_url, source_origin, opener->GetSiteInstance(), referrer,
@@ -3946,7 +3949,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   // TODO(davidben): This is insufficient to integrate with prerender properly.
   // https://crbug.com/370595
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(handle->GetWebContents());
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(
+          handle->GetWebContents());
   if (!prerender_contents && handle->IsInMainFrame()) {
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(

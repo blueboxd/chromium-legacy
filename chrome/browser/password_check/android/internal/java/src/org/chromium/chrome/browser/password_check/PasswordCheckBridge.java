@@ -62,8 +62,10 @@ class PasswordCheckBridge {
     }
 
     private static void insertCredential(CompromisedCredential[] credentials, int index,
-            String originUrl, String username, String password, boolean phished) {
-        credentials[index] = new CompromisedCredential(originUrl, username, password, phished);
+            String originUrl, String username, String password, boolean phished,
+            boolean hasScript) {
+        credentials[index] =
+                new CompromisedCredential(originUrl, username, password, phished, hasScript);
     }
 
     /**

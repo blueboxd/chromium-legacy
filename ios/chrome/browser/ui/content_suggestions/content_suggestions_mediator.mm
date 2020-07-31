@@ -199,6 +199,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   _prefObserverBridge.reset();
 }
 
+- (void)reloadAllData {
+  [self.dataSink reloadAllData];
+}
+
 - (void)blockMostVisitedURL:(GURL)URL {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, true);
   [self useFreshMostVisited];
@@ -288,7 +292,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   } else if (sectionInfo == self.learnMoreSectionInfo) {
     [convertedSuggestions addObject:self.learnMoreItem];
   } else if (sectionInfo == self.discoverSectionInfo) {
-    [convertedSuggestions addObject:self.discoverItem];
+    if ([self.contentArticlesExpanded value]) {
+      [convertedSuggestions addObject:self.discoverItem];
+    }
   } else if (!IsDiscoverFeedEnabled()) {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];
@@ -481,7 +487,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
-        [self.dataSink reloadAllData];
+        [self reloadAllData];
       });
 }
 
@@ -745,7 +751,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
   if (preferenceName == prefs::kArticlesForYouEnabled) {
-    [self.dataSink reloadAllData];
+    [self reloadAllData];
   }
 }
 

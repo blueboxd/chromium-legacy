@@ -12,21 +12,17 @@ include `content/` and `blink/` specific typemaps, as well as Mojo struct defini
 
 ## Adding a new token
 
-Suppose you want to add a new token type, `FooToken`. You would do the following:
+Suppose you want to add a new token type. You would do the following:
 
- - Create a new `foo_token.h` header in [`/third_party/blink/public/common/tokens`](/third_party/blink/public/common/tokens)
-   and define the token using [`util::TokenType<...>`](/base/util/type_safety/token_type.h).
-   See [`/third_party/blink/public/common/tokens/worker_tokens.h`](/third_party/blink/public/common/tokens/worker_tokens.h)
-   for an example.
- - Create a new `foo_token.mojom` defining a Mojo struct for the token type in
-   [`/third_party/blink/public/mojom/tokens`](/third_party/blink/public/mojom/tokens).
-   Be sure to follow the convention that the struct contain a single
-   `base.mojom.UnguessableToken` member named `value`. See
-   [`worker_tokens.mojom`](/third_party/blink/public/mojom/tokens/worker_tokens.mojom) for an example.
- - Create a new `foo_token_mojom_traits.h` header in [`/third_party/blink/public/common/tokens`](/third_party/blink/public/common/tokens)
-   that implements `mojo::StructTraits` serialization. Use the templated
-   [`TokenMojomTraitsHelper<...>`](/third_party/blink/public/common/token_mojom_traits_helper.h)
-   helper class. See [`worker_tokens_mojom_traits.h`](/third_party/blink/public/common/tokens/worker_tokens_mojom_traits.h) for an example.
+ - Add a new C++ token type to
+   [`/third_party/blink/public/common/tokens/tokens.h`](/third_party/blink/public/common/tokens/tokens.h).
+ - Add an equivalent Mojom token type to
+   [`/third_party/blink/public/mojom/tokens/tokens.mojom`](/third_party/blink/public/mojom/tokens/tokens.mojom).
+   Be sure to follow the convention that the struct contains a single
+   `base.mojom.UnguessableToken` member named `value`.
+ - Create a new Mojom traits declaration to
+   [`/third_party/blink/public/common/tokens/tokens_mojom_traits.h`](/third_party/blink/public/common/tokens/tokens_mojom_traits.h).
+   Use the templated [`TokenMojomTraitsHelper<...>`](/third_party/blink/public/common/token_mojom_traits_helper.h) helper class.
  - Update [`mojom/tokens/BUILD.gn`](third_party/blink/public/mojom/tokens/BUILD.gn) and add a new
    typemap definition for the token to the `shared_cpp_typemaps` section.
  - If your token needs to be sent via legacy IPC as well, add the appropriate

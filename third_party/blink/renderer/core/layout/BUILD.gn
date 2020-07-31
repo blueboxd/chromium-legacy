@@ -627,7 +627,7 @@ blink_core_sources("layout") {
     sources += [ "layout_theme_font_provider_default.cc" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "layout_theme_linux.cc",
       "layout_theme_linux.h",

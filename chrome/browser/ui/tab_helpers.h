@@ -18,7 +18,7 @@ class BrowserTabStripModelDelegate;
 }
 
 namespace prerender {
-class PrerenderContents;
+class ChromePrerenderContentsDelegate;
 }
 
 namespace thin_webview {
@@ -56,7 +56,7 @@ class TabHelpers {
 
   // Prerendering loads pages that have arbitrary external content; it needs
   // the full set of tab helpers to deal with it.
-  friend class prerender::PrerenderContents;
+  friend class prerender::ChromePrerenderContentsDelegate;
 
   // ThinWebView is used to host WebContents on non-tab UIs in Android. Most
   // clients of ThinWebView will need a major subset of the tab helpers.

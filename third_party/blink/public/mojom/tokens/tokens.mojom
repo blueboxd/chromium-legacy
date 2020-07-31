@@ -1,0 +1,56 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// Various token types. These are used as cross-layer and cross-process
+// identifiers for objects that exist in blink, but which have representations
+// in the browser process. They should not be used to identify objects in
+// browser-to-renderer control messages; rather, such messages should exist as
+// methods on the interface bound to the object itself. They are fine to use
+// for informational messages that cross over other interfaces, in both
+// directions.
+//
+// See third_party/blink/public/common/tokens/tokens.h for more details.
+
+////////////////////////////////////////////////////////////////////////////////
+// FRAME TOKENS
+
+struct LocalFrameToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct RemoteFrameToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// WORKER TOKENS
+
+struct DedicatedWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct SharedWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct ServiceWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// OTHER TOKENS
+//
+// Keep this section last.
+//
+// If you have multiple tokens that make a thematic group, please lift them to
+// their own section, in alphabetical order. If adding a new token here, please
+// keep the following list in alphabetic order.
+
+struct PortalToken {
+  mojo_base.mojom.UnguessableToken value;
+};

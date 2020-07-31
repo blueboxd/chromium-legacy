@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
-#include "third_party/blink/public/common/tokens/worker_tokens.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 
 namespace content {

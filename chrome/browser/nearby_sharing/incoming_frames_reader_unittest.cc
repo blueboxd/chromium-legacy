@@ -4,15 +4,14 @@
 
 #include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
 
-#include <queue>
 #include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_decoder.h"
-#include "chrome/browser/nearby_sharing/nearby_connection.h"
 #include "chrome/services/sharing/public/proto/wire_format.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
@@ -55,51 +54,6 @@ void ExpectIntroductionFrame(
 }
 
 }  // namespace
-
-class FakeNearbyConnection : public NearbyConnection {
- public:
-  FakeNearbyConnection() = default;
-  ~FakeNearbyConnection() override = default;
-
-  void Read(ReadCallback callback) override {
-    callback_ = std::move(callback);
-    MaybeRunCallback();
-  }
-
-  void Write(std::vector<uint8_t> bytes, WriteCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void Close() override {
-    closed_ = true;
-    if (callback_)
-      std::move(callback_).Run(base::nullopt);
-  }
-
-  bool IsClosed() const override { return closed_; }
-
-  void RegisterForDisconnection(base::OnceClosure callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void AppendReadableData(std::vector<uint8_t> bytes) {
-    data_.push(std::move(bytes));
-    MaybeRunCallback();
-  }
-
- private:
-  void MaybeRunCallback() {
-    if (!callback_ || data_.empty())
-      return;
-    auto item = std::move(data_.front());
-    data_.pop();
-    std::move(callback_).Run(std::move(item));
-  }
-
-  bool closed_ = false;
-  ReadCallback callback_;
-  std::queue<std::vector<uint8_t>> data_;
-};
 
 class IncomingFramesReaderTest : public testing::Test {
  public:

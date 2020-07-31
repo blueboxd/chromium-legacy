@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARLGREY_UTILS_H_
-#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARLGREY_UTILS_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARL_GREY_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARL_GREY_H_
 
 #import <Foundation/Foundation.h>
 
@@ -13,12 +13,12 @@
 @protocol GREYMatcher;
 @class FakeChromeIdentity;
 
-#define SigninEarlGreyUtils \
-  [SigninEarlGreyUtilsImpl invokedFromFile:@"" __FILE__ lineNumber:__LINE__]
+#define SigninEarlGrey \
+  [SigninEarlGreyImpl invokedFromFile:@"" __FILE__ lineNumber:__LINE__]
 
 // Methods used for the EarlGrey tests.
 // TODO(crbug.com/974833): Consider moving these into ChromeEarlGrey.
-@interface SigninEarlGreyUtilsImpl : BaseEGTestHelperImpl
+@interface SigninEarlGreyImpl : BaseEGTestHelperImpl
 
 // Returns a fake identity.
 - (FakeChromeIdentity*)fakeIdentity1;
@@ -51,4 +51,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARLGREY_UTILS_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARL_GREY_H_

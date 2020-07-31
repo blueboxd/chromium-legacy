@@ -52,12 +52,25 @@ class MockServerPushHelper : public ServerPushDelegate::ServerPushHelper {
 
 std::unique_ptr<MockTransaction> CreateMockTransaction(const GURL& url) {
   MockTransaction mock_trans = {
-      url.spec().c_str(), "GET", base::Time(), "", LOAD_NORMAL,
+      url.spec().c_str(),
+      "GET",
+      base::Time(),
+      "",
+      LOAD_NORMAL,
+      DefaultTransportInfo(),
       "HTTP/1.1 200 OK",
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
       "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n",
-      base::Time(), "<html><body>Google Blah Blah</body></html>",
-      TEST_MODE_NORMAL, nullptr, nullptr, nullptr, 0, 0, OK};
+      base::Time(),
+      "<html><body>Google Blah Blah</body></html>",
+      TEST_MODE_NORMAL,
+      nullptr,
+      nullptr,
+      nullptr,
+      0,
+      0,
+      OK,
+  };
   return std::make_unique<MockTransaction>(mock_trans);
 }
 

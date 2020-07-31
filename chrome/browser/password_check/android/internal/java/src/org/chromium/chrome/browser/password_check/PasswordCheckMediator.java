@@ -35,7 +35,9 @@ class PasswordCheckMediator implements PasswordCheckCoordinator.CredentialEventH
         assert items.size() == 1;
 
         for (CompromisedCredential credential : credentials) {
-            items.add(new ListItem(PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
+            items.add(new ListItem(credential.hasScript()
+                            ? PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT
+                            : PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
                     new PropertyModel
                             .Builder(PasswordCheckProperties.CompromisedCredentialProperties
                                              .ALL_KEYS)

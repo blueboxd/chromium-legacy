@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 
 #import "ios/third_party/earl_grey2/src/CommonLib/DistantObject/GREYTestApplicationDistantObject.h"
 
@@ -10,4 +10,4 @@
 #error "This file requires ARC support."
 #endif
 
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyAppInterface)

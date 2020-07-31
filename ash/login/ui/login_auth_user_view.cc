@@ -745,16 +745,14 @@ struct LoginAuthUserView::AnimationState {
     non_pin_y_start_in_screen = view->GetBoundsInScreen().y();
     pin_start_in_screen = view->pin_view_->GetBoundsInScreen().origin();
 
-    had_pin = (view->auth_methods() & LoginAuthUserView::AUTH_PIN) != 0;
-    had_password =
-        (view->auth_methods() & LoginAuthUserView::AUTH_PASSWORD) != 0;
-    had_fingerprint =
-        (view->auth_methods() & LoginAuthUserView::AUTH_FINGERPRINT) != 0;
+    had_pinpad = view->show_pinpad_;
+    had_password = view->HasAuthMethod(LoginAuthUserView::AUTH_PASSWORD);
+    had_fingerprint = view->HasAuthMethod(LoginAuthUserView::AUTH_FINGERPRINT);
   }
 
   int non_pin_y_start_in_screen = 0;
   gfx::Point pin_start_in_screen;
-  bool had_pin = false;
+  bool had_pinpad = false;
   bool had_password = false;
   bool had_fingerprint = false;
 };
@@ -980,20 +978,20 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
-  SetAuthMethods(auth_methods_, false /*can_use_pin*/);
+  SetAuthMethods(auth_methods_, false /*show_pinpad*/);
   user_view_->UpdateForUser(user, false /*animate*/);
 }
 
 LoginAuthUserView::~LoginAuthUserView() = default;
 
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
-                                       bool can_use_pin) {
-  can_use_pin_ = can_use_pin;
+                                       bool show_pinpad) {
+  show_pinpad_ = show_pinpad;
   bool had_password = HasAuthMethod(AUTH_PASSWORD);
 
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
   bool has_password = HasAuthMethod(AUTH_PASSWORD);
-  bool has_pin_pad = HasAuthMethod(AUTH_PIN);
+  bool has_pin = HasAuthMethod(AUTH_PIN);
   bool has_tap = HasAuthMethod(AUTH_TAP);
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
@@ -1010,7 +1008,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Adjust the PIN keyboard visibility before the password textfield's one, so
   // that when both are about to be hidden the focus doesn't jump to the "1"
   // keyboard button, causing unexpected accessibility effects.
-  pin_view_->SetVisible(has_pin_pad);
+  pin_view_->SetVisible(show_pinpad);
 
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
@@ -1023,25 +1021,25 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
     password_view_->RequestFocus();
 
   fingerprint_view_->SetVisible(has_fingerprint);
-  fingerprint_view_->SetCanUsePin(can_use_pin);
+  fingerprint_view_->SetCanUsePin(has_pin);
   challenge_response_view_->SetVisible(has_challenge_response);
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
-  if (has_fingerprint && !has_pin_pad) {
+  if (has_fingerprint && !show_pinpad) {
     padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
-  } else if (has_challenge_response && !has_pin_pad) {
+  } else if (has_challenge_response && !show_pinpad) {
     padding_view_height =
         kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
   }
   padding_below_password_view_->SetPreferredSize(
       gfx::Size(kNonEmptyWidthDp, padding_view_height));
 
-  // Note: |has_tap| must have higher priority than |has_pin_pad| when
+  // Note: |has_tap| must have higher priority than |has_pin| when
   // determining the placeholder.
   if (has_tap) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER));
-  } else if (can_use_pin) {
+  } else if (has_pin) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
   } else {
@@ -1107,9 +1105,9 @@ void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
 void LoginAuthUserView::ApplyAnimationPostLayout() {
   DCHECK(cached_animation_state_);
 
-  bool has_password = (auth_methods() & AUTH_PASSWORD) != 0;
-  bool has_pin = (auth_methods() & AUTH_PIN) != 0;
-  bool has_fingerprint = (auth_methods() & AUTH_FINGERPRINT) != 0;
+  bool has_password = HasAuthMethod(AUTH_PASSWORD);
+  bool has_pinpad = show_pinpad_;
+  bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
 
   ////////
   // Animate the user info (ie, icon, name) up or down the screen.
@@ -1169,8 +1167,8 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
   ////////
   // Grow/shrink the PIN keyboard if it is being hidden or shown.
 
-  if (cached_animation_state_->had_pin != has_pin) {
-    if (!has_pin) {
+  if (cached_animation_state_->had_pinpad != has_pinpad) {
+    if (!has_pinpad) {
       gfx::Point pin_end_in_screen = pin_view_->GetBoundsInScreen().origin();
       gfx::Rect pin_bounds = pin_view_->bounds();
       pin_bounds.set_x(cached_animation_state_->pin_start_in_screen.x() -
@@ -1185,7 +1183,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
     }
 
     auto transition = std::make_unique<PinKeyboardAnimation>(
-        has_pin /*grow*/, pin_view_->height(),
+        has_pinpad /*grow*/, pin_view_->height(),
         // TODO(https://crbug.com/955119): Implement proper animation.
         base::TimeDelta::FromMilliseconds(
             login_constants::kChangeUserAnimationDurationMs / 2.0f),
@@ -1193,7 +1191,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
     auto* sequence = new ui::LayerAnimationSequence(std::move(transition));
 
     // Hide the PIN keyboard after animation if needed.
-    if (!has_pin) {
+    if (!has_pinpad) {
       auto* observer = BuildObserverToHideView(pin_view_);
       sequence->AddObserver(observer);
       observer->SetActive();
@@ -1291,7 +1289,7 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   password_view_->SetReadOnly(true);
   Shell::Get()->login_screen_controller()->AuthenticateUserWithPasswordOrPin(
       current_user().basic_user_info.account_id, base::UTF16ToUTF8(password),
-      can_use_pin_,
+      HasAuthMethod(AUTH_PIN),
       base::BindOnce(&LoginAuthUserView::OnAuthComplete,
                      weak_factory_.GetWeakPtr()));
 }

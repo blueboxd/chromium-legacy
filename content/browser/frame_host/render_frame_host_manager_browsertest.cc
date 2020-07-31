@@ -3806,7 +3806,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
   GURL url_b_with_frame(embedded_test_server()->GetURL(
       "b.com", "/navigation_controller/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_b_with_frame));
-  EXPECT_EQ(rfh_b, web_contents->GetMainFrame());
+  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
+    // is enabled, the navigation will result in a new RFH.
+    EXPECT_NE(rfh_b, web_contents->GetMainFrame());
+    rfh_b = web_contents->GetMainFrame();
+  } else {
+    EXPECT_EQ(rfh_b, web_contents->GetMainFrame());
+  }
   EXPECT_EQ(url::Origin::Create(url_b), rfh_b->GetLastCommittedOrigin());
   FrameTreeNode* child = root->child_at(0);
   RenderFrameHostImpl* child_rfh_b = root->child_at(0)->current_frame_host();
@@ -4356,8 +4363,16 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     scoped_refptr<SiteInstance> error_site_instance =
         shell()->web_contents()->GetMainFrame()->GetSiteInstance();
     EXPECT_NE(success_site_instance, error_site_instance);
-    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
-        error_site_instance.get()));
+    if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+      // When ProactivelySwapBrowsingInstance is enabled on same-site
+      // navigations, the navigation above will result in a new
+      // BrowsingInstance.
+      EXPECT_FALSE(success_site_instance->IsRelatedSiteInstance(
+          error_site_instance.get()));
+    } else {
+      EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+          error_site_instance.get()));
+    }
     EXPECT_NE(success_site_instance->GetProcess()->GetID(),
               error_site_instance->GetProcess()->GetID());
     EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
@@ -4392,8 +4407,16 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     scoped_refptr<SiteInstance> error_site_instance =
         shell()->web_contents()->GetMainFrame()->GetSiteInstance();
     EXPECT_NE(success_site_instance, error_site_instance);
-    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
-        error_site_instance.get()));
+    if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+      // When ProactivelySwapBrowsingInstance is enabled on same-site
+      // navigations, the navigation above will result in a new
+      // BrowsingInstance.
+      EXPECT_FALSE(success_site_instance->IsRelatedSiteInstance(
+          error_site_instance.get()));
+    } else {
+      EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+          error_site_instance.get()));
+    }
     EXPECT_NE(success_site_instance->GetProcess()->GetID(),
               error_site_instance->GetProcess()->GetID());
     EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());

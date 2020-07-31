@@ -359,6 +359,14 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             GURL defaultUrlMethod = null;
             if (!TextUtils.isEmpty(defaultMethod)) {
                 defaultUrlMethod = new GURL(defaultMethod);
+
+                // Do not download any manifests for the app whose default payment method identifier
+                // is an app store payment method identifier, because app store method URLs are used
+                // only for identification and do not host manifest files.
+                if (mAppStores.values().contains(defaultUrlMethod)) {
+                    continue;
+                }
+
                 if (UrlUtils.isURLValid(defaultUrlMethod)) {
                     defaultMethod = urlToStringWithoutTrailingSlash(defaultUrlMethod);
                 }
@@ -391,6 +399,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 GURL supportedUrlMethod = new GURL(supportedMethod);
                 if (!UrlUtils.isURLValid(supportedUrlMethod)) supportedUrlMethod = null;
                 if (supportedUrlMethod != null && supportedUrlMethod.equals(defaultUrlMethod)) {
+                    continue;
+                }
+
+                // Ignore payment method identifiers of app stores, because app store method URLs
+                // are used only for identification and do not host manifest files.
+                if (mAppStores.values().contains(supportedUrlMethod)) {
                     continue;
                 }
 

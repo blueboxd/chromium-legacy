@@ -37,8 +37,6 @@ class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
 
   mutable Member<DOMPluginArray> plugins_;
   mutable Member<DOMMimeTypeArray> mime_types_;
-
-  base::span<const uint8_t> StringToBytesSafe(String str) const;
 };
 
 }  // namespace blink

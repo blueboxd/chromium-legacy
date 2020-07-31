@@ -10,9 +10,6 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_constants.h"
@@ -145,18 +142,6 @@ void HistoryTabHelper::DidFinishNavigation(
   const history::HistoryAddPageArgs& add_page_args = CreateHistoryAddPageArgs(
       web_contents()->GetLastCommittedURL(), last_committed->GetTimestamp(),
       last_committed->GetUniqueID(), navigation_handle);
-
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-  if (prerender_manager) {
-    prerender::PrerenderContents* prerender_contents =
-        prerender_manager->GetPrerenderContents(web_contents());
-    if (prerender_contents) {
-      prerender_contents->DidNavigate(add_page_args);
-      return;
-    }
-  }
 
 #if defined(OS_ANDROID)
   auto* background_tab_manager = BackgroundTabManager::GetInstance();

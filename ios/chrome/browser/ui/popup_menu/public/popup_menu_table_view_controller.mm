@@ -130,6 +130,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
     }
   }
   [self.tableView reloadData];
+  self.preferredContentSize = [self calculatePreferredContentSize];
 }
 
 - (void)itemsHaveChanged:(NSArray<TableViewItem<PopupMenuItem>*>*)items {
@@ -166,7 +167,13 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   }
 }
 
-- (CGSize)preferredContentSize {
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  self.preferredContentSize = [self calculatePreferredContentSize];
+}
+
+- (CGSize)calculatePreferredContentSize {
   CGFloat width = 0;
   CGFloat height = 0;
   for (NSInteger section = 0; section < [self.tableViewModel numberOfSections];

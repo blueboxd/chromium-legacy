@@ -12,7 +12,7 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/file_attachment.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
-#include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom-shared.h"
+#include "chrome/browser/ui/webui/nearby_share/nearby_share_target_types.mojom.h"
 #include "url/gurl.h"
 
 // A remote device.
@@ -32,6 +32,10 @@ struct ShareTarget {
   ShareTarget& operator=(const ShareTarget&);
   ShareTarget& operator=(ShareTarget&&);
   ~ShareTarget();
+
+  bool has_attachments() const {
+    return !text_attachments.empty() || !file_attachments.empty();
+  }
 
   base::UnguessableToken id = base::UnguessableToken::Create();
   std::string device_name;

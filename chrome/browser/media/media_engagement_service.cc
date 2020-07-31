@@ -15,6 +15,7 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -83,7 +84,7 @@ void MediaEngagementService::CreateWebContentsObserver(
   DCHECK(IsEnabled());
 
   // Ignore WebContents that are used for prerender/prefetch.
-  if (prerender::PrerenderContents::FromWebContents(web_contents))
+  if (prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents))
     return;
 
   MediaEngagementService* service =

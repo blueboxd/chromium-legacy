@@ -60,11 +60,13 @@ import org.chromium.ui.widget.ButtonCompat;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordCheckViewTest {
     private static final CompromisedCredential ANA =
-            new CompromisedCredential("some-url.com", "Ana", "password", false);
+            new CompromisedCredential("some-url.com", "Ana", "password", false, false);
     private static final CompromisedCredential PHISHED =
-            new CompromisedCredential("example.com", "Baub", "DoSomething", true);
+            new CompromisedCredential("example.com", "Baub", "DoSomething", true, false);
     private static final CompromisedCredential LEAKED =
-            new CompromisedCredential("some-other-url.com", "AZiegler", "N0M3rcy", false);
+            new CompromisedCredential("some-other-url.com", "AZiegler", "N0M3rcy", false, false);
+    private static final CompromisedCredential SCRIPTED =
+            new CompromisedCredential("script.com", "Charlie", "secret", false, true);
 
     private PropertyModel mModel = PasswordCheckProperties.createDefaultModel();
     private PasswordCheckFragmentView mPasswordCheckView;
@@ -102,8 +104,7 @@ public class PasswordCheckViewTest {
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(2)));
         // Has a change passwords button.
         assertNotNull(getCredentialChangeButtonAt(1));
-        // TODO(crbug.com/1092444): Ensure the button is visible as soon as it does something!
-        assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.GONE));
+        assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialChangeButtonAt(1).getText(),
                 is(getString(R.string.password_check_credential_row_change_button_caption)));
 
@@ -154,6 +155,37 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
+    public void testCrendentialDisplaysChangeButtonWithScript() {
+        runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildCredentialItem(SCRIPTED)); });
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
+
+        // Origin and username.
+        assertThat(getCredentialOriginAt(0).getText(), is(SCRIPTED.getOriginUrl()));
+        assertThat(getCredentialUserAt(0).getText(), is(SCRIPTED.getUsername()));
+
+        // Reason to show credential.
+        assertThat(getCredentialReasonAt(0).getText(),
+                is(getString(R.string.password_check_credential_row_reason_leaked)));
+
+        // Change button with script.
+        assertNotNull(getCredentialChangeButtonWithScriptAt(0));
+        assertThat(getCredentialChangeButtonWithScriptAt(0).getText(),
+                is(getString(
+                        R.string.password_check_credential_row_change_button_with_script_caption)));
+
+        // Explanation for change button with script.
+        assertNotNull(getCredentialChangeButtonWithScriptExplanationAt(0));
+        assertThat(getCredentialChangeButtonWithScriptExplanationAt(0).getText(),
+                is(getString(R.string.password_check_credential_row_script_button_explanation)));
+
+        // Change button without script.
+        assertNotNull(getCredentialChangeButtonAt(0));
+        assertThat(getCredentialChangeButtonAt(0).getText(),
+                is(getString(R.string.password_check_credential_row_change_button_caption)));
+    }
+
+    @Test
+    @MediumTest
     public void testClickingDeleteInMoreMenuTriggersHandler() {
         runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
@@ -176,7 +208,9 @@ public class PasswordCheckViewTest {
     }
 
     private MVCListAdapter.ListItem buildCredentialItem(CompromisedCredential credential) {
-        return new MVCListAdapter.ListItem(PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
+        return new MVCListAdapter.ListItem(credential.hasScript()
+                        ? PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT
+                        : PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
                 new PropertyModel
                         .Builder(PasswordCheckProperties.CompromisedCredentialProperties.ALL_KEYS)
                         .with(COMPROMISED_CREDENTIAL, credential)
@@ -218,6 +252,16 @@ public class PasswordCheckViewTest {
     private ButtonCompat getCredentialChangeButtonAt(int index) {
         return getPasswordCheckViewList().getChildAt(index).findViewById(
                 R.id.credential_change_button);
+    }
+
+    private ButtonCompat getCredentialChangeButtonWithScriptAt(int index) {
+        return getPasswordCheckViewList().getChildAt(index).findViewById(
+                R.id.credential_change_button_with_script);
+    }
+
+    private TextView getCredentialChangeButtonWithScriptExplanationAt(int index) {
+        return getPasswordCheckViewList().getChildAt(index).findViewById(
+                R.id.script_button_explanation);
     }
 
     private ListMenuButton getCredentialMoreButtonAt(int index) {

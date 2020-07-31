@@ -112,6 +112,11 @@ bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts();
 // above, this will not be true when RenderDocument for main-frame is enabled.
 bool CanSameSiteMainFrameNavigationsChangeSiteInstances();
 
+// Makes sure that navigations that start in |rfh| won't result in a proactive
+// BrowsingInstance swap (note they might still result in a normal
+// BrowsingInstance swap, e.g. in the case of cross-site navigations).
+void DisableProactiveBrowsingInstanceSwapFor(RenderFrameHost* rfh);
+
 // Returns a GURL constructed from the WebUI scheme and the given host.
 GURL GetWebUIURL(const std::string& host);
 

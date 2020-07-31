@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/prerender/prerender_contents_delegate.h"
 #include "components/prerender/common/prerender_canceler.mojom.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"
@@ -30,21 +31,16 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
-class Profile;
-
 namespace base {
 class ProcessMetrics;
 }
 
 namespace content {
+class BrowserContext;
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
 }  // namespace content
-
-namespace history {
-struct HistoryAddPageArgs;
-}
 
 namespace memory_instrumentation {
 class GlobalMemoryDump;
@@ -65,11 +61,12 @@ class PrerenderContents : public content::NotificationObserver,
     Factory() {}
     virtual ~Factory() {}
 
-    // Ownership is not transfered through this interface as prerender_manager
-    // and profile are stored as weak pointers.
+    // Ownership is not transferred through this interface as prerender_manager
+    // and browser_context are stored as weak pointers.
     virtual PrerenderContents* CreatePrerenderContents(
+        std::unique_ptr<PrerenderContentsDelegate> delegate,
         PrerenderManager* prerender_manager,
-        Profile* profile,
+        content::BrowserContext* browser_context,
         const GURL& url,
         const content::Referrer& referrer,
         const base::Optional<url::Origin>& initiator_origin,
@@ -122,11 +119,6 @@ class PrerenderContents : public content::NotificationObserver,
   }
 
   static Factory* CreateFactory();
-
-  // Returns a PrerenderContents from the given web_contents, if it's used for
-  // prerendering. Otherwise returns NULL. Handles a NULL input for
-  // convenience.
-  static PrerenderContents* FromWebContents(content::WebContents* web_contents);
 
   // Start rendering the contents in the prerendered state. If
   // |is_control_group| is true, this will go through some of the mechanics of
@@ -210,15 +202,6 @@ class PrerenderContents : public content::NotificationObserver,
   // PrerenderManager's pending deletes list.
   void Destroy(FinalStatus reason);
 
-  // Called by the history tab helper with the information that it woudl have
-  // added to the history service had this web contents not been used for
-  // prerendering.
-  void DidNavigate(const history::HistoryAddPageArgs& add_page_args);
-
-  // Applies all the URL history encountered during prerendering to the
-  // new tab.
-  void CommitHistory(content::WebContents* tab);
-
   std::unique_ptr<base::DictionaryValue> GetAsValue() const;
 
   // Marks prerender as used and releases any throttled resource requests.
@@ -238,8 +221,9 @@ class PrerenderContents : public content::NotificationObserver,
       mojo::PendingReceiver<prerender::mojom::PrerenderCanceler> receiver);
 
  protected:
-  PrerenderContents(PrerenderManager* prerender_manager,
-                    Profile* profile,
+  PrerenderContents(std::unique_ptr<PrerenderContentsDelegate> delegate,
+                    PrerenderManager* prerender_manager,
+                    content::BrowserContext* browser_context,
                     const GURL& url,
                     const content::Referrer& referrer,
                     const base::Optional<url::Origin>& initiator_origin,
@@ -304,6 +288,9 @@ class PrerenderContents : public content::NotificationObserver,
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;
 
+  // The delegate that content embedders use to override this class's logic.
+  std::unique_ptr<PrerenderContentsDelegate> delegate_;
+
   // The URL being prerendered.
   GURL prerender_url_;
 
@@ -314,8 +301,8 @@ class PrerenderContents : public content::NotificationObserver,
   // is browser initiated.
   base::Optional<url::Origin> initiator_origin_;
 
-  // The profile being used
-  Profile* profile_;
+  // The browser context being used
+  content::BrowserContext* browser_context_;
 
   content::NotificationRegistrar notification_registrar_;
 
@@ -348,11 +335,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The bounds of the WebView from the launching page.
   gfx::Rect bounds_;
-
-  typedef std::vector<history::HistoryAddPageArgs> AddPageVector;
-
-  // Caches pages to be added to the history.
-  AddPageVector add_page_vector_;
 
   // A running tally of the number of bytes this prerender has caused to be
   // transferred over the network for resources.  Updated with AddNetworkBytes.

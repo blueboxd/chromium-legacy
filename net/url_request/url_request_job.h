@@ -45,6 +45,7 @@ class ProxyServer;
 class SSLCertRequestInfo;
 class SSLInfo;
 class SSLPrivateKey;
+struct TransportInfo;
 class UploadDataStream;
 class X509Certificate;
 
@@ -257,7 +258,7 @@ class NET_EXPORT URLRequestJob {
 
  protected:
   // Notifies the job that we are connected.
-  int NotifyConnected();
+  int NotifyConnected(const TransportInfo& info);
 
   // Notifies the job that a certificate is requested.
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);

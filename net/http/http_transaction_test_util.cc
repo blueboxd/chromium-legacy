@@ -17,6 +17,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -40,6 +42,11 @@ using MockTransactionMap =
 static MockTransactionMap mock_transactions;
 }  // namespace
 
+TransportInfo DefaultTransportInfo() {
+  return TransportInfo(TransportType::kDirect,
+                       IPEndPoint(IPAddress::IPv4Localhost(), 80));
+}
+
 //-----------------------------------------------------------------------------
 // mock transaction data
 
@@ -49,6 +56,7 @@ const MockTransaction kSimpleGET_Transaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n",
     base::Time(),
@@ -60,7 +68,8 @@ const MockTransaction kSimpleGET_Transaction = {
     0,
     0,
     OK,
-    OK};
+    OK,
+};
 
 const MockTransaction kSimplePOST_Transaction = {
     "http://bugdatabase.com/edit",
@@ -68,6 +77,7 @@ const MockTransaction kSimplePOST_Transaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "",
     base::Time(),
@@ -79,7 +89,8 @@ const MockTransaction kSimplePOST_Transaction = {
     0,
     0,
     OK,
-    OK};
+    OK,
+};
 
 const MockTransaction kTypicalGET_Transaction = {
     "http://www.example.com/~foo/bar.html",
@@ -87,6 +98,7 @@ const MockTransaction kTypicalGET_Transaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
     "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n",
@@ -99,7 +111,8 @@ const MockTransaction kTypicalGET_Transaction = {
     0,
     0,
     OK,
-    OK};
+    OK,
+};
 
 const MockTransaction kETagGET_Transaction = {
     "http://www.google.com/foopy",
@@ -107,6 +120,7 @@ const MockTransaction kETagGET_Transaction = {
     base::Time(),
     "",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Etag: \"foopy\"\n",
@@ -119,7 +133,8 @@ const MockTransaction kETagGET_Transaction = {
     0,
     0,
     OK,
-    OK};
+    OK,
+};
 
 const MockTransaction kRangeGET_Transaction = {
     "http://www.google.com/",
@@ -127,6 +142,7 @@ const MockTransaction kRangeGET_Transaction = {
     base::Time(),
     "Range: 0-100\r\n",
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n",
     base::Time(),
@@ -138,7 +154,8 @@ const MockTransaction kRangeGET_Transaction = {
     0,
     0,
     OK,
-    OK};
+    OK,
+};
 
 static const MockTransaction* const kBuiltinMockTransactions[] = {
   &kSimpleGET_Transaction,
@@ -525,7 +542,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
 
   int result = OK;
   if (!connected_callback_.is_null()) {
-    result = connected_callback_.Run();
+    result = connected_callback_.Run(t->transport_info);
   }
 
   CallbackLater(std::move(callback), result);
@@ -644,6 +661,23 @@ int ReadTransaction(HttpTransaction* trans, std::string* result) {
 
   result->swap(content);
   return OK;
+}
+
+//-----------------------------------------------------------------------------
+// connected callback handler
+
+ConnectedHandler::ConnectedHandler() = default;
+ConnectedHandler::~ConnectedHandler() = default;
+
+ConnectedHandler::ConnectedHandler(const ConnectedHandler&) = default;
+ConnectedHandler& ConnectedHandler::operator=(const ConnectedHandler&) =
+    default;
+ConnectedHandler::ConnectedHandler(ConnectedHandler&&) = default;
+ConnectedHandler& ConnectedHandler::operator=(ConnectedHandler&&) = default;
+
+int ConnectedHandler::OnConnected(const TransportInfo& info) {
+  transports_.push_back(info);
+  return result_;
 }
 
 }  // namespace net

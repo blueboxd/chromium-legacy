@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
@@ -13,7 +13,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation SigninEarlGreyUtilsImpl
+@implementation SigninEarlGreyImpl
 
 - (FakeChromeIdentity*)fakeIdentity1 {
   return [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
@@ -34,11 +34,11 @@
 }
 
 - (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
-  [SigninEarlGreyUtilsAppInterface addFakeIdentity:fakeIdentity];
+  [SigninEarlGreyAppInterface addFakeIdentity:fakeIdentity];
 }
 
 - (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
-  [SigninEarlGreyUtilsAppInterface forgetFakeIdentity:fakeIdentity];
+  [SigninEarlGreyAppInterface forgetFakeIdentity:fakeIdentity];
 }
 
 - (void)checkSignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
@@ -52,14 +52,14 @@
                  base::test::ios::kWaitForActionTimeout,
                  ^bool {
                    NSString* primaryAccountGaiaID =
-                       [SigninEarlGreyUtilsAppInterface primaryAccountGaiaID];
+                       [SigninEarlGreyAppInterface primaryAccountGaiaID];
                    return primaryAccountGaiaID.length > 0;
                  }),
              @"Sign in did not complete.");
   GREYWaitForAppToIdle(@"App failed to idle");
 
   NSString* primaryAccountGaiaID =
-      [SigninEarlGreyUtilsAppInterface primaryAccountGaiaID];
+      [SigninEarlGreyAppInterface primaryAccountGaiaID];
 
   NSString* errorStr = [NSString
       stringWithFormat:@"Unexpected Gaia ID of the signed in user [expected = "
@@ -75,12 +75,12 @@
   // the assert.
   GREYWaitForAppToIdle(@"App failed to idle");
 
-  EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyUtilsAppInterface isSignedOut],
+  EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyAppInterface isSignedOut],
                              @"Unexpected signed in user");
 }
 
 - (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
-  [SigninEarlGreyUtilsAppInterface removeFakeIdentity:fakeIdentity];
+  [SigninEarlGreyAppInterface removeFakeIdentity:fakeIdentity];
 }
 
 - (void)waitForMatcher:(id<GREYMatcher>)matcher {

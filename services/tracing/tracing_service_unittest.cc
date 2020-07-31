@@ -41,40 +41,8 @@
 namespace tracing {
 namespace {
 
-// A task runner which can be dynamically redirected to a different task runner.
-class ProxyTaskRunner : public base::SequencedTaskRunner {
- public:
-  ProxyTaskRunner() = default;
-
-  void set_task_runner(scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    task_runner_ = task_runner;
-  }
-
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override {
-    return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
-  }
-
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override {
-    return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
-                                                    delay);
-  }
-
-  bool RunsTasksInCurrentSequence() const override {
-    return task_runner_->RunsTasksInCurrentSequence();
-  }
-
- private:
-  ~ProxyTaskRunner() override = default;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-};
-
-ProxyTaskRunner* GetProxyTaskRunner() {
-  static base::NoDestructor<ProxyTaskRunner> task_runner;
+RebindableTaskRunner* GetPerfettoTaskRunner() {
+  static base::NoDestructor<RebindableTaskRunner> task_runner;
   return task_runner.get();
 }
 
@@ -86,12 +54,12 @@ class TracingServiceTest : public testing::Test {
     // Since Perfetto's platform backend can only be initialized once in a
     // process, we give it a task runner that can outlive the per-test task
     // environment.
-    auto* proxy_task_runner = GetProxyTaskRunner();
+    auto* perfetto_task_runner = GetPerfettoTaskRunner();
     auto* perfetto_platform =
         PerfettoTracedProcess::Get()->perfetto_platform_for_testing();
     if (!perfetto_platform->did_start_task_runner())
-      perfetto_platform->StartTaskRunner(proxy_task_runner);
-    proxy_task_runner->set_task_runner(base::ThreadTaskRunnerHandle::Get());
+      perfetto_platform->StartTaskRunner(perfetto_task_runner);
+    perfetto_task_runner->set_task_runner(base::ThreadTaskRunnerHandle::Get());
 
     // Also tell PerfettoTracedProcess to use the current task environment.
     PerfettoTracedProcess::ResetTaskRunnerForTesting(

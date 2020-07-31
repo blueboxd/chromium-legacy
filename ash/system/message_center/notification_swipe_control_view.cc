@@ -185,17 +185,25 @@ const char* NotificationSwipeControlView::GetClassName() const {
 void NotificationSwipeControlView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   DCHECK(sender);
+  std::string notification_id = message_view_->notification_id();
+  auto weak_this = weak_factory_.GetWeakPtr();
+
   if (sender == settings_button_) {
     message_view_->OnSettingsButtonPressed(event);
-    metrics_utils::LogSettingsShown(message_view_->notification_id(),
+    metrics_utils::LogSettingsShown(notification_id,
                                     /*is_slide_controls=*/true,
                                     /*is_popup=*/false);
   } else if (sender == snooze_button_) {
     message_view_->OnSnoozeButtonPressed(event);
-    metrics_utils::LogSnoozed(message_view_->notification_id(),
+    metrics_utils::LogSnoozed(notification_id,
                               /*is_slide_controls=*/true,
                               /*is_popup=*/false);
   }
+
+  // Button handlers of |message_view_| may have closed |this|.
+  if (!weak_this)
+    return;
+
   HideButtons();
 
   // Closing the swipe control is done in these button pressed handlers.

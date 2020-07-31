@@ -138,7 +138,7 @@ config("sqlite_warnings") {
       ]
     }
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     cflags += [
       # SQLite doesn't believe in compiler warnings, preferring testing.
       # http://www.sqlite.org/faq.html#q17
@@ -191,7 +191,7 @@ component("chromium_sqlite3") {
     }
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     defines += [
       # Linux provides fdatasync(), a faster equivalent of fsync().
       "fdatasync=fdatasync",
@@ -270,7 +270,7 @@ component("dev_sqlite3") {
     }
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     defines += [
       # Linux provides fdatasync(), a faster equivalent of fsync().
       "fdatasync=fdatasync",
@@ -344,7 +344,7 @@ group("sqlite_dev") {
   ]
 }
 
-if (is_win || is_mac || is_linux) {
+if (is_win || is_mac || is_linux || is_chromeos) {
   executable("sqlite_shell") {
     include_dirs = [
       # SQLite's shell.c contains an '#include "sqlite3.h", which we want to be

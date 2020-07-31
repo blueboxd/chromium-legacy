@@ -110,8 +110,13 @@ NSString* const kLastCommittedItemIndexDeprecatedKey =
                forKey:kCertificatePolicyCacheStorageKey];
   if (_userData)
     _userData->Encode(coder);
+  web::UserAgentType userAgentType = _userAgentType;
+  if (userAgentType == web::UserAgentType::AUTOMATIC &&
+      !web::features::UseWebClientDefaultUserAgent()) {
+    userAgentType = web::UserAgentType::MOBILE;
+  }
   web::nscoder_util::EncodeString(
-      coder, kUserAgentKey, web::GetUserAgentTypeDescription(_userAgentType));
+      coder, kUserAgentKey, web::GetUserAgentTypeDescription(userAgentType));
 }
 
 @end

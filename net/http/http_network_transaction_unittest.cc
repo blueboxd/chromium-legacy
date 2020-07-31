@@ -43,6 +43,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -141,6 +142,8 @@ using net::test::IsOk;
 using base::ASCIIToUTF16;
 
 using testing::AnyOf;
+using testing::ElementsAre;
+using testing::IsEmpty;
 
 //-----------------------------------------------------------------------------
 
@@ -356,12 +359,20 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   }
 };
 
+// A default minimal HttpRequestInfo for use in tests, targeting HTTP.
 HttpRequestInfo DefaultRequestInfo() {
   HttpRequestInfo info;
   info.method = "GET";
-  info.url = GURL("http://www.example.org");
+  info.url = GURL("http://foo.test");
   info.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  return info;
+}
+
+// The default info for transports to the embedded HTTP server.
+TransportInfo EmbeddedHttpServerTransportInfo() {
+  TransportInfo info;
+  info.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 80);
   return info;
 }
 
@@ -885,12 +896,15 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETHostResolutionFailure) {
 // remote endpoint, the ConnectedCallback is never called.
 TEST_F(HttpNetworkTransactionTest, ConnectedCallbackNeverCalled) {
   auto resolver = std::make_unique<MockHostResolver>();
-  resolver->rules()->AddSimulatedTimeoutFailure("www.example.org");
+  resolver->rules()->AddSimulatedTimeoutFailure("bar.test");
   session_deps_.host_resolver = std::move(resolver);
 
   ConnectedHandler connected_handler;
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
   auto request = DefaultRequestInfo();
+  request.url = GURL("http://bar.test");
+
   HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session.get());
   transaction.SetConnectedCallback(connected_handler.Callback());
 
@@ -898,7 +912,7 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackNeverCalled) {
   transaction.Start(&request, callback.callback(), NetLogWithSource());
   callback.WaitForResult();
 
-  EXPECT_EQ(connected_handler.call_count(), 0);
+  EXPECT_THAT(connected_handler.transports(), IsEmpty());
 }
 
 // This test verifies that if the ConnectedCallback returns an error, the
@@ -924,7 +938,8 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackFailure) {
       IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NOT_IMPLEMENTED));
 
-  EXPECT_EQ(connected_handler.call_count(), 1);
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo()));
 }
 
 // This test verifies that the ConnectedCallback is called once in the case of
@@ -949,7 +964,8 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledOnce) {
       IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
-  EXPECT_EQ(connected_handler.call_count(), 1);
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo()));
 }
 
 // This test verifies that the ConnectedCallback is called once more per
@@ -985,7 +1001,8 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledOnEachAuthChallenge) {
       IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
 
-  EXPECT_EQ(connected_handler.call_count(), 1);
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo()));
 
   // Second request, connects again.
   TestCompletionCallback callback2;
@@ -994,7 +1011,9 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledOnEachAuthChallenge) {
               IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
 
-  EXPECT_EQ(connected_handler.call_count(), 2);
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo(),
+                          EmbeddedHttpServerTransportInfo()));
 }
 
 // This test verifies that the ConnectedCallback is called once more per retry.
@@ -1026,7 +1045,9 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledOnEachRetry) {
       IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
 
-  EXPECT_EQ(connected_handler.call_count(), 2);
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo(),
+                          EmbeddedHttpServerTransportInfo()));
 }
 
 // Allow up to 4 bytes of junk to precede status line.
@@ -1379,7 +1400,8 @@ TEST_F(HttpNetworkTransactionTest, Head) {
   EXPECT_EQ(1234, response->headers->GetContentLength());
   EXPECT_EQ("HTTP/1.1 404 Not Found", response->headers->GetStatusLine());
   EXPECT_TRUE(response->proxy_server.is_direct());
-  EXPECT_EQ(connected_handler.call_count(), 1);
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo()));
 
   std::string server_header;
   size_t iter = 0;
@@ -3445,9 +3467,12 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
+  ConnectedHandler connected_handler;
 
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  trans->SetConnectedCallback(connected_handler.Callback());
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -3462,6 +3487,12 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
       entries, pos,
       NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       NetLogEventPhase::NONE);
+
+  // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
+  // authentication is required. We should notify the callback that a connection
+  // was established, even though the stream might not be ready for us to send
+  // data through it.
+  EXPECT_THAT(connected_handler.transports(), IsEmpty());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3492,6 +3523,11 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(5, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  TransportInfo expected_transport;
+  expected_transport.type = TransportType::kProxied;
+  expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(expected_transport));
 
   // Check that credentials were successfully cached, with the right target.
   HttpAuthCache::Entry* entry = session->http_auth_cache()->Lookup(
@@ -3576,10 +3612,13 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
+  ConnectedHandler connected_handler;
   TestCompletionCallback callback1;
 
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  trans->SetConnectedCallback(connected_handler.Callback());
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -3603,6 +3642,12 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
+  // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
+  // authentication is required. We should notify the callback that a connection
+  // was established, even though the stream might not be ready for us to send
+  // data through it.
+  EXPECT_THAT(connected_handler.transports(), IsEmpty());
+
   LoadTimingInfo load_timing_info;
   // CONNECT requests and responses are handled at the connect job level, so
   // the transaction does not yet have a connection.
@@ -3624,6 +3669,11 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(5, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  TransportInfo expected_transport;
+  expected_transport.type = TransportType::kProxied;
+  expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(expected_transport));
 
   // The password prompt info should not be set.
   EXPECT_FALSE(response->auth_challenge.has_value());
@@ -5672,10 +5722,14 @@ class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
   SameProxyWithDifferentSchemesProxyResolver() {}
   ~SameProxyWithDifferentSchemesProxyResolver() override {}
 
-  static std::string ProxyHostPortPairAsString() { return "proxy.test:10000"; }
+  static constexpr uint16_t kProxyPort = 10000;
 
   static HostPortPair ProxyHostPortPair() {
-    return HostPortPair::FromString(ProxyHostPortPairAsString());
+    return HostPortPair("proxy.test", kProxyPort);
+  }
+
+  static std::string ProxyHostPortPairAsString() {
+    return ProxyHostPortPair().ToString();
   }
 
   // ProxyResolver implementation.
@@ -5870,29 +5924,44 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
   };
 
   for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.url);
+
     HttpRequestInfo request;
     request.method = "GET";
     request.url = test_case.url;
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-    std::unique_ptr<HttpNetworkTransaction> trans =
-        std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
-                                                 session.get());
+    ConnectedHandler connected_handler;
+
+    auto transaction = std::make_unique<HttpNetworkTransaction>(
+        DEFAULT_PRIORITY, session.get());
+
+    transaction->SetConnectedCallback(connected_handler.Callback());
+
     TestCompletionCallback callback;
-    int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+    int rv =
+        transaction->Start(&request, callback.callback(), NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
 
-    const HttpResponseInfo* response = trans->GetResponseInfo();
+    const HttpResponseInfo* response = transaction->GetResponseInfo();
     ASSERT_TRUE(response);
     ASSERT_TRUE(response->headers);
     EXPECT_EQ(200, response->headers->response_code());
     std::string response_data;
-    EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
+    EXPECT_THAT(ReadTransaction(transaction.get(), &response_data), IsOk());
     EXPECT_EQ(test_case.expected_response, response_data);
+
+    TransportInfo expected_transport;
+    expected_transport.type = TransportType::kProxied;
+    expected_transport.endpoint =
+        IPEndPoint(IPAddress::IPv4Localhost(),
+                   SameProxyWithDifferentSchemesProxyResolver::kProxyPort);
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(expected_transport));
 
     // Return the socket to the socket pool, so can make sure it's not used for
     // the next requests.
-    trans.reset();
+    transaction.reset();
     base::RunLoop().RunUntilIdle();
 
     // Check the number of idle sockets in the pool, to make sure that used
@@ -6256,9 +6325,12 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
+  ConnectedHandler connected_handler;
   TestCompletionCallback callback1;
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  trans.SetConnectedCallback(connected_handler.Callback());
 
   int rv = trans.Start(&request, callback1.callback(), log.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -6279,6 +6351,11 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  TransportInfo expected_transport;
+  expected_transport.type = TransportType::kProxied;
+  expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(expected_transport));
 
   // The password prompt info should not be set.
   EXPECT_FALSE(response->auth_challenge.has_value());
@@ -6319,9 +6396,12 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
+  ConnectedHandler connected_handler;
   TestCompletionCallback callback1;
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  trans.SetConnectedCallback(connected_handler.Callback());
 
   int rv = trans.Start(&request, callback1.callback(), log.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -6339,6 +6419,11 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   EXPECT_TRUE(response->proxy_server.is_https());
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  TransportInfo expected_transport;
+  expected_transport.type = TransportType::kProxied;
+  expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(expected_transport));
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
@@ -16015,8 +16100,12 @@ TEST_F(HttpNetworkTransactionTest, ProxyGet) {
   EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
                         HostPortPair::FromString("myproxy:70")),
             response->proxy_server);
-  EXPECT_EQ(1, connected_handler.call_count());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  TransportInfo expected_transport;
+  expected_transport.type = TransportType::kProxied;
+  expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(expected_transport));
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
@@ -16095,7 +16184,11 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGet) {
   EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
                         HostPortPair::FromString("myproxy:70")),
             response->proxy_server);
-  EXPECT_EQ(1, connected_handler.call_count());
+
+  TransportInfo expected_transport;
+  expected_transport.type = TransportType::kProxied;
+  expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(expected_transport));
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));

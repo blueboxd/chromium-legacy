@@ -5872,15 +5872,21 @@
     "policy_pref_mapping_test": [
       {
         "policies": {
-          "DeviceMinimumVersion": [
-            {"chromeos_version" : "13121.0.0", "warning_period" : 0, "aue_warning_period" : 14}
-          ]
+          "DeviceMinimumVersion": {
+            "requirements": [
+              {"chromeos_version" : "13121.0.0", "warning_period" : 0, "aue_warning_period" : 14}
+            ],
+            "unmanaged_user_restricted": true
+          }
         },
         "prefs": {
           "cros.device.min_version": {
-            "value": [
-              {"chromeos_version" : "13121.0.0", "warning_period" : 0, "aue_warning_period" : 14}
-            ]
+            "value": {
+              "requirements": [
+                {"chromeos_version" : "13121.0.0", "warning_period" : 0, "aue_warning_period" : 14}
+              ],
+              "unmanaged_user_restricted": true
+            }
           }
         }
       }

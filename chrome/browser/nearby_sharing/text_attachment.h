@@ -9,21 +9,12 @@
 
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/attachment.h"
+#include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
 
 // Represents a text attachment.
 class TextAttachment : public Attachment {
  public:
-  // Different types are used to offer richer experiences on Receiver side,
-  // mainly for: 1. displaying notification of attachment types, 2. opening
-  // different types with different apps. Remember to update Notifications,
-  // ShareTarget, etc once more types are introduced here.
-  enum class Type {
-    kText,
-    kUrl,
-    kAddress,
-    kPhoneNumber,
-    kMaxValue = kPhoneNumber
-  };
+  using Type = sharing::mojom::TextMetadata::Type;
 
   TextAttachment(std::string text_body, Type type, int64_t size);
   ~TextAttachment() override;

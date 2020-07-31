@@ -713,6 +713,12 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM" desc="The 'Manage Interests' action for the Discover feed header menu.">
         Manage Interests
       </message>
+      <message name="IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM" desc="The 'Turn Off' action for the Discover feed header menu.">
+        Turn Off
+      </message>
+      <message name="IDS_IOS_DISCOVER_FEED_MENU_TURN_ON_ITEM" desc="The 'Turn On' action for the Discover feed header menu.">
+        Turn On
+      </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_CANNOT_DETERMINE_FILE_SIZE" desc="Message displayed when the size of the file to be downloaded is unknown. [Length: 30em] [iOS only]">
         Cannot determine file size.
       </message>

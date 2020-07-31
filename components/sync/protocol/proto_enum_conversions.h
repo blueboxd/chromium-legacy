@@ -108,6 +108,9 @@ const char* ProtoEnumToString(
     sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
 
 const char* ProtoEnumToString(
+    sync_pb::AutofillProfileSpecifics::VerificationStatus status);
+
+const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecifics::SecurityType security_type);
 
 const char* ProtoEnumToString(

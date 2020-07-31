@@ -10,7 +10,7 @@
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
-#include "third_party/blink/public/common/tokens/worker_tokens.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class GURL;
 

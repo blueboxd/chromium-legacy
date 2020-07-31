@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -34,7 +35,8 @@ void DestroyPrerenderContents(
   content::WebContents* web_contents = std::move(web_contents_getter).Run();
   if (web_contents) {
     prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(web_contents);
+        prerender::ChromePrerenderContentsDelegate::FromWebContents(
+            web_contents);
     if (prerender_contents)
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
   }
@@ -48,7 +50,8 @@ void CreateSafeBrowsingUserInteractionObserver(
   content::WebContents* web_contents = web_contents_getter.Run();
   // Don't delay the interstitial for prerender pages.
   if (!web_contents ||
-      prerender::PrerenderContents::FromWebContents(web_contents)) {
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(
+          web_contents)) {
     SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager, resource);
     return;
   }

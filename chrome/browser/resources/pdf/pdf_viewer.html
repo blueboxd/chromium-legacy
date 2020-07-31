@@ -1,4 +1,9 @@
-<style include="pdf-viewer-shared-style">
+<style include="pdf-viewer-shared-style cr-hidden-style">
+  viewer-pdf-sidenav,
+  viewer-pdf-toolbar-new {
+    --pdf-toolbar-text-color: rgb(241, 241, 241);
+  }
+
   #content-focus-rectangle {
     border: 2px solid white;
     border-radius: 2px;
@@ -46,11 +51,6 @@
     display: flex;
     flex: 1;
     overflow: hidden;
-  }
-
-  #sidenav {
-    background-color: var(--viewer-pdf-toolbar-background-color);
-    min-width: 260px;
   }
 
   :host-context([pdf-viewer-update-enabled]) #plugin {
@@ -134,7 +134,8 @@
 
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
-    <div id="sidenav" hidden="[[sidenavCollapsed_]]"></div>
+    <viewer-pdf-sidenav id="sidenav" hidden="[[sidenavCollapsed_]]">
+    </viewer-pdf-sidenav>
     <div id="main" on-scroll="onScroll_">
       <div id="sizer"></div>
       <div id="content"></div>

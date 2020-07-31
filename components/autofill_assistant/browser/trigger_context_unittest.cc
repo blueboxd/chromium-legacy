@@ -10,51 +10,40 @@
 namespace autofill_assistant {
 namespace {
 
+using ::testing::Eq;
 using ::testing::IsEmpty;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 TEST(TriggerContextTest, Empty) {
   auto empty = TriggerContext::CreateEmpty();
   ASSERT_TRUE(empty);
 
-  google::protobuf::RepeatedPtrField<ScriptParameterProto> parameters_proto;
-  empty->AddParameters(&parameters_proto);
-  EXPECT_THAT(parameters_proto, IsEmpty());
-
+  EXPECT_THAT(empty->GetParameters(), IsEmpty());
   EXPECT_EQ("", empty->experiment_ids());
 }
 
 TEST(TriggerContextTest, Create) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  parameters["c"] = "d";
+  std::map<std::string, std::string> parameters = {{"key_a", "value_a"},
+                                                   {"key_b", "value_b"}};
   auto context = TriggerContext::Create(parameters, "exps");
   ASSERT_TRUE(context);
 
-  google::protobuf::RepeatedPtrField<ScriptParameterProto> parameters_proto;
-  context->AddParameters(&parameters_proto);
-  EXPECT_THAT(parameters_proto, SizeIs(2));
+  EXPECT_THAT(
+      context->GetParameters(),
+      UnorderedElementsAre(Pair("key_a", "value_a"), Pair("key_b", "value_b")));
 
-  EXPECT_EQ("a", parameters_proto.Get(0).name());
-  EXPECT_EQ("b", parameters_proto.Get(0).value());
-  EXPECT_EQ("c", parameters_proto.Get(1).name());
-  EXPECT_EQ("d", parameters_proto.Get(1).value());
-
-  EXPECT_EQ("b", context->GetParameter("a").value_or(""));
-  EXPECT_EQ("d", context->GetParameter("c").value_or(""));
-  EXPECT_FALSE(context->GetParameter("not_found"));
+  EXPECT_THAT(context->GetParameter("key_a"), Eq("value_a"));
+  EXPECT_THAT(context->GetParameter("key_b"), Eq("value_b"));
+  EXPECT_THAT(context->GetParameter("not_found"), Eq(base::nullopt));
 
   EXPECT_EQ("exps", context->experiment_ids());
 }
 
 TEST(TriggerContextTest, Merge) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  auto context1 = TriggerContext::Create(parameters, "exp1");
-
-  parameters.clear();
-  parameters["c"] = "d";
-  auto context2 = TriggerContext::Create(parameters, "exp2");
+  auto context1 = TriggerContext::Create({{"key_a", "value_a"}}, "exp1");
+  auto context2 = TriggerContext::Create({{"key_b", "value_b"}}, "exp2");
 
   // Adding empty to make sure empty contexts are properly skipped
   auto empty = TriggerContext::CreateEmpty();
@@ -64,20 +53,15 @@ TEST(TriggerContextTest, Merge) {
 
   ASSERT_TRUE(merged);
 
-  google::protobuf::RepeatedPtrField<ScriptParameterProto> parameters_proto;
-  merged->AddParameters(&parameters_proto);
-  EXPECT_THAT(parameters_proto, SizeIs(2));
+  EXPECT_THAT(
+      merged->GetParameters(),
+      UnorderedElementsAre(Pair("key_a", "value_a"), Pair("key_b", "value_b")));
 
-  EXPECT_EQ("a", parameters_proto.Get(0).name());
-  EXPECT_EQ("b", parameters_proto.Get(0).value());
-  EXPECT_EQ("c", parameters_proto.Get(1).name());
-  EXPECT_EQ("d", parameters_proto.Get(1).value());
+  EXPECT_THAT(merged->GetParameter("key_a"), Eq("value_a"));
+  EXPECT_THAT(merged->GetParameter("key_b"), Eq("value_b"));
+  EXPECT_THAT(merged->GetParameter("not_found"), Eq(base::nullopt));
 
-  EXPECT_EQ("b", merged->GetParameter("a").value_or(""));
-  EXPECT_EQ("d", merged->GetParameter("c").value_or(""));
-  EXPECT_FALSE(merged->GetParameter("not_found"));
-
-  EXPECT_EQ("exp1,exp2", merged->experiment_ids());
+  EXPECT_EQ(merged->experiment_ids(), "exp1,exp2");
 }
 
 TEST(TriggerContextTest, CCT) {
@@ -162,15 +146,13 @@ TEST(TriggerContextTest, MergeAccountsMatchingStatusTest) {
 }
 
 TEST(TriggerContextTest, HasExperimentId) {
-  std::map<std::string, std::string> parameters;
-
-  auto context = TriggerContext::Create(parameters, "1,2,3");
+  auto context = TriggerContext::Create({}, "1,2,3");
   ASSERT_TRUE(context);
 
   EXPECT_TRUE(context->HasExperimentId("2"));
   EXPECT_FALSE(context->HasExperimentId("4"));
 
-  auto other_context = TriggerContext::Create(parameters, "4,5,6");
+  auto other_context = TriggerContext::Create({}, "4,5,6");
   ASSERT_TRUE(other_context);
 
   EXPECT_TRUE(other_context->HasExperimentId("4"));
@@ -184,20 +166,20 @@ TEST(TriggerContextTest, HasExperimentId) {
   EXPECT_FALSE(merged->HasExperimentId("7"));
 
   // Double commas should not allow empty element to match.
-  auto double_comma = TriggerContext::Create(parameters, "1,,2");
+  auto double_comma = TriggerContext::Create({}, "1,,2");
   EXPECT_TRUE(double_comma->HasExperimentId("2"));
   EXPECT_FALSE(double_comma->HasExperimentId(""));
 
   // Empty context should not aloow empty element to match.
-  auto empty = TriggerContext::Create(parameters, "");
+  auto empty = TriggerContext::Create({}, "");
   EXPECT_FALSE(empty->HasExperimentId(""));
 
   // Lone comma does not create empty elements.
-  auto lone_comma = TriggerContext::Create(parameters, ",");
+  auto lone_comma = TriggerContext::Create({}, ",");
   EXPECT_FALSE(lone_comma->HasExperimentId(""));
 
   // Single element should match.
-  auto single_element = TriggerContext::Create(parameters, "1");
+  auto single_element = TriggerContext::Create({}, "1");
   EXPECT_TRUE(single_element->HasExperimentId("1"));
 }
 

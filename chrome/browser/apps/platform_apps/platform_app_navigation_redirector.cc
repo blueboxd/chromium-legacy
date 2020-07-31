@@ -7,6 +7,7 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -43,7 +44,7 @@ bool LaunchAppWithUrl(const scoped_refptr<const Extension> app,
 
   // If prerendering, don't launch the app but abort the navigation.
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(source);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(source);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_NAVIGATION_INTERCEPTED);
     return true;

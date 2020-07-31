@@ -543,8 +543,9 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     promise_image_access_helper_.BeginAccess(
         std::move(image_contexts), &begin_semaphores, &end_semaphores);
     if (!begin_semaphores.empty()) {
-      auto result = output_sk_surface()->wait(begin_semaphores.size(),
-                                              begin_semaphores.data());
+      auto result = output_sk_surface()->wait(
+          begin_semaphores.size(), begin_semaphores.data(),
+          /*deleteSemaphoresAfterWait=*/false);
       DCHECK(result);
     }
 
@@ -668,8 +669,9 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     promise_image_access_helper_.BeginAccess(
         std::move(image_contexts), &begin_semaphores, &end_semaphores);
     if (!begin_semaphores.empty()) {
-      auto result = offscreen.surface()->wait(begin_semaphores.size(),
-                                              begin_semaphores.data());
+      auto result = offscreen.surface()->wait(
+          begin_semaphores.size(), begin_semaphores.data(),
+          /*deleteSemaphoresAfterWait=*/false);
       DCHECK(result);
     }
     offscreen.surface()->draw(ddl);

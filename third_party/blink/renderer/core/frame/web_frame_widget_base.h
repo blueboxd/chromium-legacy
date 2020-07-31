@@ -385,6 +385,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   base::Optional<gfx::Point> GetAndResetContextMenuLocation();
 
+  void BindWidgetCompositor(
+      mojo::PendingReceiver<mojom::blink::WidgetCompositor> receiver) override;
+
   // Called when the FrameView for this Widget's local root is created.
   virtual void DidCreateLocalRootView() {}
 

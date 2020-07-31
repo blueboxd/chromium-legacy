@@ -28,7 +28,7 @@ config("libusb_warnings") {
   if (is_clang) {
     # guid_eq in windows_usb.c is unused.
     cflags = [ "-Wno-unused-function" ]
-    if (is_linux && !use_udev) {
+    if ((is_linux || is_chromeos) && !use_udev) {
       cflags += [ "-Wno-pointer-sign" ]
     }
   }
@@ -115,7 +115,7 @@ static_library("libusb") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "src/libusb/os/linux_usbfs.c",
       "src/libusb/os/linux_usbfs.h",
@@ -139,7 +139,7 @@ static_library("libusb") {
     deps += [ "//build/linux/libudev" ]
   }
 
-  if (is_linux && !use_udev) {
+  if ((is_linux || is_chromeos) && !use_udev) {
     sources += [ "src/libusb/os/linux_netlink.c" ]
     defines += [ "HAVE_LINUX_NETLINK_H" ]
   }

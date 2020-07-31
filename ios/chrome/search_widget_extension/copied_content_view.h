@@ -30,8 +30,7 @@ typedef NS_ENUM(NSInteger, CopiedContentType) {
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-- (void)setCopiedContentType:(CopiedContentType)type
-                  copiedText:(NSString*)copiedText;
+- (void)setCopiedContentType:(CopiedContentType)type;
 
 @end
 

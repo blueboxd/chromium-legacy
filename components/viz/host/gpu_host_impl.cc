@@ -25,8 +25,6 @@
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/ozone_platform.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -38,6 +36,8 @@
 
 #if defined(USE_OZONE)
 #include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace viz {

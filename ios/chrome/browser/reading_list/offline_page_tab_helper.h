@@ -134,6 +134,11 @@ class OfflinePageTabHelper : public web::WebStateUserData<OfflinePageTabHelper>,
   bool navigation_is_renderer_initiated_ = false;
 
   WEB_STATE_USER_DATA_KEY_DECL();
+
+  // Member variables should appear before the WeakPtrFactory, to ensure
+  // that any WeakPtrs to OfflinePageTabHelper are invalidated before its
+  // members variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<OfflinePageTabHelper> weak_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_OFFLINE_PAGE_TAB_HELPER_H_

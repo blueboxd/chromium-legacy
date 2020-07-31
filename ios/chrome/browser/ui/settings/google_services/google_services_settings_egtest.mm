@@ -5,8 +5,8 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
@@ -91,12 +91,12 @@ using chrome_test_util::SettingsDoneButton;
 // Regression test for crbug.com/1033901
 - (void)testRemovePrimaryAccount {
   // Signin.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   // Open "Google Services" settings.
   [self openGoogleServicesSettings];
   // Remove the primary account.
-  [SigninEarlGreyUtils forgetFakeIdentity:fakeIdentity];
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
   // Assert the UI has been reloaded by testing for the signin cell being
   // visible.
   id<GREYMatcher> signinCellMatcher =
@@ -122,8 +122,8 @@ using chrome_test_util::SettingsDoneButton;
     [GoogleServicesSettingsAppInterface
         unblockAllNavigationRequestsForCurrentWebState];
   }];
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
-  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
   // Open "Google Services" settings.
   [self openGoogleServicesSettings];
   // Open sign-in.
@@ -163,7 +163,7 @@ using chrome_test_util::SettingsDoneButton;
 // See: crbug.com/1076843
 - (void)testOpenSSOAddAccount {
   // Signin.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   // Open "Google Services" settings.
   [self openGoogleServicesSettings];
@@ -234,7 +234,7 @@ using chrome_test_util::SettingsDoneButton;
        forUserPref:password_manager::prefs::kPasswordLeakDetectionEnabled];
 
   // Sign in.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   // Open "Google Services" settings.
   [self openGoogleServicesSettings];
@@ -294,7 +294,7 @@ using chrome_test_util::SettingsDoneButton;
        forUserPref:password_manager::prefs::kPasswordLeakDetectionEnabled];
 
   // Sign in.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   // Open "Google Services" settings.
   [self openGoogleServicesSettings];

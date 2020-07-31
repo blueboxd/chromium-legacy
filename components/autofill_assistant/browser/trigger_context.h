@@ -37,9 +37,8 @@ class TriggerContext {
   TriggerContext();
   virtual ~TriggerContext();
 
-  // Adds all parameters to the given proto field.
-  virtual void AddParameters(
-      google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const = 0;
+  // Returns all parameters as a map.
+  virtual std::map<std::string, std::string> GetParameters() const = 0;
 
   // Returns the value of a specific parameter, if present.
   virtual base::Optional<std::string> GetParameter(
@@ -86,8 +85,7 @@ class TriggerContextImpl : public TriggerContext {
   }
 
   // Implements TriggerContext:
-  void AddParameters(google::protobuf::RepeatedPtrField<ScriptParameterProto>*
-                         dest) const override;
+  std::map<std::string, std::string> GetParameters() const override;
   base::Optional<std::string> GetParameter(
       const std::string& name) const override;
   std::string experiment_ids() const override;
@@ -123,8 +121,7 @@ class MergedTriggerContext : public TriggerContext {
   ~MergedTriggerContext() override;
 
   // Implements TriggerContext:
-  void AddParameters(google::protobuf::RepeatedPtrField<ScriptParameterProto>*
-                         dest) const override;
+  std::map<std::string, std::string> GetParameters() const override;
   base::Optional<std::string> GetParameter(
       const std::string& name) const override;
   std::string experiment_ids() const override;

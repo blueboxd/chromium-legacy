@@ -78,6 +78,9 @@ class ReadingListModel;
 // Disconnects the mediator.
 - (void)disconnect;
 
+// Reloads content suggestions.
+- (void)reloadAllData;
+
 // The notification promo owned by this mediator.
 - (NotificationPromoWhatsNew*)notificationPromo;
 

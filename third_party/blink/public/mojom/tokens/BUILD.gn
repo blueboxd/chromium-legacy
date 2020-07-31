@@ -9,22 +9,25 @@ mojom_component("tokens") {
   output_prefix = "tokens_mojom"
   macro_prefix = "TOKENS_MOJOM"
 
-  sources = [
-    "frame_token.mojom",
-    "portal_token.mojom",
-    "worker_tokens.mojom",
-  ]
+  sources = [ "tokens.mojom" ]
 
   shared_cpp_typemaps = [
     {
       types = [
+        # FRAME TOKENS
+        {
+          mojom = "blink.mojom.LocalFrameToken"
+          cpp = "::blink::LocalFrameToken"
+        },
+        {
+          mojom = "blink.mojom.RemoteFrameToken"
+          cpp = "::blink::RemoteFrameToken"
+        },
+
+        # WORKER TOKENS
         {
           mojom = "blink.mojom.DedicatedWorkerToken"
           cpp = "::blink::DedicatedWorkerToken"
-        },
-        {
-          mojom = "blink.mojom.PortalToken"
-          cpp = "::blink::PortalToken"
         },
         {
           mojom = "blink.mojom.ServiceWorkerToken"
@@ -34,22 +37,21 @@ mojom_component("tokens") {
           mojom = "blink.mojom.SharedWorkerToken"
           cpp = "::blink::SharedWorkerToken"
         },
-      ]
-      traits_headers = [
-        "//third_party/blink/public/common/tokens/portal_token_mojom_traits.h",
-        "//third_party/blink/public/common/tokens/worker_tokens_mojom_traits.h",
-      ]
-    },
-    {
-      types = [
+
+        # OTHER TOKENS
+        #
+        # Keep this section last.
+        #
+        # If you have multiple tokens that make a thematic group, please lift
+        # them to their own section, in alphabetical order. If adding a new
+        # token here, please keep the following list in alphabetic order.
         {
-          mojom = "blink.mojom.FrameToken"
-          cpp = "::blink::FrameToken"
+          mojom = "blink.mojom.PortalToken"
+          cpp = "::blink::PortalToken"
         },
       ]
-      traits_headers = [
-        "//third_party/blink/public/common/tokens/frame_token_mojom_traits.h",
-      ]
+      traits_headers =
+          [ "//third_party/blink/public/common/tokens/tokens_mojom_traits.h" ]
     },
   ]
 

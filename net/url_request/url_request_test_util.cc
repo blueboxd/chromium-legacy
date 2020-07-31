@@ -247,8 +247,8 @@ void TestDelegate::RunUntilAuthRequired() {
   run_loop.Run();
 }
 
-int TestDelegate::OnConnected(URLRequest* request) {
-  connected_count_++;
+int TestDelegate::OnConnected(URLRequest* request, const TransportInfo& info) {
+  transports_.push_back(info);
   return on_connected_result_;
 }
 

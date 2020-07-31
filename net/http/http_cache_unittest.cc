@@ -35,6 +35,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -75,9 +76,11 @@ using net::test::IsOk;
 using testing::AllOf;
 using testing::ByRef;
 using testing::Contains;
+using testing::ElementsAre;
 using testing::Eq;
 using testing::Field;
 using testing::Gt;
+using testing::IsEmpty;
 using testing::NotNull;
 
 using base::Time;
@@ -371,6 +374,7 @@ const MockTransaction kFastNoStoreGET_Transaction = {
     base::Time(),
     "",
     LOAD_VALIDATE_CACHE,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n",
     base::Time(),
@@ -381,7 +385,8 @@ const MockTransaction kFastNoStoreGET_Transaction = {
     nullptr,
     0,
     0,
-    OK};
+    OK,
+};
 
 // This class provides a handler for kRangeGET_TransactionOK so that the range
 // request can be served on demand.
@@ -565,6 +570,7 @@ const MockTransaction kRangeGET_TransactionOK = {
     base::Time(),
     "Range: bytes = 40-49\r\n" EXTRA_HEADER,
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 206 Partial Content",
     "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
     "ETag: \"foo\"\n"
@@ -578,7 +584,8 @@ const MockTransaction kRangeGET_TransactionOK = {
     nullptr,
     0,
     0,
-    OK};
+    OK,
+};
 
 const char kFullRangeData[] =
     "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 "
@@ -720,6 +727,13 @@ bool LogContainsEventType(const RecordingBoundTestNetLog& log,
   return !log.GetEntriesWithType(expected).empty();
 }
 
+// Returns a TransportInfo distinct from the default for mock transactions.
+TransportInfo TestTransportInfo() {
+  TransportInfo result;
+  result.endpoint = IPEndPoint(IPAddress(42, 0, 1, 2), 1337);
+  return result;
+}
+
 }  // namespace
 
 using HttpCacheTest = TestWithTaskEnvironment;
@@ -826,7 +840,9 @@ TEST_F(HttpCacheTest, SimpleGET_ConnectedCallback) {
 
   ConnectedHandler connected_handler;
 
-  MockHttpRequest request(kSimpleGET_Transaction);
+  ScopedMockTransaction mock_transaction(kSimpleGET_Transaction);
+  mock_transaction.transport_info = TestTransportInfo();
+  MockHttpRequest request(mock_transaction);
 
   std::unique_ptr<HttpTransaction> transaction;
   EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
@@ -840,7 +856,7 @@ TEST_F(HttpCacheTest, SimpleGET_ConnectedCallback) {
       IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
-  EXPECT_EQ(1, connected_handler.call_count());
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(TestTransportInfo()));
 }
 
 // This test verifies that when the callback passed to SetConnectedCallback()
@@ -904,8 +920,9 @@ TEST_F(HttpCacheTest, SimpleGET_ConnectedCallbackOnCacheHit) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
 
   // TODO(crbug.com/986744): Expect 1 call once HttpCache::Transaction is
-  // modified to call the callback on cache hits.
-  EXPECT_EQ(0, connected_handler.call_count());
+  // modified to call the callback on cache hits, expect that the endpoint is
+  // the one from which the cached data was downloaded.
+  EXPECT_THAT(connected_handler.transports(), IsEmpty());
 }
 
 class HttpCacheTest_SplitCacheFeature
@@ -2024,6 +2041,7 @@ TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackCalledForEachRange) {
     ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
     mock_transaction.request_headers = "Range: bytes = 10-39\r\n" EXTRA_HEADER;
     mock_transaction.data = "rg: 10-19 rg: 20-29 rg: 30-39 ";
+    mock_transaction.transport_info = TestTransportInfo();
     MockHttpRequest request(mock_transaction);
 
     ConnectedHandler connected_handler;
@@ -2041,14 +2059,29 @@ TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackCalledForEachRange) {
     EXPECT_THAT(callback.WaitForResult(), IsOk());
 
     // 1 call for the first range's network transaction.
-    EXPECT_EQ(1, connected_handler.call_count());
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(TestTransportInfo()));
+
+    // Switch the endpoint for the next network transaction to observe.
+    // For ease, we just switch the port number.
+    //
+    // NOTE: This works because only the mock transaction struct's address is
+    // registered with the mocking framework - the pointee data is consulted
+    // each time it is read.
+    auto new_transport_info = TestTransportInfo();
+    new_transport_info.endpoint =
+        IPEndPoint(new_transport_info.endpoint.address(), 123);
+    mock_transaction.transport_info = new_transport_info;
 
     ReadAndVerifyTransaction(transaction.get(), mock_transaction);
 
     // A second call for the last range's network transaction.
     // TODO(crbug.com/986744): Expect 3 calls once the callback is notified on
     // cache hits as well as network connections.
-    EXPECT_EQ(2, connected_handler.call_count());
+    // TODO(crbug.com/986744): Test that the cached data is served as coming
+    // from the endpoint whence it was originally downloaded.
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(TestTransportInfo(), new_transport_info));
   }
 }
 
@@ -2095,7 +2128,8 @@ TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackReturnErrorSecondTime) {
     EXPECT_THAT(callback.WaitForResult(), IsOk());
 
     // 1 call for the first range's network transaction.
-    EXPECT_EQ(1, connected_handler.call_count());
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(DefaultTransportInfo()));
 
     // Set the callback to return an error the next time it is called. The exact
     // error code is irrelevant, what matters is that it is reflected in the
@@ -2107,7 +2141,8 @@ TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackReturnErrorSecondTime) {
                 IsError(ERR_NOT_IMPLEMENTED));
 
     // A second call that failed.
-    EXPECT_EQ(2, connected_handler.call_count());
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(DefaultTransportInfo(), DefaultTransportInfo()));
   }
 }
 
@@ -9283,8 +9318,7 @@ TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
 
 // Tests basic pickling/unpickling of HttpResponseInfo.
 TEST_F(HttpCacheTest, PersistHttpResponseInfo) {
-  const IPEndPoint expected_endpoint =
-      IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
+  const IPEndPoint expected_endpoint = IPEndPoint(IPAddress(1, 2, 3, 4), 80);
   // Set some fields (add more if needed.)
   HttpResponseInfo response1;
   response1.was_cached = false;

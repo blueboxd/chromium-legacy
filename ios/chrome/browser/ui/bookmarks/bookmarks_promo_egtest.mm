@@ -7,8 +7,8 @@
 
 #include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -150,7 +150,7 @@ using chrome_test_util::SecondarySignInButton;
   [BookmarkEarlGreyUI openBookmarks];
 
   // Set up a fake identity.
-  [SigninEarlGreyUtils addFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGrey addFakeIdentity:[SigninEarlGrey fakeIdentity1]];
 
   // Check that promo is visible.
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];
@@ -182,8 +182,8 @@ using chrome_test_util::SecondarySignInButton;
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
 
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
-  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Check that sign-in promo view are visible.
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];

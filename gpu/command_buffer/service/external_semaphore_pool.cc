@@ -6,11 +6,9 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_implementation.h"
-#include "ui/gl/gl_context.h"
 
 namespace gpu {
 namespace {
@@ -28,8 +26,8 @@ constexpr size_t kMaxSemaphoresInPool = 16;
 }  // namespace
 
 ExternalSemaphorePool::ExternalSemaphorePool(
-    SharedContextState* shared_context_state)
-    : shared_context_state_(shared_context_state) {}
+    viz::VulkanContextProvider* context_provider)
+    : context_provider_(context_provider) {}
 
 ExternalSemaphorePool::~ExternalSemaphorePool() = default;
 
@@ -39,8 +37,7 @@ ExternalSemaphore ExternalSemaphorePool::GetOrCreateSemaphore() {
     semaphores_.pop_front();
     return semaphore;
   }
-  return ExternalSemaphore::Create(
-      shared_context_state_->vk_context_provider());
+  return ExternalSemaphore::Create(context_provider_);
 }
 
 void ExternalSemaphorePool::ReturnSemaphore(ExternalSemaphore semaphore) {
@@ -53,19 +50,16 @@ void ExternalSemaphorePool::ReturnSemaphores(
     std::vector<ExternalSemaphore> semaphores) {
   DCHECK_LE(semaphores_.size(), kMaxSemaphoresInPool);
 
-  while (!semaphores.empty() && semaphores_.size() < kMaxSemaphoresInPool) {
-    auto& semaphore = semaphores.back();
+#if DCHECK_IS_ON()
+  for (auto& semaphore : semaphores)
     DCHECK(semaphore);
-    semaphores_.emplace_back(std::move(semaphore));
-    semaphores.pop_back();
-  }
+#endif
 
-  if (semaphores.empty())
-    return;
-
-  // Need a GL context current for releasing semaphores.
-  if (!gl::GLContext::GetCurrent())
-    shared_context_state_->MakeCurrent(/*surface=*/nullptr, /*needs_gl=*/true);
+  std::move(
+      semaphores.begin(),
+      semaphores.begin() + std::min(kMaxSemaphoresInPool - semaphores_.size(),
+                                    semaphores.size()),
+      std::back_inserter(semaphores_));
 }
 
 void ExternalSemaphorePool::ReturnSemaphoresWithFenceHelper(
@@ -77,10 +71,7 @@ void ExternalSemaphorePool::ReturnSemaphoresWithFenceHelper(
 
   if (semaphores.empty())
     return;
-
-  auto* fence_helper = shared_context_state_->vk_context_provider()
-                           ->GetDeviceQueue()
-                           ->GetFenceHelper();
+  auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
   fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
       [](base::WeakPtr<ExternalSemaphorePool> pool,
          std::vector<ExternalSemaphore> semaphores,

@@ -85,6 +85,19 @@ int GetLowEntropyHashValue(const std::string& value) {
 
 }  // namespace
 
+bool ProfileThemeColors::operator==(const ProfileThemeColors& other) const {
+  return std::tie(this->profile_highlight_color,
+                  this->default_avatar_fill_color,
+                  this->default_avatar_stroke_color) ==
+         std::tie(other.profile_highlight_color,
+                  other.default_avatar_fill_color,
+                  other.default_avatar_stroke_color);
+}
+
+bool ProfileThemeColors::operator!=(const ProfileThemeColors& other) const {
+  return !(*this == other);
+}
+
 const char ProfileAttributesEntry::kSupervisedUserId[] = "managed_user_id";
 const char ProfileAttributesEntry::kIsOmittedFromProfileListKey[] =
     "is_omitted_from_profile_list";

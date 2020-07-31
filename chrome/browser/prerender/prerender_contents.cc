@@ -15,24 +15,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_tab_helper.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_manager/web_contents_tags.h"
-#include "chrome/browser/ui/tab_helpers.h"
-#include "chrome/common/chrome_render_frame.mojom.h"
-#include "components/history/core/browser/history_types.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_util.h"
 #include "components/prerender/common/render_frame_prerender_messages.mojom.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -41,7 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/http_response_headers.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -60,13 +52,15 @@ namespace prerender {
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   PrerenderContents* CreatePrerenderContents(
+      std::unique_ptr<PrerenderContentsDelegate> delegate,
       PrerenderManager* prerender_manager,
-      Profile* profile,
+      content::BrowserContext* browser_context,
       const GURL& url,
       const content::Referrer& referrer,
       const base::Optional<url::Origin>& initiator_origin,
       Origin origin) override {
-    return new PrerenderContents(prerender_manager, profile, url, referrer,
+    return new PrerenderContents(std::move(delegate), prerender_manager,
+                                 browser_context, url, referrer,
                                  initiator_origin, origin);
   }
 };
@@ -129,8 +123,9 @@ class PrerenderContents::WebContentsDelegateImpl
 PrerenderContents::Observer::~Observer() {}
 
 PrerenderContents::PrerenderContents(
+    std::unique_ptr<PrerenderContentsDelegate> delegate,
     PrerenderManager* prerender_manager,
-    Profile* profile,
+    content::BrowserContext* browser_context,
     const GURL& url,
     const content::Referrer& referrer,
     const base::Optional<url::Origin>& initiator_origin,
@@ -138,10 +133,11 @@ PrerenderContents::PrerenderContents(
     : prerender_mode_(prerender::mojom::PrerenderMode::kNoPrerender),
       prerendering_has_started_(false),
       prerender_manager_(prerender_manager),
+      delegate_(std::move(delegate)),
       prerender_url_(url),
       referrer_(referrer),
       initiator_origin_(initiator_origin),
-      profile_(profile),
+      browser_context_(browser_context),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_UNKNOWN),
       prerendering_has_been_cancelled_(false),
@@ -187,23 +183,10 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
   return new PrerenderContentsFactoryImpl();
 }
 
-// static
-PrerenderContents* PrerenderContents::FromWebContents(
-    content::WebContents* web_contents) {
-  if (!web_contents)
-    return NULL;
-  PrerenderManager* prerender_manager =
-      PrerenderManagerFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
-  if (!prerender_manager)
-    return NULL;
-  return prerender_manager->GetPrerenderContents(web_contents);
-}
-
 void PrerenderContents::StartPrerendering(
     const gfx::Rect& bounds,
     SessionStorageNamespace* session_storage_namespace) {
-  DCHECK(profile_);
+  DCHECK(browser_context_);
   DCHECK(!bounds.IsEmpty());
   DCHECK(!prerendering_has_started_);
   DCHECK(!prerender_contents_);
@@ -218,13 +201,8 @@ void PrerenderContents::StartPrerendering(
   prerendering_has_started_ = true;
 
   prerender_contents_ = CreateWebContents(session_storage_namespace);
-  TabHelpers::AttachTabHelpers(prerender_contents_.get());
   content::WebContentsObserver::Observe(prerender_contents_.get());
-
-  // Tag the prerender contents with the task manager specific prerender tag, so
-  // that it shows up in the task manager.
-  task_manager::WebContentsTags::CreateForPrerenderContents(
-      prerender_contents_.get());
+  delegate_->OnPrerenderContentsCreated(prerender_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
   prerender_contents_.get()->SetDelegate(web_contents_delegate_.get());
@@ -243,10 +221,6 @@ void PrerenderContents::StartPrerendering(
       GetRenderViewHost()->GetProcess());
 
   NotifyPrerenderStart();
-
-  // Close ourselves when the application is shutting down.
-  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                              content::NotificationService::AllSources());
 
   // Register to inform new RenderViews that we're prerendering.
   notification_registrar_.Add(
@@ -320,12 +294,6 @@ void PrerenderContents::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    // TODO(davidben): Try to remove this in favor of relying on
-    // FINAL_STATUS_PROFILE_DESTROYED.
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      Destroy(FINAL_STATUS_APP_TERMINATING);
-      return;
-
     case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       if (prerender_contents_.get()) {
         DCHECK_EQ(content::Source<WebContents>(source).ptr(),
@@ -362,7 +330,8 @@ std::unique_ptr<WebContents> PrerenderContents::CreateWebContents(
   content::SessionStorageNamespaceMap session_storage_namespace_map;
   session_storage_namespace_map[std::string()] = session_storage_namespace;
   return WebContents::CreateWithSessionStorage(
-      WebContents::CreateParams(profile_), session_storage_namespace_map);
+      WebContents::CreateParams(browser_context_),
+      session_storage_namespace_map);
 }
 
 void PrerenderContents::NotifyPrerenderStart() {
@@ -595,9 +564,7 @@ std::unique_ptr<WebContents> PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->SetDelegate(nullptr);
   content::WebContentsObserver::Observe(nullptr);
 
-  // Clear the task manager tag we added earlier to our
-  // WebContents since it's no longer a prerender contents.
-  task_manager::WebContentsTags::ClearTag(prerender_contents_.get());
+  delegate_->ReleasePrerenderContents(prerender_contents_.get());
 
   return std::move(prerender_contents_);
 }
@@ -605,17 +572,6 @@ std::unique_ptr<WebContents> PrerenderContents::ReleasePrerenderContents() {
 RenderViewHost* PrerenderContents::GetRenderViewHost() {
   return prerender_contents_ ? prerender_contents_->GetRenderViewHost()
                              : nullptr;
-}
-
-void PrerenderContents::DidNavigate(
-    const history::HistoryAddPageArgs& add_page_args) {
-  add_page_vector_.push_back(add_page_args);
-}
-
-void PrerenderContents::CommitHistory(WebContents* tab) {
-  HistoryTabHelper* history_tab_helper = HistoryTabHelper::FromWebContents(tab);
-  for (size_t i = 0; i < add_page_vector_.size(); ++i)
-    history_tab_helper->UpdateHistoryForNavigation(add_page_vector_[i]);
 }
 
 std::unique_ptr<base::DictionaryValue> PrerenderContents::GetAsValue() const {

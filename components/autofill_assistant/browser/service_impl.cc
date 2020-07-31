@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "components/autofill_assistant/browser/client.h"
@@ -20,7 +19,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "crypto/sha2.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -91,27 +89,37 @@ std::unique_ptr<ServiceImpl> ServiceImpl::Create(
 
   return std::make_unique<ServiceImpl>(
       GetAPIKey(client->GetChannel()), server_url, context,
-      client->GetAccessTokenFetcher(), client->GetLocale(),
-      client->GetCountryCode(), client->GetDeviceContext(), client);
+      std::make_unique<ClientContextImpl>(client),
+      client->GetAccessTokenFetcher());
 }
 
 ServiceImpl::ServiceImpl(const std::string& api_key,
                          const GURL& server_url,
                          content::BrowserContext* context,
+                         std::unique_ptr<ClientContext> client_context,
+                         AccessTokenFetcher* access_token_fetcher)
+    : ServiceImpl(
+          api_key,
+          server_url,
+          context,
+          std::move(client_context),
+          access_token_fetcher,
+          /* auth_enabled = */ "false" !=
+              base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                  switches::kAutofillAssistantAuth)) {}
+
+ServiceImpl::ServiceImpl(const std::string& api_key,
+                         const GURL& server_url,
+                         content::BrowserContext* context,
+                         std::unique_ptr<ClientContext> client_context,
                          AccessTokenFetcher* access_token_fetcher,
-                         const std::string& locale,
-                         const std::string& country_code,
-                         const DeviceContext& device_context,
-                         const Client* client,
                          bool auth_enabled)
     : context_(context),
       api_key_(api_key),
+      client_context_(std::move(client_context)),
       access_token_fetcher_(access_token_fetcher),
       fetching_token_(false),
       auth_enabled_(auth_enabled),
-      client_context_(
-          CreateClientContext(locale, country_code, device_context)),
-      client_(client),
       weak_ptr_factory_(this) {
   DCHECK(server_url.is_valid());
 
@@ -125,27 +133,6 @@ ServiceImpl::ServiceImpl(const std::string& api_key,
   VLOG(1) << "Using script domain " << script_action_server_url_.host();
 }
 
-ServiceImpl::ServiceImpl(const std::string& api_key,
-                         const GURL& server_url,
-                         content::BrowserContext* context,
-                         AccessTokenFetcher* access_token_fetcher,
-                         const std::string& locale,
-                         const std::string& country_code,
-                         const DeviceContext& device_context,
-                         const Client* client)
-    : ServiceImpl(
-          api_key,
-          server_url,
-          context,
-          access_token_fetcher,
-          locale,
-          country_code,
-          device_context,
-          client,
-          /* auth_enabled = */ "false" !=
-              base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kAutofillAssistantAuth)) {}
-
 ServiceImpl::~ServiceImpl() {}
 
 void ServiceImpl::GetScriptsForUrl(const GURL& url,
@@ -153,11 +140,11 @@ void ServiceImpl::GetScriptsForUrl(const GURL& url,
                                    ResponseCallback callback) {
   DCHECK(url.is_valid());
 
-  UpdateMutableClientContextFields();
+  client_context_->Update(trigger_context);
   SendRequest(AddLoader(
       script_server_url_,
-      ProtocolUtils::CreateGetScriptsRequest(
-          url, trigger_context, client_context_, GetClientAccountHash()),
+      ProtocolUtils::CreateGetScriptsRequest(url, client_context_->AsProto(),
+                                             trigger_context.GetParameters()),
       std::move(callback)));
 }
 
@@ -169,13 +156,13 @@ void ServiceImpl::GetActions(const std::string& script_path,
                              ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
-  UpdateMutableClientContextFields();
-  SendRequest(
-      AddLoader(script_action_server_url_,
-                ProtocolUtils::CreateInitialScriptActionsRequest(
-                    script_path, url, trigger_context, global_payload,
-                    script_payload, client_context_, GetClientAccountHash()),
-                std::move(callback)));
+  client_context_->Update(trigger_context);
+  SendRequest(AddLoader(
+      script_action_server_url_,
+      ProtocolUtils::CreateInitialScriptActionsRequest(
+          script_path, url, global_payload, script_payload,
+          client_context_->AsProto(), trigger_context.GetParameters()),
+      std::move(callback)));
 }
 
 void ServiceImpl::GetNextActions(
@@ -184,13 +171,12 @@ void ServiceImpl::GetNextActions(
     const std::string& previous_script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
     ResponseCallback callback) {
-  UpdateMutableClientContextFields();
-  SendRequest(AddLoader(
-      script_action_server_url_,
-      ProtocolUtils::CreateNextScriptActionsRequest(
-          trigger_context, previous_global_payload, previous_script_payload,
-          processed_actions, client_context_, GetClientAccountHash()),
-      std::move(callback)));
+  client_context_->Update(trigger_context);
+  SendRequest(AddLoader(script_action_server_url_,
+                        ProtocolUtils::CreateNextScriptActionsRequest(
+                            previous_global_payload, previous_script_payload,
+                            processed_actions, client_context_->AsProto()),
+                        std::move(callback)));
 }
 
 void ServiceImpl::SendRequest(Loader* loader) {
@@ -326,44 +312,6 @@ void ServiceImpl::OnFetchAccessToken(bool success,
   for (const auto& entry : loaders_) {
     StartLoader(entry.first);
   }
-}
-
-std::string ServiceImpl::GetClientAccountHash() const {
-  std::string chrome_account_sha_bin =
-      crypto::SHA256HashString(client_->GetChromeSignedInEmailAddress());
-  return base::ToLowerASCII(base::HexEncode(chrome_account_sha_bin.data(),
-                                            chrome_account_sha_bin.size()));
-}
-
-// static
-ClientContextProto ServiceImpl::CreateClientContext(
-    const std::string& locale,
-    const std::string& country_code,
-    const DeviceContext& device_context) {
-  ClientContextProto context;
-  context.mutable_chrome()->set_chrome_version(
-      version_info::GetProductNameAndVersionForUserAgent());
-  context.set_locale(locale);
-  context.set_country(country_code);
-  device_context.ToProto(context.mutable_device_context());
-
-  base::FieldTrial::ActiveGroups active_groups;
-  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-  for (const auto& group : active_groups) {
-    FieldTrialProto* field_trial =
-        context.mutable_chrome()->add_active_field_trials();
-    field_trial->set_trial_name(group.trial_name);
-    field_trial->set_group_name(group.group_name);
-  }
-  return context;
-}
-
-void ServiceImpl::UpdateMutableClientContextFields() {
-  client_context_.set_accessibility_enabled(client_->IsAccessibilityEnabled());
-  client_context_.set_signed_into_chrome_status(
-      client_->GetChromeSignedInEmailAddress().empty()
-          ? ClientContextProto::NOT_SIGNED_IN
-          : ClientContextProto::SIGNED_IN);
 }
 
 }  // namespace autofill_assistant

@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
@@ -232,7 +233,8 @@ void SiteEngagementService::Helper::DidFinishNavigation(
   //
   // Prerenders trigger WasShown() when they are swapped in, so input engagement
   // will activate even if navigation engagement is not scored.
-  if (prerender::PrerenderContents::FromWebContents(web_contents()) != nullptr)
+  if (prerender::ChromePrerenderContentsDelegate::FromWebContents(
+          web_contents()) != nullptr)
     return;
 
   service_->HandleNavigation(web_contents(), handle->GetPageTransition());

@@ -1,6 +1,6 @@
 include_rules = [
   "+extensions/strings/grit/extensions_strings.h",
-  "+services/network",
+  "+services/network/public",
   "+third_party/ink/grit",
   "+ui/base",
 
@@ -23,12 +23,30 @@ specific_include_rules = {
   "extension_protocols_unittest\.cc": [
     "+services/network/test",
   ],
+  "extension_gcm_app_handler_unittest\.cc": [
+    "+services/network/test",
+  ],
   "zipfile_installer_unittest.cc": [
     "+services/data_decoder",
   ],
   "test_extension_system.cc": [
     "+services/data_decoder",
   ],
+  "updater/extension_updater_unittest\.cc": [
+    "+services/network/test",
+  ],
+
+  "chrome_extension_cookies\.h": [
+    # TODO(crbug.com/1049894): Remove.
+    "+services/network/cookie_settings.h",
+  ],
+
+  "chrome_extension_cookies\.cc": [
+    # TODO(crbug.com/1049894): Remove.
+    "+services/network/cookie_manager.h",
+    "+services/network/restricted_cookie_manager.h",
+  ],
+
   "webstore_private_apitest.cc" : [
     # TODO(crbug/1095814): Remove this layering violation.
     "+chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h",

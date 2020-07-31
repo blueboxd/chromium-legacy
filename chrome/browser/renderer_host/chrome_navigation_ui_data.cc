@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/prerender/browser/prerender_histograms.h"
 #include "content/public/browser/navigation_handle.h"
@@ -35,7 +36,7 @@ ChromeNavigationUIData::ChromeNavigationUIData(
 #endif
 
   auto* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_mode_ = prerender_contents->prerender_mode();
     prerender_histogram_prefix_ =

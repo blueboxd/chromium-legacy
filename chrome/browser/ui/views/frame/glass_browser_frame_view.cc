@@ -536,11 +536,6 @@ int GlassBrowserFrameView::MinimizeButtonX() const {
              : frame()->GetMinimizeButtonOffset();
 }
 
-bool GlassBrowserFrameView::IsToolbarVisible() const {
-  return browser_view()->IsToolbarVisible() &&
-      !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
-}
-
 bool GlassBrowserFrameView::ShowCustomIcon() const {
   // Web-app windows don't include the window icon as per UI mocks.
   return !web_app_frame_toolbar() && ShouldCustomDrawSystemTitlebar() &&

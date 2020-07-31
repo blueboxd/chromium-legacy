@@ -20,7 +20,9 @@
 #include "base/synchronization/lock.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -81,7 +83,7 @@ class TestPrerenderContents : public PrerenderContents,
                               public content::RenderWidgetHostObserver {
  public:
   TestPrerenderContents(PrerenderManager* prerender_manager,
-                        Profile* profile,
+                        content::BrowserContext* browser_context,
                         const GURL& url,
                         const content::Referrer& referrer,
                         const base::Optional<url::Origin>& initiator_origin,
@@ -261,8 +263,9 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
   void IgnorePrerenderContents();
 
   PrerenderContents* CreatePrerenderContents(
+      std::unique_ptr<PrerenderContentsDelegate> delegate,
       PrerenderManager* prerender_manager,
-      Profile* profile,
+      content::BrowserContext* browser_context,
       const GURL& url,
       const content::Referrer& referrer,
       const base::Optional<url::Origin>& initiator_origin,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -26,7 +26,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation SigninEarlGreyUtilsAppInterface
+@implementation SigninEarlGreyAppInterface
 
 + (FakeChromeIdentity*)fakeIdentity1 {
   return [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"

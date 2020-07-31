@@ -24,8 +24,6 @@ const CGFloat kURLButtonMargin = 10;
 
 // The type of the copied content
 @property(nonatomic) CopiedContentType type;
-// The copied text to be displayed if the type supports showing the string.
-@property(nonatomic, copy) NSString* copiedText;
 // The copied URL label containing the URL or a placeholder text.
 @property(nonatomic, strong) UILabel* copiedContentLabel;
 // The copied URL title label containing the title of the copied URL button.
@@ -38,7 +36,7 @@ const CGFloat kURLButtonMargin = 10;
 @property(nonatomic, strong) UIVisualEffectView* primaryEffectView;
 @property(nonatomic, strong) UIVisualEffectView* secondaryEffectView;
 
-// Updates the view to show the currently set |type| and |copiedText|.
+// Updates the view to show the currently set |type|.
 - (void)updateUI;
 
 @end
@@ -173,7 +171,7 @@ const CGFloat kURLButtonMargin = 10;
       [_copiedContentLabel.trailingAnchor
           constraintEqualToAnchor:_openCopiedContentTitleLabel.trailingAnchor],
     ]];
-    [self setCopiedContentType:CopiedContentTypeNone copiedText:nil];
+    [self setCopiedContentType:CopiedContentTypeNone];
     self.highlightableViews = @[
       _hairlineView, _copiedButtonView, _openCopiedContentTitleLabel,
       _copiedContentLabel
@@ -182,10 +180,8 @@ const CGFloat kURLButtonMargin = 10;
   return self;
 }
 
-- (void)setCopiedContentType:(CopiedContentType)type
-                  copiedText:(NSString*)copiedText {
+- (void)setCopiedContentType:(CopiedContentType)type {
   self.type = type;
-  self.copiedText = copiedText;
   [self updateUI];
 }
 
@@ -224,12 +220,10 @@ const CGFloat kURLButtonMargin = 10;
     }
     case CopiedContentTypeURL: {
       titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
-      contentText = self.copiedText;
       break;
     }
     case CopiedContentTypeString: {
       titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_TEXT", nil);
-      contentText = self.copiedText;
       break;
     }
     case CopiedContentTypeImage: {

@@ -259,6 +259,7 @@ jumbo_component("cpp_base") {
     "//url/ipc:url_ipc",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
   deps = [
     "//base",
@@ -267,7 +268,6 @@ jumbo_component("cpp_base") {
     "//net",
     "//services/network/public/mojom:cookies_mojom",
     "//services/network/public/mojom:mojom_shared",
-    "//third_party/webrtc_overrides:webrtc_component",
   ]
   defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
 }

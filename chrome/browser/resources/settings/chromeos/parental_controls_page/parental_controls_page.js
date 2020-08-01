@@ -34,7 +34,7 @@ Polymer({
 
   /** @override */
   created() {
-    this.browserProxy_ = parental_controls.BrowserProxyImpl.getInstance();
+    this.browserProxy_ = parental_controls.ParentalControlsBrowserProxyImpl.getInstance();
   },
 
   /** @override */

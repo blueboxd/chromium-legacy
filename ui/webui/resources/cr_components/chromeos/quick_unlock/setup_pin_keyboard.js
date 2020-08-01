@@ -10,9 +10,6 @@
  *
  */
 
-(function() {
-'use strict';
-
 /**
  * Keep in sync with the string keys provided by settings.
  * @enum {string}
@@ -383,5 +380,3 @@ Polymer({
                        '';
   },
 });
-
-})();

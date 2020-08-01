@@ -341,7 +341,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_update_packet_size, true)
 
 // If true, consider frame expansion when calculating extra padding bytes to
 // meet minimum plaintext packet size required for header protection.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_extra_padding_bytes, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_extra_padding_bytes, true)
 
 // If true, do not try to close stream again if stream fails to be closed upon
 // connection close.

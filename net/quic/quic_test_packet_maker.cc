@@ -1263,10 +1263,21 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::BuildPacketImpl(
       packet_size += frame_size;
       frames_size += frame_size;
     }
-    // This should be done by calling QuicPacketCreator::MinPlaintextPacketSize.
-    const size_t min_plaintext_size = 7;
-    if (frames_size < min_plaintext_size) {
-      size_t padding_length = min_plaintext_size - frames_size;
+
+    const size_t min_plaintext_packet_size =
+        quic::QuicPacketCreator::MinPlaintextPacketSize(version_);
+    if (frames_size < min_plaintext_packet_size) {
+      const size_t expansion_on_new_frame =
+          frames.empty()
+              ? 0
+              : quic::QuicPacketCreator::ExpansionOnNewFrameWithLastFrame(
+                    frames.back(), version_.transport_version);
+      const size_t padding_length =
+          std::max(1 + expansion_on_new_frame,
+                   min_plaintext_packet_size - frames_size) -
+          expansion_on_new_frame;
+      CHECK_LE(padding_length + packet_size + expansion_on_new_frame,
+               max_plaintext_size);
       frames_copy.push_back(
           quic::QuicFrame(quic::QuicPaddingFrame(padding_length)));
     }

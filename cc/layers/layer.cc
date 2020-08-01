@@ -962,7 +962,6 @@ void Layer::SetScrollOffsetFromImplSide(
   if (inputs.scroll_offset == scroll_offset)
     return;
   inputs.scroll_offset = scroll_offset;
-  SetNeedsPushProperties();
 
   UpdatePropertyTreeScrollOffset();
 

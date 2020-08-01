@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {pageVisibility, ParentalControlsBrowserProxyImpl, ParentalControlsBrowserProxy} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
 /** @implements {parental_controls.ParentalControlsBrowserProxy} */
 class TestParentalControlsBrowserProxy extends TestBrowserProxy {
   constructor() {
@@ -38,7 +49,7 @@ suite('Chrome OS parental controls page setup item tests', function() {
 
   setup(function() {
     parentalControlsBrowserProxy = new TestParentalControlsBrowserProxy();
-    parental_controls.BrowserProxyImpl.instance_ = parentalControlsBrowserProxy;
+    parental_controls.ParentalControlsBrowserProxyImpl.instance_ = parentalControlsBrowserProxy;
 
     PolymerTest.clearBody();
     parentalControlsPage =
@@ -116,7 +127,7 @@ suite('Chrome OS parental controls page child account tests', function() {
 
   setup(async function() {
     parentalControlsBrowserProxy = new TestParentalControlsBrowserProxy();
-    parental_controls.BrowserProxyImpl.instance_ = parentalControlsBrowserProxy;
+    parental_controls.ParentalControlsBrowserProxyImpl.instance_ = parentalControlsBrowserProxy;
 
     PolymerTest.clearBody();
     parentalControlsPage =

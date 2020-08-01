@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2243d77c5ca464e06ab150c40244e0092cdba76c',
+  'skia_revision': '5bc663a55b26c22f658232e68285201489dfc8f6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd04a55932c4cc4c5174dbe4b63d389e8cbd5dfa5',
+  'angle_revision': '41442cce3d0f30dbfce4d95bdda18c0faa452b43',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'fada50119020483021a6b620c8fb85d62fc3e8f0',
+  'dawn_revision': '8c9858e9b8e36b8c13606b1053133ab395c03418',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '2146ce8055a5e96371eb31a169c46f322afac527',
+  'quiche_revision': '95d85af7aa56429eb52ad33bc67057c9d0e4cb8c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1537,7 +1537,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@52550c2410223f9be87beb421fde967e88bc7605',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ba78a47d745f01b174e7687a89a2c74feb6c357f',
     'condition': 'checkout_src_internal',
   },
 

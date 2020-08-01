@@ -51,4 +51,19 @@ void Agent::SetIsCrossOriginIsolated(bool value) {
   is_cross_origin_isolated = value;
 }
 
+bool Agent::IsOriginIsolated() {
+#if DCHECK_IS_ON()
+  DCHECK(is_origin_isolated_set_);
+#endif
+  return is_origin_isolated_;
+}
+
+void Agent::SetIsOriginIsolated(bool value) {
+#if DCHECK_IS_ON()
+  DCHECK(!is_origin_isolated_set_ || value == is_origin_isolated_);
+  is_origin_isolated_set_ = true;
+#endif
+  is_origin_isolated_ = value;
+}
+
 }  // namespace blink

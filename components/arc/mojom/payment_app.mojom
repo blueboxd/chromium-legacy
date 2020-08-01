@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -29,6 +29,62 @@ union IsPaymentImplementedResult {
   string error;
 };
 
+// The common payment parameters for the browser to pass to ARC in both
+// PaymentAppInstance.IsReadyToPayService() and
+// PaymentAppInstance.InvokePaymentApp() Mojo methods. ARC will forward this
+// data to either WebPaymentIntentHelper.createIsReadyToPayIntent() or
+// WebPaymentIntentHelper.createPayIntent(), depending on which method of
+// PaymentApp Mojo IPC service was invoked.
+//
+// WebPaymentIntentHelper in ARC should be used only with the
+// "https://play.google.com/billing" payment method identifier at this time.
+struct PaymentParameters {
+  // The TWA package name, e.g., "com.example.app". This is the "String
+  // packageName" parameter to createIsReadyToPayIntent() and createPayIntent()
+  // methods.
+  string package_name;
+
+  // The name of the IS_READY_TO_PAY service to query or PAY activity to invoke,
+  // depending on whether this struct is passed into IsReadyToPay() or
+  // InvokePaymentApp() method. For example,
+  // "com.example.app.IsReadyToPayService" or "com.example.app.PaymentActivity".
+  // This is the "String serviceName" parameter to createIsReadyToPayIntent() or
+  // "String activityName" parameter to createPayIntent().
+  string activity_or_service_name;
+
+  // The JSON serialization of the JavaScript object "data" in the
+  // PaymentRequest API. For example:
+  //
+  //  {"productId": "test_product_id"}
+  //
+  // This string is serialized in Blink and is parsed in the TWA. The browser
+  // does not parse this string. This string goes into the value of the
+  // "methodDataMap" parameter of createIsReadyToPayIntent() and
+  // createPayIntent() methods, i.e.:
+  //
+  //  methodDataMap.put("https://play.google.com/billing",
+  //                    new PaymentMethodData("https://play.google.com/billing",
+  //                                          stringified_method_data));
+  string stringified_method_data;
+
+  // (Host, optional port) tuple that cannot be an opaque origin. For example:
+  // "shop.com". This is the "String schemelessOrigin" parameter to
+  // createIsReadyToPayIntent() and createPayIntent() methods.
+  string top_level_origin;
+
+  // (Host, optional port) tuple that cannot be an opaque origin. For
+  // example: "payment-service-provider.com". This is the "String
+  // schemelessIframeOrigin" parameter to createIsReadyToPayIntent() and
+  // createPayIntent() methods.
+  string payment_request_origin;
+};
+
+// After the browser calls IsReadyToPay(), ARC sends this back in response.
+union IsReadyToPayResult {
+  bool response;
+  string error;
+};
+
 // The service that runs in ARC and allows the browser to invoke the TWA payment
 // app that is installed in ARC, if it implements payment intents as described
 // in https://web.dev/android-payment-apps-overview/. At first, only
@@ -43,7 +99,7 @@ union IsPaymentImplementedResult {
 // |                  |      |                                                |
 // --------------------      --------------------------------------------------
 //
-// Next method ID: 1
+// Next method ID: 2
 interface PaymentAppInstance {
   // Called by the browser to check whether the TWA with |package_name| (e.g.,
   // "com.example.app") in ARC has intent filters for
@@ -59,4 +115,12 @@ interface PaymentAppInstance {
   // incognito mode or guest mode.
   IsPaymentImplemented@0(string package_name)
       => (IsPaymentImplementedResult response);
+
+  // Forwards the request to IsReadyToPayServiceHelper.query(), which queries
+  // the payment app. The payment app should return true if payments can be
+  // made. This should not be invoked when off the record, e.g., incognito mode
+  // or guest mode.
+  [MinVersion=1]
+  IsReadyToPay@1(PaymentParameters parameters)
+      => (IsReadyToPayResult result);
 };

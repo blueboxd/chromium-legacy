@@ -24,6 +24,8 @@ class ArcPaymentAppBridge : public KeyedService {
  public:
   using IsPaymentImplementedCallback =
       base::OnceCallback<void(mojom::IsPaymentImplementedResultPtr)>;
+  using IsReadyToPayCallback =
+      base::OnceCallback<void(mojom::IsReadyToPayResultPtr)>;
 
   // Returns the instance owned by the given BrowserContext, or nullptr if the
   // browser |context| is not allowed to use ARC.
@@ -46,6 +48,11 @@ class ArcPaymentAppBridge : public KeyedService {
   // when off the record, e.g., incognito mode or guest mode.
   void IsPaymentImplemented(const std::string& package_name,
                             IsPaymentImplementedCallback callback);
+
+  // Queries the TWA payment app whether it is able to perform a payment. Should
+  // not be invoked when off the record, e.g., incognito mode or guest mode.
+  void IsReadyToPay(mojom::PaymentParametersPtr parameters,
+                    IsReadyToPayCallback callback);
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

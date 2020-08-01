@@ -67,6 +67,16 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_PARENTAL_CONTROLS_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/parental_controls_page/parental_controls_page.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_PARENTAL_CONTROLS_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/parental_controls_page/parental_controls_browser_proxy.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_KERBEROS_ACCOUNTS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/os_people_page/kerberos_accounts.m.js"
            use_base_dir="false"
@@ -132,6 +142,15 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_OS_PAGE_VISIBILITY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/os_page_visibility.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_PAGE_VISIBILITY_JS"
+           file="page_visibility.js"
+           preprocess="true"
+           compress="false" type="BINDATA" />
   <include name="IDR_OS_SETTINGS_MULTIDEVICE_PAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_page.m.js"
            use_base_dir="false"

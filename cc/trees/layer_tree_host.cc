@@ -937,15 +937,11 @@ void LayerTreeHost::UpdateScrollOffsetFromImpl(
       // This update closely follows
       // blink::PropertyTreeManager::DirectlyUpdateScrollOffsetTransform.
 
-      // Update the offset in the scroll tree.
-      if (scroll_tree.SetScrollOffset(id, new_offset)) {
-        // Scroll offset animations are clobbered via |Layer::PushPropertiesTo|.
-        // TODO(pdr): This follows the pattern of |SetScrollOffsetFromImplSide|
-        // and PropertyTreeManager::DirectlyUpdateScrollOffsetTransform but do
-        // we need to clobber scroll animations as a result of impl scrolls?
-        if (auto* layer = LayerByElementId(id))
-          layer->SetNeedsPushProperties();
-      }
+      scroll_tree.SetScrollOffset(id, new_offset);
+      // |blink::PropertyTreeManager::DirectlySetScrollOffset| (called from
+      // |blink::PropertyTreeManager::DirectlyUpdateScrollOffsetTransform|)
+      // marks the layer as needing to push properties in order to clobber
+      // animations, but that is not needed for an impl-side scroll.
 
       // Update the offset in the transform node.
       DCHECK(scroll_node->transform_id != TransformTree::kInvalidNodeId);

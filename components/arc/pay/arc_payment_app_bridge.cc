@@ -73,4 +73,17 @@ void ArcPaymentAppBridge::IsPaymentImplemented(
   payment_app->IsPaymentImplemented(package_name, std::move(callback));
 }
 
+void ArcPaymentAppBridge::IsReadyToPay(mojom::PaymentParametersPtr parameters,
+                                       IsReadyToPayCallback callback) {
+  mojom::PaymentAppInstance* payment_app = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->payment_app(), IsReadyToPay);
+  if (!payment_app) {
+    std::move(callback).Run(
+        mojom::IsReadyToPayResult::NewError(kUnableToConnectErrorMessage));
+    return;
+  }
+
+  payment_app->IsReadyToPay(std::move(parameters), std::move(callback));
+}
+
 }  // namespace arc

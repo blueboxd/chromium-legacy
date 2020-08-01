@@ -42,6 +42,22 @@
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/network_icons.m.js"
            use_base_dir="false"
            type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_LOCK_SCREEN_CONSTANTS_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/quick_unlock/lock_screen_constants.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_LOCK_SETUP_PIN_KEYBOARD_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_LOCK_PIN_KEYBOARD_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/quick_unlock/pin_keyboard.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_LOCK_PIN_KEYBOARD_ICON_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/quick_unlock/pin_keyboard_icon.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   </if>
   <if expr="use_nss_certs">
     <include name="IDR_WEBUI_CA_TRUST_EDIT_DIALOG_JS"

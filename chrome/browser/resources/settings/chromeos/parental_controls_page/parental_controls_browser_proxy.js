@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 /**
  * @fileoverview
  * Browser Proxy for Parental Controls functions.
@@ -9,7 +11,7 @@
 
 cr.define('parental_controls', function() {
   /** @interface */
-  class BrowserProxy {
+  /* #export */ class ParentalControlsBrowserProxy {
     /**
      * Shows the Add Supervsion dialog.
      */
@@ -23,8 +25,8 @@ cr.define('parental_controls', function() {
     launchFamilyLinkSettings() {}
   }
 
-  /** @implements {parental_controls.BrowserProxy} */
-  class BrowserProxyImpl {
+  /** @implements {parental_controls.ParentalControlsBrowserProxy} */
+  /* #export */ class ParentalControlsBrowserProxyImpl {
     /** @override */
     showAddSupervisionDialog() {
       chrome.send('showAddSupervisionDialog');
@@ -36,11 +38,11 @@ cr.define('parental_controls', function() {
     }
   }
 
-  cr.addSingletonGetter(BrowserProxyImpl);
+  cr.addSingletonGetter(ParentalControlsBrowserProxyImpl);
 
   // #cr_define_end
   return {
-    BrowserProxy: BrowserProxy,
-    BrowserProxyImpl: BrowserProxyImpl,
+    ParentalControlsBrowserProxy: ParentalControlsBrowserProxy,
+    ParentalControlsBrowserProxyImpl: ParentalControlsBrowserProxyImpl,
   };
 });

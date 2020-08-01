@@ -98,6 +98,7 @@ void AmbientAshTestBase::SetUp() {
       std::make_unique<TestAmbientURLLoaderImpl>());
   photo_controller()->set_image_decoder_for_testing(
       std::make_unique<TestAmbientImageDecoderImpl>());
+  base::RunLoop().RunUntilIdle();
 }
 
 void AmbientAshTestBase::TearDown() {
@@ -109,7 +110,7 @@ void AmbientAshTestBase::TearDown() {
 
 void AmbientAshTestBase::ShowAmbientScreen() {
   // The widget will be destroyed in |AshTestBase::TearDown()|.
-  ambient_controller()->ShowUi(AmbientUiMode::kLockScreenUi);
+  ambient_controller()->ShowUi(AmbientUiMode::kInSessionUi);
   // The UI only shows when images are downloaded to avoid showing blank screen.
   FastForwardToNextImage();
   // Flush the message loop to finish all async calls.
@@ -131,6 +132,10 @@ void AmbientAshTestBase::LockScreen() {
 
 void AmbientAshTestBase::UnlockScreen() {
   GetSessionControllerClient()->UnlockScreen();
+}
+
+bool AmbientAshTestBase::IsLocked() {
+  return Shell::Get()->session_controller()->IsScreenLocked();
 }
 
 void AmbientAshTestBase::SimulateSystemSuspendAndWait(
@@ -165,6 +170,11 @@ AmbientBackgroundImageView*
 AmbientAshTestBase::GetAmbientBackgroundImageView() {
   return static_cast<AmbientBackgroundImageView*>(container_view()->GetViewByID(
       AssistantViewID::kAmbientBackgroundImageView));
+}
+
+void AmbientAshTestBase::FastForwardToInactivity() {
+  task_environment()->FastForwardBy(
+      2 * AmbientController::kAutoShowWaitTimeInterval);
 }
 
 void AmbientAshTestBase::FastForwardToNextImage() {

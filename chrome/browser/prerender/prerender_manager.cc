@@ -34,17 +34,16 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager_delegate.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
-#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prerender/browser/prerender_histograms.h"
 #include "components/prerender/browser/prerender_history.h"
+#include "components/prerender/browser/prerender_util.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -795,8 +794,8 @@ std::unique_ptr<PrerenderContents> PrerenderManager::CreatePrerenderContents(
     Origin origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return base::WrapUnique(prerender_contents_factory_->CreatePrerenderContents(
-      std::make_unique<ChromePrerenderContentsDelegate>(), this, profile_, url,
-      referrer, initiator_origin, origin));
+      delegate_->GetPrerenderContentsDelegate(), this, profile_, url, referrer,
+      initiator_origin, origin));
 }
 
 void PrerenderManager::SortActivePrerenders() {

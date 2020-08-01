@@ -331,10 +331,10 @@ bool RenderViewHostImpl::CreateRenderView(
   DCHECK(GetProcess()->GetBrowserContext());
 
   // Exactly one of main_frame_routing_id_ or proxy_route_id should be set.
-  CHECK((main_frame_routing_id_ != MSG_ROUTING_NONE &&
-         proxy_route_id == MSG_ROUTING_NONE) ||
-        (main_frame_routing_id_ == MSG_ROUTING_NONE &&
-         proxy_route_id != MSG_ROUTING_NONE));
+  CHECK(!(main_frame_routing_id_ != MSG_ROUTING_NONE &&
+          proxy_route_id != MSG_ROUTING_NONE));
+  CHECK(!(main_frame_routing_id_ == MSG_ROUTING_NONE &&
+          proxy_route_id == MSG_ROUTING_NONE));
 
   RenderFrameHostImpl* main_rfh = nullptr;
   RenderFrameProxyHost* main_rfph = nullptr;

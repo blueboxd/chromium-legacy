@@ -333,3 +333,46 @@ void foo() {
 }
 
 }  // namespace affected_implicit_template_specialization
+
+// The test scenario below is based on an example encountered in
+// //cc/layers/picture_layer_impl_unittest.cc:
+//   auto* shared_quad_state = render_pass->quad_list.begin()->shared_quad_state
+// In this example, the AST looks like this:
+//  `-DeclStmt
+//    `-VarDecl shared_quad_state 'const SharedQuadState *' cinit
+//      `-ExprWithCleanups 'const SharedQuadState *'
+//        `-ImplicitCastExpr 'const SharedQuadState *' <LValueToRValue>
+//          `-MemberExpr 'const SharedQuadState *const' lvalue ->shared...state
+//            `-.....
+// The rewriter needs to ignore the implicit ExprWithCleanups and
+// ImplicitCastExpr nodes in order to find the MemberExpr.  If this is
+// implemented incorrectly, then the rewriter won't append |.get()| to fix the
+// |auto*| initialization.
+namespace more_implicit_ast_nodes_trouble {
+
+template <class BaseElementType>
+struct ListContainer {
+  struct ConstIterator {
+    const BaseElementType* operator->() const { return nullptr; }
+  };
+
+  ConstIterator begin() const { return ConstIterator(); }
+};
+
+class SharedQuadState;
+
+struct DrawQuad {
+  const SharedQuadState* shared_quad_state;
+};
+
+struct RenderPass {
+  using QuadList = ListContainer<DrawQuad>;
+  QuadList quad_list;
+};
+
+void foo() {
+  RenderPass* render_pass = nullptr;
+  auto* shared_quad_state = render_pass->quad_list.begin()->shared_quad_state;
+}
+
+}  // namespace more_implicit_ast_nodes_trouble

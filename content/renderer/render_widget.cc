@@ -55,9 +55,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/drop_data_builder.h"
-#include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/queue_message_swap_promise.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -68,8 +66,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "ipc/ipc_message_start.h"
-#include "ipc/ipc_sync_message.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -325,8 +321,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       is_hidden_(hidden),
-      never_composited_(never_composited),
-      frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)) {
+      never_composited_(never_composited) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
   DCHECK(compositor_deps_);
@@ -829,8 +824,7 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // would also be used for other widgets such as popups.
   const char* client_name = for_child_local_root_frame_ ? kOOPIF : kRenderer;
   compositor_deps_->RequestNewLayerTreeFrameSink(
-      this, frame_swap_message_queue_, std::move(url), std::move(callback),
-      client_name);
+      this, std::move(url), std::move(callback), client_name);
 }
 
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
@@ -1048,46 +1042,8 @@ void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
     observer.DidMeaningfulLayout(layout_type);
 }
 
-// static
-std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
-    std::unique_ptr<IPC::Message> msg,
-    FrameSwapMessageQueue* frame_swap_message_queue,
-    scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
-    int source_frame_number) {
-  bool first_message_for_frame = false;
-  frame_swap_message_queue->QueueMessageForFrame(
-      source_frame_number, std::move(msg), &first_message_for_frame);
-  if (!first_message_for_frame)
-    return nullptr;
-  return std::make_unique<QueueMessageSwapPromise>(
-      sync_message_filter, frame_swap_message_queue, source_frame_number);
-}
-
 void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
   GetWebWidget()->SetHandlingInputEvent(handling_input_event);
-}
-
-void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
-  // RenderThreadImpl::current() is NULL in some tests.
-  if (!RenderThreadImpl::current()) {
-    Send(msg.release());
-    return;
-  }
-
-  std::unique_ptr<cc::SwapPromise> swap_promise =
-      QueueMessageImpl(std::move(msg), frame_swap_message_queue_.get(),
-                       RenderThreadImpl::current()->sync_message_filter(),
-                       layer_tree_host_->SourceFrameNumber());
-  if (swap_promise) {
-    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
-
-    // Request a main frame if one is not already in progress. This might either
-    // A) request a commit ahead of time or B) request a commit which is not
-    // needed because there are not pending updates. If B) then the frame will
-    // be aborted early and the swap promises will be broken (see
-    // EarlyOut_NoUpdates).
-    layer_tree_host_->SetNeedsAnimateIfNotInsideMainFrame();
-  }
 }
 
 // We are supposed to get a single call to Show for a newly created RenderWidget

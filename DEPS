@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ad1e2005f194fc859ad3d30bd7d00e41ce952022',
+  'skia_revision': '2243d77c5ca464e06ab150c40244e0092cdba76c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'ee8cec922c940067397bcc70a229b664114068fe',
+  'v8_revision': 'f86646d35b22c099e3307ab3dab2013ab8d992eb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'dae778938f21de7b5611e1963c58911f34f73937',
+  'angle_revision': 'd04a55932c4cc4c5174dbe4b63d389e8cbd5dfa5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '8eec09fbdd2b45d00612d3ff64df72435a4f33bd',
+  'devtools_frontend_revision': '9fcc573bd51a414d3554298a0051d1052f329c00',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1465,7 +1465,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '81bbd7199a2e97680a4488c2da4f8248137e12e0',
+    Var('webrtc_git') + '/src.git' + '@' + '353dcec4c1e839753875ed515e106647dc241e39',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

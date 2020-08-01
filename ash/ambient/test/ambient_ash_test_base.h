@@ -47,6 +47,8 @@ class AmbientAshTestBase : public AshTestBase {
   // shown/closed.
   void LockScreen();
   void UnlockScreen();
+  // Whether lockscreen is shown.
+  bool IsLocked();
 
   // Simulates the system starting to suspend with Reason |reason|.
   // Wait until the event has been processed.
@@ -63,6 +65,9 @@ class AmbientAshTestBase : public AshTestBase {
 
   // Set the size of the next image that will be loaded.
   void SetPhotoViewImageSize(int width, int height);
+
+  // Advance the task environment timer to expire the inactivity monitor.
+  void FastForwardToInactivity();
 
   // Advance the task environment timer to load the next photo.
   void FastForwardToNextImage();

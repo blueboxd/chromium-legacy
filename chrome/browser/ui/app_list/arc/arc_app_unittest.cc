@@ -2239,6 +2239,28 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
   base::RunLoop run_loop;
   base::Closure quit = run_loop.QuitClosure();
 
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile_.get());
+    ASSERT_NE(nullptr, proxy);
+
+    proxy->LoadIcon(
+        apps::mojom::AppType::kArc, app_id, apps::mojom::IconType::kCompressed,
+        icon_size, false /*allow_placeholder_icon*/,
+        base::BindLambdaForTesting([&](apps::mojom::IconValuePtr icon_value) {
+          EXPECT_EQ(apps::mojom::IconType::kCompressed, icon_value->icon_type);
+          EXPECT_TRUE(icon_value->compressed);
+          std::vector<uint8_t> png_data = icon_value->compressed.value();
+          std::string compressed(png_data.begin(), png_data.end());
+          // Check that |compressed| starts with the 8-byte PNG magic string.
+          EXPECT_EQ(compressed.substr(0, 8),
+                    "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a");
+          quit.Run();
+        }));
+    run_loop.Run();
+    return;
+  }
+
   apps::ArcIconOnceLoader once_loader(profile());
   once_loader.LoadIcon(
       app_id, icon_size, apps::mojom::IconType::kCompressed,
@@ -2251,7 +2273,8 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
           if (iter != compressed_images.end()) {
             num_compressed_images_seen++;
             const std::string& compressed = iter->second;
-            // Check that |compressed| starts with the 8-byte PNG magic string.
+            // Check that |compressed| starts with the 8-byte PNG magic
+            // string.
             EXPECT_EQ(compressed.substr(0, 8),
                       "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a");
           }

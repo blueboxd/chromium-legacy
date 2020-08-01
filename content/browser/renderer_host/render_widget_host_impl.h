@@ -728,8 +728,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // FrameTokenMessageQueue::Client:
   void OnInvalidFrameToken(uint32_t frame_token) override;
-  void OnMessageDispatchError(const IPC::Message& message) override;
-  void OnProcessSwapMessage(const IPC::Message& message) override;
 
   void ProgressFlingIfNeeded(base::TimeTicks current_time);
   void StopFling();
@@ -919,8 +917,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                        const gfx::Vector2d& bitmap_offset_in_dip,
                        const DragEventSourceInfo& event_info);
   void OnUpdateDragCursor(blink::WebDragOperation current_op);
-  void OnFrameSwapMessagesReceived(uint32_t frame_token,
-                                   std::vector<IPC::Message> messages);
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,

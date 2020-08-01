@@ -1683,10 +1683,8 @@ void DocumentLoader::CommitNavigation() {
   if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
-
-    auto* agent = GetWindowAgentForOrigin(frame_.Get(), security_origin.get());
-    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_, agent));
-
+    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(
+        *frame_, GetWindowAgentForOrigin(frame_.Get(), security_origin.get())));
     if (origin_policy_.has_value()) {
       // Convert from WebVector<WebString> to WTF::Vector<WTF::String>
       Vector<String> ids;
@@ -1695,18 +1693,6 @@ void DocumentLoader::CommitNavigation() {
       }
 
       frame_->DomWindow()->SetOriginPolicyIds(ids);
-    }
-
-    // Inheriting cases use their agent's origin-isolated value, which is set by
-    // whatever they're inheriting from.
-    //
-    // TODO(https://crbug.com/1111897): This call is likely to happen happen
-    // multiple times per agent, since navigations can happen multiple times per
-    // agent. This is subpar. Currently a DCHECK guards against it happening
-    // multiple times *with different values*, but ideally we would use a better
-    // architecture.
-    if (!Document::ShouldInheritSecurityOriginFromOwner(Url())) {
-      agent->SetIsOriginIsolated(origin_isolation_restricted_);
     }
   } else {
     if (frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame() &&
@@ -1754,6 +1740,9 @@ void DocumentLoader::CommitNavigation() {
   security_init.ApplyDocumentPolicy(
       document_policy_,
       response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly));
+
+  frame_->DomWindow()->SetOriginIsolationRestricted(
+      origin_isolation_restricted_);
 
   if (auto* parent = frame_->Tree().Parent()) {
     SecurityContext& this_context = frame_->DomWindow()->GetSecurityContext();

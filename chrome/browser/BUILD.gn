@@ -1309,8 +1309,6 @@ static_library("browser") {
     "prerender/prerender_processor_impl.h",
     "prerender/prerender_tab_helper.cc",
     "prerender/prerender_tab_helper.h",
-    "prerender/prerender_util.cc",
-    "prerender/prerender_util.h",
     "previews/previews_content_util.cc",
     "previews/previews_content_util.h",
     "previews/previews_https_notification_infobar_decider.cc",

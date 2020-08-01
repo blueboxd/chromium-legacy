@@ -36,7 +36,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   std::unique_ptr<cc::UkmRecorderFactory> CreateUkmRecorderFactory() override;
   void RequestNewLayerTreeFrameSink(
       RenderWidget* render_widget,
-      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
       const char* client_name) override;

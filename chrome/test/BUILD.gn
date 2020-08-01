@@ -3411,7 +3411,6 @@ test("unit_tests") {
     "../browser/prerender/isolated/isolated_prerender_tab_helper_unittest.cc",
     "../browser/prerender/isolated/isolated_prerender_url_loader_interceptor_unittest.cc",
     "../browser/prerender/prerender_unittest.cc",
-    "../browser/prerender/prerender_util_unittest.cc",
     "../browser/previews/previews_content_util_unittest.cc",
     "../browser/previews/previews_https_notification_infobar_decider_unittest.cc",
     "../browser/previews/previews_lite_page_infobar_delegate_unittest.cc",

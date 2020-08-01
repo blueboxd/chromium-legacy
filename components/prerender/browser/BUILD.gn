@@ -10,6 +10,8 @@ static_library("browser") {
     "prerender_histograms.h",
     "prerender_history.cc",
     "prerender_history.h",
+    "prerender_util.cc",
+    "prerender_util.h",
   ]
 
   deps = [
@@ -18,12 +20,17 @@ static_library("browser") {
     "//components/prerender/common:mojo_bindings",
     "//net",
     "//ui/gfx/geometry",
+    "//ui/gfx/image/mojom:mojom_traits",
+    "//url",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "prerender_history_unittest.cc" ]
+  sources = [
+    "prerender_history_unittest.cc",
+    "prerender_util_unittest.cc",
+  ]
 
   deps = [
     ":browser",
@@ -31,5 +38,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//google_apis:google_apis",
     "//testing/gtest",
+    "//url:url",
   ]
 }

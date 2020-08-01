@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/views/controls/webview/webview.h"
@@ -33,12 +31,7 @@ class TabSearchWebView : public views::WebView {
                    TabSearchBubbleView* parent)
       : WebView(browser_context), parent_(parent) {}
 
-  ~TabSearchWebView() override {
-    if (timer_.has_value()) {
-      UmaHistogramMediumTimes("Tabs.TabSearch.WindowDisplayedDuration",
-                              timer_->Elapsed());
-    }
-  }
+  ~TabSearchWebView() override = default;
 
   // views::WebView:
   void PreferredSizeChanged() override {
@@ -63,9 +56,6 @@ class TabSearchWebView : public views::WebView {
   void DocumentOnLoadCompletedInMainFrame() override {
     GetWidget()->Show();
     GetWebContents()->Focus();
-
-    // Track window open times from when the bubble is first shown.
-    timer_ = base::ElapsedTimer();
   }
 
   void DidStopLoading() override {
@@ -81,9 +71,6 @@ class TabSearchWebView : public views::WebView {
 
   // What we should set the preferred width to once TabSearch has loaded.
   gfx::Size pending_preferred_size_;
-
-  // Time the Tab Search window has been open.
-  base::Optional<base::ElapsedTimer> timer_;
 };
 
 }  // namespace

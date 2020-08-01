@@ -956,15 +956,7 @@ int main(int argc, const char* argv[]) {
   auto affected_member_expr_matcher =
       memberExpr(member(fieldDecl(hasExplicitFieldDecl(field_decl_matcher))))
           .bind("affectedMemberExpr");
-  auto affected_implicit_expr_matcher = implicitCastExpr(has(expr(anyOf(
-      // Only single implicitCastExpr is present in case of:
-      // |auto* v = s.ptr_field;|
-      expr(affected_member_expr_matcher),
-      // 2nd nested implicitCastExpr is present in case of:
-      // |const auto* v = s.ptr_field;|
-      expr(implicitCastExpr(has(affected_member_expr_matcher)))))));
-  auto affected_expr_matcher =
-      expr(anyOf(affected_member_expr_matcher, affected_implicit_expr_matcher));
+  auto affected_expr_matcher = ignoringImplicit(affected_member_expr_matcher);
 
   // Places where |.get()| needs to be appended =========
   // Given
@@ -1067,10 +1059,9 @@ int main(int argc, const char* argv[]) {
   //
   // See also the testcases in tests/gen-in-out-arg-test.cc.
   auto affected_in_out_ref_arg_matcher = callExpr(forEachArgumentWithParam(
-      affected_expr_matcher.bind("expr"),
-      hasExplicitParmVarDecl(
-          hasType(qualType(allOf(referenceType(pointee(pointerType())),
-                                 unless(rValueReferenceType())))))));
+      affected_expr_matcher, hasExplicitParmVarDecl(hasType(qualType(
+                                 allOf(referenceType(pointee(pointerType())),
+                                       unless(rValueReferenceType())))))));
   FilteredExprWriter filtered_in_out_ref_arg_writer(&output_helper,
                                                     "in-out-param-ref");
   match_finder.addMatcher(affected_in_out_ref_arg_matcher,

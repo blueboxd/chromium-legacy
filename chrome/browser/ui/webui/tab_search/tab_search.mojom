@@ -4,8 +4,6 @@
 
 module tab_search.mojom;
 
-import "mojo/public/mojom/base/time.mojom";
-
 // Collection of WindowTabs of a profile.
 struct ProfileTabs {
   array<WindowTabs> windows;
@@ -68,9 +66,6 @@ interface PageHandler {
 
   // Switch to a specific tab.
   SwitchToTab(SwitchToTabInfo switch_to_tab_info);
-
-  // Records the time taken to render the initial list of tabs.
-  RecordInitialTabsRenderTime(mojo_base.mojom.TimeDelta render_time);
 };
 
 // WebUI-side handler for requests from the browser.

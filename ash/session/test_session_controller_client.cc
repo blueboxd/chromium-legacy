@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <string>
 
+#include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -196,6 +198,12 @@ void TestSessionControllerClient::SetUserPrefService(
 }
 
 void TestSessionControllerClient::RequestLockScreen() {
+  if (should_show_lock_screen_) {
+    // The lock screen can't be shown without a wallpaper.
+    Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
+    Shell::Get()->login_screen_controller()->ShowLockScreen();
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&TestSessionControllerClient::SetSessionState,
                                 weak_ptr_factory_.GetWeakPtr(),

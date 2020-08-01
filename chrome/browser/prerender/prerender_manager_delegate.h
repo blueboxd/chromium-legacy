@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_DELEGATE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "chrome/browser/prerender/prerender_contents_delegate.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -26,6 +27,10 @@ class PrerenderManagerDelegate {
 
   // Perform preconnect, if feasible.
   virtual void MaybePreconnect(const GURL& url) = 0;
+
+  // Get the prerender contents delegate.
+  virtual std::unique_ptr<PrerenderContentsDelegate>
+  GetPrerenderContentsDelegate() = 0;
 };
 
 }  // namespace prerender

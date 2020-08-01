@@ -22,10 +22,26 @@
 
 namespace ash {
 
-using AmbientControllerTest = AmbientAshTestBase;
+class AmbientControllerTest : public AmbientAshTestBase {
+ public:
+  AmbientControllerTest() : AmbientAshTestBase() {}
+  ~AmbientControllerTest() override = default;
+
+  // AmbientAshTestBase:
+  void SetUp() override {
+    AmbientAshTestBase::SetUp();
+    GetSessionControllerClient()->set_show_lock_screen_views(true);
+  }
+};
 
 TEST_F(AmbientControllerTest, ShowAmbientScreenUponLock) {
   LockScreen();
+  // Lockscreen will not immediately show Ambient mode.
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  // Ambient mode will show after inacivity and successfully loading first
+  // image.
+  FastForwardToInactivity();
   FastForwardToNextImage();
 
   EXPECT_TRUE(container_view());
@@ -34,11 +50,13 @@ TEST_F(AmbientControllerTest, ShowAmbientScreenUponLock) {
   EXPECT_TRUE(ambient_controller()->IsShown());
 
   // Clean up.
-  CloseAmbientScreen();
+  UnlockScreen();
+  EXPECT_FALSE(ambient_controller()->IsShown());
 }
 
 TEST_F(AmbientControllerTest, HideAmbientScreen) {
   LockScreen();
+  FastForwardToInactivity();
   FastForwardToNextImage();
 
   EXPECT_TRUE(container_view());
@@ -53,11 +71,13 @@ TEST_F(AmbientControllerTest, HideAmbientScreen) {
             AmbientUiVisibility::kHidden);
 
   // Clean up.
-  CloseAmbientScreen();
+  UnlockScreen();
+  EXPECT_FALSE(ambient_controller()->IsShown());
 }
 
 TEST_F(AmbientControllerTest, CloseAmbientScreenUponUnlock) {
   LockScreen();
+  FastForwardToInactivity();
   FastForwardToNextImage();
 
   EXPECT_TRUE(container_view());
@@ -138,10 +158,6 @@ TEST_F(AmbientControllerTest, ShouldRefreshAccessTokenAfterFailure) {
 
 TEST_F(AmbientControllerTest,
        CheckAcquireAndReleaseWakeLockWhenBatteryIsCharging) {
-  // Flush the loop first to ensure the |PowerStatus| has picked up the initial
-  // status.
-  base::RunLoop().RunUntilIdle();
-
   // Simulate a device being connected to a charger initially.
   power_manager::PowerSupplyProperties proto;
   proto.set_battery_state(
@@ -151,7 +167,8 @@ TEST_F(AmbientControllerTest,
   // Lock screen to start ambient mode, and flush the loop to ensure
   // the acquire wake lock request has reached the wake lock provider.
   LockScreen();
-  base::RunLoop().RunUntilIdle();
+  FastForwardToInactivity();
+  FastForwardToNextImage();
 
   EXPECT_EQ(1, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
@@ -162,11 +179,8 @@ TEST_F(AmbientControllerTest,
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 
-  // TODO(meilinw): refactor |AmbientAshTestBase| to make this built-in.
-  // Simulate the ambient screen being shown again.
-  ambient_controller()->OnAmbientUiVisibilityChanged(
-      AmbientUiVisibility::kShown);
-  base::RunLoop().RunUntilIdle();
+  // Ambient screen showup again after inactivity.
+  FastForwardToInactivity();
 
   EXPECT_EQ(1, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
@@ -181,10 +195,6 @@ TEST_F(AmbientControllerTest,
 
 TEST_F(AmbientControllerTest,
        CheckAcquireAndReleaseWakeLockWhenBatteryStateChanged) {
-  // Flush the loop first to ensure the |PowerStatus| has picked up the initial
-  // status.
-  base::RunLoop().RunUntilIdle();
-
   // Simulate a device being disconnected with a charger initially.
   power_manager::PowerSupplyProperties proto;
   proto.set_battery_state(
@@ -194,7 +204,10 @@ TEST_F(AmbientControllerTest,
   PowerStatus::Get()->SetProtoForTesting(proto);
   // Lock screen to start ambient mode.
   LockScreen();
+  FastForwardToInactivity();
+  FastForwardToNextImage();
 
+  EXPECT_TRUE(ambient_controller()->IsShown());
   // Should not acquire wake lock when device is not charging.
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
@@ -274,11 +287,21 @@ TEST_F(AmbientControllerTest, ShouldDismissContainerViewOnRealMouseMove) {
   EXPECT_FALSE(container_view());
 }
 
-TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
-  // Flush the loop first to ensure the |PowerStatus| has picked up the initial
-  // status.
-  base::RunLoop().RunUntilIdle();
+TEST_F(AmbientControllerTest, ShouldDismissAndThenComesBack) {
+  LockScreen();
+  FastForwardToInactivity();
+  FastForwardToNextImage();
+  EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
 
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_1, ui::EF_NONE);
+  EXPECT_FALSE(container_view());
+
+  FastForwardToInactivity();
+  FastForwardToNextImage();
+  EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
+}
+
+TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
   // Simulate a device being connected with a charger initially to acquire a
   // wake lock upon shown.
   power_manager::PowerSupplyProperties proto;
@@ -312,11 +335,32 @@ TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 
-TEST_F(AmbientControllerTest, ShouldShowAmbientScreenWhenScreenIsDimmed) {
+TEST_F(AmbientControllerTest,
+       ShouldShowAmbientScreenWithLockscreenWhenScreenIsDimmed) {
+  GetSessionControllerClient()->SetShouldLockScreenAutomatically(true);
   EXPECT_FALSE(ambient_controller()->IsShown());
 
   // Should lock the device and enter ambient mode when the screen is dimmed.
   SetScreenDimmedAndWait(true);
+  EXPECT_TRUE(IsLocked());
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  FastForwardToInactivity();
+  FastForwardToNextImage();
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  // Closes ambient for clean-up.
+  UnlockScreen();
+  EXPECT_FALSE(ambient_controller()->IsShown());
+}
+
+TEST_F(AmbientControllerTest, ShouldShowAmbientScreenWhenScreenIsDimmed) {
+  GetSessionControllerClient()->SetShouldLockScreenAutomatically(false);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  // Should lock the device and enter ambient mode when the screen is dimmed.
+  SetScreenDimmedAndWait(true);
+  EXPECT_FALSE(IsLocked());
 
   FastForwardToNextImage();
   EXPECT_TRUE(ambient_controller()->IsShown());

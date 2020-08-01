@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "base/memory/weak_ptr.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -35,9 +35,6 @@ class ASH_EXPORT NotificationSwipeControlView : public views::View,
 
   explicit NotificationSwipeControlView(
       message_center::MessageView* message_view);
-  NotificationSwipeControlView(const NotificationSwipeControlView&) = delete;
-  NotificationSwipeControlView& operator=(const NotificationSwipeControlView&) =
-      delete;
   ~NotificationSwipeControlView() override;
 
   // views::View
@@ -53,11 +50,6 @@ class ASH_EXPORT NotificationSwipeControlView : public views::View,
   void UpdateCornerRadius(int top_radius, int bottom_radius);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NotificationSwipeControlViewTest,
-                           DeleteOnSettingsButtonPressed);
-  FRIEND_TEST_ALL_PREFIXES(NotificationSwipeControlViewTest,
-                           DeleteOnSnoozeButtonPressed);
-
   // Change the visibility of the settings button.
   void ShowButtons(ButtonPosition button_position,
                    bool has_settings,
@@ -76,7 +68,7 @@ class ASH_EXPORT NotificationSwipeControlView : public views::View,
   views::ImageButton* settings_button_ = nullptr;
   views::ImageButton* snooze_button_ = nullptr;
 
-  base::WeakPtrFactory<NotificationSwipeControlView> weak_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(NotificationSwipeControlView);
 };
 
 }  // namespace ash

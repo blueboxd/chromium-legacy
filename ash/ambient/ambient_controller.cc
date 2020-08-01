@@ -48,9 +48,6 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kAutoShowWaitTimeInterval =
-    base::TimeDelta::FromSeconds(15);
-
 // Used by wake lock APIs.
 constexpr char kWakeLockReason[] = "AmbientMode";
 
@@ -242,7 +239,8 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       } else {
         DCHECK(visibility == AmbientUiVisibility::kClosed);
         inactivity_monitor_.reset();
-        power_status_observer_.Remove(PowerStatus::Get());
+        if (power_status_observer_.IsObserving(PowerStatus::Get()))
+          power_status_observer_.Remove(PowerStatus::Get());
       }
 
       break;
@@ -341,15 +339,19 @@ void AmbientController::OnPowerStatusChanged() {
 
 void AmbientController::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& idle_state) {
-  if (!IsUiClosed(ambient_ui_model_.ui_visibility()))
+  if (!AmbientClient::Get()->IsAmbientModeAllowed())
+    return;
+
+  if (!idle_state.dimmed())
     return;
 
   auto* session_controller = Shell::Get()->session_controller();
-  if (idle_state.dimmed() && !session_controller->IsScreenLocked() &&
-      session_controller->CanLockScreen()) {
+  if (session_controller->CanLockScreen() &&
+      session_controller->ShouldLockScreenAutomatically()) {
     // TODO(b/161469136): revise this behavior after further discussion.
-    // Locks the device when screen is dimmed to start ambient screen.
     Shell::Get()->session_controller()->LockScreen();
+  } else {
+    ShowUi(AmbientUiMode::kInSessionUi);
   }
 }
 
@@ -364,15 +366,20 @@ void AmbientController::RemoveAmbientViewDelegateObserver(
 }
 
 void AmbientController::ShowUi(AmbientUiMode mode) {
-  // TODO(meilinw): move the eligibility check to the idle entry point once
-  // implemented: b/149246117.
   if (!AmbientClient::Get()->IsAmbientModeAllowed()) {
     LOG(WARNING) << "Ambient mode is not allowed.";
     return;
   }
 
   ambient_ui_model_.SetUiMode(mode);
-  ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
+  switch (mode) {
+    case AmbientUiMode::kInSessionUi:
+      ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
+      break;
+    case AmbientUiMode::kLockScreenUi:
+      ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kHidden);
+      break;
+  }
 }
 
 void AmbientController::CloseUi() {
@@ -480,7 +487,7 @@ AmbientBackendModel* AmbientController::GetAmbientBackendModel() {
 
 void AmbientController::OnImagesChanged() {
   if (!container_view_)
-    CreateWidget();
+    CreateAndShowWidget();
 }
 
 std::unique_ptr<AmbientContainerView> AmbientController::CreateContainerView() {
@@ -491,7 +498,7 @@ std::unique_ptr<AmbientContainerView> AmbientController::CreateContainerView() {
   return container;
 }
 
-void AmbientController::CreateWidget() {
+void AmbientController::CreateAndShowWidget() {
   DCHECK(!container_view_);
 
   views::Widget::InitParams params;
@@ -529,4 +536,5 @@ void AmbientController::set_backend_controller_for_testing(
   ambient_backend_controller_ = std::move(backend_controller);
 }
 
+constexpr base::TimeDelta AmbientController::kAutoShowWaitTimeInterval;
 }  // namespace ash

@@ -39,7 +39,6 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   void GetTabGroups(GetTabGroupsCallback callback) override;
   void SwitchToTab(
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
-  void RecordInitialTabsRenderTime(base::TimeDelta render_time) override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(

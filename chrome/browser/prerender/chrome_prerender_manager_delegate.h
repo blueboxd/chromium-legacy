@@ -23,6 +23,8 @@ class ChromePrerenderManagerDelegate : public PrerenderManagerDelegate {
   // PrerenderManagerDelegate overrides.
   scoped_refptr<content_settings::CookieSettings> GetCookieSettings() override;
   void MaybePreconnect(const GURL& url) override;
+  std::unique_ptr<PrerenderContentsDelegate> GetPrerenderContentsDelegate()
+      override;
 
  private:
   Profile* profile_;

@@ -2,22 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function openTab(url) {
-  return new Promise((resolve) => {
-    chrome.tabs.onUpdated.addListener(
-        function listener(tabId, changeInfo, tab) {
-      // Note: Use new URL(...).href to compare in order to normalize the URL,
-      // which is important if the path referenced a parent (as happens in the
-      // file urls).
-      if (changeInfo.status !== 'complete' ||
-          (new URL(tab.url)).href !== (new URL(url)).href) {
-        return;
-      }
-      chrome.tabs.onUpdated.removeListener(listener);
-      resolve(tab.id);
-    });
-    chrome.tabs.create({url: url});
-  });
+function checkUrlsEqual(expected, actual) {
+  // Note: Use new URL(...).href to compare in order to normalize the URL,
+  // which is important if the path referenced a parent (as happens in the
+  // file urls).
+  chrome.test.assertEq(new URL(expected).href,
+                       new URL(actual).href);
 }
 
 function runNotAllowedTest(method, params, expectAllowed) {
@@ -46,9 +36,13 @@ function runNotAllowedTest(method, params, expectAllowed) {
   });
 }
 
-chrome.test.getConfig((config) => {
+(async () => {
+  const config = await new Promise((resolve) => {
+                   chrome.test.getConfig(resolve)
+                 });
   const fileUrl = config.testDataDirectory + '/../body1.html';
   const expectFileAccess = !!config.customArg;
+  const { openTab } = await import('/_test_resources/test_util/tabs_util.js');
 
   console.log(fileUrl);
 
@@ -63,7 +57,9 @@ chrome.test.getConfig((config) => {
     },
 
     function testAttach() {
-      openTab(fileUrl).then((tabId) => {
+      openTab(fileUrl).then((tab) => {
+        checkUrlsEqual(fileUrl, tab.url);
+        const tabId = tab.id;
         chrome.debugger.attach({tabId: tabId}, '1.1', function() {
           if (expectFileAccess) {
             chrome.test.assertNoLastError();
@@ -80,7 +76,10 @@ chrome.test.getConfig((config) => {
     },
 
     function testAttachAndNavigate() {
-      openTab(chrome.runtime.getURL('dummy.html')).then((tabId) => {
+      const url = chrome.runtime.getURL('dummy.html');
+      openTab(url).then((tab) => {
+        checkUrlsEqual(url, tab.url);
+        const tabId = tab.id;
         chrome.debugger.attach({tabId: tabId}, '1.1', function() {
           chrome.test.assertNoLastError();
           let responded = false;
@@ -125,4 +124,4 @@ chrome.test.getConfig((config) => {
           expectFileAccess);
     },
   ]);
-});
+})();

@@ -86,15 +86,6 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_Close)
 // APIs, and the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_RequestSetBounds, gfx::Rect /* bounds */)
 
-// Sends a set of queued messages that were being held until the next
-// CompositorFrame is being submitted from the renderer. These messages are
-// sent before the OnRenderFrameMetadataChanged message is sent (via mojo) and
-// before the CompositorFrame is sent to the viz service. The |frame_token|
-// will match the token in the about-to-be-submitted CompositorFrame.
-IPC_MESSAGE_ROUTED2(WidgetHostMsg_FrameSwapMessages,
-                    uint32_t /* frame_token */,
-                    std::vector<IPC::Message> /* messages */)
-
 // Indicates that the render widget has been closed in response to a
 // Close message.
 IPC_MESSAGE_CONTROL1(WidgetHostMsg_Close_ACK, int /* old_route_id */)

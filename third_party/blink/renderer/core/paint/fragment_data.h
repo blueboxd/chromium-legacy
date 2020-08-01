@@ -35,6 +35,14 @@ class CORE_EXPORT FragmentData {
     paint_offset_ = paint_offset;
   }
 
+  // Visual rect in the space of the the local transform space.
+  const PhysicalRect& VisualRectForLayoutShiftTracking() const {
+    return visual_rect_for_layout_shift_tracking_;
+  }
+  void SetVisualRectForLayoutShiftTracking(const PhysicalRect& rect) {
+    visual_rect_for_layout_shift_tracking_ = rect;
+  }
+
   // An id for this object that is unique for the lifetime of the WebView.
   UniqueObjectId UniqueId() const {
     DCHECK(rare_data_);
@@ -242,6 +250,8 @@ class CORE_EXPORT FragmentData {
   RareData& EnsureRareData();
 
   PhysicalOffset paint_offset_;
+  PhysicalRect visual_rect_for_layout_shift_tracking_;
+
   std::unique_ptr<RareData> rare_data_;
 };
 

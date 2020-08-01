@@ -6760,22 +6760,6 @@ void LayoutBox::MutableForPainting::SavePreviousContentBoxAndOverflowRects() {
       GetLayoutBox().PhysicalSelfVisualOverflowRect();
 }
 
-void LayoutBox::MutableForPainting::SetPreviousSizeAndLayoutOverflowRect(
-    const LayoutSize& previous_size,
-    const PhysicalRect& previous_layout_overflow_rect) {
-  GetLayoutBox().previous_size_ = previous_size;
-  if (!previous_layout_overflow_rect.offset.IsZero() ||
-      previous_layout_overflow_rect.size !=
-          PhysicalSizeToBeNoop(previous_size)) {
-    auto& rare_data = GetLayoutBox().EnsureRareData();
-    rare_data.has_previous_content_box_and_overflow_rects_ = true;
-    rare_data.previous_physical_layout_overflow_rect_ =
-        previous_layout_overflow_rect;
-    // Other previous_* fields don't matter because they are used for paint
-    // invalidation and we always do full paint invalidation on reattachment.
-  }
-}
-
 RasterEffectOutset LayoutBox::VisualRectOutsetForRasterEffects() const {
   // If the box has subpixel visual effect outsets, as the visual effect may be
   // painted along the pixel-snapped border box, the pixels on the anti-aliased

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_util.h"
+#include "components/prerender/browser/prerender_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

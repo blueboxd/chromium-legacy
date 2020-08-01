@@ -704,8 +704,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
-                        OnFrameSwapMessagesReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -2044,13 +2042,6 @@ void RenderWidgetHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
     view->UpdateDragCursor(current_op);
 }
 
-void RenderWidgetHostImpl::OnFrameSwapMessagesReceived(
-    uint32_t frame_token,
-    std::vector<IPC::Message> messages) {
-  frame_token_message_queue_->OnFrameSwapMessagesReceived(frame_token,
-                                                          std::move(messages));
-}
-
 void RenderWidgetHostImpl::RendererExited() {
   if (!renderer_initialized_)
     return;
@@ -2714,16 +2705,6 @@ void RenderWidgetHostImpl::UnlockMouse() {
 void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
   bad_message::ReceivedBadMessage(GetProcess(),
                                   bad_message::RWH_INVALID_FRAME_TOKEN);
-}
-
-void RenderWidgetHostImpl::OnMessageDispatchError(const IPC::Message& message) {
-  RenderProcessHost* rph = GetProcess();
-  rph->OnBadMessageReceived(message);
-}
-
-void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
-  RenderProcessHost* rph = GetProcess();
-  rph->OnMessageReceived(message);
 }
 
 bool RenderWidgetHostImpl::RequestKeyboardLock(

@@ -58,8 +58,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   InputRouter* input_router() { return input_router_.get(); }
 
-  uint32_t processed_frame_messages_count();
-
   static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
                                       RenderProcessHost* process,
                                       int32_t routing_id);

@@ -43,6 +43,9 @@ class ASH_EXPORT AmbientController
       public PowerStatus::Observer,
       public chromeos::PowerManagerClient::Observer {
  public:
+  static constexpr base::TimeDelta kAutoShowWaitTimeInterval =
+      base::TimeDelta::FromSeconds(15);
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   AmbientController();
@@ -109,7 +112,7 @@ class ASH_EXPORT AmbientController
   // TODO(meilinw): reuses the lock-screen widget: b/156531168, b/157175030.
   // Creates and shows a full-screen widget responsible for showing
   // the ambient UI.
-  void CreateWidget();
+  void CreateAndShowWidget();
 
   void StartRefreshingImages();
   void StopRefreshingImages();

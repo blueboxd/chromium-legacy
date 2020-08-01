@@ -11,7 +11,6 @@
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/render_frame_metadata_observer.h"
-#include "content/renderer/frame_swap_message_queue.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/buffer_types.h"
 
@@ -65,7 +64,6 @@ FakeCompositorDependencies::CreateUkmRecorderFactory() {
 
 void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
     RenderWidget* render_widget,
-    scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
     const char* client_name) {

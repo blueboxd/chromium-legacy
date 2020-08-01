@@ -23,8 +23,8 @@ namespace chrome_cleaner {
 class InterfaceLogService : public InterfaceMetadataObserver {
  public:
   static std::unique_ptr<InterfaceLogService> Create(
-      const base::StringPiece16 file_name,
-      const base::StringPiece16 build_version);
+      const base::WStringPiece file_name,
+      const base::WStringPiece build_version);
 
   ~InterfaceLogService() override;
 
@@ -44,8 +44,8 @@ class InterfaceLogService : public InterfaceMetadataObserver {
   base::FilePath GetLogFilePath() const;
 
  private:
-  InterfaceLogService(const base::StringPiece16 file_name,
-                      const base::StringPiece16 build_version,
+  InterfaceLogService(const base::WStringPiece file_name,
+                      const base::WStringPiece build_version,
                       std::ofstream csv_stream);
 
   // TODO(joenotcharles): Currently the CallHistory is only used in the unit

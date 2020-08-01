@@ -178,7 +178,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
-  bool caret_browsing_enabled;
   bool navigate_on_drag_drop;
   blink::mojom::V8CacheOptions v8_cache_options;
   bool record_whole_document;

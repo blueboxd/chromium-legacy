@@ -195,6 +195,7 @@ Polymer({
   /**
    * Overridden from DeepLinkingBehavior.
    * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
     // If lastFocused_ is an internal element of a Focus Row (such as the menu
@@ -209,6 +210,8 @@ Polymer({
         settingId == chromeos.settings.mojom.Setting.kBluetoothUnpairDevice) {
       this.lastFocused_ = null;
     }
+    // Should continue with deep link attempt.
+    return true;
   },
 
   /** @override */

@@ -98,7 +98,7 @@ RegistryLogger::RegistryLogger(Mode mode, const std::string& suffix)
     return;
   }
 
-  suffix_ = base::UTF8ToUTF16(suffix);
+  suffix_ = base::UTF8ToWide(suffix);
   CreateRegKey(&logging_key_, GetLoggingKeyPath(mode));
   CreateRegKey(&scan_times_key_, GetScanTimesKeyPath(mode));
 }
@@ -207,7 +207,7 @@ bool RegistryLogger::AppendLogFilePath(const base::FilePath& log_file) {
   if (ReadPendingLogFiles(&log_files, nullptr)) {
     log_files.push_back(log_file.value());
     registry_value =
-        base::JoinString(log_files, base::StringPiece16(&kMultiSzSeparator, 1));
+        base::JoinString(log_files, base::WStringPiece(&kMultiSzSeparator, 1));
   } else {
     registry_value = log_file.value();
   }
@@ -283,7 +283,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
   }
 
   base::string16 registry_value(
-      base::JoinString(log_files, base::StringPiece16(&kMultiSzSeparator, 1)));
+      base::JoinString(log_files, base::WStringPiece(&kMultiSzSeparator, 1)));
   // REG_MULTI_SZ requires an extra \0 at the end of the string.
   registry_value.append(1, L'\0');
   LONG result = logging_key_.WriteValue(
@@ -306,7 +306,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
 bool RegistryLogger::RecordFoundPUPs(const std::vector<UwSId>& pups_to_store) {
   base::string16 multi_sz_value;
   for (UwSId pup_to_store : pups_to_store) {
-    multi_sz_value += base::NumberToString16(pup_to_store);
+    multi_sz_value += base::NumberToWString(pup_to_store);
     multi_sz_value += kMultiSzSeparator;
   }
   multi_sz_value += kMultiSzSeparator;

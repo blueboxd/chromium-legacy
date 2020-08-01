@@ -35,7 +35,7 @@ const int InputStream::kBufferSize = 4096;
 InputStream::InputStream() {}
 
 InputStream::InputStream(const JavaRef<jobject>& stream) : jobject_(stream) {
-  DCHECK(!stream.is_null());
+  DCHECK(stream);
 }
 
 InputStream::~InputStream() {

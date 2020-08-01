@@ -31,6 +31,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
             CriticalPersistedTabData.class;
 
     private static final int UNSPECIFIED_THEME_COLOR = Color.TRANSPARENT;
+    private static final long INVALID_TIMESTAMP = -1;
 
     private int mParentId;
     private int mRootId;
@@ -140,7 +141,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
         // CriticalPersistedTabData is initialized with default values
         CriticalPersistedTabData criticalPersistedTabData =
                 new CriticalPersistedTabData(tab, Tab.INVALID_TAB_ID, tab.getId(),
-                        tab.getTimestampMillis(), null, -1, "", UNSPECIFIED_THEME_COLOR,
+                        INVALID_TIMESTAMP, null, -1, "", UNSPECIFIED_THEME_COLOR,
                         tab.getLaunchTypeAtInitialTabCreation() == null
                                 ? TabLaunchType.FROM_LINK
                                 : tab.getLaunchTypeAtInitialTabCreation(),
@@ -333,6 +334,14 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public long getTimestampMillis() {
         return mTimestampMillis;
+    }
+
+    /**
+     * set the timetsamp
+     * @param timestamp the timestamp
+     */
+    public void setTimestampMillis(long timestamp) {
+        mTimestampMillis = timestamp;
     }
 
     /**

@@ -81,11 +81,15 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
 
       if (buffer_renderer->RenderToTextureOwnerFrontBuffer(
               CodecOutputBufferRenderer::BindingsMode::kDontRestoreIfBound)) {
-        info.emplace();
-        texture_owner->GetCodedSizeAndVisibleRect(
-            buffer_renderer->size(), &info->coded_size, &info->visible_rect);
-
-        info->ycbcr_info = GetYCbCrInfo(texture_owner.get());
+        gfx::Size coded_size;
+        gfx::Rect visible_rect;
+        if (texture_owner->GetCodedSizeAndVisibleRect(
+                buffer_renderer->size(), &coded_size, &visible_rect)) {
+          info.emplace();
+          info->coded_size = coded_size;
+          info->visible_rect = visible_rect;
+          info->ycbcr_info = GetYCbCrInfo(texture_owner.get());
+        }
       }
 
       std::move(cb).Run(std::move(buffer_renderer), info);

@@ -152,6 +152,13 @@ class UtilitySandboxedProcessLauncherDelegate
       return true;
     }
 
+    if (sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition) {
+      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                            sandbox::USER_LIMITED);
+    }
+
     if (sandbox_type_ == sandbox::policy::SandboxType::kIconReader) {
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LOCKDOWN);

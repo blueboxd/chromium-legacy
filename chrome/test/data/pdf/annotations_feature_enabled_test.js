@@ -379,4 +379,33 @@ chrome.test.runTests([
       chrome.test.assertEq('EMBED', contentElement().tagName);
     });
   },
+  function testHidingAnnotationsExitsAnnotationsMode() {
+    testAsync(async () => {
+      const toolbar = document.createElement('viewer-pdf-toolbar-new');
+      document.body.appendChild(toolbar);
+      toolbar.toggleAnnotation();
+      chrome.test.assertTrue(toolbar.annotationMode);
+
+      await toolbar.addEventListener('display-annotations-changed', async e => {
+        chrome.test.assertFalse(e.detail);
+        await waitFor(() => toolbar.annotationMode === false);
+        chrome.test.succeed();
+      });
+      toolbar.shadowRoot.querySelector('#show-annotations-button').click();
+    });
+  },
+  function testEnteringAnnotationsModeShowsAnnotations() {
+    const toolbar = document.createElement('viewer-pdf-toolbar-new');
+    document.body.appendChild(toolbar);
+    chrome.test.assertFalse(toolbar.annotationMode);
+
+    // Hide annotations.
+    toolbar.shadowRoot.querySelector('#show-annotations-button').click();
+
+    toolbar.addEventListener('annotation-mode-toggled', e => {
+      chrome.test.assertTrue(e.detail);
+      chrome.test.succeed();
+    });
+    toolbar.toggleAnnotation();
+  }
 ]);

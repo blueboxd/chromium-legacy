@@ -118,14 +118,14 @@ class AutoWinHttpProxyConfig {
   // Returns the proxy auto-configuration URL, or an empty string if automatic
   // proxy configuration is disabled. Only valid after a successful call to
   // Load().
-  const base::char16* auto_config_url() const {
+  const wchar_t* auto_config_url() const {
     return proxy_config_.lpszAutoConfigUrl ? proxy_config_.lpszAutoConfigUrl
                                            : L"";
   }
 
   // Returns the proxy configuration string that should be passed to
   // WinHttpOpen.
-  const base::char16* proxy() const {
+  const wchar_t* proxy() const {
     return (proxy_config_.lpszProxy && proxy_config_.lpszProxy[0] != 0)
                ? proxy_config_.lpszProxy
                : WINHTTP_NO_PROXY_NAME;
@@ -133,7 +133,7 @@ class AutoWinHttpProxyConfig {
 
   // Returns the proxy bypass configuration string that should be passed to
   // WinHttpOpen. Only valid after a successful call to Load().
-  const base::char16* proxy_bypass() const {
+  const wchar_t* proxy_bypass() const {
     return access_type() == WINHTTP_ACCESS_TYPE_NO_PROXY
                ? WINHTTP_NO_PROXY_BYPASS
                : proxy_config_.lpszProxyBypass;
@@ -430,7 +430,7 @@ bool HttpResponseImpl::GetContentType(bool* has_content_type,
   DCHECK(has_content_type);
   DCHECK(content_type);
 
-  base::char16 content_type_buffer[256] = {0};
+  wchar_t content_type_buffer[256] = {0};
 
   if (QueryHeader(WINHTTP_QUERY_CONTENT_TYPE, has_content_type,
                   &content_type_buffer, sizeof(content_type_buffer))) {

@@ -748,6 +748,7 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
       response_dict.SetString("expiresIn",
                               base::NumberToString(token_info->expires_in));
       response_dict.SetString("token", token_info->token);
+      response_dict.SetString("grantedScopes", scope);
       response_dict.SetString("id_token", token_info->id_token);
       FormatOkJSONResponse(response_dict, http_response);
       return;

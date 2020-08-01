@@ -99,7 +99,7 @@ base::string16 FormatNtRegistryMemberForLogging(
     default:
       // Replace null chars with 0s for printing.
       base::string16 str(key.CastAsWStringPiece());
-      base::ReplaceChars(str, base::StringPiece16(L"\0", 1), L"\\0", &str);
+      base::ReplaceChars(str, base::WStringPiece(L"\0", 1), L"\\0", &str);
       return str;
   }
 }

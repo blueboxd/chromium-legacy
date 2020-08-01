@@ -28,6 +28,8 @@
 
 namespace autofill {
 
+using structured_address::VerificationStatus;
+
 Address::Address() {}
 
 Address::Address(const Address& address) {
@@ -102,7 +104,9 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
   }
 }
 
-void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
+void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                               const base::string16& value,
+                                               VerificationStatus status) {
   DCHECK_EQ(ADDRESS_HOME, AutofillType(type).group());
   switch (type) {
     case ADDRESS_HOME_LINE1:
@@ -221,9 +225,10 @@ base::string16 Address::GetInfoImpl(const AutofillType& type,
   return GetRawInfo(storable_type);
 }
 
-bool Address::SetInfoImpl(const AutofillType& type,
-                          const base::string16& value,
-                          const std::string& locale) {
+bool Address::SetInfoWithVerificationStatusImpl(const AutofillType& type,
+                                                const base::string16& value,
+                                                const std::string& locale,
+                                                VerificationStatus status) {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     if (!data_util::IsValidCountryCode(base::i18n::ToUpper(value))) {
       // Some popular websites use the HTML_TYPE_COUNTRY_CODE attribute for
@@ -260,7 +265,7 @@ bool Address::SetInfoImpl(const AutofillType& type,
     return !country_code_.empty();
   }
 
-  SetRawInfo(storable_type, value);
+  SetRawInfoWithVerificationStatus(storable_type, value, status);
 
   // Give up when importing addresses with any entirely blank lines.
   // There's a good chance that this formatting is not intentional, but it's

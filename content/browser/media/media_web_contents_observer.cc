@@ -220,6 +220,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged,
         OnPictureInPictureAvailabilityChanged)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnBufferUnderflow,
+                        OnBufferUnderflow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -371,6 +373,13 @@ void MediaWebContentsObserver::OnPictureInPictureAvailabilityChanged(
     bool available) {
   session_controllers_manager_.OnPictureInPictureAvailabilityChanged(
       MediaPlayerId(render_frame_host, delegate_id), available);
+}
+
+void MediaWebContentsObserver::OnBufferUnderflow(
+    RenderFrameHost* render_frame_host,
+    int delegate_id) {
+  const MediaPlayerId id(render_frame_host, delegate_id);
+  web_contents_impl()->MediaBufferUnderflow(id);
 }
 
 device::mojom::WakeLock* MediaWebContentsObserver::GetAudioWakeLock() {

@@ -9,7 +9,6 @@
 
 #include "chrome/browser/chromeos/printing/print_server.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,9 +35,11 @@ constexpr char kPrintServersPolicyJson1[] = R"json(
   }
 ])json";
 
-// An example whitelist.
-const std::vector<std::string> kPrintServersPolicyWhitelist1 = {"id3", "idX",
+// An example allowlist.
+const std::vector<std::string> kPrintServersPolicyAllowlist1 = {"id3", "idX",
                                                                 "id1"};
+// Test pref name for allowlist.
+std::string allowlist_pref_name_ = "test";
 // A different configuration file with print servers.
 constexpr char kPrintServersPolicyJson2[] = R"json(
 [
@@ -105,8 +106,8 @@ std::vector<PrintServer> PrintServersPolicyData1() {
   return std::vector<PrintServer>({Server1(), Server2(), Server3()});
 }
 
-// Corresponding vector filtered with the whitelist defined above.
-std::vector<PrintServer> PrintServersPolicyData1Whitelist1() {
+// Corresponding vector filtered with the allowlist defined above.
+std::vector<PrintServer> PrintServersPolicyData1Allowlist1() {
   return std::vector<PrintServer>({Server1(), Server3()});
 }
 
@@ -164,10 +165,15 @@ class PrintServersProviderTest : public testing::Test {
       : external_servers_(PrintServersProvider::Create()) {}
 
  protected:
+  void SetUp() override {
+    pref_service_.registry()->RegisterListPref(allowlist_pref_name_);
+    external_servers_->SetAllowlistPref(&pref_service_, allowlist_pref_name_);
+  }
+
   // Everything must be called on Chrome_UIThread.
   content::BrowserTaskEnvironment task_environment_;
-  // User profile.
-  TestingProfile profile_;
+  // Test prefs.
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   // Tested object.
   std::unique_ptr<PrintServersProvider> external_servers_;
 };
@@ -189,7 +195,6 @@ TEST_F(PrintServersProviderTest, DestructionIsSafe) {
 // After initialization "complete" flags = false.
 TEST_F(PrintServersProviderTest, InitialConditions) {
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   ASSERT_EQ(obs.GetCalls().size(), 1u);
   EXPECT_EQ(obs.GetCalls().back().complete, false);
@@ -201,7 +206,6 @@ TEST_F(PrintServersProviderTest, InitialConditions) {
 // ClearData() sets empty list and "complete" flag = true.
 TEST_F(PrintServersProviderTest, ClearData2) {
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   external_servers_->ClearData();
   ASSERT_EQ(obs.GetCalls().size(), 2u);
@@ -219,7 +223,6 @@ TEST_F(PrintServersProviderTest, ClearData2) {
 TEST_F(PrintServersProviderTest, SetData) {
   auto blob1 = std::make_unique<std::string>(kPrintServersPolicyJson1);
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   external_servers_->SetData(std::move(blob1));
   // single call from AddObserver, since SetData(...) is not processed yet
@@ -238,7 +241,6 @@ TEST_F(PrintServersProviderTest, SetData2) {
   auto blob1 = std::make_unique<std::string>(kPrintServersPolicyJson1);
   auto blob2 = std::make_unique<std::string>(kPrintServersPolicyJson2);
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   external_servers_->SetData(std::move(blob1));
   // single call from AddObserver, since SetData(...) is not processed yet
@@ -260,7 +262,6 @@ TEST_F(PrintServersProviderTest, SetData2) {
 TEST_F(PrintServersProviderTest, SetDataClearData) {
   auto blob1 = std::make_unique<std::string>(kPrintServersPolicyJson1);
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   external_servers_->SetData(std::move(blob1));
   // single call from AddObserver, since SetData(...) is not processed yet
@@ -281,7 +282,6 @@ TEST_F(PrintServersProviderTest, SetDataClearData) {
 TEST_F(PrintServersProviderTest, ClearDataSetData) {
   auto blob1 = std::make_unique<std::string>(kPrintServersPolicyJson1);
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->ClearData();
   external_servers_->AddObserver(&obs);
   // single call from AddObserver, but with effects of ClearData()
@@ -307,7 +307,6 @@ TEST_F(PrintServersProviderTest, ClearDataSetData) {
 TEST_F(PrintServersProviderTest, InvalidURLs) {
   auto blob3 = std::make_unique<std::string>(kPrintServersPolicyJson3);
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   external_servers_->SetData(std::move(blob3));
   task_environment_.RunUntilIdle();
@@ -317,34 +316,30 @@ TEST_F(PrintServersProviderTest, InvalidURLs) {
   external_servers_->RemoveObserver(&obs);
 }
 
-// Verify that whitelist works as expected.
-TEST_F(PrintServersProviderTest, Whitelist) {
+// Verify that allowlist works as expected.
+TEST_F(PrintServersProviderTest, Allowlist) {
   // The sequence from SetData test.
   auto blob1 = std::make_unique<std::string>(kPrintServersPolicyJson1);
   TestObserver obs;
-  external_servers_->SetProfile(&profile_);
   external_servers_->AddObserver(&obs);
   external_servers_->SetData(std::move(blob1));
-  // Apply an empty whitelist on the top.
-  auto* prefs = profile_.GetTestingPrefService();
+  // Apply an empty allowlist on the top.
   auto value = std::make_unique<base::ListValue>();
-  prefs->SetManagedPref(prefs::kExternalPrintServersAllowlist,
-                        std::move(value));
+  pref_service_.SetManagedPref(allowlist_pref_name_, std::move(value));
   // Check the resultant list - is is supposed to be empty.
   task_environment_.RunUntilIdle();
   ASSERT_FALSE(obs.GetCalls().empty());
   EXPECT_TRUE(obs.GetCalls().back().complete);
   EXPECT_TRUE(obs.GetCalls().back().servers.empty());
-  // Apply whitelist1.
+  // Apply allowlist1.
   value = std::make_unique<base::ListValue>();
-  for (const std::string& id : kPrintServersPolicyWhitelist1)
+  for (const std::string& id : kPrintServersPolicyAllowlist1)
     value->Append(base::Value(id));
-  prefs->SetManagedPref(prefs::kExternalPrintServersAllowlist,
-                        std::move(value));
+  pref_service_.SetManagedPref(allowlist_pref_name_, std::move(value));
   // Check the resultant list.
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(obs.GetCalls().back().complete);
-  EXPECT_EQ(obs.GetCalls().back().servers, PrintServersPolicyData1Whitelist1());
+  EXPECT_EQ(obs.GetCalls().back().servers, PrintServersPolicyData1Allowlist1());
   // The end.
   external_servers_->RemoveObserver(&obs);
 }

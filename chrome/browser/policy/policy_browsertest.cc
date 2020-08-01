@@ -2142,7 +2142,7 @@ class NoteTakingOnLockScreenPolicyTest : public PolicyTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // An app requires lockScreen permission to be enabled as a lock screen app.
-    // This permission is protected by a whitelist, so the test app has to be
+    // This permission is protected by a allowlist, so the test app has to be
     // allowlisted as well.
     command_line->AppendSwitchASCII(
         extensions::switches::kAllowlistedExtensionID, kTestAppId);
@@ -2163,7 +2163,7 @@ class NoteTakingOnLockScreenPolicyTest : public PolicyTest {
   void SetPolicyValue(base::Optional<base::Value> value) {
     PolicyMap policies;
     if (value) {
-      policies.Set(key::kNoteTakingAppsLockScreenWhitelist,
+      policies.Set(key::kNoteTakingAppsLockScreenAllowlist,
                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                    POLICY_SOURCE_CLOUD, std::move(value), nullptr);
     }
@@ -2211,7 +2211,7 @@ IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
-                       WhitelistLockScreenNoteTakingAppByPolicy) {
+                       AllowlistLockScreenNoteTakingAppByPolicy) {
   scoped_refptr<const extensions::Extension> app =
       LoadUnpackedExtension("lock_screen_apps/app_launch");
   ASSERT_TRUE(app);

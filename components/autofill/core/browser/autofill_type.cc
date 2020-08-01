@@ -203,6 +203,9 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
       // TODO(crbug/702223): Add support for UPI-VPA.
       return NO_GROUP;
 
+    case HTML_TYPE_ONE_TIME_CODE:
+      return NO_GROUP;
+
     case HTML_TYPE_UNSPECIFIED:
     case HTML_TYPE_UNRECOGNIZED:
       return NO_GROUP;
@@ -442,6 +445,7 @@ ServerFieldType AutofillType::GetStorableType() const {
     // These types aren't stored; they're transient.
     case HTML_TYPE_TRANSACTION_AMOUNT:
     case HTML_TYPE_TRANSACTION_CURRENCY:
+    case HTML_TYPE_ONE_TIME_CODE:
       return UNKNOWN_TYPE;
 
     case HTML_TYPE_UNRECOGNIZED:

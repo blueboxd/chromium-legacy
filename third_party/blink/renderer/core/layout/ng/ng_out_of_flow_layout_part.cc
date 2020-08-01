@@ -665,27 +665,39 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
           .ConvertToLogical(descendant_writing_mode, descendant_direction,
                             container_physical_content_size);
 
+  // Need a constraint space to resolve offsets.
+  NGConstraintSpaceBuilder builder(default_writing_mode,
+                                   descendant_writing_mode,
+                                   /* is_new_fc */ true);
+  builder.SetTextDirection(descendant_direction);
+  builder.SetAvailableSize(container_content_size);
+  builder.SetPercentageResolutionSize(container_content_size);
+  NGConstraintSpace descendant_constraint_space = builder.ToConstraintSpace();
+
   // TODO(almaher): The index should be based on the fragmentainer that we will
   // start layout in (skipping any column spanner fragments) rather than 0 every
   // time.
   wtf_size_t fragmentainer_index = 0;
-  const NGConstraintSpace& fragmentainer_constraint_space =
-      GetFragmentainerConstraintSpace(fragmentainer_index);
+  const NGBlockBreakToken* break_token = nullptr;
+  do {
+    // TODO(almaher): Create proxy fragment(s) to add the result to if we
+    // surpass the number of child fragments of the fragmentation context.
+    if (break_token)
+      fragmentainer_index++;
 
-  // Need a constraint space to resolve offsets.
-  // TODO(almaher): The block offset should be based on the descendant rather
-  // than on the containing block.
-  NGConstraintSpace descendant_constraint_space =
-      CreateConstraintSpaceForFragmentainerDescendant(
-          node, container_content_size,
-          container_info.container_offset.block_offset,
-          fragmentainer_constraint_space, default_writing_mode);
+    const NGConstraintSpace& fragmentainer_constraint_space =
+        GetFragmentainerConstraintSpace(fragmentainer_index);
+    scoped_refptr<const NGLayoutResult> result =
+        Layout(node, descendant_constraint_space, descendant_static_position,
+               container_content_size, container_info, default_writing_mode,
+               default_direction, nullptr, break_token,
+               &fragmentainer_constraint_space);
+    AddOOFResultToFragmentainerResults(result, fragmentainer_index);
 
-  scoped_refptr<const NGLayoutResult> result =
-      Layout(node, descendant_constraint_space, descendant_static_position,
-             container_content_size, container_info, default_writing_mode,
-             default_direction, nullptr);
-  AddOOFResultToFragmentainerResults(result, fragmentainer_index);
+    const auto& physical_fragment =
+        To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+    break_token = To<NGBlockBreakToken>(physical_fragment.BreakToken());
+  } while (break_token);
 }
 
 scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
@@ -696,7 +708,9 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     const ContainingBlockInfo& container_info,
     const WritingMode default_writing_mode,
     const TextDirection default_direction,
-    const LayoutBox* only_layout) {
+    const LayoutBox* only_layout,
+    const NGBlockBreakToken* break_token,
+    const NGConstraintSpace* fragmentainer_constraint_space) {
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
   const TextDirection candidate_direction = candidate_style.Direction();
@@ -805,11 +819,15 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
         BlockSizeFromAspectRatio(border_padding, *aspect_ratio, sizing,
                                  node_dimensions.size.inline_size));
   }
+
+  // TODO(almaher): Handle fragmentation separately for the case where
+  // |absolute_needs_child_block_size| is true.
   if (absolute_needs_child_block_size) {
     DCHECK(!has_computed_block_dimensions);
-    layout_result =
-        GenerateFragment(node, container_content_size_in_candidate_writing_mode,
-                         block_estimate, node_dimensions);
+    layout_result = GenerateFragment(
+        node, container_content_size_in_candidate_writing_mode, block_estimate,
+        node_dimensions, /* block_offset */ LayoutUnit(), break_token,
+        /* fragmentainer_constraint_space */ nullptr);
 
     // TODO(layout-dev): Handle abortions caused by block fragmentation.
     DCHECK(layout_result->Status() != NGLayoutResult::kOutOfFragmentainerSpace);
@@ -891,6 +909,9 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     }
   }
 
+  if (break_token)
+    offset.block_offset = LayoutUnit();
+
   // We have calculated the offsets, and if we need to lay out, we can do so at
   // the correct block-start offset now.
 
@@ -901,7 +922,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     block_estimate = node_dimensions.size.block_size;
     layout_result =
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
-                         block_estimate, node_dimensions);
+                         block_estimate, node_dimensions, offset.block_offset,
+                         break_token, fragmentainer_constraint_space);
   }
 
   // TODO(layout-dev): Handle abortions caused by block fragmentation.
@@ -967,7 +989,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     NGBlockNode node,
     const LogicalSize& container_content_size_in_candidate_writing_mode,
     const base::Optional<LayoutUnit>& block_estimate,
-    const NGLogicalOutOfFlowDimensions& node_dimensions) {
+    const NGLogicalOutOfFlowDimensions& node_dimensions,
+    const LayoutUnit block_offset,
+    const NGBlockBreakToken* break_token,
+    const NGConstraintSpace* fragmentainer_constraint_space) {
   // As the |block_estimate| is always in the node's writing mode, we build the
   // constraint space in the node's writing mode.
   WritingMode writing_mode = node.Style().GetWritingMode();
@@ -988,9 +1013,14 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   builder.SetIsFixedInlineSize(true);
   if (block_estimate)
     builder.SetIsFixedBlockSize(true);
+  if (fragmentainer_constraint_space) {
+    SetupSpaceBuilderForFragmentation(*fragmentainer_constraint_space, node,
+                                      block_offset, &builder,
+                                      /* is_new_fc */ true);
+  }
   NGConstraintSpace space = builder.ToConstraintSpace();
 
-  return node.Layout(space);
+  return node.Layout(space, break_token);
 }
 
 void NGOutOfFlowLayoutPart::AddOOFResultsToFragmentainer(
@@ -1053,27 +1083,6 @@ const NGConstraintSpace& NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
   return fragmentainer_constraint_space_map_
       .insert(stored_index, fragmentainer_constraint_space)
       .stored_value->value;
-}
-
-NGConstraintSpace
-NGOutOfFlowLayoutPart::CreateConstraintSpaceForFragmentainerDescendant(
-    const NGBlockNode& descendant,
-    const LogicalSize& content_size,
-    const LayoutUnit block_offset,
-    const NGConstraintSpace& fragmentainer_constraint_space,
-    const WritingMode default_writing_mode) const {
-  const ComputedStyle& descendant_style = descendant.Style();
-  NGConstraintSpaceBuilder builder(default_writing_mode,
-                                   descendant_style.GetWritingMode(),
-                                   /* is_new_fc */ true);
-  builder.SetTextDirection(descendant_style.Direction());
-  builder.SetAvailableSize(content_size);
-  builder.SetPercentageResolutionSize(content_size);
-
-  SetupSpaceBuilderForFragmentation(fragmentainer_constraint_space, descendant,
-                                    block_offset, &builder,
-                                    /* is_new_fc */ true);
-  return builder.ToConstraintSpace();
 }
 
 void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainerResults(

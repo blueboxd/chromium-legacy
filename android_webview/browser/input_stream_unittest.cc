@@ -44,7 +44,7 @@ class InputStreamTest : public Test {
                                                   int* bytes_read) {
     ScopedJavaLocalRef<jobject> counting_jstream =
         Java_InputStreamUnittest_getCountingStream(env_, stream_size);
-    EXPECT_FALSE(counting_jstream.is_null());
+    EXPECT_TRUE(counting_jstream);
 
     std::unique_ptr<InputStream> input_stream(
         new InputStream(counting_jstream));
@@ -60,7 +60,7 @@ class InputStreamTest : public Test {
 TEST_F(InputStreamTest, ReadEmptyStream) {
   ScopedJavaLocalRef<jobject> empty_jstream =
       Java_InputStreamUnittest_getEmptyStream(env_);
-  EXPECT_FALSE(empty_jstream.is_null());
+  EXPECT_TRUE(empty_jstream);
 
   std::unique_ptr<InputStream> input_stream(new InputStream(empty_jstream));
   const int bytes_requested = 10;
@@ -120,7 +120,7 @@ TEST_F(InputStreamTest, ReadLargeStreamCompletely) {
 TEST_F(InputStreamTest, DoesNotCrashWhenExceptionThrown) {
   ScopedJavaLocalRef<jobject> throw_jstream =
       Java_InputStreamUnittest_getThrowingStream(env_);
-  EXPECT_FALSE(throw_jstream.is_null());
+  EXPECT_TRUE(throw_jstream);
 
   std::unique_ptr<InputStream> input_stream(new InputStream(throw_jstream));
 

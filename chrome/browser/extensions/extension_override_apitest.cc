@@ -232,6 +232,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest,
         browser()->tab_strip_model()->GetActiveWebContents(),
         extension1_id));
   }
+
+  UnloadExtension(extension1_id);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(active_tab));
+  EXPECT_FALSE(ExtensionControlsPage(active_tab, extension1_id));
 }
 
 #if defined(OS_MAC)

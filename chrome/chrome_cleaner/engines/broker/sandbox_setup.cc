@@ -100,7 +100,7 @@ ResultCode EngineSandboxSetupHooks::UpdateSandboxPolicy(
 
   // Propagate engine selection switches to the sandbox target.
   command_line->AppendSwitchNative(
-      kEngineSwitch, base::NumberToString16(Settings::GetInstance()->engine()));
+      kEngineSwitch, base::NumberToWString(Settings::GetInstance()->engine()));
 
   return RESULT_CODE_SUCCESS;
 }

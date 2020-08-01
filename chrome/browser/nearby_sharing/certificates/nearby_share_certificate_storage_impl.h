@@ -25,18 +25,33 @@ class PublicCertificate;
 // certificates.
 class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<NearbyShareCertificateStorage> Create(
+        PrefService* pref_service,
+        std::unique_ptr<
+            leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+            proto_database);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<NearbyShareCertificateStorage> CreateInstance(
+        PrefService* pref_service,
+        std::unique_ptr<
+            leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+            proto_database) = 0;
+
+   private:
+    static Factory* test_factory_;
+  };
+
   using ExpirationList = std::vector<std::pair<std::string, base::Time>>;
 
   // Registers the prefs used by this class to the given |registry|.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  NearbyShareCertificateStorageImpl(
-      PrefService* pref_service,
-      std::unique_ptr<
-          leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-          proto_database);
   ~NearbyShareCertificateStorageImpl() override;
-
   NearbyShareCertificateStorageImpl(NearbyShareCertificateStorageImpl&) =
       delete;
   void operator=(NearbyShareCertificateStorageImpl&) = delete;
@@ -45,7 +60,7 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   bool IsInitialized() override;
   void Initialize(ResultCallback callback) override;
   std::vector<std::string> GetPublicCertificateIds() const override;
-  void GetPublicCertificates(PublicCertificateCallback callback) const override;
+  void GetPublicCertificates(PublicCertificateCallback callback) override;
   base::Optional<std::vector<NearbySharePrivateCertificate>>
   GetPrivateCertificates() const override;
   base::Optional<base::Time> NextPrivateCertificateExpirationTime()
@@ -69,6 +84,12 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   void ClearPublicCertificates(ResultCallback callback) override;
 
  private:
+  NearbyShareCertificateStorageImpl(
+      PrefService* pref_service,
+      std::unique_ptr<
+          leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+          proto_database);
+
   void OnDatabaseInitialized(ResultCallback callback,
                              leveldb_proto::Enums::InitStatus status);
 

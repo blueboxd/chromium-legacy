@@ -22,6 +22,8 @@ struct CC_EXPORT BeginMainFrameMetrics {
   base::TimeDelta layout_update;
   base::TimeDelta prepaint;
   base::TimeDelta composite;
+  base::TimeDelta compositing_assignments;
+  base::TimeDelta compositing_inputs;
   base::TimeDelta paint;
   base::TimeDelta scrolling_coordinator;
   base::TimeDelta composite_commit;

@@ -76,6 +76,9 @@ namespace autotestPrivate {
 
   // Display orientation type.
   enum RotationType {
+    // RotateAny is the auto-rotation status (not locked to a rotation) for
+    // tablet mode. Not working in clamshell mode.
+    RotateAny,
     Rotate0,
     Rotate90,
     Rotate180,

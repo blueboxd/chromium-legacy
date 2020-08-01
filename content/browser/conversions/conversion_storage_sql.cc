@@ -101,15 +101,18 @@ bool ConversionStorageSql::Initialize() {
 
   if (!opened || !InitializeSchema()) {
     db_.reset();
+    db_is_open_ = false;
     return false;
   }
+
+  db_is_open_ = true;
   return true;
 }
 
 void ConversionStorageSql::StoreImpression(
     const StorableImpression& impression) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return;
 
   // Cleanup any impression that may be expired by this point. This is done when
@@ -171,7 +174,7 @@ void ConversionStorageSql::StoreImpression(
 int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
     const StorableConversion& conversion) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return 0;
 
   const url::Origin& conversion_origin = conversion.conversion_origin();
@@ -296,7 +299,7 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
 std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
     base::Time max_report_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return {};
 
   // Get all entries in the conversions table with a |report_time| less than
@@ -357,7 +360,7 @@ std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
 
 std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return {};
 
   const char kGetImpressionsSql[] =
@@ -392,7 +395,7 @@ std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions() {
 
 int ConversionStorageSql::DeleteExpiredImpressions() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return 0;
 
   // Delete all impressions that have no associated conversions and are past
@@ -424,7 +427,7 @@ int ConversionStorageSql::DeleteExpiredImpressions() {
 
 bool ConversionStorageSql::DeleteConversion(int64_t conversion_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return false;
 
   // Delete the row identified by |conversion_id|.
@@ -445,7 +448,7 @@ void ConversionStorageSql::ClearData(
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_)
+  if (!db_is_open_)
     return;
 
   SCOPED_UMA_HISTOGRAM_TIMER("Conversions.ClearDataTime");
@@ -764,12 +767,13 @@ void ConversionStorageSql::DatabaseErrorCallback(int extended_error,
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Database::IsExpectedSqliteError(extended_error))
+  if (!sql::Database::IsExpectedSqliteError(extended_error) &&
+      !ignore_errors_for_testing_)
     DLOG(FATAL) << db_->GetErrorMessage();
 
-  // Null the database if we did not attempt to recover so we did not produce
-  // further errors.
-  db_.reset();
+  // Consider the  database closed if we did not attempt to recover so we did
+  // not produce further errors.
+  db_is_open_ = false;
 }
 
 }  // namespace content

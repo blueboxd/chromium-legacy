@@ -11,7 +11,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::DoAll;
 using testing::Mock;
+using testing::Return;
 using testing::SetArgPointee;
 
 namespace media {
@@ -90,7 +92,7 @@ TEST_F(FrameInfoHelperTest, TextureOwner) {
 
   // Return CodedSize when GetCodedSizeAndVisibleRect is called.
   ON_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _))
-      .WillByDefault(SetArgPointee<1>(kTestCodedSize));
+      .WillByDefault(DoAll(SetArgPointee<1>(kTestCodedSize), Return(true)));
 
   // Fail rendering buffer.
   auto buffer1 = CreateBufferRenderer(kTestVisibleSize, texture_owner);
@@ -134,7 +136,7 @@ TEST_F(FrameInfoHelperTest, SwitchBetweenOverlayAndTextureOwner) {
 
   // Return CodedSize when GetCodedSizeAndVisibleRect is called.
   ON_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _))
-      .WillByDefault(SetArgPointee<1>(kTestCodedSize));
+      .WillByDefault(DoAll(SetArgPointee<1>(kTestCodedSize), Return(true)));
 
   // In overlay case we always use visible size.
   GetFrameInfo(CreateBufferRenderer(kTestVisibleSize, nullptr));
@@ -179,7 +181,7 @@ TEST_F(FrameInfoHelperTest, OrderingTest) {
 
   // Return CodedSize when GetCodedSizeAndVisibleRect is called.
   ON_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _))
-      .WillByDefault(SetArgPointee<1>(kTestCodedSize));
+      .WillByDefault(DoAll(SetArgPointee<1>(kTestCodedSize), Return(true)));
 
   auto buffer_renderer = CreateBufferRenderer(kTestVisibleSize, texture_owner);
 
@@ -211,4 +213,36 @@ TEST_F(FrameInfoHelperTest, OrderingTest) {
   ASSERT_TRUE(called);
   ASSERT_TRUE(run_after_called);
 }
+
+TEST_F(FrameInfoHelperTest, FailedGetCodedSize) {
+  auto texture_owner = base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(
+      0, nullptr, nullptr, true);
+
+  // Return CodedSize when GetCodedSizeAndVisibleRect is called.
+  ON_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _))
+      .WillByDefault(DoAll(SetArgPointee<1>(kTestCodedSize), Return(true)));
+
+  // Fail next GetCodedSizeAndVisibleRect. GetFrameInfo should fallback to
+  // visible size in this case, but mark request as failed.
+  EXPECT_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _))
+      .WillOnce(DoAll(SetArgPointee<1>(gfx::Size()), Return(false)));
+  GetFrameInfo(CreateBufferRenderer(kTestVisibleSize, texture_owner));
+  EXPECT_EQ(last_frame_info_.coded_size, kTestVisibleSize);
+  Mock::VerifyAndClearExpectations(texture_owner.get());
+
+  // This time GetCodedSizeAndVisibleRect will succeed and be called and result
+  // should be kTestCodedSize instead of kTestVisibleSize.
+  EXPECT_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _)).Times(1);
+  GetFrameInfo(CreateBufferRenderer(kTestVisibleSize, texture_owner));
+  EXPECT_EQ(last_frame_info_.coded_size, kTestCodedSize);
+  Mock::VerifyAndClearExpectations(texture_owner.get());
+
+  // Verify that we don't render frame on subsequent calls with the same visible
+  // size. GetCodedSizeAndVisibleRect should not be called.
+  EXPECT_CALL(*texture_owner, GetCodedSizeAndVisibleRect(_, _, _)).Times(0);
+  GetFrameInfo(CreateBufferRenderer(kTestVisibleSize, texture_owner));
+  EXPECT_EQ(last_frame_info_.coded_size, kTestCodedSize);
+  Mock::VerifyAndClearExpectations(texture_owner.get());
+}
+
 }  // namespace media

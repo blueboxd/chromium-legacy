@@ -16,11 +16,11 @@ namespace chrome_cleaner {
 
 TEST(InternetHelpersTest, ParseContentType) {
   const struct {
-    const base::char16* content_type;
-    const base::char16* expected_mime_type;
-    const base::char16* expected_charset;
+    const wchar_t* content_type;
+    const wchar_t* expected_mime_type;
+    const wchar_t* expected_charset;
     const bool expected_had_charset;
-    const base::char16* expected_boundary;
+    const wchar_t* expected_boundary;
   } tests[] = {
       {L"text/html; charset=utf-8", L"text/html", L"utf-8", true, L""},
       {L"text/html; charset=", L"text/html", L"", true, L""},
@@ -60,11 +60,11 @@ TEST(InternetHelpersTest, ParseContentType) {
 
 TEST(InternetHelpersTest, ComposeAndDecomposeUrl) {
   const struct {
-    const base::char16* url;
-    const base::char16* scheme;
-    const base::char16* host;
+    const wchar_t* url;
+    const wchar_t* scheme;
+    const wchar_t* host;
     uint16_t port;
-    const base::char16* path;
+    const wchar_t* path;
   } tests[] = {
       {L"http://example.com/", L"http", L"example.com", 80, L"/"},
       {L"https://example.com/", L"https", L"example.com", 443, L"/"},
@@ -86,7 +86,7 @@ TEST(InternetHelpersTest, ComposeAndDecomposeUrl) {
                          tests[i].scheme == base::string16(L"https")));
   }
 
-  const base::char16* invalid_urls[] = {
+  const wchar_t* invalid_urls[] = {
       L"",         L"example.com",       L"example.com/foo",
       L"/foo/bar", L"example.com:80",    L"http://",
       L"http:",    L"http:/example.com", L"http:example.com"};

@@ -36,8 +36,8 @@ bool MultiSZToStringArray(const base::string16& buffer,
   DCHECK(value);
   DCHECK(value->empty());
 
-  const base::char16* data = buffer.c_str();
-  const base::char16* data_end = data + buffer.size();
+  const wchar_t* data = buffer.c_str();
+  const wchar_t* data_end = data + buffer.size();
 
   // Put null-terminated strings into the sequence.
   while (data < data_end) {
@@ -86,10 +86,9 @@ void StringArrayToMultiSZ(const std::vector<PendingMove>& pending_moves,
   ++total_wchars;  // Space for the extra terminating null char.
 
   buffer->resize(total_wchars);
-  base::char16* write_pointer =
-      reinterpret_cast<base::char16*>(&((*buffer)[0]));
+  wchar_t* write_pointer = reinterpret_cast<wchar_t*>(&((*buffer)[0]));
   // Keep an end pointer around for sanity checking.
-  base::char16* end_pointer = write_pointer + total_wchars;
+  wchar_t* end_pointer = write_pointer + total_wchars;
 
   std::vector<PendingMove>::const_iterator copy_iter(pending_moves.begin());
   for (; copy_iter != pending_moves.end() && write_pointer < end_pointer;
@@ -97,12 +96,12 @@ void StringArrayToMultiSZ(const std::vector<PendingMove>& pending_moves,
     // First copy the source string.
     size_t string_length = copy_iter->first.length() + 1;
     ::memcpy(write_pointer, copy_iter->first.c_str(),
-             string_length * sizeof(base::char16));
+             string_length * sizeof(wchar_t));
     write_pointer += string_length;
     // Now copy the destination string.
     string_length = copy_iter->second.length() + 1;
     ::memcpy(write_pointer, copy_iter->second.c_str(),
-             string_length * sizeof(base::char16));
+             string_length * sizeof(wchar_t));
     write_pointer += string_length;
 
     // We should never run off the end while in this loop.
@@ -247,7 +246,7 @@ bool GetPendingMoves(PendingMoveVector* pending_moves) {
   }
 
   // We now have a buffer of bytes that is actually a sequence of
-  // null-terminated char16 strings terminated by an additional null character.
+  // null-terminated wide strings terminated by an additional null character.
   // Stick this into a vector of strings for clarity.
   if (!MultiSZToStringArray(pending_moves_value, pending_moves)) {
     DLOG(ERROR) << "Cannot decode PendingRename registry value.";
@@ -293,7 +292,7 @@ bool SetPendingMoves(const PendingMoveVector& pending_moves) {
   buffer = buffer + last_entry;
 
   // Write back the serialized values into the registry key.
-  uint32_t size_in_bytes = buffer.size() * sizeof(base::char16);
+  uint32_t size_in_bytes = buffer.size() * sizeof(wchar_t);
   if (session_manager_key.WriteValue(kPendingFileRenameOps, buffer.c_str(),
                                      size_in_bytes,
                                      REG_MULTI_SZ) != ERROR_SUCCESS) {

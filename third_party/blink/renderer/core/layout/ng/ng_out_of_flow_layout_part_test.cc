@@ -103,8 +103,8 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   EXPECT_EQ(fixed_2->OffsetTop(), LayoutUnit(9));
 }
 
-// Tests that positioned nodes fragment correctly.
-TEST_F(NGOutOfFlowLayoutPartTest, PositionedFragmentation) {
+// Tests non-fragmented positioned nodes inside a multi-column.
+TEST_F(NGOutOfFlowLayoutPartTest, PositionedInMulticol) {
   SetBodyInnerHTML(
       R"HTML(
       <style>
@@ -145,6 +145,95 @@ TEST_F(NGOutOfFlowLayoutPartTest, PositionedFragmentation) {
         offset:0,0 size:100x10
         offset:0,10 size:30x8
           offset:0,0 size:35x8
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// Tests that positioned nodes fragment correctly.
+TEST_F(NGOutOfFlowLayoutPartTest, SimplePositionedFragmentation) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count:2; column-fill:auto; column-gap:16px; height:40px;
+        }
+        .rel {
+          position: relative; width:30px;
+        }
+        .abs {
+          position:absolute; top:0px; width:5px; height:50px;
+          border:solid 2px; margin-top:5px; padding:5px;
+        }
+      </style>
+      <div id="container">
+        <div id="multicol">
+          <div style="width:100px; height:50px;"></div>
+          <div class="rel">
+            <div class="abs"></div>
+          </div>
+        </div>
+      </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  // TODO(bebeaudr): The OOF positioned element should start in the second
+  // column rather than the first.
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:492x40
+        offset:0,0 size:100x40
+        offset:0,5 size:19x35
+      offset:508,0 size:492x40
+        offset:0,0 size:100x10
+        offset:0,10 size:30x0
+        offset:0,0 size:19x29
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// Tests fragmentation when a positioned node's child overflows.
+TEST_F(NGOutOfFlowLayoutPartTest, PositionedFragmentationWithOverflow) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count:2; column-fill:auto; column-gap:16px; height:40px;
+        }
+        .rel {
+          position: relative; width:30px;
+        }
+        .abs {
+          position:absolute; top:10px; width:5px; height:10px;
+        }
+      </style>
+      <div id="container">
+        <div id="multicol">
+          <div class="rel">
+            <div class="abs">
+              <div style="width:100px; height:50px;"></div>
+            </div>
+          </div>
+          <div style="width:20px; height:100px;"></div>
+        </div>
+      </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:492x40
+        offset:0,0 size:30x0
+        offset:0,0 size:20x40
+        offset:0,10 size:5x10
+          offset:0,0 size:100x30
+      offset:508,0 size:492x40
+        offset:0,0 size:20x40
+        offset:0,0 size:5x0
+          offset:0,0 size:100x20
+      offset:1016,0 size:492x40
+        offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

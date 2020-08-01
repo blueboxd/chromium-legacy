@@ -1066,6 +1066,31 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   EXPECT_EQ(data->color(), visual_data_2.color());
 }
 
+// Closing a tab in a group then moving the group to a new window before
+// restoring will place the tab in the group in the new window.
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreTabIntoGroupInNewWindow) {
+  const int tab_count = AddSomeTabs(browser(), 3);
+  ASSERT_LE(4, tab_count);
+
+  const int closed_tab_index = 1;
+
+  tab_groups::TabGroupId group =
+      browser()->tab_strip_model()->AddToNewGroup({0, 1});
+
+  CloseTab(closed_tab_index);
+  chrome::MoveTabsToNewWindow(browser(), {0}, group);
+
+  // Expect the tab to be restored to the new window, inside the group.
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(1, closed_tab_index));
+  Browser* new_browser = active_browser_list_->get(1);
+  ASSERT_EQ(2u, new_browser->tab_strip_model()
+                    ->group_model()
+                    ->GetTabGroup(group)
+                    ->ListTabs()
+                    .size());
+}
+
 IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
                        RestoreWindowWithGroupedTabs) {
   ui_test_utils::NavigateToURLWithDisposition(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback_list.h"
@@ -167,7 +168,8 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
   // Helpers to report async function results to the caller.
   void StartAsyncRun();
   void CompleteAsyncRun(ResponseValue response);
-  void CompleteFunctionWithResult(const std::string& access_token);
+  void CompleteFunctionWithResult(const std::string& access_token,
+                                  const std::set<std::string>& granted_scopes);
   void CompleteFunctionWithError(const IdentityGetAuthTokenError& error);
 
   // Whether a signin flow should be initiated in the user's current state.
@@ -183,6 +185,7 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
 
   // OAuth2MintTokenFlow::Delegate implementation:
   void OnMintTokenSuccess(const std::string& access_token,
+                          const std::set<std::string>& granted_scopes,
                           int time_to_live) override;
   void OnMintTokenFailure(const GoogleServiceAuthError& error) override;
   void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice) override;

@@ -143,8 +143,8 @@ const gfx::Size WebMediaPlayerMS::kUseGpuMemoryBufferVideoFramesMinResolution =
 // should be destructed on the IO thread.
 class WebMediaPlayerMS::FrameDeliverer {
  public:
-  using RepaintCB =
-      WTF::CrossThreadRepeatingFunction<void(scoped_refptr<media::VideoFrame>)>;
+  using RepaintCB = WTF::CrossThreadRepeatingFunction<
+      void(scoped_refptr<media::VideoFrame> frame, bool is_copy)>;
   FrameDeliverer(const base::WeakPtr<WebMediaPlayerMS>& player,
                  RepaintCB enqueue_frame_cb,
                  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
@@ -182,7 +182,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 #endif  // defined(OS_ANDROID)
 
     if (!gpu_memory_buffer_pool_) {
-      EnqueueFrame(std::move(frame));
+      EnqueueFrame(frame, frame);
       return;
     }
 
@@ -201,7 +201,7 @@ class WebMediaPlayerMS::FrameDeliverer {
     // frames is unnecessary, because the frames are not going to be shown for
     // the time period.
     if (render_frame_suspended_ || skip_creating_gpu_memory_buffer) {
-      EnqueueFrame(std::move(frame));
+      EnqueueFrame(frame, frame);
       // If there are any existing MaybeCreateHardwareFrame() calls, we do not
       // want those frames to be placed after the current one, so just drop
       // them.
@@ -219,10 +219,10 @@ class WebMediaPlayerMS::FrameDeliverer {
         FROM_HERE,
         base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
-            base::Unretained(gpu_memory_buffer_pool_.get()), std::move(frame),
+            base::Unretained(gpu_memory_buffer_pool_.get()), frame,
             media::BindToCurrentLoop(
                 base::BindOnce(&FrameDeliverer::EnqueueFrame,
-                               weak_factory_for_pool_.GetWeakPtr()))));
+                               weak_factory_for_pool_.GetWeakPtr(), frame))));
   }
 
   void SetRenderFrameSuspended(bool render_frame_suspended) {
@@ -230,7 +230,9 @@ class WebMediaPlayerMS::FrameDeliverer {
     render_frame_suspended_ = render_frame_suspended;
   }
 
-  RepaintCB GetRepaintCallback() {
+  WTF::CrossThreadRepeatingFunction<
+      void(scoped_refptr<media::VideoFrame> frame)>
+  GetRepaintCallback() {
     return CrossThreadBindRepeating(&FrameDeliverer::OnVideoFrame,
                                     weak_factory_.GetWeakPtr());
   }
@@ -238,7 +240,8 @@ class WebMediaPlayerMS::FrameDeliverer {
  private:
   friend class WebMediaPlayerMS;
 
-  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame) {
+  void EnqueueFrame(scoped_refptr<media::VideoFrame> original_frame,
+                    scoped_refptr<media::VideoFrame> frame) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
     {
@@ -254,7 +257,8 @@ class WebMediaPlayerMS::FrameDeliverer {
       }
     }
 
-    enqueue_frame_cb_.Run(std::move(frame));
+    bool is_copy = original_frame != frame;
+    enqueue_frame_cb_.Run(std::move(frame), is_copy);
   }
 
   void DropCurrentPoolTasks() {

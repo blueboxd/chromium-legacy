@@ -380,8 +380,7 @@ crbug.com/1010942 [ win amd vulkan passthrough ] conformance/glsl/samplers/glsl-
 crbug.com/angleproject/4286 [ win amd vulkan passthrough ] conformance/rendering/out-of-bounds-array-buffers.html [ Failure ]
 
 # Vulkan / Win10 / Intel / Passthrough
-# Flaking since an identified Angle roll.
-crbug.com/1111652 [ win10 intel vulkan passthrough ] conformance/context/context-size-change.html [ RetryOnFailure ]
+crbug.com/1111652 [ win10 intel vulkan passthrough ] conformance/context/context-size-change.html [ Failure ]
 
 ####################
 # Mac failures     #

@@ -9,6 +9,7 @@
 #include "chrome/browser/sessions/session_common_utils.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_live_tab.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -65,6 +66,16 @@ ChromeTabRestoreServiceClient::FindLiveTabContextWithID(SessionID desired_id) {
   return AndroidLiveTabContext::FindContextWithID(desired_id);
 #else
   return BrowserLiveTabContext::FindContextWithID(desired_id);
+#endif
+}
+
+sessions::LiveTabContext*
+ChromeTabRestoreServiceClient::FindLiveTabContextWithGroup(
+    tab_groups::TabGroupId group) {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  return BrowserLiveTabContext::FindContextWithGroup(profile_, group);
 #endif
 }
 

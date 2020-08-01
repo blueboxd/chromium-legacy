@@ -157,4 +157,26 @@ void LiteVideoObserver::MaybeUpdateCoinflipExperimentState(
                               : base::RandInt(0, 1);
 }
 
+void LiteVideoObserver::MediaBufferUnderflow(const content::MediaPlayerId& id) {
+  content::RenderFrameHost* render_frame_host = id.render_frame_host;
+
+  if (!render_frame_host || !render_frame_host->GetProcess())
+    return;
+
+  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+      loading_hints_agent;
+
+  if (render_frame_host->GetRemoteAssociatedInterfaces()) {
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        &loading_hints_agent);
+    loading_hints_agent->StopThrottlingMediaRequests();
+  }
+
+  // TODO(crbug/1101563 Update the user blocklist. This needs additional
+  // work to operate on local state mapping the current render frame id
+  // to the navigation's origin.
+
+  // TODO(crbug/1097792): Flush a UKM event for this render frame host.
+}
+
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LiteVideoObserver)

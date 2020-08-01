@@ -20,6 +20,7 @@
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
@@ -30,6 +31,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
 
@@ -502,9 +504,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        MAYBE_AccessibilityEventsCaretBrowsingEnabled) {
-  // Add command line switch that forces caret browsing on.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableCaretBrowsing);
+  // This actually enables caret browsing without setting the pref.
+  shell()->web_contents()->GetMutableRendererPrefs()->caret_browsing_enabled =
+      true;
+  // This notifies accessibility that caret browsing is on so that it sends
+  // accessibility events when the caret moves.
+  BrowserAccessibilityStateImpl::GetInstance()->SetCaretBrowsingState(true);
 
   RunEventTest(FILE_PATH_LITERAL("caret-browsing-enabled.html"));
 }

@@ -26,6 +26,10 @@ namespace policy {
 class ComponentUpdaterPolicyTest;
 }
 
+namespace settings {
+class AccessibilityMainHandler;
+}
+
 namespace update_client {
 class ComponentInstaller;
 class Configurator;
@@ -143,6 +147,7 @@ class ComponentUpdateService {
   virtual bool GetComponentDetails(const std::string& id,
                                    CrxUpdateItem* item) const = 0;
 
+  friend class settings::AccessibilityMainHandler;
   friend class ::ComponentsHandler;
   FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
 };

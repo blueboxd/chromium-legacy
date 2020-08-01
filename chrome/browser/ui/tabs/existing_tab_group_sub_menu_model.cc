@@ -24,80 +24,48 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 
-constexpr int kFirstCommandIndex =
-    TabStripModel::ContextMenuCommand::CommandLast + 1;
-
 ExistingTabGroupSubMenuModel::ExistingTabGroupSubMenuModel(
     ui::SimpleMenuModel::Delegate* parent_delegate,
     TabStripModel* model,
     int context_index)
-    : SimpleMenuModel(this),
-      parent_delegate_(parent_delegate),
-      model_(model),
-      context_index_(context_index) {
-  Build();
-}
+    : ExistingBaseSubMenuModel(parent_delegate,
+                               model,
+                               context_index,
+                               kMinExistingTabGroupCommandId) {
+  const auto& tp = ThemeService::GetThemeProviderForProfile(model->profile());
+  constexpr int kIconSize = 14;
+  std::vector<MenuItemInfo> menu_item_infos;
 
-void ExistingTabGroupSubMenuModel::Build() {
-  // Start command ids after the parent menu's ids to avoid collisions.
-  int group_index = kFirstCommandIndex;
-  const auto& tp = ThemeService::GetThemeProviderForProfile(model_->profile());
-  AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
-                      IDS_TAB_CXMENU_SUBMENU_NEW_GROUP);
-  AddSeparator(ui::NORMAL_SEPARATOR);
   for (tab_groups::TabGroupId group : GetOrderedTabGroups()) {
-    if (ShouldShowGroup(model_, context_index_, group)) {
-      const TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
+    if (ShouldShowGroup(model, context_index, group)) {
+      const TabGroup* tab_group = model->group_model()->GetTabGroup(group);
       const base::string16 group_title = tab_group->visual_data()->title();
       const base::string16 displayed_title =
           group_title.empty() ? tab_group->GetContentString() : group_title;
-      constexpr int kIconSize = 14;
       const int color_id =
           GetTabGroupContextMenuColorId(tab_group->visual_data()->color());
       // TODO (kylixrd): Investigate passing in color_id in order to color the
       // icon using the ColorProvider.
-      AddItemWithIcon(group_index, displayed_title,
-                      ui::ImageModel::FromVectorIcon(
-                          kTabGroupIcon, tp.GetColor(color_id), kIconSize));
+      ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
+          kTabGroupIcon, tp.GetColor(color_id), kIconSize);
+      menu_item_infos.emplace_back(MenuItemInfo{displayed_title, image_model});
     }
-    group_index++;
   }
+  Build(IDS_TAB_CXMENU_SUBMENU_NEW_GROUP, menu_item_infos);
 }
 
 std::vector<tab_groups::TabGroupId>
 ExistingTabGroupSubMenuModel::GetOrderedTabGroups() {
   std::vector<tab_groups::TabGroupId> ordered_groups;
   base::Optional<tab_groups::TabGroupId> current_group = base::nullopt;
-  for (int i = 0; i < model_->count(); ++i) {
+  for (int i = 0; i < model()->count(); ++i) {
     base::Optional<tab_groups::TabGroupId> new_group =
-        model_->GetTabGroupForTab(i);
+        model()->GetTabGroupForTab(i);
     if (new_group.has_value() && new_group != current_group)
       ordered_groups.push_back(new_group.value());
     current_group = new_group;
   }
   return ordered_groups;
-}
-
-bool ExistingTabGroupSubMenuModel::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool ExistingTabGroupSubMenuModel::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void ExistingTabGroupSubMenuModel::ExecuteCommand(int command_id,
-                                                  int event_flags) {
-  if (command_id == TabStripModel::CommandAddToNewGroup) {
-    parent_delegate_->ExecuteCommand(TabStripModel::CommandAddToNewGroup,
-                                     event_flags);
-    return;
-  }
-  const int group_index = command_id - kFirstCommandIndex;
-  DCHECK_LT(size_t{group_index}, model_->group_model()->ListTabGroups().size());
-  base::RecordAction(base::UserMetricsAction("TabContextMenu_NewTabInGroup"));
-  model_->ExecuteAddToExistingGroupCommand(context_index_,
-                                           GetOrderedTabGroups()[group_index]);
 }
 
 // static
@@ -109,6 +77,19 @@ bool ExistingTabGroupSubMenuModel::ShouldShowSubmenu(TabStripModel* model,
     }
   }
   return false;
+}
+
+void ExistingTabGroupSubMenuModel::ExecuteNewCommand(int event_flags) {
+  parent_delegate()->ExecuteCommand(TabStripModel::CommandAddToNewGroup,
+                                    event_flags);
+}
+
+void ExistingTabGroupSubMenuModel::ExecuteExistingCommand(int command_index) {
+  DCHECK_LT(size_t{command_index},
+            model()->group_model()->ListTabGroups().size());
+  base::RecordAction(base::UserMetricsAction("TabContextMenu_NewTabInGroup"));
+  model()->ExecuteAddToExistingGroupCommand(
+      context_index(), GetOrderedTabGroups()[command_index]);
 }
 
 // static

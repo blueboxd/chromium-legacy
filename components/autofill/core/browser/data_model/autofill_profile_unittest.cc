@@ -33,6 +33,8 @@ using base::UTF8ToUTF16;
 
 namespace autofill {
 
+using structured_address::VerificationStatus;
+
 namespace {
 
 base::string16 GetLabel(AutofillProfile* profile) {
@@ -952,6 +954,120 @@ TEST(AutofillProfileTest,
       comparator, profile3, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
   EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
       comparator, profile2, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+}
+
+TEST(AutofillProfileTest, TestFinalizeAfterImport) {
+  base::test::ScopedFeatureList structured_addresses_feature;
+  structured_addresses_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
+  // A profile with just a full name should be finalizeable.
+  {
+    AutofillProfile profile;
+    profile.SetRawInfoWithVerificationStatus(NAME_FULL,
+                                             base::ASCIIToUTF16("Peter Pan"),
+                                             VerificationStatus::kObserved);
+    EXPECT_TRUE(profile.FinalizeAfterImport());
+    EXPECT_EQ(profile.GetRawInfo(NAME_FIRST), base::ASCIIToUTF16("Peter"));
+    EXPECT_EQ(profile.GetVerificationStatus(NAME_FIRST),
+              VerificationStatus::kParsed);
+    EXPECT_EQ(profile.GetRawInfo(NAME_LAST), base::ASCIIToUTF16("Pan"));
+    EXPECT_EQ(profile.GetVerificationStatus(NAME_LAST),
+              VerificationStatus::kParsed);
+  }
+  // A profile with both a NAME_FULL and NAME_FIRST is currently not, because
+  // the full name is likely to already contain the information in the first
+  // name. The current completion logic does not support such a scenario because
+  // it is highly likely that this scenario is caused by a classification error
+  // and would not yield a correctly imported name.
+  {
+    AutofillProfile profile;
+    profile.SetRawInfoWithVerificationStatus(NAME_FULL,
+                                             base::ASCIIToUTF16("Peter Pan"),
+                                             VerificationStatus::kObserved);
+    profile.SetRawInfoWithVerificationStatus(NAME_FIRST,
+                                             base::ASCIIToUTF16("Michael"),
+                                             VerificationStatus::kObserved);
+    EXPECT_FALSE(profile.FinalizeAfterImport());
+  }
+}
+
+TEST(AutofillProfileTest, SetAndGetRawInfoWithValidationStatus) {
+  base::test::ScopedFeatureList structured_addresses_feature;
+  structured_addresses_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
+  AutofillProfile profile;
+  // An unsupported type should return |kNoStatus|.
+  EXPECT_EQ(profile.GetVerificationStatus(UNKNOWN_TYPE),
+            VerificationStatus::kNoStatus);
+  EXPECT_EQ(profile.GetVerificationStatus(PHONE_HOME_NUMBER),
+            VerificationStatus::kNoStatus);
+
+  // An unassigned supported type should return |kNoStatus|.
+  EXPECT_EQ(profile.GetVerificationStatus(NAME_FULL),
+            VerificationStatus::kNoStatus);
+
+  // Set a value with verification status and verify the results.
+  profile.SetRawInfoWithVerificationStatus(NAME_FULL,
+                                           base::ASCIIToUTF16("full name"),
+                                           VerificationStatus::kFormatted);
+  EXPECT_EQ(profile.GetVerificationStatusInt(NAME_FULL), 2);
+  EXPECT_EQ(profile.GetVerificationStatus(NAME_FULL),
+            VerificationStatus::kFormatted);
+  EXPECT_EQ(profile.GetRawInfo(NAME_FULL), base::ASCIIToUTF16("full name"));
+
+  // Test the working of the wrapper to pass the value by int.
+  profile.SetRawInfoWithVerificationStatusInt(
+      NAME_FULL, base::ASCIIToUTF16("full name"), 2);
+  EXPECT_EQ(profile.GetVerificationStatusInt(NAME_FULL), 2);
+}
+
+TEST(AutofillProfileTest, SetAndGetInfoWithValidationStatus) {
+  base::test::ScopedFeatureList structured_addresses_feature;
+  structured_addresses_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
+  AutofillProfile profile;
+  // An unsupported type should return |kNoStatus|.
+  EXPECT_EQ(profile.GetVerificationStatus(UNKNOWN_TYPE),
+            VerificationStatus::kNoStatus);
+  EXPECT_EQ(profile.GetVerificationStatus(PHONE_HOME_NUMBER),
+            VerificationStatus::kNoStatus);
+
+  // An unassigned supported type should return |kNoStatus|.
+  EXPECT_EQ(profile.GetVerificationStatus(NAME_FULL),
+            VerificationStatus::kNoStatus);
+
+  // Set a value with verification status and verify the results.
+  profile.SetInfoWithVerificationStatus(
+      AutofillType(NAME_FULL), base::ASCIIToUTF16("full name"), "en-US",
+      VerificationStatus::kFormatted);
+  EXPECT_EQ(profile.GetVerificationStatus(NAME_FULL),
+            VerificationStatus::kFormatted);
+  EXPECT_EQ(profile.GetRawInfo(NAME_FULL), base::ASCIIToUTF16("full name"));
+
+  // Settings an unknown type should result in false.
+  EXPECT_FALSE(profile.SetInfoWithVerificationStatus(
+      UNKNOWN_TYPE, base::ASCIIToUTF16("DM"), "en-US",
+      VerificationStatus::kFormatted));
+
+  // Set a value with verification status using and AutofillType and verify the
+  // results.
+  EXPECT_TRUE(profile.SetInfoWithVerificationStatus(
+      AutofillType(NAME_MIDDLE_INITIAL), base::ASCIIToUTF16("MK"), "en-US",
+      VerificationStatus::kFormatted));
+  EXPECT_EQ(profile.GetVerificationStatus(NAME_MIDDLE_INITIAL),
+            VerificationStatus::kFormatted);
+  EXPECT_EQ(profile.GetRawInfo(NAME_MIDDLE_INITIAL), base::ASCIIToUTF16("MK"));
+
+  // Set a value with verification status and verify the results.
+  EXPECT_TRUE(profile.SetInfoWithVerificationStatus(
+      AutofillType(NAME_MIDDLE_INITIAL), base::ASCIIToUTF16("CS"), "en-US",
+      VerificationStatus::kFormatted));
+  EXPECT_EQ(profile.GetVerificationStatus(NAME_MIDDLE_INITIAL),
+            VerificationStatus::kFormatted);
+  EXPECT_EQ(profile.GetRawInfo(NAME_MIDDLE_INITIAL), base::ASCIIToUTF16("CS"));
 }
 
 TEST(AutofillProfileTest, SetRawInfo_UpdateValidityFlag) {

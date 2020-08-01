@@ -79,7 +79,7 @@ bool IsKnownFileByDigestInfo(const base::FilePath& fullpath,
 
 bool IsKnownFileByOriginalFilename(const base::FilePath& path,
                                    const SignatureMatcherAPI* signature_matcher,
-                                   const base::char16* const names[],
+                                   const wchar_t* const names[],
                                    size_t names_length) {
   DCHECK(signature_matcher);
   DCHECK(names);
@@ -101,7 +101,7 @@ bool IsKnownFileByOriginalFilename(const base::FilePath& path,
 
 bool IsKnownFileByCompanyName(const base::FilePath& path,
                               const SignatureMatcherAPI* signature_matcher,
-                              const base::char16* const names[],
+                              const wchar_t* const names[],
                               size_t names_length) {
   DCHECK(signature_matcher);
   DCHECK(names);

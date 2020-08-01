@@ -25,6 +25,7 @@
 #include "base/strings/string16.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_observer.h"
@@ -1307,20 +1308,17 @@ class RenderFrameSubmissionObserver
 // So while the ACK can arrive before a CompositorFrame submission occurs. The
 // processing does not occur until after the FrameToken for that frame
 // submission arrives to the main thread.
-class MainThreadFrameObserver : public IPC::Listener {
+class MainThreadFrameObserver {
  public:
   explicit MainThreadFrameObserver(RenderWidgetHost* render_widget_host);
-  ~MainThreadFrameObserver() override;
+  ~MainThreadFrameObserver();
 
   // Synchronizes the browser main thread with the renderer main thread and impl
   // thread.
   void Wait();
 
-  // Overridden IPC::Listener methods.
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
  private:
-  void Quit();
+  void Quit(bool);
 
   RenderWidgetHost* render_widget_host_;
   base::OnceClosure quit_closure_;
@@ -1575,9 +1573,6 @@ class NavigationHandleCommitObserver : public content::WebContentsObserver {
 // A test utility that monitors console messages sent to a WebContents. This
 // can be used to wait for a message that matches a specific filter, an
 // arbitrary message, or monitor all messages sent to the WebContents' console.
-// TODO(devlin): Convert existing tests to Use this in lieu of
-// ConsoleObserverDelegate, since it doesn't require overriding the WebContents'
-// delegate (which isn't always appropriate in a test).
 class WebContentsConsoleObserver : public WebContentsObserver {
  public:
   struct Message {
@@ -1624,41 +1619,6 @@ class WebContentsConsoleObserver : public WebContentsObserver {
   std::string pattern_;
   base::RunLoop run_loop_;
   std::vector<Message> messages_;
-};
-
-// A WebContentsDelegate that catches messages sent to the console.
-// DEPRECATED. Prefer WebContentsConsoleObserver.
-// TODO(devlin): Update usages and remove this.
-class ConsoleObserverDelegate : public WebContentsDelegate {
- public:
-  ConsoleObserverDelegate(WebContents* web_contents, const std::string& filter);
-  ~ConsoleObserverDelegate() override;
-
-  // WebContentsDelegate method:
-  bool DidAddMessageToConsole(WebContents* source,
-                              blink::mojom::ConsoleMessageLevel log_level,
-                              const base::string16& message,
-                              int32_t line_no,
-                              const base::string16& source_id) override;
-
-  // Returns all the messages sent to the console.
-  std::vector<std::string> messages() { return messages_; }
-
-  // Returns the most recent message sent to the console.
-  std::string message();
-
-  // Waits for the next message captured by the filter to be sent to the
-  // console.
-  void Wait();
-
- private:
-  WebContents* web_contents_;
-  std::string filter_;
-  std::vector<std::string> messages_;
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
 };
 
 // Static methods that inject particular IPCs into the message pipe as if they
@@ -1911,9 +1871,12 @@ class ProxyDSFObserver {
 // ManhattanDistancePixelComparator which allows some small differences.  If
 // the flag switches::kRebaselinePixelTests (--rebaseline-pixel-tests) is set,
 // this function will (over)write the reference file with the produced output.
-bool CompareWebContentsOutputToReference(WebContents* web_contents,
-                                         const base::FilePath& expected_path,
-                                         const gfx::Size& snapshot_size);
+bool CompareWebContentsOutputToReference(
+    WebContents* web_contents,
+    const base::FilePath& expected_path,
+    const gfx::Size& snapshot_size,
+    const cc::PixelComparator& comparator =
+        cc::ManhattanDistancePixelComparator());
 
 }  // namespace content
 

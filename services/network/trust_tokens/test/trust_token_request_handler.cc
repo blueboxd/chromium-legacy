@@ -78,6 +78,11 @@ struct TrustTokenRequestHandler::Rep {
   std::vector<uint8_t> srr_verification;
   std::vector<IssuanceKeyPair> issuance_keys;
 
+  // Whether to peremptorily reject issuance and redemption or whether to
+  // actually process the provided input.
+  ServerOperationOutcome issuance_outcome;
+  ServerOperationOutcome redemption_outcome;
+
   // Creates a BoringSSL token issuer context suitable for issuance or
   // redemption, using only the unexpired key pairs from |issuance_keys|.
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> CreateIssuerContextFromUnexpiredKeys()
@@ -239,6 +244,10 @@ base::Optional<std::string> TrustTokenRequestHandler::Issue(
     base::StringPiece issuance_request) {
   base::AutoLock lock(mutex_);
 
+  if (rep_->issuance_outcome == ServerOperationOutcome::kUnconditionalFailure) {
+    return base::nullopt;
+  }
+
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx =
       rep_->CreateIssuerContextFromUnexpiredKeys();
 
@@ -280,6 +289,11 @@ constexpr base::TimeDelta TrustTokenRequestHandler::kSrrLifetime =
 base::Optional<std::string> TrustTokenRequestHandler::Redeem(
     base::StringPiece redemption_request) {
   base::AutoLock lock(mutex_);
+
+  if (rep_->redemption_outcome ==
+      ServerOperationOutcome::kUnconditionalFailure) {
+    return base::nullopt;
+  }
 
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx =
       rep_->CreateIssuerContextFromUnexpiredKeys();
@@ -390,7 +404,6 @@ bool TrustTokenRequestHandler::VerifySignedRequest(
     return false;  // On failure, |ConfirmSrrBodyIntegrity| has set the error.
 
   std::string verification_key;
-
   if (!ReconstructSigningDataAndVerifySignature(destination, headers,
                                                 /*verifier=*/{}, error_out,
                                                 &verification_key)) {
@@ -422,6 +435,8 @@ void TrustTokenRequestHandler::UpdateOptions(Options options) {
 
   rep_->batch_size = options.batch_size;
   rep_->client_signing_outcome = options.client_signing_outcome;
+  rep_->issuance_outcome = options.issuance_outcome;
+  rep_->redemption_outcome = options.redemption_outcome;
 
   rep_->srr_signing.resize(ED25519_PRIVATE_KEY_LEN);
   rep_->srr_verification.resize(ED25519_PUBLIC_KEY_LEN);

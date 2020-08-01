@@ -1181,10 +1181,6 @@ void TabDragController::Attach(TabDragContext* attached_context,
     // Register a new group if necessary, so that the insertion index in the
     // tab strip can be calculated based on the group membership of tabs.
     if (header_drag_) {
-      // Rather than keep the old group ID, generate a new one. This helps with
-      // restore, and allowing broken-up groups to be restored across windows
-      // as separate group IDs.
-      group_ = tab_groups::TabGroupId::GenerateNew();
       attached_context_->GetTabStripModel()->group_model()->AddTabGroup(
           group_.value(),
           source_view_drag_data()->tab_group_data.value().group_visual_data);

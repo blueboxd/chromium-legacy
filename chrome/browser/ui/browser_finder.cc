@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -230,6 +232,15 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   auto it = std::find(all_tabs.begin(), all_tabs.end(), web_contents);
 
   return (it == all_tabs.end()) ? nullptr : it.browser();
+}
+
+Browser* FindBrowserWithGroup(Profile* profile, tab_groups::TabGroupId group) {
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() == profile && browser->tab_strip_model() &&
+        browser->tab_strip_model()->group_model()->ContainsTabGroup(group))
+      return browser;
+  }
+  return nullptr;
 }
 
 Browser* FindLastActiveWithProfile(Profile* profile) {

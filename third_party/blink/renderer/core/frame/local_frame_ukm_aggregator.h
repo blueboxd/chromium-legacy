@@ -129,7 +129,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // metric_strings_ array below.
   enum MetricId {
     kCompositing,
+    kCompositingAssignments,
     kCompositingCommit,
+    kCompositingInputs,
     kImplCompositorCommit,
     kIntersectionObservation,
     kPaint,
@@ -162,7 +164,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   static base::span<const MetricInitializationData> metrics_data() {
     static const MetricInitializationData data[] = {
         {"Compositing", true},
+        {"CompositingAssignments", true},
         {"CompositingCommit", true},
+        {"CompositingInputs", true},
         {"ImplCompositorCommit", true},
         {"IntersectionObservation", true},
         {"Paint", true},

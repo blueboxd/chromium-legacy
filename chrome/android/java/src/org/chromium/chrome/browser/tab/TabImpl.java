@@ -174,11 +174,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private boolean mIsRendererUnresponsive;
 
     /**
-     * The last time this tab was shown or the time of its initialization if it wasn't yet shown.
-     */
-    private long mTimestampMillis = INVALID_TIMESTAMP;
-
-    /**
      * Title of the ContentViews webpage.
      */
     private String mTitle;
@@ -421,11 +416,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     @Override
-    public long getTimestampMillis() {
-        return mTimestampMillis;
-    }
-
-    @Override
     public boolean isIncognito() {
         return mIncognito;
     }
@@ -630,7 +620,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             // Updating the timestamp has to happen after the showInternal() call since subclasses
             // may use it for logging.
-            mTimestampMillis = System.currentTimeMillis();
+            CriticalPersistedTabData.from(this).setTimestampMillis(System.currentTimeMillis());
         } finally {
             TraceEvent.end("Tab.show");
         }
@@ -821,8 +811,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             }
 
         } finally {
-            if (mTimestampMillis == INVALID_TIMESTAMP) {
-                mTimestampMillis = System.currentTimeMillis();
+            if (CriticalPersistedTabData.from(this).getTimestampMillis() == INVALID_TIMESTAMP) {
+                CriticalPersistedTabData.from(this).setTimestampMillis(System.currentTimeMillis());
             }
             String appId = tabState != null ? tabState.openerAppId : null;
             Boolean hasThemeColor = tabState != null ? tabState.hasThemeColor() : null;
@@ -847,7 +837,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     void restoreFieldsFromState(TabState state) {
         assert state != null;
         CriticalPersistedTabData.from(this).setWebContentsState(state.contentsState);
-        mTimestampMillis = state.timestampMillis;
+        CriticalPersistedTabData.from(this).setTimestampMillis(state.timestampMillis);
         mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
         mTitle = state.contentsState.getDisplayTitleFromState();
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;

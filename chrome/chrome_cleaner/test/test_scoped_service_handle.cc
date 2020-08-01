@@ -138,7 +138,7 @@ base::string16 RandomUnusedServiceNameForTesting() {
   base::string16 service_name;
   do {
     service_name =
-        base::UTF8ToUTF16(base::UnguessableToken::Create().ToString());
+        base::UTF8ToWide(base::UnguessableToken::Create().ToString());
   } while (DoesServiceExist(service_name.c_str()));
   return service_name;
 }

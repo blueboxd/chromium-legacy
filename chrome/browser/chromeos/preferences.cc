@@ -345,7 +345,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(::prefs::kNoteTakingAppId, std::string());
   registry->RegisterBooleanPref(::prefs::kNoteTakingAppEnabledOnLockScreen,
                                 true);
-  registry->RegisterListPref(::prefs::kNoteTakingAppsLockScreenWhitelist);
+  registry->RegisterListPref(::prefs::kNoteTakingAppsLockScreenAllowlist);
   registry->RegisterBooleanPref(::prefs::kRestoreLastLockScreenNote, true);
   registry->RegisterDictionaryPref(
       ::prefs::kNoteTakingAppsLockScreenToastShown);

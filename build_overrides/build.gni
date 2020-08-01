@@ -27,8 +27,9 @@ declare_args() {
   # TODO(crbug/1006769): Switch to perfetto's client library.
   use_perfetto_client_library = false
 
-  # Allows googletest to pretty-print various absl types.
-  gtest_enable_absl_printers = false
+  # Allows googletest to pretty-print various absl types.  Disabled for nacl due
+  # to lack of toolchain support.
+  gtest_enable_absl_printers = !is_nacl
 }
 
 # Allows different projects to specify their own suppression/ignore lists for

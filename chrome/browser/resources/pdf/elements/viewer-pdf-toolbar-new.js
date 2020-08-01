@@ -169,10 +169,16 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   }
 
   /** @private */
-  onShowAnnotationsClick_() {
+  toggleDisplayAnnotations_() {
     this.displayAnnotations_ = !this.displayAnnotations_;
     this.dispatchEvent(new CustomEvent(
         'display-annotations-changed', {detail: this.displayAnnotations_}));
+
+    // <if expr="chromeos">
+    if (!this.displayAnnotations_ && this.annotationMode) {
+      this.toggleAnnotation();
+    }
+    // </if>
   }
 
   /** @private */
@@ -283,6 +289,10 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
     this.annotationMode = !this.annotationMode;
     this.dispatchEvent(new CustomEvent(
         'annotation-mode-toggled', {detail: this.annotationMode}));
+
+    if (this.annotationMode && !this.displayAnnotations_) {
+      this.toggleDisplayAnnotations_();
+    }
   }
   // </if>
 }

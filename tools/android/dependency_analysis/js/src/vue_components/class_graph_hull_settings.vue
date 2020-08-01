@@ -13,8 +13,7 @@
           v-model="internalSelectedHullDisplay"
           type="radio"
           name="hullDisplayRadioButtons"
-          :value="hullDisplay"
-          @change="updateSelectedHullDisplay">
+          :value="hullDisplay">
       <label :for="hullDisplay">
         {{ hullDisplay }}
       </label>
@@ -30,18 +29,15 @@ const ClassGraphHullSettings = {
   props: {
     selectedHullDisplay: String,
   },
-  data: function() {
-    return {
-      internalSelectedHullDisplay: this.selectedHullDisplay,
-    };
-  },
   computed: {
     HullDisplay: () => HullDisplay,
-  },
-  methods: {
-    updateSelectedHullDisplay: function() {
-      this.$emit(
-          'update:selectedHullDisplay', this.internalSelectedHullDisplay);
+    internalSelectedHullDisplay: {
+      get: function() {
+        return this.selectedHullDisplay;
+      },
+      set: function(newValue) {
+        this.$emit('update:selectedHullDisplay', newValue);
+      },
     },
   },
 };

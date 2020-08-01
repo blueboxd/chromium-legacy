@@ -306,8 +306,9 @@ public class PseudoTabUnitTest {
 
     @Test
     public void getTimestampMillis_realTab() {
+        CriticalPersistedTabData criticalPersistedTabaData = CriticalPersistedTabData.from(mTab1);
         long timestamp = 12345;
-        doReturn(timestamp).when(mTab1).getTimestampMillis();
+        doReturn(timestamp).when(criticalPersistedTabaData).getTimestampMillis();
 
         PseudoTab tab = PseudoTab.fromTab(mTab1);
         Assert.assertEquals(timestamp, tab.getTimestampMillis());

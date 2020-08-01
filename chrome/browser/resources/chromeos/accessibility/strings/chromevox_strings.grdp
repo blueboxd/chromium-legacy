@@ -2308,8 +2308,8 @@
   <message desc="Hint for how to start editing a text field while exploring the screen using touch exploration." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP_TO_EDIT">
     Double tap to start editing
   </message>
-  <message desc="Describes Learn Mode when the mode is initially entered." name="IDS_CHROMEVOX_LEARN_MODE_INTRO">
-    Starting Learn Mode. Press a qwerty key, refreshable braille key, or touch gesture to learn its function. Press control with w or escape to exit.
+  <message desc="Describes Learn Mode when the mode is initially entered with text-to-speech." name="IDS_CHROMEVOX_LEARN_MODE_INTRO" is_accessibility_with_no_ui="true">
+    Press a qwerty key, refreshable braille key, or touch gesture to learn its function. Press control with w or escape to exit.
   </message>
   <message desc="Output when leaving Learn Mode." name="IDS_CHROMEVOX_LEARN_MODE_OUTTRO">
     Stopping Learn Mode

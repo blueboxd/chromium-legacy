@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
@@ -15,20 +18,49 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+
 #if !defined(OS_CHROMEOS)
+#include "base/check_op.h"
+#include "base/numerics/ranges.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/soda_component_installer.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
+#include "components/update_client/crx_update_item.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
+  if (downloaded_bytes == -1 || total_bytes == -1 || total_bytes == 0)
+    return -1;
+  DCHECK_LE(downloaded_bytes, total_bytes);
+  return 100 *
+         base::ClampToRange(double{downloaded_bytes} / total_bytes, 0.0, 1.0);
+}
+
+}  // namespace
+
 #endif  // !defined(OS_CHROMEOS)
 
 namespace settings {
 
+#if defined(OS_CHROMEOS)
 AccessibilityMainHandler::AccessibilityMainHandler() = default;
+#else
+AccessibilityMainHandler::AccessibilityMainHandler(PrefService* prefs)
+    : prefs_(prefs) {}
+#endif  // defined(OS_CHROMEOS)
 
 AccessibilityMainHandler::~AccessibilityMainHandler() = default;
 
 void AccessibilityMainHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getScreenReaderState",
-      base::BindRepeating(&AccessibilityMainHandler::HandleGetScreenReaderState,
+      "a11yPageReady",
+      base::BindRepeating(&AccessibilityMainHandler::HandleA11yPageReady,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "confirmA11yImageLabels",
@@ -44,16 +76,20 @@ void AccessibilityMainHandler::OnJavascriptAllowed() {
           base::BindRepeating(
               &AccessibilityMainHandler::OnAccessibilityStatusChanged,
               base::Unretained(this)));
+#else
+  component_updater_observer_.Add(g_browser_process->component_updater());
 #endif  // defined(OS_CHROMEOS)
 }
 
 void AccessibilityMainHandler::OnJavascriptDisallowed() {
 #if defined(OS_CHROMEOS)
   accessibility_subscription_.reset();
+#else
+  component_updater_observer_.RemoveAll();
 #endif  // defined(OS_CHROMEOS)
 }
 
-void AccessibilityMainHandler::HandleGetScreenReaderState(
+void AccessibilityMainHandler::HandleA11yPageReady(
     const base::ListValue* args) {
   AllowJavascript();
   SendScreenReaderStateChanged();
@@ -86,6 +122,53 @@ void AccessibilityMainHandler::OnAccessibilityStatusChanged(
       chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
     SendScreenReaderStateChanged();
   }
+}
+#else
+void AccessibilityMainHandler::OnEvent(Events event, const std::string& id) {
+  if (id != component_updater::SODAComponentInstallerPolicy::GetExtensionId())
+    return;
+
+  switch (event) {
+    case Events::COMPONENT_UPDATE_FOUND:
+    case Events::COMPONENT_UPDATE_READY:
+    case Events::COMPONENT_WAIT:
+    case Events::COMPONENT_UPDATE_DOWNLOADING:
+    case Events::COMPONENT_UPDATE_UPDATING: {
+      update_client::CrxUpdateItem item;
+      g_browser_process->component_updater()->GetComponentDetails(id, &item);
+      const int progress =
+          GetDownloadProgress(item.downloaded_bytes, item.total_bytes);
+      if (progress == -1) {
+        SendLiveCaptionDownloadError();
+      } else {
+        FireWebUIListener(
+            "enable-live-caption-subtitle-changed",
+            base::Value(l10n_util::GetStringFUTF16Int(
+                IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_PROGRESS,
+                progress)));
+      }
+    } break;
+    case Events::COMPONENT_UPDATED:
+    case Events::COMPONENT_NOT_UPDATED:
+      FireWebUIListener(
+          "enable-live-caption-subtitle-changed",
+          base::Value(l10n_util::GetStringUTF16(
+              IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE)));
+      break;
+    case Events::COMPONENT_UPDATE_ERROR:
+      SendLiveCaptionDownloadError();
+      break;
+    case Events::COMPONENT_CHECKING_FOR_UPDATES:
+      // Do nothing.
+      break;
+  }
+}
+
+void AccessibilityMainHandler::SendLiveCaptionDownloadError() {
+  prefs_->SetBoolean(prefs::kLiveCaptionEnabled, false);
+  FireWebUIListener("enable-live-caption-subtitle-changed",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR)));
 }
 #endif  // defined(OS_CHROMEOS)
 

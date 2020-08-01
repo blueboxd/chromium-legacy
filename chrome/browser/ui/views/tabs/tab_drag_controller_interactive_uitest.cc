@@ -2114,7 +2114,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   EXPECT_EQ(1u, groups2.size());
   EXPECT_THAT(model2->group_model()->GetTabGroup(groups2[0])->ListTabs(),
               testing::ElementsAre(1, 2));
-  EXPECT_NE(groups2[0], group);
+  EXPECT_EQ(groups2[0], group);
   EXPECT_EQ(tab_strip2->GetGroupColorId(groups2[0]), group_color);
 }
 
@@ -2490,7 +2490,7 @@ IN_PROC_BROWSER_TEST_P(
       model2->group_model()->GetTabGroup(browser2_groups[0])->ListTabs(),
       testing::ElementsAre(1, 2));
   ASSERT_FALSE(tab_strip->controller()->IsGroupCollapsed(browser2_groups[0]));
-  EXPECT_NE(browser2_groups[0], group);
+  EXPECT_EQ(browser2_groups[0], group);
 }
 
 namespace {

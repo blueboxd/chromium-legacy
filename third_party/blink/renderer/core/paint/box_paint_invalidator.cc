@@ -241,34 +241,40 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
       layout_view.BackgroundNeedsFullPaintInvalidation())
     return BackgroundInvalidationType::kFull;
 
-  if (Element* document_element = box_.GetDocument().documentElement()) {
-    if (document_element) {
-      if (const auto* document_element_object =
-              document_element->GetLayoutObject()) {
+  if (Element* root_element = box_.GetDocument().documentElement()) {
+    if (const auto* root_object = root_element->GetLayoutObject()) {
+      if (root_object->IsBox()) {
+        const auto* root_box = ToLayoutBox(root_object);
         // LayoutView's non-fixed-attachment background is positioned in the
-        // document element and needs to invalidate if the size changes.
+        // root element and needs to invalidate if the size changes.
         // See: https://drafts.csswg.org/css-backgrounds-3/#root-background.
-        if (BackgroundGeometryDependsOnLayoutOverflowRect()) {
-          if (document_element_object->IsBox()) {
-            const auto* document_background_box =
-                ToLayoutBox(document_element_object);
-            if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-                    document_background_box
-                        ->PreviousPhysicalLayoutOverflowRect(),
-                    document_background_box->PhysicalLayoutOverflowRect())) {
-              return BackgroundInvalidationType::kFull;
-            }
-          }
+        const auto& background_layers = box_.StyleRef().BackgroundLayers();
+        if (ShouldFullyInvalidateFillLayersOnSizeChange(
+                background_layers,
+                PhysicalSizeToBeNoop(root_box->PreviousSize()),
+                PhysicalSizeToBeNoop(root_box->Size()))) {
+          return BackgroundInvalidationType::kFull;
         }
-
-        // The document background paints with a transform but nevertheless
-        // extended onto an infinite canvas. In cases where it has a transform
-        // we cna't apply incremental invalidation, because the visual rect is
-        // no longer axis-aligned to the LayoutView.
-        if (document_element_object->StyleRef().HasTransform()) {
+        if (BackgroundGeometryDependsOnLayoutOverflowRect() &&
+            ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
+                root_box->PreviousPhysicalLayoutOverflowRect(),
+                root_box->PhysicalLayoutOverflowRect())) {
+          return BackgroundInvalidationType::kFull;
+        }
+        // It also uses the root element's content box in case the background
+        // comes from the root element and positioned in content box.
+        if (background_layers.AnyLayerUsesContentBox() &&
+            root_box->PreviousPhysicalContentBoxRect() !=
+                root_box->PhysicalContentBoxRect()) {
           return BackgroundInvalidationType::kFull;
         }
       }
+      // The view background paints with a transform but nevertheless extended
+      // onto an infinite canvas. In cases where it has a transform we can't
+      // apply incremental invalidation, because the visual rect is no longer
+      // axis-aligned to the LayoutView.
+      if (root_object->StyleRef().HasTransform())
+        return BackgroundInvalidationType::kFull;
     }
   }
 
@@ -394,8 +400,9 @@ bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRectOrOverflowRects() {
       box_.ContentSize() != box_.Size())
     return true;
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
-       BackgroundPaintsOntoScrollingContentsLayer()) &&
-      box_.LayoutOverflowRect() != box_.BorderBoxRect())
+       BackgroundPaintsOntoScrollingContentsLayer() ||
+       !box_.HasOverflowClip()) &&
+      box_.HasLayoutOverflow())
     return true;
 
   return false;

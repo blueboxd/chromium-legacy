@@ -10,6 +10,10 @@
 
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 
+namespace re2 {
+class RE2;
+}  // namespace re2
+
 using autofill::structured_address::AddressComponent;
 
 namespace autofill {
@@ -124,7 +128,7 @@ class NameLast : public AddressComponent {
   explicit NameLast(AddressComponent* parent);
   ~NameLast() override;
 
-  std::vector<const RE2*> GetParseRegularExpressionsByRelevance()
+  std::vector<const re2::RE2*> GetParseRegularExpressionsByRelevance()
       const override;
 
  private:
@@ -163,7 +167,7 @@ class NameFull : public AddressComponent {
   explicit NameFull(AddressComponent* parent);
   ~NameFull() override;
 
-  std::vector<const RE2*> GetParseRegularExpressionsByRelevance()
+  std::vector<const re2::RE2*> GetParseRegularExpressionsByRelevance()
       const override;
 
  private:

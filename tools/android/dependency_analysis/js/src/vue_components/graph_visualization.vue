@@ -31,6 +31,7 @@ const GraphVisualization = {
      */
     graphUpdateTriggers: Array,
     pageModel: Object,
+    displaySettingsData: Object,
     getNodeGroup: {
       type: Function,
       default: () => null,
@@ -40,10 +41,14 @@ const GraphVisualization = {
   watch: {
     graphUpdateTriggers: {
       handler: function() {
+        const d3Data = this.pageModel.graphModel.getDataForD3(
+            this.displaySettingsData.nodeFilterData.nodeSet,
+            this.displaySettingsData.inboundDepth,
+            this.displaySettingsData.outboundDepth,
+        );
         this.graphView.registerGetNodeGroup(this.getNodeGroup);
-        this.graphView.updateGraphData(this.pageModel.getDataForD3());
-        this.graphView.updateDisplaySettings(
-            this.pageModel.displaySettingsData);
+        this.graphView.updateGraphData(d3Data);
+        this.graphView.updateDisplaySettings(this.displaySettingsData);
       },
       deep: true,
     },

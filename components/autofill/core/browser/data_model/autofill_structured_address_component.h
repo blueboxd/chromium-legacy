@@ -12,7 +12,10 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "third_party/re2/src/re2/re2.h"
+
+namespace re2 {
+class RE2;
+}  // namespace re2
 
 namespace autofill {
 namespace structured_address {
@@ -248,7 +251,8 @@ class AddressComponent {
   }
 
   // Returns the parse expressions by relevance for testing.
-  std::vector<const RE2*> GetParseRegularExpressionsByRelevanceForTesting() {
+  std::vector<const re2::RE2*>
+  GetParseRegularExpressionsByRelevanceForTesting() {
     return GetParseRegularExpressionsByRelevance();
   }
 
@@ -280,7 +284,8 @@ class AddressComponent {
 
   // Returns pointers to regular expressions sorted by their relevance.
   // This method is virtual and can be reimplemented for each type.
-  virtual std::vector<const RE2*> GetParseRegularExpressionsByRelevance() const;
+  virtual std::vector<const re2::RE2*> GetParseRegularExpressionsByRelevance()
+      const;
 
   // Method to parse |value_| into the values of |subcomponents_|. The
   // purpose of this method is to cover special cases. This method returns true

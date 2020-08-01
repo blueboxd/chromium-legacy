@@ -2635,38 +2635,23 @@ void RenderFrameSubmissionObserver::OnLocalSurfaceIdChanged(
 MainThreadFrameObserver::MainThreadFrameObserver(
     RenderWidgetHost* render_widget_host)
     : render_widget_host_(render_widget_host),
-      routing_id_(render_widget_host_->GetProcess()->GetNextRoutingID()) {
-  // TODO(lfg): We should look into adding a way to observe RenderWidgetHost
-  // messages similarly to what WebContentsObserver can do with RFH and RVW.
-  render_widget_host_->GetProcess()->AddRoute(routing_id_, this);
-}
+      routing_id_(render_widget_host_->GetProcess()->GetNextRoutingID()) {}
 
-MainThreadFrameObserver::~MainThreadFrameObserver() {
-  render_widget_host_->GetProcess()->RemoveRoute(routing_id_);
-}
+MainThreadFrameObserver::~MainThreadFrameObserver() = default;
 
 void MainThreadFrameObserver::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  render_widget_host_->Send(new WidgetMsg_WaitForNextFrameForTests(
-      render_widget_host_->GetRoutingID(), routing_id_));
+  static_cast<RenderWidgetHostImpl*>(render_widget_host_)
+      ->InsertVisualStateCallback(base::BindOnce(&MainThreadFrameObserver::Quit,
+                                                 base::Unretained(this)));
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
-void MainThreadFrameObserver::Quit() {
+void MainThreadFrameObserver::Quit(bool) {
   if (quit_closure_)
     std::move(quit_closure_).Run();
-}
-
-bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
-  if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
-      msg.routing_id() == routing_id_) {
-    GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
-  }
-  return true;
 }
 
 InputMsgWatcher::InputMsgWatcher(RenderWidgetHost* render_widget_host,
@@ -3050,38 +3035,6 @@ void WebContentsConsoleObserver::OnDidAddMessageToConsole(
 
   messages_.push_back(std::move(message));
   run_loop_.Quit();
-}
-
-ConsoleObserverDelegate::ConsoleObserverDelegate(WebContents* web_contents,
-                                                 const std::string& filter)
-    : web_contents_(web_contents), filter_(filter) {}
-
-ConsoleObserverDelegate::~ConsoleObserverDelegate() {}
-
-void ConsoleObserverDelegate::Wait() {
-  run_loop_.Run();
-}
-
-bool ConsoleObserverDelegate::DidAddMessageToConsole(
-    WebContents* source,
-    blink::mojom::ConsoleMessageLevel log_level,
-    const base::string16& message,
-    int32_t line_no,
-    const base::string16& source_id) {
-  DCHECK(source == web_contents_);
-
-  std::string ascii_message = base::UTF16ToASCII(message);
-  if (base::MatchPattern(ascii_message, filter_)) {
-    messages_.push_back(ascii_message);
-    run_loop_.Quit();
-  }
-  return false;
-}
-
-std::string ConsoleObserverDelegate::message() {
-  if (messages_.empty())
-    return std::string();
-  return messages_.back();
 }
 
 namespace {
@@ -3595,9 +3548,11 @@ void ProxyDSFObserver::OnCreation(RenderFrameProxyHost* rfph) {
     runner_->Quit();
 }
 
-bool CompareWebContentsOutputToReference(WebContents* web_contents,
-                                         const base::FilePath& expected_path,
-                                         const gfx::Size& snapshot_size) {
+bool CompareWebContentsOutputToReference(
+    WebContents* web_contents,
+    const base::FilePath& expected_path,
+    const gfx::Size& snapshot_size,
+    const cc::PixelComparator& comparator) {
   // Produce a frame of output first to ensure the system is in a consistent,
   // known state.
   {
@@ -3633,8 +3588,7 @@ bool CompareWebContentsOutputToReference(WebContents* web_contents,
               SkIRect::MakeWH(snapshot_size.width(), snapshot_size.height()));
 
           snapshot_matches =
-              cc::MatchesPNGFile(clipped_bitmap, expected_path,
-                                 cc::ManhattanDistancePixelComparator());
+              cc::MatchesPNGFile(clipped_bitmap, expected_path, comparator);
 
           // When rebaselining the pixel test, the test may fail. However, the
           // reference file will still be overwritten.

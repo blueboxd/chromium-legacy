@@ -105,8 +105,8 @@ void ProtoChromePromptIPC::RunPromptUserTask(
   chrome_cleaner::PromptUserRequest prompt_user_message;
   for (const base::FilePath& file_to_delete : files_to_delete) {
     std::string file_path_utf8;
-    if (!base::UTF16ToUTF8(file_to_delete.value().c_str(),
-                           file_to_delete.value().size(), &file_path_utf8)) {
+    if (!base::WideToUTF8(file_to_delete.value().c_str(),
+                          file_to_delete.value().size(), &file_path_utf8)) {
       std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
@@ -116,8 +116,8 @@ void ProtoChromePromptIPC::RunPromptUserTask(
 
   for (const base::string16& registry_key : registry_keys) {
     std::string registry_key_utf8;
-    if (!base::UTF16ToUTF8(registry_key.c_str(), registry_key.size(),
-                           &registry_key_utf8)) {
+    if (!base::WideToUTF8(registry_key.c_str(), registry_key.size(),
+                          &registry_key_utf8)) {
       std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
@@ -127,8 +127,8 @@ void ProtoChromePromptIPC::RunPromptUserTask(
 
   for (const base::string16& extension_id : extension_ids) {
     std::string extension_id_utf8;
-    if (!base::UTF16ToUTF8(extension_id.c_str(), extension_id.size(),
-                           &extension_id_utf8)) {
+    if (!base::WideToUTF8(extension_id.c_str(), extension_id.size(),
+                          &extension_id_utf8)) {
       std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {

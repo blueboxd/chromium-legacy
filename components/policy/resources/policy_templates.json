@@ -15929,9 +15929,42 @@
         'dynamic_refresh': True,
         'per_profile': True
       },
+      'deprecated': True,
       'example_value': ['abcdefghabcdefghabcdefghabcdefgh'],
       'id': 377,
       'caption': '''Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen''',
+      'tags': [],
+      'desc': '''Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen.
+
+      If the preferred note-taking app is enabled on the lock screen, the lock screen will contain UI element for launching the preferred note taking app.
+      When launched, the app will be able to create an app window on top of the lock screen, and create data items (notes) in the lock screen context. The app will be able to import created notes to the primary user session, when the session is unlocked. Currently, only Chrome note-taking apps are supported on the lock screen.
+
+      If the policy is set, the user will be allowed to enable an app on the lock screen only if the app's extension ID is contained in the policy list value.
+      As a consequence, setting this policy to an empty list will disable note-taking on the lock screen entirely.
+      Note that the policy containing an app ID does not necessarily mean that the user will be able to enable the app as a note-taking app on the lock screen - for example, on Chrome 61, the set of available apps is additionally restricted by the platform.
+
+      If the policy is left unset, there will be no restrictions on the set of apps the user can enable on the lock screen imposed by the policy.
+
+      This policy is deprecated, please use <ph name="NOTE_TAKING_APPS_LOCK_SCREEN_ALLOWLIST">NoteTakingAppsLockScreenAllowlist</ph> instead.'''
+    },
+    {
+      'name': 'NoteTakingAppsLockScreenAllowlist',
+      'owners': ['tbarzic@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome_os:86-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': ['abcdefghabcdefghabcdefghabcdefgh'],
+      'id': 759,
+      'caption': '''The list of note-taking apps allowed on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen''',
       'tags': [],
       'desc': '''Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen.
 
@@ -18332,6 +18365,7 @@
         'cloud_only': True,
       },
       'supported_on': ['chrome.*:72-', 'chrome_os:81-'],
+      'future_on': [ 'ios' ],
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting''',
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting which uploads information about the browser operation to Google Admin console.
@@ -23444,6 +23478,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 758,
+  'highest_id_currently_used': 759,
   'highest_atomic_group_id_currently_used': 39
 }

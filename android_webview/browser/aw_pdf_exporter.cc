@@ -44,7 +44,7 @@ AwPdfExporter::AwPdfExporter(JNIEnv* env,
                              const JavaRef<jobject>& obj,
                              content::WebContents* web_contents)
     : java_ref_(env, obj), web_contents_(web_contents) {
-  DCHECK(!obj.is_null());
+  DCHECK(obj);
   Java_AwPdfExporter_setNativeAwPdfExporter(env, obj,
                                             reinterpret_cast<intptr_t>(this));
 }
@@ -52,7 +52,7 @@ AwPdfExporter::AwPdfExporter(JNIEnv* env,
 AwPdfExporter::~AwPdfExporter() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
   // Clear the Java peer's weak pointer to |this| object.
   Java_AwPdfExporter_setNativeAwPdfExporter(env, obj, 0);
@@ -122,7 +122,7 @@ std::unique_ptr<printing::PrintSettings> AwPdfExporter::CreatePdfSettings(
 void AwPdfExporter::DidExportPdf(int page_count) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
   Java_AwPdfExporter_didExportPdf(env, obj, page_count);
 }

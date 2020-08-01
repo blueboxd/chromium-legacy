@@ -3,15 +3,35 @@
 // found in the LICENSE file.
 
 // This file adds defines about the platform we're currently building on.
+//
 //  Operating System:
-//    OS_WIN / OS_MACOSX / OS_LINUX / OS_POSIX (MACOSX or LINUX) /
-//    OS_NACL (NACL_SFI or NACL_NONSFI) / OS_NACL_SFI / OS_NACL_NONSFI
-//    OS_CHROMEOS is set by the build system
+//    OS_AIX / OS_ANDROID / OS_ASMJS / OS_FREEBSD / OS_FUCHSIA / OS_IOS /
+//    OS_LINUX / OS_MAC / OS_NACL (SFI or NONSFI) / OS_NETBSD / OS_OPENBSD /
+//    OS_QNX / OS_SOLARIS / OS_WIN
+//  Operating System family:
+//    OS_APPLE: IOS or MAC
+//    OS_BSD: FREEBSD or NETBSD or OPENBSD
+//    OS_POSIX: AIX or ANDROID or ASMJS or FREEBSD or IOS or LINUX or MAC or
+//              NACL or NETBSD or OPENBSD or QNX or SOLARIS
+//
+//  /!\ Note: OS_CHROMEOS is set by the build system, not this file
+//
 //  Compiler:
 //    COMPILER_MSVC / COMPILER_GCC
+//
 //  Processor:
-//    ARCH_CPU_X86 / ARCH_CPU_X86_64 / ARCH_CPU_X86_FAMILY (X86 or X86_64)
-//    ARCH_CPU_32_BITS / ARCH_CPU_64_BITS
+//    ARCH_CPU_ARM64 / ARCH_CPU_ARMEL / ARCH_CPU_MIPS / ARCH_CPU_MIPS64 /
+//    ARCH_CPU_MIPS64EL / ARCH_CPU_MIPSEL / ARCH_CPU_PPC64 / ARCH_CPU_S390 /
+//    ARCH_CPU_S390X / ARCH_CPU_X86 / ARCH_CPU_X86_64
+//  Processor family:
+//    ARCH_CPU_ARM_FAMILY: ARMEL or ARM64
+//    ARCH_CPU_MIPS_FAMILY: MIPS64EL or MIPSEL or MIPS64 or MIPS
+//    ARCH_CPU_PPC64_FAMILY: PPC64
+//    ARCH_CPU_S390_FAMILY: S390 or S390X
+//    ARCH_CPU_X86_FAMILY: X86 or X86_64
+//  Processor features:
+//    ARCH_CPU_31_BITS / ARCH_CPU_32_BITS / ARCH_CPU_64_BITS
+//    ARCH_CPU_BIG_ENDIAN / ARCH_CPU_LITTLE_ENDIAN
 
 #ifndef BUILD_BUILD_CONFIG_H_
 #define BUILD_BUILD_CONFIG_H_
@@ -73,9 +93,6 @@
 // https://chromium.googlesource.com/chromium/src/+/master/docs/new_port_policy.md
 
 #if defined(OS_MAC) || defined(OS_IOS)
-// TODO(https://crbug.com/1105907): Migrate off of OS_MACOSX to an appropriate
-// combination of OS_MAC, OS_IOS, and OS_APPLE.
-#define OS_MACOSX 1
 #define OS_APPLE 1
 #endif
 
@@ -87,10 +104,10 @@
 
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
-#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) ||    \
-    defined(OS_FREEBSD) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_NACL) || defined(OS_NETBSD) || defined(OS_OPENBSD) ||  \
-    defined(OS_QNX) || defined(OS_SOLARIS)
+#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) || \
+    defined(OS_FREEBSD) || defined(OS_IOS) || defined(OS_LINUX) || \
+    defined(OS_MAC) || defined(OS_NACL) || defined(OS_NETBSD) ||   \
+    defined(OS_OPENBSD) || defined(OS_QNX) || defined(OS_SOLARIS)
 #define OS_POSIX 1
 #endif
 

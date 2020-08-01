@@ -133,7 +133,7 @@ int CrashReporterMain() {
   std::unique_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
   storage.reserve(argv.size());
   for (size_t i = 0; i < argv.size(); ++i) {
-    storage.push_back(base::UTF16ToUTF8(argv[i]));
+    storage.push_back(base::WideToUTF8(argv[i]));
     argv_as_utf8[i] = &storage[i][0];
   }
   argv_as_utf8[argv.size()] = nullptr;

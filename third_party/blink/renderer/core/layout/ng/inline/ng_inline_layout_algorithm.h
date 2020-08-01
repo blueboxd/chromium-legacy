@@ -47,6 +47,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   void CreateLine(const NGLineLayoutOpportunity&,
                   NGLineInfo*,
+                  NGLogicalLineItems* line_box,
                   NGExclusionSpace*);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
@@ -78,29 +79,37 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                   NGInlineLayoutStateStack*) const;
   NGInlineBoxState* HandleCloseTag(const NGInlineItem&,
                                    const NGInlineItemResult&,
+                                   NGLogicalLineItems* line_box,
                                    NGInlineBoxState*);
 
-  void BidiReorder(TextDirection base_direction);
+  void BidiReorder(TextDirection base_direction, NGLogicalLineItems* line_box);
 
   void PlaceControlItem(const NGInlineItem&,
                         const NGLineInfo&,
                         NGInlineItemResult*,
+                        NGLogicalLineItems* line_box,
                         NGInlineBoxState*);
   void PlaceHyphen(const NGInlineItemResult&,
                    LayoutUnit hyphen_inline_size,
+                   NGLogicalLineItems* line_box,
                    NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       const NGLineInfo&,
-                                      NGInlineItemResult*);
+                                      NGInlineItemResult*,
+                                      NGLogicalLineItems* line_box);
   void PlaceLayoutResult(NGInlineItemResult*,
+                         NGLogicalLineItems* line_box,
                          NGInlineBoxState*,
                          LayoutUnit inline_offset = LayoutUnit());
-  void PlaceOutOfFlowObjects(const NGLineInfo&, const NGLineHeightMetrics&);
+  void PlaceOutOfFlowObjects(const NGLineInfo&,
+                             const NGLineHeightMetrics&,
+                             NGLogicalLineItems* line_box);
   void PlaceFloatingObjects(const NGLineInfo&,
                             const NGLineHeightMetrics&,
                             const NGLineLayoutOpportunity&,
+                            NGLogicalLineItems* line_box,
                             NGExclusionSpace*);
-  void PlaceRelativePositionedItems();
+  void PlaceRelativePositionedItems(NGLogicalLineItems* line_box);
   void PlaceListMarker(const NGInlineItem&,
                        NGInlineItemResult*,
                        const NGLineInfo&);
@@ -112,7 +121,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                 const NGExclusionSpace&,
                                 LayoutUnit line_height);
 
-  NGLogicalLineItems& line_box_;
   NGInlineLayoutStateStack* box_states_;
   NGInlineChildLayoutContext* context_;
 

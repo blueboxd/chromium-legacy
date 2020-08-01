@@ -44,8 +44,7 @@ class FeedNetworkImpl : public FeedNetwork {
                   const std::string& api_key,
                   scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
                   const base::TickClock* tick_clock,
-                  PrefService* pref_service,
-                  version_info::Channel chrome_channel);
+                  PrefService* pref_service);
   ~FeedNetworkImpl() override;
   FeedNetworkImpl(const FeedNetworkImpl&) = delete;
   FeedNetworkImpl& operator=(FeedNetworkImpl&) = delete;
@@ -81,7 +80,6 @@ class FeedNetworkImpl : public FeedNetwork {
   Delegate* delegate_;
   signin::IdentityManager* identity_manager_;
   const std::string api_key_;
-  const version_info::Channel chrome_channel_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   const base::TickClock* tick_clock_;
   PrefService* pref_service_;

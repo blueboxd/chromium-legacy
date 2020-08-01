@@ -64,8 +64,8 @@ TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
 TEST_BASE_HISTOGRAM_XML_CONTENT = """
 <histogram-configuration>
 <histograms>
-  <histogram base="true" name="Test.Base" expires_after="2211-11-22"
-      units="units" expires_after="2019-01-01">
+  <histogram base="true" name="Test.Base" units="units"
+      expires_after="2211-11-22">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Base histogram.
@@ -88,8 +88,8 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
       Not a base histogram: base attribute explicitly set to "false".
     </summary>
   </histogram>
-  <histogram name="Test.NotBase.Implicit" expires_after="M100" units="units"
-      expires_after="2019-01-01">
+  <histogram name="Test.NotBase.Implicit" units="units"
+      expires_after="M100">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Not a base histogram: no base attribute specified.
@@ -527,7 +527,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histogram_suffixes_list>
 </histogram-configuration>
 """)
-    have_errors = extract_histograms. _UpdateHistogramsWithSuffixes(
+    have_errors = extract_histograms._UpdateHistogramsWithSuffixes(
         suffix_with_label, {})
     self.assertFalse(have_errors)
 

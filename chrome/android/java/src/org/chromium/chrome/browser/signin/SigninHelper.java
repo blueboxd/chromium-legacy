@@ -21,7 +21,6 @@ import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -109,9 +108,6 @@ public class SigninHelper implements ApplicationStatus.ApplicationStateListener 
         mSigninManager = IdentityServicesProvider.get().getSigninManager(profile);
         mAccountTrackerService = IdentityServicesProvider.get().getAccountTrackerService(profile);
         mPrefsManager = SigninPreferencesManager.getInstance();
-
-        // TODO(https://crbug.com/1107942): Remove this after removing GoogleServicesManager.
-        GoogleServicesManager.get();
 
         ApplicationStatus.registerApplicationStateListener(this);
     }

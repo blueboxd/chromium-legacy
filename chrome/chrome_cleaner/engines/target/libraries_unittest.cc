@@ -107,7 +107,7 @@ TEST_P(LoadAndValidateLibrariesTest, RunTest) {
 
   ASSERT_TRUE(Engine::Name_IsValid(engine));
   parent_process_->AppendSwitchNative(chrome_cleaner::kEngineSwitch,
-                                      base::NumberToString16(engine));
+                                      base::NumberToWString(engine));
 
   int32_t exit_code = -1;
   ASSERT_TRUE(

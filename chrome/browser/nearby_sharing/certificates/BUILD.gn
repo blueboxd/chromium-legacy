@@ -41,6 +41,8 @@ source_set("test_support") {
   sources = [
     "fake_nearby_share_certificate_manager.cc",
     "fake_nearby_share_certificate_manager.h",
+    "fake_nearby_share_certificate_storage.cc",
+    "fake_nearby_share_certificate_storage.h",
     "test_util.cc",
     "test_util.h",
   ]
@@ -49,6 +51,8 @@ source_set("test_support") {
     ":certificates",
     "//base",
     "//chrome/browser/nearby_sharing/proto",
+    "//components/leveldb_proto",
+    "//components/prefs",
     "//crypto",
   ]
 }

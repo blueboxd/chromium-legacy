@@ -31,7 +31,7 @@ const base::Feature kAutofillAlwaysReturnCloudTokenizedCard{
 // If enabled, when a server card is unmasked, its info will be cached until
 // page navigation to simplify consecutive fills on the same page.
 const base::Feature kAutofillCacheServerCardInfo{
-    "AutofillCacheServerCardInfo", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillCacheServerCardInfo", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};

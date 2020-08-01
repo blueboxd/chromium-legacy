@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/platform/web_loading_hints_provider.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -130,6 +131,15 @@ void ResourceLoadingHintsAgent::SetLiteVideoHint(
       lite_video::LiteVideoHintAgent::Get(render_frame());
   if (lite_video_hint_agent)
     lite_video_hint_agent->SetLiteVideoHint(std::move(lite_video_hint));
+}
+
+void ResourceLoadingHintsAgent::StopThrottlingMediaRequests() {
+  auto* lite_video_hint_agent =
+      lite_video::LiteVideoHintAgent::Get(render_frame());
+  if (lite_video_hint_agent) {
+    LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.HintsAgent.StopThrottling", true);
+    lite_video_hint_agent->StopThrottling();
+  }
 }
 
 }  // namespace previews

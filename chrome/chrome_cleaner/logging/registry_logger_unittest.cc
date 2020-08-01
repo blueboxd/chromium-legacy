@@ -348,7 +348,7 @@ TEST_F(RegistryLoggerTest, UseSuffixRegistryKey) {
 
   base::string16 key_name = no_suffix_logger.GetLoggingKeyPath(mode);
   EXPECT_EQ(base::string16::npos,
-            key_name.find(base::UTF8ToUTF16(kTestSuffix).c_str()));
+            key_name.find(base::UTF8ToWide(kTestSuffix).c_str()));
 
   // This checks directly for the company name Google, instead of using
   // COMPANY_SHORTNAME_STRING, because it's used for communication with Chrome
@@ -356,7 +356,7 @@ TEST_F(RegistryLoggerTest, UseSuffixRegistryKey) {
   key_name = logger.GetLoggingKeyPath(mode);
   const base::string16 expected_name =
       base::StrCat({L"Software\\Google\\Software Removal Tool\\",
-                    base::UTF8ToUTF16(kTestSuffix)});
+                    base::UTF8ToWide(kTestSuffix)});
   EXPECT_EQ(expected_name, key_name);
 
   base::win::RegKey no_suffix_key;

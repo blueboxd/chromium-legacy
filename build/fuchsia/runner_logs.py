@@ -35,7 +35,7 @@ class RunnerLogManager(object):
     self._build_ids_files = build_ids_files
     self._runner_logs = []
 
-    if self._log_dir:
+    if self._log_dir and not os.path.isdir(self._log_dir):
       os.makedirs(self._log_dir)
 
     _instance = self
@@ -54,7 +54,7 @@ class RunnerLogManager(object):
 
   def _FileStreamFor(self, name, symbolize):
     if any(elem.name == name for elem in self._runner_logs):
-      raise Exception('RunnerLogManager can only open "%" once' % name)
+      raise Exception('RunnerLogManager can only open "%s" once' % name)
 
     path = os.path.join(self._log_dir, name) if self._log_dir else os.devnull
     log_file = open(path, 'w')

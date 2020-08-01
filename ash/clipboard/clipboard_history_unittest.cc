@@ -145,15 +145,13 @@ TEST_F(ClipboardHistoryTest, OneThingCopiedOneThingSaved) {
   WriteAndEnsureTextHistory(input_strings, expected_strings);
 }
 
-// Tests that if the same (non bitmap) thing is copied, only one thing is saved.
+// Tests that if the same (non bitmap) thing is copied, both things are saved.
 TEST_F(ClipboardHistoryTest, DuplicateBasic) {
   std::vector<base::string16> input_strings{base::UTF8ToUTF16("test"),
                                             base::UTF8ToUTF16("test")};
-  // Because |input_strings| is the same string twice, history should detect the
-  // duplicate.
-  std::vector<base::string16> expected_strings{base::UTF8ToUTF16("test")};
+  std::vector<base::string16> expected_strings = input_strings;
 
-  // Test that only one thing is saved.
+  // Test that both things are saved.
   WriteAndEnsureTextHistory(input_strings, expected_strings);
 }
 
@@ -184,16 +182,17 @@ TEST_F(ClipboardHistoryTest, HistoryIsReverseChronological) {
 }
 
 // Tests that when a duplicate is copied, the duplicate shows up in the proper
-// order, and the older version is not returned.
-TEST_F(ClipboardHistoryTest, DuplicateOverwritesPreviousRecord) {
+// order and that the older version is still returned.
+TEST_F(ClipboardHistoryTest, DuplicatePrecedesPreviousRecord) {
   // Input holds a unique string sandwiched by a copy.
-  std::vector<base::string16> input_strings{base::UTF8ToUTF16("test1"),
-                                            base::UTF8ToUTF16("test2"),
-                                            base::UTF8ToUTF16("test1")};
-  // The result should be a reversal of the last two elements. When a duplicate
-  // is copied, history will show the most recent version of that duplicate.
-  std::vector<base::string16> expected_strings{base::UTF8ToUTF16("test1"),
-                                               base::UTF8ToUTF16("test2")};
+  std::vector<base::string16> input_strings{
+      base::UTF8ToUTF16("test1"), base::UTF8ToUTF16("test2"),
+      base::UTF8ToUTF16("test1"), base::UTF8ToUTF16("test3")};
+  // The result should be a reversal of the copied elements. When a duplicate
+  // is copied, history will show all versions of the recent duplicate.
+  std::vector<base::string16> expected_strings{
+      base::UTF8ToUTF16("test3"), base::UTF8ToUTF16("test1"),
+      base::UTF8ToUTF16("test2"), base::UTF8ToUTF16("test1")};
 
   WriteAndEnsureTextHistory(input_strings, expected_strings);
 }
@@ -265,7 +264,7 @@ TEST_F(ClipboardHistoryTest, DuplicateBitmap) {
 
   std::vector<SkBitmap> input_bitmaps{test_bitmap_1, test_bitmap_2,
                                       test_bitmap_1};
-  std::vector<SkBitmap> expected_bitmaps{test_bitmap_1, test_bitmap_2};
+  std::vector<SkBitmap> expected_bitmaps = input_bitmaps;
   WriteAndEnsureBitmapHistory(input_bitmaps, expected_bitmaps);
 }
 

@@ -609,7 +609,9 @@ const char kNoteTakingAppEnabledOnLockScreen[] =
 // List of note taking aps that can be enabled to run on the lock screen.
 // The intended usage is to whitelist the set of apps that the user can enable
 // to run on lock screen, not to actually enable the apps to run on lock screen.
-const char kNoteTakingAppsLockScreenWhitelist[] =
+// Note that this used to be `kNoteTakingAppsLockScreenWhitelist`, hence the
+// difference between the variable name and the string value.
+const char kNoteTakingAppsLockScreenAllowlist[] =
     "settings.note_taking_apps_lock_screen_whitelist";
 
 // Dictionary pref that maps lock screen app ID to a boolean indicating whether
@@ -3050,6 +3052,18 @@ const char kAdbSideloadingPowerwashPlannedNotificationShownTime[] =
 // change in adb sideloading policy that will clear all user data was shown.
 const char kAdbSideloadingPowerwashOnNextRebootNotificationShown[] =
     "adb_sideloading_powerwash_on_next_reboot_notification_shown";
+#endif
+
+#if !defined(OS_ANDROID)
+// Boolean pref that indicates whether caret browsing is currently enabled.
+const char kCaretBrowsingEnabled[] = "settings.a11y.caretbrowsing.enabled";
+
+// Boolean pref for whether the user is shown a dialog to confirm that caret
+// browsing should be enabled/disabled when the keyboard shortcut is pressed.
+// If set to false, no intervening dialog is displayed and caret browsing mode
+// is toggled silently by the keyboard shortcut.
+const char kShowCaretBrowsingDialog[] =
+    "settings.a11y.caretbrowsing.show_dialog";
 #endif
 
 }  // namespace prefs

@@ -77,6 +77,7 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble_controller_views.h"
+#include "chrome/browser/ui/views/accessibility/caret_browsing_dialog_delegate.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -3361,6 +3362,11 @@ bool BrowserView::IsVisibleOnAllWorkspaces() const {
 
 void BrowserView::ShowEmojiPanel() {
   GetWidget()->ShowEmojiPanel();
+}
+
+void BrowserView::ShowCaretBrowsingDialog() {
+  CaretBrowsingDialogDelegate::Show(GetNativeWindow(),
+                                    GetProfile()->GetPrefs());
 }
 
 std::unique_ptr<content::EyeDropper> BrowserView::OpenEyeDropper(

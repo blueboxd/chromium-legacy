@@ -2130,6 +2130,43 @@ TEST_F(SpdySessionTest, ChangeStreamRequestPriority) {
   ASSERT_EQ(HIGHEST, stream1->priority());
 }
 
+// Attempts to extract a NetLogSource from a set of event parameters.  Returns
+// true and writes the result to |source| on success.  Returns false and
+// makes |source| an invalid source on failure.
+bool NetLogSourceFromEventParameters(const base::Value* event_params,
+                                     NetLogSource* source) {
+  const base::Value* source_dict = nullptr;
+  int source_id = -1;
+  int source_type = static_cast<int>(NetLogSourceType::COUNT);
+  if (!event_params) {
+    *source = NetLogSource();
+    return false;
+  }
+  source_dict = event_params->FindDictKey("source_dependency");
+  if (!source_dict) {
+    *source = NetLogSource();
+    return false;
+  }
+  base::Optional<int> opt_int;
+  opt_int = source_dict->FindIntKey("id");
+  if (!opt_int) {
+    *source = NetLogSource();
+    return false;
+  }
+  source_id = opt_int.value();
+  opt_int = source_dict->FindIntKey("type");
+  if (!opt_int) {
+    *source = NetLogSource();
+    return false;
+  }
+  source_type = opt_int.value();
+
+  DCHECK_GE(source_id, 0);
+  DCHECK_LT(source_type, static_cast<int>(NetLogSourceType::COUNT));
+  *source = NetLogSource(static_cast<NetLogSourceType>(source_type), source_id);
+  return true;
+}
+
 TEST_F(SpdySessionTest, Initialize) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
@@ -2158,7 +2195,7 @@ TEST_F(SpdySessionTest, Initialize) {
 
   NetLogSource socket_source;
   EXPECT_TRUE(
-      NetLogSource::FromEventParameters(&entries[pos].params, &socket_source));
+      NetLogSourceFromEventParameters(&entries[pos].params, &socket_source));
   EXPECT_TRUE(socket_source.IsValid());
   EXPECT_NE(log_.bound().source().id, socket_source.id);
 }

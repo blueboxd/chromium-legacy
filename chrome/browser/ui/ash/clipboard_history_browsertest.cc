@@ -35,60 +35,7 @@ const std::list<ui::ClipboardData>& GetClipboardData() {
       ->GetItems();
 }
 
-bool IsClipboardDataListExpected(
-    const std::list<ui::ClipboardData>& clipboard_data,
-    const std::vector<std::string>& expected_text_data) {
-  if (clipboard_data.size() != expected_text_data.size())
-    return false;
-
-  auto iter = clipboard_data.cbegin();
-  int index = 0;
-  while (iter != clipboard_data.cend()) {
-    if (iter->text() != expected_text_data[index])
-      return false;
-
-    iter++;
-    index++;
-  }
-
-  return true;
-}
-
 }  // namespace
-
-class ClipboardHistoryBrowserTest : public InProcessBrowserTest {
- public:
-  ClipboardHistoryBrowserTest() : InProcessBrowserTest() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kClipboardHistory);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Verify clipboard history's basic feature, i.e. recording clipboard data and
-// returning data following the most recent ordering
-// (https://crbug.com/1109263).
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyBasics) {
-  const std::string unique_data1("A");
-  SetClipboardText(unique_data1);
-
-  const int iteration = 10;
-  const std::string unique_data2("B");
-  const std::string unique_data3("C");
-
-  // Save duplicate data multiple times.
-  for (int i = 0; i < iteration; i++) {
-    SetClipboardText(unique_data2);
-    SetClipboardText(unique_data3);
-  }
-
-  const std::list<ui::ClipboardData> data = GetClipboardData();
-  const std::vector<std::string> expected_text_data = {
-      unique_data3, unique_data2, unique_data1};
-
-  EXPECT_TRUE(IsClipboardDataListExpected(data, expected_text_data));
-}
 
 // Verify clipboard history's features in the multiprofile environment.
 class ClipboardHistoryWithMultiProfileBrowserTest

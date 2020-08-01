@@ -24,14 +24,12 @@ namespace {
 
 // Returns the index of the closing quote of the string, if any. |start| points
 // at the opening quote.
-size_t FindStringEnd(const base::string16& line,
-                     size_t start,
-                     base::char16 delim) {
+size_t FindStringEnd(const base::string16& line, size_t start, wchar_t delim) {
   DCHECK_LT(start, line.length());
   DCHECK_EQ(line[start], delim);
   DCHECK((delim == L'"') || (delim == L'\''));
 
-  const base::char16 set[] = {delim, L'\\', L'\0'};
+  const wchar_t set[] = {delim, L'\\', L'\0'};
   for (size_t end = line.find_first_of(set, start + 1);
        end != base::string16::npos; end = line.find_first_of(set, end + 2)) {
     if (line[end] != L'\\')
@@ -40,9 +38,9 @@ size_t FindStringEnd(const base::string16& line,
   return line.length();
 }
 
-const base::char16 kHttpLws[] = L" \t";
+const wchar_t kHttpLws[] = L" \t";
 
-bool IsLWS(base::char16 c) {
+bool IsLWS(wchar_t c) {
   return ::wcschr(kHttpLws, c) != NULL;
 }
 
@@ -102,13 +100,13 @@ void ParseContentType(const base::string16& content_type_str,
       TrimLWS(&param_value_begin, &param_value_end);
 
       if (base::LowerCaseEqualsASCII(
-              base::StringPiece16(param_name_begin, param_name_end),
+              base::WStringPiece(param_name_begin, param_name_end),
               "charset")) {
         charset_val = param_value_begin - begin;
         charset_end = param_value_end - begin;
         type_has_charset = true;
       } else if (base::LowerCaseEqualsASCII(
-                     base::StringPiece16(param_name_begin, param_name_end),
+                     base::WStringPiece(param_name_begin, param_name_end),
                      "boundary")) {
         if (boundary)
           boundary->assign(param_value_begin, param_value_end);
@@ -122,7 +120,7 @@ void ParseContentType(const base::string16& content_type_str,
     // standard, but may occur in rare cases.
     charset_val = content_type_str.find_first_not_of(kHttpLws, charset_val);
     charset_val = std::min(charset_val, charset_end);
-    base::char16 first_char = content_type_str[charset_val];
+    wchar_t first_char = content_type_str[charset_val];
     if (first_char == L'"' || first_char == L'\'') {
       charset_end = FindStringEnd(content_type_str, charset_val, first_char);
       ++charset_val;
@@ -145,16 +143,16 @@ void ParseContentType(const base::string16& content_type_str,
     // The common case here is that mime_type is empty.
     bool eq = !mime_type->empty() &&
               base::LowerCaseEqualsASCII(
-                  base::StringPiece16(begin + type_val, begin + type_end),
+                  base::WStringPiece(begin + type_val, begin + type_end),
                   base::WideToUTF8(*mime_type).data());
     if (!eq) {
       mime_type->assign(base::ToLowerASCII(
-          base::StringPiece16(begin + type_val, begin + type_end)));
+          base::WStringPiece(begin + type_val, begin + type_end)));
     }
     if ((!eq && *had_charset) || type_has_charset) {
       *had_charset = true;
       charset->assign(base::ToLowerASCII(
-          base::StringPiece16(begin + charset_val, begin + charset_end)));
+          base::WStringPiece(begin + charset_val, begin + charset_end)));
     }
   }
 }
@@ -194,16 +192,16 @@ base::string16 ComposeUrl(const base::string16& host,
   if (secure) {
     if (port == 443)
       return L"https://" + host + path;
-    return L"https://" + host + L':' + base::NumberToString16(port) + path;
+    return L"https://" + host + L':' + base::NumberToWString(port) + path;
   }
   if (port == 80)
     return L"http://" + host + path;
-  return L"http://" + host + L':' + base::NumberToString16(port) + path;
+  return L"http://" + host + L':' + base::NumberToWString(port) + path;
 }
 
 base::string16 GenerateMultipartHttpRequestBoundary() {
   // The boundary has 27 '-' characters followed by 16 hex digits.
-  static const base::char16 kBoundaryPrefix[] = L"---------------------------";
+  static const wchar_t kBoundaryPrefix[] = L"---------------------------";
   static const size_t kBoundaryLength = 27 + 16;
 
   // Generate some random numbers to fill out the boundary.
@@ -211,7 +209,7 @@ base::string16 GenerateMultipartHttpRequestBoundary() {
   int r1 = rand();
 
   // Add one character for the NULL termination.
-  base::char16 temp[kBoundaryLength + 1];
+  wchar_t temp[kBoundaryLength + 1];
   ::swprintf(temp, sizeof(temp) / sizeof(*temp), L"%s%08X%08X", kBoundaryPrefix,
              r0, r1);
 

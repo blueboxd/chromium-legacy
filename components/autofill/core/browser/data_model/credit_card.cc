@@ -45,6 +45,8 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
+using structured_address::VerificationStatus;
+
 // Unicode characters used in card number obfuscation:
 //  - 0x2022 - Bullet.
 //  - 0x2006 - SIX-PER-EM SPACE (small space between bullets).
@@ -405,7 +407,9 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
   }
 }
 
-void CreditCard::SetRawInfo(ServerFieldType type, const base::string16& value) {
+void CreditCard::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                  const base::string16& value,
+                                                  VerificationStatus status) {
   DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
@@ -966,17 +970,21 @@ base::string16 CreditCard::GetInfoImpl(const AutofillType& type,
   return GetRawInfo(storable_type);
 }
 
-bool CreditCard::SetInfoImpl(const AutofillType& type,
-                             const base::string16& value,
-                             const std::string& app_locale) {
+bool CreditCard::SetInfoWithVerificationStatusImpl(
+    const AutofillType& type,
+    const base::string16& value,
+    const std::string& app_locale,
+    VerificationStatus status) {
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == CREDIT_CARD_EXP_MONTH)
     return SetExpirationMonthFromString(value, app_locale);
 
-  if (storable_type == CREDIT_CARD_NUMBER)
-    SetRawInfo(storable_type, StripSeparators(value));
-  else
-    SetRawInfo(storable_type, value);
+  if (storable_type == CREDIT_CARD_NUMBER) {
+    SetRawInfoWithVerificationStatus(storable_type, StripSeparators(value),
+                                     status);
+  } else {
+    SetRawInfoWithVerificationStatus(storable_type, value, status);
+  }
   return true;
 }
 

@@ -20,6 +20,9 @@
 #include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
+
+using structured_address::VerificationStatus;
+
 namespace {
 
 // Returns the region code for this phone number, which is an ISO 3166 2-letter
@@ -81,8 +84,9 @@ base::string16 PhoneNumber::GetRawInfo(ServerFieldType type) const {
   return base::string16();
 }
 
-void PhoneNumber::SetRawInfo(ServerFieldType type,
-                             const base::string16& value) {
+void PhoneNumber::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                   const base::string16& value,
+                                                   VerificationStatus status) {
   DCHECK_EQ(PHONE_HOME, AutofillType(type).group());
   if (type != PHONE_HOME_CITY_AND_NUMBER && type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
@@ -208,10 +212,12 @@ base::string16 PhoneNumber::GetInfoImpl(const AutofillType& type,
   }
 }
 
-bool PhoneNumber::SetInfoImpl(const AutofillType& type,
-                              const base::string16& value,
-                              const std::string& app_locale) {
-  SetRawInfo(type.GetStorableType(), value);
+bool PhoneNumber::SetInfoWithVerificationStatusImpl(
+    const AutofillType& type,
+    const base::string16& value,
+    const std::string& app_locale,
+    VerificationStatus status) {
+  SetRawInfoWithVerificationStatus(type.GetStorableType(), value, status);
 
   if (number_.empty())
     return true;

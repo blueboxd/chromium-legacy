@@ -262,7 +262,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
       Profile* profile,
       const extensions::Extension* app);
 
-  // Called when kNoteTakingAppsLockScreenWhitelist pref changes for
+  // Called when kNoteTakingAppsLockScreenAllowlist pref changes for
   // |profile_with_enabled_lock_screen_apps_|.
   void OnAllowedNoteTakingAppsChanged();
 
@@ -313,7 +313,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // and when |lock_screen_whitelist_state_| equals kAppsWhitelisted.
   std::set<std::string> lock_screen_apps_allowed_by_policy_;
 
-  // Tracks kNoteTakingAppsLockScreenWhitelist pref for the profile for which
+  // Tracks kNoteTakingAppsLockScreenAllowlist pref for the profile for which
   // lock screen apps are enabled.
   PrefChangeRegistrar pref_change_registrar_;
 

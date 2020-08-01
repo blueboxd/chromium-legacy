@@ -2226,6 +2226,7 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
         !seeking_) {
       underflow_timer_ = std::make_unique<base::ElapsedTimer>();
       watch_time_reporter_->OnUnderflow();
+      delegate_->DidBufferUnderflow(delegate_id_);
 
       if (playback_events_recorder_)
         playback_events_recorder_->OnBuffering();

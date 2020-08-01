@@ -64,6 +64,17 @@ Polymer({
     },
 
     /**
+     * The subtitle to display under the Live Caption heading. Generally, this
+     * is a generic subtitle describing the feature. While the SODA model is
+     * being downloading, this displays the download progress.
+     * @private
+     */
+    enableLiveCaptionSubtitle_: {
+      type: String,
+      value: loadTimeData.getString('captionsEnableLiveCaptionSubtitle'),
+    },
+
+    /**
      * Whether to show the focus highlight setting.
      * Depends on feature flag for focus highlight.
      * @private {boolean}
@@ -122,7 +133,15 @@ Polymer({
     this.addWebUIListener(
         'screen-reader-state-changed',
         this.onScreenReaderStateChanged_.bind(this));
-    chrome.send('getScreenReaderState');
+
+    // <if expr="not chromeos">
+    this.addWebUIListener(
+        'enable-live-caption-subtitle-changed',
+        this.onEnableLiveCaptionSubtitleChanged_.bind(this));
+    // </if>
+
+    // Enables javascript and gets the screen reader state.
+    chrome.send('a11yPageReady');
   },
 
   /**
@@ -133,6 +152,20 @@ Polymer({
     // TODO(katie): Remove showExperimentalA11yLabels flag before launch.
     this.showAccessibilityLabelsSetting_ = hasScreenReader &&
         loadTimeData.getBoolean('showExperimentalA11yLabels');
+  },
+
+  /**
+   * @private
+   * @param {!Event} event
+   */
+  onA11yCaretBrowsingChange_(event) {
+    if (event.target.checked) {
+      chrome.metricsPrivate.recordUserAction(
+          'Accessibility.CaretBrowsing.EnableWithSettings');
+    } else {
+      chrome.metricsPrivate.recordUserAction(
+          'Accessibility.CaretBrowsing.DisableWithSettings');
+    }
   },
 
   /**
@@ -155,6 +188,15 @@ Polymer({
     const a11yLiveCaptionOn = event.target.checked;
     chrome.metricsPrivate.recordBoolean(
         'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
+  },
+
+  /**
+   * @private
+   * @param {!string} enableLiveCaptionSubtitle The message sent from the webui
+   *     to be displayed as a subtitle to Live Captions.
+   */
+  onEnableLiveCaptionSubtitleChanged_(enableLiveCaptionSubtitle) {
+    this.enableLiveCaptionSubtitle_ = enableLiveCaptionSubtitle;
   },
   // </if>
 

@@ -120,4 +120,7 @@ IPC_MESSAGE_ROUTED2(
     int /* delegate_id, distinguishes instances */,
     bool /* picture-in-picture availability */)
 
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnBufferUnderflow,
+                    int /* delegate_id, distinguishes instances */)
+
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

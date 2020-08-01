@@ -26,7 +26,7 @@ class TestScopedServiceHandle : public ScopedServiceHandle {
   ::testing::AssertionResult StopAndDelete();
   void Close();
 
-  const base::char16* service_name() const { return service_name_.c_str(); }
+  const wchar_t* service_name() const { return service_name_.c_str(); }
 
  private:
   base::string16 service_name_;

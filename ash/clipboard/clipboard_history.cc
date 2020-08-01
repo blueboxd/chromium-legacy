@@ -87,18 +87,7 @@ void ClipboardHistory::OnClipboardDataChanged() {
 void ClipboardHistory::CommitData(const AccountId& account_id,
                                   ui::ClipboardData data) {
   std::list<ui::ClipboardData>& items = items_by_account_id_[account_id];
-
-  // If |data| is already contained in |items|, at *most* we need to move it to
-  // the front to retain sort order by recency.
-  auto it = std::find(items.begin(), items.end(), data);
-  if (it != items.end()) {
-    if (it != items.begin())
-      items.splice(items.begin(), items, it, std::next(it));
-    return;
-  }
-
   items.push_front(std::move(data));
-
   if (items.size() > kMaxClipboardItemsShared)
     items.pop_back();
 }

@@ -110,7 +110,8 @@ public class TabContext {
             String referrerUrl = getReferrerUrlFromTab(tab);
             return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
                     tab.getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
-                    tab.getTimestampMillis(), tab.getUrlString(), tab.isIncognito());
+                    CriticalPersistedTabData.from(tab).getTimestampMillis(), tab.getUrlString(),
+                    tab.isIncognito());
         }
 
         public double getSiteEngagementScore() {

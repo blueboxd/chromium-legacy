@@ -1,0 +1,187 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_FAKE_NEARBY_SHARE_CERTIFICATE_STORAGE_H_
+#define CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_FAKE_NEARBY_SHARE_CERTIFICATE_STORAGE_H_
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/time/time.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_storage.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_storage_impl.h"
+#include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "components/leveldb_proto/public/proto_database.h"
+
+class PrefService;
+
+// A fake implementation of NearbyShareCertificateStorage, along with a fake
+// factory, to be used in tests.
+class FakeNearbyShareCertificateStorage : public NearbyShareCertificateStorage {
+ public:
+  // Factory that creates FakeNearbyShareCertificateStorage instances. Use
+  // in NearbyShareCertificateStorageImpl::Factory::SetFactoryForTesting()
+  // in unit tests.
+  class Factory : public NearbyShareCertificateStorageImpl::Factory {
+   public:
+    Factory();
+    ~Factory() override;
+
+    // Returns all FakeNearbyShareCertificateStorage instances created by
+    // CreateInstance().
+    std::vector<FakeNearbyShareCertificateStorage*>& instances() {
+      return instances_;
+    }
+
+    PrefService* latest_pref_service() { return latest_pref_service_; }
+
+    leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>*
+    latest_proto_database() {
+      return latest_proto_database_.get();
+    }
+
+   private:
+    // NearbyShareCertificateStorageImpl::Factory:
+    std::unique_ptr<NearbyShareCertificateStorage> CreateInstance(
+        PrefService* pref_service,
+        std::unique_ptr<
+            leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+            proto_database) override;
+
+    std::vector<FakeNearbyShareCertificateStorage*> instances_;
+    PrefService* latest_pref_service_ = nullptr;
+    std::unique_ptr<
+        leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+        latest_proto_database_;
+  };
+
+  struct ReplacePublicCertificatesCall {
+    ReplacePublicCertificatesCall(
+        const std::vector<nearbyshare::proto::PublicCertificate>&
+            public_certificates,
+        ResultCallback callback);
+    ReplacePublicCertificatesCall(ReplacePublicCertificatesCall&& other);
+    ~ReplacePublicCertificatesCall();
+
+    std::vector<nearbyshare::proto::PublicCertificate> public_certificates;
+    ResultCallback callback;
+  };
+
+  struct AddPublicCertificatesCall {
+    AddPublicCertificatesCall(
+        const std::vector<nearbyshare::proto::PublicCertificate>&
+            public_certificates,
+        ResultCallback callback);
+    AddPublicCertificatesCall(AddPublicCertificatesCall&& other);
+    ~AddPublicCertificatesCall();
+
+    std::vector<nearbyshare::proto::PublicCertificate> public_certificates;
+    ResultCallback callback;
+  };
+
+  struct RemoveExpiredPublicCertificatesCall {
+    RemoveExpiredPublicCertificatesCall(base::Time now,
+                                        ResultCallback callback);
+    RemoveExpiredPublicCertificatesCall(
+        RemoveExpiredPublicCertificatesCall&& other);
+    ~RemoveExpiredPublicCertificatesCall();
+
+    base::Time now;
+    ResultCallback callback;
+  };
+
+  FakeNearbyShareCertificateStorage();
+  ~FakeNearbyShareCertificateStorage() override;
+
+  void SetIsInitialized(bool is_initialized);
+  void SetPublicCertificateIds(const std::vector<std::string>& ids);
+  void SetPrivateCertificates(
+      base::Optional<std::vector<NearbySharePrivateCertificate>>
+          private_certificates);
+  void SetNextPrivateCertificateExpirationTime(base::Optional<base::Time> time);
+  void SetNextPublicCertificateExpirationTime(base::Optional<base::Time> time);
+
+  std::vector<ResultCallback>& initialize_callbacks() {
+    return initialize_callbacks_;
+  }
+
+  std::vector<PublicCertificateCallback>& get_public_certificates_callbacks() {
+    return get_public_certificates_callbacks_;
+  }
+
+  std::vector<std::vector<NearbySharePrivateCertificate>>&
+  replace_private_certificates_calls() {
+    return replace_private_certificates_calls_;
+  }
+
+  std::vector<ReplacePublicCertificatesCall>&
+  replace_public_certificates_calls() {
+    return replace_public_certificates_calls_;
+  }
+
+  std::vector<AddPublicCertificatesCall>& add_public_certificates_calls() {
+    return add_public_certificates_calls_;
+  }
+
+  std::vector<RemoveExpiredPublicCertificatesCall>&
+  remove_expired_public_certificates_calls() {
+    return remove_expired_public_certificates_calls_;
+  }
+
+  size_t num_clear_private_certificates_calls() {
+    return num_clear_private_certificates_calls_;
+  }
+
+  std::vector<ResultCallback>& clear_public_certificates_callbacks() {
+    return clear_public_certificates_callbacks_;
+  }
+
+ private:
+  // NearbyShareCertificateStorage:
+  bool IsInitialized() override;
+  void Initialize(ResultCallback callback) override;
+  std::vector<std::string> GetPublicCertificateIds() const override;
+  void GetPublicCertificates(PublicCertificateCallback callback) override;
+  base::Optional<std::vector<NearbySharePrivateCertificate>>
+  GetPrivateCertificates() const override;
+  base::Optional<base::Time> NextPrivateCertificateExpirationTime()
+      const override;
+  base::Optional<base::Time> NextPublicCertificateExpirationTime()
+      const override;
+  void ReplacePrivateCertificates(
+      const std::vector<NearbySharePrivateCertificate>& private_certificates)
+      override;
+  void ReplacePublicCertificates(
+      const std::vector<nearbyshare::proto::PublicCertificate>&
+          public_certificates,
+      ResultCallback callback) override;
+  void AddPublicCertificates(
+      const std::vector<nearbyshare::proto::PublicCertificate>&
+          public_certificates,
+      ResultCallback callback) override;
+  void RemoveExpiredPublicCertificates(base::Time now,
+                                       ResultCallback callback) override;
+  void ClearPrivateCertificates() override;
+  void ClearPublicCertificates(ResultCallback callback) override;
+
+  bool is_initialized_ = false;
+  size_t num_clear_private_certificates_calls_ = 0;
+  base::Optional<base::Time> next_private_certificate_expiration_time_;
+  base::Optional<base::Time> next_public_certificate_expiration_time_;
+  std::vector<std::string> public_certificate_ids_;
+  base::Optional<std::vector<NearbySharePrivateCertificate>>
+      private_certificates_;
+  std::vector<ResultCallback> initialize_callbacks_;
+  std::vector<PublicCertificateCallback> get_public_certificates_callbacks_;
+  std::vector<std::vector<NearbySharePrivateCertificate>>
+      replace_private_certificates_calls_;
+  std::vector<ReplacePublicCertificatesCall> replace_public_certificates_calls_;
+  std::vector<AddPublicCertificatesCall> add_public_certificates_calls_;
+  std::vector<RemoveExpiredPublicCertificatesCall>
+      remove_expired_public_certificates_calls_;
+  std::vector<ResultCallback> clear_public_certificates_callbacks_;
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_FAKE_NEARBY_SHARE_CERTIFICATE_STORAGE_H_

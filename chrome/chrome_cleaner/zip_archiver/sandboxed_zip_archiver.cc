@@ -44,7 +44,7 @@ bool GetSanitizedFileName(const base::FilePath& path,
                           base::string16* output_sanitized_filename) {
   DCHECK(output_sanitized_filename);
 
-  base::string16 sanitized_filename = path.BaseName().AsUTF16Unsafe();
+  base::string16 sanitized_filename = path.BaseName().value();
   if (base::EndsWith(sanitized_filename, kDefaultFileStreamSuffix,
                      base::CompareCase::INSENSITIVE_ASCII)) {
     // Remove the default file stream suffix.
@@ -96,7 +96,7 @@ base::string16 ConstructZipArchiveFileName(const base::string16& filename,
                                            const std::string& file_hash,
                                            size_t max_filename_length) {
   const base::string16 normalized_hash =
-      base::UTF8ToUTF16(base::ToUpperASCII(file_hash));
+      base::UTF8ToWide(base::ToUpperASCII(file_hash));
 
   // Length of the ".zip" suffix and the "_" infix.
   constexpr size_t kAffixSize = 5;
@@ -157,7 +157,7 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
   // eliminate TOCTTOU, use |FILE_FLAG_BACKUP_SEMANTICS| to open a directory
   // then check.
   base::File src_file(::CreateFile(
-      src_file_path.AsUTF16Unsafe().c_str(), kMinimizedReadAccess,
+      src_file_path.value().c_str(), kMinimizedReadAccess,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
       OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
       nullptr));
@@ -228,7 +228,7 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
   }
 
   // Create and open the zip file with minimized rights for writing.
-  base::File zip_file(::CreateFile(zip_file_path.AsUTF16Unsafe().c_str(),
+  base::File zip_file(::CreateFile(zip_file_path.value().c_str(),
                                    kMinimizedWriteAccess, 0, nullptr,
                                    CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
   if (!zip_file.IsValid()) {
@@ -239,7 +239,7 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
     return;
   }
 
-  const std::string filename_in_zip = base::UTF16ToUTF8(sanitized_src_filename);
+  const std::string filename_in_zip = base::WideToUTF8(sanitized_src_filename);
   // Do archive.
   // Unretained pointer of |zip_archiver_| is safe because its deleter is run on
   // the same task runner. If |zip_archiver_| is destructed later, the deleter

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -55,8 +56,10 @@ class ConversionStorageSqlTest : public testing::Test {
 
   ConfigurableStorageDelegate* delegate() { return delegate_; }
 
- private:
+ protected:
   base::ScopedTempDir temp_directory_;
+
+ private:
   std::unique_ptr<ConversionStorage> storage_;
   ConfigurableStorageDelegate* delegate_ = nullptr;
   base::SimpleTestClock clock_;
@@ -257,6 +260,20 @@ TEST_F(ConversionStorageSqlTest, MaxConversionsPerOrigin) {
   size_t conversion_rows;
   sql::test::CountTableRows(&raw_db, "conversions", &conversion_rows);
   EXPECT_EQ(2u, conversion_rows);
+}
+
+TEST_F(ConversionStorageSqlTest, CantOpenDb_FailsSilentlyInRelease) {
+  base::CreateDirectoryAndGetError(db_path(), nullptr);
+
+  auto sql_storage = std::make_unique<ConversionStorageSql>(
+      temp_directory_.GetPath(),
+      std::make_unique<ConfigurableStorageDelegate>(), clock());
+  sql_storage->set_ignore_errors_for_testing(true);
+
+  // Initialize() is private on ConserionStorageSql, so convert to
+  // ConversionStorage.
+  std::unique_ptr<ConversionStorage> storage = std::move(sql_storage);
+  EXPECT_FALSE(storage->Initialize());
 }
 
 }  // namespace content

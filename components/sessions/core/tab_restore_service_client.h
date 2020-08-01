@@ -19,6 +19,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace tab_groups {
+class TabGroupId;
+}
+
 namespace sessions {
 
 class LiveTab;
@@ -53,6 +57,11 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // Returns the LiveTabContext instance that is associated with |desired_id|,
   // or null if there is no such instance.
   virtual LiveTabContext* FindLiveTabContextWithID(SessionID desired_id) = 0;
+
+  // Returns the LiveTabContext instance that contains the group with ID
+  // |group|, or null if there is no such instance.
+  virtual LiveTabContext* FindLiveTabContextWithGroup(
+      tab_groups::TabGroupId group) = 0;
 
   // Returns whether a given URL should be tracked for restoring.
   virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;

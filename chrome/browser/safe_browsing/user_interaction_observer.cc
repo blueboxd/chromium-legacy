@@ -97,6 +97,7 @@ void SafeBrowsingUserInteractionObserver::CreateForWebContents(
   if (FromWebContents(web_contents)) {
     return;
   }
+  DCHECK(!web_contents->IsPortal());
   auto observer = std::make_unique<SafeBrowsingUserInteractionObserver>(
       web_contents, resource, is_main_frame, ui_manager);
   web_contents->SetUserData(kWebContentsUserDataKey, std::move(observer));

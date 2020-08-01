@@ -27,8 +27,10 @@ class Address : public FormGroup {
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
-
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override;
   void GetMatchingTypes(const base::string16& text,
                         const std::string& locale,
                         ServerFieldTypeSet* matching_types) const override;
@@ -38,9 +40,11 @@ class Address : public FormGroup {
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
   base::string16 GetInfoImpl(const AutofillType& type,
                              const std::string& locale) const override;
-  bool SetInfoImpl(const AutofillType& type,
-                   const base::string16& value,
-                   const std::string& locale) override;
+  bool SetInfoWithVerificationStatusImpl(
+      const AutofillType& type,
+      const base::string16& value,
+      const std::string& locale,
+      structured_address::VerificationStatus status) override;
 
   // Trims any trailing newlines from |street_address_|.
   void TrimStreetAddress();

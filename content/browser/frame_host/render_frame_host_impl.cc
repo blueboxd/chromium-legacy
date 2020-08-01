@@ -632,6 +632,14 @@ const char* LifecycleStateToString(RenderFrameHostImpl::LifecycleState state) {
   }
 }
 
+// Returns the crash key string used for logging BeginNavigation calls'
+// initiators.
+base::debug::CrashKeyString* GetBeginNavigationInitiatorCrashKeyString() {
+  static auto* initiator_key_string = base::debug::AllocateCrashKeyString(
+      "begin_navigation_initiator", base::debug::CrashKeySize::Size256);
+  return initiator_key_string;
+}
+
 }  // namespace
 
 bool ShouldCreateNewHostForCrashedFrame() {
@@ -5014,6 +5022,14 @@ void RenderFrameHostImpl::BeginNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
 
+  // TODO(crbug.com/1111735): Temporary debugging aids; remove after
+  // investigating the crash described in this bug.
+  ScopedActiveURL scoped_active_url(common_params->url,
+                                    frame_tree()->root()->current_origin());
+  url::debug::ScopedOriginCrashKey begin_navigation_initiator_key(
+      GetBeginNavigationInitiatorCrashKeyString(),
+      base::OptionalOrNullptr(common_params->initiator_origin));
+
   DCHECK(navigation_client.is_valid());
 
   mojom::CommonNavigationParamsPtr validated_params = common_params.Clone();
@@ -5033,6 +5049,24 @@ void RenderFrameHostImpl::BeginNavigation(
     RenderFrameHostImpl* parent = GetParent();
     if (!parent->IsFeatureEnabled(
             blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)) {
+      // Temporary debugging aid for crbug.com/1111735, where it seems the
+      // renderer containing the iframe prompting the navigation sometimes does
+      // have a feature policy but |parent| does not have the feature policy:
+      static auto* parent_and_initiator_are_same_crash_key_string =
+          base::debug::AllocateCrashKeyString(
+              "parent_and_initiator_are_same",
+              base::debug::CrashKeySize::Size32);
+
+      // (This frame should have the same process ID as the source of the
+      // BeginNavigation.)
+      bool parent_and_initiator_are_same =
+          (parent->GetRoutingID() == begin_params->initiator_routing_id) &&
+          (parent->GetProcess()->GetID() == GetProcess()->GetID());
+
+      base::debug::ScopedCrashKeyString parent_and_initiator_are_same_key(
+          parent_and_initiator_are_same_crash_key_string,
+          parent_and_initiator_are_same ? "true" : "false");
+
       mojo::ReportBadMessage(
           "RFHI: Mandatory Trust Tokens Feature Policy feature is absent");
       return;

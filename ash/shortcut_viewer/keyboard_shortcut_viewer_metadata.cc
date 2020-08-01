@@ -651,6 +651,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {{ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN}}},
 
       {// |categories|
+       {ShortcutCategory::kAccessibility},
+       IDS_KSV_DESCRIPTION_CARET_BROWSING_TOGGLE,
+       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_7, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN}}},
+
+      {// |categories|
        {ShortcutCategory::kSystemAndDisplay},
        IDS_KSV_DESCRIPTION_TOGGLE_MESSAGE_CENTER_BUBBLE,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,

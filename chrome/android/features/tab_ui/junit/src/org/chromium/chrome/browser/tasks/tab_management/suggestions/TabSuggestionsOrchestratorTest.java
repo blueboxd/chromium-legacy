@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowProcess;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.InMemorySharedPreferences;
@@ -35,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -49,7 +51,7 @@ import java.util.List;
  */
 @SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument"})
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = ShadowProcess.class)
 public class TabSuggestionsOrchestratorTest {
     private static final int[] TAB_IDS = {0, 1, 2, 3, 4};
     private static final String GROUPING_PROVIDER = "groupingProvider";
@@ -76,12 +78,10 @@ public class TabSuggestionsOrchestratorTest {
     @Mock
     private ActivityLifecycleDispatcher mDispatcher;
 
-    private static Tab[] sTabs = {mockTab(TAB_IDS[0]), mockTab(TAB_IDS[1]), mockTab(TAB_IDS[2]),
-            mockTab(TAB_IDS[3]), mockTab(TAB_IDS[4])};
+    private static Tab[] sTabs = new Tab[TAB_IDS.length];
 
     private static Tab mockTab(int id) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(id).when(tab).getId();
+        TabImpl tab = TabUiUnitTestUtils.prepareTab(id);
         WebContents webContents = mock(WebContents.class);
         GURL gurl = mock(GURL.class);
         doReturn("").when(gurl).getSpec();
@@ -93,6 +93,10 @@ public class TabSuggestionsOrchestratorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        ShadowProcess.reset();
+        for (int i = 0; i < sTabs.length; i++) {
+            sTabs[i] = mockTab(TAB_IDS[i]);
+        }
         mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doNothing()

@@ -44,6 +44,11 @@ class TrustTokenRequestHandler {
     kFailure,
   };
 
+  enum class ServerOperationOutcome {
+    kExecuteOperationAsNormal,
+    kUnconditionalFailure,
+  };
+
   struct Options {
     // The number of issuance key pairs to provide via key commitment results.
     int num_keys = 1;
@@ -57,6 +62,14 @@ class TrustTokenRequestHandler {
     // The number of tokens to sign per issuance operation; this value is also
     // provided to the client as part of key commitment results.
     int batch_size = 10;
+
+    // If set to |kUnconditionalFailure|, returns a failure response for the
+    // corresponding operation even if the operation would have succeeded had
+    // the server been operating correctly.
+    ServerOperationOutcome issuance_outcome =
+        ServerOperationOutcome::kExecuteOperationAsNormal;
+    ServerOperationOutcome redemption_outcome =
+        ServerOperationOutcome::kExecuteOperationAsNormal;
   };
 
   // Updates the handler's options, resetting its internal state.

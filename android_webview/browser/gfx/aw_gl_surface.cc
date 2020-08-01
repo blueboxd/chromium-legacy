@@ -26,7 +26,7 @@ unsigned int AwGLSurface::GetBackingFramebufferObject() {
 }
 
 gfx::SwapResult AwGLSurface::SwapBuffers(PresentationCallback callback) {
-  DCHECK(pending_presentation_callback_.is_null());
+  DCHECK(!pending_presentation_callback_);
   pending_presentation_callback_ = std::move(callback);
   return gfx::SwapResult::SWAP_ACK;
 }
@@ -60,7 +60,7 @@ void AwGLSurface::SetSize(const gfx::Size& size) {
 }
 
 void AwGLSurface::MaybeDidPresent(gfx::PresentationFeedback feedback) {
-  if (pending_presentation_callback_.is_null())
+  if (!pending_presentation_callback_)
     return;
   std::move(pending_presentation_callback_).Run(std::move(feedback));
 }

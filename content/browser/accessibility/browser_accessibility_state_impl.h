@@ -60,10 +60,11 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   bool IsAccessibleBrowser() override;
   void AddUIThreadHistogramCallback(base::OnceClosure callback) override;
   void AddOtherThreadHistogramCallback(base::OnceClosure callback) override;
-
   void UpdateHistogramsForTesting() override;
+  void SetCaretBrowsingState(bool enabled) override;
 
-  // Returns whether caret browsing is enabled for this browser session.
+  // Returns whether caret browsing is enabled for the most recently
+  // used profile.
   bool IsCaretBrowsingEnabled() const;
 
   // AXModeObserver
@@ -113,6 +114,10 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   std::vector<base::OnceClosure> other_thread_histogram_callbacks_;
 
   bool disable_hot_tracking_;
+
+  // Keeps track of whether caret browsing is enabled for the most
+  // recently used profile.
+  bool caret_browsing_enabled_ = false;
 
 #if defined(OS_WIN)
   // Only used on Windows

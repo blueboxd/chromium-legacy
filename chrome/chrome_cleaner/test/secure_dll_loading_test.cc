@@ -55,7 +55,7 @@ class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
     base::CommandLine command_line(exe_path_);
     command_line.AppendSwitchNative(
         chrome_cleaner::kInitDoneNotifierSwitch,
-        base::NumberToString16(
+        base::NumberToWString(
             base::win::HandleToUint32(init_done_notifier->handle())));
     command_line.AppendSwitch(chrome_cleaner::kLoadEmptyDLLSwitch);
 

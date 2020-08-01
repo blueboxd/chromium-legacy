@@ -35,6 +35,7 @@ source_set("browser_prefs") {
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
     "//components/dom_distiller/core",
+    "//components/enterprise",
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/flags_ui",
     "//components/gcm_driver",

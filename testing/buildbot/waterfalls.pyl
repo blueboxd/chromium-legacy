@@ -2416,21 +2416,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'mac10.13_retina-blink-rel-dummy': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.13.6',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
       'mac10.14-blink-rel-dummy': {
         'mixins': [
           'mac_mini_7,1',

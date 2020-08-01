@@ -66,6 +66,9 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   virtual void AddOtherThreadHistogramCallback(base::OnceClosure callback) = 0;
 
   virtual void UpdateHistogramsForTesting() = 0;
+
+  // Update BrowserAccessibilityState with the current status of caret browsing.
+  virtual void SetCaretBrowsingState(bool enabled) = 0;
 };
 
 }  // namespace content

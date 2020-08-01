@@ -36,8 +36,7 @@ class NearbyShareCertificateStorage {
   virtual std::vector<std::string> GetPublicCertificateIds() const = 0;
 
   // Returns all public certificates currently in storage. No RPC call is made.
-  virtual void GetPublicCertificates(
-      PublicCertificateCallback callback) const = 0;
+  virtual void GetPublicCertificates(PublicCertificateCallback callback) = 0;
 
   // Returns all private certificates currently in storage. Will return
   // base::nullopt if deserialization from prefs fails -- not expected to happen

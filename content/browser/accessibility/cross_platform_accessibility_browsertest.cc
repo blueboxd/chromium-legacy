@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1062,6 +1063,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const char url_str[] =
       R"HTML(data:text/html,<!DOCTYPE html>
         <html>
+          <div style="margin-top: 100px;"></div>
           <input type="datetime-local" aria-label="datetime"
                  aria-controls="button1">
           <button id="button1">button</button>
@@ -1126,6 +1128,13 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
         manager->GetFromID(controls_ids[1]);
     ASSERT_NE(nullptr, popup_area);
     EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_area->GetRole());
+
+#if !BUILDFLAG(IS_CHROMECAST)
+    // Ensure that the bounding box of the popup area is at least 100
+    // pixels down the page.
+    gfx::Rect popup_bounds = popup_area->GetUnclippedRootFrameBoundsRect();
+    EXPECT_GT(popup_bounds.y(), 100);
+#endif
   }
 }
 

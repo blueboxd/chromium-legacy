@@ -140,25 +140,19 @@ class HotseatWidgetAnimationMetricsReporter {
 };
 
 // An animation metrics reporter for the shelf navigation widget.
-class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
-    : public ShelfLayoutManagerObserver {
+class ASH_EXPORT NavigationWidgetAnimationMetricsReporter {
  public:
-  explicit NavigationWidgetAnimationMetricsReporter(Shelf* shelf)
-      : shelf_(shelf) {
-    shelf_->shelf_layout_manager()->AddObserver(this);
-  }
+  NavigationWidgetAnimationMetricsReporter() = default;
 
-  ~NavigationWidgetAnimationMetricsReporter() override {
-    shelf_->shelf_layout_manager()->RemoveObserver(this);
-  }
+  ~NavigationWidgetAnimationMetricsReporter() = default;
 
   NavigationWidgetAnimationMetricsReporter(
       const NavigationWidgetAnimationMetricsReporter&) = delete;
   NavigationWidgetAnimationMetricsReporter& operator=(
       const NavigationWidgetAnimationMetricsReporter&) = delete;
 
-  void ReportSmoothness(int smoothness) {
-    switch (target_state_) {
+  void ReportSmoothness(HotseatState target_hotseat_state, int smoothness) {
+    switch (target_hotseat_state) {
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
         UMA_HISTOGRAM_PERCENTAGE(
@@ -184,24 +178,15 @@ class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
     }
   }
 
-  metrics_util::ReportCallback GetReportCallback() {
+  metrics_util::ReportCallback GetReportCallback(
+      HotseatState target_hotseat_state) {
+    DCHECK_NE(target_hotseat_state, HotseatState::kNone);
     return metrics_util::ForSmoothness(base::BindRepeating(
         &NavigationWidgetAnimationMetricsReporter::ReportSmoothness,
-        weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // ShelfLayoutManagerObserver:
-  void OnHotseatStateChanged(HotseatState old_state,
-                             HotseatState new_state) override {
-    target_state_ = new_state;
+        weak_ptr_factory_.GetWeakPtr(), target_hotseat_state));
   }
 
  private:
-  Shelf* const shelf_;
-
-  // The state to which the animation is transitioning.
-  HotseatState target_state_ = HotseatState::kShownHomeLauncher;
-
   base::WeakPtrFactory<NavigationWidgetAnimationMetricsReporter>
       weak_ptr_factory_{this};
 };
@@ -389,7 +374,7 @@ void Shelf::CreateNavigationWidget(aura::Window* container) {
       this, hotseat_widget()->GetShelfView());
   navigation_widget_->Initialize(container);
   navigation_widget_metrics_reporter_ =
-      std::make_unique<NavigationWidgetAnimationMetricsReporter>(this);
+      std::make_unique<NavigationWidgetAnimationMetricsReporter>();
 }
 
 void Shelf::CreateHotseatWidget(aura::Window* container) {
@@ -685,9 +670,10 @@ metrics_util::ReportCallback Shelf::GetTranslucentBackgroundReportCallback(
       target_state);
 }
 
-metrics_util::ReportCallback
-Shelf::GetNavigationWidgetAnimationReportCallback() {
-  return navigation_widget_metrics_reporter_->GetReportCallback();
+metrics_util::ReportCallback Shelf::GetNavigationWidgetAnimationReportCallback(
+    HotseatState target_hotseat_state) {
+  return navigation_widget_metrics_reporter_->GetReportCallback(
+      target_hotseat_state);
 }
 
 void Shelf::WillDeleteShelfLayoutManager() {

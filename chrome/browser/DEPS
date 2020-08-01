@@ -1,6 +1,7 @@
 include_rules = [
   "+apps",
   "+cc/paint",
+  "+cc/test",
   "+chrome/android/native_j_unittests_jni_headers",
   "+chrome/android/chrome_jni_headers",
   "+chrome/android/features/autofill_assistant/jni_headers",

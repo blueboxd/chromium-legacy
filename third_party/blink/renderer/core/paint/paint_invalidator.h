@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATOR_H_
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
@@ -103,6 +104,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
  private:
   friend class PaintInvalidator;
 
+  base::Optional<LayoutShiftTracker::ContainingBlockScope>
+      containing_block_scope_;
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
       nullptr;
 };
@@ -137,6 +140,9 @@ class PaintInvalidator {
   ALWAYS_INLINE void UpdateForPaintOffsetChange(const LayoutObject&,
                                                 FragmentData&,
                                                 PaintInvalidatorContext&);
+  ALWAYS_INLINE void UpdateForLayoutShiftTracking(const LayoutObject&,
+                                                  FragmentData&,
+                                                  PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> pending_delayed_paint_invalidations_;
 };

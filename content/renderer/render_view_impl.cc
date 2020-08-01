@@ -682,8 +682,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   if (prefs.spatial_navigation_enabled)
     WebRuntimeFeatures::EnableKeyboardFocusableScrollers(true);
 
-  settings->SetCaretBrowsingEnabled(prefs.caret_browsing_enabled);
-
   settings->SetSelectionIncludesAltImageText(true);
 
   settings->SetV8CacheOptions(
@@ -1650,9 +1648,12 @@ void RenderViewImpl::OnSetRendererPrefs(
     blink::SetFocusRingColor(renderer_prefs.focus_ring_color);
   }
 
-  if (GetWebView() &&
-      old_accept_languages != renderer_preferences_.accept_languages) {
-    GetWebView()->AcceptLanguagesChanged();
+  if (GetWebView()) {
+    if (old_accept_languages != renderer_preferences_.accept_languages)
+      GetWebView()->AcceptLanguagesChanged();
+
+    GetWebView()->GetSettings()->SetCaretBrowsingEnabled(
+        renderer_preferences_.caret_browsing_enabled);
   }
 }
 

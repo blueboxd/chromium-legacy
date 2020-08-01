@@ -66,6 +66,10 @@ class EmuTarget(target.Target):
       temporary_log_file = tempfile.NamedTemporaryFile('w')
       stdout = temporary_log_file
 
+    # TODO(crbug.com/1100402): Delete when no longer needed for debug info.
+    # Log system statistics at the start of the emulator run.
+    _LogSystemStatistics('system_start_statistics_log')
+
     self._emu_process = subprocess.Popen(emu_command,
                                          stdin=open(os.devnull),
                                          stdout=stdout,
@@ -104,6 +108,11 @@ class EmuTarget(target.Target):
       logging.error('%s quit unexpectedly with exit code %d' %
                     (self._GetEmulatorName(), returncode))
 
+    # TODO(crbug.com/1100402): Delete when no longer needed for debug info.
+    # Log system statistics at the end of the emulator run.
+    _LogSystemStatistics('system_end_statistics_log')
+
+
   def _IsEmuStillRunning(self):
     if not self._emu_process:
       return False
@@ -116,3 +125,12 @@ class EmuTarget(target.Target):
 
   def _GetSshConfigPath(self):
     return boot_data.GetSSHConfigPath(self._output_dir)
+
+
+# TODO(crbug.com/1100402): Delete when no longer needed for debug info.
+def _LogSystemStatistics(log_file_name):
+  # Log the cpu load and process information.
+  subprocess.call(['top', '-b', '-n', '1'],
+                  stdin=open(os.devnull),
+                  stdout=runner_logs.FileStreamFor(log_file_name),
+                  stderr=subprocess.STDOUT)

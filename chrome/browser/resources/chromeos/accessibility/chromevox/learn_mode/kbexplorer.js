@@ -56,9 +56,8 @@ KbExplorer = class {
             .backgroundWindow['BrailleBackground']['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
 
     ChromeVoxKbHandler.commandHandler = KbExplorer.onCommand;
-    $('instruction').focus();
 
-    KbExplorer.output(Msgs.getMsg('learn_mode_intro'));
+    $('instruction').textContent = Msgs.getMsg('learn_mode_intro');
     KbExplorer.shouldFlushSpeech_ = true;
   }
 

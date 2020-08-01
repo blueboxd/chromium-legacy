@@ -92,7 +92,7 @@ bool NullTerminatedUtf16BufferToString16(const std::vector<BYTE>& buffer,
   *current_byte += (string_size + 1) * sizeof(wchar_t);
   const wchar_t* string_ptr =
       reinterpret_cast<const wchar_t*>(buffer.data() + string_start);
-  base::WideToUTF16(string_ptr, string_size, parsed_string);
+  parsed_string->assign(string_ptr, string_size);
   return true;
 }
 
@@ -159,7 +159,7 @@ bool ReadUtf16StringStructure(const std::vector<BYTE>& buffer,
 
   const wchar_t* string_ptr =
       reinterpret_cast<const wchar_t*>(buffer.data() + *current_byte);
-  base::WideToUTF16(string_ptr, string_size, parsed_string);
+  parsed_string->assign(string_ptr, string_size);
   *current_byte += string_size * sizeof(wchar_t);
   return true;
 }

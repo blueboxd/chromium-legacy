@@ -3518,9 +3518,20 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   }
 
   if (IsWebArea()) {
-    if (layout_object->GetFrame()->View()) {
-      out_bounds_in_container.SetSize(
-          FloatSize(layout_object->GetFrame()->View()->Size()));
+    if (LocalFrameView* view = layout_object->GetFrame()->View()) {
+      out_bounds_in_container.SetSize(FloatSize(view->Size()));
+
+      // If it's a popup, account for the popup window's offset.
+      if (view->GetPage()->GetChromeClient().IsPopup()) {
+        IntRect frame_rect = view->FrameToScreen(view->FrameRect());
+        LocalFrameView* root_view =
+            AXObjectCache().GetDocument().GetFrame()->View();
+        IntRect root_frame_rect =
+            root_view->FrameToScreen(root_view->FrameRect());
+        out_bounds_in_container.SetLocation(
+            FloatPoint(frame_rect.X() - root_frame_rect.X(),
+                       frame_rect.Y() - root_frame_rect.Y()));
+      }
     }
     return;
   }

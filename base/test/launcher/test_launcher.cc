@@ -1493,10 +1493,6 @@ bool TestLauncher::Init(CommandLine* command_line) {
   results_tracker_.AddGlobalTag("OS_MAC");
 #endif
 
-#if defined(OS_MACOSX)
-  results_tracker_.AddGlobalTag("OS_MACOSX");
-#endif
-
 #if defined(OS_NACL)
   results_tracker_.AddGlobalTag("OS_NACL");
 #endif

@@ -94,7 +94,7 @@ SurfaceTextureGLOwner::GetAHardwareBuffer() {
   return nullptr;
 }
 
-void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
+bool SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
     gfx::Size rotated_visible_size,
     gfx::Size* coded_size,
     gfx::Rect* visible_rect) {
@@ -104,7 +104,7 @@ void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
   if (!surface_texture_) {
     *visible_rect = gfx::Rect();
     *coded_size = gfx::Size();
-    return;
+    return false;
   }
 
   float mtx[16];
@@ -139,6 +139,8 @@ void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
 
     base::debug::DumpWithoutCrashing();
   }
+
+  return true;
 }
 
 // static

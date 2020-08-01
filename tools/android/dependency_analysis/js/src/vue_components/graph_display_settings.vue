@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import {GraphEdgeColor} from '../page_model.js';
+import {GraphEdgeColor} from '../display_settings_data.js';
 
 // @vue/component
 const GraphDisplaySettings = {

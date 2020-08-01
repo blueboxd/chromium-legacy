@@ -165,12 +165,6 @@ public interface Tab extends TabLifecycle {
     Integer getLaunchTypeAtInitialTabCreation();
 
     /**
-     * @return the last time this tab was shown or the time of its initialization if it wasn't yet
-     *         shown.
-     */
-    long getTimestampMillis();
-
-    /**
      * @return {@code true} if the Tab is in incognito mode.
      */
     boolean isIncognito();

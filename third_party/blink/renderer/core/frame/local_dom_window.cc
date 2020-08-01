@@ -1746,11 +1746,7 @@ void LocalDOMWindow::SetOriginPolicyIds(const Vector<String>& ids) {
 }
 
 bool LocalDOMWindow::originIsolationRestricted() const {
-  return origin_isolation_restricted_;
-}
-
-void LocalDOMWindow::SetOriginIsolationRestricted(bool value) {
-  origin_isolation_restricted_ = value;
+  return GetAgent()->IsOriginIsolated();
 }
 
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,

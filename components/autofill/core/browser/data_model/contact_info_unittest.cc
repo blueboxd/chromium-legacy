@@ -23,6 +23,8 @@ using base::UTF8ToUTF16;
 
 namespace autofill {
 
+using structured_address::VerificationStatus;
+
 struct FullNameTestCase {
   std::string full_name_input;
   std::string given_name_output;
@@ -47,6 +49,48 @@ TEST_P(SetFullNameTest, SetFullName) {
             name.GetInfo(AutofillType(NAME_LAST), "en-US"));
   EXPECT_EQ(ASCIIToUTF16(test_case.full_name_input),
             name.GetInfo(AutofillType(NAME_FULL), "en-US"));
+}
+
+TEST(NameInfoTest, GetMatchingTypesForStructuredName) {
+  base::test::ScopedFeatureList structured_name_feature;
+  structured_name_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
+  NameInfo name;
+  name.SetRawInfoWithVerificationStatus(
+      NAME_FULL, base::ASCIIToUTF16("Mr. Pablo Diego Ruiz y Picasso"),
+      VerificationStatus::kObserved);
+  name.FinalizeAfterImport();
+
+  EXPECT_EQ(name.GetRawInfo(NAME_HONORIFIC_PREFIX), base::ASCIIToUTF16("Mr."));
+  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), base::ASCIIToUTF16("Pablo Diego"));
+  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), base::ASCIIToUTF16(""));
+  EXPECT_EQ(name.GetRawInfo(NAME_LAST), base::ASCIIToUTF16("Ruiz y Picasso"));
+  EXPECT_EQ(name.GetRawInfo(NAME_LAST_FIRST), base::ASCIIToUTF16("Ruiz"));
+  EXPECT_EQ(name.GetRawInfo(NAME_LAST_SECOND), base::ASCIIToUTF16("Picasso"));
+  EXPECT_EQ(name.GetRawInfo(NAME_LAST_CONJUNCTION), base::ASCIIToUTF16("y"));
+
+  EXPECT_EQ(name.GetVerificationStatus(NAME_HONORIFIC_PREFIX),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatus(NAME_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatus(NAME_MIDDLE),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatus(NAME_LAST), VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatus(NAME_LAST_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatus(NAME_LAST_SECOND),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatus(NAME_LAST_CONJUNCTION),
+            VerificationStatus::kParsed);
+
+  ServerFieldTypeSet matching_types;
+  name.GetMatchingTypes(base::ASCIIToUTF16("Ruiz"), "US", &matching_types);
+  EXPECT_EQ(matching_types, ServerFieldTypeSet({NAME_LAST_FIRST}));
+
+  name.GetMatchingTypes(base::ASCIIToUTF16("Mr."), "US", &matching_types);
+  EXPECT_EQ(matching_types,
+            ServerFieldTypeSet({NAME_LAST_FIRST, NAME_HONORIFIC_PREFIX}));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -165,7 +209,7 @@ TEST(NameInfoTest, GetFullName) {
             name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   // Setting raw info: no change. (Even though this leads to a slightly
-  // inconsitent state.)
+  // inconsistent state.)
   name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Second"));
   EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("Second"));
   EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));

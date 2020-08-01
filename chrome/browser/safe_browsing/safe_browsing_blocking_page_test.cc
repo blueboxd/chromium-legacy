@@ -90,6 +90,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
@@ -1812,18 +1813,26 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
           testing::tuple<bool /* IsolateAllSitesForTesting */,
                          bool /* Show warning on mouse click */>> {
  public:
-  SafeBrowsingBlockingPageDelayedWarningBrowserTest() {
+  SafeBrowsingBlockingPageDelayedWarningBrowserTest() = default;
+
+  void SetUp() override {
     if (warning_on_mouse_click_enabled()) {
       const std::map<std::string, std::string> parameters{{"mouse", "true"}};
       std::vector<base::test::ScopedFeatureList::FeatureAndParams>
           enabled_features{base::test::ScopedFeatureList::FeatureAndParams(
-              kDelayedWarnings, parameters)};
+                               kDelayedWarnings, parameters),
+                           base::test::ScopedFeatureList::FeatureAndParams(
+                               blink::features::kPortals, {}),
+                           base::test::ScopedFeatureList::FeatureAndParams(
+                               blink::features::kPortalsCrossOrigin, {})};
       scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          /*enabled_features=*/{kDelayedWarnings},
+          /*enabled_features=*/{kDelayedWarnings, blink::features::kPortals,
+                                blink::features::kPortalsCrossOrigin},
           /*disabled_features=*/{});
     }
+    InProcessBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1961,8 +1970,10 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
         ->SetURLThreatType(url, threat_type);
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
   TestThreatDetailsFactory details_factory_;
@@ -2401,5 +2412,55 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Values(SB_THREAT_TYPE_URL_MALWARE,
                                      SB_THREAT_TYPE_URL_PHISHING,
                                      SB_THREAT_TYPE_URL_UNWANTED)));
+
+// Tests with the <portal> tag.
+class SafeBrowsingBlockingPageDelayedWarningWithPortalBrowserTest
+    : public SafeBrowsingBlockingPageDelayedWarningBrowserTest {
+ public:
+  SafeBrowsingBlockingPageDelayedWarningWithPortalBrowserTest() = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{kDelayedWarnings, blink::features::kPortals,
+                              blink::features::kPortalsCrossOrigin},
+        /*disabled_features=*/{});
+    InProcessBrowserTest::SetUp();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SafeBrowsingBlockingPageDelayedWarningWithPortalBrowserTest,
+    testing::Combine(
+        testing::Values(false, true), /* IsolateAllSitesForTesting */
+        testing::Values(false, true) /* Show warning on mouse click */));
+
+// Tests that if a page embeds a portal whose contents are considered dangerous
+// by Safe Browsing, the embedder is also treated as dangerous, and the
+// interstitial isn't delayed. This is similar to
+// PortalBrowserTest.EmbedderOfDangerousPortalConsideredDangerous.
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageDelayedWarningWithPortalBrowserTest,
+    Portal_WarningNotDelayed) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL dangerous_url(
+      embedded_test_server()->GetURL("evil.com", "/title2.html"));
+  SetURLThreatType(dangerous_url, SB_THREAT_TYPE_URL_PHISHING);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver observer(contents);
+  ASSERT_TRUE(content::ExecJs(
+      contents,
+      content::JsReplace("let portal = document.createElement('portal');"
+                         "portal.src = $1;"
+                         "document.body.appendChild(portal);",
+                         dangerous_url)));
+  observer.WaitForNavigationFinished();
+  // The interstitial should be shown immediately.
+  EXPECT_TRUE(WaitForReady(browser()));
+  EXPECT_TRUE(IsShowingInterstitial(contents));
+}
 
 }  // namespace safe_browsing

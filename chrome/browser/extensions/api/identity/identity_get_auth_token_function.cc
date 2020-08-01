@@ -36,6 +36,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -88,6 +89,11 @@ void RecordFunctionResult(const IdentityGetAuthTokenError& error,
         "Signin.Extensions.GetAuthTokenResult.RemoteConsentApproved",
         error.state());
   }
+}
+
+bool IsReturnScopesInGetAuthTokenEnabled() {
+  return base::FeatureList::IsEnabled(
+      extensions_features::kReturnScopesInGetAuthToken);
 }
 
 }  // namespace
@@ -327,9 +333,21 @@ void IdentityGetAuthTokenFunction::CompleteAsyncRun(ResponseValue response) {
 }
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
-    const std::string& access_token) {
+    const std::string& access_token,
+    const std::set<std::string>& granted_scopes) {
   RecordFunctionResult(IdentityGetAuthTokenError(), remote_consent_approved_);
-  CompleteAsyncRun(OneArgument(std::make_unique<base::Value>(access_token)));
+
+  if (IsReturnScopesInGetAuthTokenEnabled()) {
+    std::unique_ptr<base::Value> granted_scopes_value =
+        std::make_unique<base::Value>(base::Value::Type::LIST);
+    for (const auto& scope : granted_scopes)
+      granted_scopes_value->Append(scope);
+
+    CompleteAsyncRun(TwoArguments(std::make_unique<base::Value>(access_token),
+                                  std::move(granted_scopes_value)));
+  } else {
+    CompleteAsyncRun(OneArgument(std::make_unique<base::Value>(access_token)));
+  }
 }
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithError(
@@ -500,7 +518,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
 
       case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
         CompleteMintTokenFlow();
-        CompleteFunctionWithResult(cache_entry.token());
+        CompleteFunctionWithResult(cache_entry.token(), token_key_.scopes);
         break;
 
       case IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
@@ -530,7 +548,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
     switch (cache_status) {
       case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
         CompleteMintTokenFlow();
-        CompleteFunctionWithResult(cache_entry.token());
+        CompleteFunctionWithResult(cache_entry.token(), token_key_.scopes);
         break;
       case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
       case IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
@@ -551,6 +569,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
 
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
     const std::string& access_token,
+    const std::set<std::string>& granted_scopes,
     int time_to_live) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnMintTokenSuccess", this);
 
@@ -561,7 +580,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
       ->SetCachedToken(token_key_, token);
 
   CompleteMintTokenFlow();
-  CompleteFunctionWithResult(access_token);
+  CompleteFunctionWithResult(access_token, granted_scopes);
 }
 
 void IdentityGetAuthTokenFunction::OnMintTokenFailure(
@@ -744,7 +763,7 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
   }
 
   CompleteMintTokenFlow();
-  CompleteFunctionWithResult(access_token);
+  CompleteFunctionWithResult(access_token, token_key_.scopes);
 }
 
 void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowFailed(

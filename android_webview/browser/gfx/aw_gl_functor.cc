@@ -49,7 +49,7 @@ bool AwGLFunctor::RequestInvokeGL(bool wait_for_completion) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return false;
   return Java_AwGLFunctor_requestInvokeGL(env, obj, wait_for_completion);
 }
@@ -58,7 +58,7 @@ void AwGLFunctor::DetachFunctorFromView() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
+  if (obj)
     Java_AwGLFunctor_detachFunctorFromView(env, obj);
 }
 

@@ -1798,12 +1798,27 @@ be describing additional metrics about the same event.
     <summary>
       The time spent in main thread compositing, between navigation and First
       Contentful Paint, in microseconds.
+
+      TODO(crbug.com/1100711): This is being replaced soon by CompositingInputs
+      + CompositingAssignments (== Compositing).
+    </summary>
+  </metric>
+  <metric name="CompositingAssignments">
+    <summary>
+      The time spent in main thread compositing assignments, between navigation
+      and First Contentful Paint, in microseconds.
     </summary>
   </metric>
   <metric name="CompositingCommit">
     <summary>
       The time spent committing main thread compositing results, between
       navigation and First Contentful Paint, in microseconds.
+    </summary>
+  </metric>
+  <metric name="CompositingInputs">
+    <summary>
+      The time spent in main thread compositing inputs, between navigation and
+      First Contentful Paint, in microseconds.
     </summary>
   </metric>
   <metric name="ForcedStyleAndLayout">
@@ -2001,6 +2016,9 @@ be describing additional metrics about the same event.
     <summary>
       The time taken by the compositing phase in microseconds during the sampled
       frame.
+
+      TODO(crbug.com/1100711): This is being replaced soon by CompositingInputs
+      + CompositingAssignments (== Compositing).
     </summary>
     <aggregation>
       <history>
@@ -2054,6 +2072,26 @@ be describing additional metrics about the same event.
     <summary>
       The highest proportion of a frame ever used by the compositing phase
       within the sample window. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="CompositingAssignments">
+    <summary>
+      The time taken by compositing assignments in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CompositingAssignmentsPercentage">
+    <summary>
+      The percentage of the main frame time used by the compositing assignments
+      phase. An int in the range [0,100].
     </summary>
   </metric>
   <metric name="CompositingCommit">
@@ -2122,10 +2160,31 @@ be describing additional metrics about the same event.
       int in the range [0,100].
     </summary>
   </metric>
+  <metric name="CompositingInputs">
+    <summary>
+      The time taken by the compositing inputs phase in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CompositingInputsPercentage">
+    <summary>
+      The percentage of the main frame time used by the compositing inputs
+      phase. An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="CompositingPercentage">
     <summary>
       The percentage of the main frame time used by the compositing phase. An
-      int in the range [0,100].
+      int in the range [0,100]. This is being replaced soon by
+      CompositingInputsPercentage and CompositingAssignmentsPercentage.
     </summary>
   </metric>
   <metric name="ForcedStyleAndLayout">

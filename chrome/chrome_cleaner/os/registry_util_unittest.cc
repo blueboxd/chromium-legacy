@@ -640,7 +640,7 @@ TEST(RegistryUtilTests, GetRegistryValueAsStringRegularString) {
   base::string16 output_value;
 
   GetRegistryValueAsString(input_value.c_str(),
-                           input_value.size() * sizeof(base::char16), REG_SZ,
+                           input_value.size() * sizeof(wchar_t), REG_SZ,
                            &output_value);
 
   EXPECT_EQ(kUnicodeValue, output_value);
@@ -651,7 +651,7 @@ TEST(RegistryUtilTests, GetRegistryValueAsStringDword) {
   base::string16 output_value;
 
   GetRegistryValueAsString(input_value.c_str(),
-                           input_value.size() * sizeof(base::char16), REG_DWORD,
+                           input_value.size() * sizeof(wchar_t), REG_DWORD,
                            &output_value);
 
   EXPECT_EQ(kDWORDStringValue, output_value);

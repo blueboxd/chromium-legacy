@@ -91,7 +91,7 @@ AwSettings::~AwSettings() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
-  if (scoped_obj.is_null())
+  if (!scoped_obj)
     return;
   Java_AwSettings_nativeAwSettingsGone(env, scoped_obj,
                                        reinterpret_cast<intptr_t>(this));
@@ -139,7 +139,7 @@ void AwSettings::UpdateEverything() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
-  if (scoped_obj.is_null())
+  if (!scoped_obj)
     return;
   // Grab the lock and call UpdateEverythingLocked.
   Java_AwSettings_updateEverything(env, scoped_obj);
@@ -166,7 +166,7 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
 
   ScopedJavaLocalRef<jstring> str =
       Java_AwSettings_getUserAgentLocked(env, obj);
-  bool ua_overidden = str.obj() != NULL;
+  bool ua_overidden = !!str;
 
   if (ua_overidden) {
     std::string override = base::android::ConvertJavaStringToUTF8(str);
@@ -313,7 +313,7 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
-  if (scoped_obj.is_null())
+  if (!scoped_obj)
     return;
   // Grab the lock and call PopulateWebPreferencesLocked.
   Java_AwSettings_populateWebPreferences(env, scoped_obj,

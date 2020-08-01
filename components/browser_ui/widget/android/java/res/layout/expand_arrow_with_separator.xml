@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:paddingStart="@dimen/radio_button_with_description_and_aux_button_spacing"
         android:paddingEnd="@dimen/radio_button_with_description_lateral_padding"
-        android:src="@drawable/ic_expand_more_right_black_24dp"
+        android:src="@drawable/ic_expand_more_horizontal_black_24dp"
         android:background="?android:attr/selectableItemBackground"
         app:tint="@color/default_icon_color_tint_list"/>
 </LinearLayout>

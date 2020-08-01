@@ -370,8 +370,8 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL start_url(embedded_test_server()->GetURL("insecure.test",
-                                                "/page_with_iframe.html"));
+  GURL start_url =
+      embedded_test_server()->GetURL("insecure.test", "/page_with_iframe.html");
   // Make sure that we are, in fact, using an insecure page.
   ASSERT_FALSE(network::IsUrlPotentiallyTrustworthy(start_url));
 
@@ -505,6 +505,167 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
+// Issuance should fail if we don't have keys for the issuer at hand.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IssuanceRequiresKeys) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService(
+      {"not-the-right-server.example"});
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(
+    fetch('/issue', {trustToken: {type: 'token-request'}})
+    .then(() => 'Success').catch(err => err.name); )";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ("InvalidStateError", EvalJs(shell(), command));
+}
+
+// When the server rejects issuance, the client-side issuance operation should
+// fail.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       CorrectlyReportsServerErrorDuringIssuance) {
+  TrustTokenRequestHandler::Options options;
+  options.issuance_outcome =
+      TrustTokenRequestHandler::ServerOperationOutcome::kUnconditionalFailure;
+  request_handler_.UpdateOptions(std::move(options));
+
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  EXPECT_EQ("OperationError", EvalJs(shell(), R"(fetch('/issue',
+        { trustToken: { type: 'token-request' } })
+        .then(()=>'Success').catch(err => err.name); )"));
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, CrossOriginIssuanceWorks) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"sub1.b.test"});
+
+  GURL start_url = server_.GetURL("sub2.b.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  // Using GetURL to generate the issuance location is important
+  // because it sets the port correctly.
+  EXPECT_EQ(
+      "Success",
+      EvalJs(shell(), JsReplace(R"(
+            fetch($1, { trustToken: { type: 'token-request' } })
+            .then(()=>'Success'); )",
+                                server_.GetURL("sub1.b.test", "/issue"))));
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, CrossSiteIssuanceWorks) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  GURL start_url = server_.GetURL("b.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  // Using GetURL to generate the issuance location is important
+  // because it sets the port correctly.
+  EXPECT_EQ("Success",
+            EvalJs(shell(), JsReplace(R"(
+            fetch($1, { trustToken: { type: 'token-request' } })
+            .then(()=>'Success'); )",
+                                      server_.GetURL("a.test", "/issue"))));
+}
+
+// Issuance should succeed only if the number of issuers associated with the
+// requesting context's top frame origin is less than the limit on the number of
+// such issuers.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       IssuanceRespectsAssociatedIssuersCap) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  static_assert(
+      network::kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers < 10,
+      "Consider rewriting this test for performance's sake if the "
+      "number-of-issuers limit gets too large.");
+
+  // Each hasTrustToken call adds the provided issuer to the calling context's
+  // list of associated issuers.
+  for (int i = 0;
+       i < network::kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers; ++i) {
+    ASSERT_EQ("Success", EvalJs(shell(), "document.hasTrustToken('https://a" +
+                                             base::NumberToString(i) +
+                                             ".test').then(()=>'Success');"));
+  }
+
+  EXPECT_EQ("OperationError", EvalJs(shell(), R"(
+            fetch('/issue', { trustToken: { type: 'token-request' } })
+            .then(() => 'Success').catch(error => error.name); )"));
+}
+
+// When an issuance request is made in cors mode, a cross-origin redirect from
+// issuer A to issuer B should result in a new issuance request to issuer B,
+// obtaining issuer B tokens on success.
+//
+// Note: For more on the interaction between Trust Tokens and redirects, see the
+// "Handling redirects" section in the design doc
+// https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.5erfr3uo012t
+IN_PROC_BROWSER_TEST_F(
+    TrustTokenBrowsertest,
+    CorsModeCrossOriginRedirectIssuanceUsesNewOriginAsIssuer) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test", "b.test"});
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(fetch($1, {trustToken: {type: 'token-request'}})
+                             .then(() => "Success")
+                             .catch(error => error.name);)";
+
+  EXPECT_EQ(
+      "Success",
+      EvalJs(shell(),
+             JsReplace(command,
+                       server_.GetURL("a.test", "/cross-site/b.test/issue"))));
+
+  EXPECT_EQ(true, EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
+                                            IssuanceOriginFromHost("b.test"))));
+  EXPECT_EQ(false,
+            EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
+                                      IssuanceOriginFromHost("a.test"))));
+}
+
+// When an issuance request is made in no-cors mode, a cross-origin redirect
+// from issuer A to issuer B should result in recycling the original issuance
+// request, obtaining issuer A tokens on success.
+//
+// Note: For more on the interaction between Trust Tokens and redirects, see the
+// "Handling redirects" section in the design doc
+// https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.5erfr3uo012t
+IN_PROC_BROWSER_TEST_F(
+    TrustTokenBrowsertest,
+    NoCorsModeCrossOriginRedirectIssuanceUsesOriginalOriginAsIssuer) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(fetch($1, {mode: 'no-cors',
+                                      trustToken: {type: 'token-request'}})
+                             .then(() => "Success")
+                             .catch(error => error.name);)";
+
+  EXPECT_EQ(
+      "Success",
+      EvalJs(shell(),
+             JsReplace(command,
+                       server_.GetURL("a.test", "/cross-site/b.test/issue"))));
+
+  EXPECT_EQ(true, EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
+                                            IssuanceOriginFromHost("a.test"))));
+  EXPECT_EQ(false,
+            EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
+                                      IssuanceOriginFromHost("b.test"))));
+}
+
 // Issuance from a context with a secure-but-non-HTTP/S top frame origin
 // should fail.
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
@@ -614,10 +775,9 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IssuanceWithAbsentKeyFails) {
   std::string command = R"(fetch($1, {trustToken: {type: 'token-request'}})
                              .then(() => "Success")
                              .catch(error => error.name);)";
-  EXPECT_THAT(
-      EvalJs(shell(), JsReplace(command, server_.GetURL("a.test", "/issue")))
-          .ExtractString(),
-      HasSubstr("OperationError"));
+  EXPECT_EQ(
+      "OperationError",
+      EvalJs(shell(), JsReplace(command, server_.GetURL("a.test", "/issue"))));
 }
 
 }  // namespace content

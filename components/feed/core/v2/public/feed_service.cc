@@ -177,8 +177,7 @@ FeedService::FeedService(
       base::DefaultTickClock::GetInstance(), profile_prefs);
   feed_network_ = std::make_unique<FeedNetworkImpl>(
       network_delegate_.get(), identity_manager, api_key, url_loader_factory,
-      base::DefaultTickClock::GetInstance(), profile_prefs,
-      chrome_info.channel);
+      base::DefaultTickClock::GetInstance(), profile_prefs);
   store_ = std::make_unique<FeedStore>(std::move(database));
 
   stream_ = std::make_unique<FeedStream>(

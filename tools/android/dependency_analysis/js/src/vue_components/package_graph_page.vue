@@ -9,41 +9,45 @@
           :node-ids="pageModel.getNodeIds()"
           @[CUSTOM_EVENTS.FILTER_SUBMITTED]="addNodeToFilter"/>
       <GraphFilterItems
-          :node-filter-data="pageModel.nodeFilterData"
+          :node-filter-data="displaySettingsData.nodeFilterData"
           @[CUSTOM_EVENTS.FILTER_ELEMENT_CLICKED]="removeNodeFromFilter"/>
       <GraphInboundInput
-          :inbound-depth-data="pageModel.inboundDepthData"/>
+          :inbound-depth-data="displaySettingsData"/>
       <GraphOutboundInput
-          :outbound-depth-data="pageModel.outboundDepthData"/>
+          :outbound-depth-data="displaySettingsData"/>
     </div>
     <div id="graph-and-node-details-container">
       <GraphVisualization
-          :graph-update-triggers="graphUpdateTriggers"
+          :graph-update-triggers="[
+            displaySettingsData,
+            displaySettingsData.nodeFilterData.nodeList,
+          ]"
           :page-model="pageModel"
+          :display-settings-data="displaySettingsData"
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"/>
       <div id="node-details-container">
         <GraphDisplaySettings
-            :display-settings-data="pageModel.displaySettingsData"/>
+            :display-settings-data="displaySettingsData"/>
         <GraphSelectedNodeDetails
-            :selected-node-details-data="pageModel.selectedNodeDetailsData"
+            :selected-node-details-data="
+              pageModel.selectedNodeDetailsData"
             @[CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED]="addNodeToFilter"
             @[CUSTOM_EVENTS.REMOVE_FROM_FILTER_CLICKED]="removeNodeFromFilter"/>
         <PackageDetailsPanel
-            :selected-package="pageModel.selectedNodeDetailsData.selectedNode"/>
+            :selected-package="
+              pageModel.selectedNodeDetailsData.selectedNode"/>
       </div>
     </div>
-    <PageUrlGenerator
-        :page-path-name="pagePathName"
-        :node-filter-data="pageModel.nodeFilterData"/>
   </div>
 </template>
 
 <script>
 import {CUSTOM_EVENTS} from '../vue_custom_events.js';
-import {PagePathName, generateFilterFromUrl} from '../url_processor.js';
+import {PagePathName, UrlProcessor} from '../url_processor.js';
 
 import {GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
+import {PackageDisplaySettingsData} from '../display_settings_data.js';
 import {parsePackageGraphModelFromJson} from '../process_graph_json.js';
 
 import GraphDisplaySettings from './graph_display_settings.vue';
@@ -54,7 +58,6 @@ import GraphOutboundInput from './graph_outbound_input.vue';
 import GraphSelectedNodeDetails from './graph_selected_node_details.vue';
 import GraphVisualization from './graph_visualization.vue';
 import PackageDetailsPanel from './package_details_panel.vue';
-import PageUrlGenerator from './page_url_generator.vue';
 
 // @vue/component
 const PackageGraphPage = {
@@ -67,7 +70,6 @@ const PackageGraphPage = {
     GraphSelectedNodeDetails,
     GraphVisualization,
     PackageDetailsPanel,
-    PageUrlGenerator,
   },
   props: {
     graphJson: Object,
@@ -76,7 +78,9 @@ const PackageGraphPage = {
   /**
    * Various references to objects used across the entire package page.
    * @typedef {Object} PackagePageData
-   * @property {PageModel} pageModel The data store for the page.
+   * @property {!PageModel} pageModel The data store for the page.
+   * @property {!PackageDisplaySettingsData} displaySettingsData Additional data
+   *   store for the graph's display settings.
    * @property {PagePathName} pagePathName The pathname for the page.
    */
 
@@ -86,32 +90,34 @@ const PackageGraphPage = {
   data: function() {
     const graphModel = parsePackageGraphModelFromJson(this.graphJson);
     const pageModel = new PageModel(graphModel);
+    const displaySettingsData = new PackageDisplaySettingsData();
 
     return {
       pageModel,
+      displaySettingsData,
       pagePathName: PagePathName.PACKAGE,
     };
   },
   computed: {
     CUSTOM_EVENTS: () => CUSTOM_EVENTS,
-    graphUpdateTriggers: function() {
-      return [
-        this.pageModel.displaySettingsData,
-        this.pageModel.nodeFilterData.nodeList,
-        this.pageModel.inboundDepthData.inboundDepth,
-        this.pageModel.outboundDepthData.outboundDepth,
-      ];
+  },
+  watch: {
+    displaySettingsData: {
+      handler: function() {
+        this.updateDocumentUrl();
+      },
+      deep: true,
     },
   },
   /**
    * Parses out data from the current URL to initialize the visualization with.
    */
   mounted: function() {
-    const includedNodesInUrl = generateFilterFromUrl(document.URL);
+    const pageUrl = new URL(document.URL);
+    const pageUrlProcessor = new UrlProcessor(pageUrl.searchParams);
+    this.displaySettingsData.readUrlProcessor(pageUrlProcessor);
 
-    if (includedNodesInUrl.length !== 0) {
-      this.addNodesToFilter(includedNodesInUrl);
-    } else {
+    if (this.displaySettingsData.nodeFilterData.nodeList.length === 0) {
       // TODO(yjlong): This is test data. Remove this when no longer needed.
       this.addNodesToFilter([
         'org.chromium.base',
@@ -121,44 +127,46 @@ const PackageGraphPage = {
         'org.chromium.ui.base',
       ]);
     }
-
-    this.setOutboundDepth(1);
-    this.graphDataUpdateTicker++;
   },
   methods: {
+    updateDocumentUrl() {
+      const urlProcessor = UrlProcessor.createForOutput();
+      this.displaySettingsData.updateUrlProcessor(urlProcessor);
+
+      const pageUrl = urlProcessor.getUrl(document.URL, PagePathName.PACKAGE);
+      history.replaceState(null, '', pageUrl);
+    },
     /**
      * @param {string} nodeName The node to add.
      */
     addNodeToFilter: function(nodeName) {
-      this.pageModel.nodeFilterData.addNode(nodeName);
+      this.displaySettingsData.nodeFilterData.addNode(nodeName);
     },
     /**
-     * Adds all supplied nodes to the node filter, then increments
-     * `graphDataUpdateTicker` once at the end, even if `nodeNames` is empty.
      * @param {!Array<string>} nodeNames The nodes to add.
      */
     addNodesToFilter: function(nodeNames) {
       for (const nodeName of nodeNames) {
-        this.pageModel.nodeFilterData.addNode(nodeName);
+        this.displaySettingsData.nodeFilterData.addNode(nodeName);
       }
     },
     /**
      * @param {string} nodeName The node to remove.
      */
     removeNodeFromFilter: function(nodeName) {
-      this.pageModel.nodeFilterData.removeNode(nodeName);
+      this.displaySettingsData.nodeFilterData.removeNode(nodeName);
     },
     /**
      * @param {number} depth The new inbound depth.
      */
     setInboundDepth: function(depth) {
-      this.pageModel.inboundDepthData.inboundDepth = depth;
+      this.displaySettingsData.inboundDepth = depth;
     },
     /**
      * @param {number} depth The new outbound depth.
      */
     setOutboundDepth: function(depth) {
-      this.pageModel.outboundDepthData.outboundDepth = depth;
+      this.displaySettingsData.outboundDepth = depth;
     },
     /**
      * @param {?GraphNode} node The selected node. May be `null`, which will

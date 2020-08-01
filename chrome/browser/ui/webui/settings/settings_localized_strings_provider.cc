@@ -204,6 +204,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE},
     {"captionsEnableLiveCaptionSubtitle",
      IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE},
+    {"caretBrowsingTitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_TITLE},
+    {"caretBrowsingSubtitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_SUBTITLE},
 #if defined(OS_CHROMEOS)
     {"manageAccessibilityFeatures",
      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},

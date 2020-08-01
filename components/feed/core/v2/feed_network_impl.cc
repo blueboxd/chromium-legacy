@@ -43,6 +43,8 @@ namespace feed {
 namespace {
 constexpr char kApplicationXProtobuf[] = "application/x-protobuf";
 constexpr base::TimeDelta kNetworkTimeout = base::TimeDelta::FromSeconds(30);
+constexpr char kUploadActionUrl[] =
+    "https://discover-pa.googleapis.com/v1/actions:upload";
 
 signin::ScopeSet GetAuthScopes() {
   return {"https://www.googleapis.com/auth/googlenow"};
@@ -66,21 +68,6 @@ GURL GetFeedQueryURL(feedwire::FeedQuery::RequestReason reason) {
           "FeedQuery");
     default:
       return GURL();
-  }
-}
-
-GURL GetUploadActionURL(version_info::Channel channel) {
-  switch (channel) {
-    case version_info::Channel::BETA:
-      return GURL(
-          "https://staging-discover-pa.sandbox.googleapis.com/v1/"
-          "actions:upload");
-    case version_info::Channel::STABLE:
-      return GURL("https://discover-pa.googleapis.com/v1/actions:upload");
-    default:
-      return GURL(
-          "https://autopush-discover-pa.sandbox.googleapis.com/v1/"
-          "actions:upload");
   }
 }
 
@@ -418,12 +405,10 @@ FeedNetworkImpl::FeedNetworkImpl(
     const std::string& api_key,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const base::TickClock* tick_clock,
-    PrefService* pref_service,
-    version_info::Channel chrome_channel)
+    PrefService* pref_service)
     : delegate_(delegate),
       identity_manager_(identity_manager),
       api_key_(api_key),
-      chrome_channel_(chrome_channel),
       loader_factory_(loader_factory),
       tick_clock_(tick_clock),
       pref_service_(pref_service) {}
@@ -459,8 +444,7 @@ void FeedNetworkImpl::SendActionRequest(
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
 
-  GURL url = GetUploadActionURL(chrome_channel_);
-  Send(url, "POST", std::move(binary_proto),
+  Send(GURL(kUploadActionUrl), "POST", std::move(binary_proto),
        base::BindOnce(
            &ParseAndForwardResponse<ActionRequestResult,
                                     NetworkRequestType::kUploadActions>,

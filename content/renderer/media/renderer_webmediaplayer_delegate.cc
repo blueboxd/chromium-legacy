@@ -222,6 +222,11 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureAvailabilityChange(
       routing_id(), delegate_id, available));
 }
 
+void RendererWebMediaPlayerDelegate::DidBufferUnderflow(int player_id) {
+  Send(new MediaPlayerDelegateHostMsg_OnBufferUnderflow(routing_id(),
+                                                        player_id));
+}
+
 void RendererWebMediaPlayerDelegate::WasHidden() {
   RecordAction(base::UserMetricsAction("Media.Hidden"));
 

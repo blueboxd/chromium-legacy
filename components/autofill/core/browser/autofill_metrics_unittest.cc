@@ -10403,6 +10403,193 @@ TEST_F(AutofillMetricsTest,
   }
 }
 
+// Verify that we don't log Autofill.WebOTP.OneTimeCode.FromAutocomplete if the
+// frame has no form.
+TEST_F(AutofillMetricsTest, FrameHasNoForm) {
+  autofill_manager_.reset();
+  EXPECT_FALSE(base::StatisticsRecorder::FindHistogram(
+      "Autofill.WebOTP.OneTimeCode.FromAutocomplete"));
+}
+
+// Verify that we correctly log metrics if a frame has
+// autocomplete="one-time-code".
+TEST_F(AutofillMetricsTest, FrameHasAutocompleteOneTimeCode) {
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+
+  std::vector<FormData> forms_with_one_time_code(1, form);
+
+  test::CreateTestFormField("", "", "", "password", &field);
+  field.autocomplete_attribute = "one-time-code";
+  forms_with_one_time_code.back().fields.push_back(field);
+  test::CreateTestFormField("", "", "", "password", &field);
+  forms_with_one_time_code.back().fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms_with_one_time_code, TimeTicks());
+  autofill_manager_.reset();
+  // Verifies that autocomplete="one-time-code" in a form is correctly recorded.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.OneTimeCode.FromAutocomplete",
+      /* has_one_time_code */ 1,
+      /* sample count */ 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.WebOTP.OneTimeCode.FromAutocomplete", 1);
+}
+
+// Verify that we correctly log metrics if a frame does not have
+// autocomplete="one-time-code".
+TEST_F(AutofillMetricsTest, FrameDoesNotHaveAutocompleteOneTimeCode) {
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<FormData> forms_without_one_time_code(1, form);
+
+  test::CreateTestFormField("", "", "", "password", &field);
+  forms_without_one_time_code.back().fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms_without_one_time_code, TimeTicks());
+  autofill_manager_.reset();
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.OneTimeCode.FromAutocomplete",
+      /* has_one_time_code */ 0,
+      /* sample count */ 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.WebOTP.OneTimeCode.FromAutocomplete", 1);
+}
+
+// Verify that we correctly log metrics when a phone number field does not have
+// autocomplete attribute but there are at least 3 fields in the form.
+TEST_F(AutofillMetricsTest, FrameHasPhoneNumberFieldWithoutAutocomplete) {
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+
+  std::vector<FormData> forms_with_phone_number(1, form);
+
+  // At least 3 fields are necessary for FormStructure to compute proper field
+  // types if autocomplete attribute value is not available.
+  test::CreateTestFormField("Phone", "phone", "", "tel", &field);
+  forms_with_phone_number.back().fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  forms_with_phone_number.back().fields.push_back(field);
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  forms_with_phone_number.back().fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms_with_phone_number, TimeTicks());
+  autofill_manager_.reset();
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult",
+      /* has_phone_number_field */ 1,
+      /* sample count */ 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult", 1);
+}
+
+// Verify that we correctly log metrics when a phone number field does not have
+// autocomplete attribute and there are less than 3 fields in the form.
+TEST_F(AutofillMetricsTest, FrameHasSinglePhoneNumberFieldWithoutAutocomplete) {
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<FormData> forms_with_single_phone_number_field(1, form);
+
+  // At least 3 fields are necessary for FormStructure to compute proper field
+  // types if autocomplete attribute value is not available.
+  test::CreateTestFormField("Phone", "phone", "", "tel", &field);
+  forms_with_single_phone_number_field.back().fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms_with_single_phone_number_field,
+                                 TimeTicks());
+  autofill_manager_.reset();
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult",
+      /* has_phone_number_field */ 0,
+      /* sample count */ 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult", 1);
+}
+
+// Verify that we correctly log metrics when a phone number field has
+// autocomplete attribute.
+TEST_F(AutofillMetricsTest, FrameHasPhoneNumberFieldWithAutocomplete) {
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+
+  std::vector<FormData> forms_with_phone_number(1, form);
+
+  test::CreateTestFormField("Phone", "phone", "", "tel", &field);
+  field.autocomplete_attribute = "phone";
+  forms_with_phone_number.back().fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms_with_phone_number, TimeTicks());
+  autofill_manager_.reset();
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult",
+      /* has_phone_number_field */ 1,
+      /* sample count */ 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult", 1);
+}
+
+// Verify that we correctly log metrics when a form does not have phone number
+// field.
+TEST_F(AutofillMetricsTest, FrameDoesNotHavePhoneNumberField) {
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<FormData> forms_without_phone_number(1, form);
+
+  test::CreateTestFormField("", "", "", "password", &field);
+  forms_without_phone_number.back().fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms_without_phone_number, TimeTicks());
+  autofill_manager_.reset();
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult",
+      /* has_phone_number_field */ 0,
+      /* sample count */ 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.WebOTP.PhoneNumberCollection.ParseResult", 1);
+}
+
 TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_WithIndex) {
   base::HistogramTester histogram_tester;
   const int test_index = 3;

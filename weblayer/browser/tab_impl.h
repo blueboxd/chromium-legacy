@@ -193,9 +193,6 @@ class TabImpl : public Tab,
       const base::android::JavaParamRef<jstring>& js_object_name);
   jboolean CanTranslate(JNIEnv* env);
   void ShowTranslateUi(JNIEnv* env);
-  void SetTopControlsMinHeight(JNIEnv* env, int min_height);
-  void SetPinTopControlsToContentTop(JNIEnv* env,
-                                     jboolean pin_top_controls_to_content_top);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
@@ -369,8 +366,6 @@ class TabImpl : public Tab,
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
   std::unique_ptr<BrowserControlsNavigationStateHandler>
       browser_controls_navigation_state_handler_;
-  int top_controls_min_height_ = 0;
-  bool pin_top_controls_to_content_top_ = false;
 
   // Last value supplied to UpdateBrowserControlsConstraint(). This *constraint*
   // can be SHOWN, if for example a modal dialog is forcing the controls to be

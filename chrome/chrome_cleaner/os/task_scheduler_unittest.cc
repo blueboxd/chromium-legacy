@@ -103,7 +103,7 @@ TEST_F(TaskSchedulerTests, RunAProgramNow) {
   // and signaled in the test process to confirm it was scheduled and ran.
   const base::string16 event_name =
       base::StrCat({kTestProcessExecutableName, L"-",
-                    base::NumberToString16(::GetCurrentProcessId())});
+                    base::NumberToWString(::GetCurrentProcessId())});
   base::WaitableEvent event(base::win::ScopedHandle(
       ::CreateEvent(nullptr, FALSE, FALSE, event_name.c_str())));
   ASSERT_NE(event.handle(), nullptr);

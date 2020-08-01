@@ -51,4 +51,9 @@ const base::Feature kContentScriptsOnDataUrls{
 const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the granted OAuth2 scopes to be returned in the GetAuthToken callback
+// function.
+const base::Feature kReturnScopesInGetAuthToken{
+    "ReturnScopesInGetAuthToken", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace extensions_features

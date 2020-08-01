@@ -412,13 +412,13 @@ struct OpacityGroup {
 void ClipQuad(GraphicsContext& context,
               const FloatPoint quad[],
               bool antialiased) {
-  SkPath path;
+  SkPathBuilder path;
   path.moveTo(FloatPointToSkPoint(quad[0]));
   path.lineTo(FloatPointToSkPoint(quad[1]));
   path.lineTo(FloatPointToSkPoint(quad[2]));
   path.lineTo(FloatPointToSkPoint(quad[3]));
 
-  context.ClipPath(path, antialiased ? kAntiAliased : kNotAntiAliased);
+  context.ClipPath(path.detach(), antialiased ? kAntiAliased : kNotAntiAliased);
 }
 
 }  // anonymous namespace

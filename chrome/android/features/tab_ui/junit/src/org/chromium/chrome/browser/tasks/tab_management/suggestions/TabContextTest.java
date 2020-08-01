@@ -53,7 +53,7 @@ public class TabContextTest {
     private static final int NEW_TAB_2_ID = 4;
     private static final int LAST_COMMITTED_INDEX = 1;
     private static final String TAB_CONTEXT_TAB_0_JSON = "[{\"id\":0,\"url\":"
-            + "\"mock_url_tab_0\",\"title\":\"mock_title_tab_0\",\"timestamp\":0,"
+            + "\"mock_url_tab_0\",\"title\":\"mock_title_tab_0\",\"timestamp\":100,"
             + "\"referrer\":\"mock_referrer_url_tab_0\"}]";
 
     @Rule
@@ -92,7 +92,7 @@ public class TabContextTest {
     }
 
     private static TabImpl mockTab(int id, int rootId, String title, String url, String originalUrl,
-            String referrerUrl, long getTimestampMillis) {
+            String referrerUrl, long timestampMillis) {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         UserDataHost userDataHost = new UserDataHost();
@@ -116,6 +116,7 @@ public class TabContextTest {
                 .when(navigationController)
                 .getEntryAtIndex(eq(LAST_COMMITTED_INDEX));
         doReturn(referrerUrl).when(navigationEntry).getReferrerUrl();
+        doReturn(timestampMillis).when(criticalPersistedTabData).getTimestampMillis();
         return tab;
     }
 
@@ -207,7 +208,8 @@ public class TabContextTest {
         Assert.assertNotNull(tabInfo);
         Assert.assertEquals(mTab0.getId(), tabInfo.id);
         Assert.assertEquals(mTab0.getUrlString(), tabInfo.url);
-        Assert.assertEquals(mTab0.getTimestampMillis(), tabInfo.timestampMillis);
+        Assert.assertEquals(
+                CriticalPersistedTabData.from(mTab0).getTimestampMillis(), tabInfo.timestampMillis);
         Assert.assertEquals(mTab0.getTitle(), tabInfo.title);
         NavigationEntry lastCommittedEntry =
                 mTab0.getWebContents().getNavigationController().getEntryAtIndex(

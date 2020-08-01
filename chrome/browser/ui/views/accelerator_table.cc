@@ -24,11 +24,14 @@ namespace {
 // Do not use Ctrl-Alt as a shortcut modifier, as it is used by i18n keyboards:
 // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx
 const AcceleratorMapping kAcceleratorMap[] = {
-    // To add an accelerator to macOS that uses modifier keys, either:
-    //   1) Update MainMenu.xib to include a new menu item with the appropriate
-    //      modifier.
-    //   2) Update GetShortcutsNotPresentInMainMenu() in
-    //      global_keyboard_shortcuts_mac.mm.
+// To add an accelerator to macOS that uses modifier keys, either:
+//   1) Update MainMenu.xib to include a new menu item with the appropriate
+//      modifier.
+//   2) Update GetShortcutsNotPresentInMainMenu() in
+//      global_keyboard_shortcuts_mac.mm.
+#if !defined(OS_CHROMEOS)
+    {ui::VKEY_F7, ui::EF_NONE, IDC_CARET_BROWSING_TOGGLE},
+#endif
     {ui::VKEY_F12, ui::EF_NONE, IDC_DEV_TOOLS_TOGGLE},
     {ui::VKEY_ESCAPE, ui::EF_NONE, IDC_CLOSE_FIND_OR_STOP},
 
@@ -146,6 +149,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
     {ui::VKEY_BROWSER_STOP, ui::EF_NONE, IDC_STOP},
     // On Chrome OS, Search + Esc is used to call out task manager.
     {ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, IDC_TASK_MANAGER},
+    {ui::VKEY_7, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN,
+     IDC_CARET_BROWSING_TOGGLE},
 #else  // !OS_CHROMEOS
     {ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER},
     {ui::VKEY_LMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR},

@@ -2554,7 +2554,19 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                              LocalFrameUkmAggregator::kCompositing);
-    layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
+    DCHECK_GE(target_state, DocumentLifecycle::kCompositingInputsClean);
+    {
+      SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                               LocalFrameUkmAggregator::kCompositingInputs);
+      layout_view->Compositor()->UpdateInputsIfNeededRecursive(target_state);
+    }
+    {
+      SCOPED_UMA_AND_UKM_TIMER(
+          EnsureUkmAggregator(),
+          LocalFrameUkmAggregator::kCompositingAssignments);
+      layout_view->Compositor()->UpdateAssignmentsIfNeededRecursive(
+          target_state);
+    }
   }
 
   return target_state > DocumentLifecycle::kCompositingClean;

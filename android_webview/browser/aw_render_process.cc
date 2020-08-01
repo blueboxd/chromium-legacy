@@ -42,7 +42,7 @@ AwRenderProcess::AwRenderProcess(RenderProcessHost* render_process_host)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   java_obj_.Reset(Java_AwRenderProcess_create(AttachCurrentThread()));
-  CHECK(!java_obj_.is_null());
+  CHECK(java_obj_);
   if (render_process_host_->IsReady()) {
     Ready();
   }

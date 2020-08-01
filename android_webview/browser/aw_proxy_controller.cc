@@ -32,7 +32,7 @@ void ProxyOverrideChanged(const JavaRef<jobject>& obj,
                           const JavaRef<jobject>& listener,
                           const JavaRef<jobject>& executor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (listener.is_null())
+  if (!listener)
     return;
   JNIEnv* env = AttachCurrentThread();
   Java_AwProxyController_proxyOverrideChanged(env, obj, listener, executor);

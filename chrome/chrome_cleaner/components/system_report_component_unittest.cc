@@ -79,14 +79,12 @@ struct ReportTestData {
 const ReportTestData kExtensionPolicyEmpty{
     HKEY_LOCAL_MACHINE, kChromePoliciesAllowlistKeyPath, L"test1", L""};
 
-constexpr base::char16 kTestingExtensionId1[] =
-    L"ababababcdcdcdcdefefefefghghghgh";
-constexpr base::char16 kTestingExtensionId1WithUpdateUrl[] =
+constexpr wchar_t kTestingExtensionId1[] = L"ababababcdcdcdcdefefefefghghghgh";
+constexpr wchar_t kTestingExtensionId1WithUpdateUrl[] =
     L"ababababcdcdcdcdefefefefghghghgh;https://clients2.google.com/service/"
     L"update2/crx";
-constexpr base::char16 kTestingExtensionId2[] =
-    L"aaaabbbbccccddddeeeeffffgggghhhh";
-constexpr base::char16 kTestingExtensionId2WithUpdateUrl[] =
+constexpr wchar_t kTestingExtensionId2[] = L"aaaabbbbccccddddeeeeffffgggghhhh";
+constexpr wchar_t kTestingExtensionId2WithUpdateUrl[] =
     L"aaaabbbbccccddddeeeeffffgggghhhh;https://clients2.google.com/service/"
     L"update2/crx";
 
@@ -248,7 +246,7 @@ template <typename Component>
 bool SomeComponentContainsPath(const RepeatedPtrField<Component>& components,
                                const base::FilePath& path) {
   const std::string name = path.BaseName().MaybeAsASCII();
-  const std::string sanitized_path = base::UTF16ToUTF8(SanitizePath(path));
+  const std::string sanitized_path = base::WideToUTF8(SanitizePath(path));
   for (const auto component : components) {
     if (component.name() == name &&
         component.file_information().path() == sanitized_path) {
@@ -308,10 +306,10 @@ bool RegistryKeyCollected(
 
     std::unordered_set<base::string16> expected_files(
         extension_id_to_filenames_map
-            .at(base::UTF8ToUTF16(installed_extension.extension_id()))
+            .at(base::UTF8ToWide(installed_extension.extension_id()))
             .begin(),
         extension_id_to_filenames_map
-            .at(base::UTF8ToUTF16(installed_extension.extension_id()))
+            .at(base::UTF8ToWide(installed_extension.extension_id()))
             .end());
 
     if (static_cast<size_t>(extension_files.size()) != expected_files.size())
@@ -321,7 +319,7 @@ bool RegistryKeyCollected(
 
     for (const auto& file : extension_files) {
       base::string16 file_name =
-          base::FilePath(base::UTF8ToUTF16(file.path())).BaseName().value();
+          base::FilePath(base::UTF8ToWide(file.path())).BaseName().value();
 
       if (expected_files.find(file_name) == expected_files.end())
         return ::testing::AssertionFailure()
@@ -465,8 +463,8 @@ TEST_F(SystemReportComponentTest, DetectFakePrograms) {
       SomeComponentContainsPath(system_report.processes(), module_path));
 
   EXPECT_TRUE(RegistryEntryCollected(
-      system_report.registry_values(), base::UTF16ToASCII(kRunKeyPath),
-      base::UTF16ToASCII(kRunTestName), base::UTF16ToASCII(kRunTestValue)));
+      system_report.registry_values(), base::WideToASCII(kRunKeyPath),
+      base::WideToASCII(kRunTestName), base::WideToASCII(kRunTestValue)));
 
   EXPECT_TRUE(InstalledProgramCollected(system_report.installed_programs(),
                                         kFakeProgram));
@@ -488,9 +486,8 @@ TEST_F(SystemReportComponentTest, ReportNameServer) {
 
   EXPECT_TRUE(RegistryEntryCollected(
       GetChromeCleanerReport().system_report().registry_values(),
-      base::UTF16ToASCII(kNameServerKeyPath),
-      base::UTF16ToASCII(kNameServerName),
-      base::UTF16ToASCII(kNameServerValue)));
+      base::WideToASCII(kNameServerKeyPath), base::WideToASCII(kNameServerName),
+      base::WideToASCII(kNameServerValue)));
 }
 
 TEST_F(SystemReportComponentTest, ReportNameServerBadValue) {
@@ -506,7 +503,7 @@ TEST_F(SystemReportComponentTest, ReportNameServerBadValue) {
 
   EXPECT_FALSE(RegistryKeyCollected(
       GetChromeCleanerReport().system_report().registry_values(),
-      base::UTF16ToASCII(kNameServerKeyPath)));
+      base::WideToASCII(kNameServerKeyPath)));
 }
 
 TEST_F(SystemReportComponentTest, ReportNameServerNonExistent) {
@@ -514,7 +511,7 @@ TEST_F(SystemReportComponentTest, ReportNameServerNonExistent) {
 
   EXPECT_FALSE(RegistryKeyCollected(
       GetChromeCleanerReport().system_report().registry_values(),
-      base::UTF16ToASCII(kNameServerKeyPath)));
+      base::WideToASCII(kNameServerKeyPath)));
 }
 
 TEST_F(SystemReportComponentTest, ReportExtensionPolicies) {
@@ -536,9 +533,9 @@ TEST_F(SystemReportComponentTest, ReportExtensionPolicies) {
   for (const auto& extension_policy : extension_policies) {
     EXPECT_TRUE(
         RegistryEntryCollected(system_report.registry_values(),
-                               base::UTF16ToASCII(extension_policy.key_path),
-                               base::UTF16ToASCII(extension_policy.name),
-                               base::UTF16ToASCII(extension_policy.value)));
+                               base::WideToASCII(extension_policy.key_path),
+                               base::WideToASCII(extension_policy.name),
+                               base::WideToASCII(extension_policy.value)));
   }
 }
 
@@ -554,7 +551,7 @@ TEST_F(SystemReportComponentTest, ReportExtensionPoliciesBadValue) {
   component_.CreateFullSystemReport();
   EXPECT_FALSE(RegistryKeyCollected(
       GetChromeCleanerReport().system_report().registry_values(),
-      base::UTF16ToASCII(kExtensionPolicyEmpty.key_path)));
+      base::WideToASCII(kExtensionPolicyEmpty.key_path)));
 }
 
 TEST_F(SystemReportComponentTest, ReportExtensionPoliciesNonExistent) {

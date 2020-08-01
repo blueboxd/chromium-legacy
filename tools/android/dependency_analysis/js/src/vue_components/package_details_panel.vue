@@ -7,12 +7,12 @@
       v-if="selectedPackage !== null"
       class="package-details-panel">
     <LinkToGraph
-        :filter="classesInSelectedPackage"
+        :filter="packageClassNames"
         :graph-type="PagePathName.CLASS"
         text="Class graph with all classes in this package"/>
     <ul>
       <li
-          v-for="classObj in classesWithShortNames"
+          v-for="classObj in packageClassObjects"
           :key="classObj.name">
         <LinkToGraph
             :filter="[classObj.name]"
@@ -39,14 +39,16 @@ const PackageDetailsPanel = {
   },
   computed: {
     PagePathName: () => PagePathName,
-    classesInSelectedPackage: function() {
+    packageClassNames: function() {
       return this.selectedPackage.classNames;
     },
-    classesWithShortNames: function() {
-      return this.classesInSelectedPackage.map(className => ({
-        name: className,
-        shortName: shortenClassName(className),
-      }));
+    packageClassObjects: function() {
+      return this.selectedPackage.classNames.map(className => {
+        return {
+          name: className,
+          shortName: shortenClassName(className),
+        };
+      });
     },
   },
 };

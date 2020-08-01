@@ -219,9 +219,9 @@ TEST_F(ZipArchiverSandboxedArchiverTest, ZipFileExists) {
 TEST_F(ZipArchiverSandboxedArchiverTest, SourceIsSymbolicLink) {
   base::FilePath symlink_path =
       test_file_.GetTempDirPath().AppendASCII(kTestSymlink);
-  ASSERT_TRUE(::CreateSymbolicLink(
-      symlink_path.AsUTF16Unsafe().c_str(),
-      test_file_.GetSourceFilePath().AsUTF16Unsafe().c_str(), 0));
+  ASSERT_TRUE(
+      ::CreateSymbolicLink(symlink_path.value().c_str(),
+                           test_file_.GetSourceFilePath().value().c_str(), 0));
 
   EXPECT_EQ(ZipArchiverResultCode::kIgnoredSourceFile, Archive(symlink_path));
 }
@@ -232,8 +232,8 @@ TEST_F(ZipArchiverSandboxedArchiverTest, SourceIsDirectory) {
 }
 
 TEST_F(ZipArchiverSandboxedArchiverTest, SourceIsDefaultFileStream) {
-  base::FilePath stream_path(base::StrCat(
-      {test_file_.GetSourceFilePath().AsUTF16Unsafe(), L"::$data"}));
+  base::FilePath stream_path(
+      base::StrCat({test_file_.GetSourceFilePath().value(), L"::$data"}));
 
   EXPECT_EQ(ZipArchiverResultCode::kSuccess, Archive(stream_path));
 
@@ -243,8 +243,8 @@ TEST_F(ZipArchiverSandboxedArchiverTest, SourceIsDefaultFileStream) {
 }
 
 TEST_F(ZipArchiverSandboxedArchiverTest, SourceIsNonDefaultFileStream) {
-  base::FilePath stream_path(base::StrCat(
-      {test_file_.GetSourceFilePath().AsUTF16Unsafe(), L":stream:$data"}));
+  base::FilePath stream_path(
+      base::StrCat({test_file_.GetSourceFilePath().value(), L":stream:$data"}));
   base::File stream_file(stream_path, base::File::FLAG_CREATE);
   ASSERT_TRUE(stream_file.IsValid());
 

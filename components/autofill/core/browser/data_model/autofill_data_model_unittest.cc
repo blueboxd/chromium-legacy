@@ -17,6 +17,8 @@
 
 namespace autofill {
 
+using structured_address::VerificationStatus;
+
 namespace {
 
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
@@ -39,7 +41,10 @@ class TestAutofillDataModel : public AutofillDataModel {
   base::string16 GetRawInfo(ServerFieldType type) const override {
     return base::string16();
   }
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override {}
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override {}
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDataModel);

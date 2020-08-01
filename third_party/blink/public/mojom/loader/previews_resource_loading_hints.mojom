@@ -57,4 +57,8 @@ interface PreviewsResourceLoadingHintsReceiver {
   // Sends the hints for reducing the data-costs of streaming
   // media/videos from the browser to renderers.
   SetLiteVideoHint(LiteVideoHint lite_video_hint);
+
+  // Notifies the renderers that active media request throttles should be stopped
+  // and not allow any new throttles.
+  StopThrottlingMediaRequests();
 };

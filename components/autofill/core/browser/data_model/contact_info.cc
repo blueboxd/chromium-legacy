@@ -22,99 +22,168 @@
 
 namespace autofill {
 
-NameInfo::NameInfo() {}
+using structured_address::VerificationStatus;
+
+namespace {
+
+// TODO(crbug.com/1103421): Clean legacy implementation once structured names
+// are fully launched.
+bool StructuredAddressesEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+}
+}  // namespace
+
+NameInfo::NameInfo() = default;
 
 NameInfo::NameInfo(const NameInfo& info) {
   *this = info;
 }
 
-NameInfo::~NameInfo() {}
+NameInfo::~NameInfo() = default;
 
 NameInfo& NameInfo::operator=(const NameInfo& info) {
   if (this == &info)
     return *this;
 
-  given_ = info.given_;
-  middle_ = info.middle_;
-  family_ = info.family_;
-  full_ = info.full_;
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled()) {
+    name_ = info.name_;
+  } else {
+    given_ = info.given_;
+    middle_ = info.middle_;
+    family_ = info.family_;
+    full_ = info.full_;
+  }
   return *this;
+}
+
+bool NameInfo::FinalizeAfterImport() {
+  if (StructuredAddressesEnabled())
+    return name_.CompleteFullTree();
+  return true;
 }
 
 bool NameInfo::operator==(const NameInfo& other) const {
   if (this == &other)
     return true;
+
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled())
+    return name_ == other.name_;
+
   return given_ == other.given_ && middle_ == other.middle_ &&
          family_ == other.family_ && full_ == other.full_;
 }
 
 base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(NAME, AutofillType(type).group());
-  switch (type) {
-    case NAME_FIRST:
-      return given_;
 
-    case NAME_MIDDLE:
-      return middle_;
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled()) {
+    return name_.GetValueForType(type);
+  } else {
+    switch (type) {
+      case NAME_FIRST:
+        return given_;
 
-    case NAME_LAST:
-      return family_;
+      case NAME_MIDDLE:
+        return middle_;
 
-    case NAME_MIDDLE_INITIAL:
-      return MiddleInitial();
+      case NAME_LAST:
+        return family_;
 
-    case NAME_FULL:
-      return full_;
+      case NAME_MIDDLE_INITIAL:
+        return MiddleInitial();
 
-    default:
-      return base::string16();
+      case NAME_FULL:
+        return full_;
+
+      default:
+        return base::string16();
+    }
   }
 }
 
-void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
+void NameInfo::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                const base::string16& value,
+                                                VerificationStatus status) {
   DCHECK_EQ(NAME, AutofillType(type).group());
-  switch (type) {
-    case NAME_FIRST:
-      given_ = value;
-      break;
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled()) {
+    bool success = name_.SetValueForTypeIfPossible(type, value, status);
+    DCHECK(success);
+  } else {
+    switch (type) {
+      case NAME_FIRST:
+        given_ = value;
+        break;
 
-    case NAME_MIDDLE:
-    case NAME_MIDDLE_INITIAL:
-      middle_ = value;
-      break;
+      case NAME_MIDDLE:
+      case NAME_MIDDLE_INITIAL:
+        middle_ = value;
+        break;
 
-    case NAME_LAST:
-      family_ = value;
-      break;
+      case NAME_LAST:
+        family_ = value;
+        break;
 
-    case NAME_FULL:
-      full_ = value;
-      break;
+      case NAME_FULL:
+        full_ = value;
+        break;
 
-    default:
-      NOTREACHED();
+      case NAME_LAST_FIRST:
+      case NAME_LAST_SECOND:
+      case NAME_LAST_CONJUNCTION:
+      case NAME_HONORIFIC_PREFIX:
+        break;
+
+      default:
+        NOTREACHED();
+    }
   }
 }
 
 void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
-  supported_types->insert(NAME_FIRST);
-  supported_types->insert(NAME_MIDDLE);
-  supported_types->insert(NAME_LAST);
-  supported_types->insert(NAME_MIDDLE_INITIAL);
-  supported_types->insert(NAME_FULL);
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled()) {
+    name_.GetSupportedTypes(supported_types);
+  } else {
+    supported_types->insert(NAME_FIRST);
+    supported_types->insert(NAME_MIDDLE);
+    supported_types->insert(NAME_LAST);
+    supported_types->insert(NAME_MIDDLE_INITIAL);
+    supported_types->insert(NAME_FULL);
+  }
 }
 
 base::string16 NameInfo::GetInfoImpl(const AutofillType& type,
                                      const std::string& app_locale) const {
-  if (type.GetStorableType() == NAME_FULL)
-    return FullName();
-
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (!StructuredAddressesEnabled()) {
+    if (type.GetStorableType() == NAME_FULL)
+      return FullName();
+  }
   return GetRawInfo(type.GetStorableType());
 }
 
-bool NameInfo::SetInfoImpl(const AutofillType& type,
-                           const base::string16& value,
-                           const std::string& app_locale) {
+bool NameInfo::SetInfoWithVerificationStatusImpl(const AutofillType& type,
+                                                 const base::string16& value,
+                                                 const std::string& app_locale,
+                                                 VerificationStatus status) {
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled()) {
+    return FormGroup::SetInfoWithVerificationStatusImpl(type, value, app_locale,
+                                                        status);
+  }
+
   // Always clear out the full name if we're making a change.
   if (value != GetInfo(type, app_locale))
     full_.clear();
@@ -124,10 +193,24 @@ bool NameInfo::SetInfoImpl(const AutofillType& type,
     return true;
   }
 
-  return FormGroup::SetInfoImpl(type, value, app_locale);
+  return FormGroup::SetInfoWithVerificationStatusImpl(type, value, app_locale,
+                                                      status);
+}
+
+VerificationStatus NameInfo::GetVerificationStatusImpl(
+    ServerFieldType type) const {
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled())
+    return name_.GetVerificationStatusForType(type);
+  return VerificationStatus::kNoStatus;
 }
 
 base::string16 NameInfo::FullName() const {
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled())
+    NOTREACHED();
   if (!full_.empty())
     return full_;
 
@@ -135,10 +218,18 @@ base::string16 NameInfo::FullName() const {
 }
 
 base::string16 NameInfo::MiddleInitial() const {
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled())
+    NOTREACHED();
   return middle_.empty() ? base::string16() : middle_.substr(0U, 1U);
 }
 
 void NameInfo::SetFullName(const base::string16& full) {
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (StructuredAddressesEnabled())
+    NOTREACHED();
   full_ = full;
   data_util::NameParts parts = data_util::SplitName(full);
   given_ = parts.given;
@@ -146,13 +237,13 @@ void NameInfo::SetFullName(const base::string16& full) {
   family_ = parts.family;
 }
 
-EmailInfo::EmailInfo() {}
+EmailInfo::EmailInfo() = default;
 
 EmailInfo::EmailInfo(const EmailInfo& info) {
   *this = info;
 }
 
-EmailInfo::~EmailInfo() {}
+EmailInfo::~EmailInfo() = default;
 
 EmailInfo& EmailInfo::operator=(const EmailInfo& info) {
   if (this == &info)
@@ -177,12 +268,14 @@ base::string16 EmailInfo::GetRawInfo(ServerFieldType type) const {
   return base::string16();
 }
 
-void EmailInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
+void EmailInfo::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                 const base::string16& value,
+                                                 VerificationStatus status) {
   DCHECK_EQ(EMAIL_ADDRESS, type);
   email_ = value;
 }
 
-CompanyInfo::CompanyInfo() {}
+CompanyInfo::CompanyInfo() = default;
 
 CompanyInfo::CompanyInfo(const AutofillProfile* profile) : profile_(profile) {}
 
@@ -190,7 +283,7 @@ CompanyInfo::CompanyInfo(const CompanyInfo& info) {
   *this = info;
 }
 
-CompanyInfo::~CompanyInfo() {}
+CompanyInfo::~CompanyInfo() = default;
 
 CompanyInfo& CompanyInfo::operator=(const CompanyInfo& info) {
   if (this == &info)
@@ -213,8 +306,9 @@ base::string16 CompanyInfo::GetRawInfo(ServerFieldType type) const {
   return IsValidOrVerified(company_name_) ? company_name_ : base::string16();
 }
 
-void CompanyInfo::SetRawInfo(ServerFieldType type,
-                             const base::string16& value) {
+void CompanyInfo::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                   const base::string16& value,
+                                                   VerificationStatus status) {
   DCHECK_EQ(COMPANY_NAME, type);
   company_name_ = value;
 }

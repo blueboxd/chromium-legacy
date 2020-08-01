@@ -90,6 +90,10 @@ class BrowserControlsContainerView extends FrameLayout {
     // The minimum height that the controls should collapse to. Only used for top controls.
     private int mMinHeight;
 
+    // Whether the controls should only expand when the page is scrolled to the top. Only used for
+    // top controls.
+    private boolean mPinControlsToContentTop;
+
     // Set to true if |mView| is hidden because the user has scrolled or triggered some action such
     // that mView is not visible. While |mView| is not visible if this is true, the bitmap from
     // |mView| may be partially visible.
@@ -249,6 +253,14 @@ class BrowserControlsContainerView extends FrameLayout {
         // Refresh the offsets so they can get clamped to their possibly taller min height.
         onOffsetsChanged(mControlsOffset, mContentOffset);
         if (mWebContents != null) mWebContents.notifyBrowserControlsHeightChanged();
+    }
+
+    /**
+     * Sets whether the controls should only expand at the top of the page contents.
+     * Only valid for top controls.
+     */
+    public void setPinControlsToContentTop(boolean pinToContentTop) {
+        mPinControlsToContentTop = pinToContentTop;
     }
 
     /**
@@ -419,6 +431,16 @@ class BrowserControlsContainerView extends FrameLayout {
     @CalledByNative
     private int getControlsOffset() {
         return mControlsOffset;
+    }
+
+    @CalledByNative
+    private int getMinHeight() {
+        return mMinHeight;
+    }
+
+    @CalledByNative
+    private boolean shouldPinControlsToContentTop() {
+        return mPinControlsToContentTop;
     }
 
     @CalledByNative

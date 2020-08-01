@@ -57,9 +57,6 @@ public final class BrowserViewController
     private final View.OnAttachStateChangeListener mOnAttachedStateChangeListener;
     private final ModalDialogManager mModalDialogManager;
 
-    private int mTopControlsMinHeight;
-    private boolean mPinToContentTop;
-
     private TabImpl mTab;
 
     private WebContentsGestureStateTracker mGestureStateTracker;
@@ -169,8 +166,6 @@ public final class BrowserViewController
 
         if (mTab != null) {
             mTab.onDidLoseActive();
-            // Clean up UI related state now that the old Tab is inactive.
-            mTab.setTopControlsMinHeight(0);
             // WebContentsGestureStateTracker is relatively cheap, easier to destroy rather than
             // update WebContents.
             mGestureStateTracker.destroy();
@@ -194,7 +189,6 @@ public final class BrowserViewController
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
         mBottomControlsContainerView.setWebContents(webContents);
-        updateActiveTabScrollBehavior();
         if (mTab != null) {
             mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle(),
                     mBottomControlsContainerView.getNativeHandle());
@@ -211,14 +205,11 @@ public final class BrowserViewController
     }
 
     public void setTopControlsMinHeight(int minHeight) {
-        mTopControlsMinHeight = minHeight;
         mTopControlsContainerView.setMinHeight(minHeight);
-        updateActiveTabScrollBehavior();
     }
 
     public void setPinTopControlsToContentTop(boolean pinToContentTop) {
-        mPinToContentTop = pinToContentTop;
-        updateActiveTabScrollBehavior();
+        mTopControlsContainerView.setPinControlsToContentTop(pinToContentTop);
     }
 
     public void setBottomView(View view) {
@@ -309,13 +300,6 @@ public final class BrowserViewController
                 ? mCachedDoBrowserControlsShrinkRendererSize
                 : (mTopControlsContainerView.isControlVisible()
                         || mBottomControlsContainerView.isControlVisible());
-    }
-
-    private void updateActiveTabScrollBehavior() {
-        if (mTab != null) {
-            mTab.setTopControlsMinHeight(mTopControlsMinHeight);
-            mTab.setPinTopControlsToContentTop(mPinToContentTop);
-        }
     }
 
     /**

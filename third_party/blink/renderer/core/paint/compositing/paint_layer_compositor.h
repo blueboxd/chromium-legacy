@@ -75,8 +75,9 @@ class CORE_EXPORT PaintLayerCompositor {
   // pointers out of this object become invalid.
   void CleanUp();
 
-  void UpdateIfNeededRecursive(DocumentLifecycle::LifecycleState target_state);
-  void UpdateCompositingInputsIfNeededRecursive(
+  void UpdateInputsIfNeededRecursive(
+      DocumentLifecycle::LifecycleState target_state);
+  void UpdateAssignmentsIfNeededRecursive(
       DocumentLifecycle::LifecycleState target_state);
 
   // Return true if this LayoutView is in "compositing mode" (i.e. has one or
@@ -152,14 +153,14 @@ class CORE_EXPORT PaintLayerCompositor {
   void AssertNoUnresolvedDirtyBits();
 #endif
 
-  void UpdateIfNeededRecursiveInternal(
+  void UpdateAssignmentsIfNeededRecursiveInternal(
       DocumentLifecycle::LifecycleState target_state,
       CompositingReasonsStats&);
-  void UpdateCompositingInputsIfNeededRecursiveInternal(
+  void UpdateInputsIfNeededRecursiveInternal(
       DocumentLifecycle::LifecycleState target_state);
 
-  void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state,
-                      CompositingReasonsStats&);
+  void UpdateAssignmentsIfNeeded(DocumentLifecycle::LifecycleState target_state,
+                                 CompositingReasonsStats&);
 
   void SetOwnerNeedsCompositingInputsUpdate();
 

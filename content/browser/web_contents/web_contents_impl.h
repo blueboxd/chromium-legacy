@@ -1052,6 +1052,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void MediaResized(const gfx::Size& size, const MediaPlayerId& id);
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen);
 
+  // Called by MediaWebContentsObserver when a buffer underflow occurs. See the
+  // WebContentsObserver function stubs for more details.
+  void MediaBufferUnderflow(const MediaPlayerId& id);
+
   int GetCurrentlyPlayingVideoCount() override;
   base::Optional<gfx::Size> GetFullscreenVideoSize() override;
 

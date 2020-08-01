@@ -31,7 +31,7 @@ class InterfaceLogServiceTest : public testing::Test {
  public:
   void SetUp() override {
     log_service_ = InterfaceLogService::Create(
-        kLogFileName, base::UTF8ToUTF16(kDummyBuildVersion));
+        kLogFileName, base::UTF8ToWide(kDummyBuildVersion));
     expected_file_size_ = 0LL;
   }
 
@@ -286,7 +286,7 @@ TEST_F(InterfaceLogServiceTest, LogAndRecoverTest) {
 
 TEST_F(InterfaceLogServiceTest, EmptyLogFileTest) {
   EXPECT_FALSE(
-      InterfaceLogService::Create(L"", base::UTF8ToUTF16(kDummyBuildVersion)));
+      InterfaceLogService::Create(L"", base::UTF8ToWide(kDummyBuildVersion)));
 }
 
 }  // namespace chrome_cleaner

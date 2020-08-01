@@ -87,7 +87,7 @@ void ScopedProcessProtector::DenyAllAccess() {
 
 void ScopedProcessProtector::DenyAccess(ACCESS_MASK access_to_deny) {
   // The name of the predefined EVERYONE group.
-  static constexpr base::char16 kEveryoneGroup[] = STRING16_LITERAL("EVERYONE");
+  static constexpr wchar_t kEveryoneGroup[] = L"EVERYONE";
 
   // The Trustee parameter requires a non-const string.
   base::string16 trustee_name(kEveryoneGroup);

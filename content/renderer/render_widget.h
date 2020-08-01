@@ -479,7 +479,6 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::PointF& screen_point,
                          blink::WebDragOperation drag_operation);
   void OnOrientationChange();
-  void OnWaitNextFrameForTests(int routing_id);
 
   // Sets the "hidden" state of this widget.  All modification of is_hidden_
   // should use this method so that we can properly inform the RenderThread of

@@ -435,8 +435,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetBounds_ACK, OnRequestSetBoundsAck)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
-    IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
-                        OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1649,13 +1647,6 @@ void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {
 
 void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
   render_frames_.RemoveObserver(frame);
-}
-
-void RenderWidget::OnWaitNextFrameForTests(
-    int main_frame_thread_observer_routing_id) {
-  // Sends an ACK to the browser process during the next compositor frame.
-  QueueMessage(std::make_unique<WidgetHostMsg_WaitForNextFrameForTests_ACK>(
-      main_frame_thread_observer_routing_id));
 }
 
 const blink::ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {

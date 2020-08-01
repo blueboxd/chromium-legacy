@@ -148,6 +148,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnPictureInPictureAvailabilityChanged(RenderFrameHost* render_frame_host,
                                              int delegate_id,
                                              bool available);
+  void OnBufferUnderflow(RenderFrameHost* render_frame_host, int delegate_id);
 
   device::mojom::WakeLock* GetAudioWakeLock();
 

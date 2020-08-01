@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/printing/print_servers_provider_factory.h"
 #include "chrome/browser/chromeos/printing/server_printers_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/device_event_log/device_event_log.h"
 #include "url/gurl.h"
 
@@ -43,7 +44,8 @@ class ServerPrintersProviderImpl
       : servers_provider_(
             PrintServersProviderFactory::Get()->GetForProfile(profile)) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    servers_provider_->SetProfile(profile);
+    servers_provider_->SetAllowlistPref(profile->GetPrefs(),
+                                        prefs::kExternalPrintServersAllowlist);
     servers_provider_->AddObserver(this);
   }
 

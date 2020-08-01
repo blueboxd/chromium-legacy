@@ -56,6 +56,9 @@ using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 
 namespace autofill {
+
+using structured_address::VerificationStatus;
+
 namespace {
 
 // Like |AutofillType::GetStorableType()|, but also returns |NAME_FULL| for
@@ -257,7 +260,7 @@ AutofillProfile::AutofillProfile(const AutofillProfile& profile)
   operator=(profile);
 }
 
-AutofillProfile::~AutofillProfile() {}
+AutofillProfile::~AutofillProfile() = default;
 
 AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   if (this == &profile)
@@ -366,13 +369,15 @@ base::string16 AutofillProfile::GetRawInfo(ServerFieldType type) const {
   return form_group->GetRawInfo(type);
 }
 
-void AutofillProfile::SetRawInfo(ServerFieldType type,
-                                 const base::string16& value) {
+void AutofillProfile::SetRawInfoWithVerificationStatus(
+    ServerFieldType type,
+    const base::string16& value,
+    VerificationStatus status) {
   FormGroup* form_group = MutableFormGroupForType(AutofillType(type));
   if (form_group) {
     is_client_validity_states_updated_ &=
         !IsClientValidationSupportedForType(type);
-    form_group->SetRawInfo(type, value);
+    form_group->SetRawInfoWithVerificationStatus(type, value, status);
   }
 }
 
@@ -1010,6 +1015,15 @@ bool AutofillProfile::ShouldSkipFillingOrSuggesting(
   return false;
 }
 
+VerificationStatus AutofillProfile::GetVerificationStatusImpl(
+    const ServerFieldType type) const {
+  const FormGroup* form_group = FormGroupForType(AutofillType(type));
+  if (!form_group)
+    return VerificationStatus::kNoStatus;
+
+  return form_group->GetVerificationStatus(type);
+}
+
 base::string16 AutofillProfile::GetInfoImpl(
     const AutofillType& type,
     const std::string& app_locale) const {
@@ -1031,9 +1045,11 @@ base::string16 AutofillProfile::GetInfoImpl(
   return form_group->GetInfoImpl(type, app_locale);
 }
 
-bool AutofillProfile::SetInfoImpl(const AutofillType& type,
-                                  const base::string16& value,
-                                  const std::string& app_locale) {
+bool AutofillProfile::SetInfoWithVerificationStatusImpl(
+    const AutofillType& type,
+    const base::string16& value,
+    const std::string& app_locale,
+    VerificationStatus status) {
   FormGroup* form_group = MutableFormGroupForType(type);
   if (!form_group)
     return false;
@@ -1043,7 +1059,9 @@ bool AutofillProfile::SetInfoImpl(const AutofillType& type,
 
   base::string16 trimmed_value;
   base::TrimWhitespace(value, base::TRIM_ALL, &trimmed_value);
-  return form_group->SetInfoImpl(type, trimmed_value, app_locale);
+
+  return form_group->SetInfoWithVerificationStatusImpl(type, trimmed_value,
+                                                       app_locale, status);
 }
 
 // static
@@ -1203,4 +1221,11 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
             << profile.use_date();
 }
 
+bool AutofillProfile::FinalizeAfterImport() {
+  bool success = true;
+  if (!name_.FinalizeAfterImport())
+    success = false;
+
+  return success;
+}
 }  // namespace autofill

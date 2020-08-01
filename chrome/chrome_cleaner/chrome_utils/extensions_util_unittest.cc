@@ -107,7 +107,7 @@ TEST(ExtensionsUtilTest, RemoveForcelistPolicyExtensions) {
   GetExtensionForcelistRegistryPolicies(&policies);
   for (ExtensionPolicyRegistryEntry& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_EXTENSION_FORCELIST, "", "");
     extension.policy_registry_entry =
         std::make_shared<ExtensionPolicyRegistryEntry>(std::move(policy));
@@ -217,7 +217,7 @@ TEST(ExtensionsUtilTest, RemoveNonWhitelistedDefaultExtensions) {
   std::vector<ForceInstalledExtension> extensions;
   for (ExtensionPolicyFile& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         DEFAULT_APPS_EXTENSION, "", "");
     extension.policy_file =
         std::make_shared<ExtensionPolicyFile>(std::move(policy));
@@ -318,7 +318,7 @@ TEST(ExtensionsUtilTest, RemoveExtensionSettingsForceInstalledExtensions) {
   base::Value json_result = policies[0].json->data.Clone();
   for (ExtensionPolicyRegistryEntry& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_EXTENSION_SETTINGS, "", "");
     extension.policy_registry_entry =
         std::make_shared<ExtensionPolicyRegistryEntry>(std::move(policy));
@@ -366,7 +366,7 @@ TEST(ExtensionsUtilTest, RemoveSomeExtensionSettingsForceInstalledExtensions) {
   base::Value json_result = policies[0].json->data.Clone();
   for (ExtensionPolicyRegistryEntry& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_EXTENSION_SETTINGS, "", "");
     extension.policy_registry_entry =
         std::make_shared<ExtensionPolicyRegistryEntry>(std::move(policy));
@@ -464,7 +464,7 @@ TEST(ExtensionsUtilTest, RemoveMasterPreferencesExtensionsNoneFound) {
   std::vector<ForceInstalledExtension> extensions;
   for (ExtensionPolicyFile& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_MASTER_PREFERENCES, "", "");
     extension.policy_file =
         std::make_shared<ExtensionPolicyFile>(std::move(policy));

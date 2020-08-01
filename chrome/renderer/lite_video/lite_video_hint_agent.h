@@ -54,15 +54,15 @@ class LiteVideoHintAgent
     return active_throttles_;
   }
 
+  // Stop throttling and resume the current throttled media requests
+  // immediately. Throttling could start again for new requests
+  void StopThrottling();
+
  private:
   friend class LiteVideoHintAgentTest;
 
   // content::RenderFrameObserver overrides
   void OnDestruct() override;
-
-  // Stop throttling and resume the current throttled media requests
-  // immediately. Throttling could start again for new requests
-  void StopThrottling();
 
   // The network downlink bandwidth target in kilobytes per second used to
   // calculate the throttling delay on media requests

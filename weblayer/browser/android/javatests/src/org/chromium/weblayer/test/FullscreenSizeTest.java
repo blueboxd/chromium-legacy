@@ -62,6 +62,13 @@ public class FullscreenSizeTest {
             return;
         }
 
+        // Reset the OSK state.
+        int withKeyboardHeight = getVisiblePageHeight();
+        dismissOsk();
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.greaterThan(withKeyboardHeight));
+        });
+
         // Now, try with fullscreen.
         // Second touch enters fullscreen.
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
@@ -85,12 +92,7 @@ public class FullscreenSizeTest {
         Assert.assertEquals(fsWithOskWidth, fsWidth);
         Assert.assertThat(fsWithOskHeight, Matchers.lessThan(fsHeight));
 
-        // Dismiss OSK.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            InputMethodManager inputManager =
-                    (InputMethodManager) mActivity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-            inputManager.hideSoftInputFromWindow(mActivity.getCurrentFocus().getWindowToken(), 0);
-        });
+        dismissOsk();
         CriteriaHelper.pollInstrumentationThread(() -> {
             Criteria.checkThat(getVisiblePageHeight(), Matchers.greaterThan(fsWithOskHeight));
         });
@@ -105,5 +107,13 @@ public class FullscreenSizeTest {
 
     private int getVisiblePageHeight() {
         return mActivityTestRule.executeScriptAndExtractInt("window.innerHeight");
+    }
+
+    private void dismissOsk() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            InputMethodManager inputManager =
+                    (InputMethodManager) mActivity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(mActivity.getCurrentFocus().getWindowToken(), 0);
+        });
     }
 }

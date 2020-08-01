@@ -9260,6 +9260,37 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Live Caption is not available right now
       </message>
 
+      <!-- Caret browsing. -->
+      <if expr="not chromeos">
+        <message name="IDS_ENABLE_CARET_BROWSING_INFO" desc="Information in the confirmation dialog for enabling caret browsing">
+          You can navigate pages with a text cursor. Press F7 to turn off.
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_ENABLE_CARET_BROWSING_INFO" desc="Information in the confirmation dialog for enabling caret browsing">
+          You can navigate pages with a text cursor. Press Ctrl+Search+7 to turn off.
+        </message>
+      </if>
+      <message name="IDS_CARET_BROWSING_DO_NOT_ASK" desc="Label for check box that prevents the dialog from being shown in the future">
+        Don't ask me again
+      </message>
+      <if expr="not use_titlecase">
+        <message name="IDS_ENABLE_CARET_BROWSING_TITLE" desc="In sentence case: The title text of the confirmation dialog for enabling caret browsing">
+          Turn on caret browsing?
+        </message>
+        <message name="IDS_ENABLE_CARET_BROWSING_TURN_ON" desc="In sentence case: The text of the button that confirms turning on caret browsing">
+          Turn on
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_ENABLE_CARET_BROWSING_TITLE" desc="In title case: The title text of the confirmation dialog for enabling caret browsing">
+          Turn On Caret Browsing?
+        </message>
+        <message name="IDS_ENABLE_CARET_BROWSING_TURN_ON" desc="In title case: The text of the button that confirms turning on caret browsing">
+          Turn On
+        </message>
+      </if>
+
       <!-- Media Galleries. -->
       <if expr="not is_android">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">

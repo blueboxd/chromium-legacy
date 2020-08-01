@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINT_SERVERS_PROVIDER_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/print_server.h"
 
-class Profile;
+class PrefService;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -45,9 +46,9 @@ class PrintServersProvider
   static std::unique_ptr<PrintServersProvider> Create();
   virtual ~PrintServersProvider() = default;
 
-  // This method set profile to fetch non-external policies. It is needed to
-  // calculate resultant list of servers.
-  virtual void SetProfile(Profile* profile) = 0;
+  // This method sets the allowlist to calculate resultant list of servers.
+  virtual void SetAllowlistPref(PrefService* prefs,
+                                const std::string& allowlist_pref) = 0;
 
   // This method also calls directly OnServersChanged(...) from |observer|.
   virtual void AddObserver(Observer* observer) = 0;

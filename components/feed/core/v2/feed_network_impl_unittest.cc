@@ -96,7 +96,7 @@ class FeedNetworkTest : public testing::Test {
     feed_network_ = std::make_unique<FeedNetworkImpl>(
         &delegate_, identity_test_env_.identity_manager(), "dummy_api_key",
         shared_url_loader_factory_, task_environment_.GetMockTickClock(),
-        &profile_prefs_, version_info::Channel::STABLE);
+        &profile_prefs_);
   }
 
   FeedNetwork* feed_network() { return feed_network_.get(); }

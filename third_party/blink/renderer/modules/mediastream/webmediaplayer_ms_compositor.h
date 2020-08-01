@@ -74,7 +74,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
     return update_submission_state_callback_;
   }
 
-  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame);
+  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame, bool is_copy);
 
   // Statistical data
   gfx::Size GetCurrentSize();
@@ -140,6 +140,15 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   friend class WebMediaPlayerMSTest;
   friend struct WebMediaPlayerMSCompositorTraits;
 
+  // Struct used to keep information about frames pending in
+  // |rendering_frame_buffer_|.
+  struct PendingFrameInfo {
+    int unique_id;
+    base::TimeDelta timestamp;
+    base::TimeTicks reference_time;
+    bool is_copy;
+  };
+
   ~WebMediaPlayerMSCompositor() override;
 
   // Ran on the |video_frame_compositor_task_runner_| to initialize
@@ -166,13 +175,16 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   // For algorithm disabled case only: call SetCurrentFrame() with the current
   // frame immediately. |video_frame_provider_client_| gets notified about the
   // new frame with a DidReceiveFrame() call.
-  void RenderWithoutAlgorithm(scoped_refptr<media::VideoFrame> frame);
+  void RenderWithoutAlgorithm(scoped_refptr<media::VideoFrame> frame,
+                              bool is_copy);
   void RenderWithoutAlgorithmOnCompositor(
-      scoped_refptr<media::VideoFrame> frame);
+      scoped_refptr<media::VideoFrame> frame,
+      bool is_copy);
 
   // Update |current_frame_| and |dropped_frame_count_|
   void SetCurrentFrame(
       scoped_refptr<media::VideoFrame> frame,
+      bool is_copy,
       base::Optional<base::TimeTicks> expected_presentation_time);
   // Following the update to |current_frame_|, this will check for changes that
   // require updating video layer.
@@ -239,6 +251,8 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   size_t total_frame_count_;
   size_t dropped_frame_count_;
 
+  bool current_frame_is_copy_ = false;
+
   // Used to complete video.requestAnimationFrame() calls. Reported up via
   // GetLastPresentedFrameMetadata().
   // TODO(https://crbug.com/1050755): Improve the accuracy of these fields for
@@ -264,8 +278,8 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   std::unique_ptr<WebVideoFrameSubmitter> submitter_;
 
-  // TODO(crbug.com/952716): Replace the use of std::map by WTF::HashMap.
-  std::map<base::TimeDelta, base::TimeTicks> timestamps_to_clock_times_;
+  // Extra information about the frames pending in |rendering_frame_buffer_|.
+  WTF::Vector<PendingFrameInfo> pending_frames_info_;
 
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
 

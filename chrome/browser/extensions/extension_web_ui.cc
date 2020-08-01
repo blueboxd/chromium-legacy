@@ -173,7 +173,7 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
   if (Profile::FromBrowserContext(web_contents->GetBrowserContext()) != profile)
     return;
 
-  GURL url = web_contents->GetURL();
+  const GURL& url = web_contents->GetLastCommittedURL();
   if (!url.SchemeIs(content::kChromeUIScheme) || url.host_piece() != page)
     return;
 

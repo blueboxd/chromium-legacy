@@ -5691,11 +5691,24 @@
   },
 
   "NoteTakingAppsLockScreenWhitelist": {
+    "note": "This policy is deprecated, see http://crbug.com/1095910.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
           "NoteTakingAppsLockScreenWhitelist": []
+        },
+        "prefs": { "settings.note_taking_apps_lock_screen_whitelist": {} }
+      }
+    ]
+  },
+
+  "NoteTakingAppsLockScreenAllowlist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "NoteTakingAppsLockScreenAllowlist": []
         },
         "prefs": { "settings.note_taking_apps_lock_screen_whitelist": {} }
       }

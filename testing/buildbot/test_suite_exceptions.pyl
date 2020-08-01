@@ -384,11 +384,6 @@
           'shards': 20,
         },
       },
-      'mac10.13_retina-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'mac10.14-blink-rel-dummy': {
         'swarming': {
           'shards': 20,

@@ -307,7 +307,7 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByMethod() {
   return false;
 }
 
-std::vector<const RE2*>
+std::vector<const re2::RE2*>
 AddressComponent::GetParseRegularExpressionsByRelevance() const {
   return {};
 }

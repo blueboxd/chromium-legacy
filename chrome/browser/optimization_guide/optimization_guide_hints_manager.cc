@@ -565,7 +565,8 @@ void OptimizationGuideHintsManager::MaybeScheduleTopHostsHintsFetch() {
   if (optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
     SetLastHintsFetchAttemptTime(clock_->Now());
     FetchTopHostsHints();
-  } else {
+  } else if (!top_hosts_hints_fetch_timer_.IsRunning()) {
+    // Only Schedule this is the time is not already running.
     ScheduleTopHostsHintsFetch();
   }
 }

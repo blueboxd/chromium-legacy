@@ -664,7 +664,7 @@ class CleanerEngineRequestsProxyTerminateTest
     test_process_ = LongRunningProcess(/*command_line=*/nullptr);
     ASSERT_TRUE(test_process_.IsValid());
 
-    base::string16 switch_str = base::NumberToString16(test_process_.Pid());
+    base::string16 switch_str = base::NumberToWString(test_process_.Pid());
     parent_process_->AppendSwitchNative(kLongRunningProcessIdSwitch,
                                         switch_str);
   }

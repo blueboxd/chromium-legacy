@@ -98,14 +98,14 @@ class MessageBuilder {
   // Adds a new line with |title| indented with |indentation_level| tabs.
   // Equivalent to:
   //   Add(title, ":").NewLine()
-  MessageBuilder& AddHeaderLine(base::StringPiece16 title);
+  MessageBuilder& AddHeaderLine(base::WStringPiece title);
 
   // AddFieldValueLine adds a new line for a pair (|field_name|, |value|)
   // indented with |indentation_level| tabs.
   // Equivalent to:
   //   Add(field_name, ": ", value).NewLine()
   template <typename Value>
-  MessageBuilder& AddFieldValueLine(base::StringPiece16 field_name,
+  MessageBuilder& AddFieldValueLine(base::WStringPiece field_name,
                                     const Value& value) {
     Add(field_name, L": ", value).NewLine();
     return *this;
@@ -127,7 +127,7 @@ class MessageBuilder {
   // list in AddInternal().
   class MessageItem {
    public:
-    explicit MessageItem(base::StringPiece16 value);
+    explicit MessageItem(base::WStringPiece value);
     explicit MessageItem(base::StringPiece value);
     explicit MessageItem(int value);
 

@@ -99,8 +99,8 @@ def Tokenize(data):
       _EatString()
       t = 'S'
     else:
-      raise ValueError(
-          'Unknown char \'%s\' at %s' % (ch, _RenderLineCol(data, lo)))
+      raise ValueError('Unknown char %s at %s' %
+                       (repr(ch), _RenderLineCol(data, lo)))
     yield (t, lo, ctx.pos)
   yield ('E', ctx.pos, ctx.pos)  # End sentinel.
 

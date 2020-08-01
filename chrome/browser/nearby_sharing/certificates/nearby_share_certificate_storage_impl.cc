@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_storage_impl.h"
 
 #include "base/base64url.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
@@ -66,6 +68,34 @@ base::Time TimestampToTime(nearbyshare::proto::Timestamp timestamp) {
          base::TimeDelta::FromNanoseconds(timestamp.nanos());
 }
 }  // namespace
+
+// static
+NearbyShareCertificateStorageImpl::Factory*
+    NearbyShareCertificateStorageImpl::Factory::test_factory_ = nullptr;
+
+// static
+std::unique_ptr<NearbyShareCertificateStorage>
+NearbyShareCertificateStorageImpl::Factory::Create(
+    PrefService* pref_service,
+    std::unique_ptr<
+        leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+        proto_database) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(pref_service,
+                                         std::move(proto_database));
+  }
+
+  return base::WrapUnique(new NearbyShareCertificateStorageImpl(
+      pref_service, std::move(proto_database)));
+}
+
+// static
+void NearbyShareCertificateStorageImpl::Factory::SetFactoryForTesting(
+    Factory* test_factory) {
+  test_factory_ = test_factory;
+}
+
+NearbyShareCertificateStorageImpl::Factory::~Factory() = default;
 
 NearbyShareCertificateStorageImpl::NearbyShareCertificateStorageImpl(
     PrefService* pref_service,
@@ -238,7 +268,7 @@ NearbyShareCertificateStorageImpl::GetPublicCertificateIds() const {
 }
 
 void NearbyShareCertificateStorageImpl::GetPublicCertificates(
-    PublicCertificateCallback callback) const {
+    PublicCertificateCallback callback) {
   db_->LoadEntries(std::move(callback));
 }
 

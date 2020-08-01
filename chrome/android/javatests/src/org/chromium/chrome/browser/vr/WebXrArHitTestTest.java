@@ -72,6 +72,22 @@ public class WebXrArHitTestTest {
                 "webxr_test_basic_hittest", PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting()");
-        mWebXrArTestFramework.assertNoJavaScriptErrors();
+        mWebXrArTestFramework.endTest();
+    }
+
+    /**
+     * Tests that hit test results are available in the subsequent frame after hit
+     * test source was returned.
+     */
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
+    public void testHitTestResultsAvailableInSubsequentFrame() {
+        mWebXrArTestFramework.loadFileAndAwaitInitialization(
+                "webxr_test_basic_hittest_results_availability", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting()");
+        mWebXrArTestFramework.endTest();
     }
 }

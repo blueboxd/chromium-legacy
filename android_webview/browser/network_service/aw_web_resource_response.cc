@@ -31,7 +31,7 @@ AwWebResourceResponse::~AwWebResourceResponse() {}
 bool AwWebResourceResponse::HasInputStream(JNIEnv* env) const {
   ScopedJavaLocalRef<jobject> jstream =
       Java_AwWebResourceResponse_getData(env, java_object_);
-  return !jstream.is_null();
+  return !!jstream;
 }
 
 std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
@@ -49,7 +49,7 @@ std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
   input_stream_transferred_ = true;
   ScopedJavaLocalRef<jobject> jstream =
       Java_AwWebResourceResponse_getData(env, java_object_);
-  if (jstream.is_null())
+  if (!jstream)
     return nullptr;
   return std::make_unique<InputStream>(jstream);
 }
@@ -58,7 +58,7 @@ bool AwWebResourceResponse::GetMimeType(JNIEnv* env,
                                         std::string* mime_type) const {
   ScopedJavaLocalRef<jstring> jstring_mime_type =
       Java_AwWebResourceResponse_getMimeType(env, java_object_);
-  if (jstring_mime_type.is_null())
+  if (!jstring_mime_type)
     return false;
   *mime_type = ConvertJavaStringToUTF8(jstring_mime_type);
   return true;
@@ -68,7 +68,7 @@ bool AwWebResourceResponse::GetCharset(JNIEnv* env,
                                        std::string* charset) const {
   ScopedJavaLocalRef<jstring> jstring_charset =
       Java_AwWebResourceResponse_getCharset(env, java_object_);
-  if (jstring_charset.is_null())
+  if (!jstring_charset)
     return false;
   *charset = ConvertJavaStringToUTF8(jstring_charset);
   return true;
@@ -80,7 +80,7 @@ bool AwWebResourceResponse::GetStatusInfo(JNIEnv* env,
   int status = Java_AwWebResourceResponse_getStatusCode(env, java_object_);
   ScopedJavaLocalRef<jstring> jstring_reason_phrase =
       Java_AwWebResourceResponse_getReasonPhrase(env, java_object_);
-  if (status < 100 || status >= 600 || jstring_reason_phrase.is_null())
+  if (status < 100 || status >= 600 || !jstring_reason_phrase)
     return false;
   *status_code = status;
   *reason_phrase = ConvertJavaStringToUTF8(jstring_reason_phrase);
@@ -94,7 +94,7 @@ bool AwWebResourceResponse::GetResponseHeaders(
       Java_AwWebResourceResponse_getResponseHeaderNames(env, java_object_);
   ScopedJavaLocalRef<jobjectArray> jstringArray_headerValues =
       Java_AwWebResourceResponse_getResponseHeaderValues(env, java_object_);
-  if (jstringArray_headerNames.is_null() || jstringArray_headerValues.is_null())
+  if (!jstringArray_headerNames || !jstringArray_headerValues)
     return false;
   std::vector<std::string> header_names;
   std::vector<std::string> header_values;

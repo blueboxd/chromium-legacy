@@ -54,11 +54,13 @@
 
 namespace blink {
 
-// Pastes htmlToPaste into the body of pageHolder's document, and
-// returns the new content of the body.
-String ContentAfterPastingHTML(DummyPageHolder* page_holder,
-                               const char* html_to_paste) {
-  LocalFrame& frame = page_holder->GetFrame();
+// Pastes |html_to_paste| into the body of |page_holder|'s document, and
+// verifies the new content of the body is safe and sanitized, and contains
+// |expected_partial_contents|.
+void PasteAndVerifySanitization(const char* html_to_paste,
+                                const char* expected_partial_contents) {
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
+  LocalFrame& frame = page_holder.get()->GetFrame();
 
   // Setup a mock clipboard host.
   PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider(
@@ -85,22 +87,10 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   test::RunPendingTasks();
   EXPECT_TRUE(frame.GetEditor().ExecuteCommand("Paste"));
 
-  return body->innerHTML();
-}
-
-// Integration tests.
-
-TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
-  static const char kUnsafeContent[] =
-      "<svg xmlns='http://www.w3.org/2000/svg' "
-      "     width='1cm' height='1cm'>"
-      "  <a href='javascript:alert()'></a>"
-      "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("</a>"))
+  // Verify that sanitization during pasting strips JavaScript, but keeps at
+  // least |expected_partial_contents|.
+  String sanitized_content = body->innerHTML();
+  EXPECT_TRUE(sanitized_content.Contains(expected_partial_contents))
       << "We should have pasted *something*; the document is: "
       << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
@@ -109,108 +99,74 @@ TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
       << sanitized_content.Utf8();
 }
 
+void PasteAndVerifyBasicSanitization(const char* unsafe_content) {
+  static const char kMinimalExpectedContents[] = "</a>";
+  PasteAndVerifySanitization(unsafe_content, kMinimalExpectedContents);
+}
+
+// Integration tests.
+
+TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
+  static const char kUnsafeContent[] =
+      "<svg xmlns='http://www.w3.org/2000/svg' "
+      "     width='1cm' height='1cm'>"
+      "  <a href='javascript:alert()'></a>"
+      "</svg>";
+  PasteAndVerifyBasicSanitization(kUnsafeContent);
+}
+
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptXlinkHrefIsStripped) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
       "     width='1cm' height='1cm'>"
       "  <a xlink:href='javascript:alert()'></a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("</a>"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  PasteAndVerifyBasicSanitization(kUnsafeContent);
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
       "  <a href='j&#x41;vascriPT:alert()'></a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("</a>"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  PasteAndVerifyBasicSanitization(kUnsafeContent);
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptXlinkHrefIsStripped_caseAndEntityInProtocol) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
       "     width='1cm' height='1cm'>"
       "  <a xlink:href='j&#x41;vascriPT:alert()'></a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("</a>"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  PasteAndVerifyBasicSanitization(kUnsafeContent);
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptHrefIsStripped_entityWithoutSemicolonInProtocol) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
       "  <a href='jav&#x61script:alert()'></a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("</a>"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  PasteAndVerifyBasicSanitization(kUnsafeContent);
 }
 
 TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptXlinkHrefIsStripped_entityWithoutSemicolonInProtocol) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
       "     width='1cm' height='1cm'>"
       "  <a xlink:href='jav&#x61script:alert()'></a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("</a>"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  PasteAndVerifyBasicSanitization(kUnsafeContent);
 }
 
 // Other sanitization integration tests are web tests that use
@@ -220,7 +176,6 @@ TEST(
 // web tests: there is nowhere to source the unsafe content from.
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnimatedAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
@@ -228,22 +183,14 @@ TEST(UnsafeSVGAttributeSanitizationTest,
       "    <animate attributeName='href' values='evil;J&#x61VaSCRIpT:alert()'>"
       "  </a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("<a href=\"https://www.goo"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  static const char kExpectedContentAfterSanitization[] =
+      "<a href=\"https://www.goo";
+  PasteAndVerifySanitization(kUnsafeContent, kExpectedContentAfterSanitization);
 }
 
 TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnimatedAnchor_javaScriptXlinkHrefIsStripped_caseAndEntityInProtocol) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -254,16 +201,9 @@ TEST(
       "values='evil;J&#x61VaSCRIpT:alert()'>"
       "  </a>"
       "</svg>";
-  String sanitized_content =
-      ContentAfterPastingHTML(page_holder.get(), kUnsafeContent);
-
-  EXPECT_TRUE(sanitized_content.Contains("<a xlink:href=\"https://www.goo"))
-      << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8();
-  EXPECT_FALSE(sanitized_content.Contains(":alert()"))
-      << "The JavaScript URL is unsafe and should have been stripped; "
-         "instead: "
-      << sanitized_content.Utf8();
+  static const char kExpectedContentAfterSanitization[] =
+      "<a xlink:href=\"https://www.goo";
+  PasteAndVerifySanitization(kUnsafeContent, kExpectedContentAfterSanitization);
 }
 
 // Unit tests

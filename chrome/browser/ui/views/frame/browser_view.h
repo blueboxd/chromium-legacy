@@ -445,6 +445,7 @@ class BrowserView : public BrowserWindow,
   void UnhideDownloadShelf();
 
   void ShowEmojiPanel() override;
+  void ShowCaretBrowsingDialog() override;
 
   std::unique_ptr<content::EyeDropper> OpenEyeDropper(
       content::RenderFrameHost* frame,

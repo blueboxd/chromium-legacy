@@ -34,9 +34,9 @@ constexpr int kChromeAcceleratorsTotalNum = 95;
 constexpr char kChromeAcceleratorsHash[] = "ef0b7eb1a1dabd26e964c6593e4698a4";
 #else
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 94;
+constexpr int kChromeAcceleratorsTotalNum = 95;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "f22167989af00d94f8de75cbc89b977e";
+constexpr char kChromeAcceleratorsHash[] = "7d5afdffb1dcc73c3f6f73107b5d6651";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const char* BooleanToString(bool value) {

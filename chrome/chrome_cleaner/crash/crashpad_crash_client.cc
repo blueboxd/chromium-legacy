@@ -220,7 +220,7 @@ bool CrashpadCrashClient::InitializeCrashReporting(Mode mode,
   bool chrome_system_install;
   RetrieveChromeVersionAndInstalledDomain(&chrome_version,
                                           &chrome_system_install);
-  SetCrashKey("ChromeVersion", base::UTF16ToUTF8(chrome_version));
+  SetCrashKey("ChromeVersion", base::WideToUTF8(chrome_version));
   SetCrashKey("ChromeSystemInstall", chrome_system_install ? "1" : "0");
 
   SetCrashKeysFromCommandLine();

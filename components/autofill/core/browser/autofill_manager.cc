@@ -466,6 +466,14 @@ AutofillManager::AutofillManager(
                       enable_download_manager) {}
 
 AutofillManager::~AutofillManager() {
+  if (frame_has_parsed_forms_) {
+    base::UmaHistogramBoolean(
+        "Autofill.WebOTP.PhoneNumberCollection.ParseResult",
+        has_observed_phone_number_field_);
+    base::UmaHistogramBoolean("Autofill.WebOTP.OneTimeCode.FromAutocomplete",
+                              has_observed_one_time_code_field_);
+  }
+
   if (autocomplete_history_manager_) {
     autocomplete_history_manager_->CancelPendingQueries(this);
   }
@@ -2029,6 +2037,7 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
 void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms,
                                     const base::TimeTicks timestamp) {
   DCHECK(!forms.empty());
+  frame_has_parsed_forms_ = true;
 
   // Record the current sync state to be used for metrics on this page.
   sync_state_ = personal_data_->GetSyncSigninState();
@@ -2047,6 +2056,11 @@ void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms,
     if (!form_structure) {
       NOTREACHED();
       continue;
+    }
+
+    if (data_util::ContainsPhone(data_util::DetermineGroups(
+            form_structure->GetServerFieldTypes()))) {
+      has_observed_phone_number_field_ = true;
     }
 
     // TODO(crbug.com/869482): avoid logging developer engagement multiple
@@ -2078,6 +2092,8 @@ void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms,
         card_form = true;
       } else if (IsAddressForm(field->Type().group())) {
         address_form = true;
+      } else if (field->Type().html_type() == HTML_TYPE_ONE_TIME_CODE) {
+        has_observed_one_time_code_field_ = true;
       }
     }
     if (card_form) {

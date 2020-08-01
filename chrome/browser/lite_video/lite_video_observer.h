@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/lite_video/lite_video_navigation_metrics.h"
 #include "chrome/browser/lite_video/lite_video_user_blocklist.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -38,6 +39,7 @@ class LiteVideoObserver
   // content::WebContentsObserver.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void MediaBufferUnderflow(const content::MediaPlayerId& id) override;
 
   // Determines the LiteVideoDecision based on |hint| and the coinflip
   // holdback state.

@@ -98,7 +98,8 @@ class GPU_GLES2_EXPORT TextureOwner
   // expect to have rotation and MediaPlayer reports rotated size. For
   // MediaCodec we don't expect rotation in ST so visible_size (i.e crop rect
   // from codec) can be used.
-  virtual void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+  // Returns whether call was successful or not.
+  virtual bool GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
                                           gfx::Size* coded_size,
                                           gfx::Rect* visible_rect) = 0;
 

@@ -17,6 +17,10 @@ namespace contents {
 class WebContents;
 }
 
+namespace tab_groups {
+class TabGroupId;
+}
+
 // Collection of functions to find Browsers based on various criteria.
 
 namespace chrome {
@@ -57,6 +61,10 @@ Browser* FindBrowserWithActiveWindow();
 // Find the browser containing |web_contents| or NULL if none is found.
 // |web_contents| must not be NULL.
 Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
+
+// Find the browser containing the group with ID |group| or nullptr if none is
+// found within the given |profile|.
+Browser* FindBrowserWithGroup(Profile* profile, tab_groups::TabGroupId group);
 
 // Returns the Browser object owned by |profile| whose window was most recently
 // active. If no such Browsers exist, returns NULL.

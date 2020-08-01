@@ -142,6 +142,11 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox, true);
   registry->RegisterBooleanPref(prefs::kScreenCaptureAllowed, true);
 
+#if !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kCaretBrowsingEnabled, false);
+  registry->RegisterBooleanPref(prefs::kShowCaretBrowsingDialog, true);
+#endif
+
 #if !defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kAccessibilityFocusHighlightEnabled,
                                 false);

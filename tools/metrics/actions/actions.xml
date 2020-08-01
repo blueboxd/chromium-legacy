@@ -1370,6 +1370,71 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accessibility.CaretBrowsing.AcceptDialog">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>
+    A user pressed the caret browsing shortcut and then enabled the feature by
+    confirming in the dialog.
+  </description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.CancelDialog">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>
+    A user pressed the caret browsing shortcut and then cancelled without
+    enabling caret browsing.
+  </description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.DisableWithKeyboard">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>
+    A user disabled caret browsing using keyboard shortcuts.
+  </description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.DisableWithSettings">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>A user disabled caret browsing using settings.</description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.DoNotAsk">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>
+    A user enabled caret browsing and checked the box to never be prompted
+    again.
+  </description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.EnableWithKeyboard">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>
+    A user enabled caret browsing using the keyboard shortcut directly, when
+    they had already opted into not showing the confirmation dialog.
+  </description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.EnableWithSettings">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>A user enabled caret browsing using settings.</description>
+</action>
+
+<action name="Accessibility.CaretBrowsing.ShowDialog">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>emilyscharff@google.com</owner>
+  <description>
+    A user pressed the caret browsing shortcut and the confirmation dialog was
+    shown.
+  </description>
+</action>
+
 <action
     name="Accessibility.ChromeVox.BluetoothBrailleDisplayConnectedButtonClick">
   <owner>dtseng@chromium.org</owner>

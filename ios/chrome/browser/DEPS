@@ -15,6 +15,7 @@ include_rules = [
   "+components/crash/core/common",
   "+components/dom_distiller/core",
   "+components/dom_distiller/ios",
+  "+components/enterprise",
   "+components/error_page/common",
   "+components/favicon/core",
   "+components/favicon/ios",

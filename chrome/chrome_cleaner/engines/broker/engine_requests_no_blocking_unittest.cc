@@ -556,8 +556,8 @@ TEST_P(EngineRequestsNoBlockingTest, TestRequest) {
       base::StrCat({temp_reg_key.FullyQualifiedPath(), L"\\dummy-subkey"}));
 
   base::Process test_process = LongRunningProcess(/*command_line=*/nullptr);
-  parent_process->AppendSwitchNative(
-      kTestProcessIdSwitch, base::NumberToString16(test_process.Pid()));
+  parent_process->AppendSwitchNative(kTestProcessIdSwitch,
+                                     base::NumberToWString(test_process.Pid()));
 
   // Install a test task scheduler so we don't accidentally delete a real task
   // when servicing the DeleteTask request.

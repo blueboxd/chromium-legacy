@@ -492,6 +492,9 @@ class BrowserWindow : public ui::BaseWindow {
       content::RenderFrameHost* frame,
       content::EyeDropperListener* listener) = 0;
 
+  // Shows a confirmation dialog about enabling caret browsing.
+  virtual void ShowCaretBrowsingDialog() = 0;
+
  protected:
   friend class BrowserCloseManager;
   friend class BrowserView;

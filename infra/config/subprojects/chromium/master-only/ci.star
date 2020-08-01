@@ -1520,6 +1520,7 @@ ci.fyi_builder(
                     'crashpad_handler',
                     'headless_lib.pak',
                     'icudtl.dat',
+                    'libminigbm.so',
                     'nacl_helper',
                     'nacl_irt_x86_64.nexe',
                     'resources.pak',

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,7 @@ const char kAccessTokenKey[] = "token";
 const char kConsentKey[] = "consent";
 const char kExpiresInKey[] = "expiresIn";
 const char kScopesKey[] = "scopes";
+const char kGrantedScopesKey[] = "grantedScopes";
 const char kDescriptionKey[] = "description";
 const char kDetailKey[] = "detail";
 const char kDetailSeparators[] = "\n";
@@ -169,10 +171,12 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(Delegate* delegate,
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 
-void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token,
-                                        int time_to_live) {
+void OAuth2MintTokenFlow::ReportSuccess(
+    const std::string& access_token,
+    const std::set<std::string>& granted_scopes,
+    int time_to_live) {
   if (delegate_)
-    delegate_->OnMintTokenSuccess(access_token, time_to_live);
+    delegate_->OnMintTokenSuccess(access_token, granted_scopes, time_to_live);
 
   // |this| may already be deleted.
 }
@@ -292,10 +296,19 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   }
 
   std::string access_token;
+  std::set<std::string> granted_scopes;
   int time_to_live;
-  if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live)) {
-    RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
-    ReportSuccess(access_token, time_to_live);
+  if (ParseMintTokenResponse(&(*value), &access_token, &granted_scopes,
+                             &time_to_live)) {
+    if (granted_scopes.empty()) {
+      granted_scopes.insert(parameters_.scopes.begin(),
+                            parameters_.scopes.end());
+      RecordApiCallResult(
+          OAuth2MintTokenApiCallResult::kMintTokenSuccessWithFallbackScopes);
+    } else {
+      RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
+    }
+    ReportSuccess(access_token, granted_scopes, time_to_live);
   } else {
     RecordApiCallResult(OAuth2MintTokenApiCallResult::kParseMintTokenFailure);
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
@@ -315,12 +328,15 @@ void OAuth2MintTokenFlow::ProcessApiCallFailure(
 }
 
 // static
-bool OAuth2MintTokenFlow::ParseMintTokenResponse(const base::Value* dict,
-                                                 std::string* access_token,
-                                                 int* time_to_live) {
+bool OAuth2MintTokenFlow::ParseMintTokenResponse(
+    const base::Value* dict,
+    std::string* access_token,
+    std::set<std::string>* granted_scopes,
+    int* time_to_live) {
   CHECK(dict);
   CHECK(dict->is_dict());
   CHECK(access_token);
+  CHECK(granted_scopes);
   CHECK(time_to_live);
 
   const std::string* ttl_string = dict->FindStringKey(kExpiresInKey);
@@ -332,6 +348,27 @@ bool OAuth2MintTokenFlow::ParseMintTokenResponse(const base::Value* dict,
     return false;
 
   *access_token = *access_token_ptr;
+
+  const std::string* granted_scopes_string =
+      dict->FindStringKey(kGrantedScopesKey);
+
+  if (!granted_scopes_string) {
+    // TODO(https://crbug.com/1100535): Once unbundled consent has successfully
+    // launched, remove the fallback to the requested scopes when the
+    // grantedScopes parameter is missing from the response. After launch,
+    // ParseMintTokenResponse should return false in these situations.
+    return true;
+  }
+
+  const std::vector<std::string> granted_scopes_vector =
+      base::SplitString(*granted_scopes_string, " ", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  if (granted_scopes_vector.empty())
+    return false;
+
+  const std::set<std::string> granted_scopes_set(granted_scopes_vector.begin(),
+                                                 granted_scopes_vector.end());
+  *granted_scopes = std::move(granted_scopes_set);
   return true;
 }
 

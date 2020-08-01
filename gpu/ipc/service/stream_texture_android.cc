@@ -225,8 +225,12 @@ void StreamTexture::OnFrameAvailable() {
 
   gfx::Rect visible_rect;
   gfx::Size coded_size;
-  texture_owner_->GetCodedSizeAndVisibleRect(rotated_visible_size_, &coded_size,
-                                             &visible_rect);
+  if (!texture_owner_->GetCodedSizeAndVisibleRect(rotated_visible_size_,
+                                                  &coded_size, &visible_rect)) {
+    // if we failed to get right size fallback to visible size.
+    coded_size = rotated_visible_size_;
+    visible_rect = gfx::Rect(coded_size);
+  }
 
   if (coded_size != coded_size_ || visible_rect != visible_rect_) {
     coded_size_ = coded_size;

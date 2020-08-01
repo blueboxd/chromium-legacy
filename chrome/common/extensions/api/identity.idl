@@ -84,7 +84,8 @@ namespace identity {
     boolean? interactive;
   };
 
-  callback GetAuthTokenCallback = void (optional DOMString token);
+  callback GetAuthTokenCallback = void (optional DOMString token,
+                                        optional DOMString[] scopes);
   callback GetAccountsCallback = void (AccountInfo[] accounts);
   callback GetProfileUserInfoCallback = void (ProfileUserInfo userInfo);
   callback InvalidateAuthTokenCallback = void ();
@@ -112,6 +113,9 @@ namespace identity {
     // or Chrome sign in screens if they are not signed in, with with no
     // context. In particular, do not use <code>getAuthToken</code>
     // interactively when your app is first launched.
+    //
+    // The <code>scopes</code> parameter in the callback function is not yet
+    // available. It will be populated in future versions of Chrome.
     //
     // |details| : Token options.
     // |callback| : Called with an OAuth2 access token as specified by the

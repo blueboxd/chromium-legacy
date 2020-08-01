@@ -224,6 +224,9 @@ void ProfilePolicyConnector::Init(
 #if defined(OS_CHROMEOS)
   migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
       policy::key::kDeviceNativePrinters, policy::key::kDevicePrinters));
+  migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
+      policy::key::kNoteTakingAppsLockScreenWhitelist,
+      policy::key::kNoteTakingAppsLockScreenAllowlist));
 
   ConfigurationPolicyProvider* user_policy_delegate_candidate =
       configuration_policy_provider ? configuration_policy_provider

@@ -70,7 +70,7 @@ void AwSSLHostStateDelegate::AllowCert(const std::string& host,
 
 void AwSSLHostStateDelegate::Clear(
     base::RepeatingCallback<bool(const std::string&)> host_filter) {
-  if (host_filter.is_null()) {
+  if (!host_filter) {
     cert_policy_for_host_.clear();
     return;
   }

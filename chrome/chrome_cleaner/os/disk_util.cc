@@ -63,12 +63,12 @@ const wchar_t kWindowsCurrentVersionRegKeyName[] =
 // "C:\Program Files\Common Files\".
 const wchar_t kCommonProgramW6432[] = L"%CommonProgramW6432%";
 
-constexpr const base::char16* kCompanyIgnoredReportingList[] = {
-    STRING16_LITERAL("Google LLC"),
-    STRING16_LITERAL("Google Inc"),
-    STRING16_LITERAL("Google Inc."),
-    STRING16_LITERAL("Intel Corporation"),
-    STRING16_LITERAL("Microsoft Corporation"),
+constexpr const wchar_t* kCompanyIgnoredReportingList[] = {
+    L"Google LLC",
+    L"Google Inc",
+    L"Google Inc.",
+    L"Intel Corporation",
+    L"Microsoft Corporation",
 };
 
 // Built from various sources to try and include all the extensions that are
@@ -407,15 +407,15 @@ base::string16 FileInformationToString(
   base::string16 content = L"path = '" + file_information.path + L"'";
 
   AppendFileInformationField(L"file_creation_date",
-                             base::UTF8ToUTF16(file_information.creation_date),
+                             base::UTF8ToWide(file_information.creation_date),
                              &content);
   AppendFileInformationField(
       L"file_last_modified_date",
-      base::UTF8ToUTF16(file_information.last_modified_date), &content);
+      base::UTF8ToWide(file_information.last_modified_date), &content);
   AppendFileInformationField(
-      L"digest", base::UTF8ToUTF16(file_information.sha256), &content);
+      L"digest", base::UTF8ToWide(file_information.sha256), &content);
   AppendFileInformationField(
-      L"size", base::NumberToString16(file_information.size), &content);
+      L"size", base::NumberToWString(file_information.size), &content);
   AppendFileInformationField(L"company_name", file_information.company_name,
                              &content);
   AppendFileInformationField(L"company_short_name",
@@ -433,7 +433,7 @@ base::string16 FileInformationToString(
   AppendFileInformationField(L"file_version", file_information.file_version,
                              &content);
   AppendFileInformationField(
-      L"active_file", base::NumberToString16(file_information.active_file),
+      L"active_file", base::NumberToWString(file_information.active_file),
       &content);
 
   return content;

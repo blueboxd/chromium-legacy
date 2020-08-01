@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_name.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -40,6 +41,8 @@
 #include "components/variations/service/variations_service.h"
 
 namespace autofill {
+
+using structured_address::VerificationStatus;
 
 namespace {
 
@@ -579,8 +582,10 @@ bool FormDataImporter::ImportAddressProfileForSection(
     // We need to store phone data in the variables, before building the whole
     // number at the end. If |value| is not from a phone field, home.SetInfo()
     // returns false and data is stored directly in |candidate_profile|.
-    if (!combined_phone.SetInfo(field_type, value))
-      candidate_profile.SetInfo(field_type, value, app_locale_);
+    if (!combined_phone.SetInfo(field_type, value)) {
+      candidate_profile.SetInfoWithVerificationStatus(
+          field_type, value, app_locale_, VerificationStatus::kObserved);
+    }
 
     // Reject profiles with invalid country information.
     if (server_field_type == ADDRESS_HOME_COUNTRY &&
@@ -595,8 +600,10 @@ bool FormDataImporter::ImportAddressProfileForSection(
         // every language code.
         std::string page_language = client_->GetPageLanguage();
         // Retry to set the country of there is known page language.
-        if (!page_language.empty())
-          candidate_profile.SetInfo(field_type, value, page_language);
+        if (!page_language.empty()) {
+          candidate_profile.SetInfoWithVerificationStatus(
+              field_type, value, page_language, VerificationStatus::kObserved);
+        }
       }
       // Check if the country code was still not determined correctly.
       if (candidate_profile.GetRawInfo(ADDRESS_HOME_COUNTRY).empty()) {
@@ -615,8 +622,9 @@ bool FormDataImporter::ImportAddressProfileForSection(
     base::string16 constructed_number;
     if (!combined_phone.ParseNumber(candidate_profile, app_locale_,
                                     &constructed_number) ||
-        !candidate_profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
-                                   constructed_number, app_locale_)) {
+        !candidate_profile.SetInfoWithVerificationStatus(
+            AutofillType(PHONE_HOME_WHOLE_NUMBER), constructed_number,
+            app_locale_, VerificationStatus::kObserved)) {
       if (import_log_buffer) {
         *import_log_buffer << LogMessage::kImportAddressProfileFromFormFailed
                            << "Invalid phone number." << CTag{};
@@ -669,6 +677,10 @@ bool FormDataImporter::ImportAddressProfileForSection(
 
   if (!all_fullfilled)
     return false;
+
+  if (!candidate_profile.FinalizeAfterImport())
+    return false;
+
   std::string guid =
       personal_data_manager_->SaveImportedProfile(candidate_profile);
 

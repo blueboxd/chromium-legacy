@@ -53,7 +53,7 @@ void ChromeProxyMainDialog::ConfirmCleanup(
     for (const ForceInstalledExtension& matched_extension :
          pup->matched_extensions) {
       extension_ids.push_back(
-          base::UTF8ToUTF16(matched_extension.id.AsString()));
+          base::UTF8ToWide(matched_extension.id.AsString()));
     }
   }
   chrome_prompt_ipc_->PostPromptUserTask(

@@ -1296,8 +1296,10 @@ public class TabListMediatorUnitTest {
 
         long timestamp1 = 1;
         long timestamp2 = 2;
-        doReturn(timestamp1).when(mTab1).getTimestampMillis();
-        doReturn(timestamp2).when(mTab2).getTimestampMillis();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        doReturn(timestamp1).when(criticalPersistedTabData1).getTimestampMillis();
+        doReturn(timestamp2).when(criticalPersistedTabData2).getTimestampMillis();
         mMediator.resetWithListOfTabs(
                 PseudoTab.getListOfPseudoTab(tabs), /*quickMode =*/false, /*mruMode =*/true);
 
@@ -1307,8 +1309,8 @@ public class TabListMediatorUnitTest {
         assertThat(mMediator.indexOfTab(TAB1_ID), equalTo(1));
         assertThat(mMediator.indexOfTab(TAB2_ID), equalTo(0));
 
-        doReturn(timestamp2).when(mTab1).getTimestampMillis();
-        doReturn(timestamp1).when(mTab2).getTimestampMillis();
+        doReturn(timestamp2).when(criticalPersistedTabData1).getTimestampMillis();
+        doReturn(timestamp1).when(criticalPersistedTabData2).getTimestampMillis();
         mMediator.resetWithListOfTabs(
                 PseudoTab.getListOfPseudoTab(tabs), /*quickMode =*/false, /*mruMode =*/true);
 

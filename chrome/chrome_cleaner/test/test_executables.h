@@ -12,10 +12,10 @@
 namespace chrome_cleaner {
 
 // The name of the service executable used for tests.
-extern const base::char16 kTestServiceExecutableName[];
+extern const wchar_t kTestServiceExecutableName[];
 
 // The name of the executable used for tests.
-extern const base::char16 kTestProcessExecutableName[];
+extern const wchar_t kTestProcessExecutableName[];
 
 // Creates a process that will run for a minute, which is long enough to be
 // killed by a reasonably fast unit or integration test.

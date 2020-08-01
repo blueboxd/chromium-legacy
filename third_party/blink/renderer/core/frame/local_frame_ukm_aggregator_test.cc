@@ -100,8 +100,8 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
                                unsigned expected_primary_metric,
                                unsigned expected_sub_metric) {
     auto entries = recorder().GetEntriesByName("Blink.PageLoad");
-    EXPECT_EQ(entries.size(), expected_num_entries);
 
+    EXPECT_EQ(entries.size(), expected_num_entries);
     for (auto* entry : entries) {
       EXPECT_TRUE(
           ukm::TestUkmRecorder::EntryHasMetric(entry, GetPrimaryMetricName()));

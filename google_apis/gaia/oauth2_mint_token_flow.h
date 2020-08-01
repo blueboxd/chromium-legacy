@@ -5,6 +5,7 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_MINT_TOKEN_FLOW_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_MINT_TOKEN_FLOW_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -41,7 +42,8 @@ enum class OAuth2MintTokenApiCallResult {
   // DEPRECATED:
   // kRemoteConsentFallback = 8
   kParseRemoteConsentFailure = 9,
-  kMaxValue = kParseRemoteConsentFailure
+  kMintTokenSuccessWithFallbackScopes = 10,
+  kMaxValue = kMintTokenSuccessWithFallbackScopes
 };
 
 // IssueAdvice: messages to show to the user to get a user's approval.
@@ -134,6 +136,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   class Delegate {
    public:
     virtual void OnMintTokenSuccess(const std::string& access_token,
+                                    const std::set<std::string>& granted_scopes,
                                     int time_to_live) {}
     virtual void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice)  {}
     virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) {}
@@ -191,7 +194,9 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
                            ParseRemoteConsentResponse_BadCookieList);
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseMintTokenResponse);
 
-  void ReportSuccess(const std::string& access_token, int time_to_live);
+  void ReportSuccess(const std::string& access_token,
+                     const std::set<std::string>& granted_scopes,
+                     int time_to_live);
   void ReportIssueAdviceSuccess(const IssueAdviceInfo& issue_advice);
   void ReportRemoteConsentSuccess(
       const RemoteConsentResolutionData& resolution_data);
@@ -202,8 +207,17 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   static bool ParseRemoteConsentResponse(
       const base::Value* dict,
       RemoteConsentResolutionData* resolution_data);
+
+  // Currently, grantedScopes is a new parameter for an unlaunched feature, so
+  // it may not always be populated in server responses. In those cases,
+  // ParseMintTokenResponse can still succeed and will just leave the
+  // granted_scopes set unmodified. When the grantedScopes parameter is present
+  // and the function returns true, granted_scopes will include the scopes
+  // returned by the server. Once the feature is fully launched, this function
+  // will be updated to fail if the grantedScopes parameter is missing.
   static bool ParseMintTokenResponse(const base::Value* dict,
                                      std::string* access_token,
+                                     std::set<std::string>* granted_scopes,
                                      int* time_to_live);
 
   Delegate* delegate_;

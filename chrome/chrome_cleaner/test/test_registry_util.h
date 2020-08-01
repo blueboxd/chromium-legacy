@@ -21,19 +21,19 @@ namespace chrome_cleaner {
 class ScopedRegistryValue {
  public:
   ScopedRegistryValue(HKEY rootkey,
-                      const base::char16* subkey,
+                      const wchar_t* subkey,
                       REGSAM access,
-                      const base::char16* value_name,
-                      const base::char16* content,
+                      const wchar_t* value_name,
+                      const wchar_t* content,
                       uint32_t value_type);
 
   ~ScopedRegistryValue();
 
  private:
-  const base::char16* value_name_;
+  const wchar_t* value_name_;
   base::win::RegKey key_;
   DWORD old_value_type_ = REG_NONE;
-  std::vector<base::char16> old_value_;
+  std::vector<wchar_t> old_value_;
   DWORD old_value_size_ = 0;
   bool has_value_ = false;
 
@@ -42,7 +42,7 @@ class ScopedRegistryValue {
 
 class ScopedTempRegistryKey {
  public:
-  ScopedTempRegistryKey(HKEY key, const base::char16* key_path, REGSAM access);
+  ScopedTempRegistryKey(HKEY key, const wchar_t* key_path, REGSAM access);
   ~ScopedTempRegistryKey();
 
   bool Valid() const { return key_.Valid(); }
@@ -56,15 +56,15 @@ class ScopedTempRegistryKey {
 // Expect the registry footprint to be found in |pup|.
 void ExpectRegistryFootprint(const PUPData::PUP& pup,
                              const RegKeyPath& key_path,
-                             const base::char16* value_name,
-                             const base::char16* value_substring,
+                             const wchar_t* value_name,
+                             const wchar_t* value_substring,
                              RegistryMatchRule rule);
 
 // Expect the registry footprint not to be found in |pup|.
 void ExpectRegistryFootprintAbsent(const PUPData::PUP& pup,
                                    const RegKeyPath& key_path,
-                                   const base::char16* value_name,
-                                   const base::char16* value_substring,
+                                   const wchar_t* value_name,
+                                   const wchar_t* value_substring,
                                    RegistryMatchRule rule);
 
 }  // namespace chrome_cleaner

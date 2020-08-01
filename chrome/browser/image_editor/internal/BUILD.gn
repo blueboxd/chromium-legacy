@@ -9,5 +9,9 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   sources = [ "android/java/src/org/chromium/chrome/browser/image_editor/ImageEditorDialogCoordinatorImpl.java" ]
 
-  deps = [ "//chrome/browser/image_editor/public:java" ]
+  deps = [
+    "//chrome/browser/image_editor/public:java",
+    "//chrome/browser/share:java",
+    "//chrome/browser/tab:java",
+  ]
 }

@@ -41,7 +41,7 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   void ReleaseBackBuffers() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
-  void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+  bool GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
                                   gfx::Size* coded_size,
                                   gfx::Rect* visible_rect) override;
 

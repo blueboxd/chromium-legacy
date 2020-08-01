@@ -199,7 +199,7 @@ bool RunOnceOverrideCommandLineContains(const std::string& cleanup_id,
   if (run_once_key.Valid()) {
     // There is no need to check the return value, since ReadValue will leave
     // |reg_value| empty on error.
-    run_once_key.ReadValue(base::UTF8ToUTF16(cleanup_id).c_str(), &reg_value);
+    run_once_key.ReadValue(base::UTF8ToWide(cleanup_id).c_str(), &reg_value);
   }
 
   return String16ContainsCaseInsensitive(reg_value, sub_string);
@@ -438,11 +438,11 @@ bool ResetAclForUcrtbase() {
   int exit_code = 0;
   if (!process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
                                       &exit_code)) {
-    LOG(ERROR) << "Failed to reset acl for file " << ucrt_path.AsUTF16Unsafe();
+    LOG(ERROR) << "Failed to reset acl for file " << ucrt_path.value();
     return false;
   }
   if (exit_code) {
-    LOG(ERROR) << "Failed to reset acl for file " << ucrt_path.AsUTF16Unsafe()
+    LOG(ERROR) << "Failed to reset acl for file " << ucrt_path.value()
                << " with exit code " << exit_code;
   }
   return !exit_code;

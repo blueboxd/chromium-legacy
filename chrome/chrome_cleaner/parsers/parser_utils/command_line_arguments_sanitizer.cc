@@ -22,7 +22,7 @@ namespace {
 base::string16 GetUnescapedHost(GURL url) {
   std::string url_host = url.host();
 
-  url::RawCanonOutputT<base::char16> unescaped_url_host;
+  url::RawCanonOutputT<wchar_t> unescaped_url_host;
   url::DecodeURLEscapeSequences(url_host.c_str(), url_host.length(),
                                 url::DecodeURLMode::kUTF8OrIsomorphic,
                                 &unescaped_url_host);
@@ -45,7 +45,7 @@ base::string16 SanitizeUrl(const base::string16& possible_url) {
   if (!has_scheme && url.host().find(".") == std::string::npos)
     return possible_url;
 
-  return base::UTF8ToUTF16(url.scheme()) + L"://" + GetUnescapedHost(url);
+  return base::UTF8ToWide(url.scheme()) + L"://" + GetUnescapedHost(url);
 }
 }  // namespace
 
@@ -60,7 +60,7 @@ std::vector<base::string16> SanitizeArguments(const base::string16& arguments) {
   std::vector<base::string16> sanitized_arguments;
   for (auto it = switches.begin(); it != switches.end(); it++) {
     sanitized_arguments.push_back(
-        L"--" + base::UTF8ToUTF16(it->first) +
+        L"--" + base::UTF8ToWide(it->first) +
         ((it->second.empty())
              ? L""
              : L"=" + SanitizePath(base::FilePath(SanitizeUrl(it->second)))));

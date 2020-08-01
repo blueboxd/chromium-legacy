@@ -941,8 +941,11 @@ ResultCode SandboxWin::StartSandboxedProcess(
 
   // Post-startup mitigations.
   mitigations = MITIGATION_DLL_SEARCH_ORDER;
-  if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
+  if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules) &&
+      sandbox_type != SandboxType::kSpeechRecognition) {
     mitigations |= MITIGATION_FORCE_MS_SIGNED_BINS;
+  }
+
   if (sandbox_type == SandboxType::kNetwork ||
       sandbox_type == SandboxType::kAudio ||
       sandbox_type == SandboxType::kIconReader) {

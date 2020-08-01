@@ -112,7 +112,7 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
   paint_flags.setStyle(PaintFlags::kStroke_Style);
   paint_flags.setStrokeWidth(1);
 
-  SkPath line_path;
+  SkPathBuilder line_path;
 
   // Draw a dark line, to ensure contrast against a light background
   line_path.moveTo(points[0].X(), points[0].Y());
@@ -120,17 +120,16 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
   line_path.moveTo(points[2].X(), points[2].Y());
   line_path.lineTo(points[3].X(), points[3].Y());
   paint_flags.setColor(SkColorSetARGB(153, 0, 0, 0));
-  context.DrawPath(line_path, paint_flags);
+  context.DrawPath(line_path.detach(), paint_flags);
 
   // Draw a light line one pixel below the light line,
   // to ensure contrast against a dark background
-  line_path.rewind();
   line_path.moveTo(points[0].X(), points[0].Y() + 1);
   line_path.lineTo(points[1].X() + (on_left ? -1 : 1), points[1].Y());
   line_path.moveTo(points[2].X(), points[2].Y() + 1);
   line_path.lineTo(points[3].X() + (on_left ? -1 : 1), points[3].Y());
   paint_flags.setColor(SkColorSetARGB(153, 255, 255, 255));
-  context.DrawPath(line_path, paint_flags);
+  context.DrawPath(line_path.detach(), paint_flags);
 }
 
 void ScrollableAreaPainter::PaintOverflowControls(

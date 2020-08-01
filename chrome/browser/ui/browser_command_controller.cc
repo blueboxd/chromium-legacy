@@ -661,6 +661,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_PROFILING_ENABLED:
       content::Profiling::Toggle();
       break;
+    case IDC_CARET_BROWSING_TOGGLE:
+      ToggleCaretBrowsing(browser_);
+      break;
 
     case IDC_SHOW_BOOKMARK_MANAGER:
       ShowBookmarkManager(browser_);
@@ -985,6 +988,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_SIGN_IN_PROMO, true);
+  command_updater_.UpdateCommandEnabled(IDC_CARET_BROWSING_TOGGLE, true);
 
   UpdateShowSyncState(true);
 

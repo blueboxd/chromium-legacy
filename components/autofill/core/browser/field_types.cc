@@ -422,6 +422,8 @@ base::StringPiece FieldTypeToStringPiece(HtmlFieldType type) {
       return "HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR";
     case HTML_TYPE_UPI_VPA:
       return "HTML_TYPE_UPI_VPA";
+    case HTML_TYPE_ONE_TIME_CODE:
+      return "HTML_TYPE_ONE_TIME_CODE";
     case HTML_TYPE_UNRECOGNIZED:
       return "HTML_TYPE_UNRECOGNIZED";
   }

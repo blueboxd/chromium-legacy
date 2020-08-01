@@ -21,8 +21,8 @@ namespace chrome_cleaner {
 // If you add another test executable here, also add it to the data_deps in
 // the "test_executables" target of chrome_cleaner/test/BUILD.gn.
 
-const base::char16 kTestServiceExecutableName[] = L"test_service.exe";
-const base::char16 kTestProcessExecutableName[] = L"test_process.exe";
+const wchar_t kTestServiceExecutableName[] = L"test_service.exe";
+const wchar_t kTestProcessExecutableName[] = L"test_process.exe";
 
 base::Process LongRunningProcess(base::CommandLine* cmd) {
   base::FilePath exe_dir;
@@ -44,7 +44,7 @@ base::Process LongRunningProcess(base::CommandLine* cmd) {
           base::WaitableEvent::InitialState::NOT_SIGNALED);
   command_line.AppendSwitchNative(
       chrome_cleaner::kInitDoneNotifierSwitch,
-      base::NumberToString16(
+      base::NumberToWString(
           base::win::HandleToUint32(init_done_event->handle())));
 
   if (cmd)

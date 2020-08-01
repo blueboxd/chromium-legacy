@@ -123,7 +123,7 @@ bool DropTabsInNewBrowser(Browser* new_browser,
 
   Browser* source_browser = nullptr;
   std::vector<int> tab_indices_to_move;
-  base::Optional<tab_groups::TabGroupId> target_group_id;
+  base::Optional<tab_groups::TabGroupId> source_group_id;
 
   // TODO(https://crbug.com/1069869): de-duplicate with
   // TabStripUIHandler::HandleMoveTab and
@@ -148,9 +148,8 @@ bool DropTabsInNewBrowser(Browser* new_browser,
         GetBrowserWithGroupId(new_browser->profile(), group_id_utf8);
     if (!source_browser)
       return false;
-    base::Optional<tab_groups::TabGroupId> source_group_id =
-        GetTabGroupIdFromString(
-            source_browser->tab_strip_model()->group_model(), group_id_utf8);
+    source_group_id = GetTabGroupIdFromString(
+        source_browser->tab_strip_model()->group_model(), group_id_utf8);
     if (!source_group_id)
       return false;
 
@@ -159,16 +158,14 @@ bool DropTabsInNewBrowser(Browser* new_browser,
             *source_group_id);
     tab_indices_to_move = source_group->ListTabs();
 
-    // Create a new group with the same visuals.
-    target_group_id = tab_groups::TabGroupId::GenerateNew();
     new_browser->tab_strip_model()->group_model()->AddTabGroup(
-        *target_group_id, *source_group->visual_data());
+        *source_group_id, *source_group->visual_data());
   }
 
   for (size_t i = 0; i < tab_indices_to_move.size(); ++i) {
     int source_index = tab_indices_to_move[i] - i;
     MoveTabAcrossWindows(source_browser, source_index, new_browser, i,
-                         target_group_id);
+                         source_group_id);
   }
   new_browser->tab_strip_model()->ActivateTabAt(0);
   return true;

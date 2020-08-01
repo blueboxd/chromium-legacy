@@ -178,7 +178,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
           CreateForProfile(profile));
 #endif
 
+#if defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(std::make_unique<AccessibilityMainHandler>());
+#else
+  AddSettingsPageUIHandler(
+      std::make_unique<AccessibilityMainHandler>(profile->GetPrefs()));
+#endif  // defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(std::make_unique<BrowserLifetimeHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<ClearBrowsingDataHandler>(web_ui, profile));

@@ -36,8 +36,8 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
     },
 
     /**
-     * Set of settingIds that could be deep linked to. Initialized as an
-     * empty set, should be overridden with applicable settingIds.
+     * Set of setting IDs that could be deep linked to. Initialized as an
+     * empty set, should be overridden with applicable setting IDs.
      * @type {!Set<!chromeos.settings.mojom.Setting>}
      */
     supportedSettingIds: {
@@ -92,11 +92,14 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
 
   /**
    * Override this method to execute code after a supported settingId is found
-   * and before the deep link is shown. Default behavior is no op.
+   * and before the deep link is shown. Returns whether or not the deep link
+   * attempt should continue. Default behavior is to no op and then return
+   * true, continuing the deep link attempt.
    * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
-    return;
+    return true;
   },
 
   /**
@@ -109,13 +112,22 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
    */
   attemptDeepLink() {
     const settingId = this.getDeepLinkSettingId();
-    if (settingId && this.supportedSettingIds.has(settingId)) {
-      this.beforeDeepLinkAttempt(settingId);
-      return this.showDeepLink(settingId);
+    // Explicitly check for null to handle settingId = 0.
+    if (settingId === null || !this.supportedSettingIds.has(settingId)) {
+      // No deep link was shown since the settingId was unsupported.
+      return new Promise(resolve => {
+        resolve({deepLinkShown: false, pendingSettingId: null});
+      });
     }
-    // No deep link was shown since the settingId was unsupported.
-    return new Promise(resolve => {
-      resolve({deepLinkShown: false, pendingSettingId: null});
-    });
+
+    const shouldContinue = this.beforeDeepLinkAttempt(settingId);
+    if (!shouldContinue) {
+      // Don't continue the deep link attempt since it was presumably
+      // handled manually in beforeDeepLinkAttempt().
+      return new Promise(resolve => {
+        resolve({deepLinkShown: false, pendingSettingId: settingId});
+      });
+    }
+    return this.showDeepLink(settingId);
   },
 };

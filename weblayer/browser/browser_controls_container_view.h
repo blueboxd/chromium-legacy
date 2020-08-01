@@ -37,6 +37,13 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   // Height needed to display the control.
   int GetControlsHeight();
 
+  // Returns the minimum height the browser controls can collapse to.
+  int GetMinHeight();
+
+  // Returns true if the browser controls should only expand when the page
+  // contents are scrolled to the top.
+  bool ShouldPinControlsToContentTop();
+
   // Returns the amount of vertical space to take away from the contents.
   int GetContentHeightDelta();
 
@@ -54,8 +61,7 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
 
   // Sets the offsets of the controls and content. See
   // BrowserControlsContainerView's javadoc for details on this.
-  void SetTopControlsOffset(JNIEnv* env,
-                            int content_offset_y);
+  void SetTopControlsOffset(JNIEnv* env, int content_offset_y);
   void SetBottomControlsOffset(JNIEnv* env);
 
   // Sets the size of |controls_layer_|.

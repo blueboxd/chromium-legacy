@@ -135,7 +135,7 @@ NameLastConjunction::NameLastConjunction(AddressComponent* parent)
 
 NameLastConjunction::~NameLastConjunction() = default;
 
-std::vector<const RE2*> NameLast::GetParseRegularExpressionsByRelevance()
+std::vector<const re2::RE2*> NameLast::GetParseRegularExpressionsByRelevance()
     const {
   auto* pattern_provider = StructuredAddressesRegExProvider::Instance();
   DCHECK(pattern_provider);
@@ -172,7 +172,7 @@ NameFull::NameFull(AddressComponent* parent)
           parent,
           {&name_honorific_, &name_first_, &name_middle_, &name_last_}) {}
 
-std::vector<const RE2*> NameFull::GetParseRegularExpressionsByRelevance()
+std::vector<const re2::RE2*> NameFull::GetParseRegularExpressionsByRelevance()
     const {
   auto* pattern_provider = StructuredAddressesRegExProvider::Instance();
   DCHECK(pattern_provider);

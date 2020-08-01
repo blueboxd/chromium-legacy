@@ -103,7 +103,7 @@ void ParentProcess::AppendSwitchHandleToShare(const std::string& switch_string,
                                               HANDLE handle) {
   extra_handles_to_inherit_.push_back(handle);
   command_line_.AppendSwitchNative(
-      switch_string, base::NumberToString16(base::win::HandleToUint32(handle)));
+      switch_string, base::NumberToWString(base::win::HandleToUint32(handle)));
 }
 
 bool ParentProcess::LaunchConnectedChildProcess(

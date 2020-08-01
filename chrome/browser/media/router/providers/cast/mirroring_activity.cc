@@ -133,14 +133,6 @@ MirroringActivity::MirroringActivity(
 }
 
 MirroringActivity::~MirroringActivity() {
-  // Usually mirroring will have already been stopped by this point, but when
-  // Chrome is shutting down, this is our first indication that mirroring needs
-  // to stop.  Without this call, if a user shuts down Chrome while mirroring,
-  // the receiver will continue to show the last mirrored frame for several
-  // seconds, which could be bad if the user was shutting down Chrome
-  // specifically to prevent someone from seeing what they were mirroring!
-  StopMirroring();
-
   if (did_start_mirroring_timestamp_) {
     base::UmaHistogramLongTimes(
         kHistogramSessionLength,

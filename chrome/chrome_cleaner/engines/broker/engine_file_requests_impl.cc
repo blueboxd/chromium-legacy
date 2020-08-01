@@ -68,7 +68,7 @@ void EngineFileRequestsImpl::FindFirstFile(
       file_name, &find_file_data, &handle);
   if (metadata_observer_) {
     std::map<std::string, std::string> arguments = {
-        {"file_name", base::UTF16ToUTF8(file_name.value())},
+        {"file_name", base::WideToUTF8(file_name.value())},
         {"result", base::NumberToString(result)},
         {"handle", base::NumberToString(reinterpret_cast<size_t>(handle))},
     };

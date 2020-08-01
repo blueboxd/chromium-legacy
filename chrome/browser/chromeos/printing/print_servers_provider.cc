@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/printing/print_servers_provider.h"
 
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -156,17 +155,19 @@ class PrintServersProviderImpl : public PrintServersProvider {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   }
 
-  void SetProfile(Profile* profile) override {
+  void SetAllowlistPref(PrefService* prefs,
+                        const std::string& allowlist_pref) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (profile_ != nullptr) {
+    if (prefs_ != nullptr && !allowlist_pref_.empty()) {
       // Some unit tests may create more than one profile with the same user.
       return;
     }
-    profile_ = profile;
-    pref_change_registrar_.Init(profile->GetPrefs());
+    prefs_ = prefs;
+    allowlist_pref_ = allowlist_pref;
+    pref_change_registrar_.Init(prefs);
     // Bind UpdateAllowlist() method and call it once.
     pref_change_registrar_.Add(
-        prefs::kExternalPrintServersAllowlist,
+        allowlist_pref_,
         base::BindRepeating(&PrintServersProviderImpl::UpdateAllowlist,
                             base::Unretained(this)));
     UpdateAllowlist();
@@ -222,28 +223,23 @@ class PrintServersProviderImpl : public PrintServersProvider {
     // The case when there is at least one unfinished task.
     if (last_processed_task_ != last_received_task_)
       return false;
-    // The case when a profile is not set.
-    if (profile_ == nullptr)
+    // The case when prefs are not set.
+    if (prefs_ == nullptr)
       return false;
     return true;
   }
 
   // Called when a new allowlist is available.
   void UpdateAllowlist() {
-    whitelist_.clear();
-    whitelist_is_set_ = false;
-    // Fetch and parse the whitelist.
-    const PrefService::Preference* pref = profile_->GetPrefs()->FindPreference(
-        prefs::kExternalPrintServersAllowlist);
+    allowlist_ = base::nullopt;
+    // Fetch and parse the allowlist.
+    const PrefService::Preference* pref =
+        prefs_->FindPreference(allowlist_pref_);
     if (pref != nullptr && !pref->IsDefaultValue()) {
-      const base::ListValue* list =
-          profile_->GetPrefs()->GetList(prefs::kExternalPrintServersAllowlist);
-      if (list != nullptr) {
-        whitelist_is_set_ = true;
-        for (const base::Value& value : *list) {
-          if (value.is_string()) {
-            whitelist_.insert(value.GetString());
-          }
+      allowlist_ = std::set<std::string>();
+      for (const base::Value& value : pref->GetValue()->GetList()) {
+        if (value.is_string()) {
+          allowlist_.value().insert(value.GetString());
         }
       }
     }
@@ -260,15 +256,15 @@ class PrintServersProviderImpl : public PrintServersProvider {
   // list is different than the previous one.
   bool CalculateResultantList() {
     std::vector<PrintServer> new_servers;
-    if (profile_ == nullptr) {
-      // |result_servers_| remains empty when profile is not set.
+    if (prefs_ == nullptr) {
+      // |result_servers_| remains empty when prefs is not set.
       return false;
     }
-    if (!whitelist_is_set_) {
+    if (!allowlist_.has_value()) {
       new_servers = servers_;
     } else {
       for (auto& print_server : servers_) {
-        if (whitelist_.count(print_server.GetId())) {
+        if (allowlist_.value().count(print_server.GetId())) {
           if (new_servers.size() == kMaxRecords) {
             LOG(WARNING) << "The list of resultant print servers read from "
                          << "policies is too long. Only the first "
@@ -320,14 +316,15 @@ class PrintServersProviderImpl : public PrintServersProvider {
   int last_processed_task_ = 0;
   // The current input list of servers.
   std::vector<PrintServer> servers_;
-  // The current whitelist.
-  bool whitelist_is_set_ = false;
-  std::set<std::string> whitelist_;
+  // The current allowlist.
+  base::Optional<std::set<std::string>> allowlist_ = base::nullopt;
   // The current resultant list of servers.
   std::vector<PrintServer> result_servers_;
 
-  Profile* profile_ = nullptr;
+  PrefService* prefs_ = nullptr;
   PrefChangeRegistrar pref_change_registrar_;
+  std::string allowlist_pref_;
+
   base::ObserverList<PrintServersProvider::Observer>::Unchecked observers_;
   base::WeakPtrFactory<PrintServersProviderImpl> weak_ptr_factory_{this};
 

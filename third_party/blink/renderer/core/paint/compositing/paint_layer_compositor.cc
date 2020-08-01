@@ -97,16 +97,15 @@ void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
     root_layer->SetNeedsCompositingInputsUpdate();
 }
 
-void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursive(
+void PaintLayerCompositor::UpdateInputsIfNeededRecursive(
     DocumentLifecycle::LifecycleState target_state) {
   DCHECK_GE(target_state, DocumentLifecycle::kCompositingInputsClean);
-  TRACE_EVENT0(
-      "blink,benchmark",
-      "PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursive");
-  UpdateCompositingInputsIfNeededRecursiveInternal(target_state);
+  TRACE_EVENT0("blink,benchmark",
+               "PaintLayerCompositor::UpdateInputsIfNeededRecursive");
+  UpdateInputsIfNeededRecursiveInternal(target_state);
 }
 
-void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
+void PaintLayerCompositor::UpdateInputsIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state) {
   if (layout_view_->GetFrameView()->ShouldThrottleRendering())
     return;
@@ -125,7 +124,7 @@ void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
         local_frame->ContentLayoutObject()) {
       local_frame->ContentLayoutObject()
           ->Compositor()
-          ->UpdateCompositingInputsIfNeededRecursiveInternal(target_state);
+          ->UpdateInputsIfNeededRecursiveInternal(target_state);
     }
   }
 
@@ -174,12 +173,11 @@ void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
 #endif
 }
 
-void PaintLayerCompositor::UpdateIfNeededRecursive(
+void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursive(
     DocumentLifecycle::LifecycleState target_state) {
-  DCHECK_GE(target_state, DocumentLifecycle::kCompositingInputsClean);
-  UpdateCompositingInputsIfNeededRecursiveInternal(target_state);
   CompositingReasonsStats compositing_reasons_stats;
-  UpdateIfNeededRecursiveInternal(target_state, compositing_reasons_stats);
+  UpdateAssignmentsIfNeededRecursiveInternal(target_state,
+                                             compositing_reasons_stats);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Compositing.LayerPromotionCount.Overlap",
                               compositing_reasons_stats.overlap_layers, 1, 100,
                               5);
@@ -197,7 +195,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursive(
       compositing_reasons_stats.total_composited_layers, 1, 1000, 10);
 }
 
-void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
+void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
   if (layout_view_->GetFrameView()->ShouldThrottleRendering())
@@ -223,19 +221,19 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
         local_frame->ContentLayoutObject()) {
       local_frame->ContentLayoutObject()
           ->Compositor()
-          ->UpdateIfNeededRecursiveInternal(target_state,
-                                            compositing_reasons_stats);
+          ->UpdateAssignmentsIfNeededRecursiveInternal(
+              target_state, compositing_reasons_stats);
     }
   }
 
   TRACE_EVENT0("blink,benchmark",
-               "PaintLayerCompositor::updateIfNeededRecursive");
+               "PaintLayerCompositor::UpdateAssignmentsIfNeededRecursive");
 
   DCHECK(!layout_view_->NeedsLayout());
 
   ScriptForbiddenScope forbid_script;
 
-  UpdateIfNeeded(target_state, compositing_reasons_stats);
+  UpdateAssignmentsIfNeeded(target_state, compositing_reasons_stats);
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
@@ -285,7 +283,7 @@ static void AssertWholeTreeNotComposited(const PaintLayer& paint_layer) {
 }
 #endif
 
-void PaintLayerCompositor::UpdateIfNeeded(
+void PaintLayerCompositor::UpdateAssignmentsIfNeeded(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
   DCHECK(target_state >= DocumentLifecycle::kCompositingClean);

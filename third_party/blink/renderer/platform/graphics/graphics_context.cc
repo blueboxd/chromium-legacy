@@ -1188,11 +1188,11 @@ void GraphicsContext::StrokeRect(const FloatRect& rect, float line_width) {
   } else if (valid_w || valid_h) {
     // we are expected to respect the lineJoin, so we can't just call
     // drawLine -- we have to create a path that doubles back on itself.
-    SkPath path;
+    SkPathBuilder path;
     path.moveTo(r.fLeft, r.fTop);
     path.lineTo(r.fRight, r.fBottom);
     path.close();
-    DrawPath(path, flags);
+    DrawPath(path.detach(), flags);
   }
 }
 

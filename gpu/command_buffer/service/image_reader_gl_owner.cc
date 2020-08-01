@@ -419,7 +419,7 @@ void ImageReaderGLOwner::OnFrameAvailable(void* context, AImageReader* reader) {
   image_reader_ptr->frame_available_cb_.Run();
 }
 
-void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
+bool ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
     gfx::Size rotated_visible_size,
     gfx::Size* coded_size,
     gfx::Rect* visible_rect) {
@@ -436,7 +436,7 @@ void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
   if (!buffer) {
     *coded_size = gfx::Size();
     *visible_rect = gfx::Rect();
-    return;
+    return false;
   }
   // Get the buffer descriptor. Note that for querying the buffer descriptor, we
   // do not need to wait on the AHB to be ready.
@@ -445,6 +445,8 @@ void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
 
   *visible_rect = GetCropRect();
   *coded_size = gfx::Size(desc.width, desc.height);
+
+  return true;
 }
 
 ImageReaderGLOwner::ImageRef::ImageRef() = default;

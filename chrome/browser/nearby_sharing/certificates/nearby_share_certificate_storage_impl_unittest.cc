@@ -141,7 +141,7 @@ class NearbyShareCertificateStorageImplTest : public ::testing::Test {
     // to ensure test coverage of FetchPublicCertificateExpirations.
     PrepopulatePublicCertificates();
 
-    cert_store_ = std::make_unique<NearbyShareCertificateStorageImpl>(
+    cert_store_ = NearbyShareCertificateStorageImpl::Factory::Create(
         pref_service_.get(), std::move(db));
   }
 
@@ -204,7 +204,7 @@ class NearbyShareCertificateStorageImplTest : public ::testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::map<std::string, nearbyshare::proto::PublicCertificate> db_entries_;
   leveldb_proto::test::FakeDB<nearbyshare::proto::PublicCertificate>* db_;
-  std::unique_ptr<NearbyShareCertificateStorageImpl> cert_store_;
+  std::unique_ptr<NearbyShareCertificateStorage> cert_store_;
   std::vector<nearbyshare::proto::PublicCertificate> public_certificates_;
 };
 

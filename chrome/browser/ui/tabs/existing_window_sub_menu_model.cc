@@ -16,39 +16,21 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
 
-namespace {
-
-enum ExistingWindowSubMenuCommand {
-  CommandNewWindow = TabStripModel::kMinExistingWindowCommandId,
-  // CommandLast and subsequent ids will be used for the list of existing window
-  // targets.
-  CommandLast
-};
-
-}  // namespace
-
 ExistingWindowSubMenuModel::ExistingWindowSubMenuModel(
     ui::SimpleMenuModel::Delegate* parent_delegate,
     TabStripModel* model,
     int context_index)
-    : SimpleMenuModel(this),
-      parent_delegate_(parent_delegate),
-      model_(model),
-      context_index_(context_index) {
-  // Start command ids after the parent menu's ids to avoid collisions.
-  AddItemWithStringId(ExistingWindowSubMenuCommand::CommandNewWindow,
-                      IDS_TAB_CXMENU_MOVETOANOTHERNEWWINDOW);
-  AddSeparator(ui::NORMAL_SEPARATOR);
-
+    : ExistingBaseSubMenuModel(parent_delegate,
+                               model,
+                               context_index,
+                               kMinExistingWindowCommandId) {
+  std::vector<MenuItemInfo> menu_item_infos;
   auto window_titles = model->GetExistingWindowsForMoveMenu();
 
-  for (size_t i = 0; i < window_titles.size(); i++) {
-    const int command_id = ExistingWindowSubMenuCommand::CommandLast + i;
-    if (command_id > TabStripModel::kMaxExistingWindowCommandId)
-      break;
-
-    AddItem(command_id, window_titles[i]);
+  for (auto& window_title : window_titles) {
+    menu_item_infos.emplace_back(MenuItemInfo{window_title});
   }
+  Build(IDS_TAB_CXMENU_MOVETOANOTHERNEWWINDOW, menu_item_infos);
 }
 
 ExistingWindowSubMenuModel::~ExistingWindowSubMenuModel() = default;
@@ -56,40 +38,27 @@ ExistingWindowSubMenuModel::~ExistingWindowSubMenuModel() = default;
 bool ExistingWindowSubMenuModel::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) const {
-  if (command_id < ExistingWindowSubMenuCommand::CommandLast) {
-    return parent_delegate_->GetAcceleratorForCommandId(
-        SubMenuCommandToTabStripModelCommand(command_id), accelerator);
+  if (IsNewCommand(command_id)) {
+    return parent_delegate()->GetAcceleratorForCommandId(
+        TabStripModel::CommandMoveTabsToNewWindow, accelerator);
   }
   return false;
 }
 
 bool ExistingWindowSubMenuModel::IsCommandIdChecked(int command_id) const {
-  if (command_id < ExistingWindowSubMenuCommand::CommandLast) {
-    return parent_delegate_->IsCommandIdChecked(
-        SubMenuCommandToTabStripModelCommand(command_id));
+  if (IsNewCommand(command_id)) {
+    return parent_delegate()->IsCommandIdChecked(
+        TabStripModel::CommandMoveTabsToNewWindow);
   }
   return false;
 }
 
 bool ExistingWindowSubMenuModel::IsCommandIdEnabled(int command_id) const {
-  if (command_id < ExistingWindowSubMenuCommand::CommandLast) {
-    return parent_delegate_->IsCommandIdEnabled(
-        SubMenuCommandToTabStripModelCommand(command_id));
+  if (IsNewCommand(command_id)) {
+    return parent_delegate()->IsCommandIdEnabled(
+        TabStripModel::CommandMoveTabsToNewWindow);
   }
   return true;
-}
-
-void ExistingWindowSubMenuModel::ExecuteCommand(int command_id,
-                                                int event_flags) {
-  if (command_id < ExistingWindowSubMenuCommand::CommandLast) {
-    parent_delegate_->ExecuteCommand(
-        SubMenuCommandToTabStripModelCommand(command_id), event_flags);
-    return;
-  }
-
-  const int browser_index =
-      command_id - ExistingWindowSubMenuCommand::CommandLast;
-  model_->ExecuteAddToExistingWindowCommand(context_index_, browser_index);
 }
 
 // static
@@ -97,14 +66,11 @@ bool ExistingWindowSubMenuModel::ShouldShowSubmenu(Profile* profile) {
   return chrome::GetTabbedBrowserCount(profile) > 1;
 }
 
-// static
-int ExistingWindowSubMenuModel::SubMenuCommandToTabStripModelCommand(
-    int command_id) {
-  switch (command_id) {
-    case ExistingWindowSubMenuCommand::CommandNewWindow:
-      return TabStripModel::CommandMoveTabsToNewWindow;
-    default:
-      NOTREACHED();
-      return -1;
-  }
+void ExistingWindowSubMenuModel::ExecuteNewCommand(int event_flags) {
+  parent_delegate()->ExecuteCommand(TabStripModel::CommandMoveTabsToNewWindow,
+                                    event_flags);
+}
+
+void ExistingWindowSubMenuModel::ExecuteExistingCommand(int command_index) {
+  model()->ExecuteAddToExistingWindowCommand(context_index(), command_index);
 }

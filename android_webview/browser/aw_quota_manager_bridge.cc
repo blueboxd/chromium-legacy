@@ -252,7 +252,7 @@ void AwQuotaManagerBridge::GetOriginsCallbackImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   Java_AwQuotaManagerBridge_onGetOriginsCallback(
@@ -318,7 +318,7 @@ void AwQuotaManagerBridge::QuotaUsageCallbackImpl(int jcallback_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   Java_AwQuotaManagerBridge_onGetUsageAndQuotaForOriginCallback(

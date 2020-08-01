@@ -689,7 +689,6 @@
       'mac10.11-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.12-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.13-blink-rel': 'release_bot_blink_minimal_symbols',
-      'mac10.13_retina-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.15-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'win7-blink-rel': 'release_bot_blink_x86_minimal_symbols',

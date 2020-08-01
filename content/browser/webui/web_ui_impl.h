@@ -93,6 +93,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   const mojo::Remote<mojom::WebUI>& GetRemoteForTest() const { return remote_; }
 
+  RenderFrameHost* frame_host_for_test() const { return frame_host_; }
+
  private:
   class MainFrameNavigationObserver;
 

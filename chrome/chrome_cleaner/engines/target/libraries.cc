@@ -94,7 +94,7 @@ void VerifyRunningInSandbox() {
 extern "C" FARPROC WINAPI DllLoadHook(unsigned dliNotify, PDelayLoadInfo pdli) {
   switch (dliNotify) {
     case dliNotePreLoadLibrary: {
-      const base::string16 requested_library = base::ASCIIToUTF16(pdli->szDll);
+      const base::string16 requested_library = base::ASCIIToWide(pdli->szDll);
       const Engine::Name engine = Settings::GetInstance()->engine();
 
       VerifyEngineLibraryAllowed(engine, requested_library);

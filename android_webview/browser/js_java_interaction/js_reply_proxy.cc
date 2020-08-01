@@ -19,7 +19,7 @@ JsReplyProxy::JsReplyProxy(js_injection::WebMessageReplyProxy* reply_proxy)
 }
 
 JsReplyProxy::~JsReplyProxy() {
-  if (java_ref_.is_null())
+  if (!java_ref_)
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();

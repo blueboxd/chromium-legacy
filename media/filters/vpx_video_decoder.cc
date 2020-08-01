@@ -44,11 +44,11 @@ static int GetVpxVideoDecoderThreadCount(const VideoDecoderConfig& config) {
   // maximum number of tiles possible for higher resolution streams.
   if (config.codec() == kCodecVP9) {
     const int width = config.coded_size().width();
-    if (width >= 4096)
+    if (width >= 3840)
       desired_threads = 16;
-    else if (width >= 2048)
+    else if (width >= 2560)
       desired_threads = 8;
-    else if (width >= 1024)
+    else if (width >= 1280)
       desired_threads = 4;
   }
 

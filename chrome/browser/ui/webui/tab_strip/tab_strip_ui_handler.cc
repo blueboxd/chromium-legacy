@@ -629,18 +629,9 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
     return;
   }
 
-  // Create a new group and copy the visuals to it.
-  tab_groups::TabGroupId new_group_id = tab_groups::TabGroupId::GenerateNew();
-  browser_->tab_strip_model()->group_model()->AddTabGroup(
-      new_group_id,
+  target_browser->tab_strip_model()->group_model()->AddTabGroup(
+      group_id.value(),
       base::Optional<tab_groups::TabGroupVisualData>{*group->visual_data()});
-
-  // The front-end needs to understand that the tab group ID has changed so
-  // that when the tabs are moved into the new group, the new group ID is
-  // updated with the correct value.
-  FireWebUIListener("tab-group-id-replaced",
-                    base::Value(group->id().ToString()),
-                    base::Value(new_group_id.ToString()));
 
   std::vector<int> source_tab_indices = group->ListTabs();
   int tab_count = source_tab_indices.size();
@@ -648,8 +639,8 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
     // The index needs to account for the tabs being detached, as they will
     // cause the indices to shift.
     int from_index = source_tab_indices[i] - i;
-    tab_strip_ui::MoveTabAcrossWindows(
-        source_browser, from_index, target_browser, to_index + i, new_group_id);
+    tab_strip_ui::MoveTabAcrossWindows(source_browser, from_index,
+                                       target_browser, to_index + i, group_id);
   }
 }
 

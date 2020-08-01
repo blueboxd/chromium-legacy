@@ -43,7 +43,7 @@ std::unique_ptr<InputStream> CreateInputStream(JNIEnv* env, const GURL& url) {
   ScopedJavaLocalRef<jobject> stream =
       android_webview::Java_AndroidProtocolHandler_open(env, jurl);
 
-  if (stream.is_null()) {
+  if (!stream) {
     DLOG(ERROR) << "Unable to open input stream for Android URL";
     return nullptr;
   }
@@ -61,7 +61,7 @@ bool GetInputStreamMimeType(JNIEnv* env,
   ScopedJavaLocalRef<jstring> returned_type =
       android_webview::Java_AndroidProtocolHandler_getMimeType(
           env, stream->jobj(), java_url);
-  if (returned_type.is_null())
+  if (!returned_type)
     return false;
 
   *mime_type = base::android::ConvertJavaStringToUTF8(returned_type);

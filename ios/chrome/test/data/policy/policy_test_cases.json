@@ -46,6 +46,16 @@
     ]
   },
 
+  "CloudReportingEnabled": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "CloudReportingEnabled": true },
+        "prefs": { "enterprise_reporting.chrome_cloud_reporting": { "local_state": true } }
+      }
+    ]
+  },
+
  "ChromeVariations": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [

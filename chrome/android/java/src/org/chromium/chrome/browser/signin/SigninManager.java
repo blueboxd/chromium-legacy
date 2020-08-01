@@ -16,6 +16,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
@@ -237,6 +238,25 @@ public class SigninManager
         mIdentityManager.addObserver(this);
 
         reloadAllAccountsFromSystem();
+
+        reconcileJavaAndNativeStates();
+    }
+
+    private void reconcileJavaAndNativeStates() {
+        try (TraceEvent ignored = TraceEvent.scoped("SigninManager.reconcileJavaAndNativeStates")) {
+            ThreadUtils.assertOnUiThread();
+            // The sign out flow starts by clearing the signed in user in the ChromeSigninController
+            // on the Java side, and then performs a sign out on the native side. If there is a
+            // crash on the native side then the signin state may get out of sync. Make sure that
+            // the native side is signed out if the Java side doesn't have a currently signed in
+            // user.
+            if (!ChromeSigninController.get().isSignedIn()
+                    && mIdentityManager.hasPrimaryAccount()) {
+                Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
+                // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
+                signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
+            }
+        }
     }
 
     /**

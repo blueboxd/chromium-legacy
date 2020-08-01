@@ -11,14 +11,14 @@
 
 namespace chrome_cleaner {
 
-MessageBuilder::MessageItem::MessageItem(base::StringPiece16 value)
+MessageBuilder::MessageItem::MessageItem(base::WStringPiece value)
     : value_(value.as_string()) {}
 
 MessageBuilder::MessageItem::MessageItem(base::StringPiece value)
-    : value_(base::UTF8ToUTF16(value.as_string())) {}
+    : value_(base::UTF8ToWide(value.as_string())) {}
 
 MessageBuilder::MessageItem::MessageItem(int value)
-    : value_(base::NumberToString16(value)) {}
+    : value_(base::NumberToWString(value)) {}
 
 MessageBuilder::ScopedIndent::ScopedIndent(MessageBuilder* builder)
     : builder_(builder) {
@@ -70,7 +70,7 @@ void MessageBuilder::IndentIfNewLine() {
     content_ += L"\t";
 }
 
-MessageBuilder& MessageBuilder::AddHeaderLine(base::StringPiece16 title) {
+MessageBuilder& MessageBuilder::AddHeaderLine(base::WStringPiece title) {
   Add(title, L":").NewLine();
   return *this;
 }

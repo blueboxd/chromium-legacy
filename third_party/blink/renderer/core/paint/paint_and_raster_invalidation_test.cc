@@ -516,8 +516,8 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   // raster invalidation for the frame contents.
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
-                  client, client->DebugName(), IntRect(0, 100, 100, 100),
-                  PaintInvalidationReason::kIncremental}));
+                  client, client->DebugName(), IntRect(0, 0, 100, 200),
+                  PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 

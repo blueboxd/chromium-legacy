@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import {generateUrlFromFilter} from '../url_processor.js';
+import {UrlProcessor, URL_PARAM_KEYS} from '../url_processor.js';
 
 // @vue/component
 const LinkToGraph = {
@@ -18,7 +18,9 @@ const LinkToGraph = {
   },
   computed: {
     url: function() {
-      return generateUrlFromFilter(document.URL, this.graphType, this.filter);
+      const urlProcessor = UrlProcessor.createForOutput();
+      urlProcessor.appendArray(URL_PARAM_KEYS.FILTER, this.filter);
+      return urlProcessor.getUrl(document.URL, this.graphType);
     },
   },
 };

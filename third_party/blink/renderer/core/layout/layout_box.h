@@ -1619,6 +1619,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
           false;
     }
 
+    // Called from LayoutShiftTracker when we attach this LayoutBox to a node
+    // for which we saved these values when the node was detached from its
+    // original LayoutBox.
+    void SetPreviousSizeAndLayoutOverflowRect(
+        const LayoutSize& previous_size,
+        const PhysicalRect& previous_layout_overflow_rect);
+
    protected:
     friend class LayoutBox;
     MutableForPainting(const LayoutBox& box)

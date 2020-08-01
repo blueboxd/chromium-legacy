@@ -811,6 +811,9 @@
   <message name="IDS_KSV_DESCRIPTION_PRIVACY_SCREEN_TOGGLE" desc="Description of the command in keyboard shortcut viewer.">
     Turn privacy screen on or off
   </message>
+  <message name="IDS_KSV_DESCRIPTION_CARET_BROWSING_TOGGLE" desc="Description of the command in keyboard shortcut viewer.">
+    Turn caret browsing on or off
+  </message>
     </messages>
   </release>
 </grit>

@@ -66,6 +66,10 @@ class PLATFORM_EXPORT ImagePlanes final {
 
  public:
   ImagePlanes();
+
+  // |color_type| is kGray_8_SkColorType if GetYUVBitDepth() == 8 and either
+  // kA16_float_SkColorType or kA16_unorm_SkColorType if GetYUVBitDepth() > 8.
+  //
   // TODO(crbug/910276): To support YUVA, ImagePlanes needs to support a
   // variable number of planes.
   ImagePlanes(void* planes[3],
@@ -285,6 +289,9 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
   // Image decoders that support high bit depth YUV decoding can override this.
+  //
+  // Note: If an implementation advertises a bit depth > 8 it must support both
+  // kA16_unorm_SkColorType and kA16_float_SkColorType ImagePlanes.
   virtual uint8_t GetYUVBitDepth() const { return 8; }
 
   // Returns the information required to decide whether or not hardware

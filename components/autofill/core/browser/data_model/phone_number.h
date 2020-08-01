@@ -36,7 +36,10 @@ class PhoneNumber : public FormGroup {
                         const std::string& app_locale,
                         ServerFieldTypeSet* matching_types) const override;
   base::string16 GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override;
 
   // Size and offset of the prefix and suffix portions of phone numbers.
   static const size_t kPrefixOffset = 0;
@@ -51,7 +54,7 @@ class PhoneNumber : public FormGroup {
     ~PhoneCombineHelper();
 
     // If |type| is a phone field type, saves the |value| accordingly and
-    // returns true.  For all other field types returs false.
+    // returns true.  For all other field types returns false.
     bool SetInfo(const AutofillType& type, const base::string16& value);
 
     // Parses the number built up from pieces stored via SetInfo() according to
@@ -77,9 +80,11 @@ class PhoneNumber : public FormGroup {
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
   base::string16 GetInfoImpl(const AutofillType& type,
                              const std::string& app_locale) const override;
-  bool SetInfoImpl(const AutofillType& type,
-                   const base::string16& value,
-                   const std::string& app_locale) override;
+  bool SetInfoWithVerificationStatusImpl(
+      const AutofillType& type,
+      const base::string16& value,
+      const std::string& app_locale,
+      structured_address::VerificationStatus status) override;
 
   // Updates the cached parsed number if the profile's region has changed
   // since the last time the cache was updated.

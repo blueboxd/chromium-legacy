@@ -620,9 +620,21 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
         tab.user_agent_override);
   } else {
     // We only respect the tab's original browser if there's no disposition.
-    if (disposition == WindowOpenDisposition::UNKNOWN && tab.browser_id) {
-      context = client_->FindLiveTabContextWithID(
-          SessionID::FromSerializedValue(tab.browser_id));
+    if (disposition == WindowOpenDisposition::UNKNOWN) {
+      if (tab.browser_id) {
+        context = client_->FindLiveTabContextWithID(
+            SessionID::FromSerializedValue(tab.browser_id));
+      }
+
+      // Restore a grouped tab into its original group, even if the group has
+      // since been moved to a different context. If the original group doesn't
+      // exist any more, fall back to using the tab's original browser.
+      if (tab.group.has_value()) {
+        LiveTabContext* group_context =
+            client_->FindLiveTabContextWithGroup(tab.group.value());
+        if (group_context)
+          context = group_context;
+      }
     }
 
     int tab_index = -1;

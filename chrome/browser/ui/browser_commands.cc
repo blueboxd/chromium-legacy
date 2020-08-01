@@ -105,6 +105,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -759,14 +760,7 @@ void MoveTabsToNewWindow(Browser* browser,
   Browser* new_browser =
       new Browser(Browser::CreateParams(browser->profile(), true));
 
-  base::Optional<tab_groups::TabGroupId> new_group = base::nullopt;
   if (group.has_value()) {
-    // Recreate the group in the new window with a different ID but the same
-    // title and color. Also ensure that the group is not collapsed. This is
-    // consistent with the behavior when dragging a group out of a window.
-
-    new_group = tab_groups::TabGroupId::GenerateNew();
-
     const tab_groups::TabGroupVisualData* old_visual_data =
         browser->tab_strip_model()
             ->group_model()
@@ -776,8 +770,8 @@ void MoveTabsToNewWindow(Browser* browser,
                                                    old_visual_data->color(),
                                                    false /* is_collapsed */);
 
-    new_browser->tab_strip_model()->group_model()->AddTabGroup(
-        new_group.value(), new_visual_data);
+    new_browser->tab_strip_model()->group_model()->AddTabGroup(group.value(),
+                                                               new_visual_data);
   }
 
   int indices_size = tab_indices.size();
@@ -798,7 +792,7 @@ void MoveTabsToNewWindow(Browser* browser,
 
     new_browser->tab_strip_model()->AddWebContents(std::move(contents_move), -1,
                                                    ui::PAGE_TRANSITION_TYPED,
-                                                   add_types, new_group);
+                                                   add_types, group);
   }
   new_browser->window()->Show();
 }
@@ -1465,6 +1459,31 @@ bool CanViewSource(const Browser* browser) {
                                              ->GetActiveWebContents()
                                              ->GetController()
                                              .CanViewSource();
+}
+
+void ToggleCaretBrowsing(Browser* browser) {
+  PrefService* prefService = browser->profile()->GetPrefs();
+  bool enabled = prefService->GetBoolean(prefs::kCaretBrowsingEnabled);
+
+  if (enabled) {
+    base::RecordAction(base::UserMetricsAction(
+        "Accessibility.CaretBrowsing.DisableWithKeyboard"));
+    prefService->SetBoolean(prefs::kCaretBrowsingEnabled, false);
+    return;
+  }
+
+  // Show a confirmation dialog, unless either (1) the command-line
+  // flag was used, or (2) the user previously checked the box
+  // indicating not to ask them next time.
+  if (prefService->GetBoolean(prefs::kShowCaretBrowsingDialog) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCaretBrowsing)) {
+    browser->window()->ShowCaretBrowsingDialog();
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        "Accessibility.CaretBrowsing.EnableWithKeyboard"));
+    prefService->SetBoolean(prefs::kCaretBrowsingEnabled, true);
+  }
 }
 
 #if !defined(TOOLKIT_VIEWS)

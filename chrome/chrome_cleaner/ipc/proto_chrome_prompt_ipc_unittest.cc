@@ -40,8 +40,8 @@ constexpr char kExpectedPromptResultSwitch[] = "expected-prompt-result";
 constexpr char kExpectedChromeDisconnectPointSwitch[] =
     "expected-parent-disconnected";
 
-constexpr base::char16 kInvalidUTF16String[] = {0xDC00, 0xD800, 0xD800, 0xDFFF,
-                                                0xDFFF, 0xDBFF, 0};
+constexpr wchar_t kInvalidUTF16String[] = {0xDC00, 0xD800, 0xD800, 0xDFFF,
+                                           0xDFFF, 0xDBFF, 0};
 const base::FilePath kInvalidFilePath(kInvalidUTF16String);
 const base::FilePath kNonASCIIFilePath(L"ééààçç");
 const base::string16 kInvalidRegistryKey(kInvalidUTF16String);
@@ -145,7 +145,7 @@ std::pair<ScopedHandle, ScopedHandle> CreateMessagePipe(
   // Handles to inherit will be added to the LaunchOptions explicitly.
   security_attributes.bInheritHandle = false;
 
-  base::string16 pipe_name = base::UTF8ToUTF16(
+  base::string16 pipe_name = base::UTF8ToWide(
       base::StrCat({"\\\\.\\pipe\\chrome-cleaner-",
                     base::UnguessableToken::Create().ToString()}));
 
@@ -483,8 +483,8 @@ class ChildProcess {
         return false;
       }
       std::string file_path_utf8;
-      base::UTF16ToUTF8(kBadFilePath.value().c_str(),
-                        kBadFilePath.value().size(), &file_path_utf8);
+      base::WideToUTF8(kBadFilePath.value().c_str(),
+                       kBadFilePath.value().size(), &file_path_utf8);
       if (request.prompt_user().files_to_delete(0) != file_path_utf8) {
         LOG(ERROR) << "Wrong value for file to delete";
         return false;
@@ -495,7 +495,7 @@ class ChildProcess {
         return false;
       }
       if (request.prompt_user().registry_keys(0) !=
-          base::UTF16ToUTF8(kBadRegistryKey)) {
+          base::WideToUTF8(kBadRegistryKey)) {
         LOG(ERROR) << "Wrong value for registry key";
         return false;
       }

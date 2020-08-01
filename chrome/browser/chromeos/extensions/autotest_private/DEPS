@@ -11,6 +11,7 @@ specific_include_rules = {
     "+ui/message_center",
   ],
   "autotest_private_api\.h": [
+    "+ash/display/screen_orientation_controller.h",
     "+ash/rotator/screen_rotation_animator_observer.h",
   ]
 }

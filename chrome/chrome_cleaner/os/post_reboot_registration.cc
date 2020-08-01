@@ -56,7 +56,7 @@ bool PostRebootRegistration::RegisterRunOnceOnRestart(
                                  GetPostRebootSwitchKeyPath().c_str(),
                                  KEY_SET_VALUE | KEY_WOW64_32KEY);
   base::string16 switches_value(switches.GetCommandLineString());
-  if (switches_key.WriteValue(base::UTF8ToUTF16(cleanup_id).c_str(),
+  if (switches_key.WriteValue(base::UTF8ToWide(cleanup_id).c_str(),
                               switches_value.c_str()) != ERROR_SUCCESS) {
     PLOG(ERROR) << "Failed to Write RunOnce value with: "
                 << SanitizeCommandLine(switches)
@@ -113,7 +113,7 @@ bool PostRebootRegistration::ReadRunOncePostRebootCommandLine(
                                  KEY_QUERY_VALUE | KEY_WOW64_32KEY);
 
   base::string16 string_value;
-  if (switches_key.ReadValue(base::UTF8ToUTF16(cleanup_id).c_str(),
+  if (switches_key.ReadValue(base::UTF8ToWide(cleanup_id).c_str(),
                              &string_value) != ERROR_SUCCESS) {
     PLOG(ERROR) << "Failed to Read RunOnce reboot switches.";
     return false;

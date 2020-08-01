@@ -576,8 +576,8 @@ TEST_P(FileRemoverQuarantineTest, DoNotQuarantineSymbolicLink) {
       CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   const base::FilePath sym_path = temp_dir_.GetPath().Append(kTestFileName);
-  ASSERT_NE(0, ::CreateSymbolicLink(sym_path.AsUTF16Unsafe().c_str(),
-                                    path.AsUTF16Unsafe().c_str(), 0));
+  ASSERT_NE(0, ::CreateSymbolicLink(sym_path.value().c_str(),
+                                    path.value().c_str(), 0));
 
   DoAndExpectCorrespondingRemoval(sym_path);
   EXPECT_EQ(
@@ -596,7 +596,7 @@ TEST_P(FileRemoverQuarantineTest, QuarantineDefaultFileStream) {
   ASSERT_NO_FATAL_FAILURE(
       CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
-  base::FilePath stream_path(base::StrCat({path.AsUTF16Unsafe(), L"::$data"}));
+  base::FilePath stream_path(base::StrCat({path.value(), L"::$data"}));
   ASSERT_NO_FATAL_FAILURE(
       CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent)));
 
@@ -615,8 +615,7 @@ TEST_P(FileRemoverQuarantineTest, DoNotQuarantineNonDefaultFileStream) {
   ASSERT_NO_FATAL_FAILURE(
       CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
-  base::FilePath stream_path(
-      base::StrCat({path.AsUTF16Unsafe(), L":stream:$data"}));
+  base::FilePath stream_path(base::StrCat({path.value(), L":stream:$data"}));
   ASSERT_NO_FATAL_FAILURE(
       CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent)));
 

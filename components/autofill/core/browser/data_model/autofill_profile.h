@@ -77,7 +77,10 @@ class AutofillProfile : public AutofillDataModel {
           matching_types_validities) const;
 
   base::string16 GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override;
 
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
@@ -276,15 +279,29 @@ class AutofillProfile : public AutofillDataModel {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  // Calls |FinalizeAfterImport()| on all |FormGroup| members that are
+  // implemented using the hybrid-structure |AddressComponent|.
+  // If possible, this will initiate the completion of the structure tree to
+  // derive all missing values either by parsing their parent node if assigned,
+  // or by formatting the value from their child nodes.
+  // Returns true if all calls yielded true.
+  bool FinalizeAfterImport();
+
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 
   // FormGroup:
   base::string16 GetInfoImpl(const AutofillType& type,
                              const std::string& app_locale) const override;
-  bool SetInfoImpl(const AutofillType& type,
-                   const base::string16& value,
-                   const std::string& app_locale) override;
+
+  structured_address::VerificationStatus GetVerificationStatusImpl(
+      const ServerFieldType type) const override;
+
+  bool SetInfoWithVerificationStatusImpl(
+      const AutofillType& type,
+      const base::string16& value,
+      const std::string& app_locale,
+      structured_address::VerificationStatus status) override;
 
   // Creates inferred labels for |profiles| at indices corresponding to
   // |indices|, and stores the results to the corresponding elements of

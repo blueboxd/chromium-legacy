@@ -230,16 +230,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
 
 // Test Learn Mode by pressing a few keys in Learn Mode. Only available while
 // logged in.
-//
-// Disabled on msan: https://crbug.com/1111575.
-// Disabled on debug build: https://crbug.com/1111686.
-#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
-#define MAYBE_LearnModeHardwareKeys DISABLED_LearnModeHardwareKeys
-#else
-#define MAYBE_LearnModeHardwareKeys LearnModeHardwareKeys
-#endif
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
-                       MAYBE_LearnModeHardwareKeys) {
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
   EnableChromeVox();
   sm_.Call([this]() {
     extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
@@ -247,6 +238,9 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
         "CommandHandler.onCommand('showKbExplorerPage');");
   });
   sm_.ExpectSpeech("ChromeVox Learn Mode");
+  sm_.ExpectSpeech(
+      "Press a qwerty key, refreshable braille key, or touch gesture to learn "
+      "its function. Press control with w or escape to exit.");
 
   // These are the default top row keys and their descriptions which live in
   // ChromeVox.

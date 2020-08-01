@@ -20,6 +20,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutBox;
 class LayoutObject;
+class NGBlockBreakToken;
 class NGBlockNode;
 class NGBoxFragmentBuilder;
 class NGLayoutResult;
@@ -114,26 +115,23 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   void LayoutFragmentainerDescendant(const NGLogicalOutOfFlowPositionedNode&);
 
-  scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
-                                             const NGConstraintSpace&,
-                                             const NGLogicalStaticPosition&,
-                                             LogicalSize container_content_size,
-                                             const ContainingBlockInfo&,
-                                             const WritingMode,
-                                             const TextDirection,
-                                             const LayoutBox* only_layout);
+  scoped_refptr<const NGLayoutResult> Layout(
+      NGBlockNode,
+      const NGConstraintSpace&,
+      const NGLogicalStaticPosition&,
+      LogicalSize container_content_size,
+      const ContainingBlockInfo&,
+      const WritingMode,
+      const TextDirection,
+      const LayoutBox* only_layout,
+      const NGBlockBreakToken* break_token = nullptr,
+      const NGConstraintSpace* fragmentainer_constraint_space = nullptr);
 
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);
 
   void AddOOFResultsToFragmentainer(
       const Vector<scoped_refptr<const NGLayoutResult>>& results,
       const wtf_size_t index);
-  NGConstraintSpace CreateConstraintSpaceForFragmentainerDescendant(
-      const NGBlockNode& descendant,
-      const LogicalSize& content_size,
-      const LayoutUnit block_offset,
-      const NGConstraintSpace& fragmentainer_constraint_space,
-      const WritingMode default_writing_mode) const;
   const NGConstraintSpace& GetFragmentainerConstraintSpace(
       const wtf_size_t index);
   void AddOOFResultToFragmentainerResults(
@@ -143,7 +141,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       NGBlockNode node,
       const LogicalSize& container_content_size_in_child_writing_mode,
       const base::Optional<LayoutUnit>& block_estimate,
-      const NGLogicalOutOfFlowDimensions& node_dimensions);
+      const NGLogicalOutOfFlowDimensions& node_dimensions,
+      const LayoutUnit block_offset,
+      const NGBlockBreakToken* break_token,
+      const NGConstraintSpace* fragmentainer_constraint_space);
 
   const NGConstraintSpace& container_space_;
   NGBoxFragmentBuilder* container_builder_;

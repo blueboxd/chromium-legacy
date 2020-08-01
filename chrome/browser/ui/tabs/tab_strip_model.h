@@ -496,10 +496,6 @@ class TabStripModel : public TabGroupController {
     CommandLast
   };
 
-  // Range of command IDs reserved for the "Move to another window" submenu.
-  static const int kMinExistingWindowCommandId = 1001;
-  static const int kMaxExistingWindowCommandId = 1200;
-
   // Returns true if the specified command is enabled. If |context_index| is
   // selected the response applies to all selected tabs.
   bool IsContextMenuCommandEnabled(int context_index,

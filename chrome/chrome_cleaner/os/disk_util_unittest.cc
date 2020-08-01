@@ -833,8 +833,7 @@ TEST(DiskUtilTests, ZoneIdentifierWhenProcessIsRunning) {
   base::FilePath source_exe_path(
       executable_path.Append(kTestProcessExecutableName));
   base::string16 target_exe_name = base::StrCat(
-      {base::UTF8ToUTF16(base::UnguessableToken::Create().ToString()),
-       L".exe"});
+      {base::UTF8ToWide(base::UnguessableToken::Create().ToString()), L".exe"});
   base::FilePath target_exe_path(executable_path.Append(target_exe_name));
 
   ASSERT_TRUE(base::CopyFile(source_exe_path, target_exe_path));

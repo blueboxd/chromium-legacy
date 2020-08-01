@@ -30,7 +30,7 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
               return;
             }
 
-            mockFeedback.expectSpeech(/Starting Learn Mode/);
+            mockFeedback.expectSpeech(/Press a qwerty key/);
             callback(mockFeedback, evt);
           });
       CommandHandler.onCommand('showKbExplorerPage');

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {DisplaySettingsData} from './display_settings_data.js';
 import {GraphNode, D3GraphData} from './graph_model.js';
-import {DisplaySettingsData, GraphEdgeColor} from './page_model.js';
+import {GraphEdgeColor} from './display_settings_data.js';
 
 import * as d3 from 'd3';
 

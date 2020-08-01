@@ -40,7 +40,7 @@ TEST(DiskUtilTests, RetrieveFolderInformation) {
   EXPECT_TRUE(RetrieveFolderInformation(temp_folder, &folder_information));
 
   // The expected file path value should be sanitized.
-  EXPECT_EQ(base::UTF16ToUTF8(SanitizePath(temp_folder)),
+  EXPECT_EQ(base::WideToUTF8(SanitizePath(temp_folder)),
             folder_information.path());
   EXPECT_FALSE(folder_information.creation_date().empty());
   EXPECT_FALSE(folder_information.last_modified_date().empty());
@@ -163,7 +163,7 @@ TEST_P(PUPToUwSTest, PUPToUwS) {
     ASSERT_TRUE(uws.files(i).has_file_information());
     const FileInformation& file_info = uws.files(i).file_information();
     ASSERT_TRUE(file_info.has_path());
-    base::FilePath file_path(base::UTF8ToUTF16(file_info.path()));
+    base::FilePath file_path(base::UTF8ToWide(file_info.path()));
     base::string16 uws_filename =
         base::ToLowerASCII(file_path.BaseName().value());
     converted_files.push_back(uws_filename);

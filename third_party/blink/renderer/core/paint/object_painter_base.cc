@@ -229,7 +229,7 @@ void FillQuad(GraphicsContext& context,
               const FloatPoint quad[],
               const Color& color,
               bool antialias) {
-  SkPath path;
+  SkPathBuilder path;
   path.moveTo(FloatPointToSkPoint(quad[0]));
   path.lineTo(FloatPointToSkPoint(quad[1]));
   path.lineTo(FloatPointToSkPoint(quad[2]));
@@ -238,7 +238,7 @@ void FillQuad(GraphicsContext& context,
   flags.setAntiAlias(antialias);
   flags.setColor(color.Rgb());
 
-  context.DrawPath(path, flags);
+  context.DrawPath(path.detach(), flags);
 }
 
 void DrawDashedOrDottedBoxSide(GraphicsContext& graphics_context,

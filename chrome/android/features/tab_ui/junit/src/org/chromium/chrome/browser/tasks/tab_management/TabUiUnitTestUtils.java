@@ -31,6 +31,8 @@ public class TabUiUnitTestUtils {
     public static TabImpl prepareTab(int tabId) {
         TabImpl tab = prepareTab();
         doReturn(tabId).when(tab).getId();
+        UserDataHost userDataHost = new UserDataHost();
+        doReturn(userDataHost).when(tab).getUserDataHost();
         return tab;
     }
 

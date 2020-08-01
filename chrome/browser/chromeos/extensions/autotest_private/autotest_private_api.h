@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
@@ -912,22 +913,29 @@ class AutotestPrivateSwapWindowsInSplitViewFunction : public ExtensionFunction {
 
 class AutotestPrivateWaitForDisplayRotationFunction
     : public ExtensionFunction,
-      public ash::ScreenRotationAnimatorObserver {
+      public ash::ScreenRotationAnimatorObserver,
+      public ash::ScreenOrientationController::Observer {
  public:
   AutotestPrivateWaitForDisplayRotationFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForDisplayRotation",
                              AUTOTESTPRIVATE_WAITFORDISPLAYROTATION)
 
+  // ash::ScreenRotationAnimatorObserver:
   void OnScreenCopiedBeforeRotation() override;
   void OnScreenRotationAnimationFinished(ash::ScreenRotationAnimator* animator,
                                          bool canceled) override;
+
+  // ash::ScreenOrientationController::Observer:
+  void OnUserRotationLockChanged() override;
 
  private:
   ~AutotestPrivateWaitForDisplayRotationFunction() override;
   ResponseAction Run() override;
 
+  ResponseValue CheckScreenRotationAnimation();
+
   int64_t display_id_ = display::kInvalidDisplayId;
-  display::Display::Rotation target_rotation_ = display::Display::ROTATE_0;
+  base::Optional<display::Display::Rotation> target_rotation_;
   // A reference to keep the instance alive while waiting for rotation.
   scoped_refptr<ExtensionFunction> self_;
 };

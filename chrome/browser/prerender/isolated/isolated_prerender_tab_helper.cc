@@ -840,6 +840,8 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
   // before the end of the method if the handle is not created.
   IsolatedPrerenderSubresourceManager* manager =
       service->OnAboutToNoStatePrefetch(url, CopyPrefetchResponseForNSP(url));
+  DCHECK_EQ(manager, service->GetSubresourceManagerForURL(url));
+
   manager->SetCreateIsolatedLoaderFactoryCallback(base::BindRepeating(
       &IsolatedPrerenderTabHelper::CreateNewURLLoaderFactory,
       weak_factory_.GetWeakPtr()));
@@ -866,12 +868,28 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
     return;
   }
 
+  page_->number_of_no_state_prefetch_attempts_++;
+
+  // It is possible for the manager to be destroyed during the NoStatePrefetch
+  // navigation. If this happens, abort the NSP and try again.
+  manager = service->GetSubresourceManagerForURL(url);
+  if (!manager) {
+    handle->OnCancel();
+    handle.reset();
+
+    page_->failed_no_state_prefetch_urls_.push_back(url);
+
+    // Try the next URL.
+    page_->urls_to_no_state_prefetch_.erase(
+        page_->urls_to_no_state_prefetch_.begin());
+    DoNoStatePrefetch();
+    return;
+  }
+
   manager->ManageNoStatePrefetch(
       std::move(handle),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrerenderDone,
                      weak_factory_.GetWeakPtr(), url));
-
-  page_->number_of_no_state_prefetch_attempts_++;
 }
 
 void IsolatedPrerenderTabHelper::OnPrerenderDone(const GURL& url) {

@@ -254,8 +254,7 @@ class LnkParserTest : public testing::Test {
       if (buffer[i] == size_lower && buffer[i + 1] == size_upper) {
         const wchar_t* string_ptr =
             reinterpret_cast<const wchar_t*>(buffer.data() + i + 2);
-        base::string16 found_string;
-        base::WideToUTF16(string_ptr, length, &found_string);
+        base::string16 found_string(string_ptr, length);
         if (found_string == expected_string) {
           found = true;
           *found_location = i;

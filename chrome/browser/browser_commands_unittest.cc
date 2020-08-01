@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,6 +27,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace {
 
@@ -435,6 +437,57 @@ TEST_F(BrowserCommandsTest, OnDefaultZoomLevelChanged) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_PLUS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_NORMAL));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_MINUS));
+}
+
+TEST_F(BrowserCommandsTest, ToggleCaretBrowsing) {
+  // Set initial known state for browser process TestingProfile.
+  PrefService* pref_service = profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kCaretBrowsingEnabled, false);
+  pref_service->SetBoolean(prefs::kShowCaretBrowsingDialog, false);
+
+  // Create multiple tabs to test if caret browsing mode gets broadcast to all
+  // tabs when toggled.
+  GURL about_blank(url::kAboutBlankURL);
+  int tab_count = 3;
+  for (int i = 0; i < tab_count; ++i) {
+    AddTab(browser(), about_blank);
+  }
+
+  // Toggle on caret browsing.
+  chrome::ExecuteCommand(browser(), IDC_CARET_BROWSING_TOGGLE);
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kCaretBrowsingEnabled));
+
+  // Add another tab after toggling caret browsing mode--it should also have
+  // caret browsing mode set.
+  AddTab(browser(), about_blank);
+  tab_count++;
+
+  // Check renderer preferences for each tab.
+  for (int i = 0; i < tab_count; ++i) {
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetWebContentsAt(i);
+    blink::mojom::RendererPreferences* renderer_preferences =
+        web_contents->GetMutableRendererPrefs();
+    EXPECT_TRUE(renderer_preferences->caret_browsing_enabled);
+  }
+
+  // Toggle off caret browsing.
+  chrome::ExecuteCommand(browser(), IDC_CARET_BROWSING_TOGGLE);
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kCaretBrowsingEnabled));
+
+  // Add another tab after toggling caret browsing mode--it should also have
+  // caret browsing mode unset.
+  AddTab(browser(), about_blank);
+  tab_count++;
+
+  // Check renderer preferences for each tab.
+  for (int i = 0; i < tab_count; ++i) {
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetWebContentsAt(i);
+    blink::mojom::RendererPreferences* renderer_preferences =
+        web_contents->GetMutableRendererPrefs();
+    EXPECT_FALSE(renderer_preferences->caret_browsing_enabled);
+  }
 }
 
 }  // namespace

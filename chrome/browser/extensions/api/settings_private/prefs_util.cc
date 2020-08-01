@@ -388,6 +388,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kAccessibilityFocusHighlightEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
+  (*s_whitelist)[::prefs::kCaretBrowsingEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
 #if defined(OS_CHROMEOS)
   // Accounts / Users / People.

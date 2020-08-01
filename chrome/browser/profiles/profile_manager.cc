@@ -1238,6 +1238,16 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   // flag attached to the profile.
   signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(profile);
   signin_util::EnsurePrimaryAccountAllowedForProfile(profile);
+
+#if !defined(OS_ANDROID)
+  // Caret browsing mode preference is not persisted between browser sessions,
+  // unless the command-line switch is also set - because otherwise it can be
+  // confusing if users don't realize that it was set.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  profile->GetPrefs()->SetBoolean(
+      prefs::kCaretBrowsingEnabled,
+      command_line->HasSwitch(switches::kEnableCaretBrowsing));
+#endif
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,

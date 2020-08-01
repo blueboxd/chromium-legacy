@@ -1215,12 +1215,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check if an identifier starts with reserved prefixes.
   bool IsPrefixReserved(const String& name);
 
-  // Helper function to check if all characters in the shader source belong to
-  // the ASCII subset as defined in GLSL ES 1.0 spec section 3.1 Character Set
-  // for WebGL 1.0 and in GLSL ES 3.00 spec section 3.1 Character Set for WebGL
-  // 2.0.
-  bool ValidateShaderSource(const String&);
-
   virtual bool ValidateShaderType(const char* function_name,
                                   GLenum shader_type);
 

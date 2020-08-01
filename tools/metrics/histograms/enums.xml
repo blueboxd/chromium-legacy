@@ -21339,6 +21339,7 @@ Called by update_document_policy_enum.py.-->
   <int value="756" label="SensorsBlockedForUrls"/>
   <int value="757" label="DeviceChannelDowngradeBehavior"/>
   <int value="758" label="BackForwardCacheEnabled"/>
+  <int value="759" label="NoteTakingAppsLockScreenAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -50882,6 +50883,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Parse issue advice failure"/>
   <int value="8" label="Remote consent fallback (deprecated 06/2020)"/>
   <int value="9" label="Parse remote consent failure"/>
+  <int value="10" label="Mint token success with fallback scopes"/>
 </enum>
 
 <enum name="OAuthMultiloginResponseStatus">
@@ -57871,6 +57873,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="User closed the Upgrade card."/>
   <int value="4" label="User disabled New Profiles Management."/>
   <int value="5" label="User elected to send feedback."/>
+</enum>
+
+<enum name="PromoBrowserCommandEnum">
+  <int value="0" label="Unknown Command"/>
 </enum>
 
 <enum name="ProtectorError">

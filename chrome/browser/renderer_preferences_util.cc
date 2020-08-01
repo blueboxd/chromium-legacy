@@ -12,9 +12,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
@@ -102,7 +104,14 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   prefs->enable_encrypted_media =
       pref_service->GetBoolean(prefs::kEnableEncryptedMedia);
   prefs->webrtc_ip_handling_policy = std::string();
-  // Handling the backward compatibility of previous boolean verions of policy
+#if !defined(OS_ANDROID)
+  prefs->caret_browsing_enabled =
+      pref_service->GetBoolean(prefs::kCaretBrowsingEnabled);
+  content::BrowserAccessibilityState::GetInstance()->SetCaretBrowsingState(
+      prefs->caret_browsing_enabled);
+#endif
+
+  // Handling the backward compatibility of previous boolean versions of policy
   // controls.
   if (!pref_service->HasPrefPath(prefs::kWebRTCIPHandlingPolicy)) {
     if (!pref_service->GetBoolean(prefs::kWebRTCNonProxiedUdpEnabled)) {

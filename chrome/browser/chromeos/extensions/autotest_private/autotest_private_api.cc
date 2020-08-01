@@ -552,6 +552,7 @@ display::Display::Rotation ToRotation(
       return display::Display::ROTATE_180;
     case api::autotest_private::RotationType::ROTATION_TYPE_ROTATE270:
       return display::Display::ROTATE_270;
+    case api::autotest_private::RotationType::ROTATION_TYPE_ROTATEANY:
     case api::autotest_private::RotationType::ROTATION_TYPE_NONE:
       break;
   }
@@ -3308,32 +3309,40 @@ AutotestPrivateWaitForDisplayRotationFunction::Run() {
   std::unique_ptr<api::autotest_private::WaitForDisplayRotation::Params> params(
       api::autotest_private::WaitForDisplayRotation::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  target_rotation_ = ToRotation(params->rotation);
-
   if (!base::StringToInt64(params->display_id, &display_id_)) {
     return RespondNow(Error(base::StrCat(
         {"Invalid display_id; expected string with numbers only, got ",
          params->display_id})));
   }
-  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id_);
-  if (!root_window) {
-    return RespondNow(Error(base::StrCat(
-        {"Invalid display_id; no root window found for the display id ",
-         params->display_id})));
-  }
-  auto* animator = ash::ScreenRotationAnimator::GetForRootWindow(root_window);
-  if (!animator->IsRotating()) {
-    display::Display display;
-    display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_,
-                                                          &display);
-    // This should never fail.
-    DCHECK(display.is_valid());
-    return RespondNow(OneArgument(
-        std::make_unique<base::Value>(display.rotation() == target_rotation_)));
-  }
-  self_ = this;
 
-  animator->AddObserver(this);
+  if (params->rotation ==
+      api::autotest_private::RotationType::ROTATION_TYPE_ROTATEANY) {
+    display::Display display;
+    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_,
+                                                               &display)) {
+      return RespondNow(Error(base::StrCat(
+          {"Display is not found for display_id ", params->display_id})));
+    }
+    DCHECK(display.is_valid());
+    if (!display.IsInternal()) {
+      return RespondNow(
+          Error("RotateAny is valid only for the internal display"));
+    }
+    auto* screen_orientation_controller =
+        ash::Shell::Get()->screen_orientation_controller();
+    if (screen_orientation_controller->user_rotation_locked()) {
+      self_ = this;
+      screen_orientation_controller->AddObserver(this);
+      return RespondLater();
+    }
+    target_rotation_.reset();
+  } else {
+    target_rotation_ = ToRotation(params->rotation);
+  }
+
+  auto result = CheckScreenRotationAnimation();
+  if (result)
+    return RespondNow(std::move(result));
   return RespondLater();
 }
 
@@ -3348,8 +3357,49 @@ void AutotestPrivateWaitForDisplayRotationFunction::
   display::Display display;
   display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);
   Respond(OneArgument(std::make_unique<base::Value>(
-      display.is_valid() && display.rotation() == target_rotation_)));
+      display.is_valid() && (!target_rotation_.has_value() ||
+                             display.rotation() == *target_rotation_))));
   self_.reset();
+}
+
+void AutotestPrivateWaitForDisplayRotationFunction::
+    OnUserRotationLockChanged() {
+  auto* screen_orientation_controller =
+      ash::Shell::Get()->screen_orientation_controller();
+  if (screen_orientation_controller->user_rotation_locked())
+    return;
+  screen_orientation_controller->RemoveObserver(this);
+  self_.reset();
+  target_rotation_.reset();
+  auto result = CheckScreenRotationAnimation();
+  // Wait for the rotation if unlocking causes rotation.
+  if (result)
+    Respond(std::move(result));
+}
+
+ExtensionFunction::ResponseValue
+AutotestPrivateWaitForDisplayRotationFunction::CheckScreenRotationAnimation() {
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id_);
+  if (!root_window) {
+    return Error(base::StringPrintf(
+        "Invalid display_id; no root window found for the display id %" PRId64,
+        display_id_));
+  }
+  auto* animator = ash::ScreenRotationAnimator::GetForRootWindow(root_window);
+  if (!animator->IsRotating()) {
+    display::Display display;
+    display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_,
+                                                          &display);
+    // This should never fail.
+    DCHECK(display.is_valid());
+    return OneArgument(
+        std::make_unique<base::Value>(!target_rotation_.has_value() ||
+                                      display.rotation() == *target_rotation_));
+  }
+  self_ = this;
+
+  animator->AddObserver(this);
+  return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

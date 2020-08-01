@@ -213,13 +213,28 @@ bool SampleVectorBase::AddSubtractImpl(SampleCountIterator* iter,
   }
 }
 
-// Use simple binary search.  This is very general, but there are better
-// approaches if we knew that the buckets were linearly distributed.
+// Uses simple binary search or calculates the index directly if it's an "exact"
+// linear histogram. This is very general, but there are better approaches if we
+// knew that the buckets were linearly distributed.
 size_t SampleVectorBase::GetBucketIndex(Sample value) const {
   size_t bucket_count = bucket_ranges_->bucket_count();
   CHECK_GE(bucket_count, 1u);
   CHECK_GE(value, bucket_ranges_->range(0));
   CHECK_LT(value, bucket_ranges_->range(bucket_count));
+
+  // For "exact" linear histograms, e.g. bucket_count = maximum + 1, their
+  // minimum is 1 and bucket sizes are 1. Thus, we don't need to binary search
+  // the bucket index. The bucket index for bucket |value| is just the |value|.
+  Sample maximum = bucket_ranges_->range(bucket_count - 1);
+  if (maximum == static_cast<Sample>(bucket_count - 1)) {
+    // |value| is in the underflow bucket.
+    if (value < 1)
+      return 0;
+    // |value| is in the overflow bucket.
+    if (value > maximum)
+      return bucket_count - 1;
+    return static_cast<size_t>(value);
+  }
 
   size_t under = 0;
   size_t over = bucket_count;

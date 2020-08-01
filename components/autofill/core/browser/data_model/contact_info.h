@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_CONTACT_INFO_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_CONTACT_INFO_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_name.h"
 #include "components/autofill/core/browser/data_model/form_group.h"
 
 namespace autofill {
@@ -28,16 +30,37 @@ class NameInfo : public FormGroup {
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override;
+
+  // Derives all missing tokens in the structured representation of the name by
+  // either parsing missing tokens from their assigned parent or by formatting
+  // them from their assigned children.
+  // Return false if the completion is not possible either because no value is
+  // set or because there are two conflicting values set. Two values are
+  // conflicting iff they are on the same root-to-leaf path.
+  // For example, NAME_FIRST is child of NAME_LAST and if both are set, the tree
+  // cannot be completed.
+  bool FinalizeAfterImport();
 
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
   base::string16 GetInfoImpl(const AutofillType& type,
                              const std::string& app_locale) const override;
-  bool SetInfoImpl(const AutofillType& type,
-                   const base::string16& value,
-                   const std::string& app_locale) override;
+
+  bool SetInfoWithVerificationStatusImpl(
+      const AutofillType& type,
+      const base::string16& value,
+      const std::string& app_locale,
+      structured_address::VerificationStatus status) override;
+
+  // Return the verification status of a structured name value.
+  structured_address::VerificationStatus GetVerificationStatusImpl(
+      ServerFieldType type) const override;
 
   // Returns the full name, which is either |full_|, or if |full_| is empty,
   // is composed of given, middle and family.
@@ -50,10 +73,16 @@ class NameInfo : public FormGroup {
   // Sets |given_|, |middle_|, and |family_| to the tokenized |full|.
   void SetFullName(const base::string16& full);
 
+  // Legacy fields to store the unstructured representation of the name when
+  // |features::kAutofillEnableSupportForMoreStructureInNames| is not enabled.
   base::string16 given_;
   base::string16 middle_;
   base::string16 family_;
   base::string16 full_;
+
+  // This data structure stores the more-structured representation of the name
+  // when |features::kAutofillEnableSupportForMoreStructureInNames| is enabled.
+  structured_address::NameFull name_;
 };
 
 class EmailInfo : public FormGroup {
@@ -68,7 +97,10 @@ class EmailInfo : public FormGroup {
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override;
 
  private:
   // FormGroup:
@@ -90,7 +122,10 @@ class CompanyInfo : public FormGroup {
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  void SetRawInfoWithVerificationStatus(
+      ServerFieldType type,
+      const base::string16& value,
+      structured_address::VerificationStatus status) override;
   void set_profile(const AutofillProfile* profile) { profile_ = profile; }
 
  private:

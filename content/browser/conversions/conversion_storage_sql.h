@@ -37,6 +37,10 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   ConversionStorageSql& operator=(const ConversionStorageSql& other) = delete;
   ~ConversionStorageSql() override;
 
+  void set_ignore_errors_for_testing(bool ignore_for_testing) {
+    ignore_errors_for_testing_ = ignore_for_testing;
+  }
+
  private:
   // ConversionStorage
   bool Initialize() override;
@@ -66,12 +70,18 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
 
   static bool g_run_in_memory_;
 
+  // If set, database errors will not crash the client when run in debug mode.
+  bool ignore_errors_for_testing_ = false;
+
   const base::FilePath path_to_database_;
+
+  // Whether the db is open and should be accessed. False if database
+  // initialization failed, or if the db suffered from an unrecoverable error.
+  bool db_is_open_ = false;
 
   // May be null if the database:
   //  - could not be opened
   //  - table/index initialization failed
-  //  - suffered from an unrecoverable error.
   std::unique_ptr<sql::Database> db_;
 
   // Must outlive |this|.

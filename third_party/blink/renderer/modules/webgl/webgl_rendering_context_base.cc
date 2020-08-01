@@ -4682,15 +4682,17 @@ void WebGLRenderingContextBase::shaderSource(WebGLShader* shader,
   if (!ValidateWebGLProgramOrShader("shaderSource", shader))
     return;
   String string_without_comments = StripComments(string).Result();
-  // TODO(danakj): Make validateShaderSource reject characters > 255 (or utf16
-  // Strings) so we don't need to use StringUTF8Adaptor.
-  if (!ValidateShaderSource(string_without_comments))
-    return;
   shader->SetSource(string);
-  WTF::StringUTF8Adaptor adaptor(string_without_comments);
-  const GLchar* shader_data = adaptor.data();
-  // TODO(danakj): Use base::saturated_cast<GLint>.
-  const GLint shader_length = adaptor.size();
+  if (!string_without_comments.Is8Bit() ||
+      !string_without_comments.ContainsOnlyASCIIOrEmpty()) {
+    SynthesizeGLError(
+        GL_INVALID_VALUE, "shaderSource",
+        "Non ASCII character detected after comments are stripped.");
+    return;
+  }
+  const GLchar* shader_data =
+      reinterpret_cast<const GLchar*>(string_without_comments.Characters8());
+  const GLint shader_length = string_without_comments.length();
   ContextGL()->ShaderSource(ObjectOrZero(shader), 1, &shader_data,
                             &shader_length);
 }
@@ -7205,20 +7207,6 @@ bool WebGLRenderingContextBase::IsPrefixReserved(const String& name) {
       name.StartsWith("_webgl_"))
     return true;
   return false;
-}
-
-bool WebGLRenderingContextBase::ValidateShaderSource(const String& string) {
-  for (wtf_size_t i = 0; i < string.length(); ++i) {
-    // line-continuation character \ is supported in WebGL 2.0.
-    if (IsWebGL2OrHigher() && string[i] == '\\') {
-      continue;
-    }
-    if (!ValidateCharacter(string[i])) {
-      SynthesizeGLError(GL_INVALID_VALUE, "shaderSource", "string not ASCII");
-      return false;
-    }
-  }
-  return true;
 }
 
 bool WebGLRenderingContextBase::ValidateShaderType(const char* function_name,

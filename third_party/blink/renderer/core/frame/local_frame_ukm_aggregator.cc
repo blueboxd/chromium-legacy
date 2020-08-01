@@ -187,6 +187,14 @@ LocalFrameUkmAggregator::GetBeginMainFrameMetrics() {
       main_frame_percentage_records_[static_cast<unsigned>(
                                          MetricId::kCompositing)]
           .interval_duration;
+  metrics_data->compositing_assignments =
+      main_frame_percentage_records_[static_cast<unsigned>(
+                                         MetricId::kCompositingAssignments)]
+          .interval_duration;
+  metrics_data->compositing_inputs =
+      main_frame_percentage_records_[static_cast<unsigned>(
+                                         MetricId::kCompositingInputs)]
+          .interval_duration;
   metrics_data->paint =
       main_frame_percentage_records_[static_cast<unsigned>(MetricId::kPaint)]
           .interval_duration;
@@ -412,7 +420,9 @@ void LocalFrameUkmAggregator::ReportPreFCPEvent() {
 
     switch (static_cast<MetricId>(i)) {
       CASE_FOR_ID(Compositing);
+      CASE_FOR_ID(CompositingAssignments);
       CASE_FOR_ID(CompositingCommit);
+      CASE_FOR_ID(CompositingInputs);
       CASE_FOR_ID(ImplCompositorCommit);
       CASE_FOR_ID(IntersectionObservation);
       CASE_FOR_ID(Paint);
@@ -457,7 +467,9 @@ void LocalFrameUkmAggregator::ReportUpdateTimeEvent() {
   for (unsigned i = 0; i < static_cast<unsigned>(kCount); ++i) {
     switch (static_cast<MetricId>(i)) {
       CASE_FOR_ID(Compositing, i);
+      CASE_FOR_ID(CompositingAssignments, i);
       CASE_FOR_ID(CompositingCommit, i);
+      CASE_FOR_ID(CompositingInputs, i);
       CASE_FOR_ID(ImplCompositorCommit, i);
       CASE_FOR_ID(IntersectionObservation, i);
       CASE_FOR_ID(Paint, i);

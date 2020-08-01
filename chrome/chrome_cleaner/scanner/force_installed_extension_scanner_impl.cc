@@ -84,7 +84,7 @@ ForceInstalledExtensionScannerImpl::GetForceInstalledExtensions(
         std::move(policy_registry_entries_force_list.back());
     policy_registry_entries_force_list.pop_back();
     base::Optional<ExtensionID> extension_id =
-        ExtensionID::Create(base::UTF16ToUTF8(entry.extension_id));
+        ExtensionID::Create(base::WideToUTF8(entry.extension_id));
     if (!extension_id.has_value()) {
       continue;
     }
@@ -100,7 +100,7 @@ ForceInstalledExtensionScannerImpl::GetForceInstalledExtensions(
         std::move(policy_files_default_extensions.back());
     policy_files_default_extensions.pop_back();
     base::Optional<ExtensionID> extension_id =
-        ExtensionID::Create(base::UTF16ToUTF8(file.extension_id));
+        ExtensionID::Create(base::WideToUTF8(file.extension_id));
     if (!extension_id.has_value()) {
       continue;
     }
@@ -117,7 +117,7 @@ ForceInstalledExtensionScannerImpl::GetForceInstalledExtensions(
         std::move(policy_registry_entries_force_installed.back());
     policy_registry_entries_force_installed.pop_back();
     base::Optional<ExtensionID> extension_id =
-        ExtensionID::Create(base::UTF16ToUTF8(entry.extension_id));
+        ExtensionID::Create(base::WideToUTF8(entry.extension_id));
     if (!extension_id.has_value()) {
       continue;
     }
@@ -134,7 +134,7 @@ ForceInstalledExtensionScannerImpl::GetForceInstalledExtensions(
         std::move(policy_files_master_preferences.back());
     policy_files_master_preferences.pop_back();
     base::Optional<ExtensionID> extension_id =
-        ExtensionID::Create(base::UTF16ToUTF8(file.extension_id));
+        ExtensionID::Create(base::WideToUTF8(file.extension_id));
     if (!extension_id.has_value()) {
       continue;
     }

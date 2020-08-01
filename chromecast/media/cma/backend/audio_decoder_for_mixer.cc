@@ -133,6 +133,7 @@ void AudioDecoderForMixer::Initialize() {
   pending_buffer_complete_ = false;
   pending_output_frames_ = kNoPendingOutput;
   paused_ = false;
+  playback_rate_ = 1.0f;
   reported_ready_for_playback_ = false;
   mixer_delay_ = RenderingDelay();
 
@@ -196,9 +197,10 @@ void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
 
   mixer_input_ =
       std::make_unique<mixer_service::OutputStreamConnection>(this, params);
-  mixer_input_->Connect();
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
   mixer_input_->SetAudioClockRate(av_sync_clock_rate_);
+  mixer_input_->SetPlaybackRate(playback_rate_);
+  mixer_input_->Connect();
 }
 
 void AudioDecoderForMixer::StartPlaybackAt(int64_t playback_start_timestamp) {
@@ -259,6 +261,7 @@ float AudioDecoderForMixer::SetPlaybackRate(float rate) {
     rate = 1.0f;
   }
 
+  playback_rate_ = rate;
   mixer_input_->SetPlaybackRate(rate);
   backend_->NewAudioPlaybackRateInEffect(rate);
 
@@ -378,9 +381,20 @@ void AudioDecoderForMixer::ResetMixerInputForNewConfig(
 
   pending_output_frames_ = kNoPendingOutput;
   next_buffer_delay_ = AudioDecoderForMixer::RenderingDelay();
+  int64_t last_timestamp = last_push_playout_timestamp_;
   last_push_playout_timestamp_ = kInvalidTimestamp;
 
   CreateMixerInput(config, start_playback_asap_);
+  if (!start_playback_asap_) {
+    if (last_timestamp != kInvalidTimestamp &&
+        last_push_pts_ != kInvalidTimestamp) {
+      mixer_input_->SetStartTimestamp(last_timestamp, last_push_pts_);
+    } else {
+      // Pause + resume starts playback immediately.
+      mixer_input_->Pause();
+      mixer_input_->Resume();
+    }
+  }
 }
 
 void AudioDecoderForMixer::CreateDecoder() {

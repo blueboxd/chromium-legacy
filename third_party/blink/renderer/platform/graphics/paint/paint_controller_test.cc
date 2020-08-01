@@ -1358,13 +1358,14 @@ void DrawPath(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, client, type, IntRect(0, 0, 100, 100));
-  SkPath path;
-  path.moveTo(0, 0);
-  path.lineTo(0, 100);
-  path.lineTo(50, 50);
-  path.lineTo(100, 100);
-  path.lineTo(100, 0);
-  path.close();
+  SkPathBuilder builder;
+  builder.moveTo(0, 0);
+  builder.lineTo(0, 100);
+  builder.lineTo(50, 50);
+  builder.lineTo(100, 100);
+  builder.lineTo(100, 0);
+  builder.close();
+  SkPath path = builder.detach();
   PaintFlags flags;
   flags.setAntiAlias(true);
   for (unsigned i = 0; i < count; i++)

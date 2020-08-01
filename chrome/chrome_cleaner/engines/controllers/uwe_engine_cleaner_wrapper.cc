@@ -163,7 +163,7 @@ void UwEEngineCleanerWrapper::RemovePUPExtensions(
           return;
         }
         master_preferences_extensions.push_back(
-            base::UTF8ToUTF16(extension.id.AsString()));
+            base::UTF8ToWide(extension.id.AsString()));
         break;
       }
       case INSTALL_METHOD_UNSPECIFIED:
@@ -197,7 +197,7 @@ void UwEEngineCleanerWrapper::RemovePUPExtensions(
       LOG(ERROR) << "Could not serialize json";
       return;
     }
-    base::string16 serialized_json16 = base::UTF8ToUTF16(serialized_json);
+    base::string16 serialized_json16 = base::UTF8ToWide(serialized_json);
     if (!RemoveExtensionSettingsPoliciesExtensionForAccessMask(
             KEY_WOW64_32KEY | KEY_WRITE, content_type, serialized_json16)) {
       LOG(ERROR) << "Could not remove extension settings from registry";

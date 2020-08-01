@@ -37,7 +37,7 @@ class MockTextureOwner : public TextureOwner {
   MOCK_METHOD1(OnTextureDestroyed, void(gpu::gles2::AbstractTexture*));
   MOCK_METHOD1(SetFrameAvailableCallback, void(const base::RepeatingClosure&));
   MOCK_METHOD3(GetCodedSizeAndVisibleRect,
-               void(gfx::Size rotated_visible_size,
+               bool(gfx::Size rotated_visible_size,
                     gfx::Size* coded_size,
                     gfx::Rect* visible_rect));
 

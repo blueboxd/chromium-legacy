@@ -19,18 +19,18 @@ namespace chrome_cleaner {
 
 namespace {
 
-const base::char16 kExtensionId1[] = L"extension1";
-const base::char16 kTestFileName1[] = L"file1.file";
+const wchar_t kExtensionId1[] = L"extension1";
+const wchar_t kTestFileName1[] = L"file1.file";
 
-const base::char16 kExtensionId2[] = L"extension2";
-const base::char16 kTestFileName2[] = L"file2.file";
+const wchar_t kExtensionId2[] = L"extension2";
+const wchar_t kTestFileName2[] = L"file2.file";
 
-const base::char16 kExtensionId3[] = L"extension3";
-const base::char16 kTestFileName3[] = L"file3.file";
+const wchar_t kExtensionId3[] = L"extension3";
+const wchar_t kTestFileName3[] = L"file3.file";
 
-const base::char16 kExtensionId4[] = L"generic-extension-name";
+const wchar_t kExtensionId4[] = L"generic-extension-name";
 
-const base::char16 kExtensionId5[] = L"ghost-extension";
+const wchar_t kExtensionId5[] = L"ghost-extension";
 
 }  // namespace
 

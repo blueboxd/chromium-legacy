@@ -29,19 +29,19 @@ using testing::Contains;
 TEST(UwEMatcherTest, GetForceInstalledExtensions) {
   ForceInstalledExtensionScannerImpl extension_scanner;
   std::vector<ForceInstalledExtension> expected_extensions{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId2)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId2)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId5)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId5)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId4)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId4)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId3)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId3)).value(),
        POLICY_EXTENSION_FORCELIST},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId6)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId6)).value(),
        POLICY_MASTER_PREFERENCES},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId7)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId7)).value(),
        POLICY_MASTER_PREFERENCES},
   };
   TestJsonParser json_parser;

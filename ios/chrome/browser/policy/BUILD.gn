@@ -23,6 +23,7 @@ source_set("policy") {
     "//components/autofill/core/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
+    "//components/enterprise",
     "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common",

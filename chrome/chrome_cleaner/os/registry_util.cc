@@ -163,7 +163,7 @@ base::string16 RegistryValueTypeToString(DWORD value_type) {
       return L"REG_SZ";
     default:
       LOG(WARNING) << "Unknown registry value type (" << value_type << ").";
-      return base::NumberToString16(value_type);
+      return base::NumberToWString(value_type);
   }
 }
 
@@ -181,7 +181,7 @@ void CollectMatchingRegistryNames(const base::win::RegKey& key,
 
   // Enumerates value names under the registry key |key|.
   DWORD index = 0;
-  std::vector<base::char16> value_name(kValueNameBufferSize);
+  std::vector<wchar_t> value_name(kValueNameBufferSize);
   while (true) {
     for (unsigned int iteration = 0; iteration < kMaxRegistryReadIterations;
          ++iteration) {
@@ -396,7 +396,7 @@ void GetRegistryValueAsString(const wchar_t* raw_content,
     // The content displayed by this fallback is a sequence of bytes in
     // little-endian, which give strange display for numeric values (i.e
     // 01000000 instead of 00000001)
-    *content = base::ASCIIToUTF16(base::HexEncode(
+    *content = base::ASCIIToWide(base::HexEncode(
         reinterpret_cast<const char*>(raw_content), raw_content_bytes));
   }
 }

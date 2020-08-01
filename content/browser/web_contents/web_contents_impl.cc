@@ -2246,9 +2246,6 @@ const WebPreferences WebContentsImpl::ComputeWebPreferences() {
   if (IsSpatialNavigationDisabled())
     prefs.spatial_navigation_enabled = false;
 
-  prefs.caret_browsing_enabled =
-      command_line.HasSwitch(switches::kEnableCaretBrowsing);
-
   prefs.disable_reading_from_canvas =
       command_line.HasSwitch(switches::kDisableReadingFromCanvas);
 
@@ -7609,6 +7606,11 @@ void WebContentsImpl::MediaResized(const gfx::Size& size,
 
   for (auto& observer : observers_)
     observer.MediaResized(size, id);
+}
+
+void WebContentsImpl::MediaBufferUnderflow(const MediaPlayerId& id) {
+  for (auto& observer : observers_)
+    observer.MediaBufferUnderflow(id);
 }
 
 void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {

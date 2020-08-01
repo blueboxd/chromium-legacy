@@ -8,13 +8,12 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "ui/base/models/simple_menu_model.h"
+#include "chrome/browser/ui/tabs/existing_base_sub_menu_model.h"
 
 class Profile;
 class TabStripModel;
 
-class ExistingWindowSubMenuModel : public ui::SimpleMenuModel,
-                                   ui::SimpleMenuModel::Delegate {
+class ExistingWindowSubMenuModel : public ExistingBaseSubMenuModel {
  public:
   ExistingWindowSubMenuModel(ui::SimpleMenuModel::Delegate* parent_delegate,
                              TabStripModel* model,
@@ -28,7 +27,6 @@ class ExistingWindowSubMenuModel : public ui::SimpleMenuModel,
   // ui::SimpleMenuModel::Delegate
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
 
   // Whether the submenu should be shown in the provided context. True iff
   // the submenu would show at least one window. Does not assume ownership of
@@ -36,10 +34,9 @@ class ExistingWindowSubMenuModel : public ui::SimpleMenuModel,
   static bool ShouldShowSubmenu(Profile* profile);
 
  private:
-  static int SubMenuCommandToTabStripModelCommand(int command_id);
-  ui::SimpleMenuModel::Delegate* parent_delegate_;
-  TabStripModel* model_;
-  int context_index_;
+  // ExistingBaseSubMenuModel
+  void ExecuteNewCommand(int event_flags) override;
+  void ExecuteExistingCommand(int command_index) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingWindowSubMenuModel);
 };

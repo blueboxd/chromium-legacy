@@ -29,6 +29,8 @@ extern const base::Feature kContentScriptsOnDataUrls;
 
 extern const base::Feature kReportKeepaliveUkm;
 
+extern const base::Feature kReturnScopesInGetAuthToken;
+
 }  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_FEATURES_H_

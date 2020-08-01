@@ -62,7 +62,7 @@ const wchar_t kExternalExtensionsFilePath[] =
 // Extension IDs that are expected to be in external_extensions.json, or have
 // been in past versions, gathered from
 // chrome/browser/resources/default_apps/external_extensions.json
-constexpr std::array<const base::char16*, 8> default_extension_whitelist = {
+constexpr std::array<const wchar_t*, 8> default_extension_whitelist = {
     L"blpcfgokakmgnkcojhhkbfbldkacnbeo", L"pjkljhegncpnkpknbcohdijeoejaedia",
     L"apdfllckaahabafndbhieahigkjlhalf", L"aohghmighlieiainnegkcijnfilokake",
     L"aapocclcgogkmnckokdopfmhonfmgoek", L"felcaaldnbdncclmgdcncolpebgiejap",
@@ -123,7 +123,7 @@ bool RemoveForcelistPolicyExtensionForAccessMask(
       base::string16 entry;
       GetRegistryValueAsString(forcelist_it.Value(), forcelist_it.ValueSize(),
                                forcelist_it.Type(), &entry);
-      if (base::UTF16ToUTF8(entry.substr(0, kExtensionIdLength)) ==
+      if (base::WideToUTF8(entry.substr(0, kExtensionIdLength)) ==
           extension.id.AsString()) {
         keys.push_back(forcelist_it.Name());
       }
@@ -167,7 +167,7 @@ void GetExtensionSettingsPoliciesFromParsedJson(
   scoped_refptr<RefValue> saved_json =
       base::WrapRefCounted(new RefValue(json->Clone()));
   for (const auto& entry : *extension_settings) {
-    const base::string16& extension_id = base::UTF8ToUTF16(entry.first);
+    const base::string16& extension_id = base::UTF8ToWide(entry.first);
     const std::unique_ptr<base::Value>& settings_value = entry.second;
 
     if (settings_value->is_dict()) {
@@ -208,7 +208,7 @@ void GetExtensionSettingsPoliciesForAccessMask(
 
     counter->Increment();
     json_parser->Parse(
-        base::UTF16ToUTF8(extension_settings),
+        base::WideToUTF8(extension_settings),
         base::BindOnce(&GetExtensionSettingsPoliciesFromParsedJson,
                        extension_settings_keys[i], policies, counter, type));
   }
@@ -236,7 +236,7 @@ void GetDefaultExtensionsFromParsedJson(
   scoped_refptr<RefValue> saved_json =
       base::WrapRefCounted(new RefValue(json->Clone()));
   for (const auto& entry : *default_extensions) {
-    base::string16 extension_id = base::UTF8ToUTF16(entry.first);
+    base::string16 extension_id = base::UTF8ToWide(entry.first);
     if (!base::Contains(default_extension_whitelist, extension_id)) {
       policies->emplace_back(extension_id, extensions_file, saved_json);
     }
@@ -272,7 +272,7 @@ void GetMasterPreferencesExtensionsFromParsedJson(
   scoped_refptr<RefValue> saved_json =
       base::WrapRefCounted(new RefValue(json->Clone()));
   for (const auto& entry : *extension_settings_dictionary) {
-    base::string16 extension_id = base::UTF8ToUTF16(entry.first);
+    base::string16 extension_id = base::UTF8ToWide(entry.first);
     policies->emplace_back(extension_id, extensions_file, saved_json);
   }
 }

@@ -328,7 +328,8 @@ void WebMediaPlayerMSCompositor::SetVideoFrameProviderClient(
 }
 
 void WebMediaPlayerMSCompositor::EnqueueFrame(
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<media::VideoFrame> frame,
+    bool is_copy) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(current_frame_lock_);
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::EnqueueFrame",
@@ -338,14 +339,14 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
 
   // With algorithm off, just let |current_frame_| hold the incoming |frame|.
   if (!rendering_frame_buffer_) {
-    RenderWithoutAlgorithm(std::move(frame));
+    RenderWithoutAlgorithm(std::move(frame), is_copy);
     return;
   }
 
   // This is a signal frame saying that the stream is stopped.
   if (frame->metadata()->end_of_stream) {
     rendering_frame_buffer_.reset();
-    RenderWithoutAlgorithm(std::move(frame));
+    RenderWithoutAlgorithm(std::move(frame), is_copy);
     return;
   }
 
@@ -357,7 +358,7 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
         << "Incoming VideoFrames have no reference_time, switching off super "
            "sophisticated rendering algorithm";
     rendering_frame_buffer_.reset();
-    RenderWithoutAlgorithm(std::move(frame));
+    RenderWithoutAlgorithm(std::move(frame), is_copy);
     return;
   }
   base::TimeTicks render_time = *frame->metadata()->reference_time;
@@ -375,11 +376,12 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
     // increase |dropped_frame_count_| by the count of all other frames.
     dropped_frame_count_ += rendering_frame_buffer_->frames_queued() - 1;
     rendering_frame_buffer_->Reset();
-    timestamps_to_clock_times_.clear();
-    RenderWithoutAlgorithm(frame);
+    pending_frames_info_.clear();
+    RenderWithoutAlgorithm(frame, is_copy);
   }
 
-  timestamps_to_clock_times_[frame->timestamp()] = render_time;
+  pending_frames_info_.push_back(PendingFrameInfo{
+      frame->unique_id(), frame->timestamp(), render_time, is_copy});
   rendering_frame_buffer_->EnqueueFrame(std::move(frame));
 }
 
@@ -503,8 +505,13 @@ bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
          io_task_runner_->BelongsToCurrentThread());
 #endif
   for (const base::TimeDelta& timestamp : timestamps) {
-    DCHECK(timestamps_to_clock_times_.count(timestamp));
-    wall_clock_times->push_back(timestamps_to_clock_times_[timestamp]);
+    auto* it =
+        std::find_if(pending_frames_info_.begin(), pending_frames_info_.end(),
+                     [&timestamp](PendingFrameInfo& info) {
+                       return info.timestamp == timestamp;
+                     });
+    DCHECK(it != pending_frames_info_.end());
+    wall_clock_times->push_back(it->reference_time);
   }
   return true;
 }
@@ -529,35 +536,45 @@ void WebMediaPlayerMSCompositor::RenderUsingAlgorithm(
   if (!frame || frame == current_frame_)
     return;
 
-  const base::TimeDelta timestamp = frame->timestamp();
-  SetCurrentFrame(std::move(frame), deadline_min);
+  // Walk |pending_frames_info_| to find |is_copy| value for the frame, while
+  // also erasing old elements.
+  bool is_copy = false;
+  for (auto* it = pending_frames_info_.begin();
+       it != pending_frames_info_.end();) {
+    if (it->unique_id == frame->unique_id())
+      is_copy = it->is_copy;
 
-  const auto& end = timestamps_to_clock_times_.end();
-  const auto& begin = timestamps_to_clock_times_.begin();
-  auto iterator = begin;
-  while (iterator != end && iterator->first < timestamp)
-    ++iterator;
-  timestamps_to_clock_times_.erase(begin, iterator);
+    // Erase info for the older frames.
+    if (it->timestamp < frame->timestamp()) {
+      it = pending_frames_info_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  SetCurrentFrame(std::move(frame), is_copy, deadline_min);
 }
 
 void WebMediaPlayerMSCompositor::RenderWithoutAlgorithm(
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<media::VideoFrame> frame,
+    bool is_copy) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   PostCrossThreadTask(
       *video_frame_compositor_task_runner_, FROM_HERE,
       CrossThreadBindOnce(
           &WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor,
-          WrapRefCounted(this), std::move(frame)));
+          WrapRefCounted(this), std::move(frame), is_copy));
 }
 
 void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<media::VideoFrame> frame,
+    bool is_copy) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(current_frame_lock_);
     if (current_frame_)
       last_render_length_ = frame->timestamp() - current_frame_->timestamp();
-    SetCurrentFrame(std::move(frame), base::nullopt);
+    SetCurrentFrame(std::move(frame), is_copy, base::nullopt);
   }
   if (video_frame_provider_client_)
     video_frame_provider_client_->DidReceiveFrame();
@@ -565,6 +582,7 @@ void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
 
 void WebMediaPlayerMSCompositor::SetCurrentFrame(
     scoped_refptr<media::VideoFrame> frame,
+    bool is_copy,
     base::Optional<base::TimeTicks> expected_display_time) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   current_frame_lock_.AssertAcquired();
@@ -608,6 +626,7 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   }
 
   current_frame_ = std::move(frame);
+  current_frame_is_copy_ = is_copy;
 
   // TODO(https://crbug.com/1050755): Improve the accuracy of these fields when
   // we only use RenderWithoutAlgorithm.
@@ -713,7 +732,7 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal() {
   scoped_refptr<media::VideoFrame> current_frame_ref;
   {
     base::AutoLock auto_lock(current_frame_lock_);
-    if (!current_frame_ || !player_)
+    if (!current_frame_ || !player_ || current_frame_is_copy_)
       return;
     current_frame_ref = current_frame_;
   }
@@ -727,8 +746,10 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal() {
   // |current_frame_| hasn't been changed.
   {
     base::AutoLock auto_lock(current_frame_lock_);
-    if (current_frame_ == current_frame_ref)
+    if (current_frame_ == current_frame_ref) {
       current_frame_ = std::move(copied_frame);
+      current_frame_is_copy_ = true;
+    }
   }
 }
 

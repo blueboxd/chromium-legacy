@@ -101,6 +101,7 @@ class AudioDecoderForMixer
   bool pending_buffer_complete_ = false;
   bool mixer_error_ = false;
   bool paused_ = false;
+  float playback_rate_ = 1.0f;
   bool reported_ready_for_playback_ = false;
   RenderingDelay mixer_delay_;
 

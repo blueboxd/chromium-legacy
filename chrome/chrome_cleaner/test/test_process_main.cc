@@ -23,7 +23,7 @@
 
 namespace {
 
-constexpr base::char16 kLogFileExtension[] = L"log";
+constexpr wchar_t kLogFileExtension[] = L"log";
 
 }  // namespace
 

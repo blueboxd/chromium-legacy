@@ -34,6 +34,7 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
   CameraAppHelperImpl(CameraResultCallback camera_result_callback,
                       aura::Window* window);
   ~CameraAppHelperImpl() override;
+  void Bind(mojo::PendingReceiver<mojom::CameraAppHelper> receiver);
 
   // mojom::CameraAppHelper implementations.
   void HandleCameraResult(uint32_t intent_id,
@@ -60,6 +61,8 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
 
   mojo::Remote<TabletModeMonitor> tablet_monitor_;
   mojo::Remote<ScreenStateMonitor> screen_state_monitor_;
+
+  mojo::Receiver<chromeos_camera::mojom::CameraAppHelper> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CameraAppHelperImpl);
 };

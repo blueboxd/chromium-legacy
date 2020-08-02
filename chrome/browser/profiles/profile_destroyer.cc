@@ -101,21 +101,28 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
 void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
   DCHECK(profile);
   DCHECK(profile->IsOffTheRecord());
-  if (pending_destroyers_) {
-    for (auto i = pending_destroyers_->begin(); i != pending_destroyers_->end();
-         ++i) {
-      if ((*i)->profile_ == profile) {
-        // We want to signal this in debug builds so that we don't lose sight of
-        // these potential leaks, but we handle it in release so that we don't
-        // crash or corrupt profile data on disk.
-        NOTREACHED() << "A render process host wasn't destroyed early enough.";
-        (*i)->profile_ = NULL;
-        break;
-      }
-    }
+  if (ResetPendingDestroyers(profile)) {
+    // We want to signal this in debug builds so that we don't lose sight of
+    // these potential leaks, but we handle it in release so that we don't
+    // crash or corrupt profile data on disk.
+    NOTREACHED() << "A render process host wasn't destroyed early enough.";
   }
   DCHECK(profile->GetOriginalProfile());
   profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
+}
+
+bool ProfileDestroyer::ResetPendingDestroyers(Profile* const profile) {
+  DCHECK(profile);
+  bool found = false;
+  if (pending_destroyers_) {
+    for (auto* i : *pending_destroyers_) {
+      if (i->profile_ == profile) {
+        i->profile_ = nullptr;
+        found = true;
+      }
+    }
+  }
+  return found;
 }
 
 ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
@@ -185,7 +192,14 @@ void ProfileDestroyer::DestroyProfile() {
   DCHECK(profile_->GetOriginalProfile());
   profile_->GetOriginalProfile()->DestroyOffTheRecordProfile(profile_);
 
+#if defined(OS_ANDROID)
+  // It is possible on Android platform that more than one destroyer
+  // is instantiated to delete a single profile. Reset the others to
+  // avoid UAF. See https://crbug.com/1029677.
+  ResetPendingDestroyers(profile_);
+#else
   profile_ = nullptr;
+#endif
 
   // And stop the timer so we can be released early too.
   timer_.Stop();

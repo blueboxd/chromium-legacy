@@ -25,6 +25,8 @@ class CAPTURE_EXPORT CameraAppDeviceProviderImpl
       mojo::PendingRemote<cros::mojom::CameraAppDeviceBridge> bridge,
       DeviceIdMappingCallback mapping_callback);
   ~CameraAppDeviceProviderImpl() override;
+  void Bind(
+      mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver);
 
   // cros::mojom::CameraAppDeviceProvider implementations.
   void GetCameraAppDevice(const std::string& source_id,
@@ -39,6 +41,8 @@ class CAPTURE_EXPORT CameraAppDeviceProviderImpl
   mojo::Remote<cros::mojom::CameraAppDeviceBridge> bridge_;
 
   DeviceIdMappingCallback mapping_callback_;
+
+  mojo::Receiver<cros::mojom::CameraAppDeviceProvider> receiver_{this};
 
   base::WeakPtrFactory<CameraAppDeviceProviderImpl> weak_ptr_factory_;
 

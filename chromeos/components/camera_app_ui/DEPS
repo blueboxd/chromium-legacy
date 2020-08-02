@@ -1,7 +1,9 @@
 include_rules = [
   "+ash/public/cpp",
+  "+components/arc/intent_helper",
   "+components/content_settings/core/common",
   "+content/public/browser",
+  "+media/capture/video/chromeos",
   "+ui/aura",
   "+ui/webui",
 ]

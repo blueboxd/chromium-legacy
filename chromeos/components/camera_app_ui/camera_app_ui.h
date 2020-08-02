@@ -6,7 +6,18 @@
 #define CHROMEOS_COMPONENTS_CAMERA_APP_UI_CAMERA_APP_UI_H_
 
 #include "base/macros.h"
+#include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
+#include "ui/aura/window.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+
+namespace chromeos_camera {
+class CameraAppHelperImpl;
+}  // namespace chromeos_camera
+
+namespace media {
+class CameraAppDeviceProviderImpl;
+}  // namespace media
 
 namespace chromeos {
 
@@ -15,7 +26,40 @@ class CameraAppUI : public ui::MojoWebUIController {
   explicit CameraAppUI(content::WebUI* web_ui);
   ~CameraAppUI() override;
 
+  // [To be deprecated] This method is only used for CCA as a platform app and
+  // will be deprecated once we migrate CCA to SWA.
+  // Connects to CameraAppDeviceProvider which could be used to get
+  // CameraAppDevice from video capture service through CameraAppDeviceBridge.
+  static void ConnectToCameraAppDeviceProvider(
+      content::RenderFrameHost* source,
+      mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver);
+
+  // [To be deprecated] This method is only used for CCA as a platform app and
+  // will be deprecated once we migrate CCA to SWA.
+  // Connects to CameraAppHelper that could handle camera intents.
+  static void ConnectToCameraAppHelper(
+      content::RenderFrameHost* source,
+      mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver);
+
+  // Instantiates implementor of the cros::mojom::CameraAppDeviceProvider mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver);
+
+  // Instantiates implementor of the chromeos_camera::mojom::CameraAppHelper
+  // mojo interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver);
+
  private:
+  aura::Window* window();
+
+  std::unique_ptr<media::CameraAppDeviceProviderImpl> provider_;
+
+  std::unique_ptr<chromeos_camera::CameraAppHelperImpl> helper_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(CameraAppUI);
 };
 

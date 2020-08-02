@@ -21,22 +21,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
-#include "chromeos/components/camera_app_ui/camera_app_helper_impl.h"
+#include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "chromeos/services/cfm/public/buildflags/buildflags.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/media_device_id.h"
-#include "content/public/browser/video_capture_service.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
-#include "media/capture/video/chromeos/camera_app_device_provider_impl.h"
-#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "ui/aura/window.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -92,80 +84,6 @@ void BindHandwritingRecognizerRequestor(
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-// Translates the renderer-side source ID to video device id.
-void TranslateVideoDeviceId(
-    const std::string& salt,
-    const url::Origin& origin,
-    const std::string& source_id,
-    base::OnceCallback<void(const base::Optional<std::string>&)> callback) {
-  auto callback_on_io_thread = base::BindOnce(
-      [](const std::string& salt, const url::Origin& origin,
-         const std::string& source_id,
-         base::OnceCallback<void(const base::Optional<std::string>&)>
-             callback) {
-        content::GetMediaDeviceIDForHMAC(
-            blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, salt,
-            std::move(origin), source_id, std::move(callback));
-      },
-      salt, std::move(origin), source_id, std::move(callback));
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, std::move(callback_on_io_thread));
-}
-
-void HandleCameraResult(
-    content::BrowserContext* context,
-    uint32_t intent_id,
-    arc::mojom::CameraIntentAction action,
-    const std::vector<uint8_t>& data,
-    chromeos_camera::mojom::CameraAppHelper::HandleCameraResultCallback
-        callback) {
-  auto* intent_helper =
-      arc::ArcIntentHelperBridge::GetForBrowserContext(context);
-  intent_helper->HandleCameraResult(intent_id, action, data,
-                                    std::move(callback));
-}
-
-// Connects to CameraAppDeviceProvider which could be used to get
-// CameraAppDevice from video capture service through CameraAppDeviceBridge.
-void ConnectToCameraAppDeviceProvider(
-    content::RenderFrameHost* source,
-    mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver) {
-  mojo::PendingRemote<cros::mojom::CameraAppDeviceBridge> device_bridge;
-  auto device_bridge_receiver = device_bridge.InitWithNewPipeAndPassReceiver();
-
-  // Connects to CameraAppDeviceBridge from video_capture service.
-  content::GetVideoCaptureService().ConnectToCameraAppDeviceBridge(
-      std::move(device_bridge_receiver));
-
-  auto security_origin = source->GetLastCommittedOrigin();
-  auto media_device_id_salt =
-      source->GetProcess()->GetBrowserContext()->GetMediaDeviceIDSalt();
-
-  auto mapping_callback =
-      base::BindRepeating(&TranslateVideoDeviceId, media_device_id_salt,
-                          std::move(security_origin));
-
-  auto camera_app_device_provider =
-      std::make_unique<media::CameraAppDeviceProviderImpl>(
-          std::move(device_bridge), std::move(mapping_callback));
-  mojo::MakeSelfOwnedReceiver(std::move(camera_app_device_provider),
-                              std::move(receiver));
-}
-
-// Connects to CameraAppHelper that could handle camera intents.
-void ConnectToCameraAppHelper(
-    content::RenderFrameHost* source,
-    mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver) {
-  auto handle_result_callback = base::BindRepeating(
-      &HandleCameraResult, source->GetProcess()->GetBrowserContext());
-  auto* window = source->GetNativeView()->GetToplevelWindow();
-  auto camera_app_helper =
-      std::make_unique<chromeos_camera::CameraAppHelperImpl>(
-          std::move(handle_result_callback), window);
-  mojo::MakeSelfOwnedReceiver(std::move(camera_app_helper),
-                              std::move(receiver));
-}
-
 void BindTtsStream(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver) {
@@ -173,6 +91,7 @@ void BindTtsStream(
       Profile::FromBrowserContext(render_frame_host->GetBrowserContext()))
       ->BindTtsStream(std::move(receiver));
 }
+
 #endif
 }  // namespace
 
@@ -240,10 +159,10 @@ void PopulateChromeFrameBindersForExtension(
 
   if (extension->id().compare(extension_misc::kCameraAppId) == 0 ||
       extension->id().compare(extension_misc::kCameraAppDevId) == 0) {
-    binder_map->Add<cros::mojom::CameraAppDeviceProvider>(
-        base::BindRepeating(&ConnectToCameraAppDeviceProvider));
+    binder_map->Add<cros::mojom::CameraAppDeviceProvider>(base::BindRepeating(
+        &chromeos::CameraAppUI::ConnectToCameraAppDeviceProvider));
     binder_map->Add<chromeos_camera::mojom::CameraAppHelper>(
-        base::BindRepeating(&ConnectToCameraAppHelper));
+        base::BindRepeating(&chromeos::CameraAppUI::ConnectToCameraAppHelper));
   }
 
   if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId) {

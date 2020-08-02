@@ -21,6 +21,12 @@ CameraAppDeviceProviderImpl::CameraAppDeviceProviderImpl(
 
 CameraAppDeviceProviderImpl::~CameraAppDeviceProviderImpl() = default;
 
+void CameraAppDeviceProviderImpl::Bind(
+    mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver) {
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
+}
+
 void CameraAppDeviceProviderImpl::GetCameraAppDevice(
     const std::string& source_id,
     GetCameraAppDeviceCallback callback) {

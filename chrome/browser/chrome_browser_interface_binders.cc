@@ -152,6 +152,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/user_action_recorder.mojom.h"
+#include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
+#include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
 #include "chromeos/components/media_app_ui/media_app_ui.h"
@@ -165,6 +167,7 @@
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #endif
 
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
@@ -572,6 +575,12 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos::printing::printing_manager::mojom::PrintingMetadataProvider,
       chromeos::printing::printing_manager::PrintManagementUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<cros::mojom::CameraAppDeviceProvider,
+                                         chromeos::CameraAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos_camera::mojom::CameraAppHelper, chromeos::CameraAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<help_app_ui::mojom::PageHandlerFactory,
                                          chromeos::HelpAppUI>(map);

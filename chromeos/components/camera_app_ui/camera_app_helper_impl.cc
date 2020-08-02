@@ -44,6 +44,12 @@ CameraAppHelperImpl::~CameraAppHelperImpl() {
   ash::ScreenBacklight::Get()->RemoveObserver(this);
 }
 
+void CameraAppHelperImpl::Bind(
+    mojo::PendingReceiver<mojom::CameraAppHelper> receiver) {
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
+}
+
 void CameraAppHelperImpl::HandleCameraResult(
     uint32_t intent_id,
     arc::mojom::CameraIntentAction action,

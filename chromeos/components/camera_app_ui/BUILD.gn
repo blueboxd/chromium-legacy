@@ -26,6 +26,7 @@ static_library("camera_app_ui") {
     "//chromeos/resources:camera_app_resources",
     "//chromeos/strings",
     "//chromeos/system",
+    "//components/arc",
     "//content/public/browser",
     "//content/public/common",
     "//media/capture:capture_lib",

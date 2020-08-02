@@ -121,9 +121,8 @@ ClassicPendingScript::ClassicPendingScript(
 ClassicPendingScript::~ClassicPendingScript() {}
 
 NOINLINE void ClassicPendingScript::CheckState() const {
-  // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
-  CHECK(GetElement());
-  CHECK_EQ(is_external_, !!GetResource());
+  DCHECK(GetElement());
+  DCHECK_EQ(is_external_, !!GetResource());
 }
 
 namespace {

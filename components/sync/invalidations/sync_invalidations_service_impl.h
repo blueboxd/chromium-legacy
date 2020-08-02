@@ -35,6 +35,9 @@ class SyncInvalidationsServiceImpl : public SyncInvalidationsService {
   // SyncInvalidationsService implementation.
   void AddListener(InvalidationsListener* listener) override;
   void RemoveListener(InvalidationsListener* listener) override;
+  void AddTokenObserver(FCMRegistrationTokenObserver* observer) override;
+  void RemoveTokenObserver(FCMRegistrationTokenObserver* observer) override;
+  const std::string& GetFCMRegistrationToken() const override;
 
   // KeyedService overrides.
   void Shutdown() override;

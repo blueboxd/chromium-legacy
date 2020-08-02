@@ -10,7 +10,11 @@ js_type_check("closure_compile") {
 
 js_library("browser_proxy") {
   deps = [
+    "..:background_ops",
     "..:chrome_util",
+    "..:intent",
+    "..:perf",
+    "..:type",
     "../models:chrome_file_system_entry",
     "../mojo:chrome_helper",
   ]

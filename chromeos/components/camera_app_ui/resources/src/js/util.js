@@ -5,7 +5,7 @@
 import {browserProxy} from './browser_proxy/browser_proxy.js';
 import * as state from './state.js';
 import * as tooltip from './tooltip.js';
-import {Facing, Resolution} from './type.js';
+import {Facing} from './type.js';
 
 /**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
@@ -265,18 +265,6 @@ export function makeUnfocusableByMouse(element) {
 }
 
 /**
- * Checks if the window is maximized or fullscreen.
- * @return {boolean} True if maximized or fullscreen, false otherwise.
- */
-export function isWindowFullSize() {
-  // App-window's isFullscreen, isMaximized state and window's outer-size may
-  // not be updated immediately during resizing. Use if app-window's outerBounds
-  // width matches screen width here as workarounds.
-  return chrome.app.window.current().outerBounds.width >= screen.width ||
-      chrome.app.window.current().outerBounds.height >= screen.height;
-}
-
-/**
  * Opens help.
  */
 export function openHelp() {
@@ -388,56 +376,6 @@ export function scalePicture(url, isVideo, width, height = undefined) {
 export function toggleChecked(element, checked) {
   element.checked = checked;
   element.dispatchEvent(new Event('change'));
-}
-
-/**
- * Sets CCA window inner bound to size which can fit in current screen.
- * @return {!Promise} Promise which is resolved when size change actually
- *     happen or is resolved immediately when there is no need to change.
- */
-export function fitWindow() {
-  const appWindow = chrome.app.window.current();
-
-  /**
-   * Get a preferred window size which can fit in current screen.
-   * @return {Resolution} Preferred window size.
-   */
-  const getPreferredWindowSize = () => {
-    const inner = appWindow.innerBounds;
-    const outer = appWindow.outerBounds;
-
-    const predefinedWidth = inner.minWidth;
-    const availableWidth = screen.availWidth;
-
-    const topBarHeight = outer.height - inner.height;
-    const fixedRatioMaxWidth =
-        Math.floor((screen.availHeight - topBarHeight) * 16 / 9);
-
-    let preferredWidth =
-        Math.min(predefinedWidth, availableWidth, fixedRatioMaxWidth);
-    preferredWidth -= preferredWidth % 16;
-    const preferredHeight = preferredWidth * 9 / 16;
-
-    return new Resolution(preferredWidth, preferredHeight);
-  };
-
-  const {width, height} = getPreferredWindowSize();
-
-  return new Promise((resolve) => {
-    const inner = appWindow.innerBounds;
-    if (inner.width === width && inner.height === height) {
-      resolve();
-      return;
-    }
-
-    const listener = () => {
-      appWindow.onBoundsChanged.removeListener(listener);
-      resolve();
-    };
-    appWindow.onBoundsChanged.addListener(listener);
-
-    Object.assign(inner, {width, height, minWidth: width, minHeight: height});
-  });
 }
 
 /**

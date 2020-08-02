@@ -109,7 +109,8 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<DeviceInfoSyncClient>(browser_state->GetPrefs());
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          ::GetChannel(), ::GetVersionString(), device_info_sync_client.get());
+          ::GetChannel(), ::GetVersionString(), device_info_sync_client.get(),
+          /*sync_invalidations_service=*/nullptr);
   auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
       browser_state->GetPrefs(), base::DefaultClock::GetInstance());
 

@@ -73,7 +73,8 @@ class DeviceInfo {
              base::Time last_updated_timestamp,
              base::TimeDelta pulse_interval,
              bool send_tab_to_self_receiving_enabled,
-             const base::Optional<SharingInfo>& sharing_info);
+             const base::Optional<SharingInfo>& sharing_info,
+             const std::string& fcm_registration_token);
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -123,6 +124,9 @@ class DeviceInfo {
   // Returns Sharing related info of the device.
   const base::Optional<SharingInfo>& sharing_info() const;
 
+  // Returns the FCM registration token for sync invalidations.
+  const std::string& fcm_registration_token() const;
+
   // Gets the OS in string form.
   std::string GetOSString() const;
 
@@ -143,6 +147,8 @@ class DeviceInfo {
   void set_sharing_info(const base::Optional<SharingInfo>& sharing_info);
 
   void set_client_name(const std::string& client_name);
+
+  void set_fcm_registration_token(const std::string& fcm_token);
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
@@ -178,6 +184,9 @@ class DeviceInfo {
   bool send_tab_to_self_receiving_enabled_;
 
   base::Optional<SharingInfo> sharing_info_;
+
+  // An FCM registration token obtained by sync invalidations service.
+  std::string fcm_registration_token_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };

@@ -152,7 +152,8 @@ void SharingBrowserTest::AddDeviceInfo(
           original_device.last_updated_timestamp(),
           original_device.pulse_interval(),
           original_device.send_tab_to_self_receiving_enabled(),
-          original_device.sharing_info());
+          original_device.sharing_info(),
+          original_device.fcm_registration_token());
   fake_device_info_tracker_.Add(fake_device.get());
   device_infos_.push_back(std::move(fake_device));
 }

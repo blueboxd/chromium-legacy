@@ -111,7 +111,8 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
         /*model_name=*/std::string(),
         /*last_updated_timestamp=*/base::Time(),
         /*pulse_interval=*/base::TimeDelta(),
-        /*send_tab_to_self_receiving_enabled=*/true, std::move(sharing_info));
+        /*send_tab_to_self_receiving_enabled=*/true, std::move(sharing_info),
+        /*fcm_registration_token=*/std::string());
   }
 
   // We want to send to the passed |fcm_configuration| as it is the most up to

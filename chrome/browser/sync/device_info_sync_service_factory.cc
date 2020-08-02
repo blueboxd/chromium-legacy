@@ -19,10 +19,12 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
+#include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_sync_client.h"
@@ -107,6 +109,7 @@ DeviceInfoSyncServiceFactory::DeviceInfoSyncServiceFactory()
           "DeviceInfoSyncService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+  DependsOn(SyncInvalidationsServiceFactory::GetInstance());
 }
 
 DeviceInfoSyncServiceFactory::~DeviceInfoSyncServiceFactory() {}
@@ -120,7 +123,9 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
-          device_info_sync_client.get());
+          device_info_sync_client.get(),
+          SyncInvalidationsServiceFactory::GetForProfile(profile));
+
   auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
       profile->GetPrefs(), base::DefaultClock::GetInstance());
 

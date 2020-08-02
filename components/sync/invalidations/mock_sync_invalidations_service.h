@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_INVALIDATIONS_MOCK_SYNC_INVALIDATIONS_SERVICE_H_
 #define COMPONENTS_SYNC_INVALIDATIONS_MOCK_SYNC_INVALIDATIONS_SERVICE_H_
 
+#include <string>
+
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,6 +19,13 @@ class MockSyncInvalidationsService : public SyncInvalidationsService {
 
   MOCK_METHOD(void, AddListener, (InvalidationsListener * listener));
   MOCK_METHOD(void, RemoveListener, (InvalidationsListener * listener));
+  MOCK_METHOD(void,
+              AddTokenObserver,
+              (FCMRegistrationTokenObserver * observer));
+  MOCK_METHOD(void,
+              RemoveTokenObserver,
+              (FCMRegistrationTokenObserver * observer));
+  MOCK_METHOD(const std::string&, GetFCMRegistrationToken, (), (const));
 };
 
 }  // namespace syncer

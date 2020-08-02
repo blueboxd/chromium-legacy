@@ -18,5 +18,6 @@ std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
       guid, name, "chrome_version", "user_agent", device_type, "device_id",
       manufacturer_name, model_name, last_updated_timestamp,
       syncer::DeviceInfoUtil::GetPulseInterval(),
-      /*send_tab_to_self_receiving_enabled=*/false, sharing_info);
+      /*send_tab_to_self_receiving_enabled=*/false, sharing_info,
+      /*fcm_registration_token=*/std::string());
 }

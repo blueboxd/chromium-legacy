@@ -247,7 +247,9 @@ export class Camera extends View {
         this.start();
       }
     });
-    chrome.app.window.current().onMinimized.addListener(() => this.start());
+    browserProxy.addOnMinimizedListener(() => {
+      this.start();
+    });
 
     document.addEventListener('visibilitychange', () => {
       const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
@@ -302,7 +304,7 @@ export class Camera extends View {
    * @return {boolean}
    */
   isSuspended() {
-    return this.locked_ || chrome.app.window.current().isMinimized() ||
+    return this.locked_ || browserProxy.isMinimized() ||
         state.get(state.State.SUSPEND) ||
         state.get(state.State.SCREEN_OFF_AUTO) || this.isTabletBackground_();
   }

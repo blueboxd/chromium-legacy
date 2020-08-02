@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
+import {BackgroundOps} from '../background_ops.js';
+import {Intent} from '../intent.js';
+import {PerfLogger} from '../perf.js';
+// eslint-disable-next-line no-unused-vars
 import {BrowserProxy} from './browser_proxy_interface.js';
 
 /* eslint-disable new-cap */
@@ -141,6 +145,55 @@ class WebUIBrowserProxy {
   /** @override */
   isMp4RecordingEnabled() {
     return false;
+  }
+
+  /** @override */
+  getBackgroundOps() {
+    // TODO(980846): Refactor after migrating to SWA since there is no
+    // background page for SWA.
+    const perfLogger = new PerfLogger();
+    const url = window.location.href;
+    const intent = url.includes('intent') ? Intent.create(new URL(url)) : null;
+    return /** @type {BackgroundOps} */ ({
+      bindForegroundOps: (ops) => {},
+      getIntent: () => intent,
+      getPerfLogger: () => perfLogger,
+      getTestingErrorCallback: () => null,
+      notifyActivation: () => {},
+      notifySuspension: () => {},
+    });
+  }
+
+  /** @override */
+  isFullscreenOrMaximized() {
+    // TODO(980846): Implement the fullscreen monitor.
+    return false;
+  }
+
+  /** @override */
+  fitWindow() {
+    // TODO(980846): Remove the method once we migrate to SWA.
+  }
+
+  /** @override */
+  showWindow() {
+    // TODO(980846): Remove the method once we migrate to SWA.
+  }
+
+  /** @override */
+  hideWindow() {
+    // TODO(980846): Remove the method once we migrate to SWA.
+  }
+
+  /** @override */
+  isMinimized() {
+    // TODO(980846): Implement the minimization monitor.
+    return false;
+  }
+
+  /** @override */
+  addOnMinimizedListener(listener) {
+    // TODO(980846): Implement the minimization monitor.
   }
 }
 

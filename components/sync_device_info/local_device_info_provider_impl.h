@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "components/sync/invalidations/fcm_registration_token_observer.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/version_info/version_info.h"
@@ -19,12 +20,19 @@
 namespace syncer {
 
 class DeviceInfoSyncClient;
+class SyncInvalidationsService;
 
-class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
+class LocalDeviceInfoProviderImpl
+    : public MutableLocalDeviceInfoProvider,
+      public syncer::FCMRegistrationTokenObserver {
  public:
-  LocalDeviceInfoProviderImpl(version_info::Channel channel,
-                              const std::string& version,
-                              const DeviceInfoSyncClient* sync_client);
+  // |sync_invalidations_service| is used to get an FCM registration token. It
+  // may be nullptr if sync invalidations are disabled.
+  LocalDeviceInfoProviderImpl(
+      version_info::Channel channel,
+      const std::string& version,
+      const DeviceInfoSyncClient* sync_client,
+      SyncInvalidationsService* sync_invalidations_service);
   ~LocalDeviceInfoProviderImpl() override;
 
   // MutableLocalDeviceInfoProvider implementation.
@@ -39,7 +47,12 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override;
 
+  // syncer::FCMRegistrationTokenObserver implementation.
+  void OnFCMRegistrationTokenChanged() override;
+
  private:
+  std::string GetFCMRegistrationToken() const;
+
   // The channel (CANARY, DEV, BETA, etc.) of the current client.
   const version_info::Channel channel_;
 
@@ -47,6 +60,7 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   const std::string version_;
 
   const DeviceInfoSyncClient* const sync_client_;
+  SyncInvalidationsService* sync_invalidations_service_ = nullptr;
 
   std::unique_ptr<DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;

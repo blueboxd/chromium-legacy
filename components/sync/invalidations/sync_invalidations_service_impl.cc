@@ -30,6 +30,21 @@ void SyncInvalidationsServiceImpl::RemoveListener(
   fcm_handler_->RemoveListener(listener);
 }
 
+void SyncInvalidationsServiceImpl::AddTokenObserver(
+    FCMRegistrationTokenObserver* observer) {
+  fcm_handler_->AddTokenObserver(observer);
+}
+
+void SyncInvalidationsServiceImpl::RemoveTokenObserver(
+    FCMRegistrationTokenObserver* observer) {
+  fcm_handler_->RemoveTokenObserver(observer);
+}
+
+const std::string& SyncInvalidationsServiceImpl::GetFCMRegistrationToken()
+    const {
+  return fcm_handler_->GetFCMRegistrationToken();
+}
+
 void SyncInvalidationsServiceImpl::Shutdown() {
   fcm_handler_.reset();
 }

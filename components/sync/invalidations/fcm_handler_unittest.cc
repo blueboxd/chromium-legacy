@@ -15,6 +15,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/sync/invalidations/fcm_registration_token_observer.h"
 #include "components/sync/invalidations/invalidations_listener.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -76,6 +77,11 @@ class MockListener : public InvalidationsListener {
   MOCK_METHOD1(OnInvalidationReceived, void(const std::string& payload));
 };
 
+class MockTokenObserver : public FCMRegistrationTokenObserver {
+ public:
+  MOCK_METHOD0(OnFCMRegistrationTokenChanged, void());
+};
+
 class FCMHandlerTest : public testing::Test {
  public:
   FCMHandlerTest()
@@ -121,6 +127,23 @@ TEST_F(FCMHandlerTest, ShouldPropagatePayloadToListener) {
   EXPECT_CALL(mock_listener, OnInvalidationReceived(kPayloadValue));
   fcm_handler_.OnMessage(kSyncInvalidationsAppId, gcm_message);
   fcm_handler_.RemoveListener(&mock_listener);
+}
+
+TEST_F(FCMHandlerTest, ShouldNotifyOnTokenChange) {
+  NiceMock<MockTokenObserver> mock_token_observer;
+  fcm_handler_.AddTokenObserver(&mock_token_observer);
+
+  // Check that the handler gets the token through GetToken.
+  ON_CALL(mock_instance_id_, GetToken(_, _, _, _, _, _))
+      .WillByDefault(
+          WithArg<5>(Invoke([](InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token", InstanceID::Result::SUCCESS);
+          })));
+
+  EXPECT_CALL(mock_token_observer, OnFCMRegistrationTokenChanged());
+  fcm_handler_.StartListening();
+
+  fcm_handler_.RemoveTokenObserver(&mock_token_observer);
 }
 
 }  // namespace

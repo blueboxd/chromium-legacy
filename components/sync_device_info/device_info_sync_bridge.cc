@@ -95,7 +95,8 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
       ProtoTimeToTime(specifics.last_updated_timestamp()),
       GetPulseIntervalFromSpecifics(specifics),
       specifics.feature_fields().send_tab_to_self_receiving_enabled(),
-      SpecificsToSharingInfo(specifics));
+      SpecificsToSharingInfo(specifics),
+      specifics.invalidation_fields().instance_id_token());
 }
 
 // Allocate a EntityData and copies |specifics| into it.
@@ -148,6 +149,12 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
          sharing_info->enabled_features) {
       sharing_fields->add_enabled_features(feature);
     }
+  }
+
+  // Set sync invalidations FCM registration token.
+  if (!info.fcm_registration_token().empty()) {
+    specifics->mutable_invalidation_fields()->set_instance_id_token(
+        info.fcm_registration_token());
   }
 
   return specifics;

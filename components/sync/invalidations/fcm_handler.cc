@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/sync/invalidations/fcm_registration_token_observer.h"
 #include "components/sync/invalidations/invalidations_listener.h"
 
 namespace syncer {
@@ -27,7 +28,6 @@ FCMHandler::FCMHandler(gcm::GCMDriver* gcm_driver,
 
 FCMHandler::~FCMHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(listeners_.empty());
   StopListening();
 }
 
@@ -63,19 +63,27 @@ void FCMHandler::ShutdownHandler() {
 
 void FCMHandler::AddListener(InvalidationsListener* listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(listener);
-  listeners_.push_back(listener);
+  listeners_.AddObserver(listener);
 }
 
 void FCMHandler::RemoveListener(InvalidationsListener* listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Erase(listeners_, listener);
+  listeners_.RemoveObserver(listener);
 }
 
 void FCMHandler::OnStoreReset() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Currently the FCM registration token is not stored and there is nothing to
-  // do.
+  // The FCM registration token is not stored by FCMHandler.
+}
+
+void FCMHandler::AddTokenObserver(FCMRegistrationTokenObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  token_observers_.AddObserver(observer);
+}
+
+void FCMHandler::RemoveTokenObserver(FCMRegistrationTokenObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  token_observers_.RemoveObserver(observer);
 }
 
 void FCMHandler::OnMessage(const std::string& app_id,
@@ -89,8 +97,8 @@ void FCMHandler::OnMessage(const std::string& app_id,
     payload = it->second;
   }
 
-  for (InvalidationsListener* listener : listeners_) {
-    listener->OnInvalidationReceived(payload);
+  for (InvalidationsListener& listener : listeners_) {
+    listener.OnInvalidationReceived(payload);
   }
 }
 
@@ -123,11 +131,19 @@ void FCMHandler::DidRetrieveToken(const std::string& subscription_token,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug.com/1108783): add a UMA histogram to monitor results.
   if (result == instance_id::InstanceID::SUCCESS) {
+    if (fcm_registration_token_ == subscription_token) {
+      // Nothing has changed, do not notify observers.
+      return;
+    }
+
     fcm_registration_token_ = subscription_token;
-    return;
+    for (FCMRegistrationTokenObserver& token_observer : token_observers_) {
+      token_observer.OnFCMRegistrationTokenChanged();
+    }
+  } else {
+    DLOG(WARNING) << "Messaging subscription failed: " << result;
   }
 
-  DLOG(WARNING) << "Messaging subscription failed: " << result;
   // TODO(crbug.com/1102336): schedule next token validation.
 }
 

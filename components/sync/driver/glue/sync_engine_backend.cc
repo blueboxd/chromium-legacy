@@ -57,6 +57,31 @@ namespace {
 const base::FilePath::CharType kNigoriStorageFilename[] =
     FILE_PATH_LITERAL("Nigori.bin");
 
+class SyncInvalidationAdapter : public InvalidationInterface {
+ public:
+  explicit SyncInvalidationAdapter(const std::string& payload)
+      : payload_(payload) {}
+  ~SyncInvalidationAdapter() override = default;
+
+  bool IsUnknownVersion() const override { return true; }
+
+  const std::string& GetPayload() const override { return payload_; }
+
+  int64_t GetVersion() const override {
+    // TODO(crbug.com/1102322): implement versions. This method is not called
+    // until IsUnknownVersion() returns true.
+    NOTREACHED();
+    return 0;
+  }
+
+  void Acknowledge() override { NOTIMPLEMENTED(); }
+
+  void Drop() override { NOTIMPLEMENTED(); }
+
+ private:
+  const std::string payload_;
+};
+
 }  // namespace
 
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
@@ -567,9 +592,8 @@ void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
   // TODO(crbug.com/1102322): use data types from active or from payload.
   const ModelTypeSet active_datatypes{ModelType::BOOKMARKS};
   for (const ModelType type : active_datatypes) {
-    // TODO(crbug.com/1082122): implement new InvalidationInterface for new
-    // invalidations.
-    std::unique_ptr<InvalidationInterface> inv_adapter;
+    std::unique_ptr<InvalidationInterface> inv_adapter =
+        std::make_unique<SyncInvalidationAdapter>(payload);
     sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
   }
 }

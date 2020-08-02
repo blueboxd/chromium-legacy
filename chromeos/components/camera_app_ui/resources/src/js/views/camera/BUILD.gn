@@ -25,6 +25,7 @@ js_library("layout") {
   deps = [
     "../..:chrome_util",
     "../..:type",
+    "../../browser_proxy",
   ]
 }
 
@@ -59,6 +60,7 @@ js_library("preview") {
     "../..:chrome_util",
     "../..:nav",
     "../..:type",
+    "../../browser_proxy",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
   ]
 }

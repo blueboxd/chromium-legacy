@@ -12,10 +12,12 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/time.h"
+#include "components/sync/invalidations/switches.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
@@ -103,7 +105,9 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
          expected_specifics.manufacturer() == arg.manufacturer_name() &&
          expected_specifics.feature_fields()
                  .send_tab_to_self_receiving_enabled() ==
-             arg.send_tab_to_self_receiving_enabled();
+             arg.send_tab_to_self_receiving_enabled() &&
+         expected_specifics.invalidation_fields().instance_id_token() ==
+             arg.fcm_registration_token();
 }
 
 Matcher<std::unique_ptr<EntityData>> HasSpecifics(
@@ -124,6 +128,15 @@ MATCHER(HasLastUpdatedAboutNow, "") {
   }
   if (actual_last_updated > now + tolerance) {
     *result_listener << "which is too far in the future";
+    return false;
+  }
+  return true;
+}
+
+MATCHER(HasInstanceIdToken, "") {
+  const sync_pb::DeviceInfoSpecifics& specifics = arg.device_info();
+  if (specifics.invalidation_fields().instance_id_token().empty()) {
+    *result_listener << "which is empty";
     return false;
   }
   return true;
@@ -199,6 +212,13 @@ sync_pb::SharingSpecificFields::EnabledFeatures SharingEnabledFeaturesForSuffix(
                     : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2;
 }
 
+std::string SyncInvalidationsInstanceIdTokenForSuffix(int suffix) {
+  if (base::FeatureList::IsEnabled(switches::kSubscribeForSyncInvalidations)) {
+    return base::StringPrintf("instance id token %d", suffix);
+  }
+  return std::string();
+}
+
 DataTypeActivationRequest TestDataTypeActivationRequest(SyncMode sync_mode) {
   DataTypeActivationRequest request;
   request.cache_guid = CacheGuidForSuffix(kLocalSuffix);
@@ -235,6 +255,13 @@ DeviceInfoSpecifics CreateSpecifics(
       SharingSenderIdAuthSecretForSuffix(suffix));
   specifics.mutable_sharing_fields()->add_enabled_features(
       SharingEnabledFeaturesForSuffix(suffix));
+
+  const std::string sync_invalidations_instance_id_token =
+      SyncInvalidationsInstanceIdTokenForSuffix(suffix);
+  if (!sync_invalidations_instance_id_token.empty()) {
+    specifics.mutable_invalidation_fields()->set_instance_id_token(
+        sync_invalidations_instance_id_token);
+  }
   return specifics;
 }
 
@@ -306,7 +333,8 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
             {SharingSenderIdFcmTokenForSuffix(kLocalSuffix),
              SharingSenderIdP256dhForSuffix(kLocalSuffix),
              SharingSenderIdAuthSecretForSuffix(kLocalSuffix)},
-            sharing_enabled_features));
+            sharing_enabled_features),
+        SyncInvalidationsInstanceIdTokenForSuffix(kLocalSuffix));
   }
 
   void Clear() override { local_device_info_.reset(); }
@@ -1231,6 +1259,15 @@ TEST_F(DeviceInfoSyncBridgeTest, RefreshLocalDeviceNameForSyncModeToggle) {
   device = local_device()->GetLocalDeviceInfo();
   ASSERT_TRUE(device);
   ASSERT_EQ(expected_device_name_full_sync, device->client_name());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, ShouldSendInvalidationFields) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSubscribeForSyncInvalidations);
+
+  EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasInstanceIdToken()), _));
+  InitializeAndMergeInitialData(SyncMode::kFull);
 }
 
 }  // namespace

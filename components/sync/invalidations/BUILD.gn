@@ -8,6 +8,7 @@ static_library("invalidations") {
   sources = [
     "fcm_handler.cc",
     "fcm_handler.h",
+    "fcm_registration_token_observer.h",
     "invalidations_listener.h",
     "switches.cc",
     "switches.h",

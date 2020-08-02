@@ -201,15 +201,15 @@ export class App {
     } catch (error) {
       console.error(error);
       if (error && error.message === 'no-migrate') {
-        chrome.app.window.current().close();
+        window.close();
         return;
       }
       nav.open(ViewName.WARNING, 'filesystem-failure');
     }
 
     const showWindow = (async () => {
-      await util.fitWindow();
-      chrome.app.window.current().show();
+      await browserProxy.fitWindow();
+      browserProxy.showWindow();
       this.backgroundOps_.notifyActivation();
     })();
     const startCamera = (async () => {
@@ -238,7 +238,7 @@ export class App {
   async suspend() {
     state.set(state.State.SUSPEND, true);
     await this.cameraView_.start();
-    chrome.app.window.current().hide();
+    browserProxy.hideWindow();
     this.backgroundOps_.notifySuspension();
   }
 
@@ -247,7 +247,7 @@ export class App {
    */
   resume() {
     state.set(state.State.SUSPEND, false);
-    chrome.app.window.current().show();
+    browserProxy.showWindow();
     this.backgroundOps_.notifyActivation();
   }
 }
@@ -265,8 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (instance !== null) {
     return;
   }
-  assert(window['backgroundOps'] !== undefined);
-  const /** !BackgroundOps */ bgOps = window['backgroundOps'];
+  const bgOps = browserProxy.getBackgroundOps();
 
   const testErrorCallback = bgOps.getTestingErrorCallback();
   metrics.initMetrics();

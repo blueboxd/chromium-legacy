@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../../browser_proxy/browser_proxy.js';
 import {assert} from '../../chrome_util.js';
 import * as state from '../../state.js';
 import {Mode, Resolution} from '../../type.js';
-import * as util from '../../util.js';
 
 /**
  * CSS rules.
@@ -103,10 +103,9 @@ export class Layout {
    * Updates the layout for video-size or window-size changes.
    */
   update() {
-    const fullWindow = util.isWindowFullSize();
+    const fullWindow = browserProxy.isFullscreenOrMaximized();
     const tall = window.innerHeight > window.innerWidth;
-    const tabletLandscape = fullWindow && !tall;
-    state.set(state.State.TABLET_LANDSCAPE, tabletLandscape);
+    state.set(state.State.TABLET_LANDSCAPE, fullWindow && !tall);
     state.set(state.State.MAX_WND, fullWindow);
     state.set(state.State.TALL, tall);
 

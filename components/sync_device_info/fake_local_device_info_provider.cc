@@ -21,7 +21,8 @@ FakeLocalDeviceInfoProvider::FakeLocalDeviceInfoProvider()
                    /*last_updated_timestamp=*/base::Time::Now(),
                    DeviceInfoUtil::GetPulseInterval(),
                    /*send_tab_to_self_receiving_enabled=*/false,
-                   /*sharing_info=*/base::nullopt) {}
+                   /*sharing_info=*/base::nullopt,
+                   /*fcm_registration_token=*/std::string()) {}
 
 FakeLocalDeviceInfoProvider::~FakeLocalDeviceInfoProvider() = default;
 

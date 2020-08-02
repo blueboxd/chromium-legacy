@@ -7,13 +7,13 @@
 
 #include <string>
 
+#include "base/observer_list.h"
+
 namespace syncer {
 
 // This class provides an interface to handle received invalidations.
-class InvalidationsListener {
+class InvalidationsListener : public base::CheckedObserver {
  public:
-  virtual ~InvalidationsListener() = default;
-
   // Called on each invalidation. |payload| is passed as is without any parsing.
   virtual void OnInvalidationReceived(const std::string& payload) = 0;
 };

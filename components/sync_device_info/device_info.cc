@@ -48,7 +48,8 @@ DeviceInfo::DeviceInfo(const std::string& guid,
                        base::Time last_updated_timestamp,
                        base::TimeDelta pulse_interval,
                        bool send_tab_to_self_receiving_enabled,
-                       const base::Optional<SharingInfo>& sharing_info)
+                       const base::Optional<SharingInfo>& sharing_info,
+                       const std::string& fcm_registration_token)
     : guid_(guid),
       client_name_(client_name),
       chrome_version_(chrome_version),
@@ -60,7 +61,8 @@ DeviceInfo::DeviceInfo(const std::string& guid,
       last_updated_timestamp_(last_updated_timestamp),
       pulse_interval_(pulse_interval),
       send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled),
-      sharing_info_(sharing_info) {}
+      sharing_info_(sharing_info),
+      fcm_registration_token_(fcm_registration_token) {}
 
 DeviceInfo::~DeviceInfo() {}
 
@@ -153,6 +155,10 @@ std::string DeviceInfo::GetDeviceTypeString() const {
   }
 }
 
+const std::string& DeviceInfo::fcm_registration_token() const {
+  return fcm_registration_token_;
+}
+
 bool DeviceInfo::Equals(const DeviceInfo& other) const {
   return this->guid() == other.guid() &&
          this->client_name() == other.client_name() &&
@@ -164,7 +170,8 @@ bool DeviceInfo::Equals(const DeviceInfo& other) const {
          this->model_name() == other.model_name() &&
          this->send_tab_to_self_receiving_enabled() ==
              other.send_tab_to_self_receiving_enabled() &&
-         this->sharing_info() == other.sharing_info();
+         this->sharing_info() == other.sharing_info() &&
+         this->fcm_registration_token() == other.fcm_registration_token();
 }
 
 std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() const {
@@ -196,6 +203,10 @@ void DeviceInfo::set_sharing_info(
 
 void DeviceInfo::set_client_name(const std::string& client_name) {
   client_name_ = client_name;
+}
+
+void DeviceInfo::set_fcm_registration_token(const std::string& fcm_token) {
+  fcm_registration_token_ = fcm_token;
 }
 
 }  // namespace syncer

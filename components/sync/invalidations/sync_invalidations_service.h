@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_SYNC_INVALIDATIONS_SYNC_INVALIDATIONS_SERVICE_H_
 #define COMPONENTS_SYNC_INVALIDATIONS_SYNC_INVALIDATIONS_SERVICE_H_
 
+#include <string>
+
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace syncer {
+class FCMRegistrationTokenObserver;
 class InvalidationsListener;
 
 // Service which is used to register with FCM. It is used to obtain an FCM token
@@ -22,6 +25,14 @@ class SyncInvalidationsService : public KeyedService {
   // |listener| then RemoveListener will do nothing.
   virtual void AddListener(InvalidationsListener* listener) = 0;
   virtual void RemoveListener(InvalidationsListener* listener) = 0;
+
+  // Add or remove an FCM token change observer. |observer| must not be nullptr.
+  virtual void AddTokenObserver(FCMRegistrationTokenObserver* observer) = 0;
+  virtual void RemoveTokenObserver(FCMRegistrationTokenObserver* observer) = 0;
+
+  // Used to get an obtained FCM token. Returns empty string if it hasn't been
+  // received yet.
+  virtual const std::string& GetFCMRegistrationToken() const = 0;
 };
 
 }  // namespace syncer

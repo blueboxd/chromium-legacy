@@ -97,7 +97,7 @@ int ChromeMain(int argc, const char** argv) {
   base::CommandLine::Init(0, nullptr);
   base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if(!__builtin_available(macOS 10.10,*)) {
     command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
   }

@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_settings.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h"
-#include "third_party/blink/renderer/platform/widget/compositing/widget_compositor.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/input/ime_event_guard.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
@@ -190,11 +189,6 @@ void WidgetBase::Shutdown(
       FROM_HERE,
       base::BindOnce([](scoped_refptr<WidgetInputHandlerManager> manager) {},
                      std::move(widget_input_handler_manager_)));
-
-  if (widget_compositor_) {
-    widget_compositor_->Shutdown();
-    widget_compositor_ = nullptr;
-  }
 }
 
 cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
@@ -667,18 +661,6 @@ void WidgetBase::ProcessTouchAction(cc::TouchAction touch_action) {
 void WidgetBase::SetFocus(bool enable) {
   has_focus_ = enable;
   client_->FocusChanged(enable);
-}
-
-void WidgetBase::BindWidgetCompositor(
-    mojo::PendingReceiver<mojom::blink::WidgetCompositor> receiver) {
-  if (widget_compositor_)
-    widget_compositor_->Shutdown();
-
-  widget_compositor_ = base::MakeRefCounted<WidgetCompositor>(
-      weak_ptr_factory_.GetWeakPtr(),
-      LayerTreeHost()->GetTaskRunnerProvider()->MainThreadTaskRunner(),
-      LayerTreeHost()->GetTaskRunnerProvider()->ImplThreadTaskRunner(),
-      std::move(receiver));
 }
 
 void WidgetBase::UpdateCompositionInfo(bool immediate_request) {

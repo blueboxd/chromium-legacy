@@ -132,7 +132,8 @@ uint64_t BeginFrameSource::BeginFrameArgsGenerator::EstimateTickCountsBetween(
   constexpr double kErrorMarginIntervalPct = 0.05;
   base::TimeDelta error_margin = vsync_interval * kErrorMarginIntervalPct;
   int ticks_since_estimated_frame_time =
-      (frame_time + error_margin - next_expected_frame_time) / vsync_interval;
+      (frame_time + error_margin - next_expected_frame_time)
+          .IntDiv(vsync_interval);
   return std::max(0, ticks_since_estimated_frame_time);
 }
 

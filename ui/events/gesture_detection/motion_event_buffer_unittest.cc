@@ -170,9 +170,9 @@ class MotionEventBufferTest : public testing::Test,
         event_time + flush_time_delta - event_time_offset;
     base::TimeTicks max_event_time =
         event_time + base::TimeDelta::FromSecondsD(0.5f);
-    const size_t min_expected_events =
-        static_cast<size_t>((max_event_time - flush_time) /
-                            std::max(event_time_delta, flush_time_delta));
+    const size_t min_expected_events = static_cast<size_t>(
+        (max_event_time - flush_time)
+            .IntDiv(std::max(event_time_delta, flush_time_delta)));
 
     MotionEventBuffer buffer(this, true);
 

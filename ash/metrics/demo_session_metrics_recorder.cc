@@ -42,7 +42,7 @@ constexpr char kHelpAppId[] = "nbljnnecbjbmifnoehiemkgefbnpoeak";
 // recorded samples for a full minute while the device is in between uses, we
 // would bias our measurements toward whatever app was used last.
 constexpr int kMaxPeriodsWithoutActivity =
-    base::TimeDelta::FromSeconds(15) / kSamplePeriod;
+    base::TimeDelta::FromSeconds(15).IntDiv(kSamplePeriod);
 
 // Maps a Chrome app ID to a DemoModeApp value for metrics.
 DemoModeApp GetAppFromAppId(const std::string& app_id) {

@@ -43,7 +43,7 @@ class NetLogPlatformBrowserTestBase : public PlatformBrowserTest {
     // Try for up to 5 seconds to read the netlog file.
     constexpr auto kMaxWaitTime = base::TimeDelta::FromSeconds(5);
     constexpr auto kWaitInterval = base::TimeDelta::FromMilliseconds(50);
-    int tries_left = kMaxWaitTime / kWaitInterval;
+    int tries_left = kMaxWaitTime.IntDiv(kWaitInterval);
 
     base::Optional<base::Value> parsed_net_log;
     while (true) {

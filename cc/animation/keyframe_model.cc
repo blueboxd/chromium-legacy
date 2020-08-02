@@ -317,7 +317,7 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
   else if (iteration_time == curve_->Duration())
     iteration = ceil(iteration_start_ + iterations_ - 1);
   else
-    iteration = static_cast<int>(scaled_active_time / curve_->Duration());
+    iteration = static_cast<int>(scaled_active_time.IntDiv(curve_->Duration()));
 
   // Check if we are running the keyframe model in reverse direction for the
   // current iteration

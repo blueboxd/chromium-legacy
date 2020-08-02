@@ -55,7 +55,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     return base::TimeDelta::FromSeconds(5);
   }
   static constexpr int64_t FirstFrameTimeoutFrames() {
-    return FirstFrameTimeout() / viz::BeginFrameArgs::DefaultInterval();
+    return FirstFrameTimeout().IntDiv(viz::BeginFrameArgs::DefaultInterval());
   }
 
   // Wait up to 1 second for a frame of the correct size to be produced. Android
@@ -65,7 +65,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     return base::TimeDelta::FromSeconds(1);
   }
   static constexpr int64_t ResizeTimeoutFrames() {
-    return ResizeTimeout() / viz::BeginFrameArgs::DefaultInterval();
+    return ResizeTimeout().IntDiv(viz::BeginFrameArgs::DefaultInterval());
   }
 
   // Advances the fallback surface to the first surface after navigation. This

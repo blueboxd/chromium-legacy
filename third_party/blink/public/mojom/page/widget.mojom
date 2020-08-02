@@ -91,9 +91,6 @@ interface FrameWidget {
 
   // Disables device emulator.
   DisableDeviceEmulation();
-
-  // Binds an WidgetCompositor interface.
-  BindWidgetCompositor(pending_receiver<WidgetCompositor> host);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that
@@ -188,11 +185,4 @@ interface WidgetHost {
              gfx.mojom.Rect focus_rect,
              mojo_base.mojom.TextDirection focus_dir,
              bool is_anchor_first);
-};
-
-// This interface is bound on the compositor thread.
-interface WidgetCompositor {
-  // Requests that the RenderWidget sends back a response after the next main
-  // frame is generated and presented in the display compositor.
-  VisualStateRequest() => ();
 };

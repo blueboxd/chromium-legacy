@@ -26,10 +26,10 @@ cr.define('settings', function() {
    *   osWifiConfigurationsSynced: boolean,
    * }}
    */
-  let OsSyncPrefs;
+  /* #export */ let OsSyncPrefs;
 
   /** @interface */
-  class OsSyncBrowserProxy {
+  /* #export */ class OsSyncBrowserProxy {
     /**
      * Function to invoke when the sync page has been navigated to. This
      * registers the UI as the "active" sync UI.
@@ -64,7 +64,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.OsSyncBrowserProxy}
    */
-  class OsSyncBrowserProxyImpl {
+  /* #export */ class OsSyncBrowserProxyImpl {
     /** @override */
     didNavigateToOsSyncPage() {
       chrome.send('DidNavigateToOsSyncPage');

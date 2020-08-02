@@ -266,8 +266,8 @@ group("closure_compile_module") {
     #"os_apps_page/app_management_page/plugin_vm_page:closure_compile_module",
     #"os_files_page:closure_compile_module",
     "os_languages_page:closure_compile_module",
-
-    #"os_people_page:closure_compile_module",
+    "os_people_page:closure_compile_module",
+    
     #"os_printing_page:closure_compile_module",
     #"os_privacy_page:closure_compile_module",
     "os_reset_page:closure_compile_module",
@@ -291,7 +291,7 @@ js_type_check("closure_compile_local_module") {
     ":metrics_recorder.m",
 
     #  ":os_icons.m",
-    #  ":os_page_visibility.m",
+    ":os_page_visibility.m",
     ":os_route.m",
 
     #  ":os_settings.m",
@@ -333,10 +333,8 @@ js_library("os_icons.m") {
 
 js_library("os_page_visibility.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_page_visibility.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":os_page_visibility_module" ]
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("os_route.m") {
@@ -421,7 +419,6 @@ group("polymer3_elements") {
     # Local targets
     ":modulize",
     ":os_icons_module",
-    ":os_page_visibility_module",
     ":os_settings_icons_css_module",
 
     # Shared with browser settings
@@ -442,12 +439,6 @@ polymer_modulizer("os_icons") {
   html_type = "iron-iconset"
 }
 
-polymer_modulizer("os_page_visibility") {
-  js_file = "os_page_visibility.js"
-  html_file = "os_page_visibility.html"
-  html_type = "dom-module"
-}
-
 polymer_modulizer("os_settings_icons_css") {
   js_file = "os_settings_icons_css.m.js"
   html_file = "os_settings_icons_css.html"
@@ -461,6 +452,7 @@ js_modulizer("modulize") {
     "route_origin_behavior.js",
     "search_handler.js",
     "os_route.js",
+    "os_page_visibility.js",
     "deep_linking_behavior.js",
   ]
   namespace_rewrites = os_settings_namespace_rewrites

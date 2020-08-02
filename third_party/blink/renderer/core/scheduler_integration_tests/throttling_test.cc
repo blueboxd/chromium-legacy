@@ -271,7 +271,7 @@ class IntensiveWakeUpThrottlingTest : public ThrottlingTestBase {
     // Tasks are not throttled beyond the default background throttling behavior
     // nor do they get to run more often.
     Vector<String> expected_ouput(
-        kTimeUntilNextCheck / kDefaultThrottledWakeUpInterval,
+        kTimeUntilNextCheck.IntDiv(kDefaultThrottledWakeUpInterval),
         "called onTimer");
     EXPECT_THAT(ConsoleMessages(), expected_ouput);
   }

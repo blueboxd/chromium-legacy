@@ -16,10 +16,6 @@
  *   id="lockScreenPasswordPrompt"
  * </settings-lock-screen-password-prompt-dialog>
  */
-
-(function() {
-'use strict';
-
 Polymer({
   is: 'settings-lock-screen-password-prompt-dialog',
 
@@ -71,4 +67,3 @@ Polymer({
     return this.i18n('passwordPromptEnterPasswordLock');
   },
 });
-})();

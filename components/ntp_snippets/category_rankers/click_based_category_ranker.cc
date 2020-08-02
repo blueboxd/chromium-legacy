@@ -455,7 +455,7 @@ bool ClickBasedCategoryRanker::DecayClicksIfNeeded() {
   }
   DCHECK_LE(last_decay, now);
 
-  int num_pending_decays = (now - last_decay) / kTimeBetweenDecays;
+  int num_pending_decays = (now - last_decay).IntDiv(kTimeBetweenDecays);
   int executed_decays = 0;
   while (executed_decays < num_pending_decays && IsEnoughClicksToDecay()) {
     for (RankedCategory& ranked_category : ordered_categories_) {

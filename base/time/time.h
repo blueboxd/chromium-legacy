@@ -297,12 +297,22 @@ class BASE_EXPORT TimeDelta {
     return *this = (*this / a);
   }
 
-  constexpr int64_t operator/(TimeDelta a) const {
+  constexpr int64_t operator/(TimeDelta a) const = delete;
+  constexpr int64_t IntDiv(TimeDelta a) const {
     if (!is_inf() && !a.is_zero())
       return delta_ / a.delta_;
     return ((delta_ < 0) == (a.delta_ < 0))
                ? std::numeric_limits<int64_t>::max()
                : std::numeric_limits<int64_t>::min();
+  }
+  constexpr double FltDiv(TimeDelta a) const {
+    // 0/0 and inf/inf (any combination of positive and negative) are invalid
+    // (they are almost certainly not intentional, and result in NaN, which
+    // turns into 0 if clamped to an integer; this makes introducing subtle bugs
+    // too easy).
+    CHECK((!is_zero() || !a.is_zero()) && (!is_inf() || !a.is_inf()));
+
+    return ToDouble() / a.ToDouble();
   }
 
   constexpr TimeDelta operator%(TimeDelta a) const {
@@ -346,6 +356,15 @@ class BASE_EXPORT TimeDelta {
   // Builds a delta from the product of a user-provided value and a
   // known-positive value.
   static constexpr TimeDelta FromProduct(int64_t value, int64_t positive_value);
+
+  // Returns a double representation of this TimeDelta's tick count.  In
+  // particular, Max()/Min() are converted to +/-infinity.
+  constexpr double ToDouble() const {
+    if (!is_inf())
+      return static_cast<double>(delta_);
+    return (delta_ < 0) ? -std::numeric_limits<double>::infinity()
+                        : std::numeric_limits<double>::infinity();
+  }
 
   // Delta in microseconds.
   int64_t delta_;

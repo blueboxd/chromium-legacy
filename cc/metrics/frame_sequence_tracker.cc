@@ -525,7 +525,7 @@ void FrameSequenceTracker::ReportFramePresented(
                                  : feedback.interval;
       DCHECK(!interval.is_zero()) << TRACKER_DCHECK_MSG;
       constexpr base::TimeDelta kEpsilon = base::TimeDelta::FromMilliseconds(1);
-      int64_t frames = (difference + kEpsilon) / interval;
+      int64_t frames = (difference + kEpsilon).IntDiv(interval);
       metrics_->add_checkerboarded_frames(frames);
     }
 

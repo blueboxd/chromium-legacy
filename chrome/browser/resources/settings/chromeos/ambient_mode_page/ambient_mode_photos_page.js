@@ -85,12 +85,11 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDescription_(topicSource) {
-    // TODO(b/159766700, items 2&3): Finalize the strings and i18n.
+  getTitleInnerHtml_(topicSource) {
     if (topicSource === AmbientModeTopicSource.GOOGLE_PHOTOS) {
-      return 'A slideshow of selected memories will be created';
+      return this.i18nAdvanced('ambientModeAlbumsSubpageGooglePhotosTitle');
     } else {
-      return 'Curated images and artwork';
+      return this.i18n('ambientModeTopicSourceArtGalleryDescription');
     }
   },
 

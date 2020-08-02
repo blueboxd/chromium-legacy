@@ -21,7 +21,7 @@ cr.define('settings', function() {
    *   organization: (string|undefined),
    * }}
    */
-  let Account;
+  /* #export */ let Account;
 
   /** @interface */
   /* #export */ class AccountManagerBrowserProxy {

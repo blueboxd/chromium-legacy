@@ -176,7 +176,8 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
-      GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;
+      GetCertVerifyProcBuiltinTimeLimitForTesting().IntDiv(timeout_increment) +
+      1;
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
   ASSERT_TRUE(test_server.InitializeAndListen());
@@ -247,7 +248,8 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
-      GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;
+      GetCertVerifyProcBuiltinTimeLimitForTesting().IntDiv(timeout_increment) +
+      1;
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
   ASSERT_TRUE(test_server.InitializeAndListen());
@@ -324,7 +326,8 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
-      GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;
+      GetCertVerifyProcBuiltinTimeLimitForTesting().IntDiv(timeout_increment) +
+      1;
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
   ASSERT_TRUE(test_server.InitializeAndListen());

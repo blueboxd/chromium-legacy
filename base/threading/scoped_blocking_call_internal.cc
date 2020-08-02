@@ -194,8 +194,10 @@ void IOJankMonitoringWindow::OnBlockingCallCompleted(TimeTicks call_start,
   if (call_end >= start_time_ + kMonitoringWindow)
     MonitorNextJankWindowIfNecessary(call_end);
 
-  const int jank_start_index = (call_start - start_time_) / kIOJankInterval;
-  const int num_janky_intervals = (call_end - call_start) / kIOJankInterval;
+  const int jank_start_index =
+      (call_start - start_time_).IntDiv(kIOJankInterval);
+  const int num_janky_intervals =
+      (call_end - call_start).IntDiv(kIOJankInterval);
 
   AddJank(jank_start_index, num_janky_intervals);
 }

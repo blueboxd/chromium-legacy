@@ -63,9 +63,6 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   void EnableDeviceEmulation(
       const blink::DeviceEmulationParams& parameters) override {}
   void DisableDeviceEmulation() override {}
-  void BindWidgetCompositor(
-      mojo::PendingReceiver<blink::mojom::WidgetCompositor> receiver) override {
-  }
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
   base::i18n::TextDirection text_direction_ =

@@ -625,7 +625,7 @@ double MapTimeOffsetToATone(base::TimeDelta offset) {
   constexpr double kMaxFrequency = 2000;
   constexpr int kNumToneSteps = 10;
 
-  const int64_t step_number = offset / (kTestDuration / kNumToneSteps);
+  const int64_t step_number = offset.IntDiv(kTestDuration / kNumToneSteps);
   const double t = static_cast<double>(step_number) / kNumToneSteps;
   return kMinFrequency + t * (kMaxFrequency - kMinFrequency);
 }

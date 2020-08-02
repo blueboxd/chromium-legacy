@@ -426,6 +426,10 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
                     content::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
 
+// Requests that the RenderFrame send back a response after waiting for the
+// commit, activation and frame swap of the current DOM tree in blink.
+IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin allowlist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginAllowlist,
@@ -629,6 +633,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SelectionChanged,
                     base::string16 /* text covers the selection range */,
                     uint32_t /* the offset of the text in the document */,
                     gfx::Range /* selection range in the document */)
+
+// Sent as a response to FrameMsg_VisualStateRequest.
+// The message is delivered using RenderWidget::QueueMessage.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent FrameMsg, then ifdefs for platform specific FrameMsg, then

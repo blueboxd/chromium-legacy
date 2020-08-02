@@ -1308,17 +1308,20 @@ class RenderFrameSubmissionObserver
 // So while the ACK can arrive before a CompositorFrame submission occurs. The
 // processing does not occur until after the FrameToken for that frame
 // submission arrives to the main thread.
-class MainThreadFrameObserver {
+class MainThreadFrameObserver : public IPC::Listener {
  public:
   explicit MainThreadFrameObserver(RenderWidgetHost* render_widget_host);
-  ~MainThreadFrameObserver();
+  ~MainThreadFrameObserver() override;
 
   // Synchronizes the browser main thread with the renderer main thread and impl
   // thread.
   void Wait();
 
+  // Overridden IPC::Listener methods.
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
  private:
-  void Quit(bool);
+  void Quit();
 
   RenderWidgetHost* render_widget_host_;
   base::OnceClosure quit_closure_;

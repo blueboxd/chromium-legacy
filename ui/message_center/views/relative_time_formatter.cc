@@ -69,7 +69,7 @@ void GetRelativeTimeStringAndNextUpdateTime(TimeDelta delta,
   }
 
   int string_id = past ? format.past : format.future;
-  int count = static_cast<int>(absolute / format.range);
+  int count = static_cast<int>(absolute.IntDiv(format.range));
   TimeDelta delay = past
                         ? format.range * (count + 1)
                         : TimeDelta::FromMilliseconds(1) - format.range * count;

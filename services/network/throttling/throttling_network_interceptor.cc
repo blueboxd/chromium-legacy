@@ -104,7 +104,7 @@ uint64_t ThrottlingNetworkInterceptor::UpdateThrottledRecords(
     return last_tick;
   }
 
-  int64_t new_tick = (now - offset_) / tick_length;
+  int64_t new_tick = (now - offset_).IntDiv(tick_length);
   int64_t ticks = new_tick - last_tick;
 
   int64_t length = records->size();

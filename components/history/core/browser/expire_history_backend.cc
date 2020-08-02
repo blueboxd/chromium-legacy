@@ -318,7 +318,7 @@ void ExpireHistoryBackend::ExpireVisitsInternal(
   if (!expire_visits_time.is_zero()) {
     UMA_HISTOGRAM_PERCENTAGE(
         "History.ExpireVisits.GetRedirectsDurationPercentage",
-        get_redirects_time * 100 / expire_visits_time);
+        (get_redirects_time * 100).IntDiv(expire_visits_time));
   }
 }
 

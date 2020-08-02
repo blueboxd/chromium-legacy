@@ -1034,7 +1034,7 @@ SVGSMILElement::ProgressState SVGSMILElement::CalculateProgressState(
     // use a progress value of 1.0, otherwise we should return a value that is
     // within the interval (< 1.0), so subtract the smallest representable time
     // delta in that case.
-    repeat = last_active_duration / simple_duration;
+    repeat = last_active_duration.IntDiv(simple_duration);
     simple_time = last_active_duration % simple_duration;
     if (simple_time) {
       simple_time = simple_time - SMILTime::Epsilon();
@@ -1043,7 +1043,7 @@ SVGSMILElement::ProgressState SVGSMILElement::CalculateProgressState(
       --repeat;
     }
   } else {
-    repeat = active_time / simple_duration;
+    repeat = active_time.IntDiv(simple_duration);
     simple_time = active_time % simple_duration;
   }
   return {clampTo<float>(simple_time.InternalValueAsDouble() /

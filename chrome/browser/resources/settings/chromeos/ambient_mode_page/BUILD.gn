@@ -45,6 +45,7 @@ js_library("ambient_mode_photos_page") {
     ":constants",
     "..:os_route",
     "../..:router",
+    "../localized_link:localized_link",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
@@ -57,9 +58,9 @@ js_library("constants") {
 
 js_library("topic_source_item") {
   deps = [
+    ":constants",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
-    ":constants"
   ]
 }
 
@@ -124,8 +125,8 @@ js_library("topic_source_item.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/ambient_mode_page/topic_source_item.m.js" ]
   deps = [
     ":constants.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":topic_source_item_module" ]
 }

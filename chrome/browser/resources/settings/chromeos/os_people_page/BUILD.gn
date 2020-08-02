@@ -249,6 +249,7 @@ js_library("account_manager.m") {
     "../localized_link:localized_link.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -500,12 +501,15 @@ group("polymer3_elements") {
     ":modulize",
     ":os_people_page_module",
     ":os_sync_controls_module",
+    ":pin_autosubmit_dialog_module",
     ":setup_fingerprint_dialog_module",
     ":setup_pin_dialog_module",
     ":user_list_module",
     ":users_add_user_dialog_module",
     ":users_page_module",
-    "../../people_page:modulize",
+    "../../people_page:polymer3_elements",
+    "../../privacy_page:polymer3_elements",
+    "../../:icons_module",
   ]
 }
 
@@ -641,4 +645,5 @@ js_modulizer("modulize") {
     "lock_state_behavior.js",
     "os_sync_browser_proxy.js",
   ]
+  namespace_rewrites = os_settings_namespace_rewrites
 }

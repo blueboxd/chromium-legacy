@@ -21,6 +21,16 @@
     <style include="cr-shared-style settings-shared iron-flex">
       #ambientModeEnable {
         border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
+      }
+
+      #pageDescription {
+        padding-inline-start: var(--cr-section-padding);
+        padding-top: 0;
+      }
+
+      #topicSourceListDiv {
+        border-bottom: var(--cr-separator-line);
       }
 
       /* Set padding on children instead of the container itself to ensure that
@@ -32,6 +42,10 @@
         padding-inline-start: var(--cr-section-padding);
       }
     </style>
+    <h2 id="pageDescription">
+      $i18n{ambientModePageDescription}
+    </h2>
+
     <settings-toggle-button id="ambientModeEnable"
         class="primary-toggle"
         pref="{{prefs.settings.ambient_mode.enabled}}"

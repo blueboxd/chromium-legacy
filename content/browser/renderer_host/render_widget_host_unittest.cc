@@ -2060,6 +2060,137 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
 }
 
+// Check that if messages of a frame arrive earlier than the frame itself, we
+// queue the messages until the frame arrives and then process them.
+TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
+  constexpr uint32_t frame_token = 1;
+  std::vector<IPC::Message> messages;
+  messages.push_back(WidgetHostMsg_Close(5));
+
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token, messages));
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  view_->OnFrameTokenChanged(frame_token);
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+}
+
+// Check that if a frame arrives earlier than its messages, we process the
+// messages immedtiately.
+TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
+  constexpr uint32_t frame_token = 1;
+  std::vector<IPC::Message> messages;
+  messages.push_back(WidgetHostMsg_Close(5));
+
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  view_->OnFrameTokenChanged(frame_token);
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token, messages));
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+}
+
+// Check that if messages of multiple frames arrive before the frames, we
+// process each message once it frame arrives.
+TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
+  constexpr uint32_t frame_token1 = 1;
+  constexpr uint32_t frame_token2 = 2;
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages2;
+  messages1.push_back(WidgetHostMsg_Close(5));
+  messages2.push_back(WidgetHostMsg_Close(6));
+
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+  EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  view_->OnFrameTokenChanged(frame_token1);
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+  view_->OnFrameTokenChanged(frame_token2);
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(2u, host_->processed_frame_messages_count());
+}
+
+// Check that if multiple frames arrive before their messages, each message is
+// processed immediately as soon as it arrives.
+TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
+  constexpr uint32_t frame_token1 = 1;
+  constexpr uint32_t frame_token2 = 2;
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages2;
+  messages1.push_back(WidgetHostMsg_Close(5));
+  messages2.push_back(WidgetHostMsg_Close(6));
+
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  view_->OnFrameTokenChanged(frame_token1);
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  view_->OnFrameTokenChanged(frame_token2);
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(2u, host_->processed_frame_messages_count());
+}
+
+// Check that if one frame is lost but its messages arrive, we process the
+// messages on the arrival of the next frame.
+TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
+  constexpr uint32_t frame_token1 = 1;
+  constexpr uint32_t frame_token2 = 2;
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages2;
+  messages1.push_back(WidgetHostMsg_Close(5));
+  messages2.push_back(WidgetHostMsg_Close(6));
+
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+  EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  view_->OnFrameTokenChanged(frame_token2);
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
+  EXPECT_EQ(2u, host_->processed_frame_messages_count());
+}
+
 // If a navigation happens while the widget is hidden, we shouldn't show
 // contents of the previous page when we become visible.
 TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {

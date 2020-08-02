@@ -14,4 +14,5 @@ os_test_namespace_rewrites = os_settings_namespace_rewrites + [
                                "test_util.waitAfterNextRender|waitAfterNextRender",
                                "settings.TestWallpaperBrowserProxy|TestWallpaperBrowserProxy",
                                "parental_controls.ParentalControlsBrowserProxy|ParentalControlsBrowserProxy",
+                               "settings.FakeQuickUnlockPrivate|FakeQuickUnlockPrivate",
                              ]

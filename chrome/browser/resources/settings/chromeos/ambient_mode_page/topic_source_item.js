@@ -64,13 +64,26 @@ Polymer({
   },
 
   /**
+   * @return {string}
+   * @private
+   */
+  getItemDescription_() {
+    if (this.item === AmbientModeTopicSource.GOOGLE_PHOTOS) {
+      return this.i18n('ambientModeTopicSourceGooglePhotosDescription');
+    } else if (this.item === AmbientModeTopicSource.ART_GALLERY) {
+      return this.i18n('ambientModeTopicSourceArtGalleryDescription');
+    } else {
+      return '';
+    }
+  },
+
+  /**
    * The aria label for the subpage button.
    * @return {string}
    * @private
    */
   getButtonLabel_() {
-    // TODO(b/159766700, item 5): Finalize the strings and i18n.
-    return 'Select ' + this.getItemName_() + ' albums';
+    return this.i18n('ambientModeTopicSourceSubpage', this.getItemName_());
   },
 
   /**
@@ -78,12 +91,12 @@ Polymer({
    * @private
    */
   computeAriaLabel_() {
-    // TODO(b/159766700, item 6): Finalize the strings and i18n.
+    const rowLabel = this.getItemName_() + ' ' + this.getItemDescription_();
     if (this.checked) {
-      return 'Topic source ' + this.getItemName_() + ' selected, ' +
-          this.getButtonLabel_();
+      return this.i18n(
+          'ambientModeTopicSourceSelectedRow', rowLabel, this.getItemName_());
     }
-    return 'Select topic source ' + this.getItemName_();
+    return this.i18n('ambientModeTopicSourceUnselectedRow', rowLabel);
   },
 
   /**

@@ -37,6 +37,7 @@ js_modulizer("modulize") {
     "fake_bluetooth_private.js",
     "fake_settings_search_handler.js",
     "fake_user_action_recorder.js",
+    "fake_quick_unlock_private.js",
     "localized_link_test.js",
     "multidevice_page_tests.js",
     "multidevice_subpage_tests.js",
@@ -45,6 +46,7 @@ js_modulizer("modulize") {
     "multidevice_feature_toggle_tests.js",
     "nearby_share_subpage_tests.js",
     "os_reset_page_test.js",
+    "os_people_page_test.js",
     "parental_controls_page_test.js",
     "people_page_account_manager_test.js",
     "people_page_change_picture_test.js",
@@ -54,6 +56,7 @@ js_modulizer("modulize") {
     "test_os_lifetime_browser_proxy.js",
     "test_multidevice_browser_proxy.js",
     "test_wallpaper_browser_proxy.js",
+    "test_os_sync_browser_proxy.js",
   ]
   namespace_rewrites =
       os_settings_namespace_rewrites + os_test_namespace_rewrites

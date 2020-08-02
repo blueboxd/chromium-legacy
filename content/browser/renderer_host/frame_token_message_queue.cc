@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 
 #include "base/bind.h"
+#include "ipc/ipc_message.h"
 
 namespace content {
 
@@ -62,10 +63,27 @@ void FrameTokenMessageQueue::EnqueueOrRunFrameTokenCallback(
   callback_map_.insert(std::make_pair(frame_token, std::move(callback)));
 }
 
+void FrameTokenMessageQueue::OnFrameSwapMessagesReceived(
+    uint32_t frame_token,
+    std::vector<IPC::Message> messages) {
+  EnqueueOrRunFrameTokenCallback(
+      frame_token, base::BindOnce(&FrameTokenMessageQueue::ProcessSwapMessages,
+                                  base::Unretained(this), std::move(messages)));
+}
+
 void FrameTokenMessageQueue::Reset() {
   last_received_frame_token_reset_ = last_received_frame_token_;
   last_received_frame_token_ = 0;
   callback_map_.clear();
+}
+
+void FrameTokenMessageQueue::ProcessSwapMessages(
+    std::vector<IPC::Message> messages) {
+  for (const IPC::Message& i : messages) {
+    client_->OnProcessSwapMessage(i);
+    if (i.dispatch_error())
+      client_->OnMessageDispatchError(i);
+  }
 }
 
 }  // namespace content

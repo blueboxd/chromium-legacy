@@ -34,6 +34,7 @@
 #include "content/common/android/sync_compositor_statics.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -153,6 +154,7 @@ SynchronousLayerTreeFrameSinkImpl::SynchronousLayerTreeFrameSinkImpl(
     uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<viz::BeginFrameSource> synthetic_begin_frame_source,
     blink::SynchronousCompositorRegistry* registry,
+    scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     mojo::PendingRemote<viz::mojom::CompositorFrameSink>
         compositor_frame_sink_remote,
     mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
@@ -165,6 +167,7 @@ SynchronousLayerTreeFrameSinkImpl::SynchronousLayerTreeFrameSinkImpl(
       registry_(registry),
       sender_(sender),
       memory_policy_(0u),
+      frame_swap_message_queue_(frame_swap_message_queue),
       unbound_compositor_frame_sink_(std::move(compositor_frame_sink_remote)),
       unbound_client_(std::move(client_receiver)),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
@@ -552,6 +555,17 @@ void SynchronousLayerTreeFrameSinkImpl::DidActivatePendingTree() {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->DidActivatePendingTree();
+  DeliverMessages();
+}
+
+void SynchronousLayerTreeFrameSinkImpl::DeliverMessages() {
+  std::vector<std::unique_ptr<IPC::Message>> messages;
+  std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
+      frame_swap_message_queue_->AcquireSendMessageScope();
+  frame_swap_message_queue_->DrainMessages(&messages);
+  for (auto& msg : messages) {
+    Send(msg.release());
+  }
 }
 
 bool SynchronousLayerTreeFrameSinkImpl::Send(IPC::Message* message) {

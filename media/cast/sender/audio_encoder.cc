@@ -104,7 +104,7 @@ class AudioEncoder::ImplBase
     if (!frame_capture_time_.is_null()) {
       const base::TimeDelta amount_ahead_by =
           recorded_time - (frame_capture_time_ + buffer_fill_duration);
-      const int64_t num_frames_missed = amount_ahead_by / frame_duration_;
+      const int64_t num_frames_missed = amount_ahead_by.IntDiv(frame_duration_);
       if (num_frames_missed > kUnderrunSkipThreshold) {
         samples_dropped_from_buffer_ += buffer_fill_end_;
         buffer_fill_end_ = 0;

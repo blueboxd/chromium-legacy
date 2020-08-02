@@ -11,6 +11,11 @@
 <dom-module id="topic-source-list">
   <template>
     <style include="settings-shared cr-shared-style iron-flex">
+      #topicSourceTitle {
+        padding-bottom: 16px;
+        padding-top: 16px;
+      }
+
       topic-source-item {
         align-items: center;
         height: 48px;
@@ -20,15 +25,13 @@
         border-top: var(--cr-separator-line);
       }
 
-     iron-list > :focus {
+      iron-list > :focus {
         background-color: var(--cr-focused-item-color);
       }
     </style>
-    <div class="first">
-      <h2>
-        $i18n{ambientModeTopicSourceTitle}
-      </h2>
-    </div>
+    <h2 id="topicSourceTitle">
+      $i18n{ambientModeTopicSourceTitle}
+    </h2>
 
     <iron-list id="topicSourceList" selection-enabled
         items="[[topicSources]]"

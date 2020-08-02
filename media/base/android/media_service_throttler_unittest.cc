@@ -139,7 +139,7 @@ TEST_F(MediaServiceThrottlerTest,
 // reset.
 TEST_F(MediaServiceThrottlerTest, NoCrash_LongInactivity_ShouldReset) {
   // Schedule two minutes' worth of clients.
-  SimulateClientCreations(base::TimeDelta::FromMinutes(2) / base_delay_);
+  SimulateClientCreations(base::TimeDelta::FromMinutes(2).IntDiv(base_delay_));
 
   // Advance the time so the scheduler perceived a full minute of inactivity.
   clock_.Advance(base::TimeDelta::FromSeconds(61));
@@ -263,7 +263,7 @@ TEST_F(MediaServiceThrottlerTest, CrashListener_NoRequests_ShouldShutDown) {
   // Schedule many minutes worth of clients. This is to prove that the
   // MediaServerCrashListener's clean up happens after lack of requests, as
   // opposed to lack of actually scheduled clients.
-  SimulateClientCreations(base::TimeDelta::FromMinutes(3) / base_delay_);
+  SimulateClientCreations(base::TimeDelta::FromMinutes(3).IntDiv(base_delay_));
 
   // The MediaServerCrashListener should be alive, with 1s second to spare.
   clock_.Advance(base::TimeDelta::FromSeconds(59));
@@ -292,7 +292,7 @@ TEST_F(MediaServiceThrottlerTest,
   // Schedule many minutes worth of clients. This is to prove that the
   // MediaServerCrashListener's clean up happens after lack of requests, as
   // opposed to lack of actually scheduled clients.
-  SimulateClientCreations(base::TimeDelta::FromMinutes(3) / base_delay_);
+  SimulateClientCreations(base::TimeDelta::FromMinutes(3).IntDiv(base_delay_));
 
   // The MediaServerCrashListener should be alive, with 1s second to spare.
   clock_.Advance(base::TimeDelta::FromSeconds(59));

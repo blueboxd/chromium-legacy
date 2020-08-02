@@ -17,6 +17,7 @@ import './personalization_page/change_picture.m.js';
 import './os_people_page/account_manager.m.js';
 import './os_people_page/kerberos_accounts.m.js';
 import './parental_controls_page/parental_controls_page.m.js';
+import './os_people_page/os_people_page.m.js';
 
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from '../people_page/account_manager_browser_proxy.m.js';
@@ -30,6 +31,8 @@ export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevic
 export {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, SmartLockSignInEnabledState} from './multidevice_page/multidevice_constants.m.js';
 export {KerberosAccountsBrowserProxyImpl, KerberosConfigErrorCode, KerberosErrorType} from './os_people_page/kerberos_accounts_browser_proxy.m.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.m.js';
+export {SyncBrowserProxy, SyncBrowserProxyImpl, PageStatus, StoredAccount, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+export {ProfileInfoBrowserProxyImpl, ProfileInfoBrowserProxy} from '../people_page/profile_info_browser_proxy.m.js';
 export {routes} from './os_route.m.js';
 export {ChangePictureBrowserProxy, ChangePictureBrowserProxyImpl} from './personalization_page/change_picture_browser_proxy.m.js';
 export {WallpaperBrowserProxyImpl} from './personalization_page/wallpaper_browser_proxy.m.js';

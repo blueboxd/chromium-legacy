@@ -83,7 +83,7 @@ int RecentEventsCounter::GetTotal(base::TimeDelta now) {
 int RecentEventsCounter::GetBucketIndex(base::TimeDelta timestamp) const {
   DCHECK_GE(timestamp, base::TimeDelta());
 
-  int index = (timestamp % duration_) / bucket_duration_;
+  int index = (timestamp % duration_).IntDiv(bucket_duration_);
   DCHECK_GE(index, 0);
   DCHECK_LT(index, num_buckets_);
   return index;

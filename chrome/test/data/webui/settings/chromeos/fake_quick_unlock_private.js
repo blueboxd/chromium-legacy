@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+
 /**
  * @fileoverview Fake implementation of chrome.quickUnlockPrivate for testing.
  */
@@ -20,7 +22,7 @@ cr.define('settings', function() {
    * @constructor
    * @implements {QuickUnlockPrivate}
    */
-  function FakeQuickUnlockPrivate() {
+  /* #export */ function FakeQuickUnlockPrivate() {
     /** @type {!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>} */
     this.availableModes = [chrome.quickUnlockPrivate.QuickUnlockMode.PIN];
     /** @type {!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>} */
@@ -197,5 +199,6 @@ cr.define('settings', function() {
   /** @type {!ChromeEvent} */
   FakeQuickUnlockPrivate.prototype.onActiveModesChanged = new FakeChromeEvent();
 
+  // #cr_define_end
   return {FakeQuickUnlockPrivate: FakeQuickUnlockPrivate};
 });

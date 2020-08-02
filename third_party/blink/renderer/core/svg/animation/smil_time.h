@@ -108,10 +108,16 @@ class SMILTime {
   SMILTime operator-() const { return -time_; }
   // Division and /modulo are used primarily for computing interval
   // progress/repeats.
-  int64_t operator/(SMILTime other) const {
+  int64_t operator/(SMILTime other) const = delete;
+  int64_t IntDiv(SMILTime other) const {
     DCHECK(IsFinite());
     DCHECK(other.IsFinite());
-    return time_ / other.time_;
+    return time_.IntDiv(other.time_);
+  }
+  double FltDiv(SMILTime other) const {
+    DCHECK(IsFinite());
+    DCHECK(other.IsFinite());
+    return time_.FltDiv(other.time_);
   }
   SMILTime operator%(SMILTime other) const {
     DCHECK(IsFinite());

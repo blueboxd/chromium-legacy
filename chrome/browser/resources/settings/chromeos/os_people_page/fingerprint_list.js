@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
 /**
  * The duration in ms of a background flash when a user touches the fingerprint
  * sensor on this page.
@@ -117,7 +114,8 @@ Polymer({
    */
   onAttemptReceived_(fingerprintAttempt) {
     /** @type {NodeList<!HTMLElement>} */ const listItems =
-        this.$.fingerprintsList.querySelectorAll('.list-item');
+        /** @type {NodeList<!HTMLElement>} */
+        (this.$.fingerprintsList.querySelectorAll('.list-item'));
     /** @type {Array<number>} */ const filteredIndexes =
         fingerprintAttempt.indexes.filter(function(index) {
           return index >= 0 && index < listItems.length;
@@ -232,4 +230,3 @@ Polymer({
     return this.i18n('lockScreenDeleteFingerprintLabel', item);
   },
 });
-})();

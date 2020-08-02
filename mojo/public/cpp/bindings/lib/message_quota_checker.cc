@@ -99,8 +99,8 @@ NOINLINE void MaybeDumpWithoutCrashing(
 }
 
 int64_t ToSamplingInterval(base::TimeTicks when) {
-  return (when - base::TimeTicks::UnixEpoch()) /
-         MessageQuotaChecker::DecayingRateAverage::kSamplingInterval;
+  return (when - base::TimeTicks::UnixEpoch())
+      .IntDiv(MessageQuotaChecker::DecayingRateAverage::kSamplingInterval);
 }
 
 base::TimeTicks FromSamplingInterval(int64_t sampling_interval) {

@@ -35,6 +35,7 @@ class WebThreadScheduler;
 }  // namespace blink
 
 namespace content {
+class FrameSwapMessageQueue;
 class RenderWidget;
 
 class CONTENT_EXPORT CompositorDependencies {
@@ -56,6 +57,7 @@ class CONTENT_EXPORT CompositorDependencies {
       std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
   virtual void RequestNewLayerTreeFrameSink(
       RenderWidget* render_widget,
+      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
       const char* client_name) = 0;

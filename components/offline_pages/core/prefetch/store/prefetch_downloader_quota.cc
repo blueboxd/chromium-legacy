@@ -85,9 +85,9 @@ int64_t PrefetchDownloaderQuota::GetAvailableQuotaBytes() {
       store_utils::FromDatabaseTime(statement.ColumnInt64(0));
   int64_t available_quota = statement.ColumnInt64(1);
 
-  int64_t remaining_quota =
-      available_quota +
-      (GetMaxDailyQuotaBytes() * (clock_->Now() - update_time)) / kQuotaPeriod;
+  int64_t remaining_quota = available_quota + (GetMaxDailyQuotaBytes() *
+                                               (clock_->Now() - update_time))
+                                                  .IntDiv(kQuotaPeriod);
 
   if (remaining_quota < 0)
     SetAvailableQuotaBytes(0);

@@ -164,6 +164,9 @@ extern const char kGoogleAccountChooserURL[];
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 
+// URL of the Google Photos.
+extern const char kGooglePhotosURL[];
+
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];

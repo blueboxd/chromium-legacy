@@ -48,6 +48,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
  ['ParentalControlsPage','parental_controls_page_test.m.js'],
+ ['PeoplePage', 'os_people_page_test.m.js'],
  ['PersonalizationPage', 'personalization_page_test.m.js'],
  ['PeoplePageAccountManager', 'people_page_account_manager_test.m.js'],
  ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],

@@ -206,8 +206,8 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64_t start = (r.start(i) / frame_duration_);
-      int64_t end = (r.end(i) / frame_duration_) - 1;
+      int64_t start = r.start(i).IntDiv(frame_duration_);
+      int64_t end = r.end(i).IntDiv(frame_duration_) - 1;
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
@@ -305,7 +305,7 @@ class SourceBufferStreamTest : public testing::Test {
         }
       }
 
-      EXPECT_EQ(buffer->GetDecodeTimestamp() / frame_duration_,
+      EXPECT_EQ(buffer->GetDecodeTimestamp().IntDiv(frame_duration_),
                 current_position);
     }
 

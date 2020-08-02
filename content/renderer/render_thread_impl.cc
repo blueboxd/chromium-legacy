@@ -77,6 +77,7 @@
 #include "content/renderer/browser_exposed_renderer_interfaces.h"
 #include "content/renderer/categorized_worker_pool.h"
 #include "content/renderer/effective_connection_type_helper.h"
+#include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
@@ -1633,6 +1634,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
 
 void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     RenderWidget* render_widget,
+    scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
     const char* client_name) {
@@ -1776,6 +1778,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
             sync_message_filter(), g_next_layer_tree_frame_sink_id++,
             std::move(params.synthetic_begin_frame_source),
             render_widget->GetWebWidget()->GetSynchronousCompositorRegistry(),
+            std::move(frame_swap_message_queue),
             std::move(params.pipes.compositor_frame_sink_remote),
             std::move(params.pipes.client_receiver)),
         std::move(render_frame_metadata_observer));

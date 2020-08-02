@@ -48,7 +48,7 @@ void AddJankySlices(std::set<int>* janky_slices,
   // Find each janky slice, and add it to |janky_slices|.
   while (jank_start < jank_end) {
     // Convert |jank_start| to a slice label.
-    int64_t label = (jank_start - start_time) / kJankThreshold;
+    int64_t label = (jank_start - start_time).IntDiv(kJankThreshold);
     janky_slices->insert(label);
 
     jank_start += kJankThreshold;

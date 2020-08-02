@@ -732,8 +732,8 @@ TEST_F(FrameSchedulerImplStopInBackgroundDisabledTest, ThrottledTaskExecution) {
   // throttling is disabled by default.
   constexpr int kNumTasks =
       base::TimeDelta::FromSeconds(
-          kIntensiveWakeUpThrottling_GracePeriodSeconds_Default) *
-      2 / kTaskPeriod;
+          kIntensiveWakeUpThrottling_GracePeriodSeconds_Default * 2)
+          .IntDiv(kTaskPeriod);
   // This TaskRunner is throttled.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimerDelayed);

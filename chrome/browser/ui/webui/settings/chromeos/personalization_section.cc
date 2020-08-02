@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
@@ -22,6 +24,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace settings {
@@ -111,6 +114,10 @@ bool IsAmbientModeAllowed() {
   return chromeos::features::IsAmbientModeEnabled();
 }
 
+GURL GetGooglePhotosURL() {
+  return GURL(chrome::kGooglePhotosURL);
+}
+
 }  // namespace
 
 PersonalizationSection::PersonalizationSection(
@@ -147,14 +154,30 @@ void PersonalizationSection::AddLoadTimeData(
       {"ambientModeTitle", IDS_OS_SETTINGS_AMBIENT_MODE_TITLE},
       {"ambientModeEnabled", IDS_OS_SETTINGS_AMBIENT_MODE_ENABLED},
       {"ambientModeDisabled", IDS_OS_SETTINGS_AMBIENT_MODE_DISABLED},
+      {"ambientModePageDescription",
+       IDS_OS_SETTINGS_AMBIENT_MODE_PAGE_DESCRIPTION},
       {"ambientModeOn", IDS_OS_SETTINGS_AMBIENT_MODE_ON},
       {"ambientModeOff", IDS_OS_SETTINGS_AMBIENT_MODE_OFF},
       {"ambientModeTopicSourceTitle",
        IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_TITLE},
       {"ambientModeTopicSourceGooglePhotos",
        IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS},
+      {"ambientModeTopicSourceGooglePhotosDescription",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESCRIPTION},
+      {"ambientModeTopicSourceGooglePhotosDescriptionNoAlbum",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESCRIPTION_NO_ALBUM},
       {"ambientModeTopicSourceArtGallery",
        IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
+      {"ambientModeTopicSourceArtGalleryDescription",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY_DESCRIPTION},
+      {"ambientModeTopicSourceSelectedRow",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_SELECTED_ROW},
+      {"ambientModeTopicSourceUnselectedRow",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_UNSELECTED_ROW},
+      {"ambientModeTopicSourceSubpage",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_SUBPAGE},
+      {"ambientModeAlbumsSubpageGooglePhotosNoAlbum",
+       IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_NO_ALBUM},
       {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
       {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
       {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
@@ -184,6 +207,11 @@ void PersonalizationSection::AddLoadTimeData(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
   html_source->AddBoolean("isAmbientModeEnabled", IsAmbientModeAllowed());
+  html_source->AddString(
+      "ambientModeAlbumsSubpageGooglePhotosTitle",
+      l10n_util::GetStringFUTF16(
+          IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_TITLE,
+          base::UTF8ToUTF16(GetGooglePhotosURL().spec())));
 }
 
 void PersonalizationSection::AddHandlers(content::WebUI* web_ui) {

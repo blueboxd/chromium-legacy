@@ -27,6 +27,13 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
+  static LayoutUnit ComputeLegendInlineOffset(
+      const ComputedStyle& legend_style,
+      LayoutUnit legend_border_box_inline_size,
+      const NGBoxStrut& legend_margins,
+      LayoutUnit fieldset_border_padding_inline_start,
+      LayoutUnit fieldset_content_inline_size);
+
  private:
   NGBreakStatus LayoutChildren();
   NGBreakStatus LayoutLegend(

@@ -287,3 +287,22 @@ testcase.genericTaskAndNonGenericTask = async () => {
   const appId = await setupTaskTest(RootPath.DOWNLOADS, tasks);
   await executeDefaultTask(appId, 'dummytaskid-2|open-with');
 };
+
+testcase.noActionBarOpenForDirectories = async () => {
+  const tasks = [new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1')];
+
+  // Override tasks for the test.
+  const appId = await setupTaskTest(RootPath.DOWNLOADS, tasks);
+
+  // Select file and ensure action bar open is shown.
+  await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
+  await remoteCall.waitForElement(appId, '#tasks:not([hidden])');
+
+  // Select dir and ensure action bar open is hidden, but context menu is shown.
+  await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']);
+  await remoteCall.waitForElement(appId, '#tasks[hidden]');
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['#file-list .table-row[selected]']));
+  await remoteCall.waitForElement(
+      appId, '#default-task-menu-item:not([hidden])');
+};

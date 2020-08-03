@@ -1390,7 +1390,7 @@ void ServiceWorkerRegistry::OnStoragePolicyChanged() {
   }
 
   if (!policy_updates.empty())
-    storage()->ApplyPolicyUpdates(std::move(policy_updates));
+    GetRemoteStorageControl()->ApplyPolicyUpdates(std::move(policy_updates));
 }
 
 bool ServiceWorkerRegistry::ShouldPurgeOnShutdown(const url::Origin& origin) {

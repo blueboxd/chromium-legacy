@@ -41,17 +41,18 @@ class RecentEventsCounter {
   // Log an event at timedelta |timestamp|. |timestamp| cannot be negative.
   void Log(base::TimeDelta timestamp);
 
-  // Return the count of events reported in the |duration_| preceeding |now|.
-  int GetTotal(base::TimeDelta now);
+  // Return the count of events reported in the |duration_| preceding |now|.
+  // |now| must be >= any |timestamp| previously passed to Log().
+  int GetTotal(base::TimeDelta now) const;
 
  private:
   // Return the index of the bucket containing |timestamp|.
   int GetBucketIndex(base::TimeDelta timestamp) const;
 
   // The length of time that events should be recorded.
-  base::TimeDelta duration_;
+  const base::TimeDelta duration_;
   // The number of buckets to use to record the events.
-  int num_buckets_;
+  const int num_buckets_;
   // The number of events in each bucket.
   std::vector<int> event_count_;
   // The index of the first bucket. |event_count_| is a circular array.

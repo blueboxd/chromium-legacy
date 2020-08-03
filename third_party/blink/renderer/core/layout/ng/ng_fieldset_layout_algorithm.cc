@@ -325,16 +325,43 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
   // of the fieldset. As a paint effect, the block-start border will be
   // pushed so that the center of the border will be flush with the center
   // of the border-box of the legend.
-  // TODO(mstensho): inline alignment
-  //
+
+  LayoutUnit legend_inline_start = ComputeLegendInlineOffset(
+      legend.Style(),
+      NGFragment(writing_mode_, result->PhysicalFragment()).InlineSize(),
+      legend_margins, BorderScrollbarPadding().inline_start,
+      ChildAvailableSize().inline_size);
+
   // NOTE: For painting purposes, this must be kept in sync with:
   // NGFieldsetPainter::PaintFieldsetDecorationBackground
-  LogicalOffset legend_offset = {
-      BorderScrollbarPadding().inline_start + legend_margins.inline_start,
-      block_offset};
+  LogicalOffset legend_offset = {legend_inline_start, block_offset};
 
   container_builder_.AddResult(*result, legend_offset);
   return NGBreakStatus::kContinue;
+}
+
+LayoutUnit NGFieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
+    const ComputedStyle& legend_style,
+    LayoutUnit legend_border_box_inline_size,
+    const NGBoxStrut& legend_margins,
+    LayoutUnit fieldset_border_padding_inline_start,
+    LayoutUnit fieldset_content_inline_size) {
+  const ETextAlign align = legend_style.GetTextAlign();
+  const ETextAlign align_end = legend_style.IsLeftToRightDirection()
+                                   ? ETextAlign::kRight
+                                   : ETextAlign::kLeft;
+  LayoutUnit legend_inline_start = fieldset_border_padding_inline_start;
+  if (align == ETextAlign::kCenter) {
+    legend_inline_start +=
+        (fieldset_content_inline_size - legend_border_box_inline_size) / 2;
+  } else if (align == align_end) {
+    legend_inline_start += fieldset_content_inline_size -
+                           legend_border_box_inline_size -
+                           legend_margins.inline_end;
+  } else {
+    legend_inline_start += legend_margins.inline_start;
+  }
+  return legend_inline_start;
 }
 
 NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(

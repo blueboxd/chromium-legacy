@@ -695,7 +695,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("defaultTaskDialogDrive"),
                       TestCase("changeDefaultDialogScrollList"),
                       TestCase("genericTaskIsNotExecuted"),
-                      TestCase("genericTaskAndNonGenericTask")));
+                      TestCase("genericTaskAndNonGenericTask"),
+                      TestCase("noActionBarOpenForDirectories")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FolderShortcuts, /* folder_shortcuts.js */

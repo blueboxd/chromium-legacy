@@ -818,7 +818,7 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
                     << file->mime_type;
     FileAttachment attachment(file->name, file->type, file->size,
                               /*file_path=*/base::nullopt, file->mime_type);
-    // TODO(himanshujaju) - setAttachmentPayloadId();
+    SetAttachmentPayloadId(attachment, file->payload_id);
     share_target.file_attachments.push_back(std::move(attachment));
   }
 
@@ -834,7 +834,7 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     NS_LOG(VERBOSE) << __func__ << "Found text attachment " << text->text_title
                     << " of type " << text->type;
     TextAttachment attachment(text->text_title, text->type, text->size);
-    // TODO(himanshujaju) - setAttachmentPayloadId();
+    SetAttachmentPayloadId(attachment, text->payload_id);
     share_target.text_attachments.push_back(std::move(attachment));
   }
 
@@ -946,4 +946,10 @@ OutgoingShareTargetInfo& NearbySharingServiceImpl::GetOutgoingShareTargetInfo(
 
 void NearbySharingServiceImpl::ClearOutgoingShareTargetInfoMap() {
   outgoing_share_target_info_map_.clear();
+}
+
+void NearbySharingServiceImpl::SetAttachmentPayloadId(
+    const Attachment& attachment,
+    int64_t payload_id) {
+  attachment_info_map_[attachment.id()].payload_id = payload_id;
 }

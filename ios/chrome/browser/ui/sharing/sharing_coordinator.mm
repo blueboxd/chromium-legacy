@@ -4,14 +4,12 @@
 
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 
-#include "base/feature_list.h"
 #import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -80,7 +78,6 @@
 #pragma mark - QRGenerationCommands
 
 - (void)generateQRCode:(GenerateQRCodeCommand*)command {
-  DCHECK(base::FeatureList::IsEnabled(kQRCodeGeneration));
   self.qrGeneratorCoordinator = [[QRGeneratorCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.browser

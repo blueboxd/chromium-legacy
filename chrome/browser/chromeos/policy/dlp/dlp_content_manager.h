@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONTENT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONTENT_MANAGER_H_
 
-#include "base/containers/flat_set.h"
+#include "base/containers/flat_map.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 
 class GURL;
 
@@ -25,13 +26,14 @@ class DlpContentManager {
   // There will always be a single instance created on the first access.
   static DlpContentManager* Get();
 
-  // Checks whether |web_contents| is confidential according to the policy.
-  bool IsWebContentsConfidential(
+  // Returns which restrictions are applied to the |web_contents| according to
+  // the policy.
+  DlpContentRestrictionSet GetConfidentialRestrictions(
       const content::WebContents* web_contents) const;
 
-  // Returns whether any WebContents with a confidential content is currently
-  // visible.
-  bool IsConfidentialDataPresentOnScreen() const;
+  // Returns which restrictions are applied to the WebContents which are
+  // currently visible.
+  DlpContentRestrictionSet GetOnScreenPresentRestrictions() const;
 
   // The caller (test) should manage |dlp_content_manager| lifetime.
   // Reset doesn't delete the object.
@@ -52,34 +54,35 @@ class DlpContentManager {
   // Called from DlpContentTabHelper:
   // Being called when confidentiality state changes for |web_contents|, e.g.
   // because of navigation.
-  virtual void OnConfidentialityChanged(content::WebContents* web_contents,
-                                        bool confidential);
+  virtual void OnConfidentialityChanged(
+      content::WebContents* web_contents,
+      const DlpContentRestrictionSet& restriction_set);
   // Called when |web_contents| is about to be destroyed.
   virtual void OnWebContentsDestroyed(const content::WebContents* web_contents);
-  // Should return whether |url| is considered as confidential according to
-  // the policies.
-  virtual bool IsURLConfidential(const GURL& url) const;
+  // Should return which restrictions are being applied to the |url| according
+  // to the policies.
+  virtual DlpContentRestrictionSet GetRestrictionSetForURL(
+      const GURL& url) const;
   // Called when |web_contents| becomes visible or not.
-  virtual void OnVisibilityChanged(content::WebContents* web_contents,
-                                   bool visible);
+  virtual void OnVisibilityChanged(content::WebContents* web_contents);
 
-  // Helpers to add/remove WebContents from confidential sets.
-  void AddToConfidential(content::WebContents* web_contents);
+  // Helper to remove |web_contents| from the confidential set.
   void RemoveFromConfidential(const content::WebContents* web_contents);
 
-  // Updates |is_confidential_web_contents_visible_| and calls
-  // OnScreenConfidentialityStateChanged() if needed.
-  void MaybeChangeVisibilityFlag();
+  // Updates |on_screen_restrictions_| and calls
+  // OnScreenRestrictionsChanged() if needed.
+  void MaybeChangeOnScreenRestrictions();
 
-  // Called when a confidential content becomes visible or all confidential
-  // content becomes not visible.
-  void OnScreenConfidentialityStateChanged(bool visible);
+  // Called when the restrictions for currently visible content changes.
+  void OnScreenRestrictionsChanged(
+      const DlpContentRestrictionSet& restrictions) const;
 
-  // Set of currently known confidential WebContents.
-  base::flat_set<content::WebContents*> confidential_web_contents_;
-  // Flag the indicates whether any confidential WebContents is currently
-  // visible or not.
-  bool is_confidential_web_contents_visible_ = false;
+  // Map from currently known confidential WebContents to the restrictions.
+  base::flat_map<content::WebContents*, DlpContentRestrictionSet>
+      confidential_web_contents_;
+
+  // Set of restriction applied to the currently visible content.
+  DlpContentRestrictionSet on_screen_restrictions_;
 };
 
 }  // namespace policy

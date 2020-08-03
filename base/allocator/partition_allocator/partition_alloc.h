@@ -587,10 +587,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
               (page->bucket->is_direct_mapped() &&
                (bucket == Bucket::get_sentinel_bucket())));
 
-    if (UNLIKELY(page->get_raw_size_ptr())) {  // has raw size.
-      PA_DCHECK(page->get_raw_size() == size);
-      *allocated_size = size;
-    }
+    *allocated_size = page->GetAllocatedSize();
   }
 
   return ret;
@@ -615,24 +612,47 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   // TODO(palmer): See if we can afford to make this a CHECK.
   PA_DCHECK(IsValidPage(page));
   auto* root = PartitionRoot<thread_safe>::FromPage(page);
-  if (root->allow_extras && !page->bucket->is_direct_mapped()) {
-    // Allocated size can be:
-    // - The slot size for small buckets, up to single-slot buckets.
-    // - Stored exactly, for single-slot buckets and direct-mapped allocations.
-    size_t allocated_size = page->get_raw_size();
-    PA_DCHECK(!allocated_size || page->bucket->slot_size >= allocated_size);
-    if (!allocated_size)
-      allocated_size = page->bucket->slot_size;
 
-    size_t size_with_no_extras =
-        internal::PartitionSizeAdjustSubtract(true, allocated_size);
-#if ENABLE_TAG_FOR_MTE_CHECKED_PTR && MTE_CHECKED_PTR_SET_TAG_AT_FREE
-    internal::PartitionTagIncrementValue(ptr, size_with_no_extras);
-#else
-    internal::PartitionTagClearValue(ptr, size_with_no_extras);
+  if (root->allow_extras) {
+    size_t allocated_size = page->GetAllocatedSize();
+
+    // |ptr| points after the tag and the cookie.
+    // The layout is | tag | cookie | data | cookie |
+    //               ^              ^
+    //               |             ptr
+    //      allocation_start_ptr
+    //
+    // Note: tag and cookie can be 0-sized.
+    void* allocation_start_ptr =
+        internal::PartitionPointerAdjustSubtract(true /* allow_extras */, ptr);
+
+#if DCHECK_IS_ON()
+    void* start_cookie_ptr =
+        internal::PartitionCookiePointerAdjustSubtract(ptr);
+    void* end_cookie_ptr = internal::PartitionCookiePointerAdjustSubtract(
+        reinterpret_cast<char*>(allocation_start_ptr) + allocated_size);
+
+    // If these asserts fire, you probably corrupted memory.
+    internal::PartitionCookieCheckValue(start_cookie_ptr);
+    internal::PartitionCookieCheckValue(end_cookie_ptr);
 #endif
+
+    if (!page->bucket->is_direct_mapped()) {
+      size_t size_with_no_extras =
+          internal::PartitionSizeAdjustSubtract(true, allocated_size);
+#if ENABLE_TAG_FOR_MTE_CHECKED_PTR && MTE_CHECKED_PTR_SET_TAG_AT_FREE
+      internal::PartitionTagIncrementValue(ptr, size_with_no_extras);
+#else
+      internal::PartitionTagClearValue(ptr, size_with_no_extras);
+#endif
+    }
+
+    ptr = allocation_start_ptr;
   }
-  ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
+
+#if DCHECK_IS_ON()
+  memset(ptr, kFreedByte, page->GetAllocatedSize());
+#endif
 
   root->RawFree(ptr, page);
 #endif
@@ -936,6 +956,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
     size_t size_rounded_up =
         static_cast<size_t>(1)
         << (sizeof(size_t) * 8 - base::bits::CountLeadingZeroBits(size - 1));
+    PA_CHECK(size_rounded_up >= size);  // Overflow check.
     ptr = Alloc(size_rounded_up, "");
   }
 

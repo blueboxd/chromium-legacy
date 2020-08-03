@@ -131,7 +131,7 @@ class PageLoadMetricsObserverDelegate {
   virtual const LargestContentfulPaintHandler&
   GetExperimentalLargestContentfulPaintHandler() const = 0;
 
-  // UKM SourceId for the current page load.
+  // UKM source ID for the current page load.
   virtual ukm::SourceId GetSourceId() const = 0;
 
   // Whether the associated navigation is the first navigation in its associated

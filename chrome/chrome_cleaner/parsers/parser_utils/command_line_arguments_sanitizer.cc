@@ -19,22 +19,22 @@ namespace {
 
 // It may be possible that the return value of GURL.host() is %-scaped, use
 // this function to get the ASCII version.
-base::string16 GetUnescapedHost(GURL url) {
+std::wstring GetUnescapedHost(GURL url) {
   std::string url_host = url.host();
 
   url::RawCanonOutputT<wchar_t> unescaped_url_host;
   url::DecodeURLEscapeSequences(url_host.c_str(), url_host.length(),
                                 url::DecodeURLMode::kUTF8OrIsomorphic,
                                 &unescaped_url_host);
-  return base::string16(unescaped_url_host.data(), unescaped_url_host.length());
+  return std::wstring(unescaped_url_host.data(), unescaped_url_host.length());
 }
 
 // Tries to parse the url string using GURL and returns the concatenation of
 // the scheme and the host. If the url is not valid it returns the same string
 // that was provided. If the url has no scheme, http:// is assumed.
-base::string16 SanitizeUrl(const base::string16& possible_url) {
+std::wstring SanitizeUrl(const std::wstring& possible_url) {
   bool has_scheme = (possible_url.find(L"://") != std::string::npos);
-  base::string16 scheme = (has_scheme) ? L"" : L"http://";
+  std::wstring scheme = (has_scheme) ? L"" : L"http://";
   GURL url(scheme + possible_url);
 
   if (!url.is_valid())
@@ -49,7 +49,7 @@ base::string16 SanitizeUrl(const base::string16& possible_url) {
 }
 }  // namespace
 
-std::vector<base::string16> SanitizeArguments(const base::string16& arguments) {
+std::vector<std::wstring> SanitizeArguments(const std::wstring& arguments) {
   // We prepend a dummy to the string because it takes the first element as the
   // executable path.
   const base::CommandLine command_line =
@@ -57,7 +57,7 @@ std::vector<base::string16> SanitizeArguments(const base::string16& arguments) {
 
   const base::CommandLine::SwitchMap& switches = command_line.GetSwitches();
 
-  std::vector<base::string16> sanitized_arguments;
+  std::vector<std::wstring> sanitized_arguments;
   for (auto it = switches.begin(); it != switches.end(); it++) {
     sanitized_arguments.push_back(
         L"--" + base::UTF8ToWide(it->first) +

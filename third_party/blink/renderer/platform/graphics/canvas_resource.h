@@ -419,11 +419,11 @@ class PLATFORM_EXPORT CanvasResourceRasterSharedImage final
 };
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-// Resource type for WebGPU SharedImage
-class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
+// Resource type for SharedImage that uses Skia and Dawn backend
+class PLATFORM_EXPORT CanvasResourceSkiaDawnSharedImage final
     : public CanvasResourceSharedImage {
  public:
-  static scoped_refptr<CanvasResourceWebGPUSharedImage> Create(
+  static scoped_refptr<CanvasResourceSkiaDawnSharedImage> Create(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
@@ -431,7 +431,7 @@ class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
       const CanvasColorParams&,
       bool is_origin_top_left,
       uint32_t shared_image_usage_flags);
-  ~CanvasResourceWebGPUSharedImage() override;
+  ~CanvasResourceSkiaDawnSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
   bool IsAccelerated() const final { return true; }
@@ -483,7 +483,7 @@ class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
   };
 
   static void OnBitmapImageDestroyed(
-      scoped_refptr<CanvasResourceWebGPUSharedImage> resource,
+      scoped_refptr<CanvasResourceSkiaDawnSharedImage> resource,
       bool has_read_ref_on_texture,
       const gpu::SyncToken& sync_token,
       bool is_lost);
@@ -496,7 +496,7 @@ class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
   const gpu::SyncToken GetSyncToken() override;
   bool IsOverlayCandidate() const final { return false; }
 
-  CanvasResourceWebGPUSharedImage(
+  CanvasResourceSkiaDawnSharedImage(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,

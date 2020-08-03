@@ -75,8 +75,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kDirectGpuMemoryBuffer = 6,
     kPassThrough = 7,
     kSwapChain = 8,
-    kWebGPUSharedImage = 9,
-    kMaxValue = kWebGPUSharedImage,
+    kSkiaDawnSharedImage = 9,
+    kMaxValue = kSkiaDawnSharedImage,
   };
 
   using RestoreMatrixClipStackCb =

@@ -393,10 +393,6 @@ const char kPointerSupportDescription[] =
     "Enables pointer support on tablets on iOS 13.4 and above.";
 #endif  // defined(__IPHONE_13_4)
 
-const char kQRCodeGenerationName[] = "QR Code Generation";
-const char kQRCodeGenerationDescription[] =
-    "Allows the generation of a QR code for a page.";
-
 const char kReloadSadTabName[] = "Reload SadTab automatically";
 const char kReloadSadTabDescription[] =
     "When enabled, the first time the renderer crashes, the page is reloaded "

@@ -176,21 +176,33 @@
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
     (TableViewURLItem*)item API_AVAILABLE(ios(13.0)) {
-  return [UIContextMenuConfiguration
-      configurationWithIdentifier:nil
-                  previewProvider:nil
-                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
-                     // Record that this context menu was shown to the user.
-                     RecordMenuShown(MenuScenario::kRecentTabsEntry);
+  __weak __typeof(self) weakSelf = self;
 
-                     ActionFactory* actionFactory = [[ActionFactory alloc]
-                         initWithScenario:MenuScenario::kRecentTabsEntry];
+  UIContextMenuActionProvider actionProvider =
+      ^(NSArray<UIMenuElement*>* suggestedActions) {
+        if (!weakSelf) {
+          // Return an empty menu.
+          return [UIMenu menuWithTitle:@"" children:@[]];
+        }
 
-                     UIAction* copyAction =
-                         [actionFactory actionToCopyURL:item.URL];
+        RecentTabsCoordinator* strongSelf = weakSelf;
 
-                     return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
-                   }];
+        // Record that this context menu was shown to the user.
+        RecordMenuShown(MenuScenario::kRecentTabsEntry);
+
+        ActionFactory* actionFactory = [[ActionFactory alloc]
+            initWithBrowser:strongSelf.browser
+                   scenario:MenuScenario::kRecentTabsEntry];
+
+        UIAction* copyAction = [actionFactory actionToCopyURL:item.URL];
+
+        return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+      };
+
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 - (UIContextMenuConfiguration*)

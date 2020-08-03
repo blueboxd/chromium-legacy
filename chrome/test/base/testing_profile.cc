@@ -27,8 +27,6 @@
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -36,7 +34,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -55,7 +52,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
-#include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -69,10 +65,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/common/bookmark_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/content_visit_delegate.h"
 #include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/history_backend.h"
@@ -85,7 +78,6 @@
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "components/keyed_service/core/simple_key_map.h"
-#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
@@ -156,13 +148,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "components/offline_pages/core/stub_offline_page_model.h"
-#endif
-
 using base::Time;
-using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 using testing::NiceMock;
@@ -194,17 +180,6 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
   return std::move(in_memory_url_index);
 }
 
-std::unique_ptr<KeyedService> BuildBookmarkModel(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  std::unique_ptr<BookmarkModel> bookmark_model(
-      new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
-          profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
-          BookmarkSyncServiceFactory::GetForProfile(profile))));
-  bookmark_model->Load(profile->GetPrefs(), profile->GetPath());
-  return std::move(bookmark_model);
-}
-
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
                               sql::InitStatus status,
                               const std::string& diagnostics) {
@@ -219,12 +194,6 @@ std::unique_ptr<KeyedService> BuildWebDataService(
       content::GetUIThreadTaskRunner({}),
       base::BindRepeating(&TestProfileErrorCallback));
 }
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
-  return std::make_unique<offline_pages::StubOfflinePageModel>();
-}
-#endif
 
 std::unique_ptr<KeyedService> BuildPersonalDataManagerInstanceFor(
     content::BrowserContext* context) {
@@ -601,12 +570,6 @@ TestingProfile::~TestingProfile() {
   ignore_result(temp_dir_.Delete());
 }
 
-void TestingProfile::CreateFaviconService() {
-  // It is up to the caller to create the history service if one is needed.
-  FaviconServiceFactory::GetInstance()->SetTestingFactory(
-      this, FaviconServiceFactory::GetDefaultFactory());
-}
-
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   // Should never be created multiple times.
   DCHECK(!HistoryServiceFactory::GetForProfileWithoutCreating(this));
@@ -636,22 +599,6 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   WebHistoryServiceFactory::GetInstance()->SetTestingFactory(
       this, BrowserContextKeyedServiceFactory::TestingFactory());
   return true;
-}
-
-void TestingProfile::CreateBookmarkModel(bool delete_file) {
-  if (delete_file) {
-    base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
-    base::DeleteFile(path);
-  }
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
-#endif
-  ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
-      this, ManagedBookmarkServiceFactory::GetDefaultFactory());
-  // This creates the BookmarkModel.
-  ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      this, base::BindRepeating(&BuildBookmarkModel)));
 }
 
 void TestingProfile::CreateWebDataService() {

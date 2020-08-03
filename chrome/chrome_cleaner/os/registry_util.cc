@@ -12,7 +12,6 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,10 +41,10 @@ const size_t kNumExtraBytesForRegistryStrings = 3;
 // Split the pattern into path components. For example, with the pattern
 // 'ab??/x*/abc', |head| receives the component 'ab??' and |rest| receives the
 // remaining components 'x*/abc'.
-void ExtractHeadingSubkeyComponent(const base::string16& pattern,
+void ExtractHeadingSubkeyComponent(const std::wstring& pattern,
                                    const wchar_t escape_char,
-                                   base::string16* head,
-                                   base::string16* rest) {
+                                   std::wstring* head,
+                                   std::wstring* rest) {
   DCHECK(head);
   DCHECK(rest);
 
@@ -73,11 +72,11 @@ void ExtractHeadingSubkeyComponent(const base::string16& pattern,
 // the wow64access masks for each existing path.
 void CollectMatchingRegistryPathsRecursive(
     HKEY hkey,
-    const base::string16& key_path,
-    const base::string16& pattern,
+    const std::wstring& key_path,
+    const std::wstring& pattern,
     const wchar_t escape_char,
     REGSAM wow64access,
-    std::map<base::string16, REGSAM>* path_masks) {
+    std::map<std::wstring, REGSAM>* path_masks) {
   DCHECK(path_masks);
 
   if (pattern.empty()) {
@@ -87,12 +86,12 @@ void CollectMatchingRegistryPathsRecursive(
   }
 
   // Extract the first key_path component of the pattern.
-  base::string16 subkey_pattern;
-  base::string16 remaining_pattern;
+  std::wstring subkey_pattern;
+  std::wstring remaining_pattern;
   ExtractHeadingSubkeyComponent(pattern, escape_char, &subkey_pattern,
                                 &remaining_pattern);
 
-  base::string16 current_prefix;
+  std::wstring current_prefix;
   if (!key_path.empty())
     current_prefix = key_path + kRegistrySubkeyDelimiter;
 
@@ -110,7 +109,7 @@ void CollectMatchingRegistryPathsRecursive(
   base::win::RegistryKeyIterator subkeys_it(hkey, key_path.c_str(),
                                             wow64access);
   for (; subkeys_it.Valid(); ++subkeys_it) {
-    base::string16 subkey_name = subkeys_it.Name();
+    std::wstring subkey_name = subkeys_it.Name();
     if (String16WildcardMatchInsensitive(subkey_name, subkey_pattern,
                                          escape_char)) {
       CollectMatchingRegistryPathsRecursive(hkey, current_prefix + subkey_name,
@@ -141,7 +140,7 @@ const wchar_t kChromiumPoliciesWhitelistKeyPathDeprecated[] =
 const wchar_t kChromiumPoliciesAllowlistKeyPath[] =
     L"software\\policies\\chromium\\ExtensionInstallAllowlist";
 
-base::string16 RegistryValueTypeToString(DWORD value_type) {
+std::wstring RegistryValueTypeToString(DWORD value_type) {
   switch (value_type) {
     case REG_BINARY:
       return L"REG_BINARY";
@@ -168,9 +167,9 @@ base::string16 RegistryValueTypeToString(DWORD value_type) {
 }
 
 void CollectMatchingRegistryNames(const base::win::RegKey& key,
-                                  const base::string16& pattern,
+                                  const std::wstring& pattern,
                                   const wchar_t escape_char,
-                                  std::vector<base::string16>* names) {
+                                  std::vector<std::wstring>* names) {
   DCHECK(names);
 
   // If there is no wild-card, return the pattern as-is.
@@ -214,14 +213,14 @@ void CollectMatchingRegistryNames(const base::win::RegKey& key,
 }
 
 void CollectMatchingRegistryPaths(HKEY hkey,
-                                  const base::string16& pattern,
+                                  const std::wstring& pattern,
                                   const wchar_t escape_char,
                                   std::vector<RegKeyPath>* key_paths) {
   DCHECK(key_paths);
   // We can query for key reflection, but not redirection. To avoid many special
   // cases here about which keys are remapped, we scan the Win32 and Win64 space
   // independently and remove duplicates after the fact.
-  std::map<base::string16, REGSAM> key_path_masks;
+  std::map<std::wstring, REGSAM> key_path_masks;
   if (!NameContainsWildcards(pattern)) {
     // If there is no wild-card, just check whether the key exists.
     if (RegKeyPath(hkey, pattern.c_str(), KEY_WOW64_32KEY).Exists())
@@ -257,7 +256,7 @@ void CollectMatchingRegistryPaths(HKEY hkey,
 
 bool ReadRegistryValue(const base::win::RegKey& reg_key,
                        const wchar_t* value_name,
-                       base::string16* content,
+                       std::wstring* content,
                        uint32_t* content_type,
                        RegistryError* error) {
   DWORD content_bytes = 0;
@@ -303,7 +302,7 @@ bool ReadRegistryValue(const base::win::RegKey& reg_key,
   // Accept empty content.
   if (content_bytes == 0) {
     if (content)
-      *content = base::string16();
+      *content = std::wstring();
     if (content_type)
       *content_type = type;
     if (error)
@@ -314,8 +313,8 @@ bool ReadRegistryValue(const base::win::RegKey& reg_key,
   if (content) {
     // For non string types, simply convert the value to a string.
     if (type != REG_SZ && type != REG_EXPAND_SZ && type != REG_MULTI_SZ) {
-      const base::string16::value_type* char16_buffer =
-          reinterpret_cast<base::string16::value_type*>(&buffer[0]);
+      const std::wstring::value_type* char16_buffer =
+          reinterpret_cast<std::wstring::value_type*>(&buffer[0]);
       GetRegistryValueAsString(char16_buffer, content_bytes, type, content);
     } else {
       // We may need to fix the null termination of the string read from the
@@ -340,9 +339,9 @@ bool ReadRegistryValue(const base::win::RegKey& reg_key,
       DCHECK_LE(content_bytes, buffer.size());
 
       // Returns the content of the registry value.
-      const base::string16::value_type* char16_buffer =
-          reinterpret_cast<base::string16::value_type*>(&buffer[0]);
-      *content = base::string16(char16_buffer, content_bytes / 2 - 1);
+      const std::wstring::value_type* char16_buffer =
+          reinterpret_cast<std::wstring::value_type*>(&buffer[0]);
+      *content = std::wstring(char16_buffer, content_bytes / 2 - 1);
     }
   }
   if (content_type)
@@ -354,7 +353,7 @@ bool ReadRegistryValue(const base::win::RegKey& reg_key,
 
 bool ReadRegistryValue(const RegKeyPath& key_path,
                        const wchar_t* value_name,
-                       base::string16* content,
+                       std::wstring* content,
                        uint32_t* content_type,
                        RegistryError* error) {
   DCHECK(value_name);
@@ -370,19 +369,19 @@ bool ReadRegistryValue(const RegKeyPath& key_path,
 }
 
 bool WriteRegistryValue(const wchar_t* value_name,
-                        const base::string16& content,
+                        const std::wstring& content,
                         uint32_t content_type,
                         base::win::RegKey* reg_key) {
   LONG success = reg_key->WriteValue(
       value_name, reinterpret_cast<const void*>(content.c_str()),
-      content.size() * sizeof(base::string16::value_type), content_type);
+      content.size() * sizeof(std::wstring::value_type), content_type);
   return success == ERROR_SUCCESS;
 }
 
 void GetRegistryValueAsString(const wchar_t* raw_content,
                               size_t raw_content_bytes,
                               DWORD value_type,
-                              base::string16* content) {
+                              std::wstring* content) {
   DCHECK(raw_content);
   DCHECK(content);
 

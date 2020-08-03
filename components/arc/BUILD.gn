@@ -212,6 +212,7 @@ static_library("arc_base") {
     "arc_features_parser.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
+    "session/adb_sideloading_availability_delegate.h",
     "session/arc_bridge_host_impl.cc",
     "session/arc_bridge_host_impl.h",
     "session/arc_bridge_service.cc",

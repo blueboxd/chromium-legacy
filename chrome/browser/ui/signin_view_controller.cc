@@ -45,9 +45,6 @@ namespace {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-const base::Feature kOpenSignoutTab = {"OpenSignoutTab",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -380,12 +377,6 @@ void SigninViewController::ShowDiceAddAccountTab(
 
 void SigninViewController::ShowGaiaLogoutTab(
     signin_metrics::SourceForRefreshTokenOperation source) {
-  if (!base::FeatureList::IsEnabled(kOpenSignoutTab)) {
-    IdentityManagerFactory::GetForProfile(browser_->profile())
-        ->GetAccountsMutator()
-        ->RemoveAllAccounts(source);
-    return;
-  }
 
   // Since the user may be triggering navigation from another UI element such as
   // a menu, ensure the web contents (and therefore the page that is about to be

@@ -43,9 +43,9 @@ class SandboxedShortcutParser : public ShortcutParserAPI {
       scoped_refptr<ParseTasksRemainingCounter> counter,
       std::vector<ShortcutInformation>* found_shortcuts,
       mojom::LnkParsingResult parsing_result,
-      const base::Optional<base::string16>& optional_file_path,
-      const base::Optional<base::string16>& optional_command_line_arguments,
-      const base::Optional<base::string16>& optional_icon_location);
+      const base::Optional<std::wstring>& optional_file_path,
+      const base::Optional<std::wstring>& optional_command_line_arguments,
+      const base::Optional<std::wstring>& optional_icon_location);
 
   base::Lock lock_;
   MojoTaskRunner* mojo_task_runner_;

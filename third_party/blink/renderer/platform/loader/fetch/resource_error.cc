@@ -68,6 +68,14 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
   return error;
 }
 
+ResourceError ResourceError::BlockedByResponse(
+    const KURL& url,
+    network::mojom::BlockedByResponseReason blocked_by_response_reason) {
+  ResourceError error(net::ERR_BLOCKED_BY_RESPONSE, url, base::nullopt);
+  error.blocked_by_response_reason_ = blocked_by_response_reason;
+  return error;
+}
+
 ResourceError ResourceError::CacheMissError(const KURL& url) {
   return ResourceError(net::ERR_CACHE_MISS, url, base::nullopt);
 }

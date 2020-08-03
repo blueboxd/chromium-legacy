@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Opener COOP assert_equals: No report received. expected 1 but got 0
+FAIL Openee COOP assert_equals: No report received. expected 1 but got 0
+Harness: the test ran to completion.
+

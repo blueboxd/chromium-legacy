@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_CHROME_BOOKMARK_CLIENT_H_
 #define CHROME_BROWSER_BOOKMARKS_CHROME_BOOKMARK_CLIENT_H_
 
+#include <memory>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/deferred_sequenced_task_runner.h"
@@ -42,10 +45,8 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
 
   // bookmarks::BookmarkClient:
   void Init(bookmarks::BookmarkModel* model) override;
-  bool PreferTouchIcon() override;
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
-      favicon_base::IconType type,
       favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker) override;
   bool SupportsTypedCountForUrls() override;

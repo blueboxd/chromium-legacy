@@ -442,11 +442,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           password_manager::features::kPasswordCheck)) {
     // Password check.
     [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
-    _passwordProblemsItem = [self passwordProblemsItem];
+    if (!_passwordProblemsItem) {
+      _passwordProblemsItem = [self passwordProblemsItem];
+    }
 
     [model addItem:_passwordProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
-    _checkForProblemsItem = [self checkForProblemsItem];
+    if (!_checkForProblemsItem) {
+      _checkForProblemsItem = [self checkForProblemsItem];
+    }
 
     [model addItem:_checkForProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
@@ -832,7 +836,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [self searchForTerm:searchText];
 }
 
-#pragma mark - PasswordIssuesViewControllerDelegate
+#pragma mark - PasswordIssuesCoordinatorDelegate
 
 - (void)passwordIssuesCoordinatorDidRemove:
     (PasswordIssuesCoordinator*)coordinator {

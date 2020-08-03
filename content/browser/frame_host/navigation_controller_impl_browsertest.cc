@@ -7522,8 +7522,9 @@ class NavigationControllerAlertDialogBrowserTest
 }  // namespace
 
 // Check that swapped out frames cannot spawn JavaScript dialogs.
+// TODO(crbug.com/1112336): Flaky
 IN_PROC_BROWSER_TEST_P(NavigationControllerAlertDialogBrowserTest,
-                       NoDialogsFromSwappedOutFrames) {
+                       DISABLED_NoDialogsFromSwappedOutFrames) {
   // Start on a normal page.
   GURL url1 = embedded_test_server()->GetURL(
       "/navigation_controller/beforeunload_dialog.html");

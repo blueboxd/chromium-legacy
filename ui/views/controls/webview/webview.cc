@@ -272,17 +272,8 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
   if (web_contents() && !web_contents()->IsCrashed()) {
     content::RenderWidgetHostView* host_view =
         web_contents()->GetRenderWidgetHostView();
-    if (host_view) {
-      gfx::NativeViewAccessible accessible =
-          host_view->GetNativeViewAccessible();
-      // |accessible| needs to know whether this is the primary WebContents.
-      if (auto* ax_platform_node =
-              ui::AXPlatformNode::FromNativeViewAccessible(accessible)) {
-        ax_platform_node->SetIsPrimaryWebContentsForWindow(
-            is_primary_web_contents_for_window_);
-      }
-      return accessible;
-    }
+    if (host_view)
+      return host_view->GetNativeViewAccessible();
   }
   return View::GetNativeViewAccessible();
 }

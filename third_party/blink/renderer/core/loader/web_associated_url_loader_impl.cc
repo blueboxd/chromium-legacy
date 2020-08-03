@@ -290,7 +290,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
-  DidFail(WebURLError(ResourceError::Failure(NullURL())));
+  DidFail(ResourceError::Failure(NullURL()));
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
@@ -448,9 +448,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   }
 
   if (!loader_) {
-    client_adapter_->DidFail(
-        WebURLError(ResourceError::CancelledDueToAccessCheckError(
-            request.Url(), ResourceRequestBlockedReason::kOther)));
+    client_adapter_->DidFail(ResourceError::CancelledDueToAccessCheckError(
+        request.Url(), ResourceRequestBlockedReason::kOther));
   }
   client_adapter_->EnableErrorNotifications();
 }

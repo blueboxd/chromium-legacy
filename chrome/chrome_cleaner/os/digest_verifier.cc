@@ -82,7 +82,7 @@ bool DigestVerifier::InitializeFromResource(int resource_id) {
   }
 
   for (const chrome_cleaner::FileDigest& digest : digests_pb.file_digests()) {
-    const base::string16 filename = base::UTF8ToWide(digest.filename());
+    const std::wstring filename = base::UTF8ToWide(digest.filename());
     digests_[base::ToLowerASCII(filename)] =
         base::ToLowerASCII(digest.digest());
   }

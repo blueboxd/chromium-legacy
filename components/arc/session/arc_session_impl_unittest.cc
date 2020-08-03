@@ -278,6 +278,26 @@ class FakeSchedulerConfigurationManager
   DISALLOW_COPY_AND_ASSIGN(FakeSchedulerConfigurationManager);
 };
 
+class FakeAdbSideloadingAvailabilityDelegate
+    : public AdbSideloadingAvailabilityDelegate {
+ public:
+  FakeAdbSideloadingAvailabilityDelegate() = default;
+  ~FakeAdbSideloadingAvailabilityDelegate() override = default;
+
+  void CanChangeAdbSideloading(
+      base::OnceCallback<void(bool can_change_adb_sideloading)> callback)
+      override {
+    std::move(callback).Run(can_change_adb_sideloading_);
+  }
+
+  void SetCanChangeAdbSideloading(bool can_change) {
+    can_change_adb_sideloading_ = can_change;
+  }
+
+ private:
+  bool can_change_adb_sideloading_ = false;
+};
+
 class ArcSessionImplTest : public testing::Test {
  public:
   ArcSessionImplTest() = default;
@@ -315,6 +335,10 @@ class ArcSessionImplTest : public testing::Test {
 
   FakeSchedulerConfigurationManager fake_schedule_configuration_manager_;
 
+  std::unique_ptr<FakeAdbSideloadingAvailabilityDelegate>
+      adb_sideloading_availability_delegate_ =
+          std::make_unique<FakeAdbSideloadingAvailabilityDelegate>();
+
  private:
   std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSessionInternal(
       std::unique_ptr<ArcSessionImpl::Delegate> delegate,
@@ -323,7 +347,8 @@ class ArcSessionImplTest : public testing::Test {
       delegate = std::make_unique<FakeDelegate>(lcd_density);
     return std::unique_ptr<ArcSessionImpl, ArcSessionDeleter>(
         new ArcSessionImpl(std::move(delegate),
-                           &fake_schedule_configuration_manager_));
+                           &fake_schedule_configuration_manager_,
+                           adb_sideloading_availability_delegate_.get()));
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -870,6 +895,34 @@ TEST_F(ArcSessionImplTest, ShutdownWhileWaitingForNumCores) {
             arc_session->GetStateForTesting());
   arc_session->OnShutdown();
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
+}
+
+// Test that correct value false for managed sideloading is passed
+TEST_F(ArcSessionImplTest, CanChangeAdbSideloading_False) {
+  auto arc_session = CreateArcSession();
+  adb_sideloading_availability_delegate_->SetCanChangeAdbSideloading(false);
+
+  arc_session->StartMiniInstance();
+  arc_session->RequestUpgrade(DefaultUpgradeParams());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(GetClient(arc_session.get())
+                   ->last_upgrade_params()
+                   .is_managed_adb_sideloading_allowed);
+}
+
+// Test that correct value true for managed sideloading is passed
+TEST_F(ArcSessionImplTest, CanChangeAdbSideloading_True) {
+  auto arc_session = CreateArcSession();
+  adb_sideloading_availability_delegate_->SetCanChangeAdbSideloading(true);
+
+  arc_session->StartMiniInstance();
+  arc_session->RequestUpgrade(DefaultUpgradeParams());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(GetClient(arc_session.get())
+                  ->last_upgrade_params()
+                  .is_managed_adb_sideloading_allowed);
 }
 
 }  // namespace

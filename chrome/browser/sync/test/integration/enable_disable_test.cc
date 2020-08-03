@@ -10,6 +10,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -153,7 +154,13 @@ class EnableDisableSingleClientTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
+// Flakiness spike on Windows, see crbug.com/1111227.
+#if defined(OS_WIN)
+#define MAYBE_EnableOneAtATime DISABLED_EnableOneAtATime
+#else
+#define MAYBE_EnableOneAtATime EnableOneAtATime
+#endif
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, MAYBE_EnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
@@ -247,8 +254,14 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   }
 }
 
+// Flakiness spike on Windows, see crbug.com/1111227.
+#if defined(OS_WIN)
+#define MAYBE_FastDisableEnableOneAtATime DISABLED_FastDisableEnableOneAtATime
+#else
+#define MAYBE_FastDisableEnableOneAtATime FastDisableEnableOneAtATime
+#endif
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
-                       FastDisableEnableOneAtATime) {
+                       MAYBE_FastDisableEnableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
 

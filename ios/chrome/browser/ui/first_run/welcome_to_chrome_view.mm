@@ -586,6 +586,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   self.TOSTextView.editable = NO;
   self.TOSTextView.adjustsFontForContentSizeCategory = YES;
   self.TOSTextView.delegate = self;
+  self.TOSTextView.backgroundColor = UIColor.clearColor;
   self.TOSTextView.linkTextAttributes =
       @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
 
@@ -609,6 +610,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   NSMutableAttributedString* attributedText =
       [[NSMutableAttributedString alloc] initWithString:TOSText];
   [attributedText addAttributes:@{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextPrimaryColor],
     NSParagraphStyleAttributeName : style,
     NSFontAttributeName : font
   }

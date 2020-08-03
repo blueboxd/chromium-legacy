@@ -411,6 +411,10 @@ class HeapHashMap : public HashMap<KeyArg,
         WTF::IsTraceable<KeyArg>::value || WTF::IsTraceable<MappedArg>::value,
         "For hash maps without traceable elements, use HashMap<> "
         "instead of HeapHashMap<>.");
+    static_assert(internal::IsMemberOrWeakMemberType<KeyArg> ||
+                      !WTF::IsTraceable<KeyArg>::value,
+                  "HeapHashMap supports only Member, WeakMember and "
+                  "non-traceable types as keys.");
   }
 
  public:

@@ -110,6 +110,8 @@ class ArcContainerClientAdapter
     login_manager::UpgradeArcContainerRequest request;
     request.set_account_id(params.account_id);
     request.set_is_account_managed(params.is_account_managed);
+    request.set_is_managed_adb_sideloading_allowed(
+        params.is_managed_adb_sideloading_allowed);
     request.set_skip_boot_completed_broadcast(
         params.skip_boot_completed_broadcast);
     request.set_packages_cache_mode(

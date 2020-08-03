@@ -128,7 +128,6 @@ BookmarkNode::BookmarkNode(int64_t id,
       url_(url),
       type_(type),
       date_added_(base::Time::Now()),
-      favicon_type_(favicon_base::IconType::kInvalid),
       is_permanent_node_(is_permanent_node) {
   DCHECK((type == URL) != url.is_empty());
   DCHECK(base::IsValidGUIDOutputString(guid));
@@ -137,7 +136,6 @@ BookmarkNode::BookmarkNode(int64_t id,
 void BookmarkNode::InvalidateFavicon() {
   icon_url_.reset();
   favicon_ = gfx::Image();
-  favicon_type_ = favicon_base::IconType::kInvalid;
   favicon_state_ = INVALID_FAVICON;
 }
 

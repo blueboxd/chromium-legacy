@@ -89,11 +89,6 @@ class WEBVIEW_EXPORT WebView : public View,
   // if the web contents is changed.
   void SetCrashedOverlayView(View* crashed_overlay_view);
 
-  // Sets whether this is the primary web contents for the window.
-  void set_is_primary_web_contents_for_window(bool is_primary) {
-    is_primary_web_contents_for_window_ = is_primary;
-  }
-
   // When used to host UI, we need to explicitly allow accelerators to be
   // processed. Default is false.
   void set_allow_accelerators(bool allow_accelerators) {
@@ -204,7 +199,6 @@ class WEBVIEW_EXPORT WebView : public View,
   content::BrowserContext* browser_context_;
   bool allow_accelerators_ = false;
   View* crashed_overlay_view_ = nullptr;
-  bool is_primary_web_contents_for_window_ = false;
 
   // Minimum and maximum sizes to determine WebView bounds for auto-resizing.
   // Empty if auto resize is not enabled.

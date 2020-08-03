@@ -24,7 +24,6 @@ class BoundsAnimator;
 namespace ash {
 class BackButton;
 class HomeButton;
-enum class HotseatState;
 class NavigationButtonAnimationMetricsReporter;
 class Shelf;
 class ShelfView;
@@ -99,8 +98,7 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
       views::View* button,
       bool visible,
       bool animate,
-      NavigationButtonAnimationMetricsReporter* metrics_reporter,
-      HotseatState target_hotseat_state);
+      NavigationButtonAnimationMetricsReporter* metrics_reporter);
 
   // Returns the clip rectangle.
   gfx::Rect CalculateClipRect() const;

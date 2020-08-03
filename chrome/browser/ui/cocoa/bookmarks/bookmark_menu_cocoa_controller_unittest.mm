@@ -61,11 +61,15 @@ class BookmarkMenuCocoaControllerTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    profile()->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForBrowserContext(profile()));
     controller_.reset(
         [[FakeBookmarkMenuController alloc] initWithProfile:profile()]);
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{BookmarkModelFactory::GetInstance(),
+             BookmarkModelFactory::GetDefaultFactory()}};
   }
 
   FakeBookmarkMenuController* controller() { return controller_.get(); }

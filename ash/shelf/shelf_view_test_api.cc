@@ -81,9 +81,6 @@ void ShelfViewTestAPI::SetAnimationDuration(base::TimeDelta duration) {
 
 void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone(
     views::BoundsAnimator* bounds_animator) {
-  if (!bounds_animator->IsAnimating())
-    return;
-
   std::unique_ptr<TestAPIAnimationObserver> observer(
       new TestAPIAnimationObserver());
 

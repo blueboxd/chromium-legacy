@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/strings/string_util.h"
@@ -148,7 +147,7 @@ TEST(RegistryTests, FullPath) {
 
 TEST(RegistryTests, GetNativeFullPath) {
   // The 'HKLM\\hardware' registry key doesn't have redirection.
-  base::string16 native_path;
+  std::wstring native_path;
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kHardwareKeyPath)
                   .GetNativeFullPath(&native_path));
   EXPECT_TRUE(
@@ -163,14 +162,14 @@ TEST(RegistryTests, GetNativeFullPath) {
       String16EqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
 
   // The 'HKLM\\software' registry key may have a redirection.
-  base::string16 native_path32;
+  std::wstring native_path32;
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kSoftwareKeyPath, KEY_WOW64_32KEY)
                   .GetNativeFullPath(&native_path32));
   EXPECT_TRUE(
       String16EqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath) ||
       String16EqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath32));
 
-  base::string16 native_path64;
+  std::wstring native_path64;
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kSoftwareKeyPath, KEY_WOW64_64KEY)
                   .GetNativeFullPath(&native_path64));
   EXPECT_TRUE(
@@ -178,7 +177,7 @@ TEST(RegistryTests, GetNativeFullPath) {
 }
 
 TEST(RegistryTests, GetNativeFullPathUpCase) {
-  base::string16 native_path32;
+  std::wstring native_path32;
   EXPECT_TRUE(
       RegKeyPath(HKEY_LOCAL_MACHINE, kSoftwareKeyPathUpCase, KEY_WOW64_32KEY)
           .GetNativeFullPath(&native_path32));

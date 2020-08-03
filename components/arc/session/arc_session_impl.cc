@@ -323,12 +323,16 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
                                                   channel);
 }
 
-ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate,
-                               chromeos::SchedulerConfigurationManagerBase*
-                                   scheduler_configuration_manager)
+ArcSessionImpl::ArcSessionImpl(
+    std::unique_ptr<Delegate> delegate,
+    chromeos::SchedulerConfigurationManagerBase*
+        scheduler_configuration_manager,
+    AdbSideloadingAvailabilityDelegate* adb_sideloading_availability_delegate)
     : delegate_(std::move(delegate)),
       client_(delegate_->CreateClient()),
-      scheduler_configuration_manager_(scheduler_configuration_manager) {
+      scheduler_configuration_manager_(scheduler_configuration_manager),
+      adb_sideloading_availability_delegate_(
+          adb_sideloading_availability_delegate) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -494,6 +498,16 @@ void ArcSessionImpl::OnFreeDiskSpace(int64_t space) {
     StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
+
+  adb_sideloading_availability_delegate_->CanChangeAdbSideloading(
+      base::BindOnce(&ArcSessionImpl::OnCanChangeAdbSideloading,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ArcSessionImpl::OnCanChangeAdbSideloading(
+    bool can_change_adb_sideloading) {
+  upgrade_params_.is_managed_adb_sideloading_allowed =
+      can_change_adb_sideloading;
 
   delegate_->CreateSocket(base::BindOnce(&ArcSessionImpl::OnSocketCreated,
                                          weak_factory_.GetWeakPtr()));

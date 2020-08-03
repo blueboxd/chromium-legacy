@@ -63,7 +63,7 @@ message AutofillProfileSpecifics {
   // "Ruiz y Picasso" containing a first last name, a conjunction (the y) and a
   // second last name.
   repeated string name_last_first = 27;
-  repeated string name_last_conjuction = 28;
+  repeated string name_last_conjunction = 28;
   repeated string name_last_second = 29;
   repeated string name_full = 21;
 
@@ -73,7 +73,7 @@ message AutofillProfileSpecifics {
   repeated VerificationStatus name_middle_status = 32;
   repeated VerificationStatus name_last_status = 33;
   repeated VerificationStatus name_last_first_status = 34;
-  repeated VerificationStatus name_last_conjuction_status = 35;
+  repeated VerificationStatus name_last_conjunction_status = 35;
   repeated VerificationStatus name_last_second_status = 36;
   repeated VerificationStatus name_full_status = 37;
 

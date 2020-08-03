@@ -593,6 +593,7 @@ cc_test_static_library("test_support") {
     "//services/viz/privileged/mojom",
     "//skia",
     "//testing/gtest",
+    "//ui/base:features",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

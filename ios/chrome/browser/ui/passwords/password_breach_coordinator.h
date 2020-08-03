@@ -5,12 +5,24 @@
 #ifndef IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_COORDINATOR_H_
 
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+
+class GURL;
 
 // Presents and stops the Password Breach feature, which consists in alerting
 // the user that Chrome detected a leaked credential. In some scenarios it
 // prompts for a checkup of the stored passwords.
 @interface PasswordBreachCoordinator : ChromeCoordinator
+
+- (instancetype)
+    initWithBaseViewController:(UIViewController*)baseViewController
+                       browser:(Browser*)browser
+                      leakType:(password_manager::CredentialLeakType)leakType
+                           URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 @end
 

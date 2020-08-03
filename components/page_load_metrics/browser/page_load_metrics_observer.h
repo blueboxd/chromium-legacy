@@ -303,7 +303,8 @@ class PageLoadMetricsObserver {
   // OnRestoreFromBackForwardCache is triggered when a page is restored from
   // the back-forward cache.
   virtual void OnRestoreFromBackForwardCache(
-      const mojom::PageLoadTiming& timing) {}
+      const mojom::PageLoadTiming& timing,
+      content::NavigationHandle* navigation_handle) {}
 
   // Called before OnCommit. The observer should return whether it wishes to
   // observe navigations whose main resource has MIME type |mine_type|. The

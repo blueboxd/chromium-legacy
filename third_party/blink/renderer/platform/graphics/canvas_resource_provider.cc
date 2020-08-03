@@ -218,10 +218,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
           context_provider_wrapper,
       bool is_origin_top_left,
       bool is_accelerated,
-      bool use_webgpu,
+      bool skia_use_dawn,
       uint32_t shared_image_usage_flags)
       : CanvasResourceProvider(
-            use_webgpu ? kWebGPUSharedImage : kSharedImage,
+            skia_use_dawn ? kSkiaDawnSharedImage : kSharedImage,
             size,
             filter_quality,
             // TODO(khushalsagar): The software path seems to be assuming N32
@@ -306,8 +306,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       return nullptr;
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-    if (type_ == kWebGPUSharedImage) {
-      return CanvasResourceWebGPUSharedImage::Create(
+    if (type_ == kSkiaDawnSharedImage) {
+      return CanvasResourceSkiaDawnSharedImage::Create(
           Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
           ColorParams(), IsOriginTopLeft(), shared_image_usage_flags_);
     }
@@ -811,7 +811,7 @@ enum class CanvasResourceType {
   kSharedImage,
   kSharedBitmap,
   kBitmap,
-  kWebGPUSharedImage,
+  kSkiaDawnSharedImage,
 };
 
 }  // unnamed namespace
@@ -862,13 +862,13 @@ CanvasResourceProvider::CreateSharedImageProvider(
 
   const auto& capabilities =
       context_provider_wrapper->ContextProvider()->GetCapabilities();
-  bool use_webgpu =
+  bool skia_use_dawn =
       raster_mode == RasterMode::kGPU &&
       base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas);
   // TODO(senorblanco): once Dawn reports maximum texture size, Dawn Canvas
   // should respect it.  http://crbug.com/1082760
-  if (!use_webgpu && (size.Width() > capabilities.max_texture_size ||
-                      size.Height() > capabilities.max_texture_size)) {
+  if (!skia_use_dawn && (size.Width() > capabilities.max_texture_size ||
+                         size.Height() > capabilities.max_texture_size)) {
     return nullptr;
   }
 
@@ -890,7 +890,7 @@ CanvasResourceProvider::CreateSharedImageProvider(
 
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
       size, filter_quality, color_params, context_provider_wrapper,
-      is_origin_top_left, raster_mode == RasterMode::kGPU, use_webgpu,
+      is_origin_top_left, raster_mode == RasterMode::kGPU, skia_use_dawn,
       shared_image_usage_flags);
   if (provider->IsValid())
     return provider;
@@ -1241,7 +1241,7 @@ void CanvasResourceProvider::RasterRecord(
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {
-  if (type_ == kWebGPUSharedImage) {
+  if (type_ == kSkiaDawnSharedImage) {
     return false;
   }
   auto* raster_interface = RasterInterface();

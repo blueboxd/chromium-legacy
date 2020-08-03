@@ -48,6 +48,7 @@ class GeneratePasswordForFormFieldAction : public Action {
 
   void StoreGeneratedPasswordToUserData(const std::string& memory_key,
                                         const std::string& generated_password,
+                                        const autofill::FormData& form_data,
                                         UserData* user_data,
                                         UserData::FieldChange* field_change);
 

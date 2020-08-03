@@ -237,6 +237,8 @@ class UiDelegate {
   // The generic user interface to show, if any.
   virtual const GenericUserInterfaceProto* GetGenericUiProto() const = 0;
 
+  // Whether the overlay should be determined based on AA state or always
+  // hidden.
   virtual bool ShouldShowOverlay() const = 0;
 
   // Notifies the UI deleagate that it should shut down.

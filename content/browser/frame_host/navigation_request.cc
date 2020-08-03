@@ -1716,14 +1716,6 @@ void NavigationRequest::CreateCoopReporter(
     return;
   }
 
-  // If the page does not have any reporting endpoints, skip creating a
-  // reporter.
-  if (!render_frame_host_->cross_origin_opener_policy().reporting_endpoint &&
-      !render_frame_host_->cross_origin_opener_policy()
-           .report_only_reporting_endpoint) {
-    return;
-  }
-
   coop_reporter_ = std::make_unique<CrossOriginOpenerPolicyReporter>(
       storage_partition, frame_tree_node_->current_frame_host(),
       common_params_->url, render_frame_host_->cross_origin_opener_policy());

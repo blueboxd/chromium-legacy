@@ -620,6 +620,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   return ![self.collectionUpdater isMostVisitedSection:indexPath.section] &&
          ![self.collectionUpdater isPromoSection:indexPath.section] &&
+         ![self.collectionUpdater isDiscoverSection:indexPath.section] &&
          [self.collectionUpdater contentSuggestionTypeForItem:item] !=
              ContentSuggestionTypeLearnMore &&
          [self.collectionUpdater contentSuggestionTypeForItem:item] !=

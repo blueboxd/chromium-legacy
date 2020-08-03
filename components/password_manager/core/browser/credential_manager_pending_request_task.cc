@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -40,22 +41,30 @@ bool IsBetterMatch(const autofill::PasswordForm& form1,
   return form1.date_created > form2.date_created;
 }
 
+// Creates a base::flat_set of std::unique_ptr<autofill::PasswordForm> that uses
+// |key_getter| to compute the key used when comparing forms.
+template <typename KeyGetter>
+auto MakeFlatSet(KeyGetter key_getter) {
+  auto cmp = [key_getter](const auto& lhs, const auto& rhs) {
+    return key_getter(lhs) < key_getter(rhs);
+  };
+
+  return base::flat_set<std::unique_ptr<autofill::PasswordForm>, decltype(cmp)>(
+      cmp);
+}
+
 // Remove duplicates in |forms| before displaying them in the account chooser.
 void FilterDuplicates(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_forms;
-  // The key is [username, signon_realm]. signon_realm is used only for PSL
-  // matches because those entries have it in the UI.
-  auto get_key = [](const auto& form) {
-    return std::make_pair(form->username_value, form->is_public_suffix_match
-                                                    ? form->signon_realm
-                                                    : std::string());
-  };
-  auto cmp = [&](const auto& lhs, const auto& rhs) {
-    return get_key(lhs) < get_key(rhs);
-  };
-  base::flat_set<std::unique_ptr<autofill::PasswordForm>, decltype(cmp)>
-      credentials(cmp);
+  // The key is [username, signon_realm, store]. signon_realm is used only for
+  // PSL matches because those entries have it in the UI.
+  auto credentials = MakeFlatSet(/*key_getter=*/[](const auto& form) {
+    return std::make_tuple(
+        form->username_value,
+        form->is_public_suffix_match ? form->signon_realm : std::string(),
+        form->in_store);
+  });
   for (auto& form : *forms) {
     if (!form->federation_origin.opaque()) {
       federated_forms.push_back(std::move(form));
@@ -65,7 +74,25 @@ void FilterDuplicates(
         *result.first = std::move(form);
     }
   }
-  *forms = std::move(credentials).extract();
+  // |credentials| contains credentials from both profile and account stores.
+  // There could potentially be duplicate credentials with the same password in
+  // which case it doesn't make sense to show both in the UI. When such
+  // duplicates exist, we favor the account store version to make it clear in
+  // the UI that this credential is available on other devices.
+  auto credentials_with_unique_passwords =
+      MakeFlatSet(/*key_getter=*/[](const auto& form) {
+        return std::make_tuple(
+            form->username_value,
+            form->is_public_suffix_match ? form->signon_realm : std::string(),
+            form->password_value);
+      });
+
+  for (auto& form : std::move(credentials).extract()) {
+    auto result = credentials_with_unique_passwords.insert(std::move(form));
+    if (!result.second && form->IsUsingAccountStore())
+      *result.first = std::move(form);
+  }
+  *forms = std::move(credentials_with_unique_passwords).extract();
   std::move(federated_forms.begin(), federated_forms.end(),
             std::back_inserter(*forms));
 }

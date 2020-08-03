@@ -60,19 +60,20 @@ class GeneratePasswordForFormFieldActionTest : public testing::Test {
 };
 
 TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
+  ON_CALL(mock_action_delegate_, OnRetrieveElementFormAndFieldData)
+      .WillByDefault(RunOnceCallback<1>(ClientStatus(ACTION_APPLIED),
+                                        autofill::FormData(),
+                                        autofill::FormFieldData()));
   GeneratePasswordForFormFieldProto* generate_password_proto =
       proto_.mutable_generate_password_for_form_field();
   *generate_password_proto->mutable_element() =
       Selector({kFakeSelector}).MustBeVisible().proto;
   generate_password_proto->set_memory_key(kMemoryKeyForGeneratedPassword);
 
-  Selector fake_selector = Selector({kFakeSelector}).MustBeVisible();
-
   GeneratePasswordForFormFieldAction action(&mock_action_delegate_, proto_);
-
-  EXPECT_CALL(mock_website_login_manager_,
-              OnPresaveGeneratedPassword(_, kGeneratedPassword, _, _))
-      .Times(1);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
 
   action.ProcessAction(callback_.Get());
   EXPECT_EQ(kGeneratedPassword,
@@ -80,4 +81,28 @@ TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
                 .strings()
                 .values(0));
 }
+
+TEST_F(GeneratePasswordForFormFieldActionTest, FormDataIsNotRetrieved) {
+  ON_CALL(mock_action_delegate_, OnRetrieveElementFormAndFieldData)
+      .WillByDefault(RunOnceCallback<1>(ClientStatus(INVALID_SELECTOR),
+                                        autofill::FormData(),
+                                        autofill::FormFieldData()));
+
+  GeneratePasswordForFormFieldProto* generate_password_proto =
+      proto_.mutable_generate_password_for_form_field();
+  *generate_password_proto->mutable_element() =
+      Selector({kFakeSelector}).MustBeVisible().proto;
+
+  GeneratePasswordForFormFieldAction action(&mock_action_delegate_, proto_);
+
+  EXPECT_CALL(mock_website_login_manager_, GetGeneratedPassword()).Times(0);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_SELECTOR))));
+
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_FALSE(user_data_.has_additional_value(kMemoryKeyForGeneratedPassword));
+}
+
 }  // namespace autofill_assistant

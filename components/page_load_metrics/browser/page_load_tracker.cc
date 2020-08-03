@@ -959,8 +959,8 @@ void PageLoadTracker::OnRestoreFromBackForwardCache(
     PageShown();
 
   for (const auto& observer : observers_) {
-    observer->OnRestoreFromBackForwardCache(
-        metrics_update_dispatcher_.timing());
+    observer->OnRestoreFromBackForwardCache(metrics_update_dispatcher_.timing(),
+                                            navigation_handle);
   }
 }
 

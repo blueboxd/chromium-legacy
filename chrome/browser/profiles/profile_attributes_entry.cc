@@ -6,6 +6,7 @@
 
 #include "base/hash/hash.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,9 +26,14 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/themes/theme_properties.h"
 #endif
 
 namespace {
@@ -410,8 +416,7 @@ size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
   return icon_index;
 }
 
-base::Optional<ProfileThemeColors>
-ProfileAttributesEntry::GetProfileThemeColors() const {
+ProfileThemeColors ProfileAttributesEntry::GetProfileThemeColors() const {
   base::Optional<SkColor> profile_highlight_color =
       GetProfileThemeColor(kProfileHighlightColorKey);
   base::Optional<SkColor> default_avatar_fill_color =
@@ -421,7 +426,8 @@ ProfileAttributesEntry::GetProfileThemeColors() const {
   if (!profile_highlight_color.has_value()) {
     DCHECK(!default_avatar_fill_color.has_value() &&
            !default_avatar_stroke_color.has_value());
-    return base::nullopt;
+    return GetDefaultProfileThemeColors(
+        ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors());
   }
 
   DCHECK(default_avatar_fill_color.has_value() &&
@@ -663,6 +669,27 @@ size_t ProfileAttributesEntry::profile_index() const {
   size_t index = profile_info_cache_->GetIndexOfProfileWithPath(profile_path_);
   DCHECK(index < profile_info_cache_->GetNumberOfProfiles());
   return index;
+}
+
+// static
+ProfileThemeColors ProfileAttributesEntry::GetDefaultProfileThemeColors(
+    bool dark_mode) {
+#if defined(OS_ANDROID)
+  // Profile theme colors shouldn't be queried on Android.
+  NOTREACHED();
+  return {SK_ColorRED, SK_ColorRED, SK_ColorRED};
+#else
+  ProfileThemeColors default_colors;
+  // TODO(https://crbug.com/1102384): update this with the right colors, once we
+  // have them.
+  default_colors.profile_highlight_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_FRAME_ACTIVE, /*incognito=*/false, dark_mode);
+  default_colors.default_avatar_fill_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_FRAME_ACTIVE, /*incognito=*/false, dark_mode);
+  default_colors.default_avatar_stroke_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_TOOLBAR, /*incognito=*/false, dark_mode);
+  return default_colors;
+#endif
 }
 
 const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {

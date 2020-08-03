@@ -129,7 +129,7 @@ TEST_F(ParserImplTest, ParseCorrectShortcutTest) {
   base::win::ShortcutProperties shortcut_properties;
   shortcut_properties.set_target(not_lnk_file_path_);
   shortcut_properties.set_icon(not_lnk_file_path_, /*icon_index=*/0);
-  const base::string16 lnk_arguments = L"argument1 -f -t -a -o";
+  const std::wstring lnk_arguments = L"argument1 -f -t -a -o";
   shortcut_properties.set_arguments(lnk_arguments);
 
   base::win::ScopedHandle lnk_file_handle = CreateAndOpenShortcutInTempDir(

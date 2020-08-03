@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 
+#include <utility>
+
 #include "base/metrics/user_metrics.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -34,20 +36,15 @@ void BookmarkClientImpl::Init(bookmarks::BookmarkModel* model) {
   model_ = model;
 }
 
-bool BookmarkClientImpl::PreferTouchIcon() {
-  return false;
-}
-
 base::CancelableTaskTracker::TaskId
 BookmarkClientImpl::GetFaviconImageForPageURL(
     const GURL& page_url,
-    favicon_base::IconType type,
     favicon_base::FaviconImageCallback callback,
     base::CancelableTaskTracker* tracker) {
   return favicon::GetFaviconImageForPageURL(
       ios::FaviconServiceFactory::GetForBrowserState(
           browser_state_, ServiceAccessType::EXPLICIT_ACCESS),
-      page_url, type, std::move(callback), tracker);
+      page_url, favicon_base::IconType::kFavicon, std::move(callback), tracker);
 }
 
 bool BookmarkClientImpl::SupportsTypedCountForUrls() {

@@ -62,15 +62,15 @@ bool IsSafeNameForDeletion(const base::FilePath& path) {
   if (path.empty())
     return false;
 
-  const base::string16& path_str = path.value();
+  const std::wstring& path_str = path.value();
   // Disallow anything with "\..\".
-  if (path_str.find(L"\\..\\") != base::string16::npos)
+  if (path_str.find(L"\\..\\") != std::wstring::npos)
     return false;
 
   // Ensure the path does not specify a drive root: require a character other
   // than \/:. after the last :
   size_t last_colon_pos = path_str.rfind(L':');
-  if (last_colon_pos == base::string16::npos)
+  if (last_colon_pos == std::wstring::npos)
     return true;
   for (size_t index = last_colon_pos + 1; index < path_str.size(); ++index) {
     wchar_t character = path_str[index];

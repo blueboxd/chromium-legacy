@@ -42,9 +42,9 @@ void ParserImpl::ParseShortcut(mojo::PlatformHandle lnk_file_handle,
   if (!shortcut_handle.IsValid()) {
     LOG(ERROR) << "Unable to get raw file HANDLE from mojo.";
     std::move(callback).Run(mojom::LnkParsingResult::INVALID_HANDLE,
-                            base::make_optional<base::string16>(),
-                            base::make_optional<base::string16>(),
-                            base::make_optional<base::string16>());
+                            base::make_optional<std::wstring>(),
+                            base::make_optional<std::wstring>(),
+                            base::make_optional<std::wstring>());
     return;
   }
 
@@ -54,17 +54,16 @@ void ParserImpl::ParseShortcut(mojo::PlatformHandle lnk_file_handle,
 
   if (result != mojom::LnkParsingResult::SUCCESS) {
     LOG(ERROR) << "Error parsing the shortcut";
-    std::move(callback).Run(result, base::make_optional<base::string16>(),
-                            base::make_optional<base::string16>(),
-                            base::make_optional<base::string16>());
+    std::move(callback).Run(result, base::make_optional<std::wstring>(),
+                            base::make_optional<std::wstring>(),
+                            base::make_optional<std::wstring>());
     return;
   }
 
   std::move(callback).Run(
-      result, base::make_optional<base::string16>(parsed_shortcut.target_path),
-      base::make_optional<base::string16>(
-          parsed_shortcut.command_line_arguments),
-      base::make_optional<base::string16>(parsed_shortcut.icon_location));
+      result, base::make_optional<std::wstring>(parsed_shortcut.target_path),
+      base::make_optional<std::wstring>(parsed_shortcut.command_line_arguments),
+      base::make_optional<std::wstring>(parsed_shortcut.icon_location));
 }
 
 }  // namespace chrome_cleaner

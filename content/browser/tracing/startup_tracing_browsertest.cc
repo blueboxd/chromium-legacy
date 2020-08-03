@@ -61,8 +61,9 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CommandlineStartupTracingTest);
 };
 
-// Failing on Android ASAN, Linux TSAN. crbug.com/1041392
+// Failing on Android/Win ASAN, Linux TSAN. crbug.com/1041392
 #if (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
     (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define MAYBE_TestStartupTracing DISABLED_TestStartupTracing
 #else

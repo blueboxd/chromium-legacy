@@ -91,19 +91,31 @@ namespace {
 // ChromeBrowserMainPartsChromeos owns.
 ArcServiceLauncher* g_arc_service_launcher = nullptr;
 
+std::unique_ptr<ArcSessionManager> CreateArcSessionManager(
+    ArcBridgeService* arc_bridge_service,
+    ash::DefaultScaleFactorRetriever* retriever,
+    version_info::Channel channel,
+    chromeos::SchedulerConfigurationManagerBase*
+        scheduler_configuration_manager) {
+  auto delegate = std::make_unique<AdbSideloadingAvailabilityDelegateImpl>();
+  auto runner = std::make_unique<ArcSessionRunner>(base::BindRepeating(
+      ArcSession::Create, arc_bridge_service, retriever, channel,
+      scheduler_configuration_manager, delegate.get()));
+  return std::make_unique<ArcSessionManager>(std::move(runner),
+                                             std::move(delegate));
+}
+
 }  // namespace
 
 ArcServiceLauncher::ArcServiceLauncher(
     chromeos::SchedulerConfigurationManagerBase*
         scheduler_configuration_manager)
     : arc_service_manager_(std::make_unique<ArcServiceManager>()),
-      arc_session_manager_(std::make_unique<ArcSessionManager>(
-          std::make_unique<ArcSessionRunner>(
-              base::BindRepeating(ArcSession::Create,
-                                  arc_service_manager_->arc_bridge_service(),
+      arc_session_manager_(
+          CreateArcSessionManager(arc_service_manager_->arc_bridge_service(),
                                   &default_scale_factor_retriever_,
                                   chrome::GetChannel(),
-                                  scheduler_configuration_manager)))),
+                                  scheduler_configuration_manager)),
       scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
@@ -252,11 +264,10 @@ void ArcServiceLauncher::ResetForTesting() {
   // No recreation of arc_service_manager. Pointers to its ArcBridgeService
   // may be referred from existing KeyedService, so destoying it would cause
   // unexpected behavior, specifically on test teardown.
-  arc_session_manager_ = std::make_unique<ArcSessionManager>(
-      std::make_unique<ArcSessionRunner>(base::BindRepeating(
-          ArcSession::Create, arc_service_manager_->arc_bridge_service(),
-          &default_scale_factor_retriever_, chrome::GetChannel(),
-          scheduler_configuration_manager_)));
+  arc_session_manager_ = CreateArcSessionManager(
+      arc_service_manager_->arc_bridge_service(),
+      &default_scale_factor_retriever_, chrome::GetChannel(),
+      scheduler_configuration_manager_);
 }
 
 }  // namespace arc

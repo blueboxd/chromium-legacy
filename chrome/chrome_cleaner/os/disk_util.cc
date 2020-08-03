@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -20,7 +21,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -138,8 +138,8 @@ void CollectMatchingPathsRecursive(
 }
 
 void AppendFileInformationField(const wchar_t* field_name,
-                                const base::string16& field,
-                                base::string16* information) {
+                                const std::wstring& field,
+                                std::wstring* information) {
   DCHECK(field_name);
   DCHECK(information);
   if (!field.empty()) {
@@ -185,7 +185,7 @@ bool ExtractExecutablePathWithoutArgument(const base::FilePath& program_path,
     return true;
   }
   size_t program_path_length = program_path.value().find(L" ");
-  while (program_path_length != base::string16::npos) {
+  while (program_path_length != std::wstring::npos) {
     base::FilePath truncated_path(
         program_path.value().substr(0, program_path_length));
     if (ExpandEnvPathandWow64PathIfFileExists(truncated_path,
@@ -203,13 +203,13 @@ bool IsActionRunDll32(const base::FilePath& exec_path) {
       exec_path.BaseName().RemoveExtension().value(), L"rundll32");
 }
 
-base::FilePath ExtractRunDllTargetPath(const base::string16& arguments) {
+base::FilePath ExtractRunDllTargetPath(const std::wstring& arguments) {
   // Some programs use rundll instead of an executable, and so their disk
   // footprint will be the first of a set of comma separated list of
   // arguments passed to rundll32.exe, which may also be "quoted", and may
   // also have command line arguments. We can't use CommandLine::GetArgs nor
   // CommandLine::GetArgumentsString() since they split/quote by spaces.
-  std::vector<base::string16> rundll_args = base::SplitString(
+  std::vector<std::wstring> rundll_args = base::SplitString(
       arguments, L",\"", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (rundll_args.empty()) {
     LOG(WARNING) << "Rundll without any arguments? '" << arguments << "'";
@@ -252,7 +252,7 @@ base::FilePath GetX64ProgramFilesPath(const base::FilePath& input_path) {
                                 kWindowsCurrentVersionRegKeyName,
                                 KEY_READ | KEY_WOW64_64KEY);
   DCHECK(version_key.Valid());
-  base::string16 program_files_path;
+  std::wstring program_files_path;
   LONG error =
       version_key.ReadValue(kProgramFilesDirValueName, &program_files_path);
   if (error != ERROR_SUCCESS) {
@@ -268,7 +268,7 @@ base::FilePath GetX86ProgramFilesPath(const base::FilePath& input_path) {
                                 kWindowsCurrentVersionRegKeyName,
                                 KEY_READ | KEY_WOW64_32KEY);
   DCHECK(version_key.Valid());
-  base::string16 program_files_path;
+  std::wstring program_files_path;
   LONG error =
       version_key.ReadValue(kProgramFilesDirValueName, &program_files_path);
   if (error != ERROR_SUCCESS) {
@@ -279,13 +279,13 @@ base::FilePath GetX86ProgramFilesPath(const base::FilePath& input_path) {
   return base::FilePath(program_files_path).Append(input_path);
 }
 
-bool NameContainsWildcards(const base::string16& name) {
+bool NameContainsWildcards(const std::wstring& name) {
   return (name.find(L"*") != base::FilePath::StringType::npos ||
           name.find(L"?") != base::FilePath::StringType::npos);
 }
 
-bool NameMatchesPattern(const base::string16& name,
-                        const base::string16& pattern,
+bool NameMatchesPattern(const std::wstring& name,
+                        const std::wstring& pattern,
                         const wchar_t escape_char) {
   return String16WildcardMatchInsensitive(name, pattern, escape_char);
 }
@@ -310,7 +310,7 @@ bool PathContainsWildcards(const base::FilePath& file_path) {
 }
 
 bool PathHasActiveExtension(const base::FilePath& file_path) {
-  base::string16 extension;
+  std::wstring extension;
   if (base::EndsWith(file_path.value(), kDefaultDataStream,
                      base::CompareCase::INSENSITIVE_ASCII)) {
     // Default stream with an explicit stream type specified.
@@ -319,7 +319,7 @@ bool PathHasActiveExtension(const base::FilePath& file_path) {
     // check.
     size_t true_path_len =
         file_path.value().size() - wcslen(kDefaultDataStream);
-    base::string16 true_path = file_path.value().substr(0, true_path_len);
+    std::wstring true_path = file_path.value().substr(0, true_path_len);
     extension = base::FilePath(true_path).Extension();
   } else {
     CHECK_EQ(base::FilePath::StringType::npos,
@@ -397,14 +397,14 @@ void ExpandWow64Path(const base::FilePath& path,
   }
 }
 
-base::string16 FileInformationToString(
+std::wstring FileInformationToString(
     const internal::FileInformation& file_information) {
   if (file_information.path.empty())
     return L"";
 
   // We add the first field directly without using any AppendFileInformation*()
   // function since the first field should not be prepended with a separator.
-  base::string16 content = L"path = '" + file_information.path + L"'";
+  std::wstring content = L"path = '" + file_information.path + L"'";
 
   AppendFileInformationField(L"file_creation_date",
                              base::UTF8ToWide(file_information.creation_date),
@@ -439,7 +439,7 @@ base::string16 FileInformationToString(
   return content;
 }
 
-bool IsCompanyOnIgnoredReportingList(const base::string16& company_name) {
+bool IsCompanyOnIgnoredReportingList(const std::wstring& company_name) {
   return base::Contains(kCompanyIgnoredReportingList, company_name);
 }
 
@@ -700,8 +700,8 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
 }
 
 bool PathEqual(const base::FilePath& path1, const base::FilePath& path2) {
-  base::string16 long_path1;
-  base::string16 long_path2;
+  std::wstring long_path1;
+  std::wstring long_path2;
   ConvertToLongPath(path1.value(), &long_path1);
   ConvertToLongPath(path2.value(), &long_path2);
   return base::FilePath::CompareEqualIgnoreCase(long_path1, long_path2);
@@ -709,8 +709,8 @@ bool PathEqual(const base::FilePath& path1, const base::FilePath& path2) {
 
 bool FilePathLess::operator()(const base::FilePath& smaller,
                               const base::FilePath& larger) const {
-  base::string16 long_smaller;
-  base::string16 long_larger;
+  std::wstring long_smaller;
+  std::wstring long_larger;
   ConvertToLongPath(smaller.value(), &long_smaller);
   ConvertToLongPath(larger.value(), &long_larger);
   return base::FilePath::CompareLessIgnoreCase(long_smaller, long_larger);
@@ -813,7 +813,7 @@ bool HasZoneIdentifier(const base::FilePath& path) {
 
 bool OverwriteZoneIdentifier(const base::FilePath& path) {
   const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-  base::string16 stream_path = path.value() + L":Zone.Identifier";
+  std::wstring stream_path = path.value() + L":Zone.Identifier";
   HANDLE file = CreateFile(stream_path.c_str(), GENERIC_WRITE, kShare, nullptr,
                            OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (INVALID_HANDLE_VALUE == file)
@@ -837,7 +837,7 @@ bool OverwriteZoneIdentifier(const base::FilePath& path) {
 }
 
 base::FilePath ExtractExecutablePathFromRegistryContent(
-    const base::string16& content) {
+    const std::wstring& content) {
   // The content of the registry key can be a fullpath to an executable as is.
   base::FilePath program_path(content);
   base::FilePath return_program_path;

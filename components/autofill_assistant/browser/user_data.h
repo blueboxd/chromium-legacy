@@ -146,6 +146,12 @@ class UserData {
   // The additional value for |key|, or nullptr if it does not exist.
   const ValueProto* additional_value(const std::string& key) const;
 
+  // The form data of the password change form. This is stored at the time of
+  // password generation (GeneratePasswordForFormFieldProto) to allow a
+  // subsequent PresaveGeneratedPasswordProto to presave the password prior to
+  // submission.
+  base::Optional<autofill::FormData> password_form_data_;
+
   std::string GetAllAddressKeyNames() const;
 };
 

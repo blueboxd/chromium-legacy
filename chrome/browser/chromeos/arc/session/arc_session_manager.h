@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_app_id_provider_impl.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/session/adb_sideloading_availability_delegate_impl.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -112,9 +113,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   using ExpansionResult = std::pair<std::string /* salt on disk */,
                                     bool /* expansion successful */>;
 
-
-  explicit ArcSessionManager(
-      std::unique_ptr<ArcSessionRunner> arc_session_runner);
+  ArcSessionManager(std::unique_ptr<ArcSessionRunner> arc_session_runner,
+                    std::unique_ptr<AdbSideloadingAvailabilityDelegateImpl>
+                        adb_sideloading_availability_delegate);
   ~ArcSessionManager() override;
 
   static ArcSessionManager* Get();
@@ -369,6 +370,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnExpandPropertyFilesAndReadSalt(ExpansionResult result);
 
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
+  std::unique_ptr<AdbSideloadingAvailabilityDelegateImpl>
+      adb_sideloading_availability_delegate_;
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;

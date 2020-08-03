@@ -680,7 +680,7 @@ void DocumentLoader::BodyLoadingFinished(
     return;
   }
 
-  ResourceError resource_error = error.value();
+  ResourceError resource_error(*error);
   if (network_utils::IsCertificateTransparencyRequiredError(
           resource_error.ErrorCode())) {
     GetUseCounterHelper().Count(

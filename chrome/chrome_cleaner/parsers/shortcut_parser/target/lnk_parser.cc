@@ -7,13 +7,13 @@
 #include <windows.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 
@@ -51,7 +51,7 @@ bool ReadUnsignedShort(const std::vector<BYTE>& buffer,
 
 bool NullTerminatedASCIIBufferToString16(const std::vector<BYTE>& buffer,
                                          DWORD* current_byte,
-                                         base::string16* parsed_string) {
+                                         std::wstring* parsed_string) {
   const DWORD string_start = *current_byte;
   const int kMaxCharactersToRead = buffer.size() - *current_byte;
   int string_size =
@@ -74,7 +74,7 @@ bool NullTerminatedASCIIBufferToString16(const std::vector<BYTE>& buffer,
 
 bool NullTerminatedUtf16BufferToString16(const std::vector<BYTE>& buffer,
                                          DWORD* current_byte,
-                                         base::string16* parsed_string) {
+                                         std::wstring* parsed_string) {
   const DWORD string_start = *current_byte;
   const int kMaxWideCharactersToRead =
       (buffer.size() - *current_byte) / sizeof(wchar_t);
@@ -102,7 +102,7 @@ bool NullTerminatedUtf16BufferToString16(const std::vector<BYTE>& buffer,
 bool NullTerminatedStringToString16(const std::vector<BYTE>& buffer,
                                     bool is_unicode,
                                     DWORD* current_byte,
-                                    base::string16* parsed_string) {
+                                    std::wstring* parsed_string) {
   if (*current_byte >= buffer.size()) {
     LOG(ERROR) << "Error parsing null terminated string";
     return false;
@@ -139,7 +139,7 @@ bool SkipUtf16StringStructure(const std::vector<BYTE>& buffer,
 // and then moves the value of current_byte to the end of it.
 bool ReadUtf16StringStructure(const std::vector<BYTE>& buffer,
                               DWORD* current_byte,
-                              base::string16* parsed_string) {
+                              std::wstring* parsed_string) {
   uint16_t string_size;
   if (!ReadUnsignedShort(buffer, current_byte, &string_size)) {
     LOG(ERROR) << "Error reading string structure";
@@ -293,7 +293,7 @@ mojom::LnkParsingResult internal::ParseLnkBytes(
 
   current_byte = structure_beginning + path_prefix_offset;
 
-  base::string16 prefix_string;
+  std::wstring prefix_string;
   if (!NullTerminatedStringToString16(file_buffer, is_unicode, &current_byte,
                                       &prefix_string)) {
     LOG(ERROR) << "Error parsing path prefix";
@@ -302,7 +302,7 @@ mojom::LnkParsingResult internal::ParseLnkBytes(
 
   // Recover the path by appending the suffix to the prefix.
   current_byte = structure_beginning + path_suffix_offset;
-  base::string16 suffix_string;
+  std::wstring suffix_string;
 
   if (!NullTerminatedStringToString16(file_buffer, is_unicode, &current_byte,
                                       &suffix_string)) {

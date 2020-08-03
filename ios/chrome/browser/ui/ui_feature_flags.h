@@ -41,9 +41,6 @@ extern const base::Feature kTestFeature;
 // Verify if the crash in https://crbug.com/816427 is fixed on iOS 12.
 extern const base::Feature kFirstResponderSendAction;
 
-// Feature flag to enable QR code generation for a URL.
-extern const base::Feature kQRCodeGeneration;
-
 // Feature flag that enables the native UI Context Menus (not for Web content).
 extern const base::Feature kEnableNativeContextMenus;
 

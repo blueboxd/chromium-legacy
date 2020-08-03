@@ -16,6 +16,9 @@
 // This web state will be replaced on successful preload.
 - (web::WebState*)webStateToReplace;
 
+// Returns the UIView used to contain the WebView for sizing purposes.
+- (UIView*)webViewContainer;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_DELEGATE_H_

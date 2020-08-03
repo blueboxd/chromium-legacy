@@ -2868,7 +2868,6 @@ crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-fo
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]
@@ -6848,3 +6847,7 @@ crbug.com/1111410 http/tests/serviceworker/service-worker-gc.html [ Pass Failure
 # Sheriff 2020-08-01
 crbug.com/1112111 fast/forms/month/month-picker-appearance-step.html [ Pass Failure ]
 
+# Sheriff 2020-08-03
+crbug.com/1108423 external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1106429 virtual/percent-based-scrolling/max-percent-delta-page-zoom.html [ Pass Failure ]
+crbug.com/1112304 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Pass Timeout ]

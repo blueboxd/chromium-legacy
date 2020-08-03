@@ -3313,6 +3313,8 @@ static_library("browser") {
       "metrics/tab_stats_tracker.cc",
       "metrics/tab_stats_tracker.h",
       "metrics/tab_stats_tracker_delegate.h",
+      "nearby_sharing/attachment_info.cc",
+      "nearby_sharing/attachment_info.h",
       "nearby_sharing/fast_initiation_manager.cc",
       "nearby_sharing/fast_initiation_manager.h",
       "nearby_sharing/incoming_frames_reader.cc",

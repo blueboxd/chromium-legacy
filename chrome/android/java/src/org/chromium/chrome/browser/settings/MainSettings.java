@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
+import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
@@ -52,6 +53,7 @@ import java.util.Map;
 public class MainSettings extends PreferenceFragmentCompat
         implements TemplateUrlService.LoadListener, ProfileSyncService.SyncStateChangedListener,
                    SigninManager.SignInStateObserver {
+    public static final String PREF_SYNC_PROMO = "sync_promo";
     public static final String PREF_ACCOUNT_SECTION = "account_section";
     public static final String PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION =
             "account_and_google_services_section";
@@ -71,11 +73,12 @@ public class MainSettings extends PreferenceFragmentCompat
     public static final String PREF_DEVELOPER = "developer";
 
     // Used for elevating the privacy section behind the flag (see crbug.com/1099233).
-    public static final int PRIVACY_ORDER_DEFAULT = 17;
-    public static final int PRIVACY_ORDER_ELEVATED = 11;
+    public static final int PRIVACY_ORDER_DEFAULT = 18;
+    public static final int PRIVACY_ORDER_ELEVATED = 12;
 
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
+    private SyncPromoPreference mSyncPromoPreference;
     private SignInPreference mSignInPreference;
     private ChromeBasePreference mManageSync;
     private @Nullable PasswordCheck mPasswordCheck;
@@ -107,6 +110,7 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mSyncPromoPreference.onPreferenceFragmentDestroyed();
         mSignInPreference.onPreferenceFragmentDestroyed();
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
@@ -121,6 +125,7 @@ public class MainSettings extends PreferenceFragmentCompat
                 Profile.getLastUsedRegularProfile());
         if (signinManager.isSigninSupported()) {
             signinManager.addSignInStateObserver(this);
+            mSyncPromoPreference.registerForUpdates();
             mSignInPreference.registerForUpdates();
         }
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -136,6 +141,7 @@ public class MainSettings extends PreferenceFragmentCompat
                 Profile.getLastUsedRegularProfile());
         if (signinManager.isSigninSupported()) {
             signinManager.removeSignInStateObserver(this);
+            mSyncPromoPreference.unregisterForUpdates();
             mSignInPreference.unregisterForUpdates();
         }
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -247,6 +253,7 @@ public class MainSettings extends PreferenceFragmentCompat
             Preference preference = getPreferenceScreen().getPreference(index);
             mAllPreferences.put(preference.getKey(), preference);
         }
+        mSyncPromoPreference = (SyncPromoPreference) mAllPreferences.get(PREF_SYNC_PROMO);
         mSignInPreference = (SignInPreference) mAllPreferences.get(PREF_SIGN_IN);
         mManageSync = (ChromeBasePreference) findPreference(PREF_MANAGE_SYNC);
     }
@@ -268,9 +275,11 @@ public class MainSettings extends PreferenceFragmentCompat
         boolean hasPrimaryAccount = IdentityServicesProvider.get()
                                             .getIdentityManager(Profile.getLastUsedRegularProfile())
                                             .hasPrimaryAccount();
+        boolean isSyncPromoHidden =
+                mSyncPromoPreference.getState() == SyncPromoPreference.State.PROMO_HIDDEN;
         mManageSync.setVisible(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-                && hasPrimaryAccount);
+                && hasPrimaryAccount && isSyncPromoHidden);
 
         updateSyncAndServicesPreference();
         updateSearchEnginePreference();

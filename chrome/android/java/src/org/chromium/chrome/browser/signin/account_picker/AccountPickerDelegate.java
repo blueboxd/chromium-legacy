@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.signin.account_picker;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -21,6 +24,7 @@ import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This class is used in web sign-in flow for the account picker bottom sheet.
@@ -29,14 +33,15 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * web sign-in flow.
  */
 public class AccountPickerDelegate {
+    private final WindowAndroid mWindowAndroid;
     private final ChromeActivity mChromeActivity;
     private final Tab mTab;
     private final String mContinueUrl;
     private final SigninManager mSigninManager;
 
-    public AccountPickerDelegate(ChromeActivity chromeActivity, String continueUrl) {
-        mChromeActivity = chromeActivity;
-        // TODO(https://crbug.com/1095554): Check if website redirects after sign-in
+    public AccountPickerDelegate(WindowAndroid windowAndroid, String continueUrl) {
+        mWindowAndroid = windowAndroid;
+        mChromeActivity = (ChromeActivity) mWindowAndroid.getActivity().get();
         mTab = mChromeActivity.getActivityTab();
         mContinueUrl = continueUrl;
         mSigninManager = IdentityServicesProvider.get().getSigninManager(
@@ -70,13 +75,22 @@ public class AccountPickerDelegate {
     /**
      * Notifies when the user clicked the "add account" button.
      */
-    public void addAccount() {
-        // TODO(https//crbug.com/1097031): We should select the added account
-        // and collapse the account chooser after the account is actually added.
+    public void addAccount(Callback<String> callback) {
         AccountManagerFacadeProvider.getInstance().createAddAccountIntent(
                 (@Nullable Intent intent) -> {
                     if (intent != null) {
-                        mChromeActivity.startActivity(intent);
+                        WindowAndroid.IntentCallback intentCallback =
+                                new WindowAndroid.IntentCallback() {
+                                    @Override
+                                    public void onIntentCompleted(
+                                            WindowAndroid window, int resultCode, Intent data) {
+                                        if (resultCode == Activity.RESULT_OK) {
+                                            callback.onResult(data.getStringExtra(
+                                                    AccountManager.KEY_ACCOUNT_NAME));
+                                        }
+                                    }
+                                };
+                        mWindowAndroid.showIntent(intent, intentCallback, null);
                     } else {
                         // AccountManagerFacade couldn't create intent, use SigninUtils to open
                         // settings instead.

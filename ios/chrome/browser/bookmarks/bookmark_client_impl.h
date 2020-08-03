@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_BOOKMARKS_BOOKMARK_CLIENT_IMPL_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/deferred_sequenced_task_runner.h"
@@ -34,10 +35,8 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
 
   // bookmarks::BookmarkClient:
   void Init(bookmarks::BookmarkModel* model) override;
-  bool PreferTouchIcon() override;
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
-      favicon_base::IconType type,
       favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker) override;
   bool SupportsTypedCountForUrls() override;

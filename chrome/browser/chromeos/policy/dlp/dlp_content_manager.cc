@@ -20,13 +20,16 @@ DlpContentManager* DlpContentManager::Get() {
   return g_dlp_content_manager;
 }
 
-bool DlpContentManager::IsWebContentsConfidential(
+DlpContentRestrictionSet DlpContentManager::GetConfidentialRestrictions(
     const content::WebContents* web_contents) const {
-  return base::Contains(confidential_web_contents_, web_contents);
+  if (!base::Contains(confidential_web_contents_, web_contents))
+    return DlpContentRestrictionSet();
+  return confidential_web_contents_.at(web_contents);
 }
 
-bool DlpContentManager::IsConfidentialDataPresentOnScreen() const {
-  return is_confidential_web_contents_visible_;
+DlpContentRestrictionSet DlpContentManager::GetOnScreenPresentRestrictions()
+    const {
+  return on_screen_restrictions_;
 }
 
 /* static */
@@ -48,11 +51,14 @@ DlpContentManager::~DlpContentManager() = default;
 
 void DlpContentManager::OnConfidentialityChanged(
     content::WebContents* web_contents,
-    bool confidential) {
-  if (confidential) {
-    AddToConfidential(web_contents);
-  } else {
+    const DlpContentRestrictionSet& restriction_set) {
+  if (restriction_set.IsEmpty()) {
     RemoveFromConfidential(web_contents);
+  } else {
+    confidential_web_contents_[web_contents] = restriction_set;
+    if (web_contents->GetVisibility() == content::Visibility::VISIBLE) {
+      MaybeChangeOnScreenRestrictions();
+    }
   }
 }
 
@@ -61,46 +67,40 @@ void DlpContentManager::OnWebContentsDestroyed(
   RemoveFromConfidential(web_contents);
 }
 
-bool DlpContentManager::IsURLConfidential(const GURL& url) const {
+DlpContentRestrictionSet DlpContentManager::GetRestrictionSetForURL(
+    const GURL& url) const {
+  DlpContentRestrictionSet set;
   // TODO(crbug/1109783): Implement based on the policy.
-  return false;
+  return set;
 }
 
-void DlpContentManager::OnVisibilityChanged(content::WebContents* web_contents,
-                                            bool visible) {
-  MaybeChangeVisibilityFlag();
-}
-
-void DlpContentManager::AddToConfidential(content::WebContents* web_contents) {
-  confidential_web_contents_.insert(web_contents);
-  if (web_contents->GetVisibility() == content::Visibility::VISIBLE) {
-    MaybeChangeVisibilityFlag();
-  }
+void DlpContentManager::OnVisibilityChanged(
+    content::WebContents* web_contents) {
+  MaybeChangeOnScreenRestrictions();
 }
 
 void DlpContentManager::RemoveFromConfidential(
     const content::WebContents* web_contents) {
   confidential_web_contents_.erase(web_contents);
-  MaybeChangeVisibilityFlag();
+  MaybeChangeOnScreenRestrictions();
 }
 
-void DlpContentManager::MaybeChangeVisibilityFlag() {
-  bool is_confidential_web_contents_currently_visible = false;
-  for (auto* web_contents : confidential_web_contents_) {
-    if (web_contents->GetVisibility() == content::Visibility::VISIBLE) {
-      is_confidential_web_contents_currently_visible = true;
-      break;
+void DlpContentManager::MaybeChangeOnScreenRestrictions() {
+  DlpContentRestrictionSet new_restriction_set;
+  // TODO(crbug/1111860): Recalculate more effectively.
+  for (const auto& entry : confidential_web_contents_) {
+    if (entry.first->GetVisibility() == content::Visibility::VISIBLE) {
+      new_restriction_set.UnionWith(entry.second);
     }
   }
-  if (is_confidential_web_contents_visible_ !=
-      is_confidential_web_contents_currently_visible) {
-    is_confidential_web_contents_visible_ =
-        is_confidential_web_contents_currently_visible;
-    OnScreenConfidentialityStateChanged(is_confidential_web_contents_visible_);
+  if (on_screen_restrictions_ != new_restriction_set) {
+    on_screen_restrictions_ = new_restriction_set;
+    OnScreenRestrictionsChanged(on_screen_restrictions_);
   }
 }
 
-void DlpContentManager::OnScreenConfidentialityStateChanged(bool visible) {
+void DlpContentManager::OnScreenRestrictionsChanged(
+    const DlpContentRestrictionSet& restrictions) const {
   // TODO(crbug/1105991): Implement enforcing/releasing of restrictions.
 }
 

@@ -1318,7 +1318,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
 HotseatState ShelfLayoutManager::CalculateHotseatState(
     ShelfVisibilityState visibility_state,
-    ShelfAutoHideState auto_hide_state) const {
+    ShelfAutoHideState auto_hide_state) {
   if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
     return HotseatState::kShownClamshell;
 
@@ -1507,7 +1507,6 @@ bool ShelfLayoutManager::SetDimmed(bool dimmed) {
     return false;
 
   dimmed_for_inactivity_ = dimmed;
-
   CalculateTargetBoundsAndUpdateWorkArea();
 
   const base::TimeDelta dim_animation_duration =
@@ -1520,7 +1519,7 @@ bool ShelfLayoutManager::SetDimmed(bool dimmed) {
   if (animate) {
     navigation_widget_reporter.emplace(
         GetLayer(shelf_->navigation_widget())->GetAnimator(),
-        shelf_->GetNavigationWidgetAnimationReportCallback(hotseat_state()));
+        shelf_->GetNavigationWidgetAnimationReportCallback());
   }
 
   AnimateOpacity(GetLayer(shelf_->navigation_widget()), target_opacity_,

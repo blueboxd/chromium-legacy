@@ -172,6 +172,74 @@ class MODULES_EXPORT WebSocketChannelImpl final
     Vector<char> data;
   };
 
+  class Message final {
+    DISALLOW_NEW();
+
+   public:
+    using DidCallSendMessage =
+        util::StrongAlias<class DidCallSendMessageTag, bool>;
+
+    // Initializes message as a string
+    Message(const std::string&,
+            base::OnceClosure completion_callback,
+            DidCallSendMessage did_call_send_message);
+
+    // Initializes message as a blob
+    explicit Message(scoped_refptr<BlobDataHandle>);
+
+    // Initializes message as a ArrayBuffer
+    Message(base::span<const char> message,
+            base::OnceClosure completion_callback,
+            DidCallSendMessage did_call_send_message);
+
+    // Initializes a Blank message
+    Message(MessageType type,
+            base::span<const char> message,
+            base::OnceClosure completion_callback);
+
+    // Close message
+    Message(uint16_t code, const String& reason);
+
+    Message(const Message&) = delete;
+    Message& operator=(const Message&) = delete;
+
+    Message(Message&&);
+    Message& operator=(Message&&);
+
+    MessageType Type() const;
+    scoped_refptr<BlobDataHandle> GetBlobDataHandle();
+    DidCallSendMessage GetDidCallSendMessage() const;
+    uint16_t Code() const;
+    String Reason() const;
+    base::OnceClosure CompletionCallback();
+
+    // Returns a mutable |pending_payload_|. Since calling code always mutates
+    // the value, |pending_payload_| only has a mutable getter.
+    base::span<const char>& MutablePendingPayload();
+
+    void SetDidCallSendMessage(DidCallSendMessage did_call_send_message);
+
+   private:
+    struct MessageDataDeleter {
+      void operator()(char* p) const { WTF::Partitions::FastFree(p); }
+    };
+    using MessageData = std::unique_ptr<char[], MessageDataDeleter>;
+    static MessageData CreateMessageData(std::size_t message_size) {
+      return MessageData(static_cast<char*>(WTF::Partitions::FastMalloc(
+          message_size, "blink::WebSockChannelImpl::Message::MessageData")));
+    }
+
+    MessageData message_data_;
+    MessageType type_;
+
+    scoped_refptr<BlobDataHandle> blob_data_handle_;
+    base::span<const char> pending_payload_;
+    DidCallSendMessage did_call_send_message_ = DidCallSendMessage(false);
+    uint16_t code_ = 0;
+    String reason_;
+    base::OnceClosure completion_callback_;
+  };
+
   // The state is defined to see the conceptual state more clearly than checking
   // various members (for DCHECKs for example). This is only used internally.
   enum class State {
@@ -233,7 +301,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   KURL url_;
   uint64_t identifier_;
   Member<BlobLoader> blob_loader_;
-  HeapDeque<Member<Message>> messages_;
+  WTF::Deque<Message> messages_;
   WebSocketMessageChunkAccumulator message_chunks_;
   const Member<ExecutionContext> execution_context_;
 

@@ -143,9 +143,7 @@ Polymer({
    * @private
    */
   getTitle_() {
-    // TODO(crbug.com/377410): Change strings like
-    // 'editCompromisedPasswordTitle' to 'editPasswordTitle'.
-    return this.isEditDialog_ ? this.i18n('editCompromisedPasswordTitle') :
+    return this.isEditDialog_ ? this.i18n('editPasswordTitle') :
                                 this.i18n('passwordDetailsTitle');
   },
 
@@ -154,6 +152,6 @@ Polymer({
    * @private
    */
   getFootnote_() {
-    return this.i18n('editCompromisedPasswordFootnote', this.entry.urls.shown);
+    return this.i18n('editPasswordFootnote', this.entry.urls.shown);
   }
 });

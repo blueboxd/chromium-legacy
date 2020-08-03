@@ -420,21 +420,33 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
     (id<ReadingListListItem>)item API_AVAILABLE(ios(13.0)) {
-  return [UIContextMenuConfiguration
-      configurationWithIdentifier:nil
-                  previewProvider:nil
-                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
-                     // Record that this context menu was shown to the user.
-                     RecordMenuShown(MenuScenario::kReadingListEntry);
+  __weak __typeof(self) weakSelf = self;
 
-                     ActionFactory* actionFactory = [[ActionFactory alloc]
-                         initWithScenario:MenuScenario::kReadingListEntry];
+  UIContextMenuActionProvider actionProvider =
+      ^(NSArray<UIMenuElement*>* suggestedActions) {
+        if (!weakSelf) {
+          // Return an empty menu.
+          return [UIMenu menuWithTitle:@"" children:@[]];
+        }
 
-                     UIAction* copyAction =
-                         [actionFactory actionToCopyURL:item.entryURL];
+        ReadingListCoordinator* strongSelf = weakSelf;
 
-                     return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
-                   }];
+        // Record that this context menu was shown to the user.
+        RecordMenuShown(MenuScenario::kReadingListEntry);
+
+        ActionFactory* actionFactory = [[ActionFactory alloc]
+            initWithBrowser:strongSelf.browser
+                   scenario:MenuScenario::kReadingListEntry];
+
+        UIAction* copyAction = [actionFactory actionToCopyURL:item.entryURL];
+
+        return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+      };
+
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 @end

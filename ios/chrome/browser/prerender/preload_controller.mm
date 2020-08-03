@@ -418,6 +418,10 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   }
 }
 
+- (UIView*)webViewContainerForWebState:(web::WebState*)webState {
+  return [self.delegate webViewContainer];
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState

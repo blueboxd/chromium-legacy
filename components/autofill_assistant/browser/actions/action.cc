@@ -137,6 +137,9 @@ std::ostream& operator<<(std::ostream& out,
     case ActionProto::ActionInfoCase::kConfigureUiState:
       out << "ConfigureUiState";
       break;
+    case ActionProto::ActionInfoCase::kPresaveGeneratedPassword:
+      out << "PresaveGeneratedPassword";
+      break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";
       break;

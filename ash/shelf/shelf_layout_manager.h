@@ -295,7 +295,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Overview, Shelf, and any active gestures.
   // TODO(manucornet): Move this to the hotseat class.
   HotseatState CalculateHotseatState(ShelfVisibilityState visibility_state,
-                                     ShelfAutoHideState auto_hide_state) const;
+                                     ShelfAutoHideState auto_hide_state);
 
  private:
   class UpdateShelfObserver;

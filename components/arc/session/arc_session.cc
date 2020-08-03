@@ -25,10 +25,11 @@ std::unique_ptr<ArcSession> ArcSession::Create(
     ash::DefaultScaleFactorRetriever* retriever,
     version_info::Channel channel,
     chromeos::SchedulerConfigurationManagerBase*
-        scheduler_configuration_manager) {
+        scheduler_configuration_manager,
+    AdbSideloadingAvailabilityDelegate* adb_sideloading_availability_delegate) {
   return std::make_unique<ArcSessionImpl>(
       ArcSessionImpl::CreateDelegate(arc_bridge_service, retriever, channel),
-      scheduler_configuration_manager);
+      scheduler_configuration_manager, adb_sideloading_availability_delegate);
 }
 
 }  // namespace arc

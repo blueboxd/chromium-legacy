@@ -23,9 +23,9 @@ struct ShortcutInformation {
   ~ShortcutInformation();
 
   base::FilePath lnk_path;
-  base::string16 target_path;
-  base::string16 command_line_arguments;
-  base::string16 icon_location;
+  std::wstring target_path;
+  std::wstring command_line_arguments;
+  std::wstring icon_location;
 };
 
 typedef base::OnceCallback<void(std::vector<ShortcutInformation>)>

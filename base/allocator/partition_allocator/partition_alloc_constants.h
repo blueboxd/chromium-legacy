@@ -176,8 +176,13 @@ static const size_t kMaxBucketed =
     ((kNumBucketsPerOrder - 1) * kMaxBucketSpacing);
 // Limit when downsizing a direct mapping using `realloc`:
 static const size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
-static const size_t kMaxDirectMapped =
-    (1UL << 31) + kPageAllocationGranularity;  // 2 GiB plus 1 more page.
+// Intentionally set to less than 2GiB to make sure that a 2GiB allocation
+// fails. This is a security choice in Chrome, to help making size_t vs int bugs
+// harder to exploit.
+//
+// There are matching limits in other allocators, such as tcmalloc. See
+// crbug.com/998048 for details.
+static const size_t kMaxDirectMapped = (1UL << 31) - kPageAllocationGranularity;
 static const size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
 // Constant for the memory reclaim logic.

@@ -790,7 +790,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
 // Make sure that a same document navigation does not cause issues with the
 // auto-reload timer.  Note that this test was added due to this case causing
 // a crash.  On regression, this test may hang due to a crashed renderer.
-IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
+// TODO(crbug.com/1111535): Flaky.
+IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
+                       DISABLED_IgnoresSameDocumentNavigation) {
   GURL test_url("http://error.page.auto.reload");
   InstallInterceptor(test_url, 2);
 

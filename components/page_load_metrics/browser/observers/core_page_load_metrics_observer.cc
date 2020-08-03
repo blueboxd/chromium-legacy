@@ -1207,7 +1207,8 @@ CorePageLoadMetricsObserver::OnEnterBackForwardCache(
 }
 
 void CorePageLoadMetricsObserver::OnRestoreFromBackForwardCache(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    content::NavigationHandle* navigation_handle) {
   // This never reaches yet because OnEnterBackForwardCache returns
   // STOP_OBSERVING.
   // TODO(hajimehoshi): After changing OnEnterBackForwardCache to continue

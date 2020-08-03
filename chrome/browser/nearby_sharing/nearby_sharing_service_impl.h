@@ -17,6 +17,8 @@
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/nearby_sharing/attachment.h"
+#include "chrome/browser/nearby_sharing/attachment_info.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
@@ -158,6 +160,7 @@ class NearbySharingServiceImpl
   OutgoingShareTargetInfo& GetOutgoingShareTargetInfo(
       const ShareTarget& share_target);
   void ClearOutgoingShareTargetInfoMap();
+  void SetAttachmentPayloadId(const Attachment& attachment, int64_t payload_id);
 
   PrefService* prefs_;
   Profile* profile_;
@@ -198,6 +201,10 @@ class NearbySharingServiceImpl
   // TODO(crbug/1085068) update this map when handling payloads
   base::flat_map<base::UnguessableToken, OutgoingShareTargetInfo>
       outgoing_share_target_info_map_;
+
+  // A mapping of Attachment Id to additional AttachmentInfo related to the
+  // Attachment.
+  base::flat_map<base::UnguessableToken, AttachmentInfo> attachment_info_map_;
 
   // This alarm is used to disconnect the sharing connection if both sides do
   // not press accept within the timeout.

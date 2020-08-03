@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/test_browser.h"
@@ -15,7 +14,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/generate_qr_code_command.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -69,7 +67,6 @@ class SharingCoordinatorTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList scoped_features_;
   ScopedKeyWindow scoped_key_window_;
   UIViewController* base_view_controller_;
   std::unique_ptr<TestBrowser> browser_;
@@ -135,7 +132,6 @@ TEST_F(SharingCoordinatorTest, Start_ShareCurrentPage) {
 
 // Tests that the coordinator handles the QRGenerationCommands protocol.
 TEST_F(SharingCoordinatorTest, GenerateQRCode) {
-  scoped_features_.InitAndEnableFeature(kQRCodeGeneration);
   SharingCoordinator* coordinator = GetCoordinator();
 
   id vc_partial_mock = OCMPartialMock(base_view_controller_);

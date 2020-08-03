@@ -102,9 +102,9 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                   const ScriptValue& key,
                   ExceptionState&);
   IDBRequest* put(ScriptState*, const ScriptValue& value, ExceptionState&);
-  IDBRequest* putAll(ScriptState*,
-                     const HeapVector<ScriptValue>& values,
-                     ExceptionState&);
+  HeapVector<Member<IDBRequest>> putAll(ScriptState*,
+                                        const HeapVector<ScriptValue>& values,
+                                        ExceptionState&);
   IDBRequest* put(ScriptState*,
                   const ScriptValue& value,
                   const ScriptValue& key,
@@ -131,9 +131,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                     const IDBRequest::Source&,
                     const ScriptValue&,
                     const IDBKey*,
-                    ExceptionState&,
-                    std::unique_ptr<WebIDBCallbacks> optional_custom_callback,
-                    Vector<scoped_refptr<BlobDataHandle>>* blob_handles_out);
+                    ExceptionState&);
 
   // Used internally and by InspectorIndexedDBAgent:
   IDBRequest* openCursor(
@@ -209,9 +207,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                     mojom::IDBPutMode,
                     const ScriptValue&,
                     const ScriptValue& key_value,
-                    ExceptionState&,
-                    std::unique_ptr<WebIDBCallbacks> optional_custom_callback,
-                    Vector<scoped_refptr<BlobDataHandle>>* blob_handles_out);
+                    ExceptionState&);
 
   int64_t FindIndexId(const String& name) const;
 

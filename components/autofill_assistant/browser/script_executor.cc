@@ -209,6 +209,7 @@ bool ScriptExecutor::ShouldInterruptOnPause(const ActionProto& proto) {
     case ActionProto::ActionInfoCase::kGeneratePasswordForFormField:
     case ActionProto::ActionInfoCase::kSaveGeneratedPassword:
     case ActionProto::ActionInfoCase::kConfigureUiState:
+    case ActionProto::ActionInfoCase::kPresaveGeneratedPassword:
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       return false;
   }

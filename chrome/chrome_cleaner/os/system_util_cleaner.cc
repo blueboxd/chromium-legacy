@@ -12,6 +12,7 @@
 #include <shellapi.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -21,7 +22,6 @@
 #include "base/process/process_info.h"
 #include "base/process/process_iterator.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/threading/simple_thread.h"
 #include "base/win/scoped_com_initializer.h"
@@ -79,8 +79,8 @@ class LaunchElevatedProcessThreadDelegate
       return;
     }
 
-    const base::string16 file = command_line_.GetProgram().value();
-    const base::string16 arguments = command_line_.GetArgumentsString();
+    const std::wstring file = command_line_.GetProgram().value();
+    const std::wstring arguments = command_line_.GetArgumentsString();
 
     SHELLEXECUTEINFO shex_info = {};
     shex_info.cbSize = sizeof(shex_info);

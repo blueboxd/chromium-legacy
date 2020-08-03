@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/generate_qr_code_activity.h"
 
-#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -57,7 +55,7 @@ NSString* const kGenerateQrCodeActivityType =
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return base::FeatureList::IsEnabled(kQRCodeGeneration) && self.handler;
+  return self.handler;
 }
 
 + (UIActivityCategory)activityCategory {

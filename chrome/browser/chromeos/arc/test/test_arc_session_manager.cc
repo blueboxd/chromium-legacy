@@ -34,8 +34,9 @@ bool CreateFilesAndDirectories(const base::FilePath& temp_dir,
 
 std::unique_ptr<ArcSessionManager> CreateTestArcSessionManager(
     std::unique_ptr<ArcSessionRunner> arc_session_runner) {
-  auto manager =
-      std::make_unique<ArcSessionManager>(std::move(arc_session_runner));
+  auto manager = std::make_unique<ArcSessionManager>(
+      std::move(arc_session_runner),
+      std::make_unique<AdbSideloadingAvailabilityDelegateImpl>());
   // Our unit tests the ArcSessionManager::ExpandPropertyFiles() function won't
   // be automatically called. Because of that, we can call
   // OnExpandPropertyFilesForTesting() instead with |true| for easier unit

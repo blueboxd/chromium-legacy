@@ -80,7 +80,7 @@ TEST(RegistryUtilTests, CollectMatchingRegistryNames) {
   ASSERT_EQ(ERROR_SUCCESS, registry_key.WriteValue(L"Test2", kValue));
   ASSERT_EQ(ERROR_SUCCESS, registry_key.WriteValue(L"Test_3", kValue));
 
-  std::vector<base::string16> names;
+  std::vector<std::wstring> names;
   CollectMatchingRegistryNames(
       registry_key, L"Test*", PUPData::kRegistryPatternEscapeCharacter, &names);
   EXPECT_THAT(names, testing::ElementsAre(L"Test1", L"Test2", L"Test_3"));
@@ -135,7 +135,7 @@ TEST(RegistryUtilTests, CollectMatchingRegistryNamesWithEscapedWildcard) {
   ASSERT_EQ(ERROR_SUCCESS, registry_key.WriteValue(
                                L"\uFFFF" ESCAPE_REGISTRY_STR("*"), kValue));
 
-  std::vector<base::string16> names;
+  std::vector<std::wstring> names;
   CollectMatchingRegistryNames(registry_key, ESCAPE_REGISTRY_STR("*"),
                                PUPData::kRegistryPatternEscapeCharacter,
                                &names);
@@ -321,7 +321,7 @@ TEST(RegistryUtilTests, OpenRegistryKey) {
   // Try to read back the registry key with invalid access rights.
   const RegKeyPath key_path(HKEY_LOCAL_MACHINE, kRegistryKeyPath);
   base::win::RegKey key;
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   EXPECT_TRUE(key_path.Open(KEY_WRITE, &key));
   EXPECT_FALSE(
@@ -342,7 +342,7 @@ TEST(RegistryUtilTests, ReadNonExistingRegistryValue) {
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kRegistryKeyPath,
                             KEY_ALL_ACCESS);
 
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type = REG_NONE;
 
   EXPECT_FALSE(
@@ -357,7 +357,7 @@ TEST(RegistryUtilTests, ReadStringRegistryValue) {
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kRegistryKeyPath,
                             KEY_ALL_ACCESS);
 
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
 
   // Write a string value and read it back.
@@ -380,7 +380,7 @@ TEST(RegistryUtilTests, ReadExpandStringRegistryValue) {
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kRegistryKeyPath,
                             KEY_ALL_ACCESS);
 
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
 
   // Write a string value and read it back.
@@ -400,7 +400,7 @@ TEST(RegistryUtilTests, ReadMultiStringRegistryValue) {
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kRegistryKeyPath,
                             KEY_ALL_ACCESS);
 
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
 
   // Write a multi-string value and read it back.
@@ -420,7 +420,7 @@ TEST(RegistryUtilTests, ReadStringWithNullRegistryValue1) {
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kRegistryKeyPath,
                             KEY_ALL_ACCESS);
 
-  base::string16 content;
+  std::wstring content;
 
   // Write a string value with null characters and read it back.
   EXPECT_EQ(ERROR_SUCCESS, reg_key.WriteValue(kValueName, kValueWithNull,
@@ -440,7 +440,7 @@ TEST(RegistryUtilTests, ReadStringEmptyRegistryValue) {
   // Write an empty string (0 byte) value and read it back.
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, kValueEmpty, 0, REG_SZ));
-  base::string16 content;
+  std::wstring content;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, nullptr, nullptr));
   EXPECT_EQ(0U, content.size());
@@ -452,10 +452,10 @@ TEST(RegistryUtilTests, ReadHugeStringRegistryValue) {
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kRegistryKeyPath,
                             KEY_ALL_ACCESS);
 
-  base::string16 content;
+  std::wstring content;
 
   // Write a huge string to the registry value and read it back.
-  base::string16 huge_content(4096, 'x');
+  std::wstring huge_content(4096, 'x');
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, huge_content.c_str()));
   EXPECT_TRUE(
@@ -472,7 +472,7 @@ TEST(RegistryUtilTests, ReadRegistryValueOfDWORDType) {
   // Write a DWORD value.
   EXPECT_EQ(ERROR_SUCCESS, reg_key.WriteValue(kValueName, kDWORDValue));
 
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, &content_type, nullptr));
@@ -489,7 +489,7 @@ TEST(RegistryUtilTests, ReadRegistryValueOfBinaryType) {
   // Write a binary value.
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, kValue, sizeof(kValue), REG_BINARY));
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, &content_type, nullptr));
@@ -505,7 +505,7 @@ TEST(RegistryUtilTests, ReadRegistryValueOfSmallBinaryType) {
 
   // Write a binary value.
   EXPECT_EQ(ERROR_SUCCESS, reg_key.WriteValue(kValueName, "a", 1, REG_BINARY));
-  base::string16 content;
+  std::wstring content;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, nullptr, nullptr));
   EXPECT_EQ(L"61", content);
@@ -521,7 +521,7 @@ TEST(RegistryUtilTests, ReadRegistryValueOfInvalidSize) {
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, kOddSizeEntryString,
                                sizeof(kOddSizeEntryString), REG_SZ));
-  base::string16 content;
+  std::wstring content;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, nullptr, nullptr));
   EXPECT_EQ(kExpectedOddSizeEntryString, content);
@@ -537,7 +537,7 @@ TEST(RegistryUtilTests, ReadRegistryValueWithSingleNullTerminatingChar) {
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, kSingleNullCharString,
                                sizeof(kSingleNullCharString), REG_SZ));
-  base::string16 content;
+  std::wstring content;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, nullptr, nullptr));
   EXPECT_EQ(kExpectedSingleOrNoNullCharString, content);
@@ -553,7 +553,7 @@ TEST(RegistryUtilTests, ReadRegistryValueWithNoNullTerminatingChar) {
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, kNoNullCharString,
                                sizeof(kNoNullCharString), REG_SZ));
-  base::string16 content;
+  std::wstring content;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, nullptr, nullptr));
   EXPECT_EQ(kExpectedSingleOrNoNullCharString, content);
@@ -569,7 +569,7 @@ TEST(RegistryUtilTests, ReadRegistryValueWithExtraNullCharacter) {
   EXPECT_EQ(ERROR_SUCCESS,
             reg_key.WriteValue(kValueName, kNullOddSizeEntryString,
                                sizeof(kNullOddSizeEntryString), REG_SZ));
-  base::string16 content;
+  std::wstring content;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, nullptr, nullptr));
   EXPECT_EQ(0, ::memcmp(content.c_str(), kExpectedNullOddSizeEntryString,
@@ -584,11 +584,11 @@ TEST(RegistryUtilTests, WriteRegistryValue) {
                             KEY_ALL_ACCESS);
 
   // Write a value with NUL characters.
-  base::string16 source(kValueWithNull, base::size(kValueWithNull) - 1);
+  std::wstring source(kValueWithNull, base::size(kValueWithNull) - 1);
   EXPECT_TRUE(WriteRegistryValue(kValueName, source, REG_SZ, &reg_key));
 
   // Read back the value.
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, &content_type, nullptr));
@@ -603,11 +603,11 @@ TEST(RegistryUtilTests, ReadWriteRegistryUnicodeValue) {
                             KEY_ALL_ACCESS);
 
   // Write a value with unicode characters.
-  base::string16 source(kUnicodeValue, base::size(kUnicodeValue) - 1);
+  std::wstring source(kUnicodeValue, base::size(kUnicodeValue) - 1);
   EXPECT_TRUE(WriteRegistryValue(kValueName, source, REG_SZ, &reg_key));
 
   // Read back the value.
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, &content_type, nullptr));
@@ -622,12 +622,12 @@ TEST(RegistryUtilTests, ReadWriteRegistryInvalidUnicodeValue) {
                             KEY_ALL_ACCESS);
 
   // Write a value with an invalid character.
-  base::string16 source(kInvalidUnicodeValue,
-                        base::size(kInvalidUnicodeValue) - 1);
+  std::wstring source(kInvalidUnicodeValue,
+                      base::size(kInvalidUnicodeValue) - 1);
   EXPECT_TRUE(WriteRegistryValue(kValueName, source, REG_SZ, &reg_key));
 
   // Read back the value.
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   EXPECT_TRUE(
       ReadRegistryValue(reg_key, kValueName, &content, &content_type, nullptr));
@@ -636,8 +636,8 @@ TEST(RegistryUtilTests, ReadWriteRegistryInvalidUnicodeValue) {
 }
 
 TEST(RegistryUtilTests, GetRegistryValueAsStringRegularString) {
-  base::string16 input_value(kUnicodeValue, base::size(kUnicodeValue) - 1);
-  base::string16 output_value;
+  std::wstring input_value(kUnicodeValue, base::size(kUnicodeValue) - 1);
+  std::wstring output_value;
 
   GetRegistryValueAsString(input_value.c_str(),
                            input_value.size() * sizeof(wchar_t), REG_SZ,
@@ -647,8 +647,8 @@ TEST(RegistryUtilTests, GetRegistryValueAsStringRegularString) {
 }
 
 TEST(RegistryUtilTests, GetRegistryValueAsStringDword) {
-  base::string16 input_value(kDWORDRawValue, sizeof(kDWORDValue));
-  base::string16 output_value;
+  std::wstring input_value(kDWORDRawValue, sizeof(kDWORDValue));
+  std::wstring output_value;
 
   GetRegistryValueAsString(input_value.c_str(),
                            input_value.size() * sizeof(wchar_t), REG_DWORD,
@@ -658,7 +658,7 @@ TEST(RegistryUtilTests, GetRegistryValueAsStringDword) {
 }
 
 TEST(RegistryUtilTests, GetRegistryValueAsStringFakeBinary) {
-  base::string16 output_value;
+  std::wstring output_value;
 
   GetRegistryValueAsString(kValue, sizeof(kValue), REG_BINARY, &output_value);
 
@@ -666,7 +666,7 @@ TEST(RegistryUtilTests, GetRegistryValueAsStringFakeBinary) {
 }
 
 TEST(RegistryUtilTests, GetRegistryValueAsStringRealBinary) {
-  base::string16 output_value;
+  std::wstring output_value;
 
   GetRegistryValueAsString(reinterpret_cast<const wchar_t*>(kBytesValue),
                            base::size(kBytesValue), REG_BINARY, &output_value);
@@ -675,7 +675,7 @@ TEST(RegistryUtilTests, GetRegistryValueAsStringRealBinary) {
 }
 
 TEST(RegistryUtilTests, GetRegistryValueAsStringSmallBinaries) {
-  base::string16 output_value;
+  std::wstring output_value;
   GetRegistryValueAsString(reinterpret_cast<const wchar_t*>("a"), 1, REG_BINARY,
                            &output_value);
   EXPECT_EQ(L"61", output_value);

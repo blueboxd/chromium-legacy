@@ -37,9 +37,6 @@ const base::Feature kTestFeature{"TestFeature",
 const base::Feature kFirstResponderSendAction{
     "FirstResponderSendAction", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kQRCodeGeneration{"QRCodeGeneration",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnableNativeContextMenus{
     "EnableNativeContextMenus", base::FEATURE_DISABLED_BY_DEFAULT};
 

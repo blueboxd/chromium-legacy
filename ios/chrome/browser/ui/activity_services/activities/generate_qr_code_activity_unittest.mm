@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/generate_qr_code_activity.h"
 
-#include "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #include "ios/chrome/browser/ui/commands/qr_generation_commands.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -36,29 +34,18 @@ class GenerateQrCodeActivityTest : public PlatformTest {
                                             handler:mocked_handler_];
   }
 
-  base::test::ScopedFeatureList scoped_features_;
   id mocked_handler_;
 };
 
-// Tests that the activity can be performed when the feature flag is on.
-TEST_F(GenerateQrCodeActivityTest, FlagOn_ActivityEnabled) {
-  scoped_features_.InitAndEnableFeature(kQRCodeGeneration);
+// Tests that the activity can be performed when the handler is not nil.
+TEST_F(GenerateQrCodeActivityTest, ValidHandler_ActivityEnabled) {
   GenerateQrCodeActivity* activity = CreateActivity();
 
   EXPECT_TRUE([activity canPerformWithActivityItems:@[]]);
 }
 
-// Tests that the activity cannot be performed when the feature flag is off.
-TEST_F(GenerateQrCodeActivityTest, FlagOff_ActivityDisabled) {
-  scoped_features_.InitAndDisableFeature(kQRCodeGeneration);
-  GenerateQrCodeActivity* activity = CreateActivity();
-
-  EXPECT_FALSE([activity canPerformWithActivityItems:@[]]);
-}
-
 // Tests that the activity cannot be performed when its handler is nil.
 TEST_F(GenerateQrCodeActivityTest, NilHandler_ActivityDisabled) {
-  scoped_features_.InitAndEnableFeature(kQRCodeGeneration);
   GenerateQrCodeActivity* activity =
       [[GenerateQrCodeActivity alloc] initWithURL:GURL("https://example.com")
                                             title:@"Some title"

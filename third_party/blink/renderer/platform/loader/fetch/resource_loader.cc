@@ -41,6 +41,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
@@ -1017,7 +1018,9 @@ void ResourceLoader::DidReceiveResponseInternal(
       !response.CurrentRequestUrl().ProtocolIsData() &&
       !response.CurrentRequestUrl().ProtocolIs("blob")) {
     DCHECK(!base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
-    HandleError(ResourceError::Failure(response.CurrentRequestUrl()));
+    HandleError(ResourceError::BlockedByResponse(
+        response.CurrentRequestUrl(), network::mojom::BlockedByResponseReason::
+                                          kCoepFrameResourceNeedsCoepHeader));
     return;
   }
 
@@ -1270,7 +1273,7 @@ void ResourceLoader::DidFail(const WebURLError& error,
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
-  HandleError(error);
+  HandleError(ResourceError(error));
 }
 
 void ResourceLoader::HandleError(const ResourceError& error) {

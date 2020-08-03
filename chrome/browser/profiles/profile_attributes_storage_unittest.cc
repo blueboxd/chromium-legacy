@@ -29,6 +29,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/native_theme/native_theme.h"
 
 using ::testing::Mock;
 using ::testing::_;
@@ -915,6 +916,8 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_SingleProfile) {
       "Profile.State.LastUsed_LatentMultiProfileOthers", 0);
 }
 
+// Themes aren't used on Android
+#if !defined(OS_ANDROID)
 TEST_F(ProfileAttributesStorageTest, ProfileThemeColors) {
   AddTestingProfile();
   base::FilePath profile_path = GetProfilePath("testing_profile_path0");
@@ -923,16 +926,27 @@ TEST_F(ProfileAttributesStorageTest, ProfileThemeColors) {
 
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(storage()->GetProfileAttributesWithPath(profile_path, &entry));
-  EXPECT_EQ(base::nullopt, entry->GetProfileThemeColors());
+  EXPECT_EQ(entry->GetProfileThemeColors(),
+            ProfileAttributesEntry::GetDefaultProfileThemeColors(false));
+
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(true);
+  EXPECT_EQ(entry->GetProfileThemeColors(),
+            ProfileAttributesEntry::GetDefaultProfileThemeColors(true));
+  EXPECT_NE(entry->GetProfileThemeColors(),
+            ProfileAttributesEntry::GetDefaultProfileThemeColors(false));
 
   ProfileThemeColors colors = {SK_ColorTRANSPARENT, SK_ColorBLACK,
                                SK_ColorWHITE};
   entry->SetProfileThemeColors(colors);
-  base::Optional<ProfileThemeColors> actual_colors =
-      entry->GetProfileThemeColors();
-  ASSERT_TRUE(actual_colors.has_value());
-  EXPECT_EQ(colors, actual_colors);
+  EXPECT_EQ(entry->GetProfileThemeColors(), colors);
 
+  // Colors shouldn't change after switching back to the light mode.
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(false);
+  EXPECT_EQ(entry->GetProfileThemeColors(), colors);
+
+  // base::nullopt resets the colors to default.
   entry->SetProfileThemeColors(base::nullopt);
-  EXPECT_EQ(base::nullopt, entry->GetProfileThemeColors());
+  EXPECT_EQ(entry->GetProfileThemeColors(),
+            ProfileAttributesEntry::GetDefaultProfileThemeColors(false));
 }
+#endif

@@ -2185,7 +2185,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       RecordMenuShown(MenuScenario::kBookmarkEntry);
 
       ActionFactory* actionFactory =
-          [[ActionFactory alloc] initWithScenario:MenuScenario::kBookmarkEntry];
+          [[ActionFactory alloc] initWithBrowser:self.browser
+                                        scenario:MenuScenario::kBookmarkEntry];
 
       UIAction* copyAction = [actionFactory actionToCopyURL:node->url()];
 

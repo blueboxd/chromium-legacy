@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/check_op.h"
@@ -169,10 +170,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   // either LOADED_FAVICON (if it was already loaded prior to the call) or
   // LOADING_FAVICON (with the exception of folders, where the call is a no-op).
   const gfx::Image& GetFavicon(const BookmarkNode* node);
-
-  // Returns the type of the favicon for |node|. If the favicon has not yet
-  // been loaded, it returns |favicon_base::IconType::kInvalid|.
-  favicon_base::IconType GetFaviconType(const BookmarkNode* node);
 
   // Sets the title of |node|.
   void SetTitle(const BookmarkNode* node, const base::string16& title);
@@ -350,12 +347,11 @@ class BookmarkModel : public BookmarkUndoProvider,
   // favicon, FaviconLoaded is invoked.
   void OnFaviconDataAvailable(
       BookmarkNode* node,
-      favicon_base::IconType icon_type,
       const favicon_base::FaviconImageResult& image_result);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // favicon service.
-  void LoadFavicon(BookmarkNode* node, favicon_base::IconType icon_type);
+  void LoadFavicon(BookmarkNode* node);
 
   // Called to notify the observers that the favicon has been loaded.
   void FaviconLoaded(const BookmarkNode* node);

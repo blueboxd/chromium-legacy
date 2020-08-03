@@ -7,13 +7,14 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/titled_url_node.h"
-#include "components/favicon_base/favicon_types.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -154,9 +155,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   const gfx::Image& favicon() const { return favicon_; }
   void set_favicon(const gfx::Image& icon) { favicon_ = icon; }
 
-  favicon_base::IconType favicon_type() const { return favicon_type_; }
-  void set_favicon_type(favicon_base::IconType type) { favicon_type_ = type; }
-
   FaviconState favicon_state() const { return favicon_state_; }
   void set_favicon_state(FaviconState state) { favicon_state_ = state; }
 
@@ -192,9 +190,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 
   // The favicon of this node.
   gfx::Image favicon_;
-
-  // The type of favicon currently loaded.
-  favicon_base::IconType favicon_type_;
 
   // The URL of the node's favicon.
   std::unique_ptr<GURL> icon_url_;

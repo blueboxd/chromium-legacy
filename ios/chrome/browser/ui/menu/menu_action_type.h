@@ -8,6 +8,13 @@
 // Enum representing the existing set of menu actions as types. Current values
 // should not be renumbered. Please keep in sync with "IOSMenuAction" in
 // src/tools/metrics/histograms/enums.xml.
-enum class MenuActionType { Copy = 0, Delete = 1, kMaxValue = Delete };
+enum class MenuActionType {
+  Copy = 0,
+  Delete = 1,
+  OpenInNewTab = 2,
+  OpenInNewIncognitoTab = 3,
+  OpenInNewWindow = 4,
+  kMaxValue = OpenInNewWindow
+};
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_MENU_ACTION_TYPE_H_

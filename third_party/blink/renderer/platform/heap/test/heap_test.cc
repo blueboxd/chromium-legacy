@@ -4710,7 +4710,7 @@ class PartObject {
   Member<SimpleObject> obj_;
 };
 
-class AllocatesOnAssignment {
+class AllocatesOnAssignment : public GarbageCollected<AllocatesOnAssignment> {
  public:
   AllocatesOnAssignment(std::nullptr_t) : value_(nullptr) {}
   AllocatesOnAssignment(int x) : value_(MakeGarbageCollected<IntWrapper>(x)) {}
@@ -4733,12 +4733,12 @@ class AllocatesOnAssignment {
 
   inline bool IsDeleted() const { return value_.IsHashTableDeletedValue(); }
 
-  void Trace(Visitor* visitor) const {}
+  void Trace(Visitor* visitor) const { visitor->Trace(value_); }
 
   int Value() { return value_->Value(); }
 
  private:
-  Persistent<IntWrapper> value_;
+  Member<IntWrapper> value_;
 
   friend bool operator==(const AllocatesOnAssignment&,
                          const AllocatesOnAssignment&);
@@ -4756,55 +4756,26 @@ void swap(AllocatesOnAssignment& a, AllocatesOnAssignment& b) {
   std::swap(a.value_, b.value_);
 }
 
-struct DegenerateHash {
-  static unsigned GetHash(const AllocatesOnAssignment&) { return 0; }
-  static bool Equal(const AllocatesOnAssignment& a,
-                    const AllocatesOnAssignment& b) {
-    return !a.IsDeleted() && a == b;
-  }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
-struct AllocatesOnAssignmentHashTraits
-    : WTF::GenericHashTraits<AllocatesOnAssignment> {
-  typedef AllocatesOnAssignment T;
-  typedef std::nullptr_t EmptyValueType;
-  static EmptyValueType EmptyValue() { return nullptr; }
-  static const bool kEmptyValueIsZero =
-      false;  // Can't be zero if it has a vtable.
-  static void ConstructDeletedValue(T& slot, bool) {
-    slot = T(AllocatesOnAssignment::kDeletedValue);
-  }
-  static bool IsDeletedValue(const T& value) { return value.IsDeleted(); }
-};
-
 }  // namespace blink
-
-namespace WTF {
-
-template <>
-struct DefaultHash<blink::AllocatesOnAssignment> {
-  typedef blink::DegenerateHash Hash;
-};
-
-template <>
-struct HashTraits<blink::AllocatesOnAssignment>
-    : blink::AllocatesOnAssignmentHashTraits {};
-
-}  // namespace WTF
 
 namespace blink {
 
 TEST_F(HeapTest, GCInHashMapOperations) {
-  typedef HeapHashMap<AllocatesOnAssignment, AllocatesOnAssignment> Map;
-  Map* map = MakeGarbageCollected<Map>();
+  typedef HeapHashMap<Member<AllocatesOnAssignment>,
+                      Member<AllocatesOnAssignment>>
+      Map;
+  Persistent<Map> map = MakeGarbageCollected<Map>();
   IntWrapper* key = MakeGarbageCollected<IntWrapper>(42);
-  map->insert(key, AllocatesOnAssignment(103));
-  map->erase(key);
-  for (int i = 0; i < 10; i++)
-    map->insert(AllocatesOnAssignment(i), AllocatesOnAssignment(i));
+  AllocatesOnAssignment* object =
+      MakeGarbageCollected<AllocatesOnAssignment>(key);
+  map->insert(object, MakeGarbageCollected<AllocatesOnAssignment>(103));
+  map->erase(object);
+  for (int i = 0; i < 10; i++) {
+    map->insert(MakeGarbageCollected<AllocatesOnAssignment>(i),
+                MakeGarbageCollected<AllocatesOnAssignment>(i));
+  }
   for (Map::iterator it = map->begin(); it != map->end(); ++it)
-    EXPECT_EQ(it->key.Value(), it->value.Value());
+    EXPECT_EQ(it->key->Value(), it->value->Value());
 }
 
 class PartObjectWithVirtualMethod {

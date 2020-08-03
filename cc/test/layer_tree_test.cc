@@ -50,6 +50,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_switches.h"
 
@@ -621,7 +622,8 @@ LayerTreeTest::LayerTreeTest(TestRendererType renderer_type)
   // Tests should timeout quickly unless --cc-layer-tree-test-no-timeout was
   // specified (for running in a debugger).
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kCCLayerTreeTestNoTimeout))
+  if (!command_line->HasSwitch(switches::kCCLayerTreeTestNoTimeout)) {
+    timeout_seconds_ = 10;
 #if defined(THREAD_SANITIZER)
     // SwiftShader is a multi-threaded renderer and TSAN takes a lot longer to
     // run tests when using SwiftShader
@@ -639,13 +641,20 @@ LayerTreeTest::LayerTreeTest(TestRendererType renderer_type)
     BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) || BUILDFLAG(CFI_ENFORCEMENT_TRAP)
     // CFI is slow as well.
     timeout_seconds_ = 20;
-#elif defined(ADDRESS_SANITIZER) || defined(_DEBUG) || defined(USE_OZONE)
-    // ASAN and Debug builds are slower than release builds, as expected
-    // Ozone builds also go through a slower path than regular Linux builds
+#elif defined(ADDRESS_SANITIZER) || defined(_DEBUG)
+    // ASAN and Debug builds are slower than release builds, as expected.
     timeout_seconds_ = 30;
-#else
-    timeout_seconds_ = 10;
+#elif defined(USE_OZONE)
+    // Ozone builds go through a slower path than regular Linux builds.
+    // TODO(https://crbug.com/1096425): This special case of having both Ozone
+    // and X11 enabled that will be removed when Ozone is the default. Until
+    // then, we only need to use the slower Ozone timeout when the Ozone
+    // platform is being used. Remove this condition once it is not needed.
+    if (features::IsUsingOzonePlatform())
+      timeout_seconds_ = 30;
 #endif
+  }
+
   if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
     timeout_seconds_ = 5 * 60;
 

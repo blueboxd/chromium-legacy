@@ -240,7 +240,23 @@ std::string MD5VideoFrameValidator::ComputeMD5FromVideoFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, video_frame);
+
+  // VideoFrame::HashFrameForTesting() computes MD5 hash values of the coded
+  // area. However, MD5 hash values used in our test only use the visible area
+  // because they are computed from images output by decode tools like ffmpeg.
+  const VideoPixelFormat format = video_frame.format();
+  const gfx::Rect& visible_rect = video_frame.visible_rect();
+  for (size_t i = 0; i < VideoFrame::NumPlanes(format); ++i) {
+    const int visible_row_bytes =
+        VideoFrame::RowBytes(i, format, visible_rect.width());
+    const int visible_rows = VideoFrame::Rows(i, format, visible_rect.height());
+    const char* data = reinterpret_cast<const char*>(video_frame.data(i));
+    const size_t stride = video_frame.stride(i);
+    for (int row = 0; row < visible_rows; ++row) {
+      base::MD5Update(&context, base::StringPiece(data + (stride * row),
+                                                  visible_row_bytes));
+    }
+  }
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);

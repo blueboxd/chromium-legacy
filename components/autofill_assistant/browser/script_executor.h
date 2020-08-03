@@ -253,7 +253,8 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&)>
           view_inflation_finished_callback) override;
   void ClearGenericUi() override;
-  void SetOverlayBehavior(ConfigureUiStateProto::OverlayBehavior) override;
+  void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to

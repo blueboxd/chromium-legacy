@@ -134,8 +134,7 @@ Polymer({
    * @return {string} The text to be displayed as the dialog's footnote.
    */
   getFootnote_() {
-    return this.i18n(
-        'editCompromisedPasswordFootnote', this.item.formattedOrigin);
+    return this.i18n('editPasswordFootnote', this.item.formattedOrigin);
   },
 
   /**

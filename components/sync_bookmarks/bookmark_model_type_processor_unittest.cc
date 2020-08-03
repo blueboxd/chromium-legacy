@@ -192,7 +192,6 @@ class TestBookmarkClientWithFavicon : public bookmarks::TestBookmarkClient {
   // bookmarks::TestBookmarkClient implementation.
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
-      favicon_base::IconType type,
       favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker) override {
     favicon_image_callbacks_[next_task_id_] = std::move(callback);

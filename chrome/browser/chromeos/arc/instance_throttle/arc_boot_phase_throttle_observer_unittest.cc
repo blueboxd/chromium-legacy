@@ -28,8 +28,10 @@ class ArcBootPhaseThrottleObserverTest : public testing::Test {
   ArcBootPhaseThrottleObserverTest()
       : scoped_user_manager_(
             std::make_unique<chromeos::FakeChromeUserManager>()),
-        arc_session_manager_(std::make_unique<ArcSessionRunner>(
-            base::Bind(FakeArcSession::Create))) {
+        arc_session_manager_(
+            std::make_unique<ArcSessionRunner>(
+                base::Bind(FakeArcSession::Create)),
+            std::make_unique<AdbSideloadingAvailabilityDelegateImpl>()) {
     // Setup and login profile
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());

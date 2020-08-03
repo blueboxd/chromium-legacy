@@ -15,6 +15,7 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/managed/managed_bookmark_util.h"
 #include "components/favicon/core/favicon_util.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -47,20 +48,15 @@ void ChromeBookmarkClient::Init(bookmarks::BookmarkModel* model) {
 #endif
 }
 
-bool ChromeBookmarkClient::PreferTouchIcon() {
-  return false;
-}
-
 base::CancelableTaskTracker::TaskId
 ChromeBookmarkClient::GetFaviconImageForPageURL(
     const GURL& page_url,
-    favicon_base::IconType type,
     favicon_base::FaviconImageCallback callback,
     base::CancelableTaskTracker* tracker) {
   return favicon::GetFaviconImageForPageURL(
       FaviconServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS),
-      page_url, type, std::move(callback), tracker);
+      page_url, favicon_base::IconType::kFavicon, std::move(callback), tracker);
 }
 
 bool ChromeBookmarkClient::SupportsTypedCountForUrls() {

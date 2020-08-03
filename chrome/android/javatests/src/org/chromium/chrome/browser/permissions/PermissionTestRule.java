@@ -294,6 +294,13 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Utility functions to support permissions testing in other contexts.
      */
     public static void replyToDialog(boolean allow, ChromeActivity activity) {
+        // Wait a tiny bit before clicking the dialog. Sometimes the click happens too quick and the
+        // dialog is not ready. See crbug.com/1098806 for example flaky tests.
+        try {
+            Thread.sleep(300);
+        } catch (Exception ex) {
+        }
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabModalPresenter presenter = (TabModalPresenter) activity.getModalDialogManager()
                                                   .getCurrentPresenterForTest();

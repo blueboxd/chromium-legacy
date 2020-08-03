@@ -405,7 +405,6 @@ bool VulkanSwapChain::AcquireNextImage() {
   VkSemaphore vk_semaphore = CreateSemaphore(device);
   DCHECK(vk_semaphore != VK_NULL_HANDLE);
 
-  uint64_t kTimeout = UINT64_MAX;
 #if defined(USE_X11)
   // The xserver should still composite windows with a 1Hz fake vblank when
   // screen is off or the window is offscreen. However there is an xserver
@@ -417,8 +416,11 @@ bool VulkanSwapChain::AcquireNextImage() {
   // be recreated.
   //
   // TODO(https://crbug.com/1098237): set correct timeout for ozone/x11.
-  if (!features::IsUsingOzonePlatform())
-    kTimeout = base::Time::kNanosecondsPerSecond * 2;
+  static uint64_t kTimeout = features::IsUsingOzonePlatform()
+                                 ? UINT64_MAX
+                                 : base::Time::kNanosecondsPerSecond * 2;
+#else
+  static uint64_t kTimeout = UINT64_MAX;
 #endif
   // Acquire the next image.
   uint32_t next_image;

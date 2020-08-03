@@ -10,7 +10,9 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/menu/menu_action_type.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 
+class Browser;
 class GURL;
 
 // Factory providing methods to create UIActions with consistent titles, images
@@ -18,9 +20,10 @@ class GURL;
 API_AVAILABLE(ios(13.0))
 @interface ActionFactory : NSObject
 
-// Initializes a factory instance to create action instances for the given
-// |scenario|.
-- (instancetype)initWithScenario:(MenuScenario)scenario;
+// Initializes a factory instance for the current |browser| to create action
+// instances for the given |scenario|.
+- (instancetype)initWithBrowser:(Browser*)browser
+                       scenario:(MenuScenario)scenario;
 
 // Creates a UIAction instance configured with the given |title| and |image|.
 // Upon execution, the action's |type| will be recorded and the |block| will be
@@ -35,8 +38,26 @@ API_AVAILABLE(ios(13.0))
 - (UIAction*)actionToCopyURL:(const GURL)URL;
 
 // Creates a UIAction instance configured for deletion which will invoke
-// the given |block| upon being triggered.
+// the given delete |block| when executed.
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance configured for opening the |URL| in a new tab and
+// which will invoke the given |completion| block after execution.
+- (UIAction*)actionToOpenInNewTabWithURL:(const GURL)URL
+                              completion:(ProceduralBlock)completion;
+
+// Creates a UIAction instance configured for opening the |URL| in a new
+// incognito tab and which will invoke the given |completion| block after
+// execution.
+- (UIAction*)actionToOpenInNewIncognitoTabWithURL:(const GURL)URL
+                                       completion:(ProceduralBlock)completion;
+
+// Creates a UIAction instance configured for opening the |URL| in a new window
+// from |activityOrigin|, and which will invoke the given |completion| block
+// after execution.
+- (UIAction*)actionToOpenInNewWindowWithURL:(const GURL)URL
+                             activityOrigin:(WindowActivityOrigin)activityOrigin
+                                 completion:(ProceduralBlock)completion;
 
 @end
 

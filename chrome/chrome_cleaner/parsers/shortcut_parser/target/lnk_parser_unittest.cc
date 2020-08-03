@@ -85,7 +85,7 @@ class LnkParserTest : public testing::Test {
 
   void CheckParsedShortcut(ParsedLnkFile* parsed_shortcut,
                            base::FilePath target_path,
-                           base::string16 arguments,
+                           std::wstring arguments,
                            base::FilePath icon_location) {
     base::FilePath parsed_file_path(parsed_shortcut->target_path);
     ASSERT_TRUE(PathEqual(parsed_file_path, target_path));
@@ -97,7 +97,7 @@ class LnkParserTest : public testing::Test {
   }
 
   bool CreateFileWithUTF16Name(base::FilePath* file_path) {
-    base::string16 UTF16_file_name = L"NormalFile\x0278";
+    std::wstring UTF16_file_name = L"NormalFile\x0278";
     *file_path = temp_dir_.GetPath().Append(UTF16_file_name);
     return CreateFileInFolder(temp_dir_.GetPath(), UTF16_file_name);
   }
@@ -241,7 +241,7 @@ class LnkParserTest : public testing::Test {
   // https://msdn.microsoft.com/en-us/library/dd871305.aspx for more
   // information.
   bool FindStringDataInBuffer(const std::vector<BYTE>& buffer,
-                              const base::string16& expected_string,
+                              const std::wstring& expected_string,
                               DWORD* found_location) {
     size_t length = expected_string.length();
     if (buffer.size() < length + 2)
@@ -254,7 +254,7 @@ class LnkParserTest : public testing::Test {
       if (buffer[i] == size_lower && buffer[i + 1] == size_upper) {
         const wchar_t* string_ptr =
             reinterpret_cast<const wchar_t*>(buffer.data() + i + 2);
-        base::string16 found_string(string_ptr, length);
+        std::wstring found_string(string_ptr, length);
         if (found_string == expected_string) {
           found = true;
           *found_location = i;
@@ -320,7 +320,7 @@ TEST_F(LnkParserTest, ParseLnkWithoutArgumentsTest) {
 TEST_F(LnkParserTest, ParseLnkWithArgumentsTest) {
   base::win::ShortcutProperties properties;
   properties.set_target(target_file_path_);
-  const base::string16 kArguments = L"Seven";
+  const std::wstring kArguments = L"Seven";
   properties.set_arguments(kArguments.c_str());
 
   base::win::ScopedHandle lnk_handle = CreateAndOpenShortcut(properties);
@@ -336,7 +336,7 @@ TEST_F(LnkParserTest, ParseLnkWithArgumentsTest) {
 TEST_F(LnkParserTest, ParseLnkWithExtraStringStructures) {
   base::win::ShortcutProperties properties;
   properties.set_target(target_file_path_);
-  const base::string16 kArguments =
+  const std::wstring kArguments =
       L"lavidaesbella --arg1 --argmento2 --argumento3 /a --Seven";
   properties.set_arguments(kArguments.c_str());
 
@@ -435,7 +435,7 @@ TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_TooLarge) {
   base::win::ShortcutProperties properties;
   properties.set_target(target_file_path_);
   properties.set_working_dir(temp_dir_.GetPath());
-  const base::string16 kArguments = L"foo --bar";
+  const std::wstring kArguments = L"foo --bar";
   properties.set_arguments(kArguments.c_str());
 
   // Create a LNK file which thinks its arguments are much longer than they
@@ -450,7 +450,7 @@ TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_TooLarge) {
 }
 
 TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_ZeroSize) {
-  const base::string16 kArguments = L"foo --bar";
+  const std::wstring kArguments = L"foo --bar";
 
   base::win::ShortcutProperties properties;
   properties.set_target(target_file_path_);
@@ -468,7 +468,7 @@ TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_ZeroSize) {
 }
 
 TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_NegativeSize) {
-  const base::string16 kArguments = L"foo --bar";
+  const std::wstring kArguments = L"foo --bar";
 
   base::win::ShortcutProperties properties;
   properties.set_target(target_file_path_);
@@ -488,7 +488,7 @@ TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_NegativeSize) {
 }
 
 TEST_F(LnkParserTest, ArgumentsSizeCorruptedShortcutTest_Smaller) {
-  const base::string16 kArguments = L"foo --bar";
+  const std::wstring kArguments = L"foo --bar";
 
   base::win::ShortcutProperties properties;
   properties.set_target(target_file_path_);

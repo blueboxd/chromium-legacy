@@ -23,7 +23,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_path_override.h"

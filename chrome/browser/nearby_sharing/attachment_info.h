@@ -1,0 +1,25 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_ATTACHMENT_INFO_H_
+#define CHROME_BROWSER_NEARBY_SHARING_ATTACHMENT_INFO_H_
+
+#include <stdint.h>
+#include <string>
+
+#include "base/optional.h"
+
+// Ties associated information to an Attachment.
+struct AttachmentInfo {
+  AttachmentInfo();
+  ~AttachmentInfo();
+
+  AttachmentInfo(AttachmentInfo&&);
+  AttachmentInfo& operator=(AttachmentInfo&&);
+
+  base::Optional<int64_t> payload_id;
+  std::string text_body;
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_ATTACHMENT_INFO_H_

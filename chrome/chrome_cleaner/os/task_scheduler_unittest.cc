@@ -7,6 +7,7 @@
 #include <taskschd.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -14,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -101,7 +101,7 @@ TEST_F(TaskSchedulerTests, RunAProgramNow) {
 
   // Create a unique name for a shared event to be waited for in this process
   // and signaled in the test process to confirm it was scheduled and ran.
-  const base::string16 event_name =
+  const std::wstring event_name =
       base::StrCat({kTestProcessExecutableName, L"-",
                     base::NumberToWString(::GetCurrentProcessId())});
   base::WaitableEvent event(base::win::ScopedHandle(
@@ -205,7 +205,7 @@ TEST_F(TaskSchedulerTests, GetTaskNameList) {
                                     TaskScheduler::TRIGGER_TYPE_HOURLY, false));
   EXPECT_TRUE(task_scheduler_->IsTaskRegistered(kTaskName2));
 
-  std::vector<base::string16> task_names;
+  std::vector<std::wstring> task_names;
   EXPECT_TRUE(task_scheduler_->GetTaskNameList(&task_names));
   EXPECT_TRUE(base::Contains(task_names, kTaskName1));
   EXPECT_TRUE(base::Contains(task_names, kTaskName2));
@@ -226,7 +226,7 @@ TEST_F(TaskSchedulerTests, GetTasksIncludesHidden) {
 
   EXPECT_TRUE(task_scheduler_->IsTaskRegistered(kTaskName1));
 
-  std::vector<base::string16> task_names;
+  std::vector<std::wstring> task_names;
   EXPECT_TRUE(task_scheduler_->GetTaskNameList(&task_names));
   EXPECT_TRUE(base::Contains(task_names, kTaskName1));
 

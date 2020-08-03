@@ -154,7 +154,7 @@ function isElementVisible(element) {
  */
 function editDialogPartsAreShownCorrectly(passwordDialog) {
   assertEquals(
-      passwordDialog.i18n('editCompromisedPasswordTitle'),
+      passwordDialog.i18n('editPasswordTitle'),
       passwordDialog.$.title.textContent.trim());
   assertFalse(passwordDialog.$.passwordInput.readonly);
   assertTrue(passwordDialog.$.passwordInput.required);
@@ -654,7 +654,7 @@ suite('PasswordsSection', function() {
     getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     flush();
     assertEquals(
-        passwordsSection.i18n('editCompromisedPassword'),
+        passwordsSection.i18n('editPassword'),
         passwordsSection.$.passwordsListHandler.$$('#menuEditPassword')
             .textContent.trim());
   });

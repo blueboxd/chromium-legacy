@@ -53,12 +53,6 @@ void GeneratePasswordForFormFieldAction::OnGetFormAndFieldDataForGeneration(
     const autofill::FormFieldData& field_data) {
   if (!status.ok()) {
     EndAction(status);
-  }
-
-  if (!delegate_->GetUserData()->selected_login_.has_value()) {
-    VLOG(1) << "GeneratePasswordForFormFieldAction: requested login details "
-               "not available in client memory.";
-    EndAction(ClientStatus(PRECONDITION_FAILED));
     return;
   }
 
@@ -69,29 +63,20 @@ void GeneratePasswordForFormFieldAction::OnGetFormAndFieldDataForGeneration(
 
   delegate_->WriteUserData(base::BindOnce(
       &GeneratePasswordForFormFieldAction::StoreGeneratedPasswordToUserData,
-      weak_ptr_factory_.GetWeakPtr(), memory_key, password));
+      weak_ptr_factory_.GetWeakPtr(), memory_key, password, form_data));
 
-  // Presaving stores a generated password with empty username for the cases
-  // when Chrome misses or misclassifies a successful submission. Thus, even if
-  // a site saves/updates the password and Chrome doesn't, the generated
-  // password will be in the password store.
-  // Ideally, a generated password should be presaved after form filling.
-  // Otherwise, if filling fails and submission cannot happen for sure, the
-  // presaved password is pointless.
-  delegate_->GetWebsiteLoginManager()->PresaveGeneratedPassword(
-      *delegate_->GetUserData()->selected_login_, password, form_data,
-      base::BindOnce(&GeneratePasswordForFormFieldAction::EndAction,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ClientStatus(ACTION_APPLIED)));
+  EndAction(ClientStatus(ACTION_APPLIED));
 }
 
 void GeneratePasswordForFormFieldAction::StoreGeneratedPasswordToUserData(
     const std::string& memory_key,
     const std::string& generated_password,
+    const autofill::FormData& form_data,
     UserData* user_data,
     UserData::FieldChange* field_change) {
   DCHECK(user_data);
   user_data->additional_values_[memory_key] = SimpleValue(generated_password);
+  user_data->password_form_data_ = form_data;
 }
 
 void GeneratePasswordForFormFieldAction::EndAction(const ClientStatus& status) {

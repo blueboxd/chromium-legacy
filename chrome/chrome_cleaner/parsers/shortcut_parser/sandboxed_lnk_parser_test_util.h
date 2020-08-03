@@ -25,16 +25,16 @@ base::win::ScopedHandle CreateAndOpenShortcutInTempDir(
 
 bool CheckParsedShortcut(const ParsedLnkFile& parsed_shortcut,
                          base::FilePath expected_target_path,
-                         base::string16 expected_arguments,
+                         std::wstring expected_arguments,
                          base::FilePath expected_icon_location);
 void OnLnkParseDone(
     ParsedLnkFile* out_parsed_shortcut,
     mojom::LnkParsingResult* out_result_code,
     base::OnceClosure callback,
     mojom::LnkParsingResult result_code,
-    const base::Optional<base::string16>& optional_file_path,
-    const base::Optional<base::string16>& optional_command_line_arguments,
-    const base::Optional<base::string16>& optional_icon_location);
+    const base::Optional<std::wstring>& optional_file_path,
+    const base::Optional<std::wstring>& optional_command_line_arguments,
+    const base::Optional<std::wstring>& optional_icon_location);
 
 }  // namespace chrome_cleaner
 

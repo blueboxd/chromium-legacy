@@ -11,7 +11,6 @@
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
-#include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/random.h"
@@ -93,6 +92,21 @@ struct PartitionPage {
   ALWAYS_INLINE static void* ToPointer(const PartitionPage* page);
   ALWAYS_INLINE static PartitionPage* FromPointerNoAlignmentCheck(void* ptr);
   ALWAYS_INLINE static PartitionPage* FromPointer(void* ptr);
+
+  // Returns either the exact allocated size for direct-mapped and single-slot
+  // buckets, or the slot size. The second one is an overestimate of the real
+  // allocated size.
+  ALWAYS_INLINE size_t GetAllocatedSize() const {
+    // Allocated size can be:
+    // - The slot size for small enough buckets.
+    // - Stored exactly, for large buckets (see get_raw_size_ptr()), and
+    //   direct-mapped allocations.
+    size_t result = bucket->slot_size;
+    if (UNLIKELY(get_raw_size_ptr()))  // has row size.
+      result = get_raw_size();
+
+    return result;
+  }
 
   ALWAYS_INLINE const size_t* get_raw_size_ptr() const;
   ALWAYS_INLINE size_t* get_raw_size_ptr() {
@@ -216,10 +230,11 @@ PartitionPage<thread_safe>::FromPointer(void* ptr) {
 template <bool thread_safe>
 ALWAYS_INLINE const size_t* PartitionPage<thread_safe>::get_raw_size_ptr()
     const {
-  // For single-slot buckets which span more than one partition page, we
-  // have some spare metadata space to store the raw allocation size. We
-  // can use this to report better statistics.
-  if (bucket->slot_size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
+  // For single-slot buckets which span more than
+  // |kMaxPartitionPagesPerSlotSpan| partition pages, we have some spare
+  // metadata space to store the raw allocation size. We can use this to report
+  // better statistics.
+  if (LIKELY(bucket->slot_size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize))
     return nullptr;
 
   PA_DCHECK((bucket->slot_size % kSystemPageSize) == 0);
@@ -242,22 +257,6 @@ ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
 #if DCHECK_IS_ON()
   auto* root = PartitionRoot<thread_safe>::FromPage(this);
   root->lock_.AssertAcquired();
-
-  size_t slot_size = bucket->slot_size;
-  const size_t raw_size = get_raw_size();
-  if (raw_size) {
-    slot_size = raw_size;
-  }
-
-  // If these asserts fire, you probably corrupted memory.
-  if (root->allow_extras) {
-    PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) +
-                              kInSlotTagBufferSize);
-    PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
-                              kCookieSize);
-  }
-
-  memset(ptr, kFreedByte, slot_size);
 #endif
 
   PA_DCHECK(num_allocated_slots);

@@ -133,10 +133,10 @@ bool LaunchTestProcess(const wchar_t* executable,
 }
 
 bool DoesVolumeSupportNamedStreams(const base::FilePath& path) {
-  std::vector<base::string16> components;
+  std::vector<std::wstring> components;
   path.GetComponents(&components);
   DCHECK(!components.empty());
-  base::string16& drive = components[0];
+  std::wstring& drive = components[0];
   drive += L'\\';
   DWORD system_flags = 0;
   if (::GetVolumeInformation(drive.c_str(), nullptr, 0, nullptr, nullptr,
@@ -174,10 +174,10 @@ void CreateProgramPathsAndFiles(const base::FilePath& temp_dir_path,
 // and passes the result to ExtractExecutablePathFromRegistryContent to get a
 // file path. Returns success if every file path matches |expected_path|.
 ::testing::AssertionResult ExtractExecutablePathFromMockRegistryAndExpect(
-    const base::string16& registry_path,
+    const std::wstring& registry_path,
     const base::FilePath& expected_path) {
-  for (const base::string16& registry_content : kMockRegistryContents) {
-    base::string16 full_registry_content =
+  for (const std::wstring& registry_content : kMockRegistryContents) {
+    std::wstring full_registry_content =
         base::StringPrintf(registry_content.c_str(), registry_path.c_str());
     base::FilePath extracted_path =
         ExtractExecutablePathFromRegistryContent(full_registry_content);
@@ -832,7 +832,7 @@ TEST(DiskUtilTests, ZoneIdentifierWhenProcessIsRunning) {
   // DLL's that would have to be copied into the folder too.
   base::FilePath source_exe_path(
       executable_path.Append(kTestProcessExecutableName));
-  base::string16 target_exe_name = base::StrCat(
+  std::wstring target_exe_name = base::StrCat(
       {base::UTF8ToWide(base::UnguessableToken::Create().ToString()), L".exe"});
   base::FilePath target_exe_path(executable_path.Append(target_exe_name));
 
@@ -888,7 +888,7 @@ TEST(DiskUtilTests,
 TEST(DiskUtilTests, ExtractExecutablePathFromRegistryContentWithEnvVariable) {
   // This test expects files to be placed in %TEMP% and not anywhere else
   // ScopedTempDir might decide to put them.
-  base::string16 temp_str;
+  std::wstring temp_str;
   ASSERT_NE(0U, ::GetEnvironmentVariableW(
                     L"TEMP", ::base::WriteInto(&temp_str, MAX_PATH), MAX_PATH))
       << logging::SystemErrorCodeToString(logging::GetLastSystemErrorCode());
@@ -972,7 +972,7 @@ TEST(DiskUtilTests, RetrieveDetailedFileInformation) {
 
   EXPECT_FALSE(whitelisted);
 
-  base::string16 sanitized_path = SanitizePath(temp_file);
+  std::wstring sanitized_path = SanitizePath(temp_file);
 
   EXPECT_EQ(sanitized_path, file_information.path);
   EXPECT_FALSE(file_information.creation_date.empty());
@@ -1107,7 +1107,7 @@ TEST(DiskUtilTests, RetrieveBasicFileInformationNoFile) {
 }
 
 TEST(DiskUtilTests, FileInformationToString) {
-  base::string16 display_str = FileInformationToString(kFileInformation1);
+  std::wstring display_str = FileInformationToString(kFileInformation1);
   EXPECT_EQ(kFileInformation1ExpectedString, display_str);
 }
 

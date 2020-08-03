@@ -57,6 +57,9 @@ class PLATFORM_EXPORT ResourceError final {
       const KURL&,
       ResourceRequestBlockedReason,
       const String& localized_description);
+  static ResourceError BlockedByResponse(
+      const KURL&,
+      network::mojom::BlockedByResponseReason);
 
   static ResourceError CacheMissError(const KURL&);
   static ResourceError TimeoutError(const KURL&);
@@ -69,7 +72,7 @@ class PLATFORM_EXPORT ResourceError final {
                 base::Optional<network::CorsErrorStatus>);
   ResourceError(const KURL& failing_url,
                 const network::CorsErrorStatus& status);
-  ResourceError(const WebURLError&);
+  explicit ResourceError(const WebURLError&);
 
   int ErrorCode() const { return error_code_; }
   const String& FailingURL() const { return failing_url_; }

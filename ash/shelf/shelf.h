@@ -237,8 +237,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   metrics_util::ReportCallback GetTranslucentBackgroundReportCallback(
       HotseatState target_state);
 
-  metrics_util::ReportCallback GetNavigationWidgetAnimationReportCallback(
-      HotseatState target_hotseat_state);
+  metrics_util::ReportCallback GetNavigationWidgetAnimationReportCallback();
 
  protected:
   // ShelfLayoutManagerObserver:

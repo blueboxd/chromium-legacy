@@ -6,13 +6,14 @@
 
 #include <stdio.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/win/scoped_handle.h"
@@ -107,9 +108,9 @@ void SandboxedShortcutParser::OnShortcutsParsingDone(
     scoped_refptr<ParseTasksRemainingCounter> counter,
     std::vector<ShortcutInformation>* found_shortcuts,
     mojom::LnkParsingResult parsing_result,
-    const base::Optional<base::string16>& optional_file_path,
-    const base::Optional<base::string16>& optional_command_line_arguments,
-    const base::Optional<base::string16>& optional_icon_location) {
+    const base::Optional<std::wstring>& optional_file_path,
+    const base::Optional<std::wstring>& optional_command_line_arguments,
+    const base::Optional<std::wstring>& optional_icon_location) {
   ShortcutInformation parsed_shortcut;
   parsed_shortcut.lnk_path = lnk_path;
   if (parsing_result == mojom::LnkParsingResult::SUCCESS) {
@@ -124,7 +125,7 @@ void SandboxedShortcutParser::OnShortcutsParsingDone(
     if (optional_icon_location.has_value())
       parsed_shortcut.icon_location = optional_icon_location.value();
 
-    const base::string16 kChromeLnkName = L"Google Chrome.lnk";
+    const std::wstring kChromeLnkName = L"Google Chrome.lnk";
     if (chrome_exe_locations.Contains(
             base::FilePath(parsed_shortcut.icon_location)) ||
         lnk_path.BaseName().value() == kChromeLnkName) {

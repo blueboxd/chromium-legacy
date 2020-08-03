@@ -29,7 +29,7 @@ namespace {
 // Arbitrary value of temp_dirs.
 constexpr unsigned int kDirQuantity = 5;
 
-const base::string16 kLnkArguments = L"-a -b -c -d GenericExample";
+const std::wstring kLnkArguments = L"-a -b -c -d GenericExample";
 
 class LoggedParserSandboxSetupHooks : public ParserSandboxSetupHooks {
  public:

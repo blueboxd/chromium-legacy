@@ -186,7 +186,7 @@ Polymer({
    * @private
    */
   getMenuEditPasswordName_() {
-    return this.isEditDialog_ ? this.i18n('editCompromisedPassword') :
+    return this.isEditDialog_ ? this.i18n('editPassword') :
                                 this.i18n('passwordViewDetails');
   },
 

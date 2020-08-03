@@ -142,9 +142,9 @@ class ProfileAttributesEntry {
   bool IsSignedInWithCredentialProvider() const;
   // Returns the index of the default icon used by the profile.
   size_t GetAvatarIconIndex() const;
-  // Returns the colors specified by the profile theme. base::nullopt indicates
-  // the default colors should be used for this profile.
-  base::Optional<ProfileThemeColors> GetProfileThemeColors() const;
+  // Returns the colors specified by the profile theme, or default colors if no
+  // theme is specified for the profile.
+  ProfileThemeColors GetProfileThemeColors() const;
   // Returns the metrics bucket this profile should be recorded in.
   // Note: The bucket index is assigned once and remains the same all time. 0 is
   // reserved for the guest profile.
@@ -175,6 +175,7 @@ class ProfileAttributesEntry {
   void SetIsUsingDefaultAvatar(bool value);
   void SetIsAuthError(bool value);
   void SetAvatarIconIndex(size_t icon_index);
+  // base::nullopt resets colors to default.
   void SetProfileThemeColors(const base::Optional<ProfileThemeColors>& colors);
 
   // Unlike for other string setters, the argument is expected to be UTF8
@@ -215,11 +216,15 @@ class ProfileAttributesEntry {
 
  private:
   friend class ProfileInfoCache;
+  friend class ProfileThemeUpdateServiceBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
                            EntryInternalAccessors);
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest, ProfileActiveTime);
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
                            DownloadHighResAvatarTest);
+  FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest, ProfileThemeColors);
+
+  static ProfileThemeColors GetDefaultProfileThemeColors(bool dark_mode);
 
   void Initialize(ProfileInfoCache* cache,
                   const base::FilePath& path,

@@ -4567,7 +4567,7 @@
     Upgrade Linux (Beta)
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BODY" desc="Description for the Crostini upgrader, a dialog for upgrading Linux.">
-    Backing up files is recommended as part of this upgrade to prevent data loss in case the upgrade cannot be completed. Starting the upgrade will cause Linux (Beta) to shut down. Please save open files before proceeding.
+    Backing up files is recommended in case the upgrade cannot be completed. Starting the upgrade will cause Linux (Beta) to shut down. Please save open files before proceeding.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
     Upgrade

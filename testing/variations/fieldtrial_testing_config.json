@@ -5686,21 +5686,6 @@
             ]
         }
     ],
-    "QRCodeGenerationStudy": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "QRCodeGeneration"
-                    ]
-                }
-            ]
-        }
-    ],
     "QRCodeGeneratorDesktopStudy": [
         {
             "platforms": [

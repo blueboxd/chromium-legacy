@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
 import org.chromium.chrome.browser.tab.Tab;
@@ -58,7 +57,6 @@ public class MediaTest {
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE})
-    @FlakyTest
     public void testMicrophoneMediaPermissionsPlumbingDialog() throws Exception {
         testMediaPermissionsPlumbing("Mic count:", "initiate_getMicrophone()", 1, true, true);
     }
@@ -72,7 +70,6 @@ public class MediaTest {
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE})
-    @FlakyTest
     public void testCameraPermissionsPlumbingDialog() throws Exception {
         testMediaPermissionsPlumbing("Camera count:", "initiate_getCamera()", 1, false, true);
     }
@@ -86,7 +83,6 @@ public class MediaTest {
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE})
-    @FlakyTest
     public void testCombinedPermissionsPlumbingDialog() throws Exception {
         testMediaPermissionsPlumbing("Combined count:", "initiate_getCombined()", 1, true, true);
     }

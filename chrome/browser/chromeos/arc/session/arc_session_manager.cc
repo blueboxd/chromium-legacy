@@ -443,8 +443,12 @@ class ArcSessionManager::ScopedOptInFlowTracker {
 };
 
 ArcSessionManager::ArcSessionManager(
-    std::unique_ptr<ArcSessionRunner> arc_session_runner)
+    std::unique_ptr<ArcSessionRunner> arc_session_runner,
+    std::unique_ptr<AdbSideloadingAvailabilityDelegateImpl>
+        adb_sideloading_availability_delegate)
     : arc_session_runner_(std::move(arc_session_runner)),
+      adb_sideloading_availability_delegate_(
+          std::move(adb_sideloading_availability_delegate)),
       attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)),
       property_files_source_dir_(base::FilePath(
           IsArcVmEnabled() ? kPropertyFilesPathVm : kPropertyFilesPath)),
@@ -739,6 +743,7 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   DCHECK(!profile_);
   DCHECK(IsArcAllowedForProfile(profile));
   profile_ = profile;
+  adb_sideloading_availability_delegate_->SetProfile(profile);
   // RequestEnable() requires |profile_| set, therefore shouldn't have been
   // called at this point.
   SetArcEnabledStateMetric(false);
@@ -756,10 +761,10 @@ void ArcSessionManager::SetUserInfo() {
   std::string serialno;
   // ARC container doesn't need the serial number.
   if (arc::IsArcVmEnabled()) {
-    const std::string chormeos_user =
+    const std::string chromeos_user =
         cryptohome::CreateAccountIdentifierFromAccountId(account).account_id();
     serialno = GetOrCreateSerialNumber(g_browser_process->local_state(),
-                                       chormeos_user, *arc_salt_on_disk_);
+                                       chromeos_user, *arc_salt_on_disk_);
   }
 
   arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash, serialno);

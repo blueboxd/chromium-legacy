@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/unguessable_token.h"
+
 // A single attachment to be sent by / received from a ShareTarget, can be
 // either a file or text.
 class Attachment {
@@ -17,6 +19,11 @@ class Attachment {
 
   virtual int64_t size() const = 0;
   virtual Family family() const = 0;
+
+  const base::UnguessableToken& id() const { return id_; }
+
+ private:
+  base::UnguessableToken id_ = base::UnguessableToken::Create();
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_ATTACHMENT_H_

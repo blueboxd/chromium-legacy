@@ -48,6 +48,10 @@ struct UpgradeParams {
   // Whether the account is managed.
   bool is_account_managed;
 
+  // Whether adb sideloading is allowed when the account and/or the device is
+  // managed.
+  bool is_managed_adb_sideloading_allowed = false;
+
   // Option to disable ACTION_BOOT_COMPLETED broadcast for 3rd party apps.
   // The constructor automatically populates this from command-line.
   bool skip_boot_completed_broadcast;

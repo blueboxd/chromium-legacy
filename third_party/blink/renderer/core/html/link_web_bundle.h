@@ -24,6 +24,10 @@ class CORE_EXPORT LinkWebBundle final : public LinkResource,
  public:
   explicit LinkWebBundle(HTMLLinkElement* owner);
   ~LinkWebBundle() override;
+
+  LinkWebBundle(const LinkWebBundle&) = delete;
+  LinkWebBundle& operator=(const LinkWebBundle&) = delete;
+
   void Trace(Visitor* visitor) const override;
 
   void NotifyLoaded();
@@ -46,6 +50,7 @@ class CORE_EXPORT LinkWebBundle final : public LinkResource,
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#name-parsing-the-index-section
   static KURL ParseResourceUrl(const AtomicString& str);
 
+ private:
   Member<WebBundleLoader> bundle_loader_;
 };
 

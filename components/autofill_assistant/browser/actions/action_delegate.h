@@ -404,7 +404,8 @@ class ActionDelegate {
   virtual void ClearGenericUi() = 0;
 
   // Sets the OverlayBehavior.
-  virtual void SetOverlayBehavior(ConfigureUiStateProto::OverlayBehavior) = 0;
+  virtual void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) = 0;
 
  protected:
   ActionDelegate() = default;

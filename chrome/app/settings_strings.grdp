@@ -391,9 +391,6 @@
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_HIDE" desc="Action menu item for a row which displays a compromised password. The password value, which is shown in plain text, will be hidden again.">
     Hide password
   </message>
-  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_EDIT" desc="Action menu item for a row which displays a compromised password. It will open a modal dialog which will allow the user to edit the password and other metadata (username, website).">
-    Edit password
-  </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_REMOVE" desc="Action menu item for a row which displays a compromised password. It will open a confirmation dialog for deleting the password.">
     Remove password
   </message>
@@ -402,12 +399,6 @@
   </message>
   <message name="IDS_SETTINGS_REMOVE_COMPROMISED_PASSWORD_CONFIRMATION_DESCRIPTION" desc="Compromised password remove dialog conformation description">
     Removing this password will not delete your account on <ph name="DOMAIN">$1<ex>airbnb.com</ex></ph>. Change your password or delete your account on <ph name="DOMAIN_LINK">$2<ex>&lt;a href="https://airbnb.com" target="_blank"&gt;airbnb.com&lt;/a&gt;</ex></ph> to keep it safe from others.
-  </message>
-  <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_TITLE" desc="The title for a dialog, which allows a user to edit a password, which have been found to be compromised. This dialog includes other details, such as username and website.">
-    Edit password
-  </message>
-  <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_FOOTNOTE" desc="A footnote for the dialog which allows the user to edit a password, which has been found to have been compromised.">
-    Make sure the password you are saving matches your password for <ph name="WEBSITE">$1<ex>airbnb.com</ex></ph>
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_SITE" desc="A label for the field, which displays the site for which the password was saved. The field is part of a dialog, which allows the user to edit the password.">
     Site
@@ -465,6 +456,15 @@
   </message>
   <message name="IDS_SETTINGS_PASSWORD_DETAILS" desc="Label for a context menu item that shows a dialog with details for the selected password.">
     Details
+  </message>
+  <message name="IDS_SETTINGS_PASSWORD_EDIT_TITLE" desc="The title for a dialog, which allows a user to edit a saved password. This dialog includes other details, such as username and website.">
+    Edit password
+  </message>
+  <message name="IDS_SETTINGS_PASSWORD_EDIT" desc="Action menu item for a row which displays a saved password. It will open a modal dialog which will allow the user to edit the password and other metadata (username, website).">
+    Edit password
+  </message>
+  <message name="IDS_SETTINGS_PASSWORD_EDIT_FOOTNOTE" desc="A footnote for the dialog which allows the user to edit a saved password.">
+    Make sure the password you are saving matches your password for <ph name="WEBSITE">$1<ex>airbnb.com</ex></ph>
   </message>
   <message name="IDS_SETTINGS_PASSWORD_COPY" desc="Label for a context menu item that allows to copy the selected password into clipboard.">
     Copy password
@@ -1265,7 +1265,7 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_MORE_BUTTON_ARIA_LABEL" desc="Accessiblity text for the button that leads users to the Chrome cleaner page, which explains details about the device softrware check.">
     Show details of the device software check
   </message>
-  
+
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Preload pages for faster browsing and searching
   </message>

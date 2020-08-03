@@ -87,6 +87,7 @@
                                   BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
                                   PageInfoCommands,
+                                  PasswordBreachCommands,
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
@@ -226,6 +227,8 @@
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
   [self.dispatcher startDispatchingToTarget:self
                                 forProtocol:@protocol(PageInfoCommands)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forProtocol:@protocol(PasswordBreachCommands)];
   [self installDelegatesForAllWebStates];
   [self installDelegatesForBrowser];
   [self addWebStateListObserver];
@@ -275,6 +278,7 @@
   self.sharingCoordinator = nil;
 
   [self.passwordBreachCoordinator stop];
+  self.passwordBreachCoordinator = nil;
 
   [self.pageInfoCoordinator stop];
 
@@ -360,13 +364,6 @@
       [[PassKitCoordinator alloc] initWithBaseViewController:self.viewController
                                                      browser:self.browser];
 
-  self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  [self.browser->GetCommandDispatcher()
-      startDispatchingToTarget:self.passwordBreachCoordinator
-                   forProtocol:@protocol(PasswordBreachCommands)];
-
   self.printController = [[PrintController alloc] init];
   self.printController.baseViewController = self.viewController;
 
@@ -374,6 +371,8 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   [self.qrScannerCoordinator start];
+
+  /* passwordBreachCoordinator is created and started by a BrowserCommand */
 
   /* ReadingListCoordinator is created and started by a BrowserCommand */
 
@@ -434,8 +433,6 @@
   self.passKitCoordinator = nil;
 
   [self.passwordBreachCoordinator stop];
-  [self.browser->GetCommandDispatcher()
-      stopDispatchingToTarget:self.passwordBreachCoordinator];
   self.passwordBreachCoordinator = nil;
 
   self.printController = nil;
@@ -956,6 +953,18 @@
   if (StoreKitTabHelper::FromWebState(webState)) {
     StoreKitTabHelper::FromWebState(webState)->SetLauncher(nil);
   }
+}
+
+#pragma mark - PasswordBreachCommands
+
+- (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
+                                  URL:(const GURL&)URL {
+  self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                        leakType:leakType
+                             URL:URL];
+  [self.passwordBreachCoordinator start];
 }
 
 @end

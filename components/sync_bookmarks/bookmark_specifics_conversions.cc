@@ -241,12 +241,8 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   scoped_refptr<base::RefCountedMemory> favicon_bytes(nullptr);
   const gfx::Image& favicon = model->GetFavicon(node);
   // Check for empty images. This can happen if the favicon is still being
-  // loaded. Also avoid syncing touch icons.
-  if (!favicon.IsEmpty() &&
-      model->GetFaviconType(node) == favicon_base::IconType::kFavicon) {
-    // TODO(crbug.com/516866): Verify that this isn't  problematic for bookmarks
-    // created on iOS devices.
-
+  // loaded.
+  if (!favicon.IsEmpty()) {
     // Re-encode the BookmarkNode's favicon as a PNG.
     favicon_bytes = favicon.As1xPNGBytes();
   }

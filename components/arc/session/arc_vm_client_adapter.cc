@@ -865,7 +865,8 @@ std::vector<std::string> GenerateUpgradeProps(
     }
   }
 
-  // TODO(niwa): Handle |is_managed_account| in |upgrade_params| when we
+  // TODO(niwa): Handle |is_account_managed| and
+  // |is_managed_adb_sideloading_allowed| in |upgrade_params| when we
   // implement apk sideloading for ARCVM.
   return result;
 }

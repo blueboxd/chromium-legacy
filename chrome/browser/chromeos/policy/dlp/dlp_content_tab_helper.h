@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONTENT_TAB_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONTENT_TAB_HELPER_H_
 
-#include "base/containers/flat_set.h"
+#include "base/containers/flat_map.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -24,6 +25,8 @@ namespace policy {
 // DlpContentManager.
 // WebContents is considered as confidential if either the main frame or any
 // of sub-frames are confidential according to the current policy.
+// In this case the applied restrictions for the WebContents will be the
+// superset of all restrictions for sub-frames.
 class DlpContentTabHelper
     : public content::WebContentsUserData<DlpContentTabHelper>,
       public content::WebContentsObserver {
@@ -45,12 +48,22 @@ class DlpContentTabHelper
   DlpContentTabHelper(const DlpContentTabHelper&) = delete;
   DlpContentTabHelper& operator=(const DlpContentTabHelper&) = delete;
 
-  // WebContents is considered as confidential if either the main frame or any
-  // of sub-frames are confidential.
-  bool IsConfidential() const;
+  // Returns the superset of all restrictions for sub-frames.
+  DlpContentRestrictionSet GetRestrictionSet() const;
 
-  // Set of the currently known confidential frames.
-  base::flat_set<content::RenderFrameHost*> confidential_frames_;
+  // Adds or updates the |render_frame_host| and |restrictions| to/in the map
+  // and notifies DlpContentManager if needed.
+  void AddFrame(content::RenderFrameHost* render_frame_host,
+                DlpContentRestrictionSet restrictions);
+
+  // Removes |render_frame_host| from the map and notifies DlpContentManager if
+  // needed.
+  void RemoveFrame(content::RenderFrameHost* render_frame_host);
+
+  // Map from the currently known confidential frames to the corresponding
+  // restriction set.
+  base::flat_map<content::RenderFrameHost*, DlpContentRestrictionSet>
+      confidential_frames_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

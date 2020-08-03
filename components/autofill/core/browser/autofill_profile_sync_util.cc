@@ -13,20 +13,62 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 // TODO(crbug.com/904390): Remove when the investigation is over.
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/sync/model/entity_data.h"
 
+using autofill::data_util::TruncateUTF8;
 using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
-using autofill::data_util::TruncateUTF8;
 using sync_pb::AutofillProfileSpecifics;
 using syncer::EntityData;
 
 namespace autofill {
+
+using structured_address::VerificationStatus;
+
 namespace {
+
+//  Converts the verification status representation used in the
+//  AutofillProfileSpecifics to the representation used in AutofillProfile.
+VerificationStatus ConvertSpecificsToProfileVerificationStatus(
+    AutofillProfileSpecifics::VerificationStatus entity_status) {
+  switch (entity_status) {
+    case sync_pb::
+        AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED:
+      return VerificationStatus::kNoStatus;
+    case sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED:
+      return VerificationStatus::kParsed;
+    case sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED:
+      return VerificationStatus::kFormatted;
+    case sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED:
+      return VerificationStatus::kObserved;
+    case sync_pb::AutofillProfileSpecifics_VerificationStatus_USER_VERIFIED:
+      return VerificationStatus::kUserVerified;
+  }
+}
+
+// Converts the verification status representation used AutofillProfiles to the
+// one used in AutofillProfileSpecifics.
+AutofillProfileSpecifics::VerificationStatus
+ConvertProfileToSpecificsVerificationStatus(VerificationStatus profile_status) {
+  switch (profile_status) {
+    case (VerificationStatus::kNoStatus):
+      return sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED;
+    case (VerificationStatus::kParsed):
+      return sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED;
+    case (VerificationStatus::kFormatted):
+      return sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED;
+    case (VerificationStatus::kObserved):
+      return sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED;
+    case (VerificationStatus::kUserVerified):
+      return sync_pb::AutofillProfileSpecifics_VerificationStatus_USER_VERIFIED;
+  }
+}
 
 bool IsAutofillProfileSpecificsValid(
     const AutofillProfileSpecifics& specifics) {
@@ -58,14 +100,44 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
       entry.is_client_validity_states_updated());
 
   // Set repeated fields.
+  specifics->add_name_honorific(
+      TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_HONORIFIC_PREFIX))));
   specifics->add_name_first(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_FIRST))));
   specifics->add_name_middle(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_MIDDLE))));
   specifics->add_name_last(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_LAST))));
+  specifics->add_name_last_first(
+      TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_LAST_FIRST))));
+  specifics->add_name_last_second(
+      TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_LAST_SECOND))));
+  specifics->add_name_last_conjunction(
+      TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_LAST_CONJUNCTION))));
   specifics->add_name_full(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(NAME_FULL))));
+
+  specifics->add_name_honorific_status(
+      ConvertProfileToSpecificsVerificationStatus(
+          entry.GetVerificationStatus(NAME_HONORIFIC_PREFIX)));
+  specifics->add_name_first_status(ConvertProfileToSpecificsVerificationStatus(
+      entry.GetVerificationStatus(NAME_FIRST)));
+  specifics->add_name_middle_status(ConvertProfileToSpecificsVerificationStatus(
+      entry.GetVerificationStatus(NAME_MIDDLE)));
+  specifics->add_name_last_status(ConvertProfileToSpecificsVerificationStatus(
+      entry.GetVerificationStatus(NAME_LAST)));
+  specifics->add_name_last_first_status(
+      ConvertProfileToSpecificsVerificationStatus(
+          entry.GetVerificationStatus(NAME_LAST_FIRST)));
+  specifics->add_name_last_conjunction_status(
+      ConvertProfileToSpecificsVerificationStatus(
+          entry.GetVerificationStatus(NAME_LAST_CONJUNCTION)));
+  specifics->add_name_last_second_status(
+      ConvertProfileToSpecificsVerificationStatus(
+          entry.GetVerificationStatus(NAME_LAST_SECOND)));
+  specifics->add_name_full_status(ConvertProfileToSpecificsVerificationStatus(
+      entry.GetVerificationStatus(NAME_FULL)));
+
   specifics->add_email_address(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(EMAIL_ADDRESS))));
   specifics->add_phone_home_whole_number(
@@ -113,15 +185,91 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
       specifics.validity_state_bitfield());
 
   // Set repeated fields.
-  profile->SetRawInfo(NAME_FIRST, UTF8ToUTF16(specifics.name_first_size()
-                                                  ? specifics.name_first(0)
-                                                  : std::string()));
-  profile->SetRawInfo(NAME_MIDDLE, UTF8ToUTF16(specifics.name_middle_size()
-                                                   ? specifics.name_middle(0)
-                                                   : std::string()));
-  profile->SetRawInfo(
-      NAME_LAST, UTF8ToUTF16(specifics.name_last_size() ? specifics.name_last(0)
-                                                        : std::string()));
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_HONORIFIC_PREFIX,
+      UTF8ToUTF16(specifics.name_honorific_size() ? specifics.name_honorific(0)
+                                                  : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_honorific_status_size()
+              ? specifics.name_honorific_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_FIRST,
+      UTF8ToUTF16(specifics.name_first_size() ? specifics.name_first(0)
+                                              : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_first_status_size()
+              ? specifics.name_first_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_MIDDLE,
+      UTF8ToUTF16(specifics.name_middle_size() ? specifics.name_middle(0)
+                                               : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_middle_status_size()
+              ? specifics.name_middle_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_LAST,
+      UTF8ToUTF16(specifics.name_last_size() ? specifics.name_last(0)
+                                             : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_last_status_size()
+              ? specifics.name_last_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_LAST_FIRST,
+      UTF8ToUTF16(specifics.name_last_first_size()
+                      ? specifics.name_last_first(0)
+                      : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_last_first_status_size()
+              ? specifics.name_last_first_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_LAST_CONJUNCTION,
+      UTF8ToUTF16(specifics.name_last_conjunction_size()
+                      ? specifics.name_last_conjunction(0)
+                      : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_last_conjunction_status_size()
+              ? specifics.name_last_conjunction_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  profile->SetRawInfoWithVerificationStatus(
+      NAME_LAST_SECOND,
+      UTF8ToUTF16(specifics.name_last_second_size()
+                      ? specifics.name_last_second(0)
+                      : std::string()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.name_last_second_status_size()
+              ? specifics.name_last_second_status(0)
+              : AutofillProfileSpecifics::VerificationStatus::
+                    AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+
+  // Older versions don't have a separate full name; don't overwrite full name
+  // in this case.
+  if (specifics.name_full_size() > 0) {
+    profile->SetRawInfoWithVerificationStatus(
+        NAME_FULL, UTF8ToUTF16(specifics.name_full(0)),
+        ConvertSpecificsToProfileVerificationStatus(
+            specifics.name_full_status_size()
+                ? specifics.name_full_status(0)
+                : AutofillProfileSpecifics::VerificationStatus::
+                      AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED));
+  }
+
   profile->SetRawInfo(
       EMAIL_ADDRESS,
       UTF8ToUTF16(specifics.email_address_size() ? specifics.email_address(0)
@@ -130,12 +278,6 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
                       UTF8ToUTF16(specifics.phone_home_whole_number_size()
                                       ? specifics.phone_home_whole_number(0)
                                       : std::string()));
-
-  // Older versions don't have a separate full name; don't overwrite full name
-  // in this case.
-  if (specifics.name_full_size() > 0) {
-    profile->SetRawInfo(NAME_FULL, UTF8ToUTF16(specifics.name_full(0)));
-  }
 
   // Set simple single-valued fields.
   profile->SetRawInfo(COMPANY_NAME, UTF8ToUTF16(specifics.company_name()));

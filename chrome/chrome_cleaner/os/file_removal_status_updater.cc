@@ -200,7 +200,7 @@ void FileRemovalStatusUpdater::UpdateRemovalStatus(const base::FilePath& path,
       << "Unknown RemovalStatus: need to update "
          "RemovalStatusCanBeOverriddenBy()?";
 
-  const base::string16 sanitized_path = SanitizePath(path);
+  const std::wstring sanitized_path = SanitizePath(path);
 
   base::AutoLock lock(removal_status_lock_);
 
@@ -228,7 +228,7 @@ RemovalStatus FileRemovalStatusUpdater::GetRemovalStatus(
 }
 
 RemovalStatus FileRemovalStatusUpdater::GetRemovalStatusOfSanitizedPath(
-    const base::string16& sanitized_path) const {
+    const std::wstring& sanitized_path) const {
   base::AutoLock lock(removal_status_lock_);
   const auto it = removal_statuses_.find(sanitized_path);
   return it == removal_statuses_.end() ? REMOVAL_STATUS_UNSPECIFIED
@@ -242,7 +242,7 @@ void FileRemovalStatusUpdater::UpdateQuarantineStatus(
   DCHECK(status > QUARANTINE_STATUS_UNSPECIFIED &&
          status <= QuarantineStatus_MAX);
 
-  const base::string16 sanitized_path = SanitizePath(path);
+  const std::wstring sanitized_path = SanitizePath(path);
 
   base::AutoLock lock(removal_status_lock_);
 
@@ -264,7 +264,7 @@ void FileRemovalStatusUpdater::UpdateQuarantineStatus(
 
 QuarantineStatus FileRemovalStatusUpdater::GetQuarantineStatus(
     const base::FilePath& path) const {
-  const base::string16 sanitized_path = SanitizePath(path);
+  const std::wstring sanitized_path = SanitizePath(path);
 
   base::AutoLock lock(removal_status_lock_);
 

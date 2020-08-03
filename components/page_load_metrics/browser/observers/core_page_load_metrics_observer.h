@@ -216,7 +216,8 @@ class CorePageLoadMetricsObserver
   ObservePolicy OnEnterBackForwardCache(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnRestoreFromBackForwardCache(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      content::NavigationHandle* navigation_handle) override;
   void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                  int behavior_flags) override;
 

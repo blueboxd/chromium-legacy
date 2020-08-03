@@ -2497,10 +2497,7 @@ void AXPlatformNodeAuraLinux::SetDocumentParentOnFrameIfNecessary() {
   frame->SetDocumentParent(parent_atk_object);
 }
 
-AtkObject* AXPlatformNodeAuraLinux::FindPrimaryWebContentDocument() {
-  // It could get multiple web contents since additional web content is added,
-  // when the DevTools window is opened.
-  std::vector<AtkObject*> web_content_candidates;
+AtkObject* AXPlatformNodeAuraLinux::FindFirstWebContentDocument() {
   for (auto child_iterator_ptr = GetDelegate()->ChildrenBegin();
        *child_iterator_ptr != *GetDelegate()->ChildrenEnd();
        ++(*child_iterator_ptr)) {
@@ -2512,34 +2509,10 @@ AtkObject* AXPlatformNodeAuraLinux::FindPrimaryWebContentDocument() {
       continue;
     if (child_node->GetAtkRole() != ATK_ROLE_DOCUMENT_WEB)
       continue;
-    web_content_candidates.push_back(child);
+    return child;
   }
 
-  if (web_content_candidates.empty())
-    return nullptr;
-
-  // If it finds just one web content, return it.
-  if (web_content_candidates.size() == 1)
-    return web_content_candidates[0];
-
-  for (auto* object : web_content_candidates) {
-    auto* child_node = AXPlatformNodeAuraLinux::FromAtkObject(object);
-    // If it is a primary web contents, return it.
-    if (child_node->IsPrimaryWebContentsForWindow())
-      return object;
-  }
   return nullptr;
-}
-
-bool AXPlatformNodeAuraLinux::IsWebDocumentForRelations() {
-  AtkObject* atk_object = GetOrCreateAtkObject();
-  if (!atk_object)
-    return false;
-  AXPlatformNodeAuraLinux* parent = FromAtkObject(GetParent());
-  if (!parent || !GetDelegate()->IsWebContent() ||
-      GetAtkRole() != ATK_ROLE_DOCUMENT_WEB)
-    return false;
-  return parent->FindPrimaryWebContentDocument() == atk_object;
 }
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
@@ -3210,7 +3183,7 @@ AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
 
   AtkRelationSet* relation_set = atk_relation_set_new();
 
-  if (IsWebDocumentForRelations()) {
+  if (GetDelegate()->IsWebContent() && GetAtkRole() == ATK_ROLE_DOCUMENT_WEB) {
     AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object);
     if (parent_frame) {
       atk_relation_set_add_relation_by_type(
@@ -3219,7 +3192,7 @@ AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
   }
 
   if (auto* document_parent = FromAtkObject(document_parent_)) {
-    AtkObject* document = document_parent->FindPrimaryWebContentDocument();
+    AtkObject* document = document_parent->FindFirstWebContentDocument();
     if (document) {
       atk_relation_set_add_relation_by_type(relation_set, ATK_RELATION_EMBEDS,
                                             document);

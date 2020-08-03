@@ -33,6 +33,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/query_parser/query_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1362,8 +1363,7 @@ class BookmarkModelFaviconTest : public testing::Test,
       favicon_base::FaviconImageResult image_result;
       image_result.image = image;
       image_result.icon_url = icon_url;
-      model_->OnFaviconDataAvailable(node, favicon_base::IconType::kFavicon,
-                                     image_result);
+      model_->OnFaviconDataAvailable(node, image_result);
   }
 
   bool WasNodeUpdated(const BookmarkNode* node) {

@@ -497,6 +497,7 @@ message ActionProto {
     GeneratePasswordForFormFieldProto generate_password_for_form_field = 52;
     SaveGeneratedPasswordProto save_generated_password = 53;
     ConfigureUiStateProto configure_ui_state = 54;
+    PresaveGeneratedPasswordProto presave_generated_password = 55;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1902,13 +1903,21 @@ message SetFormFieldValueProto {
 
 // Asks the password manager to generate a suitable password for |element|. The
 // generated password can be filled in subsequent SetFormFieldValueProto
-// actions. Generated password will be presaved to password store,
-// login details need to be available in the client memory for this action.
+// actions.
 message GeneratePasswordForFormFieldProto {
   // A reference to the form element for which to generate a password.
   optional SelectorProto element = 1;
   // The client memory key to store the generated password.
   optional string memory_key = 2;
+}
+
+// Presaves generated password to the password store.
+// Presaving stores a generated password with empty username.
+// Only possible if a password has already been generated using
+// |GeneratePasswordForFormFieldProto|.
+message PresaveGeneratedPasswordProto {
+  // The client memory key of the stored password.
+  optional string memory_key = 1;
 }
 
 // Asks the password save manager to save generated password after successful
@@ -1924,10 +1933,6 @@ message ConfigureUiStateProto {
     // The overlay is decided according to the state the client is in.
     DEFAULT = 0;
     // The overlay is always hidden.
-    // At the moment this also changes the behavior of the back button and it
-    // should only be used for browse mode.
-    // TODO(HLUCA): add a separate setting in this action to configure the back
-    // button behavior.
     HIDDEN = 1;
   }
   optional OverlayBehavior overlay_behavior = 1;

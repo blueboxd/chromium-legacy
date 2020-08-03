@@ -221,8 +221,9 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownBrightness) {
   ExpectBrightnessDown();
 }
 
+// TODO(crbug.com/1112278): Disabled because it's flaky.
 IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
-                       ShouldShowSingleErrorOnNetworkDown) {
+                       DISABLED_ShouldShowSingleErrorOnNetworkDown) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();

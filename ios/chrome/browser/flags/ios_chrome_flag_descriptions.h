@@ -340,10 +340,6 @@ extern const char kPointerSupportName[];
 extern const char kPointerSupportDescription[];
 #endif  // defined(__IPHONE_13_4)
 
-// Title and description for the flag to enable QR code generation for a page.
-extern const char kQRCodeGenerationName[];
-extern const char kQRCodeGenerationDescription[];
-
 // Title and description for the flag that reload the page when the renderer
 // crashes.
 extern const char kReloadSadTabName[];

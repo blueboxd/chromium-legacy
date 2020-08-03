@@ -355,6 +355,10 @@ enum AuthenticationButtonType {
           constraintEqualToAnchor:self.containerView.leadingAnchor],
       [self.unifiedConsentViewController.view.trailingAnchor
           constraintEqualToAnchor:self.containerView.trailingAnchor],
+      // Constraint between the container view and the horizontal buttons.
+      [self.horizontalButtonsView.topAnchor
+          constraintEqualToAnchor:self.containerView.bottomAnchor
+                         constant:kCompactConstants.ButtonVerticalPadding],
     ]];
     _compactSizeClassConstraints = constraints;
   }
@@ -383,6 +387,10 @@ enum AuthenticationButtonType {
           constraintEqualToAnchor:self.containerView.centerXAnchor],
       [self.unifiedConsentViewController.view.centerYAnchor
           constraintEqualToAnchor:self.containerView.centerYAnchor],
+      // Constraint between the container view and the horizontal buttons.
+      [self.horizontalButtonsView.topAnchor
+          constraintEqualToAnchor:self.containerView.bottomAnchor
+                         constant:kRegularConstants.ButtonVerticalPadding],
     ]];
     // Adding constraints to ensure the user consent view has a limited size
     // on iPad. If the screen is bigger than the max size, those constraints

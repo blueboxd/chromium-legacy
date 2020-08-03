@@ -2799,7 +2799,8 @@ TEST_P(ArcDefaultAppTest, DisableDefaultApps) {
   EXPECT_FALSE(prefs->GetApp(app_id));
 }
 
-TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
+// TODO(crbug.com/1112319): Flaky.
+TEST_P(ArcAppLauncherForDefaultAppTest, DISABLED_AppIconUpdated) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 

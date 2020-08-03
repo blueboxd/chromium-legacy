@@ -130,7 +130,24 @@ bool AdjustOOMScore(ProcessId process, int score) {
 
 bool UncheckedMalloc(size_t size, void** result) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) || defined(OS_ANDROID)
+  // There are multiple reasons for not calling |UncheckedAlloc()| with
+  // PartitionAlloc:
+  //
+  // TODO(crbug.com/1111331) allocator::UncheckedMalloc() will not work anyway,
+  //   since the right flag is not passed to it.
+  //
+  // TODO(crbug.com/1111332) On Android, not all callers of UncheckedMalloc()
+  //   have the proper wrapping of symbols. As a consequence, using
+  //   UncheckedAlloc() leads to allocating and freeing with different
+  //   allocators. Deferring to malloc() makes sure that the same allocator is
+  //   used.
+  *result = malloc(size);
+#else
   *result = allocator::UncheckedAlloc(size);
+#endif
+
 #elif defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || \
     (!defined(LIBC_GLIBC) && !BUILDFLAG(USE_TCMALLOC))
   *result = malloc(size);

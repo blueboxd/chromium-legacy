@@ -16,44 +16,29 @@ DlpContentTabHelper::~DlpContentTabHelper() = default;
 
 void DlpContentTabHelper::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  if (DlpContentManager::Get()->IsURLConfidential(
-          render_frame_host->GetLastCommittedURL())) {
-    const bool inserted = confidential_frames_.insert(render_frame_host).second;
-    if (inserted && confidential_frames_.size() == 1) {
-      DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
-                                                         /*confidential=*/true);
-    }
-  }
+  const DlpContentRestrictionSet restriction_set =
+      DlpContentManager::Get()->GetRestrictionSetForURL(
+          render_frame_host->GetLastCommittedURL());
+  if (!restriction_set.IsEmpty())
+    AddFrame(render_frame_host, restriction_set);
 }
 
 void DlpContentTabHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  const bool erased = confidential_frames_.erase(render_frame_host);
-  if (erased && confidential_frames_.empty())
-    DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
-                                                       /*confidential=*/false);
+  RemoveFrame(render_frame_host);
 }
 
 void DlpContentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage())
     return;
-  if (DlpContentManager::Get()->IsURLConfidential(
-          navigation_handle->GetURL())) {
-    const bool inserted =
-        confidential_frames_.insert(navigation_handle->GetRenderFrameHost())
-            .second;
-    if (inserted && confidential_frames_.size() == 1) {
-      DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
-                                                         /*confidential=*/true);
-    }
+  const DlpContentRestrictionSet restriction_set =
+      DlpContentManager::Get()->GetRestrictionSetForURL(
+          navigation_handle->GetURL());
+  if (restriction_set.IsEmpty()) {
+    RemoveFrame(navigation_handle->GetRenderFrameHost());
   } else {
-    const bool erased =
-        confidential_frames_.erase(navigation_handle->GetRenderFrameHost());
-    if (erased && confidential_frames_.empty())
-      DlpContentManager::Get()->OnConfidentialityChanged(
-          web_contents(),
-          /*confidential=*/false);
+    AddFrame(navigation_handle->GetRenderFrameHost(), restriction_set);
   }
 }
 
@@ -63,17 +48,42 @@ void DlpContentTabHelper::WebContentsDestroyed() {
 
 void DlpContentTabHelper::OnVisibilityChanged(content::Visibility visibility) {
   // DlpContentManager tracks visibility only for confidential WebContents.
-  if (!IsConfidential())
+  if (GetRestrictionSet().IsEmpty())
     return;
-  DlpContentManager::Get()->OnVisibilityChanged(
-      web_contents(), visibility == content::Visibility::VISIBLE);
+  DlpContentManager::Get()->OnVisibilityChanged(web_contents());
 }
 
 DlpContentTabHelper::DlpContentTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
-bool DlpContentTabHelper::IsConfidential() const {
-  return !confidential_frames_.empty();
+DlpContentRestrictionSet DlpContentTabHelper::GetRestrictionSet() const {
+  DlpContentRestrictionSet set;
+  for (auto& entry : confidential_frames_) {
+    set.UnionWith(entry.second);
+  }
+  return set;
+}
+
+void DlpContentTabHelper::AddFrame(content::RenderFrameHost* render_frame_host,
+                                   DlpContentRestrictionSet restrictions) {
+  const DlpContentRestrictionSet old_restriction_set = GetRestrictionSet();
+  confidential_frames_[render_frame_host] = restrictions;
+  const DlpContentRestrictionSet new_restriction_set = GetRestrictionSet();
+  if (new_restriction_set != old_restriction_set) {
+    DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
+                                                       new_restriction_set);
+  }
+}
+
+void DlpContentTabHelper::RemoveFrame(
+    content::RenderFrameHost* render_frame_host) {
+  const DlpContentRestrictionSet old_restriction_set = GetRestrictionSet();
+  confidential_frames_.erase(render_frame_host);
+  const DlpContentRestrictionSet new_restriction_set = GetRestrictionSet();
+  if (old_restriction_set != new_restriction_set) {
+    DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
+                                                       new_restriction_set);
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(DlpContentTabHelper)

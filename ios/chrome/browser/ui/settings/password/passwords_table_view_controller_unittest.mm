@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
@@ -54,8 +55,10 @@ using ::testing::Return;
 
 // Declaration to conformance to SavePasswordsConsumerDelegate and keep tests in
 // this file working.
-@interface PasswordsTableViewController (Test) <UISearchBarDelegate,
-                                                PasswordsConsumer>
+@interface PasswordsTableViewController (Test) <
+    UISearchBarDelegate,
+    PasswordIssuesCoordinatorDelegate,
+    PasswordsConsumer>
 - (void)updateExportPasswordsButton;
 @end
 
@@ -758,6 +761,23 @@ TEST_P(PasswordsTableViewControllerTest, PasswordStoreListener) {
   EXPECT_EQ(1, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
   AddSavedForm2();
   EXPECT_EQ(2, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
+}
+
+// Test verifies Passwords View Controller handles deletion of passwords.
+TEST_P(PasswordsTableViewControllerTest, PasswordIssuesDeletion) {
+  if (!GetParam().password_check_enabled)
+    return;
+  AddSavedForm1();
+  AddSavedForm2();
+  EXPECT_EQ(2, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
+
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
+
+  auto password =
+      GetTestStore().stored_passwords().at("http://www.example.com/").at(0);
+  EXPECT_TRUE([passwords_controller willHandlePasswordDeletion:password]);
+  EXPECT_EQ(1, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
 }
 
 const std::vector<PasswordCheckFeatureStatus> kPasswordCheckFeatureStatusCases{

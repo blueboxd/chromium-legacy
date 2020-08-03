@@ -4967,6 +4967,7 @@ be describing additional metrics about the same event.
 <event name="HistoryNavigation" singular="True">
   <owner>altimin@chromium.org</owner>
   <owner>arthursonzogni@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <summary>
     Metrics recorded each time we commit a history navigation, which are needed
     to estimate benefits of back-forward cache. Except as otherwise noted, the
@@ -4990,6 +4991,22 @@ be describing additional metrics about the same event.
       Bitmask of features used by the cross origin subframes of the previous
       page load. See blink::SchedulingPolicy::Feature for the meaning for the
       individual features.
+    </summary>
+  </metric>
+  <metric name="CumulativeShiftScoreAfterBackForwardCacheRestore">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/3fQz29y) that has occurred
+      during the session, after the page is restored from the back-forward
+      cache. This metric's integral value is 100x the fractional cumulative
+      layout shift score described in the explainer.
+    </summary>
+  </metric>
+  <metric name="FirstInputDelayAfterBackForwardCacheRestore">
+    <summary>
+      Measures First Input Delay, the duration between the hardware timestamp
+      and the start of event processing on the main thread for the first
+      meaningful input per navigation, after the page is restored from the
+      back-forward cache.
     </summary>
   </metric>
   <metric name="LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument">
@@ -5022,6 +5039,13 @@ be describing additional metrics about the same event.
       http://foo#bar.
 
       It's expected to be rare, but might be problematic for back-forward cache.
+    </summary>
+  </metric>
+  <metric name="NavigationToFirstPaintAfterBackForwardCacheRestore">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the first paint is performed, after the page is restored
+      from the back-forward cache.
     </summary>
   </metric>
   <metric name="SameOriginSubframesFeatures">

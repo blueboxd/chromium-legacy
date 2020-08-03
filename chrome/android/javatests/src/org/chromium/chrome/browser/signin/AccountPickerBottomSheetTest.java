@@ -18,6 +18,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -31,8 +32,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -51,6 +55,7 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
@@ -84,6 +89,9 @@ public class AccountPickerBottomSheetTest {
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(0).build();
+
+    @Captor
+    public ArgumentCaptor<Callback<String>> callbackArgumentCaptor;
 
     private final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -299,7 +307,16 @@ public class AccountPickerBottomSheetTest {
     public void testAddAccountOnExpandedSheet() {
         buildAndShowExpandedBottomSheet();
         onView(withText(R.string.signin_add_account_to_device)).perform(click());
-        verify(mAccountPickerDelegateMock).addAccount();
+        verify(mAccountPickerDelegateMock).addAccount(callbackArgumentCaptor.capture());
+        ProfileDataSource.ProfileData profileDataAdded = new ProfileDataSource.ProfileData(
+                /* accountName= */ "test.account3@gmail.com", /* avatar= */ null,
+                /* fullName= */ null, /* givenName= */ null);
+        Callback<String> callback = callbackArgumentCaptor.getValue();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> callback.onResult(profileDataAdded.getAccountName()));
+        CriteriaHelper.pollUiThread(mCoordinator.getBottomSheetViewForTesting().findViewById(
+                R.id.account_picker_selected_account)::isShown);
+        checkCollapsedAccountList(profileDataAdded);
     }
 
     @Test
@@ -338,7 +355,7 @@ public class AccountPickerBottomSheetTest {
         onView(allOf(withText(R.string.signin_add_account_to_device),
                        withEffectiveVisibility(VISIBLE)))
                 .perform(click());
-        verify(mAccountPickerDelegateMock).addAccount();
+        verify(mAccountPickerDelegateMock).addAccount(notNull());
     }
 
     private void checkCollapsedAccountList(ProfileDataSource.ProfileData profileData) {

@@ -439,6 +439,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
   base::ScopedFD devnull;
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch("verbose") &&
+      !cmd_line->HasSwitch("enable-chrome-logs") &&
       cmd_line->GetSwitchValueASCII("log-level") != "ALL") {
     // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
     // users.

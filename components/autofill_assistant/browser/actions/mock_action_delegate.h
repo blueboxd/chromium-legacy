@@ -112,10 +112,15 @@ class MockActionDelegate : public ActionDelegate {
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback)
       override {
-    autofill::FormData form_data;
-    autofill::FormFieldData field_data;
-    std::move(callback).Run(OkClientStatus(), form_data, field_data);
+    OnRetrieveElementFormAndFieldData(selector, callback);
   }
+
+  MOCK_METHOD2(
+      OnRetrieveElementFormAndFieldData,
+      void(const Selector& selector,
+           base::OnceCallback<void(const ClientStatus&,
+                                   const autofill::FormData&,
+                                   const autofill::FormFieldData&)>& callback));
 
   MOCK_METHOD4(OnFillCardForm,
                void(const autofill::CreditCard* card,

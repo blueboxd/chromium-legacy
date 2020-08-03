@@ -312,6 +312,11 @@ void NearbySharingServiceImpl::Open(const ShareTarget& share_target,
   std::move(status_codes_callback).Run(StatusCodes::kOk);
 }
 
+NearbyNotificationDelegate* NearbySharingServiceImpl::GetNotificationDelegate(
+    const std::string& notification_id) {
+  return nearby_notification_manager_->GetNotificationDelegate(notification_id);
+}
+
 NearbyShareSettings* NearbySharingServiceImpl::GetSettings() {
   return &settings_;
 }

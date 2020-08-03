@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "ui/views/controls/image_view.h"
@@ -25,6 +24,8 @@ class AnimationDelegate;
 class AlertIndicator : public views::ImageView {
  public:
   explicit AlertIndicator(Tab* parent_tab);
+  AlertIndicator(const AlertIndicator&) = delete;
+  AlertIndicator& operator=(const AlertIndicator&) = delete;
   ~AlertIndicator() override;
 
   // views::ImageView:
@@ -60,8 +61,6 @@ class AlertIndicator : public views::ImageView {
   std::unique_ptr<gfx::AnimationDelegate> fade_animation_delegate_;
   std::unique_ptr<gfx::Animation> fade_animation_;
   base::Optional<TabAlertState> showing_alert_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlertIndicator);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_H_

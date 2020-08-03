@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -253,8 +252,6 @@ bool NotificationsApiFunction::CreateNotification(
   // Extract required fields: type, title, message, and icon.
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
-  UMA_HISTOGRAM_ENUMERATION("Notifications.ExtensionNotificationType", type,
-                            message_center::NOTIFICATION_TYPE_LAST);
 
   const base::string16 title(base::UTF8ToUTF16(*options->title));
   const base::string16 message(base::UTF8ToUTF16(*options->message));
@@ -293,12 +290,6 @@ bool NotificationsApiFunction::CreateNotification(
   if (options->buttons.get()) {
     // Currently we allow up to 2 buttons.
     size_t number_of_buttons = options->buttons->size();
-
-    // Use distinct buckets for 1-16 notification action buttons, and an
-    // overflow bucket for 17 or more action buttons. Does not impact how many
-    // action buttons are shown.
-    UMA_HISTOGRAM_ENUMERATION("Notifications.ExtensionNotificationActionCount",
-                              number_of_buttons, 17);
 
     number_of_buttons = number_of_buttons > 2 ? 2 : number_of_buttons;
 

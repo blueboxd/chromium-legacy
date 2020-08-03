@@ -62,8 +62,8 @@ class InternetSection
   void OnDeviceList(
       std::vector<network_config::mojom::DeviceStatePropertiesPtr> devices);
 
-  void FetchActiveNetworks();
-  void OnActiveNetworks(
+  void FetchNetworkList();
+  void OnNetworkList(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks);
 
   // Null if no cellular network exists.

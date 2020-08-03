@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/mojom/chrome_prompt.mojom.h"
@@ -32,7 +31,7 @@ namespace chrome_cleaner {
 //   chrome_prompt_ipc->Initialize(&error_handler);
 //   ...
 //   std::vector<base::FilePath> files_to_delete = ...;
-//   std::vector<base::string16> registry_keys = ...;
+//   std::vector<std::wstring> registry_keys = ...;
 //   chrome_prompt_ipc->PostPromptUserTask(
 //       files_to_delete, registry_keys,
 //       base::BindOnce(&ReceivePromptResult));
@@ -56,15 +55,14 @@ class MojoChromePromptIPC : public ChromePromptIPC {
   // controller's thread; clients of this class are responsible for posting
   // response on the right thread.
   void PostPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
-                          const std::vector<base::string16>& registry_keys,
-                          const std::vector<base::string16>& extension_ids,
+                          const std::vector<std::wstring>& registry_keys,
+                          const std::vector<std::wstring>& extension_ids,
                           PromptUserCallback callback) override;
 
   // Posts a PromptDisableExtensions() task to the IPC controller's thread.
   // Internal state must be State::kDoneInteraction when the posted task runs.
-  void PostDisableExtensionsTask(
-      const std::vector<base::string16>& extension_ids,
-      DisableExtensionsCallback callback) override;
+  void PostDisableExtensionsTask(const std::vector<std::wstring>& extension_ids,
+                                 DisableExtensionsCallback callback) override;
 
   // Queries Chrome for its version of the ChromePrompt interface. If version
   // >= 3 calls |delete_allowed_callback|. Calls |delete_not_allowed_callback|
@@ -86,13 +84,12 @@ class MojoChromePromptIPC : public ChromePromptIPC {
   // Runs |chrome_prompt_service_->PromptUser()|. Must be called on the IPC
   // thread.
   void RunPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
-                         const std::vector<base::string16>& registry_keys,
-                         const std::vector<base::string16>& extension_ids,
+                         const std::vector<std::wstring>& registry_keys,
+                         const std::vector<std::wstring>& extension_ids,
                          PromptUserCallback callback);
 
-  void RunDisableExtensionsTask(
-      const std::vector<base::string16>& extension_ids,
-      DisableExtensionsCallback callback);
+  void RunDisableExtensionsTask(const std::vector<std::wstring>& extension_ids,
+                                DisableExtensionsCallback callback);
 
   // Callback for mojom::ChromePrompt::PromptUser, internal state must be
   // State::kWaitingForResponseFromChrome. Invokes callback(prompt_acceptance)
@@ -113,8 +110,8 @@ class MojoChromePromptIPC : public ChromePromptIPC {
 
   void PromptUserCheckVersion(
       const std::vector<base::FilePath>& files_to_delete,
-      const std::vector<base::string16>& registry_keys,
-      const std::vector<base::string16>& extension_ids,
+      const std::vector<std::wstring>& registry_keys,
+      const std::vector<std::wstring>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback,
       uint32_t version);
 

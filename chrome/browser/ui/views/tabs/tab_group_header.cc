@@ -58,6 +58,10 @@ class TabGroupHighlightPathGenerator : public views::HighlightPathGenerator {
   TabGroupHighlightPathGenerator(const views::View* chip,
                                  const views::View* title)
       : chip_(chip), title_(title) {}
+  TabGroupHighlightPathGenerator(const TabGroupHighlightPathGenerator&) =
+      delete;
+  TabGroupHighlightPathGenerator& operator=(
+      const TabGroupHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
@@ -70,8 +74,6 @@ class TabGroupHighlightPathGenerator : public views::HighlightPathGenerator {
  private:
   const views::View* const chip_;
   const views::View* const title_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabGroupHighlightPathGenerator);
 };
 
 }  // namespace

@@ -14,7 +14,6 @@ import androidx.annotation.StringDef;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
 import org.chromium.components.browser_ui.notifications.channels.ChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.channels.ChannelDefinitions.PredefinedChannel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

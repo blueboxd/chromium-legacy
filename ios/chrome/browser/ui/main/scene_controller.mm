@@ -1422,6 +1422,20 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfBrowser:(Browser*)browser {
+  // Check if there are pending actions that would result in opening a new tab.
+  // In that case, it is not useful to open another tab.
+  if (@available(iOS 13, *)) {
+    for (NSUserActivity* activity in self.sceneState.connectionOptions
+             .userActivities) {
+      if (ActivityIsURLLoad(activity)) {
+        return NO;
+      }
+    }
+  }
+  if (self.startupParameters) {
+    return NO;
+  }
+
   if (self.tabSwitcherIsActive) {
     Browser* mainBrowser = self.mainInterface.browser;
     Browser* otrBrowser = self.incognitoInterface.browser;
@@ -1447,24 +1461,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
     return YES;
   }
-  BOOL hasPendingURL = NO;
-
-  if (@available(iOS 13, *)) {
-    // Only consider normal mode load as this function always returns NO for
-    // incognito browser.
-    for (NSUserActivity* activity in self.sceneState.connectionOptions
-             .userActivities) {
-      if (ActivityIsURLLoadInNormalMode(activity)) {
-        hasPendingURL = YES;
-        break;
-      }
-    }
-  }
 
   // If there is a URLLoading activity, avoid opening a new tab as the NTP would
   // flash before the target URL is loaded.
   return browser->GetWebStateList()->empty() &&
-         !(browser->GetBrowserState()->IsOffTheRecord()) && !hasPendingURL;
+         !(browser->GetBrowserState()->IsOffTheRecord());
 }
 
 #pragma mark - SceneURLLoadingServiceDelegate

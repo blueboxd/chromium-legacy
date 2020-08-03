@@ -18,6 +18,8 @@ class TelemetryExtensionUiBrowserTest : public SandboxedWebUiAppTestBase {
       delete;
   TelemetryExtensionUiBrowserTest& operator=(
       const TelemetryExtensionUiBrowserTest&) = delete;
+
+  void SetUpOnMainThread() override;
 };
 
 #endif  // CHROMEOS_COMPONENTS_TELEMETRY_EXTENSION_UI_TEST_TELEMETRY_EXTENSION_UI_BROWSERTEST_H_

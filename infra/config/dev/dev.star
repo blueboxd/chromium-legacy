@@ -42,4 +42,16 @@ luci.milo(
     logo = 'https://storage.googleapis.com/chrome-infra-public/logo/chromium.svg',
 )
 
+# An all-purpose public realm.
+luci.realm(
+    name = 'public',
+    bindings = [
+        luci.binding(
+            roles = 'role/buildbucket.reader',
+            groups = 'all',
+        ),
+        # Other roles are inherited from @root which grants them to group:all.
+    ],
+)
+
 exec('//dev/subprojects/chromium/subproject.star')

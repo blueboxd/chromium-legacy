@@ -122,6 +122,40 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 @implementation RequestDesktopMobileSiteTestCase
 
+#pragma mark - Helpers
+
+- (BOOL)isMobileByDefault {
+  return web::features::UseWebClientDefaultUserAgent()
+             ? ![ChromeEarlGrey isIPadIdiom]
+             : YES;
+}
+
+- (GREYElementInteraction*)defaultRequestButton {
+  if ([self isMobileByDefault])
+    return RequestDesktopButton();
+  return RequestMobileButton();
+}
+
+- (GREYElementInteraction*)nonDefaultRequestButton {
+  if ([self isMobileByDefault])
+    return RequestMobileButton();
+  return RequestDesktopButton();
+}
+
+- (std::string)defaultLabel {
+  if ([self isMobileByDefault])
+    return kMobileSiteLabel;
+  return kDesktopSiteLabel;
+}
+
+- (std::string)nonDefaultLabel {
+  if ([self isMobileByDefault])
+    return kDesktopSiteLabel;
+  return kMobileSiteLabel;
+}
+
+#pragma mark - Tests
+
 // Tests that requesting desktop site of a page works and the user agent
 // propagates to the next navigations in the same tab.
 - (void)testRequestDesktopSitePropagatesToNextNavigations {
@@ -131,17 +165,17 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that desktop user agent propagates.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]];
 }
 
 // Tests that requesting desktop site of a page works and the requested user
@@ -153,12 +187,12 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Close all tabs and undo, trigerring a restoration.
@@ -174,8 +208,8 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Verify that desktop user agent propagates.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestMobileButton() assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [[self nonDefaultRequestButton] assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]];
 }
 
 // Tests that requesting desktop site of a page works and desktop user agent
@@ -187,18 +221,18 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that desktop user agent does not propagate to new tab.
   [ChromeEarlGreyUI openNewTab];
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 }
 
 // Tests that requesting desktop site of a page works and going back re-opens
@@ -211,18 +245,18 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that going back returns to the mobile site.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 }
 
 // Tests that when requesting desktop on another page and coming back to a page
@@ -241,14 +275,14 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(
                               "http://" + std::string(kPurgeURL))];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that going back returns to the mobile site.
@@ -261,32 +295,23 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
                           "reloaded";
                  }),
              @"Page did not reload");
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 }
 
 // Tests that navigating forward to a page not using the default mode from a
 // restored session is using the mode used in the past session.
 - (void)testNavigateForwardToDesktopMode {
-  BOOL isMobileByDefault = web::features::UseWebClientDefaultUserAgent()
-                               ? ![ChromeEarlGrey isIPadIdiom]
-                               : YES;
-
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
 
   // Load the page in the non-default mode.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
-  [ChromeEarlGrey waitForWebStateContainingText:isMobileByDefault
-                                                    ? kMobileSiteLabel
-                                                    : kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   [ChromeEarlGreyUI openToolsMenu];
-  [isMobileByDefault ? RequestDesktopButton() : RequestMobileButton()
-      performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:isMobileByDefault
-                                                    ? kDesktopSiteLabel
-                                                    : kMobileSiteLabel];
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]];
 
   // Go back to NTP to restore the session from there.
   [ChromeEarlGrey goBack];
@@ -298,12 +323,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // The session is restored, navigate forward and check the mode.
   [ChromeEarlGrey goForward];
-  [ChromeEarlGrey waitForWebStateContainingText:isMobileByDefault
-                                                    ? kDesktopSiteLabel
-                                                    : kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]];
   [ChromeEarlGreyUI openToolsMenu];
-  [isMobileByDefault ? RequestMobileButton() : RequestDesktopButton()
-      assertWithMatcher:grey_notNil()];
+  [[self nonDefaultRequestButton] assertWithMatcher:grey_notNil()];
 }
 
 // Tests that requesting mobile site of a page works and the user agent
@@ -315,23 +337,23 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestMobileButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
+  [[self nonDefaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that mobile user agent propagates.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 }
 
 // Tests that requesting mobile site of a page works and going back re-opens
@@ -344,24 +366,24 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestMobileButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
+  [[self nonDefaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that going back returns to the desktop site.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]];
 }
 
 // Tests that requesting desktop site button is not enabled on new tab pages.
@@ -390,29 +412,37 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];
 
-  std::string platform =
-      base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
-  [ChromeEarlGrey waitForWebStateContainingText:platform];
+  std::string defaultPlatform;
+  std::string nonDefaultPlatform;
+  if ([self isMobileByDefault]) {
+    defaultPlatform = base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
+    if (@available(iOS 13, *)) {
+      nonDefaultPlatform = kDesktopPlatformLabel;
+    } else {
+      nonDefaultPlatform = defaultPlatform;
+    }
+  } else {
+    defaultPlatform = kDesktopPlatformLabel;
+    nonDefaultPlatform =
+        base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
+  }
+  [ChromeEarlGrey waitForWebStateContainingText:defaultPlatform];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+  [[self defaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self nonDefaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
-  if (@available(iOS 13, *)) {
-    [ChromeEarlGrey waitForWebStateContainingText:kDesktopPlatformLabel];
-  } else {
-    [ChromeEarlGrey waitForWebStateContainingText:platform];
-  }
+  [ChromeEarlGrey waitForWebStateContainingText:nonDefaultPlatform];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
-  [RequestMobileButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
+  [[self nonDefaultRequestButton] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]
                                         timeout:kWaitForUserAgentChangeTimeout];
-  [ChromeEarlGrey waitForWebStateContainingText:platform];
+  [ChromeEarlGrey waitForWebStateContainingText:defaultPlatform];
 }
 
 @end

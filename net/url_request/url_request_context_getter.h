@@ -16,10 +16,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace content {
-class WebSocketManager;
-}
-
 #if defined(OS_IOS)
 namespace web {
 class NetworkContextOwner;
@@ -69,11 +65,9 @@ class NET_EXPORT URLRequestContextGetter
   void NotifyContextShuttingDown();
 
  private:
-  // AddObserver and RemoveObserver are deprecated. Friend URLFetcherCore,
-  // content::WebSocketManager, and web::NetworkContextOwner to restrict
-  // visibility.
+  // AddObserver and RemoveObserver are deprecated. Friend URLFetcherCore and
+  // web::NetworkContextOwner to restrict visibility.
   friend class URLFetcherCore;
-  friend class content::WebSocketManager;
 
 #if defined(OS_IOS)
   friend class web::NetworkContextOwner;

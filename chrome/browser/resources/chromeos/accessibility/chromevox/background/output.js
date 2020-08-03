@@ -126,12 +126,10 @@ Output = class {
    * @param {QueueMode|undefined} mode
    */
   static forceModeForNextSpeechUtterance(mode) {
-    // If previous calls to force the mode went unprocessed, try to honor the
-    // first caller's setting which is generally set by key and gesture events
-    // rather than automation events. Make an exception when a caller explicitly
-    // clears the mode .e.g in editing.
     if (Output.forceModeForNextSpeechUtterance_ === undefined ||
-        mode === undefined) {
+        mode === undefined ||
+        // Only allow setting to higher queue modes.
+        mode < Output.forceModeForNextSpeechUtterance_) {
       Output.forceModeForNextSpeechUtterance_ = mode;
     }
   }

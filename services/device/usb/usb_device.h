@@ -150,6 +150,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   friend class UsbServiceAndroid;
   friend class UsbServiceImpl;
   friend class UsbServiceLinux;
+  friend class UsbServiceMac;
   friend class UsbServiceWin;
 
   void OnDisconnect();

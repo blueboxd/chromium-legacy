@@ -106,9 +106,11 @@ SpeechLog = class extends BaseLog {
   toString() {
     let logStr = 'Speak';
     if (this.queueMode_ == QueueMode.FLUSH) {
-      logStr += ' (I)';
+      logStr += ' (F)';
     } else if (this.queueMode_ == QueueMode.CATEGORY_FLUSH) {
       logStr += ' (C)';
+    } else if (this.queueMode_ == QueueMode.INTERJECT) {
+      logStr += ' (I)';
     } else {
       logStr += ' (Q)';
     }

@@ -14,6 +14,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
@@ -40,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties;
@@ -48,6 +50,7 @@ import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -186,6 +189,28 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
+    public void testClickingChangePasswordTriggersHandler() {
+        runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
+
+        TouchCommon.singleClickView(getCredentialChangeButtonAt(0));
+
+        waitForEvent(mMockHandler).onChangePasswordButtonClick(eq(ANA));
+    }
+
+    @Test
+    @MediumTest
+    public void testClickingChangePasswordWithScriptTriggersHandler() {
+        runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(SCRIPTED)));
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
+
+        TouchCommon.singleClickView(getCredentialChangeButtonWithScriptAt(0));
+
+        waitForEvent(mMockHandler).onChangePasswordWithScriptButtonClick(eq(SCRIPTED));
+    }
+
+    @Test
+    @MediumTest
     public void testClickingDeleteInMoreMenuTriggersHandler() {
         runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
@@ -271,5 +296,10 @@ public class PasswordCheckViewTest {
 
     private String getString(@IdRes int stringResource) {
         return mTestRule.getActivity().getString(stringResource);
+    }
+
+    private static <T> T waitForEvent(T mock) {
+        return verify(mock,
+                timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
     }
 }

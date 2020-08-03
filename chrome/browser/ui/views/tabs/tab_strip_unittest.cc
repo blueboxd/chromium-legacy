@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -61,7 +60,8 @@ views::View* FindTabView(views::View* view) {
 class TestAXEventObserver : public views::AXEventObserver {
  public:
   TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
-
+  TestAXEventObserver(const TestAXEventObserver&) = delete;
+  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
   ~TestAXEventObserver() override {
     views::AXEventManager::Get()->RemoveObserver(this);
   }
@@ -87,8 +87,6 @@ class TestAXEventObserver : public views::AXEventObserver {
   int add_count_ = 0;
   int change_count_ = 0;
   int remove_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
 }  // namespace
@@ -98,7 +96,8 @@ class TestTabStripObserver : public TabStripObserver {
   explicit TestTabStripObserver(TabStrip* tab_strip) : tab_strip_(tab_strip) {
     tab_strip_->AddObserver(this);
   }
-
+  TestTabStripObserver(const TestTabStripObserver&) = delete;
+  TestTabStripObserver& operator=(const TestTabStripObserver&) = delete;
   ~TestTabStripObserver() override { tab_strip_->RemoveObserver(this); }
 
   int last_tab_added() const { return last_tab_added_; }
@@ -122,8 +121,6 @@ class TestTabStripObserver : public TabStripObserver {
   int last_tab_removed_ = -1;
   int last_tab_moved_from_ = -1;
   int last_tab_moved_to_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
 
 class TabStripTest : public ChromeViewsTestBase,
@@ -133,8 +130,9 @@ class TabStripTest : public ChromeViewsTestBase,
       : touch_ui_scoper_(GetParam()),
         animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
             gfx::Animation::RichAnimationRenderMode::FORCE_ENABLED)) {}
-
-  ~TabStripTest() override {}
+  TabStripTest(const TabStripTest&) = delete;
+  TabStripTest& operator=(const TabStripTest&) = delete;
+  ~TabStripTest() override = default;
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
@@ -281,8 +279,6 @@ class TabStripTest : public ChromeViewsTestBase,
   ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_;
   std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
       animation_mode_reset_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripTest);
 };
 
 TEST_P(TabStripTest, GetModelCount) {

@@ -2424,6 +2424,75 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest,
       render_text, kSimplifiedDomainDisplayUrl, path_bounds));
 }
 
+// Tests that gradient mask is set correctly.
+TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a user interaction to begin animating to the simplified domain.
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+
+  // Advance the clock by 1ms until the full size gradient has been added.
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  uint32_t step = 1;
+  int max_gradient_width = OmniboxViewViews::kSmoothingGradientMaxWidth;
+  while (omnibox_view()->elide_animation_smoothing_rect_right_.width() <
+         max_gradient_width) {
+    elide_as_element->Step(base::TimeTicks() +
+                           base::TimeDelta::FromMilliseconds(++step));
+  }
+  // If we are eliding from the left, the other side gradient should also be
+  // full size at this point, otherwise it should be 0.
+  if (GetParam()) {
+    EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(),
+              max_gradient_width);
+  } else {
+    EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(), 0);
+  }
+
+  // Get a bounding box for the unelided section of the URL.
+  std::vector<gfx::Range> ranges_surrounding_simplified_domain;
+  gfx::Range simplified_range = omnibox_view()->GetSimplifiedDomainBounds(
+      &ranges_surrounding_simplified_domain);
+  gfx::Rect simplified_rect;
+  for (auto rect : render_text->GetSubstringBounds(simplified_range)) {
+    simplified_rect.Union(rect - render_text->GetLineOffset(0));
+  }
+
+  // Advance the animation until both gradients start shrinking.
+  while (omnibox_view()->elide_animation_smoothing_rect_left_.width() ==
+             max_gradient_width ||
+         omnibox_view()->elide_animation_smoothing_rect_right_.width() ==
+             max_gradient_width) {
+    elide_as_element->Step(base::TimeTicks() +
+                           base::TimeDelta::FromMilliseconds(++step));
+  }
+  int offset = elide_animation->GetCurrentOffsetForTesting();
+  gfx::Rect display_rect = render_text->display_rect();
+  // Check the expected size and positions for both gradients.
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(),
+            simplified_rect.x() + offset);
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.x(),
+            display_rect.x());
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.width(),
+            display_rect.right() - (simplified_rect.right() + offset));
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.x(),
+            simplified_rect.right() + offset);
+}
+
 // Tests that in the hide-on-interaction field trial, a second user interaction
 // does not interfere with an animation that is currently running. This is
 // similar to SameDocNavigationDuringAnimation except that this test checks that

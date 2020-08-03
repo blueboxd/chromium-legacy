@@ -33,6 +33,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CallbackController;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -45,6 +46,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -72,6 +74,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -157,6 +160,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -289,6 +293,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private ObservableSupplierImpl<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier =
             new ObservableSupplierImpl<>();
+
+    private CallbackController mCallbackController = new CallbackController();
 
     private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
         @Override
@@ -1030,6 +1036,18 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // TODO(tedchoc): We should cache the last visible time and reuse it to avoid different
         //                values of this depending on when it is called after the activity was
         //                shown.
+
+        if (mCallbackController != null) {
+            new OneShotCallback<>(
+                    mTabModelProfileSupplier, mCallbackController.makeCancelable(profile -> {
+                        assert profile != null : "Unexpectedly null profile from TabModel.";
+                        if (profile == null) return;
+
+                        TrackerFactory.getTrackerForProfile(profile).notifyEvent(
+                                EventConstants.STARTED_FROM_MAIN_INTENT);
+                    }));
+        }
+
         mMainIntentMetrics.onMainIntentWithNative(
                 mInactivityTracker.getTimeSinceLastBackgroundedMs());
     }
@@ -2050,6 +2068,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public void onDestroyInternal() {
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
+
         if (mOverviewModeController != null && mOverviewModeObserver != null) {
             mOverviewModeController.removeOverviewModeObserver(mOverviewModeObserver);
         }

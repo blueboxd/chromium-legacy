@@ -159,7 +159,15 @@ TEST_P(WaylandWindowManagerTest, GetCurrentKeyboardFocusedWindow) {
 TEST_P(WaylandWindowManagerTest, GetWindowsOnOutput) {
   MockPlatformWindowDelegate delegate;
 
+  // Create a second wl_output.
   wl::TestOutput* output = server_.CreateAndInitializeOutput();
+  Sync();
+
+  // Place it at the right of the first output.
+  int x = server_.output()->GetRect().x();
+  output->SetRect({x, 0, 800, 600});
+  output->Flush();
+  Sync();
 
   auto window1 = CreateWaylandWindowWithParams(PlatformWindowType::kWindow,
                                                kDefaultBounds, &delegate);
@@ -195,6 +203,9 @@ TEST_P(WaylandWindowManagerTest, GetWindowsOnOutput) {
 
   windows_on_output = manager_->GetWindowsOnOutput(output_id);
   EXPECT_EQ(2u, windows_on_output.size());
+
+  output->DestroyGlobal();
+  Sync();
 }
 
 TEST_P(WaylandWindowManagerTest, GetAllWindows) {

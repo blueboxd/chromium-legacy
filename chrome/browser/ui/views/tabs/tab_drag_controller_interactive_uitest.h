@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "url/url_constants.h"
 
@@ -30,6 +29,8 @@ class GestureEvent;
 class TabDragControllerTest : public InProcessBrowserTest {
  public:
   TabDragControllerTest();
+  TabDragControllerTest(const TabDragControllerTest&) = delete;
+  TabDragControllerTest& operator=(const TabDragControllerTest&) = delete;
   ~TabDragControllerTest() override;
 
   // Cover for TabStrip::StopAnimating(true).
@@ -60,9 +61,6 @@ class TabDragControllerTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUp() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);
 };
 
 namespace test {

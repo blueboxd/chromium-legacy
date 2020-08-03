@@ -221,12 +221,6 @@ const std::vector<SearchConcept>& GetCellularSearchConcepts() {
        {.subpage = mojom::Subpage::kCellularDetails},
        {IDS_OS_SETTINGS_TAG_CELLULAR_ALT1, IDS_OS_SETTINGS_TAG_CELLULAR_ALT2,
         IDS_OS_SETTINGS_TAG_CELLULAR_ALT3, SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetCellularOnSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CELLULAR_SIM_LOCK,
        mojom::kCellularDetailsSubpagePath,
        mojom::SearchResultIcon::kCellular,
@@ -240,6 +234,18 @@ const std::vector<SearchConcept>& GetCellularOnSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kCellularRoaming}},
+      {IDS_OS_SETTINGS_TAG_CELLULAR_APN,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularApn}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCellularOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CELLULAR_TURN_OFF,
        mojom::kNetworkSectionPath,
        mojom::SearchResultIcon::kCellular,
@@ -247,12 +253,6 @@ const std::vector<SearchConcept>& GetCellularOnSearchConcepts() {
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kMobileOnOff},
        {IDS_OS_SETTINGS_TAG_CELLULAR_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_CELLULAR_APN,
-       mojom::kCellularDetailsSubpagePath,
-       mojom::SearchResultIcon::kCellular,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kCellularApn}},
   });
   return *tags;
 }
@@ -504,7 +504,7 @@ InternetSection::InternetSection(Profile* profile,
 
   // Fetch initial list of devices and active networks.
   FetchDeviceList();
-  FetchActiveNetworks();
+  FetchNetworkList();
 }
 
 InternetSection::~InternetSection() = default;
@@ -817,7 +817,7 @@ void InternetSection::OnDeviceStateListChanged() {
 
 void InternetSection::OnActiveNetworksChanged(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
-  OnActiveNetworks(std::move(networks));
+  FetchNetworkList();
 }
 
 void InternetSection::FetchDeviceList() {
@@ -835,7 +835,6 @@ void InternetSection::OnDeviceList(
   updater.RemoveSearchTags(GetWifiSearchConcepts());
   updater.RemoveSearchTags(GetWifiOnSearchConcepts());
   updater.RemoveSearchTags(GetWifiOffSearchConcepts());
-  updater.RemoveSearchTags(GetCellularSearchConcepts());
   updater.RemoveSearchTags(GetCellularOnSearchConcepts());
   updater.RemoveSearchTags(GetCellularOffSearchConcepts());
   updater.RemoveSearchTags(GetInstantTetheringSearchConcepts());
@@ -853,7 +852,9 @@ void InternetSection::OnDeviceList(
         break;
 
       case NetworkType::kCellular:
-        updater.AddSearchTags(GetCellularSearchConcepts());
+        // Note: Cellular search concepts all point to the cellular details
+        // page, which is only available if a cellular network exists. This
+        // check is in OnNetworkList().
         if (device->device_state == DeviceStateType::kEnabled)
           updater.AddSearchTags(GetCellularOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
@@ -876,16 +877,16 @@ void InternetSection::OnDeviceList(
   }
 }
 
-void InternetSection::FetchActiveNetworks() {
+void InternetSection::FetchNetworkList() {
   cros_network_config_->GetNetworkStateList(
       network_config::mojom::NetworkFilter::New(
           network_config::mojom::FilterType::kVisible,
           network_config::mojom::NetworkType::kAll,
           network_config::mojom::kNoLimit),
-      base::Bind(&InternetSection::OnActiveNetworks, base::Unretained(this)));
+      base::Bind(&InternetSection::OnNetworkList, base::Unretained(this)));
 }
 
-void InternetSection::OnActiveNetworks(
+void InternetSection::OnNetworkList(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
   using network_config::mojom::NetworkType;
 
@@ -894,6 +895,7 @@ void InternetSection::OnActiveNetworks(
   updater.RemoveSearchTags(GetEthernetConnectedSearchConcepts());
   updater.RemoveSearchTags(GetWifiConnectedSearchConcepts());
   updater.RemoveSearchTags(GetWifiMeteredSearchConcepts());
+  updater.RemoveSearchTags(GetCellularSearchConcepts());
   updater.RemoveSearchTags(GetCellularConnectedSearchConcepts());
   updater.RemoveSearchTags(GetCellularMeteredSearchConcepts());
   updater.RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
@@ -909,8 +911,10 @@ void InternetSection::OnActiveNetworks(
   for (const auto& network : networks) {
     // Special case: Some cellular search functionality is available even if the
     // network is not connected.
-    if (network->type == NetworkType::kCellular)
+    if (network->type == NetworkType::kCellular) {
       cellular_guid_ = network->guid;
+      updater.AddSearchTags(GetCellularSearchConcepts());
+    }
 
     if (!IsConnected(network->connection_state))
       continue;

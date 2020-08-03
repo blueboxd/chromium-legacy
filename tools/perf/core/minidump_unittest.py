@@ -35,6 +35,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
+      'linux',  # https://crbug.com/1108432
       'win'  # https://crbug.com/1084931
   )
   def testSymbolizeMinidump(self):
@@ -80,6 +81,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
+      'linux',  # https://crbug.com/1108432
       'win'  # https://crbug.com/1084931
   )
   def testMultipleCrashMinidumps(self):

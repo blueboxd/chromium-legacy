@@ -1373,7 +1373,7 @@ const char kNewProfilePickerDescription[] =
 
 const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
-    "Enables the new experimental USB backend for Windows.";
+    "Enables the new experimental USB backends for macOS and Windows";
 
 const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
@@ -2712,6 +2712,13 @@ const char kEphemeralTabUsingBottomSheetDescription[] =
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
+
+const char kFillingPasswordsFromAnyOriginName[] =
+    "Filling passwords from any origin";
+const char kFillingPasswordsFromAnyOriginDescription[] =
+    "Enabling this flag adds a button to the password fallback sheet. The "
+    "button opens a different sheet that allows filling a password from any "
+    "origin.";
 
 const char kGamesHubName[] = "Games Hub";
 const char kGamesHubDescription[] =

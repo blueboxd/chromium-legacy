@@ -288,6 +288,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
             event.SetStringKey(kKeyEventResult,
                                safe_browsing::EventResultToString(
                                    safe_browsing::EventResult::BYPASSED));
+            event.SetBoolKey(kKeyClickedThrough, true);
             return event;
           },
           params.url, params.file_name, params.download_digest_sha256,
@@ -448,6 +449,9 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
             event.SetStringKey(
                 kKeyEventResult,
                 safe_browsing::EventResultToString(event_result));
+            event.SetBoolKey(
+                kKeyClickedThrough,
+                event_result == safe_browsing::EventResult::BYPASSED);
             return event;
           },
           url.spec(), file_name, download_digest_sha256, GetProfileUserName(),
@@ -492,6 +496,9 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
             event.SetStringKey(
                 kKeyEventResult,
                 safe_browsing::EventResultToString(event_result));
+            event.SetBoolKey(
+                kKeyClickedThrough,
+                event_result == safe_browsing::EventResult::BYPASSED);
 
             AddAnalysisConnectorVerdictToEvent(result, &event);
 
@@ -543,6 +550,7 @@ void SafeBrowsingPrivateEventRouter::OnAnalysisConnectorWarningBypassed(
             event.SetStringKey(kKeyEventResult,
                                safe_browsing::EventResultToString(
                                    safe_browsing::EventResult::BYPASSED));
+            event.SetBoolKey(kKeyClickedThrough, true);
 
             AddAnalysisConnectorVerdictToEvent(result, &event);
 
@@ -594,6 +602,9 @@ void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(
             event.SetStringKey(
                 kKeyEventResult,
                 safe_browsing::EventResultToString(event_result));
+            event.SetBoolKey(
+                kKeyClickedThrough,
+                event_result == safe_browsing::EventResult::BYPASSED);
             return event;
           },
           url.spec(), file_name, download_digest_sha256, GetProfileUserName(),

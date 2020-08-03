@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
@@ -122,6 +121,10 @@ class TabStyleHighlightPathGenerator : public views::HighlightPathGenerator {
  public:
   explicit TabStyleHighlightPathGenerator(TabStyle* tab_style)
       : tab_style_(tab_style) {}
+  TabStyleHighlightPathGenerator(const TabStyleHighlightPathGenerator&) =
+      delete;
+  TabStyleHighlightPathGenerator& operator=(
+      const TabStyleHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
@@ -130,8 +133,6 @@ class TabStyleHighlightPathGenerator : public views::HighlightPathGenerator {
 
  private:
   TabStyle* const tab_style_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStyleHighlightPathGenerator);
 };
 
 }  // namespace
@@ -146,6 +147,8 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
     DCHECK(close_button_);
     tab_close_button_observer_.Add(close_button_);
   }
+  TabCloseButtonObserver(const TabCloseButtonObserver&) = delete;
+  TabCloseButtonObserver& operator=(const TabCloseButtonObserver&) = delete;
 
   ~TabCloseButtonObserver() override {
     tab_close_button_observer_.Remove(close_button_);
@@ -168,8 +171,6 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
   Tab* tab_;
   views::View* close_button_;
   TabController* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabCloseButtonObserver);
 };
 
 // Tab -------------------------------------------------------------------------

@@ -30,21 +30,28 @@ TtsCategory = {
 };
 
 /**
- * Queue modes for calls to {@code TtsInterface.speak}.
+ * Queue modes for calls to {@code TtsInterface.speak}. The modes are listed in
+ * descending order of priority.
  * @enum
  */
 QueueMode = {
-  /** Stop speech, clear everything, then speak this utterance. */
-  FLUSH: 0,
+  /**
+     Prepend the current utterance (if any) to the queue, stop speech, and
+     speak this utterance.
+   */
+  INTERJECT: 0,
 
-  /** Append this utterance to the end of the queue. */
-  QUEUE: 1,
+  /** Stop speech, clear everything, then speak this utterance. */
+  FLUSH: 1,
 
   /**
    * Clear any utterances of the same category (as set by
    * properties['category']) from the queue, then enqueue this utterance.
    */
-  CATEGORY_FLUSH: 2
+  CATEGORY_FLUSH: 2,
+
+  /** Append this utterance to the end of the queue. */
+  QUEUE: 3
 };
 
 /**

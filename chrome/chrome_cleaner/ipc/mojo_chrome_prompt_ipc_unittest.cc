@@ -40,8 +40,8 @@ constexpr char kExpectedParentDisconnectedSwitch[] =
     "expected-parent-disconnected";
 
 const base::FilePath kBadFilePath(L"/path/to/bad.dll");
-const base::string16 kBadRegistryKey(L"HKCU:32\\Software\\ugly-uws\\nasty");
-const base::string16 kExtensionId(L"expected-extension-id");
+const std::wstring kBadRegistryKey(L"HKCU:32\\Software\\ugly-uws\\nasty");
+const std::wstring kExtensionId(L"expected-extension-id");
 
 // Possible moments when the parent process can disconnect from the IPC to
 // check connection error handling in the child process.
@@ -96,8 +96,8 @@ class MockChromePrompt : public mojom::ChromePrompt {
 
   void PromptUser(
       const std::vector<base::FilePath>& files_to_delete,
-      const base::Optional<std::vector<base::string16>>& registry_keys,
-      const base::Optional<std::vector<base::string16>>& extension_ids,
+      const base::Optional<std::vector<std::wstring>>& registry_keys,
+      const base::Optional<std::vector<std::wstring>>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback) override {
     EXPECT_NE(test_config_.uws_expected, files_to_delete.empty());
     if (test_config_.uws_expected) {
@@ -112,7 +112,7 @@ class MockChromePrompt : public mojom::ChromePrompt {
     CloseConnectionIf(ParentDisconnected::kOnDone);
   }
 
-  void DisableExtensions(const std::vector<base::string16>& extension_ids,
+  void DisableExtensions(const std::vector<std::wstring>& extension_ids,
                          DisableExtensionsCallback callback) override {
     FAIL() << "No tests include UwE so DisableExtensions should not be called.";
   }
@@ -174,8 +174,8 @@ class ChromePromptIPCChildProcess : public ChildProcess {
     CHECK(chrome_prompt_ipc);
 
     std::vector<base::FilePath> files_to_delete;
-    std::vector<base::string16> registry_keys;
-    std::vector<base::string16> extension_ids;
+    std::vector<std::wstring> registry_keys;
+    std::vector<std::wstring> extension_ids;
     if (uws_expected()) {
       files_to_delete.push_back(kBadFilePath);
       registry_keys.push_back(kBadRegistryKey);

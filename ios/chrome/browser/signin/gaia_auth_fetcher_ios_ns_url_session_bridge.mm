@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/web/common/features.h"
@@ -19,13 +20,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Name of the cookie that is managed by AccountConsistencyService and is used
-// to inform Google web properties that the browser is connected and that Google
-// authentication cookies are managed by |AccountReconcilor|).
-const char kChromeConnectedCookieName[] = "CHROME_CONNECTED";
-}
 
 @interface GaiaAuthFetcherIOSURLSessionDelegate
     : NSObject <NSURLSessionTaskDelegate>
@@ -159,8 +153,10 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequestWithCookies(
     // |CHROME_CONNECTED| cookie is attached to all web requests to Google web
     // properties. Requests initiated from the browser services (e.g.
     // GaiaCookieManagerService) must not include this cookie.
-    if (cookie_with_access_result.cookie.Name() == kChromeConnectedCookieName)
+    if (cookie_with_access_result.cookie.Name() ==
+        AccountConsistencyService::kChromeConnectedCookieName) {
       continue;
+    }
     [http_cookies addObject:net::SystemCookieFromCanonicalCookie(
                                 cookie_with_access_result.cookie)];
   }

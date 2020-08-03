@@ -172,6 +172,9 @@ public final class EventConstants {
     public static final String NTP_SHOWN = "ntp_shown";
     public static final String NTP_HOME_BUTTON_CLICKED = "ntp_homebutton_clicked";
 
+    /** Reengagement events. */
+    public static final String STARTED_FROM_MAIN_INTENT = "started_from_main_intent";
+
     /**
      * Do not instantiate.
      */

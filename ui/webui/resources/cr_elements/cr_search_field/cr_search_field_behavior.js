@@ -137,3 +137,37 @@
     return true;
   },
 };
+
+/** @interface */
+/* #export */ class CrSearchFieldBehaviorInterface {
+  constructor() {
+    /** @type {string} */
+    this.label;
+
+    /** @type {string} */
+    this.clearLabel;
+
+    /** @type {boolean} */
+    this.hasSearchText;
+  }
+
+  /**
+   * @return {!HTMLInputElement} The input field element the behavior should
+   *     use.
+   */
+  getSearchInput() {}
+
+  /** @return {string} The value of the search field. */
+  getValue() {}
+
+  /**
+   * @param {string} value
+   * @param {boolean=} opt_noEvent Whether to prevent a 'search-changed' event
+   *     firing for this change.
+   */
+  setValue(value, opt_noEvent) {}
+
+  onSearchTermSearch() {}
+
+  onSearchTermInput() {}
+}

@@ -70,6 +70,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                     const std::string& dump_name) override;
   bool EmulatingRGB() const override;
   bool IsInUseByWindowServer() const override;
+  void DisableInUseByWindowServer() override;
 
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
@@ -111,6 +112,8 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   base::ThreadChecker thread_checker_;
   // The default value of Rec. 601 is based on historical shader code.
   gfx::ColorSpace color_space_for_yuv_to_rgb_ = gfx::ColorSpace::CreateREC601();
+
+  bool disable_in_use_by_window_server_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };

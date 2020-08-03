@@ -4095,11 +4095,21 @@
       'id': 26,
       'caption': '''Supported authentication schemes''',
       'tags': [],
-      'desc': '''Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Setting the policy specifies which HTTP authentication schemes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> supports.
 
-          Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
+      Leaving the policy unset employs all 4 schemes.
 
-          If this policy is left not set, all four schemes will be used.''',
+      Valid values:
+
+      * basic
+
+      * digest
+
+      * ntlm
+
+      * negotiate
+
+      Note: Separate multiple values with commas.''',
     },
     {
       'name': 'DisableAuthNegotiateCnameLookup',
@@ -4115,11 +4125,9 @@
       'id': 27,
       'caption': '''Disable CNAME lookup when negotiating Kerberos authentication''',
       'tags': [],
-      'desc': '''Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
+      'desc': '''Setting the policy to Enabled skips CNAME lookup. The server name is used as entered when generating the Kerberos SPN.
 
-          If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
-
-          If you disable this setting or leave it not set, the canonical name of the server will be determined via CNAME lookup.''',
+      Setting the policy to Disabled or leaving it unset means CNAME lookup determines the canonical name of the server when generating the Kerberos SPN.''',
     },
     {
       'name': 'EnableAuthNegotiatePort',
@@ -4135,11 +4143,9 @@
       'id': 28,
       'caption': '''Include non-standard port in Kerberos SPN''',
       'tags': [],
-      'desc': '''Specifies whether the generated Kerberos SPN should include a non-standard port.
+      'desc': '''Setting the policy to Enabled and entering a nonstandard port (in other words, a port other than 80 or 443) includes it in the generated Kerberos SPN.
 
-          If you enable this setting, and a non-standard port (i.e., a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN.
-
-          If you disable this setting or leave it not set, the generated Kerberos SPN will not include a port in any case.''',
+      Setting the policy to Disabled or leaving it unset means the generated Kerberos SPN won't include a port.''',
     },
     {
       'name': 'AuthServerWhitelist',
@@ -4158,11 +4164,11 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="AUTH_SERVER_ALLOWLIST_POLICY_NAME">AuthServerAllowlist</ph>' policy instead.
 
-          Specifies which servers should be allowed for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
+      Setting the policy specifies which servers should be allowed for integrated authentication. Integrated authentication is only on when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> gets an authentication challenge from a proxy or from a server in this permitted list.
 
-          Separate multiple server names with commas. Wildcards (*) are allowed.
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> tries to detect if a server is on the intranet. Only then will it respond to IWA requests. If a server is detected as internet, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores IWA requests from it.
 
-          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to detect if a server is on the Intranet and only then will it respond to IWA requests.  If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      Note: Separate multiple server names with commas. Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed.''',
     },
     {
       'name': 'AuthServerAllowlist',
@@ -4178,11 +4184,11 @@
       'id': 747,
       'caption': '''Authentication server allowlist''',
       'tags': [],
-      'desc': '''Specifies which servers should be allowed for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
+      'desc': '''Setting the policy specifies which servers should be allowed for integrated authentication. Integrated authentication is only on when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> gets an authentication challenge from a proxy or from a server in this permitted list.
 
-          Separate multiple server names with commas. Wildcards (*) are allowed.
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> tries to detect if a server is on the intranet. Only then will it respond to IWA requests. If a server is detected as internet, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores IWA requests from it.
 
-          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to detect if a server is on the Intranet and only then will it respond to IWA requests.  If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      Note: Separate multiple server names with commas. Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed.''',
     },
     {
       'name': 'AuthNegotiateDelegateWhitelist',
@@ -4201,11 +4207,9 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph>' policy instead.
 
-          Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
+      Setting the policy assigns servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to. Separate multiple server names with commas. Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed.
 
-          Separate multiple server names with commas. Wildcards (*) are allowed.
-
-          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.''',
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't delegate user credentials, even if a server is detected as intranet.''',
     },
     {
       'name': 'AuthNegotiateDelegateAllowlist',
@@ -4221,11 +4225,9 @@
       'id': 746,
       'caption': '''Kerberos delegation server allowlist''',
       'tags': [],
-      'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
+      'desc': '''Setting the policy assigns servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to. Separate multiple server names with commas. Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed.
 
-          Separate multiple server names with commas. Wildcards (*) are allowed.
-
-          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.''',
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't delegate user credentials, even if a server is detected as intranet.''',
     },
     {
       'name': 'AuthNegotiateDelegateByKdcPolicy',
@@ -4241,13 +4243,11 @@
       'id': 528,
       'caption': '''Use KDC policy to delegate credentials.''',
       'tags': ['website-sharing'],
-      'desc': '''Controls whether approval by KDC policy is respected to decide whether to delegate <ph name="KERBEROS">Kerberos</ph> tickets.
+      'desc': '''Setting the policy to Enabled means HTTP authentication respects approval by KDC policy. In other words, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> delegates credentials if the KDC sets <ph name="OK_AS_DELEGATE">OK-AS-DELEGATE</ph> on a service ticket. See RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). Service should match <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph>.
 
-          If this policy is true, HTTP authentication respects approval by KDC policy, i.e. Chrome only delegates credentials if the KDC sets <ph name="OK_AS_DELEGATE">OK-AS-DELEGATE</ph> on a service ticket. Please see https://tools.ietf.org/html/rfc5896.html for more information. Service should also match 'AuthNegotiateDelegateAllowlist' policy.
+      Setting the policy to Disabled or leaving it unset means KDC policy is ignored on supported platforms and only <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph> is respected.
 
-          If this policy is not set or set to false, KDC policy is ignored on supported platforms and 'AuthNegotiateDelegateAllowlist' policy only is respected.
-
-          On Windows KDC policy is always respected.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, KDC policy is always respected.''',
     },
     {
       'name': 'GSSAPILibraryName',
@@ -4263,9 +4263,9 @@
       'id': 31,
       'caption': '''GSSAPI library name''',
       'tags': [],
-      'desc': '''Specifies which GSSAPI library to use for HTTP authentication. You can set either just a library name, or a full path.
+      'desc': '''Setting the policy specifies which GSSAPI library to use for HTTP authentication. Set the policy to either a library name or a full path.
 
-          If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default library name.''',
     },
     {
       'name': 'AuthAndroidNegotiateAccountType',
@@ -4281,9 +4281,9 @@
       'id': 305,
       'caption': '''Account type for <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication''',
       'tags': [],
-      'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
+      'desc': '''Setting the policy specifies the type of accounts provided by the Android authentication app that supports <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication (such as Kerberos authentication). This information should be available from the supplier of the authentication app. For details, see The Chromium Projects ( https://goo.gl/hajyfN )
 
-          If no setting is provided, <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication is disabled on Android.''',
+      Leaving the policy unset turns off <ph name="HTTP_NEGOTIATE">HTTP Negotiate</ph> authentication on Android.''',
     },
     {
       'name': 'AllowCrossOriginAuthPrompt',
@@ -4299,9 +4299,11 @@
       'id': 89,
       'caption': '''Cross-origin HTTP Basic Auth prompts''',
       'tags': ['website-sharing'],
-      'desc': '''Controls whether third-party sub-content on a page is allowed to pop-up an HTTP Basic Auth dialog box.
+      'desc': '''Setting the policy to Enabled allows third-party subcontent on a page to open an HTTP Basic Auth pop-up.
 
-          Typically this is disabled as a phishing defense. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialog box.''',
+       Setting the policy to Disabled or leaving it unset renders third-party subcontent unable to open an HTTP Basic Auth pop-up.
+
+      Typically, this policy is Disabled as a phishing defense.''',
     },
     {
       'name': 'NtlmV2Enabled',
@@ -4317,11 +4319,11 @@
       'id': 393,
       'caption': '''Enable NTLMv2 authentication.''',
       'tags': ['website-sharing'],
-      'desc': '''Controls whether NTLMv2 is enabled.
+      'desc': '''Setting the policy to Enabled or leaving it unset turns NTLMv2 on.
 
-          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
+      Setting the policy to Disabled turns NTLMv2 off.
 
-          If this policy is not set, the default is true and NTLMv2 is enabled.''',
+      All recent versions of Samba and <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> servers support NTLMv2. This should only be turned off for backward compatibility as it reduces the security of authentication.''',
     },
     {
       'name': 'ExtensionInstallBlacklist',
@@ -16106,6 +16108,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean'},
       'supported_on': ['chrome.*:75-'],
+      'future_on': ['ios'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,

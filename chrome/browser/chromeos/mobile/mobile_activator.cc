@@ -195,7 +195,6 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
   // again.
   if (success && state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
     SignalCellularPlanPayment();
-    UMA_HISTOGRAM_COUNTS_1M("Cellular.PaymentReceived", 1);
     const NetworkState* network = GetNetworkState(service_path_);
     if (network && IsSimpleActivationFlow(network)) {
       state_ = PLAN_ACTIVATION_DONE;
@@ -204,8 +203,6 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
     } else {
       StartOTASP();
     }
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M("Cellular.PaymentFailed", 1);
   }
 }
 
@@ -258,7 +255,6 @@ void MobileActivator::StartOTASPTimer() {
 }
 
 void MobileActivator::StartActivation() {
-  UMA_HISTOGRAM_COUNTS_1M("Cellular.MobileSetupStart", 1);
   const NetworkState* network = GetNetworkState(service_path_);
   // Check if we can start activation process.
   if (!network) {
@@ -865,7 +861,6 @@ void MobileActivator::ChangeState(const NetworkState* network,
     case PLAN_ACTIVATION_DONE:
       DCHECK(network);
       CompleteActivation();
-      UMA_HISTOGRAM_COUNTS_1M("Cellular.MobileSetupSucceeded", 1);
       break;
     case PLAN_ACTIVATION_ERROR:
       CompleteActivation();

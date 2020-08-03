@@ -7,7 +7,6 @@
 
 #include <set>
 
-#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -23,15 +22,14 @@ class Point;
 class WindowFinder {
  public:
   WindowFinder() = default;
+  WindowFinder(const WindowFinder&) = delete;
+  WindowFinder& operator=(const WindowFinder&) = delete;
   virtual ~WindowFinder() = default;
 
   // See comment at display::Screen::GetLocalProcessWindowAtPoint().
   virtual gfx::NativeWindow GetLocalProcessWindowAtPoint(
       const gfx::Point& screen_point,
       const std::set<gfx::NativeWindow>& ignore);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowFinder);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_WINDOW_FINDER_H_

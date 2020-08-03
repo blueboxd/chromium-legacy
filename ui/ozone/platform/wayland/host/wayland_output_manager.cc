@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 
+#include <algorithm>
+#include <cstdint>
 #include <memory>
 
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -15,13 +17,16 @@ WaylandOutputManager::WaylandOutputManager() = default;
 
 WaylandOutputManager::~WaylandOutputManager() = default;
 
+// Output is considered ready when at least one wl_output is fully configured
+// (i.e: wl_output::done received), so that WaylandOutputManager is able to
+// instantiate a valid WaylandScreen when requested by the upper layer.
 bool WaylandOutputManager::IsOutputReady() const {
-  if (output_list_.empty())
-    return false;
-  return output_list_.front()->is_ready();
+  return std::find_if(output_list_.begin(), output_list_.end(),
+                      [](const auto& output) { return output->is_ready(); }) !=
+         output_list_.end();
 }
 
-void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
+void WaylandOutputManager::AddWaylandOutput(uint32_t output_id,
                                             wl_output* output) {
   // Make sure an output with |output_id| has not been added yet. It's very
   // unlikely to happen, unless a compositor has a bug in the numeric names
@@ -29,26 +34,26 @@ void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
   auto output_it = GetOutputItById(output_id);
   DCHECK(output_it == output_list_.end());
   auto wayland_output = std::make_unique<WaylandOutput>(output_id, output);
-  WaylandOutput* wayland_output_ptr = wayland_output.get();
-  output_list_.push_back(std::move(wayland_output));
-
-  OnWaylandOutputAdded(output_id);
 
   // Even if WaylandScreen has not been created, the output still must be
   // initialized, which results in setting up a wl_listener and getting the
   // geometry and the scaling factor from the Wayland Compositor.
-  wayland_output_ptr->Initialize(this);
+  wayland_output->Initialize(this);
+  DCHECK(!wayland_output->is_ready());
+
+  output_list_.push_back(std::move(wayland_output));
 }
 
-void WaylandOutputManager::RemoveWaylandOutput(const uint32_t output_id) {
+void WaylandOutputManager::RemoveWaylandOutput(uint32_t output_id) {
   auto output_it = GetOutputItById(output_id);
 
   // Check the comment in the WaylandConnetion::GlobalRemove.
   if (output_it == output_list_.end())
     return;
 
+  if (wayland_screen_)
+    wayland_screen_->OnOutputRemoved(output_id);
   output_list_.erase(output_it);
-  OnWaylandOutputRemoved(output_id);
 }
 
 std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen(
@@ -64,10 +69,10 @@ std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen(
   // OutOutputHandleScale. All the other hot geometry and scale changes are done
   // automatically, and the |wayland_screen_| is notified immediately about the
   // changes.
-  if (!output_list_.empty()) {
-    for (auto& output : output_list_) {
-      OnWaylandOutputAdded(output->output_id());
-      output->TriggerDelegateNotification();
+  for (const auto& output : output_list_) {
+    if (output->is_ready()) {
+      wayland_screen->OnOutputAddedOrUpdated(
+          output->output_id(), output->bounds(), output->scale_factor());
     }
   }
 
@@ -90,22 +95,13 @@ WaylandOutput* WaylandOutputManager::GetOutput(uint32_t id) const {
   return output_it->get();
 }
 
-void WaylandOutputManager::OnWaylandOutputAdded(uint32_t output_id) {
-  if (wayland_screen_)
-    wayland_screen_->OnOutputAdded(output_id);
-}
-
-void WaylandOutputManager::OnWaylandOutputRemoved(uint32_t output_id) {
-  if (wayland_screen_)
-    wayland_screen_->OnOutputRemoved(output_id);
-}
-
 void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
                                                  const gfx::Rect& new_bounds,
                                                  int32_t scale_factor) {
-  if (wayland_screen_)
-    wayland_screen_->OnOutputMetricsChanged(output_id, new_bounds,
+  if (wayland_screen_) {
+    wayland_screen_->OnOutputAddedOrUpdated(output_id, new_bounds,
                                             scale_factor);
+  }
 }
 
 WaylandOutputManager::OutputList::const_iterator

@@ -5,7 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_OUTPUT_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_OUTPUT_H_
 
+#include <cstdint>
+
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/test/global_object.h"
 
@@ -16,14 +19,22 @@ class TestOutput : public GlobalObject {
  public:
   TestOutput();
   ~TestOutput() override;
-  void SetRect(const gfx::Rect rect) { rect_ = rect; }
-  const gfx::Rect GetRect() { return rect_; }
-  void OnBind() override;
 
+  const gfx::Rect GetRect() { return rect_; }
+  void SetRect(const gfx::Rect& rect);
   void SetScale(int32_t factor);
+
+  void Flush();
+
+ protected:
+  void OnBind() override;
 
  private:
   gfx::Rect rect_;
+  int32_t scale_;
+
+  base::Optional<gfx::Rect> pending_rect_ = base::nullopt;
+  base::Optional<int32_t> pending_scale_ = base::nullopt;
 
   DISALLOW_COPY_AND_ASSIGN(TestOutput);
 };

@@ -7,6 +7,7 @@ module blink.mojom;
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/blocked_by_response_reason.mojom";
+import "services/network/public/mojom/source_location.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 
 // A code that uniquely identifies an issue. This type should be descriptive
@@ -80,13 +81,7 @@ struct ContentSecurityPolicyIssueDetails {
   string violated_directive;
   ContentSecurityPolicyViolationType content_security_policy_violation_type;
   AffectedFrame? frame_ancestor;
-  SourceCodeLocation? source_code_location;
-};
-
-struct SourceCodeLocation {
-  string url;
-  uint32 line_number;
-  uint32 column_number;
+  network.mojom.SourceLocation? source_location;
 };
 
 enum SameSiteCookieOperation {

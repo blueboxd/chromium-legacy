@@ -20,23 +20,23 @@ class WaylandOutput {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     virtual void OnOutputHandleMetrics(uint32_t output_id,
                                        const gfx::Rect& new_bounds,
                                        int32_t scale_factor) = 0;
+
+   protected:
+    virtual ~Delegate() = default;
   };
 
-  WaylandOutput(const uint32_t output_id, wl_output* output);
+  WaylandOutput(uint32_t output_id, wl_output* output);
   ~WaylandOutput();
 
   void Initialize(Delegate* delegate);
 
-  void TriggerDelegateNotification() const;
-
   uint32_t output_id() const { return output_id_; }
   bool has_output(wl_output* output) const { return output_.get() == output; }
   int32_t scale_factor() const { return scale_factor_; }
+  gfx::Rect bounds() const { return rect_in_physical_pixels_; }
 
   // Tells if the output has already received physical screen dimensions in the
   // global compositor space.
@@ -44,6 +44,8 @@ class WaylandOutput {
 
  private:
   static constexpr int32_t kDefaultScaleFactor = 1;
+
+  void TriggerDelegateNotifications() const;
 
   // Callback functions used for setting geometric properties of the output
   // and available modes.

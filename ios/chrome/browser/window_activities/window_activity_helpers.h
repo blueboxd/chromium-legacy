@@ -60,10 +60,6 @@ NSUserActivity* ActivityToMoveTab(NSString* tab_id);
 // new tab page in a new tab).
 bool ActivityIsURLLoad(NSUserActivity* activity);
 
-// true if |activity| is one that indicates a URL load (including loading the
-// new tab page in a new tab) in normal mode.
-bool ActivityIsURLLoadInNormalMode(NSUserActivity* activity);
-
 // true if |activity| is one that indicates a tab move.
 bool ActivityIsTabMove(NSUserActivity* activity);
 

@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info_internal.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 
 namespace {
 
@@ -73,7 +74,7 @@ int64_t SysInfo::AmountOfAvailablePhysicalMemory(
 
 // static
 std::string SysInfo::CPUModelName() {
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if (defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)) && defined(ARCH_CPU_ARMEL)
   const char kCpuModelPrefix[] = "Hardware";
 #else
   const char kCpuModelPrefix[] = "model name";

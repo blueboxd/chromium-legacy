@@ -39,9 +39,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -130,13 +132,15 @@ public class FeedStreamSurfaceTest {
         AppHooks.setInstanceForTesting(mAppHooks);
 
         Profile.setLastUsedProfileForTesting(mProfileMock);
-        mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
-                mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback);
+        mFeedStreamSurface = Mockito.spy(new FeedStreamSurface(mActivity, false, mSnackbarManager,
+                mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback));
         mContentManager = mFeedStreamSurface.getFeedListContentManagerForTesting();
-
-        mRecyclerView = (RecyclerView) mFeedStreamSurface.getView();
+        mFeedStreamSurface.mRootView = Mockito.spy(mFeedStreamSurface.mRootView);
+        mRecyclerView = mFeedStreamSurface.mRootView;
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        // Print logs to stdout.
+        ShadowLog.stream = System.out;
     }
 
     @After
@@ -398,7 +402,7 @@ public class FeedStreamSurfaceTest {
     @SmallTest
     public void testNavigateTab() {
         when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
-        mFeedStreamSurface.navigateTab(TEST_URL);
+        mFeedStreamSurface.navigateTab(TEST_URL, null);
         verify(mPageNavigationDelegate)
                 .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.CURRENT_TAB), any());
     }
@@ -592,6 +596,146 @@ public class FeedStreamSurfaceTest {
         FeedStreamSurface.clearAll();
         verify(mFeedStreamSurfaceJniMock).surfaceClosed(anyLong(), any(FeedStreamSurface.class));
         verify(mProcessScope).resetAccount();
+    }
+
+    @Test
+    @SmallTest
+    public void testFindChildViewContainingDescendentNullParameters() {
+        View v = new View(mActivity);
+        assertEquals(null, mFeedStreamSurface.findChildViewContainingDescendent(null, v));
+        assertEquals(null, mFeedStreamSurface.findChildViewContainingDescendent(v, null));
+    }
+
+    @Test
+    @SmallTest
+    public void testFindChildViewContainingDescendentNotADescendent() {
+        View v1 = new View(mActivity);
+        LinearLayout v2 = new LinearLayout(mActivity);
+        View v2Child = new View(mActivity);
+        v2.addView(v2Child);
+
+        assertEquals(null, mFeedStreamSurface.findChildViewContainingDescendent(v1, v2));
+        assertEquals(null, mFeedStreamSurface.findChildViewContainingDescendent(v1, v2Child));
+    }
+
+    @Test
+    @SmallTest
+    public void testFindChildViewContainingDescendentDirectDescendent() {
+        LinearLayout parent = new LinearLayout(mActivity);
+        View child = new View(mActivity);
+        parent.addView(child);
+
+        assertEquals(child, mFeedStreamSurface.findChildViewContainingDescendent(parent, child));
+    }
+
+    @Test
+    @SmallTest
+    public void testFindChildViewContainingDescendentIndirectDescendent() {
+        LinearLayout parent = new LinearLayout(mActivity);
+        LinearLayout child = new LinearLayout(mActivity);
+        View grandChild = new View(mActivity);
+        parent.addView(child);
+        child.addView(grandChild);
+
+        assertEquals(
+                child, mFeedStreamSurface.findChildViewContainingDescendent(parent, grandChild));
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigateReportsCorrectSlice() {
+        StreamUpdate update = StreamUpdate.newBuilder()
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                                      .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+
+        View childA = new View(mActivity);
+        mRecyclerView.addView(childA);
+        View childB = new View(mActivity);
+        mRecyclerView.addView(childB);
+
+        // findChildViewContainingDescendent() won't work on its own because mRecyclerView is a
+        // mockito spy, and therefore child.getParent() != mRecyclerView.
+        Mockito.doReturn(childA)
+                .when(mFeedStreamSurface)
+                .findChildViewContainingDescendent(mRecyclerView, childA);
+        Mockito.doReturn(childB)
+                .when(mFeedStreamSurface)
+                .findChildViewContainingDescendent(mRecyclerView, childB);
+        Mockito.doReturn(0).when(mRecyclerView).getChildAdapterPosition(childA);
+        Mockito.doReturn(1).when(mRecyclerView).getChildAdapterPosition(childB);
+
+        mFeedStreamSurface.navigateTab("http://someurl", childB);
+        mFeedStreamSurface.navigateNewTab("http://someurl", childA);
+
+        verify(mFeedStreamSurfaceJniMock)
+                .reportOpenAction(anyLong(), any(FeedStreamSurface.class), eq("b"));
+        verify(mFeedStreamSurfaceJniMock)
+                .reportOpenInNewTabAction(anyLong(), any(FeedStreamSurface.class), eq("a"));
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigateFromBottomSheetReportsCorrectSlice() {
+        StreamUpdate update = StreamUpdate.newBuilder()
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                                      .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+
+        View childA = new View(mActivity);
+        mRecyclerView.addView(childA);
+        View childB = new View(mActivity);
+        mRecyclerView.addView(childB);
+        LinearLayout bottomSheetView = new LinearLayout(mActivity);
+        View menuItem = new View(mActivity);
+        bottomSheetView.addView(menuItem);
+
+        // findChildViewContainingDescendent() won't work on its own because mRecyclerView is a
+        // mockito spy, and therefore child.getParent() != mRecyclerView.
+        Mockito.doReturn(childA)
+                .when(mFeedStreamSurface)
+                .findChildViewContainingDescendent(mRecyclerView, childA);
+        Mockito.doReturn(childB)
+                .when(mFeedStreamSurface)
+                .findChildViewContainingDescendent(mRecyclerView, childB);
+        Mockito.doReturn(0).when(mRecyclerView).getChildAdapterPosition(childA);
+        Mockito.doReturn(1).when(mRecyclerView).getChildAdapterPosition(childB);
+
+        mFeedStreamSurface.showBottomSheet(bottomSheetView, childB);
+        mFeedStreamSurface.navigateTab("http://someurl", menuItem);
+        mFeedStreamSurface.dismissBottomSheet();
+        mFeedStreamSurface.navigateNewTab("http://someurl", menuItem);
+
+        verify(mFeedStreamSurfaceJniMock)
+                .reportOpenAction(anyLong(), any(FeedStreamSurface.class), eq("b"));
+        // Bottom sheet closed for this navigation, so slice cannot be found.
+        verify(mFeedStreamSurfaceJniMock)
+                .reportOpenInNewTabAction(anyLong(), any(FeedStreamSurface.class), eq(""));
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigateNoSliceFound() {
+        StreamUpdate update = StreamUpdate.newBuilder()
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                                      .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+
+        View nonConnectedView = new View(mActivity);
+
+        // findChildViewContainingDescendent() won't work on its own because mRecyclerView is a
+        // mockito spy, and therefore child.getParent() != mRecyclerView.
+        Mockito.doReturn(null)
+                .when(mFeedStreamSurface)
+                .findChildViewContainingDescendent(mRecyclerView, nonConnectedView);
+
+        mFeedStreamSurface.navigateTab("http://someurl", nonConnectedView);
+
+        verify(mFeedStreamSurfaceJniMock)
+                .reportOpenAction(anyLong(), any(FeedStreamSurface.class), eq(""));
     }
 
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {

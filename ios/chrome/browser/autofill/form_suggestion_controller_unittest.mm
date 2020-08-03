@@ -15,6 +15,7 @@
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
@@ -175,7 +176,7 @@ class FormSuggestionControllerTest : public PlatformTest {
         JsSuggestionManager:mock_js_suggestion_manager_];
     [suggestion_controller_ setWebViewProxy:mock_web_view_proxy_];
 
-    id mock_consumer_ = [OCMockObject
+    id mock_consumer = [OCMockObject
         niceMockForProtocol:@protocol(FormInputAccessoryConsumer)];
     // Mock the consumer to verify the suggestion views.
     void (^mockShow)(NSInvocation*) = ^(NSInvocation* invocation) {
@@ -183,7 +184,7 @@ class FormSuggestionControllerTest : public PlatformTest {
       [invocation getArgument:&suggestions atIndex:2];
       received_suggestions_ = suggestions;
     };
-    [[[mock_consumer_ stub] andDo:mockShow]
+    [[[mock_consumer stub] andDo:mockShow]
         showAccessorySuggestions:[OCMArg any]
                 suggestionClient:[OCMArg any]];
 
@@ -191,14 +192,25 @@ class FormSuggestionControllerTest : public PlatformTest {
     void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
       received_suggestions_ = nil;
     };
-    [[[mock_consumer_ stub] andDo:mockRestore] restoreOriginalKeyboardView];
+    [[[mock_consumer stub] andDo:mockRestore] restoreOriginalKeyboardView];
+
+    id mock_window = OCMClassMock([UIWindow class]);
+
+    id mock_web_state_view = OCMClassMock([UIView class]);
+    OCMStub([mock_web_state_view window]).andReturn(mock_window);
+
+    test_web_state_.SetView(mock_web_state_view);
+
+    id mock_app_state = OCMClassMock([AppState class]);
+    OCMStub([mock_app_state lastTappedWindow]).andReturn(mock_window);
 
     accessory_mediator_ =
-        [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
+        [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer
                                                     delegate:nil
                                                 webStateList:NULL
                                          personalDataManager:NULL
-                                               passwordStore:nullptr];
+                                               passwordStore:nullptr
+                                                    appState:mock_app_state];
 
     [accessory_mediator_ injectWebState:&test_web_state_];
     [accessory_mediator_ injectProvider:suggestion_controller_];

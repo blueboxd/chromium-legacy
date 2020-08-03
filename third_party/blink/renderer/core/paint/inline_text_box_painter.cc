@@ -18,11 +18,11 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
 #include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
-#include "third_party/blink/renderer/core/paint/decoration_info.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/core/paint/text_decoration_info.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -362,7 +362,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 
   if (!paint_selected_text_only) {
     // Paint text decorations except line-through.
-    DecorationInfo decoration_info;
+    base::Optional<TextDecorationInfo> decoration_info;
     bool has_line_through_decoration = false;
     if (style_to_use.TextDecorationsInEffect() != TextDecoration::kNone &&
         inline_text_box_.Truncation() != kCFullTruncation) {
@@ -373,14 +373,13 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
           EnclosingUnderlineObject(&inline_text_box_);
       const ComputedStyle* decorating_box_style =
           decorating_box ? decorating_box.Style() : nullptr;
-      text_painter.ComputeDecorationInfo(decoration_info, box_origin,
-                                         local_origin, width,
-                                         inline_text_box_.Root().BaselineType(),
-                                         style_to_use, decorating_box_style);
-      TextDecorationOffset decoration_offset(*decoration_info.style,
+      decoration_info.emplace(box_origin, local_origin, width,
+                              inline_text_box_.Root().BaselineType(),
+                              style_to_use, decorating_box_style);
+      TextDecorationOffset decoration_offset(decoration_info->Style(),
                                              &inline_text_box_, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
-          decoration_offset, decoration_info, paint_info,
+          decoration_offset, decoration_info.value(), paint_info,
           style_to_use.AppliedTextDecorations(), text_style,
           &has_line_through_decoration);
     }
@@ -404,8 +403,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     // Paint line-through decoration if needed.
     if (has_line_through_decoration) {
       text_painter.PaintDecorationsOnlyLineThrough(
-          decoration_info, paint_info, style_to_use.AppliedTextDecorations(),
-          text_style);
+          decoration_info.value(), paint_info,
+          style_to_use.AppliedTextDecorations(), text_style);
     }
   }
 

@@ -2478,7 +2478,8 @@ TEST_F(PartitionAllocTest, AlignedAllocations) {
 
   for (size_t alloc_size : alloc_sizes) {
     for (size_t alignment : alignemnts) {
-      void* ptr = aligned_allocator.root()->AlignedAlloc(alignment, alloc_size);
+      void* ptr =
+          aligned_allocator.root()->AlignedAllocFlags(0, alignment, alloc_size);
       ASSERT_TRUE(ptr);
       EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr) % alignment, 0ull);
       allocator.root()->Free(ptr);

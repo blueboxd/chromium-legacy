@@ -18,7 +18,6 @@
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -190,6 +189,8 @@ class TabSlotAnimationDelegate : public gfx::AnimationDelegate {
       TabStrip* tab_strip,
       TabSlotView* slot_view,
       OnAnimationProgressedCallback on_animation_progressed);
+  TabSlotAnimationDelegate(const TabSlotAnimationDelegate&) = delete;
+  TabSlotAnimationDelegate& operator=(const TabSlotAnimationDelegate&) = delete;
   ~TabSlotAnimationDelegate() override;
 
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -202,8 +203,6 @@ class TabSlotAnimationDelegate : public gfx::AnimationDelegate {
   TabStrip* const tab_strip_;
   TabSlotView* const slot_view_;
   OnAnimationProgressedCallback on_animation_progressed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabSlotAnimationDelegate);
 };
 
 TabSlotAnimationDelegate::TabSlotAnimationDelegate(
@@ -229,13 +228,13 @@ class ResetDraggingStateDelegate : public TabSlotAnimationDelegate {
       TabStrip* tab_strip,
       Tab* tab,
       OnAnimationProgressedCallback on_animation_progressed);
+  ResetDraggingStateDelegate(const ResetDraggingStateDelegate&) = delete;
+  ResetDraggingStateDelegate& operator=(const ResetDraggingStateDelegate&) =
+      delete;
   ~ResetDraggingStateDelegate() override;
 
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
 };
 
 ResetDraggingStateDelegate::ResetDraggingStateDelegate(
@@ -304,12 +303,11 @@ class TabStrip::RemoveTabDelegate : public TabSlotAnimationDelegate {
   RemoveTabDelegate(TabStrip* tab_strip,
                     Tab* tab,
                     OnAnimationProgressedCallback on_animation_progressed);
+  RemoveTabDelegate(const RemoveTabDelegate&) = delete;
+  RemoveTabDelegate& operator=(const RemoveTabDelegate&) = delete;
 
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);
 };
 
 TabStrip::RemoveTabDelegate::RemoveTabDelegate(

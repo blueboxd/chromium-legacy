@@ -210,11 +210,6 @@ std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile);
 std::string ArcPackageNameToAppId(const std::string& package_name,
                                   Profile* profile);
 
-// Returns true if the ARC app is sticky (not uninstallable). This function
-// will DCHECK if app_id isn't installed. This functionality should eventually
-// move to the App Service: (https://crbug.com/948408).
-bool IsArcAppSticky(const std::string& app_id, Profile* profile);
-
 // Add/remove an observer to be notified of app launches.
 void AddAppLaunchObserver(content::BrowserContext* context,
                           AppLaunchObserver* observer);

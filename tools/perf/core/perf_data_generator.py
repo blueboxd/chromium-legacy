@@ -464,7 +464,7 @@ BUILDERS = {
         'tests': [{
             'isolate': 'performance_test_suite',
         }],
-        'platform': 'android-chrome',
+        'platform': 'android-chrome-64-bundle',
         'dimension': {
             'pool': 'chrome.tests.perf',
             'os': 'Android',

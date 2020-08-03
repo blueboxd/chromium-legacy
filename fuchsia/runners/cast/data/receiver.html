@@ -19,9 +19,16 @@ found in the LICENSE file.
 <body>
   <video src="data:cast_streaming_receiver" autoplay>
 
-  <!-- TODO(crbug.com/1087528): This should not be necessary. Figure out why
-       autoplay is not enough here. -->
   <script>
+    // The Cast Streaming session must stop when the stream is no longer visible. crbug.com/1111886
+    document.addEventListener('visibilitychange', function(e) {
+      if (document.hidden) {
+        window.close();
+      }
+    });
+
+    // TODO(crbug.com/1087528): This should not be necessary. Figure out why
+    // autoplay is not enough here.
     var video = document.querySelector('video');
     video.play();
   </script>

@@ -385,8 +385,12 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   PA_CHECK(result || flags & PartitionAllocReturnNull);
   return result;
 #else
-  if (UNLIKELY(!ptr))
-    return AllocFlags(flags, new_size, type_name);
+  bool no_hooks = flags & PartitionAllocNoHooks;
+  if (UNLIKELY(!ptr)) {
+    return no_hooks ? AllocFlagsNoHooks(flags, new_size)
+                    : AllocFlags(flags, new_size, type_name);
+  }
+
   if (UNLIKELY(!new_size)) {
     Free(ptr);
     return nullptr;
@@ -401,7 +405,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
   bool overridden = false;
   size_t actual_old_size;
-  if (UNLIKELY(hooks_enabled)) {
+  if (UNLIKELY(!no_hooks && hooks_enabled)) {
     overridden = PartitionAllocHooks::ReallocOverrideHookIfEnabled(
         &actual_old_size, ptr);
   }
@@ -422,7 +426,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
       }
     }
     if (success) {
-      if (UNLIKELY(hooks_enabled)) {
+      if (UNLIKELY(!no_hooks && hooks_enabled)) {
         PartitionAllocHooks::ReallocObserverHookIfEnabled(ptr, ptr, new_size,
                                                           type_name);
       }
@@ -454,7 +458,8 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = AllocFlags(flags, new_size, type_name);
+  void* ret = no_hooks ? AllocFlagsNoHooks(flags, new_size)
+                       : AllocFlags(flags, new_size, type_name);
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;

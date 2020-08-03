@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_ICON_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_ICON_H_
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -40,6 +39,8 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   };
 
   TabIcon();
+  TabIcon(const TabIcon&) = delete;
+  TabIcon& operator=(const TabIcon&) = delete;
   ~TabIcon() override;
 
   // Sets the tab data (network state, favicon, load progress, etc.) that are
@@ -158,8 +159,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   bool can_paint_to_layer_ = false;
 
   bool has_tab_renderer_data_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TabIcon);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_ICON_H_

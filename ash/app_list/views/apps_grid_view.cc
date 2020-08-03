@@ -116,14 +116,6 @@ constexpr int kDefaultAnimationDuration = 200;
 // apps grid view.
 constexpr int kEndCardifiedAnimationDuration = 350;
 
-// The background card opacity of the active apps grid page, when background
-// cards are shown.
-constexpr float kBackgroundCardOpacityActivePage = 0.2f;
-
-// The background card opacity of inactive apps grid pages, when background
-// cards are shown.
-constexpr float kBackgroundCardOpacityInactivePage = 0.1f;
-
 // The opacity for the background cards when hidden.
 constexpr float kBackgroundCardOpacityHide = 0.0f;
 
@@ -358,6 +350,17 @@ bool IsOEMFolderItem(AppListItem* item) {
   return IsFolderItem(item) &&
          (static_cast<AppListFolderItem*>(item))->folder_type() ==
              AppListFolderItem::FOLDER_TYPE_OEM;
+}
+
+// Returns the relative horizontal position of a point compared to a rect. -1
+// means the point is outside on the left side of the rect. 0 means the point is
+// within the rect. 1 means it's on the right side of the rect.
+int CompareHorizontalPointPositionToRect(gfx::Point point, gfx::Rect bounds) {
+  if (point.x() > bounds.right())
+    return 1;
+  if (point.x() < bounds.x())
+    return -1;
+  return 0;
 }
 
 }  // namespace
@@ -743,6 +746,14 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   UpdateDropTargetRegion();
 
   MaybeStartPageFlipTimer(last_drag_point_);
+
+  if (cardified_state_) {
+    int hovered_page = GetPageFlipTargetForDrag(last_drag_point_);
+    if (hovered_page == -1)
+      hovered_page = pagination_model_.selected_page();
+
+    SetHighlightedBackgroundCard(hovered_page);
+  }
 
   if (last_drop_target != drop_target_ ||
       last_drop_target_region != drop_target_region_) {
@@ -1584,11 +1595,11 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
                                         const gfx::Rect& current,
                                         bool animate_target,
                                         const gfx::Rect& target) {
-  // Determine page of |current| and |target|. -1 means in the left invisible
-  // page, 0 is the center visible page and 1 means in the right invisible page.
+  // Determine page of |current| and |target|.
   const int current_page =
-      current.x() < 0 ? -1 : current.x() >= width() ? 1 : 0;
-  const int target_page = target.x() < 0 ? -1 : target.x() >= width() ? 1 : 0;
+      CompareHorizontalPointPositionToRect(current.origin(), GetLocalBounds());
+  const int target_page =
+      CompareHorizontalPointPositionToRect(target.origin(), GetLocalBounds());
 
   const int dir = current_page < target_page || (current_page == target_page &&
                                                  current.y() < target.y())
@@ -2295,7 +2306,7 @@ void AppsGridView::StartAppsGridCardifiedView() {
   cardified_state_ = true;
   UpdateTilePadding();
   for (int i = 0; i < pagination_model_.total_pages(); i++)
-    AppendBackgroundCard(kBackgroundCardOpacityHide);
+    AppendBackgroundCard();
   MaybeCreateGradientMask();
   AnimateCardifiedState();
 }
@@ -2381,13 +2392,13 @@ void AppsGridView::AnimateCardifiedState() {
       const bool is_active_page =
           background_cards_[pagination_model_.selected_page()] ==
           background_card;
-      background_card->SetOpacity(is_active_page
-                                      ? kBackgroundCardOpacityActivePage
-                                      : kBackgroundCardOpacityInactivePage);
+      background_card->SetColor(
+          GetAppListConfig().GetCardifiedBackgroundColor(is_active_page));
     } else {
       background_card->SetOpacity(kBackgroundCardOpacityHide);
     }
   }
+  highlighted_page_ = pagination_model_.selected_page();
 }
 
 void AppsGridView::RecenterItemsContainer() {
@@ -2493,29 +2504,7 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
 void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
   if (!IsPointWithinPageFlipBuffer(drag_point))
     StopPageFlipTimer();
-  int new_page_flip_target = -1;
-
-  // Drag zones are at the edges of the scroll axis.
-  if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_VERTICAL) {
-    if (drag_point.y() <
-        GetAppListConfig().page_flip_zone_size() + GetInsets().top()) {
-      new_page_flip_target = pagination_model_.selected_page() - 1;
-    } else if (IsPointWithinBottomDragBuffer(drag_point)) {
-      // If the drag point is within the drag buffer, but not over the shelf.
-      new_page_flip_target = pagination_model_.selected_page() + 1;
-    }
-  } else {
-    // TODO(xiyuan): Fix this for RTL.
-    if (new_page_flip_target == -1 &&
-        drag_point.x() < GetAppListConfig().page_flip_zone_size())
-      new_page_flip_target = pagination_model_.selected_page() - 1;
-
-    if (new_page_flip_target == -1 &&
-        drag_point.x() > width() - GetAppListConfig().page_flip_zone_size()) {
-      new_page_flip_target = pagination_model_.selected_page() + 1;
-    }
-  }
+  int new_page_flip_target = GetPageFlipTargetForDrag(drag_point);
 
   if (new_page_flip_target == page_flip_target_)
     return;
@@ -2990,11 +2979,10 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     Layout();
 }
 
-void AppsGridView::AppendBackgroundCard(float opacity) {
+void AppsGridView::AppendBackgroundCard() {
   background_cards_.push_back(
       std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
   ui::Layer* current_layer = background_cards_.back().get();
-  current_layer->SetColor(gfx::kGoogleGrey100);
   // The size of the grid excluding the outer padding.
   const gfx::Size grid_size = GetTileGridSize();
   // The size for the background card that will be displayed. The outer padding
@@ -3021,7 +3009,6 @@ void AppsGridView::AppendBackgroundCard(float opacity) {
       horizontal_padding, vertical_padding + vertical_page_start_offset,
       background_card_size.width() - 2 * kCardifiedHorizontalPadding,
       background_card_size.height()));
-  current_layer->SetOpacity(opacity);
   current_layer->SetVisible(true);
   current_layer->SetRoundedCornerRadius(
       gfx::RoundedCornersF(kBackgroundCardCornerRadius));
@@ -3066,8 +3053,9 @@ void AppsGridView::TotalPagesChanged(int previous_page_count,
 
   const int page_difference = new_page_count - previous_page_count;
   if (page_difference > 0) {
-    for (int i = previous_page_count; i < new_page_count; ++i)
-      AppendBackgroundCard(kBackgroundCardOpacityHide);
+    for (int i = background_cards_.size(); i <= new_page_count; ++i) {
+      AppendBackgroundCard();
+    }
   } else {
     for (int i = 0; i < page_difference; ++i)
       RemoveBackgroundCard();
@@ -3109,12 +3097,6 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
       ClearSelectedView(selected_view_);
     }
     Layout();
-  }
-  if (cardified_state_) {
-    background_cards_[old_selected]->SetOpacity(
-        kBackgroundCardOpacityInactivePage);
-    background_cards_[new_selected]->SetOpacity(
-        kBackgroundCardOpacityActivePage);
   }
 }
 
@@ -3966,6 +3948,50 @@ void AppsGridView::MaybeCreateGradientMask() {
       }
       layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
     }
+  }
+}
+
+int AppsGridView::GetPageFlipTargetForDrag(const gfx::Point& drag_point) {
+  int new_page_flip_target = -1;
+
+  // Drag zones are at the edges of the scroll axis.
+  if (pagination_controller_->scroll_axis() ==
+      PaginationController::SCROLL_AXIS_VERTICAL) {
+    if (drag_point.y() <
+        GetAppListConfig().page_flip_zone_size() + GetInsets().top()) {
+      new_page_flip_target = pagination_model_.selected_page() - 1;
+    } else if (IsPointWithinBottomDragBuffer(drag_point)) {
+      // If the drag point is within the drag buffer, but not over the shelf.
+      new_page_flip_target = pagination_model_.selected_page() + 1;
+    }
+  } else {
+    // TODO(xiyuan): Fix this for RTL.
+    if (new_page_flip_target == -1 &&
+        drag_point.x() < GetAppListConfig().page_flip_zone_size())
+      new_page_flip_target = pagination_model_.selected_page() - 1;
+
+    if (new_page_flip_target == -1 &&
+        drag_point.x() > width() - GetAppListConfig().page_flip_zone_size()) {
+      new_page_flip_target = pagination_model_.selected_page() + 1;
+    }
+  }
+  return new_page_flip_target;
+}
+
+void AppsGridView::SetHighlightedBackgroundCard(int new_highlighted_page) {
+  if (!IsValidPageFlipTarget(new_highlighted_page))
+    return;
+
+  if (new_highlighted_page != highlighted_page_) {
+    background_cards_[highlighted_page_]->SetColor(
+        GetAppListConfig().GetCardifiedBackgroundColor(
+            /*is_active=*/false));
+    if (static_cast<int>(background_cards_.size()) == new_highlighted_page)
+      AppendBackgroundCard();
+    background_cards_[new_highlighted_page]->SetColor(
+        GetAppListConfig().GetCardifiedBackgroundColor(/*is_active=*/true));
+
+    highlighted_page_ = new_highlighted_page;
   }
 }
 

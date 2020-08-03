@@ -28,6 +28,7 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * Provides functions that map {@link PasswordCheckProperties} changes in a {@link PropertyModel} to
@@ -117,16 +118,24 @@ class PasswordCheckViewBinder {
             reason.setText(credential.isPhished()
                             ? R.string.password_check_credential_row_reason_phished
                             : R.string.password_check_credential_row_reason_leaked);
-            if (credential.hasScript()) {
-                assert view.findViewById(R.id.credential_change_button_with_script) != null;
-                assert view.findViewById(R.id.script_button_explanation) != null;
-            }
 
             ListMenuButton more = view.findViewById(R.id.credential_menu_button);
             more.setDelegate(() -> {
                 return createCredentialMenu(view.getContext(), model.get(COMPROMISED_CREDENTIAL),
                         model.get(CREDENTIAL_HANDLER));
             });
+
+            ButtonCompat button = view.findViewById(R.id.credential_change_button);
+            button.setOnClickListener(unusedView -> {
+                model.get(CREDENTIAL_HANDLER).onChangePasswordButtonClick(credential);
+            });
+            if (credential.hasScript()) {
+                ButtonCompat button_with_script =
+                        view.findViewById(R.id.credential_change_button_with_script);
+                button_with_script.setOnClickListener(unusedView -> {
+                    model.get(CREDENTIAL_HANDLER).onChangePasswordWithScriptButtonClick(credential);
+                });
+            }
         } else if (propertyKey == CREDENTIAL_HANDLER) {
             assert model.get(CREDENTIAL_HANDLER) != null;
             // Is read-only and must therefore be bound initially, so no action required.

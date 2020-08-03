@@ -140,6 +140,22 @@ bool IsClipboardDataMarkedAsConfidential() {
       ->IsMarkedByOriginatorAsConfidential();
 }
 
+// Draws a rectangle of dimensions and position |rect| in |canvas|, colored
+// with a gradient from |start_color| to |end_color|.
+void DrawGradientRect(const gfx::Rect& rect,
+                      SkColor start_color,
+                      SkColor end_color,
+                      gfx::Canvas* canvas) {
+  SkColor colors[2] = {start_color, end_color};
+  SkPoint points[2];
+  points[0].iset(rect.origin().x(), rect.origin().y());
+  points[1].iset(rect.right(), rect.y());
+  cc::PaintFlags flags;
+  flags.setShader(cc::PaintShader::MakeLinearGradient(points, colors, nullptr,
+                                                      2, SkTileMode::kClamp));
+  canvas->DrawRect(rect, flags);
+}
+
 }  // namespace
 
 OmniboxViewViews::ElideAnimation::ElideAnimation(OmniboxViewViews* view,
@@ -157,12 +173,29 @@ OmniboxViewViews::ElideAnimation::~ElideAnimation() = default;
 void OmniboxViewViews::ElideAnimation::Start(
     const gfx::Range& elide_to_bounds,
     uint32_t delay_ms,
-    const std::vector<gfx::Range>& ranges_to_color,
+    const std::vector<gfx::Range>& ranges_surrounding_simplified_domain,
     SkColor starting_color,
     SkColor ending_color) {
-  ranges_to_color_ = ranges_to_color;
+  DCHECK(ranges_surrounding_simplified_domain.size() == 1 ||
+         ranges_surrounding_simplified_domain.size() == 2);
+  ranges_surrounding_simplified_domain_ = ranges_surrounding_simplified_domain;
   starting_color_ = starting_color;
   ending_color_ = ending_color;
+
+  // simplified_domain_bounds_ will be set to a rectangle surrounding the part
+  // of the URL that is never elided, on its original position before any
+  // animation runs. If ranges_surrounding_simplified_domain_ only contains one
+  // range it means we are not eliding on the right side, so we use the right
+  // side of elide_to_bounds as the range as it will always be the right limit
+  // of the simplified section.
+  gfx::Range simplified_domain_range(
+      ranges_surrounding_simplified_domain_[0].end(),
+      ranges_surrounding_simplified_domain_.size() == 2
+          ? ranges_surrounding_simplified_domain_[1].start()
+          : elide_to_bounds.end());
+  for (auto rect : render_text_->GetSubstringBounds(simplified_domain_range)) {
+    simplified_domain_bounds_.Union(rect - render_text_->GetLineOffset(0));
+  }
 
   // After computing |elide_to_rect_| below, |elide_to_bounds| aren't actually
   // need anymore for the animation. However, the bounds provide a convenient
@@ -248,14 +281,34 @@ void OmniboxViewViews::ElideAnimation::AnimationProgressed(
   gfx::Rect shifted_bounds(old_bounds.x(), old_bounds.y(), bounds.width(),
                            old_bounds.height());
   render_text_->SetDisplayRect(shifted_bounds);
+  current_offset_ = gfx::Tween::IntValueBetween(animation->GetCurrentValue(),
+                                                starting_display_offset_,
+                                                ending_display_offset_);
+  render_text_->SetDisplayOffset(current_offset_);
 
-  render_text_->SetDisplayOffset(gfx::Tween::IntValueBetween(
-      animation->GetCurrentValue(), starting_display_offset_,
-      ending_display_offset_));
-
-  for (const auto& range : ranges_to_color_) {
+  for (const auto& range : ranges_surrounding_simplified_domain_) {
     view_->ApplyColor(GetCurrentColor(), range);
   }
+
+  // The gradient mask should be a fixed width, except if that width would
+  // cause it to mask the unelided section. In that case we set it to the
+  // maximum width possible that won't cover the unelided section.
+  int unelided_left_bound = simplified_domain_bounds_.x() + current_offset_;
+  int unelided_right_bound =
+      unelided_left_bound + simplified_domain_bounds_.width();
+  int left_gradient_width = kSmoothingGradientMaxWidth < unelided_left_bound
+                                ? kSmoothingGradientMaxWidth
+                                : unelided_left_bound;
+  int right_gradient_width =
+      shifted_bounds.right() - kSmoothingGradientMaxWidth > unelided_right_bound
+          ? kSmoothingGradientMaxWidth
+          : shifted_bounds.right() - unelided_right_bound;
+
+  view_->elide_animation_smoothing_rect_left_ = gfx::Rect(
+      old_bounds.x(), old_bounds.y(), left_gradient_width, old_bounds.height());
+  view_->elide_animation_smoothing_rect_right_ =
+      gfx::Rect(shifted_bounds.right() - right_gradient_width, old_bounds.y(),
+                right_gradient_width, old_bounds.height());
 
   view_->SchedulePaint();
 }
@@ -614,6 +667,22 @@ void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Omnibox.PaintTime");
     Textfield::OnPaint(canvas);
+  }
+  if ((hover_elide_or_unelide_animation_ &&
+       hover_elide_or_unelide_animation_->IsAnimating()) ||
+      (elide_after_web_contents_interaction_animation_ &&
+       elide_after_web_contents_interaction_animation_->IsAnimating())) {
+    SkColor bg_color = GetBackgroundColor();
+    // We can't use the SK_ColorTRANSPARENT constant here because for purposes
+    // of the gradient the R,G,B values of the transparent color do matter, and
+    // need to be identical to the background color (SK_ColorTRANSPARENT is a
+    // transparent black, and results in the gradient looking gray).
+    SkColor bg_transparent = SkColorSetARGB(
+        0, SkColorGetR(bg_color), SkColorGetG(bg_color), SkColorGetB(bg_color));
+    DrawGradientRect(elide_animation_smoothing_rect_left_, bg_color,
+                     bg_transparent, canvas);
+    DrawGradientRect(elide_animation_smoothing_rect_right_, bg_transparent,
+                     bg_color, canvas);
   }
 }
 
@@ -2280,10 +2349,10 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
 
   base::string16 text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
-  ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
 
   if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain()) {
     ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
+    ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
     return gfx::Range(host.begin, host.end());
   }
 
@@ -2295,6 +2364,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
 
   if (simplified_domain.empty()) {
     ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
+    ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
     return gfx::Range(host.begin, host.end());
   }
 
@@ -2302,6 +2372,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
       text.find(base::ASCIIToUTF16(simplified_domain));
   DCHECK_NE(simplified_domain_pos, std::string::npos);
   ranges_surrounding_simplified_domain->emplace_back(0, simplified_domain_pos);
+  ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
   return gfx::Range(simplified_domain_pos, host.end());
 }
 

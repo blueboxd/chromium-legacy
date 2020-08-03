@@ -14,6 +14,10 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/public/platform_screen.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 
 class WaylandConnection;
@@ -26,11 +30,10 @@ class WaylandScreen : public PlatformScreen {
   WaylandScreen& operator=(const WaylandScreen&) = delete;
   ~WaylandScreen() override;
 
-  void OnOutputAdded(uint32_t output_id);
-  void OnOutputRemoved(uint32_t output_id);
-  void OnOutputMetricsChanged(uint32_t output_id,
+  void OnOutputAddedOrUpdated(uint32_t output_id,
                               const gfx::Rect& bounds,
                               int32_t output_scale);
+  void OnOutputRemoved(uint32_t output_id);
 
   base::WeakPtr<WaylandScreen> GetWeakPtr();
 
@@ -53,6 +56,10 @@ class WaylandScreen : public PlatformScreen {
   void RemoveObserver(display::DisplayObserver* observer) override;
 
  private:
+  void AddOrUpdateDisplay(uint32_t output_id,
+                          const gfx::Rect& bounds,
+                          int32_t scale);
+
   WaylandConnection* connection_ = nullptr;
 
   display::DisplayList display_list_;

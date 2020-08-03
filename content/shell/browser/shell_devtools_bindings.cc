@@ -352,7 +352,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     std::string name;
     if (!params->GetString(0, &name))
       return;
-    preferences_.RemoveWithoutPathExpansion(name, nullptr);
+    preferences_.RemoveKey(name);
   } else if (method == "requestFileSystems") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"),

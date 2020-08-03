@@ -7,7 +7,6 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view_model.h"
 
@@ -35,6 +34,8 @@ class StackedTabStripLayout {
                         int stacked_padding,
                         int max_stacked_count,
                         views::ViewModelBase* view_model);
+  StackedTabStripLayout(const StackedTabStripLayout&) = delete;
+  StackedTabStripLayout& operator=(const StackedTabStripLayout&) = delete;
   ~StackedTabStripLayout();
 
   // Sets the x-coordinate the normal tabs start at as well as the pinned tab
@@ -238,8 +239,6 @@ class StackedTabStripLayout {
 
   // Index of the active tab.
   int active_index_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(StackedTabStripLayout);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_STACKED_TAB_STRIP_LAYOUT_H_

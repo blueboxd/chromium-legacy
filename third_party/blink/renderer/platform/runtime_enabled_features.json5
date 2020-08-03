@@ -787,10 +787,6 @@
       status: "stable",
     },
     {
-      name: "FlexGaps",
-      status: "stable",
-    },
-    {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,
     },

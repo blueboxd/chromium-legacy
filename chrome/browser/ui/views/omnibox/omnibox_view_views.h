@@ -21,6 +21,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -70,6 +71,9 @@ class OmniboxViewViews : public OmniboxView,
       send_tab_to_self::SendTabToSelfSubMenuModel::kMinCommandId;
   static const int kMaxSendTabToSelfSubMenuCommandId =
       send_tab_to_self::SendTabToSelfSubMenuModel::kMaxCommandId;
+
+  // Max width of the gradient mask used to smooth ElideAnimation edges.
+  static const int kSmoothingGradientMaxWidth = 15;
 
   OmniboxViewViews(OmniboxEditController* controller,
                    std::unique_ptr<OmniboxClient> client,
@@ -198,6 +202,7 @@ class OmniboxViewViews : public OmniboxView,
                            SameDocNavigations);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
                            SameDocNavigationDuringAnimation);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest, GradientMask);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
                            UserInteractionDuringAnimation);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
@@ -242,13 +247,18 @@ class OmniboxViewViews : public OmniboxView,
     ~ElideAnimation() override;
 
     // Begin the elision animation targeting |elide_to_bounds|, after a delay of
-    // |delay_ms|. As the animation runs, each range in |ranges_to_color| will
-    // be faded from |starting_color| to |ending_color|.
-    void Start(const gfx::Range& elide_to_bounds,
-               uint32_t delay_ms,
-               const std::vector<gfx::Range>& ranges_to_color,
-               SkColor starting_color,
-               SkColor ending_color);
+    // |delay_ms|. |ranges_surrounding_simplified_domain| should contain 1 or 2
+    // ranges surrounding the simplified domain part, they should be in order
+    // (i.e. the range on the left should be the first element). If only one
+    // element is set, it will be assumed we are only eliding from the left
+    // side. Those ranges will be faded from |starting_color| to
+    // |ending_color|.
+    void Start(
+        const gfx::Range& elide_to_bounds,
+        uint32_t delay_ms,
+        const std::vector<gfx::Range>& ranges_surrounding_simplified_domain,
+        SkColor starting_color,
+        SkColor ending_color);
 
     void Stop();
 
@@ -260,12 +270,15 @@ class OmniboxViewViews : public OmniboxView,
     const gfx::Range& GetElideToBounds() const;
 
     // Returns the current color applied to each of the ranges in
-    // |ranges_to_color| passed in to Start(), if the animation is running or
-    // has completed running. Returns gfx::kPlaceholderColor if the animation
-    // has not starting running yet.
+    // |ranges_surrounding_simplified_domain| passed in to Start(), if the
+    // animation is running or has completed running.
+    // Returns gfx::kPlaceholderColor if the animation has not starting
+    // running yet.
     SkColor GetCurrentColor() const;
 
     gfx::MultiAnimation* GetAnimationForTesting();
+
+    int GetCurrentOffsetForTesting() { return current_offset_; }
 
     // views::AnimationDelegateViews:
     void AnimationProgressed(const gfx::Animation* animation) override;
@@ -284,13 +297,18 @@ class OmniboxViewViews : public OmniboxView,
     gfx::Rect elide_to_rect_;
     // The starting display rect from which we are eliding or uneliding.
     gfx::Rect elide_from_rect_;
+    // The display rect surrounding the simplified domain.
+    gfx::Rect simplified_domain_bounds_;
     // The starting and ending display offsets for |render_text_|.
     int starting_display_offset_ = 0;
     int ending_display_offset_ = 0;
 
-    // As the animation runs, each range in |ranges_to_color_| fades from
-    // |starting_color_| to |ending_color_|.
-    std::vector<gfx::Range> ranges_to_color_;
+    // The current offset, exposed for testing.
+    int current_offset_;
+
+    // Holds the ranges surrounding the simplified domain part. As the animation
+    // runs, each range fades from |starting_color_| to |ending_color_|.
+    std::vector<gfx::Range> ranges_surrounding_simplified_domain_;
     SkColor starting_color_;
     SkColor ending_color_;
 
@@ -524,6 +542,11 @@ class OmniboxViewViews : public OmniboxView,
   // not already interacted with the page.
   std::unique_ptr<ElideAnimation>
       elide_after_web_contents_interaction_animation_;
+
+  // If set, rectangles will be drawn as gradient masks over the omnibox text.
+  // Used to smooth color transition when an ElideAnimation is animating.
+  gfx::Rect elide_animation_smoothing_rect_left_;
+  gfx::Rect elide_animation_smoothing_rect_right_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   std::vector<gfx::Range> saved_temporary_selection_;

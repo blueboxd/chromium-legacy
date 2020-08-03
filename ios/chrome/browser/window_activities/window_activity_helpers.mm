@@ -80,10 +80,6 @@ bool ActivityIsURLLoad(NSUserActivity* activity) {
          [activity.activityType isEqualToString:kLoadIncognitoURLActivityType];
 }
 
-bool ActivityIsURLLoadInNormalMode(NSUserActivity* activity) {
-  return [activity.activityType isEqualToString:kLoadURLActivityType];
-}
-
 bool ActivityIsTabMove(NSUserActivity* activity) {
   return [activity.activityType isEqualToString:kMoveTabActivityType];
 }

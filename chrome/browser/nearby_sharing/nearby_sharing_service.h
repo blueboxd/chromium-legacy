@@ -14,6 +14,7 @@
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_update_callback.h"
 
+class NearbyNotificationDelegate;
 class NearbyShareContactManager;
 class NearbyShareCertificateManager;
 class NearbyShareHttpNotifier;
@@ -100,6 +101,10 @@ class NearbySharingService {
   // Opens attachments from the remote |share_target|.
   virtual void Open(const ShareTarget& share_target,
                     StatusCodesCallback status_codes_callback) = 0;
+
+  // Gets a delegate to handle events for |notification_id| or nullptr.
+  virtual NearbyNotificationDelegate* GetNotificationDelegate(
+      const std::string& notification_id) = 0;
 
   virtual NearbyShareSettings* GetSettings() = 0;
   virtual NearbyShareHttpNotifier* GetHttpNotifier() = 0;

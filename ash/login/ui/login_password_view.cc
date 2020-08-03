@@ -5,10 +5,10 @@
 #include "ash/login/ui/login_password_view.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/login/ui/login_button.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/login_types.h"
@@ -16,6 +16,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +36,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -57,17 +59,31 @@ const int kDelayBeforeShowingTooltipMs = 500;
 // Margin above/below the password view.
 constexpr const int kMarginAboveBelowPasswordIconsDp = 8;
 
-// Total width of the password view.
-constexpr int kPasswordTotalWidthDp = 204;
+// Spacing between the password textfield and the submit button.
+constexpr int kSpacingBetweenPasswordTextFieldAndSubmitButtonDp = 8;
+
+// Size (width/height) of the submit button.
+constexpr int kSubmitButtonSizeDp = 32;
+
+// Left padding of the password view allowing the view to have its center
+// aligned with the one of the user pod.
+constexpr int kLeftPaddingPasswordView =
+    kSubmitButtonSizeDp + kSpacingBetweenPasswordTextFieldAndSubmitButtonDp;
+
+// Width of the password textfield, placed at the center of the password view.
+constexpr int kPasswordTextfieldWidthDp = 204;
+
+// Total width of the password view (left margin + password textfield + spacing
+// + submit button).
+constexpr int kPasswordTotalWidthDp =
+    kLeftPaddingPasswordView + kPasswordTextfieldWidthDp + kSubmitButtonSizeDp +
+    kSpacingBetweenPasswordTextFieldAndSubmitButtonDp;
 
 // Delta between normal font and font of the typed text.
 constexpr int kPasswordFontDeltaSize = 5;
 
 // Spacing between glyphs.
 constexpr int kPasswordGlyphSpacing = 6;
-
-// Size (width/height) of the submit button.
-constexpr int kSubmitButtonSizeDp = 20;
 
 // Size (width/height) of the display password button.
 constexpr int kDisplayPasswordButtonSizeDp = 20;
@@ -458,12 +474,25 @@ LoginPasswordView::LoginPasswordView()
       hide_password_timer_(std::make_unique<base::RetainingOneShotTimer>()) {
   Shell::Get()->ime_controller()->AddObserver(this);
 
+  // Contains the password layout on the left and the submit button on the
+  // right.
   auto* root_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, kLeftPaddingPasswordView, 0, 0),
+      kSpacingBetweenPasswordTextFieldAndSubmitButtonDp));
   root_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kCenter);
+      views::BoxLayout::MainAxisAlignment::kEnd);
 
-  password_row_ = AddChildView(std::make_unique<NonAccessibleView>());
+  // Contains the password row along with the separator.
+  auto* password = AddChildView(std::make_unique<views::View>());
+  std::unique_ptr<views::BoxLayout> password_layout =
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical);
+  password_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  password->SetLayoutManager(std::move(password_layout));
+
+  password_row_ = password->AddChildView(std::make_unique<NonAccessibleView>());
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kMarginAboveBelowPasswordIconsDp, 0));
@@ -511,29 +540,24 @@ LoginPasswordView::LoginPasswordView()
   capslock_icon_->SetVisible(false);
 
   if (is_display_password_feature_enabled_) {
-    // Display password button.
     display_password_button_ = password_row_->AddChildView(
         std::make_unique<DisplayPasswordButton>(this));
-  } else {
-    // Submit button.
-    submit_button_ =
-        password_row_->AddChildView(std::make_unique<LoginButton>(this));
-    submit_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kLockScreenArrowIcon, kSubmitButtonSizeDp,
-                              login_constants::kButtonEnabledColor));
-    submit_button_->SetImage(
-        views::Button::STATE_DISABLED,
-        gfx::CreateVectorIcon(
-            kLockScreenArrowIcon, kSubmitButtonSizeDp,
-            SkColorSetA(login_constants::kButtonEnabledColor,
-                        login_constants::kButtonDisabledAlpha)));
-    submit_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   }
 
   // Separator on bottom.
-  separator_ = AddChildView(std::make_unique<NonAccessibleSeparator>());
+  separator_ =
+      password->AddChildView(std::make_unique<NonAccessibleSeparator>());
+
+  submit_button_ = AddChildView(std::make_unique<ArrowButtonView>(
+      /*listener=*/this, kSubmitButtonSizeDp));
+  const AshColorProvider* color_provider = AshColorProvider::Get();
+  SkColor color = color_provider->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive,
+      AshColorProvider::AshColorMode::kDark);
+  submit_button_->SetBackgroundColor(color);
+  submit_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
+  submit_button_->SetEnabled(false);
 
   // Initialize the capslock icon and the separator without a highlight.
   SetSeparatorAndCapsLockHighlighted(/*highlight=*/false);
@@ -692,12 +716,11 @@ void LoginPasswordView::InvertPasswordDisplayingState() {
 
 void LoginPasswordView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  if (is_display_password_feature_enabled_) {
+  if (sender == submit_button_) {
+    SubmitPassword();
+  } else if (is_display_password_feature_enabled_) {
     DCHECK_EQ(sender, display_password_button_);
     InvertPasswordDisplayingState();
-  } else {
-    DCHECK_EQ(sender, submit_button_);
-    SubmitPassword();
   }
 }
 
@@ -755,8 +778,7 @@ bool LoginPasswordView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void LoginPasswordView::UpdateUiState() {
-  if (!is_display_password_feature_enabled_)
-    submit_button_->SetEnabled(IsPasswordSubmittable());
+  submit_button_->SetEnabled(IsPasswordSubmittable());
 }
 
 void LoginPasswordView::OnCapsLockChanged(bool enabled) {

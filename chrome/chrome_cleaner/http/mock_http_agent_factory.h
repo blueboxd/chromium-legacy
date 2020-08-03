@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
+#include <string>
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
 #include "chrome/chrome_cleaner/http/http_status_codes.h"
 
@@ -63,11 +63,11 @@ class MockHttpAgentConfig {
 
     RequestData& operator=(const RequestData& other);
 
-    base::string16 host;
+    std::wstring host;
     uint16_t port;
-    base::string16 path;
+    std::wstring path;
     bool secure;
-    base::string16 extra_headers;
+    std::wstring extra_headers;
     std::string body;
   };
 

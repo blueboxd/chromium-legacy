@@ -136,6 +136,28 @@ class TestDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
+class DeleteOnCloseDelegate : public NotificationDelegate {
+ public:
+  DeleteOnCloseDelegate(MessageCenter* message_center,
+                        const std::string& notification_id)
+      : message_center_(message_center), notification_id_(notification_id) {}
+  DeleteOnCloseDelegate(const DeleteOnCloseDelegate&) = delete;
+  DeleteOnCloseDelegate& operator=(const DeleteOnCloseDelegate&) = delete;
+
+  void Close(bool by_user) override {
+    // Removing the same notification inside Close should be a noop.
+    message_center_->RemoveNotification(notification_id_, false /* by_user */);
+  }
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {}
+
+ private:
+  ~DeleteOnCloseDelegate() override = default;
+
+  MessageCenter* message_center_;
+  std::string notification_id_;
+};
+
 // The default app id used to create simple notifications.
 const std::string kDefaultAppId = "app1";
 
@@ -910,6 +932,24 @@ TEST_F(MessageCenterImplTest, RemoveNonVisibleNotification) {
   // Also try removing a visible notification.
   message_center()->RemoveNotification("id2", false);
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
+}
+
+TEST_F(MessageCenterImplTest, RemoveInCloseHandler) {
+  std::string id("id1");
+
+  // Create a notification that calls RemoveNotification() on close.
+  auto notification = std::make_unique<Notification>(
+      NOTIFICATION_TYPE_SIMPLE, id, UTF8ToUTF16("title"), UTF8ToUTF16(id),
+      gfx::Image() /* icon */, base::string16() /* display_source */, GURL(),
+      NotifierId(NotifierType::APPLICATION, kDefaultAppId),
+      RichNotificationData(),
+      base::MakeRefCounted<DeleteOnCloseDelegate>(message_center(), id));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
+
+  // Then remove the notification which calls RemoveNotification() reentrantly.
+  message_center()->RemoveNotification(id, true /* by_user */);
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 }
 
 TEST_F(MessageCenterImplTest, FindNotificationsByAppId) {

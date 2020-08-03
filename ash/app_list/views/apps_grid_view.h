@@ -311,9 +311,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Translates the items container view to center the current page in the apps
   // grid.
   void RecenterItemsContainer();
-  // Appends a background card to the back of |background_cards_| with a defined
-  // |opacity|.
-  void AppendBackgroundCard(float opacity);
+  // Appends a background card to the back of |background_cards_|.
+  void AppendBackgroundCard();
   // Removes the background card at the end of |background_cards_|.
   void RemoveBackgroundCard();
   // Masks the apps grid container to background cards bounds.
@@ -741,6 +740,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Create a layer mask for graident alpha when the feature is enabled.
   void MaybeCreateGradientMask();
 
+  // Obtains the target page to flip for |drag_point|.
+  int GetPageFlipTargetForDrag(const gfx::Point& drag_point);
+
+  // Updates the highlighted background card. Used only for cardified state.
+  void SetHighlightedBackgroundCard(int new_highlighted_page);
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
@@ -905,6 +910,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // |last_drag_point_|, |last_mouse_drag_point_| is the location of the most
   // recent drag on AppsGridView instead of the app icon.
   gfx::PointF last_mouse_drag_point_;
+
+  // The highlighted page during cardified state.
+  int highlighted_page_ = -1;
 
   // Layer array for apps grid background cards. Used to display the background
   // card during cardified state.

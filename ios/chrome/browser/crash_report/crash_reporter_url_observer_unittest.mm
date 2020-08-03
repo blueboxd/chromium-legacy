@@ -23,6 +23,8 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
 class TestWebState : public web::TestWebState {
  public:
   void LoadURL(const GURL& url) {
@@ -52,6 +54,8 @@ class TestWebState : public web::TestWebState {
  private:
   std::unique_ptr<web::NavigationItem> pending_item_;
 };
+
+}  // namespace
 
 @interface DictionaryParameterSetter : NSObject <CrashReporterParameterSetter>
 @property(nonatomic) NSMutableDictionary* params;

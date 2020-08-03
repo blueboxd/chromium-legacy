@@ -26,6 +26,8 @@ class TabCloseButton : public views::ImageButton,
   // See note on SetTabColor.
   TabCloseButton(views::ButtonListener* listener,
                  MouseEventCallback mouse_event_callback);
+  TabCloseButton(const TabCloseButton&) = delete;
+  TabCloseButton& operator=(const TabCloseButton&) = delete;
   ~TabCloseButton() override;
 
   // Returns the width of the tab close button.
@@ -58,8 +60,6 @@ class TabCloseButton : public views::ImageButton,
   MouseEventCallback mouse_event_callback_;
 
   SkColor icon_color_ = gfx::kPlaceholderColor;
-
-  DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_CLOSE_BUTTON_H_

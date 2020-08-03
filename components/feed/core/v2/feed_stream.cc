@@ -181,7 +181,8 @@ void FeedStream::TriggerStreamLoad() {
 void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
   PopulateDebugStreamData(result, *profile_prefs_);
   metrics_reporter_->OnLoadStream(result.load_from_store_status,
-                                  result.final_status);
+                                  result.final_status,
+                                  std::move(result.latencies));
 
   model_loading_in_progress_ = false;
 
@@ -308,6 +309,7 @@ EphemeralChangeId FeedStream::CreateEphemeralChange(
     DLOG(ERROR) << "Calling CreateEphemeralChange before the model is loaded";
     return {};
   }
+  metrics_reporter_->EphemeralStreamChange();
   return model_->CreateEphemeralChange(std::move(operations));
 }
 
@@ -327,6 +329,7 @@ bool FeedStream::CommitEphemeralChange(EphemeralChangeId id) {
 bool FeedStream::RejectEphemeralChange(EphemeralChangeId id) {
   if (!model_)
     return false;
+  metrics_reporter_->EphemeralStreamChangeRejected();
   return model_->RejectEphemeralChange(id);
 }
 

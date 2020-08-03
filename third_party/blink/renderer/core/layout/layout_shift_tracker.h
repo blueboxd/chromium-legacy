@@ -18,12 +18,13 @@
 
 namespace blink {
 
+class LayoutBox;
 class LayoutObject;
+class LayoutText;
 class LocalFrameView;
 class PropertyTreeStateOrAlias;
 class TracedValue;
 class WebInputEvent;
-struct PhysicalRect;
 
 // Tracks "layout shifts" from layout objects changing their visual location
 // between animation frames. See https://github.com/WICG/layout-instability.
@@ -32,26 +33,38 @@ class CORE_EXPORT LayoutShiftTracker final
  public:
   explicit LayoutShiftTracker(LocalFrameView*);
   ~LayoutShiftTracker() = default;
-  // |old_visual_rect| and |new_visual_rect| are in the local transform space:
-  // |property_tree_state.Transform()|. As we don't save the old property tree
-  // state, the caller should adjust |old_visual_rect| as if the difference
-  // between the old and new additional offsets to the layout shift root[1]
-  // caused the difference between the locations of |old_visual_rect| and
-  // |new_visual_rect|, in addition to that caused by the difference between
-  // the old and new paint offsets in the local transform space, so that we can
-  // calculate the total shift from the layout shift root by comparing locations
-  // of |old_visual_rect| and |new_visual_rect|.
-  // [1] See PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext
-  // ::additional_offset_to_layout_shift_root_delta.
-  void NotifyObjectPrePaint(const LayoutObject& object,
-                            const PropertyTreeStateOrAlias& property_tree_state,
-                            const PhysicalRect& old_visual_rect,
-                            const PhysicalRect& new_visual_rect);
+
+  bool NeedsToTrack(const LayoutObject&) const;
+
+  // |old_rect| and |new_rect| are layout overflow rects if the box has layout
+  // overflow and doesn't clip overflow, or border box rect, in the local
+  // transform space (property_tree_state.Transform()). |old_paint_offset| and
+  // |new_paint_offset| are the offsets of the border box rect in the local
+  // transform space, which are the same as |old_rect.offset| and
+  // |new_rect.offset| respectively if the rects are border box rects.
+  // As we don't save the old property tree state, the caller should adjust
+  // |old_rect| and |old_paint_offset| so that we can calculate the correct old
+  // visual representation and old starting point in the initial containing
+  // block and the viewport with the new property tree state in most cases.
+  void NotifyBoxPrePaint(const LayoutBox& box,
+                         const PropertyTreeStateOrAlias& property_tree_state,
+                         const PhysicalRect& old_rect,
+                         const PhysicalRect& new_rect,
+                         const PhysicalOffset& old_paint_offset,
+                         const PhysicalOffset& new_paint_offset);
+
+  void NotifyTextPrePaint(const LayoutText& text,
+                          const PropertyTreeStateOrAlias& property_tree_state,
+                          const LogicalOffset& old_starting_point,
+                          const LogicalOffset& new_starting_point,
+                          const PhysicalOffset& old_paint_offset,
+                          const PhysicalOffset& new_paint_offset);
+
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(mojom::blink::ScrollType, ScrollOffset delta);
   void NotifyViewportSizeChanged();
-  bool IsActive();
+  bool IsActive() const { return is_active_; }
   double Score() const { return score_; }
   double WeightedScore() const { return weighted_score_; }
   float OverallMaxDistance() const { return overall_max_distance_; }
@@ -83,14 +96,51 @@ class CORE_EXPORT LayoutShiftTracker final
 
    private:
     Scope* scope_ = nullptr;
-    HeapHashMap<Member<const Node>, PhysicalRect> visual_rects_;
+    struct Geometry {
+      PhysicalRect layout_overflow_rect;
+      PhysicalOffset paint_offset;
+      LayoutSize size;
+    };
+    HeapHashMap<Member<const Node>, Geometry> geometries_before_detach_;
+  };
+
+  class CORE_EXPORT ContainingBlockScope {
+   public:
+    // |old_size| and |new_size| are the border box sizes.
+    // |old_rect| and |new_rect| have the same definition as in
+    // NotifyBoxPrePaint().
+    explicit ContainingBlockScope(const PhysicalSize& old_size,
+                                  const PhysicalSize& new_size,
+                                  const PhysicalRect& old_rect,
+                                  const PhysicalRect& new_rect)
+        : outer_(top_),
+          old_size_(old_size),
+          new_size_(new_size),
+          old_rect_(old_rect),
+          new_rect_(new_rect) {
+      top_ = this;
+    }
+    ~ContainingBlockScope() { top_ = outer_; }
+
+   private:
+    friend class LayoutShiftTracker;
+    ContainingBlockScope* outer_;
+    static ContainingBlockScope* top_;
+    PhysicalSize old_size_;
+    PhysicalSize new_size_;
+    PhysicalRect old_rect_;
+    PhysicalRect new_rect_;
+    LayoutUnit max_text_shift_distance_;
   };
 
  private:
   void ObjectShifted(const LayoutObject&,
                      const PropertyTreeStateOrAlias&,
-                     FloatRect old_rect,
-                     FloatRect new_rect);
+                     const PhysicalRect& old_rect,
+                     const PhysicalRect& new_rect,
+                     const FloatPoint& old_starting_point,
+                     const FloatPoint& new_starting_point);
+
   void ReportShift(double score_delta, double weighted_score_delta);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,
@@ -103,6 +153,7 @@ class CORE_EXPORT LayoutShiftTracker final
   void SubmitPerformanceEntry(double score_delta, bool input_detected) const;
 
   Member<LocalFrameView> frame_view_;
+  bool is_active_;
 
   // The document cumulative layout shift (DCLS) score for this LocalFrame,
   // unweighted, with move distance applied.

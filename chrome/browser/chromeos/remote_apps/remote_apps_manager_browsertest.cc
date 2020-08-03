@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -294,7 +295,11 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
   EXPECT_FALSE(item->is_folder());
   EXPECT_EQ(name, item->name());
   // kShared uses size hint 64 dip.
-  apps::ApplyIconEffects(apps::IconEffects::kResizeAndPad, 64, &icon);
+  apps::IconEffects icon_effects =
+      base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)
+          ? apps::IconEffects::kCrOsStandardIcon
+          : apps::IconEffects::kResizeAndPad;
+  apps::ApplyIconEffects(icon_effects, 64, &icon);
   CheckIconsEqual(icon, item->GetIcon(ash::AppListConfigType::kShared));
 }
 

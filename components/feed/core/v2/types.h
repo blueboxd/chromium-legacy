@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "base/util/type_safety/id_type.h"
 #include "base/values.h"
 #include "components/feed/core/v2/public/types.h"
@@ -51,6 +52,40 @@ struct PersistentMetricsData {
 
 base::Value PersistentMetricsDataToValue(const PersistentMetricsData& data);
 PersistentMetricsData PersistentMetricsDataFromValue(const base::Value& value);
+
+class LoadLatencyTimes {
+ public:
+  enum StepKind {
+    // Time from when the LoadStreamTask was created to when it is executed.
+    kTaskExecution,
+    // Time spent loading the stream state from storage.
+    kLoadFromStore,
+    // Time spent querying for and uploading stored actions. Recorded even if
+    // no actions are uploaded.
+    kUploadActions,
+    // Time spent making the FeedQuery request.
+    kQueryRequest,
+    // A view was reported in the stream, indicating the stream was shown.
+    kStreamViewed,
+  };
+  struct Step {
+    StepKind kind;
+    base::TimeDelta latency;
+  };
+
+  LoadLatencyTimes();
+  ~LoadLatencyTimes();
+  LoadLatencyTimes(const LoadLatencyTimes&) = delete;
+  LoadLatencyTimes& operator=(const LoadLatencyTimes&) = delete;
+
+  void StepComplete(StepKind kind);
+
+  const std::vector<Step>& steps() const { return steps_; }
+
+ private:
+  base::TimeTicks last_time_;
+  std::vector<Step> steps_;
+};
 
 }  // namespace feed
 

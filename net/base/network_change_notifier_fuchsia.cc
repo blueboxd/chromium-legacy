@@ -4,7 +4,9 @@
 
 #include "net/base/network_change_notifier_fuchsia.h"
 
+#include <lib/async-loop/cpp/loop.h>
 #include <lib/sys/cpp/component_context.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -28,7 +30,7 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
                                    required_features) {}
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
-    fuchsia::netstack::NetstackPtr netstack,
+    fidl::InterfaceHandle<fuchsia::netstack::Netstack> netstack,
     uint32_t required_features,
     SystemDnsConfigChangeNotifier* system_dns_config_notifier)
     : NetworkChangeNotifier(NetworkChangeCalculatorParams(),
@@ -36,35 +38,29 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
       required_features_(required_features) {
   DCHECK(netstack);
 
-  // Temporarily re-wrap our Netstack channel so we can query the interfaces
-  // and routing table synchronously to populate the initial state.
-  fuchsia::netstack::NetstackSyncPtr sync_netstack;
-  sync_netstack.Bind(netstack.Unbind());
-  DCHECK(sync_netstack);
-
-  // Manually fetch the interfaces and routes.
-  std::vector<fuchsia::netstack::NetInterface> interfaces;
-  zx_status_t status = sync_netstack->GetInterfaces(&interfaces);
-  ZX_CHECK(status == ZX_OK, status) << "synchronous GetInterfaces()";
-  std::vector<fuchsia::netstack::RouteTableEntry> routes;
-  status = sync_netstack->GetRouteTable(&routes);
-  ZX_CHECK(status == ZX_OK, status) << "synchronous GetInterfaces()";
-  // This will Notify internal observers like the NetworkChangeCalculator
-  // to be properly updated.
-  OnRouteTableReceived(std::move(interfaces), std::move(routes));
-
-  // Re-wrap Netstack back into an asynchronous pointer.
-  netstack_.Bind(sync_netstack.Unbind());
-  DCHECK(netstack_);
   netstack_.set_error_handler([](zx_status_t status) {
-    // TODO(https://crbug.com/901092): Unit tests that use NetworkService are
-    // crashing because NetworkService does not clean up properly, and the
-    // netstack connection is cancelled, causing this fatal error.
-    // When the NetworkService cleanup is fixed, we should make this log FATAL.
-    ZX_LOG(ERROR, status) << "Lost connection to netstack.";
+    ZX_LOG(FATAL, status) << "Lost connection to netstack.";
   });
+
   netstack_.events().OnInterfacesChanged = fit::bind_member(
       this, &NetworkChangeNotifierFuchsia::ProcessInterfaceList);
+
+  // Temporarily bind to a local dispatcher so we can synchronously wait for the
+  // synthetic event to populate the initial state.
+  async::Loop loop(&kAsyncLoopConfigNeverAttachToThread);
+  zx_status_t status = netstack_.Bind(std::move(netstack), loop.dispatcher());
+  ZX_CHECK(status == ZX_OK, status) << "Bind()";
+  on_initial_interfaces_received_ =
+      base::BindOnce(&async::Loop::Quit, base::Unretained(&loop));
+  status = loop.Run();
+  ZX_CHECK(status == ZX_ERR_CANCELED, status) << "loop.Run()";
+
+  // Bind to the dispatcher for the thread's MessagePump.
+  //
+  // Note this must be done before |loop| is destroyed, since that would close
+  // the interface handle underlying |netstack_|.
+  status = netstack_.Bind(netstack_.Unbind());
+  ZX_CHECK(status == ZX_OK, status) << "Bind()";
 }
 
 NetworkChangeNotifierFuchsia::~NetworkChangeNotifierFuchsia() {
@@ -147,6 +143,10 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
   if (connection_type != cached_connection_type_) {
     base::subtle::Release_Store(&cached_connection_type_, connection_type);
     NotifyObserversOfConnectionTypeChange();
+  }
+
+  if (on_initial_interfaces_received_) {
+    std::move(on_initial_interfaces_received_).Run();
   }
 }
 

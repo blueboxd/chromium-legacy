@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/telemetry_extension_ui/diagnostics_service.h"
+#include "chromeos/components/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"
 #include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
 #include "chromeos/components/telemetry_extension_ui/probe_service.h"
 #include "chromeos/components/telemetry_extension_ui/telemetry_extension_untrusted_source.h"
@@ -15,6 +17,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace chromeos {
@@ -34,6 +37,9 @@ CreateTrustedTelemetryExtensionDataSource() {
                                   IDR_TELEMETRY_EXTENSION_ICON_96);
   trusted_source->AddResourcePath("trusted_scripts.js",
                                   IDR_TELEMETRY_EXTENSION_TRUSTED_SCRIPTS_JS);
+  trusted_source->AddResourcePath(
+      "diagnostics_service.mojom-lite.js",
+      IDR_TELEMETRY_EXTENSION_DIAGNOSTICS_SERVICE_MOJO_LITE_JS);
   trusted_source->AddResourcePath(
       "probe_service.mojom-lite.js",
       IDR_TELEMETRY_EXTENSION_PROBE_SERVICE_MOJO_LITE_JS);
@@ -66,6 +72,11 @@ CreateUntrustedTelemetryExtensionDataSource() {
       "untrusted_scripts.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS);
   untrusted_source->AddResourcePath(
       "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
+  untrusted_source->AddResourcePath("mojo_bindings_lite.js",
+                                    IDR_MOJO_MOJO_BINDINGS_LITE_JS);
+  untrusted_source->AddResourcePath(
+      "diagnostics_service.mojom-lite.js",
+      IDR_TELEMETRY_EXTENSION_DIAGNOSTICS_SERVICE_MOJO_LITE_JS);
 
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameAncestors,
@@ -97,6 +108,12 @@ TelemetryExtensionUI::~TelemetryExtensionUI() = default;
 void TelemetryExtensionUI::BindInterface(
     mojo::PendingReceiver<health::mojom::ProbeService> receiver) {
   probe_service_ = std::make_unique<ProbeService>(std::move(receiver));
+}
+
+void TelemetryExtensionUI::BindInterface(
+    mojo::PendingReceiver<health::mojom::DiagnosticsService> receiver) {
+  diagnostics_service_ =
+      std::make_unique<DiagnosticsService>(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(TelemetryExtensionUI)

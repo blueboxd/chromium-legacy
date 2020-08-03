@@ -58,6 +58,8 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
   explicit CrashAnimation(TabIcon* target)
       : gfx::LinearAnimation(base::TimeDelta::FromSeconds(1), 25, this),
         target_(target) {}
+  CrashAnimation(const CrashAnimation&) = delete;
+  CrashAnimation& operator=(const CrashAnimation&) = delete;
   ~CrashAnimation() override = default;
 
   // gfx::Animation overrides:
@@ -75,8 +77,6 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
 
  private:
   TabIcon* target_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrashAnimation);
 };
 
 TabIcon::TabIcon()

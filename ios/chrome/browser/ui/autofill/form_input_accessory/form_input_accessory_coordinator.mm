@@ -24,6 +24,8 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state.h"
@@ -80,12 +82,16 @@
       autofill::PersonalDataManagerFactory::GetForBrowserState(
           self.browser->GetBrowserState()->GetOriginalChromeBrowserState());
 
+  AppState* appState = SceneStateBrowserAgent::FromBrowser(self.browser)
+                           ->GetSceneState()
+                           .appState;
   _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
          initWithConsumer:self.formInputAccessoryViewController
                  delegate:self
              webStateList:self.browser->GetWebStateList()
       personalDataManager:personalDataManager
-            passwordStore:passwordStore];
+            passwordStore:passwordStore
+                 appState:appState];
 }
 
 - (void)stop {

@@ -156,7 +156,15 @@ GaiaRemoteConsentFlow::GetCookieManagerForPartition() {
 }
 
 void GaiaRemoteConsentFlow::OnEndBatchOfRefreshTokenStateChanges() {
+// On ChromeOS, new accounts are added through the account manager. They need to
+// be pushed to the partition used by this flow explicitly.
+// On Desktop, sign-in happens on the Web and a new account is directly added to
+// this partition's cookie jar. An extra update triggered from here might change
+// cookies order in the middle of the flow. This may lead to a bug like
+// https://crbug.com/1112343.
+#if defined(OS_CHROMEOS)
   SetAccountsInCookie();
+#endif
 }
 
 void GaiaRemoteConsentFlow::SetWebAuthFlowForTesting(

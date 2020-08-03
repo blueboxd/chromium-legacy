@@ -101,6 +101,12 @@ const base::Feature kIPHExploreSitesTileFeature{
     "IPH_ExploreSitesTile", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedHeaderMenuFeature{
     "IPH_FeedHeaderMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeReengagementNotification1{
+    "IPH_ChromeReengagementNotification1", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeReengagementNotification2{
+    "IPH_ChromeReengagementNotification2", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeReengagementNotification3{
+    "IPH_ChromeReengagementNotification3", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

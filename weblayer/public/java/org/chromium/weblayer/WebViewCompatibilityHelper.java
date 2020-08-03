@@ -11,7 +11,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.util.Pair;
 
 import dalvik.system.BaseDexClassLoader;
 import dalvik.system.PathClassLoader;
@@ -19,25 +18,19 @@ import dalvik.system.PathClassLoader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /** Helper class which performs initialization needed for WebView compatibility. */
 final class WebViewCompatibilityHelper {
     /** Creates a the ClassLoader to use for WebView compatibility. */
-    static Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> initialize(
-            Context appContext)
+    static ClassLoader initialize(Context appContext)
             throws PackageManager.NameNotFoundException, ReflectiveOperationException {
         Context remoteContext = WebLayer.getOrCreateRemoteContext(appContext);
         PackageInfo info =
                 appContext.getPackageManager().getPackageInfo(remoteContext.getPackageName(),
                         PackageManager.GET_SHARED_LIBRARY_FILES
                                 | PackageManager.MATCH_UNINSTALLED_PACKAGES);
-        int majorVersion = parseMajorVersion(info.versionName);
-        if (!isSupportedVersion(majorVersion)) {
-            return Pair.create(
-                    null, WebLayer.WebViewCompatibilityResult.FAILURE_UNSUPPORTED_VERSION);
-        }
-        if (majorVersion >= 84) {
+
+        if (parseMajorVersion(info.versionName) >= 84) {
             // Recreate the context without code to avoid wasting memory by accidentally using the
             // class loader.
             remoteContext = appContext.createPackageContext(
@@ -65,31 +58,27 @@ final class WebViewCompatibilityHelper {
 
         String dexPath = getAllApkPaths(info.applicationInfo);
         String librarySearchPath = TextUtils.join(File.pathSeparator, libraryPaths);
-        Callable<ClassLoader> classLoaderGetter = () -> {
-            // TODO(cduvall): PathClassLoader may call stat on the library paths, consider moving
-            // this to a background thread.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            try {
-                return new PathClassLoader(
-                        dexPath, librarySearchPath, ClassLoader.getSystemClassLoader());
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-        };
-        return Pair.create(classLoaderGetter, WebLayer.WebViewCompatibilityResult.SUCCESS);
-    }
-
-    /**
-     * Returns if the version of the WebLayer implementation supports WebView compatibility. We
-     * can't use WebLayer.getSupportedMajorVersion() here because the loader depends on
-     * WebView compatibility already being set up.
-     */
-    static boolean isSupportedVersion(int majorVersion) {
-        // M- only supports WebView compat via copying the libraries on 81, so only support 82+.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            return majorVersion >= 82;
+        // TODO(cduvall): PathClassLoader may call stat on the library paths, consider moving
+        // this to a background thread.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return new PathClassLoader(
+                    dexPath, librarySearchPath, ClassLoader.getSystemClassLoader()) {
+                @Override
+                public Class<?> loadClass(String name) throws ClassNotFoundException {
+                    // TODO(crbug.com/1112001): Investigate why loading classes causes strict mode
+                    // violations in some situations.
+                    StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+                    try {
+                        return super.loadClass(name);
+                    } finally {
+                        StrictMode.setThreadPolicy(oldPolicy);
+                    }
+                }
+            };
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
-        return majorVersion >= 81;
     }
 
     /** Parses the version name into an integer version number. */

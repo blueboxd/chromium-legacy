@@ -53,11 +53,11 @@ bool ReadFoundPUPs(std::set<UwSId>* stored_pups) {
   if (!logging_key.Valid())
     return false;
 
-  std::vector<base::string16> existing_pups;
+  std::vector<std::wstring> existing_pups;
   bool success = true;
   if (logger.ReadValues(logging_key, kFoundUwsValueName, &existing_pups,
                         nullptr)) {
-    for (base::string16 pup_id_string : existing_pups) {
+    for (std::wstring pup_id_string : existing_pups) {
       UwSId pup_id = 0;
       if (base::StringToUint(pup_id_string, &pup_id))
         stored_pups->insert(pup_id);
@@ -110,7 +110,7 @@ TEST_F(RegistryLoggerTest, AppendLogUploadResultBasic) {
   base::win::RegKey logging_key;
   ASSERT_TRUE(OpenLoggingRegKey(&logging_key, logger, KEY_QUERY_VALUE, mode));
 
-  base::string16 upload_results;
+  std::wstring upload_results;
   LONG result = logging_key.ReadValue(kUploadResultsValueName, &upload_results);
   EXPECT_EQ(ERROR_SUCCESS, result);
   EXPECT_STREQ(L"1;0;0;", upload_results.c_str());
@@ -145,11 +145,11 @@ TEST_F(RegistryLoggerTest, AppendLogUploadResultMaxLength) {
   base::win::RegKey logging_key;
   ASSERT_TRUE(OpenLoggingRegKey(&logging_key, logger, KEY_QUERY_VALUE, mode));
 
-  base::string16 upload_results;
+  std::wstring upload_results;
   LONG result = logging_key.ReadValue(kUploadResultsValueName, &upload_results);
   EXPECT_EQ(ERROR_SUCCESS, result);
 
-  base::string16 expected_string;
+  std::wstring expected_string;
   for (size_t i = 0; i < kMaxNumUploadResults; ++i)
     expected_string += L"1;";
 
@@ -336,8 +336,7 @@ TEST_F(RegistryLoggerTest, LoggingKeyPathContainsCompanyName) {
   // This checks directly for the company name Google, instead of using
   // COMPANY_SHORTNAME_STRING, because it's used for communication with Chrome
   // so it needs to use Chrome's company name.
-  const base::string16 expected_name =
-      L"Software\\Google\\Software Removal Tool";
+  const std::wstring expected_name = L"Software\\Google\\Software Removal Tool";
   EXPECT_EQ(expected_name, logger.GetLoggingKeyPath(mode));
 }
 
@@ -346,15 +345,15 @@ TEST_F(RegistryLoggerTest, UseSuffixRegistryKey) {
   TestRegistryLogger logger(mode, kTestSuffix);
   TestRegistryLogger no_suffix_logger(mode);
 
-  base::string16 key_name = no_suffix_logger.GetLoggingKeyPath(mode);
-  EXPECT_EQ(base::string16::npos,
+  std::wstring key_name = no_suffix_logger.GetLoggingKeyPath(mode);
+  EXPECT_EQ(std::wstring::npos,
             key_name.find(base::UTF8ToWide(kTestSuffix).c_str()));
 
   // This checks directly for the company name Google, instead of using
   // COMPANY_SHORTNAME_STRING, because it's used for communication with Chrome
   // so it needs to use Chrome's company name.
   key_name = logger.GetLoggingKeyPath(mode);
-  const base::string16 expected_name =
+  const std::wstring expected_name =
       base::StrCat({L"Software\\Google\\Software Removal Tool\\",
                     base::UTF8ToWide(kTestSuffix)});
   EXPECT_EQ(expected_name, key_name);

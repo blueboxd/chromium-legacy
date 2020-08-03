@@ -37,17 +37,6 @@ namespace {
 // should be added again on a domain it was previously set.
 const int kHoursThresholdToReAddCookie = 24;
 
-// JavaScript template used to set (or delete) the CHROME_CONNECTED cookie.
-// It takes 3 arguments: the domain of the cookie, its value and its expiration
-// date. It also clears the legacy X-CHROME-CONNECTED cookie.
-NSString* const kChromeConnectedCookieTemplate =
-    @"<html><script>domain=\"%@\";"
-     "document.cookie=\"X-CHROME-CONNECTED=; path=/; domain=\" + domain + \";"
-     " expires=Thu, 01-Jan-1970 00:00:01 GMT\";"
-     "document.cookie=\"CHROME_CONNECTED=%@; path=/; domain=\" + domain + \";"
-     " expires=\" + new Date(%f).toGMTString() + \"; secure;"
-     " samesite=lax;\"</script></html>";
-
 // WebStatePolicyDecider that monitors the HTTP headers on Gaia responses,
 // reacting on the X-Chrome-Manage-Accounts header and notifying its delegate.
 // It also notifies the AccountConsistencyService of domains it should add the
@@ -158,45 +147,8 @@ void AccountConsistencyHandler::WebStateDestroyed() {
   account_consistency_service_->RemoveWebStateHandler(web_state());
 }
 
-// WKWebView navigation delegate that calls its callback every time a navigation
-// has finished.
-@interface AccountConsistencyNavigationDelegate : NSObject<WKNavigationDelegate>
-
-// Designated initializer. |callback| will be called every time a navigation has
-// finished. |callback| must not be empty.
-- (instancetype)initWithCallback:(const base::RepeatingClosure&)callback
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-@end
-
-@implementation AccountConsistencyNavigationDelegate {
-  // Callback that will be called every time a navigation has finished.
-  base::RepeatingClosure _callback;
-}
-
-- (instancetype)initWithCallback:(const base::RepeatingClosure&)callback {
-  self = [super init];
-  if (self) {
-    DCHECK(!callback.is_null());
-    _callback = callback;
-  }
-  return self;
-}
-
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
-#pragma mark - WKNavigationDelegate
-
-- (void)webView:(WKWebView*)webView
-    didFinishNavigation:(WKNavigation*)navigation {
-  _callback.Run();
-}
-
-@end
+const char AccountConsistencyService::kChromeConnectedCookieName[] =
+    "CHROME_CONNECTED";
 
 const char AccountConsistencyService::kDomainsWithCookiePref[] =
     "signin.domains_with_cookie";
@@ -251,8 +203,6 @@ AccountConsistencyService::AccountConsistencyService(
 }
 
 AccountConsistencyService::~AccountConsistencyService() {
-  DCHECK(!web_view_);
-  DCHECK(!navigation_delegate_);
 }
 
 // static
@@ -344,7 +294,6 @@ void AccountConsistencyService::LoadFromPrefs() {
 void AccountConsistencyService::Shutdown() {
   identity_manager_->RemoveObserver(this);
   ActiveStateManager::FromBrowserState(browser_state_)->RemoveObserver(this);
-  ResetWKWebView();
   web_state_handlers_.clear();
 }
 
@@ -365,10 +314,8 @@ void AccountConsistencyService::ApplyCookieRequests() {
   applying_cookie_requests_ = true;
 
   const GURL url("https://" + cookie_requests_.front().domain);
-  std::string cookie_value = "";
-  // Expiration date of the cookie in the JavaScript convention of time, a
-  // number of milliseconds since the epoch.
-  double expiration_date = 0;
+  std::string cookie_value;
+  base::Time expiration_date;
   switch (cookie_requests_.front().request_type) {
     case ADD_CHROME_CONNECTED_COOKIE:
       cookie_value = signin::BuildMirrorRequestCookieIfPossible(
@@ -382,22 +329,43 @@ void AccountConsistencyService::ApplyCookieRequests() {
         return;
       }
       // Create expiration date of Now+2y to roughly follow the SAPISID cookie.
-      expiration_date =
-          (base::Time::Now() + base::TimeDelta::FromDays(730)).ToJsTime();
+      expiration_date = base::Time::Now() + base::TimeDelta::FromDays(730);
       break;
     case REMOVE_CHROME_CONNECTED_COOKIE:
-      // Nothing to do. Default values correspond to removing the cookie (no
-      // value, expiration date in the past).
+      // Default values correspond to removing the cookie (no value, expiration
+      // date in the past).
+      expiration_date = base::Time::UnixEpoch();
       break;
   }
-  NSString* html = [NSString
-      stringWithFormat:kChromeConnectedCookieTemplate,
-                       base::SysUTF8ToNSString(url.host()),
-                       base::SysUTF8ToNSString(cookie_value), expiration_date];
-  // Load an HTML string with embedded JavaScript that will set or remove the
-  // cookie. By setting the base URL to |url|, this effectively allows to modify
-  // cookies on the correct domain without having to do a network request.
-  [GetWKWebView() loadHTMLString:html baseURL:net::NSURLWithGURL(url)];
+
+  std::unique_ptr<net::CanonicalCookie> cookie =
+      net::CanonicalCookie::CreateSanitizedCookie(
+          url,
+          /*name=*/kChromeConnectedCookieName, cookie_value,
+          /*domain=*/url.host(),
+          /*path=*/std::string(),
+          /*creation_time=*/base::Time::Now(), expiration_date,
+          /*last_access_time=*/base::Time(),
+          /*secure=*/true,
+          /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_DEFAULT);
+  net::CookieOptions options;
+  options.set_include_httponly();
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
+
+  network::mojom::CookieManager* cookie_manager =
+      browser_state_->GetCookieManager();
+  cookie_manager->SetCanonicalCookie(
+      *cookie, url, options,
+      base::BindOnce(&AccountConsistencyService::FinishedSetCookie,
+                     base::Unretained(this)));
+}
+
+void AccountConsistencyService::FinishedSetCookie(
+    net::CookieAccessResult cookie_access_result) {
+  DCHECK(cookie_access_result.status.IsInclude());
+  FinishedApplyingCookieRequest(true);
 }
 
 void AccountConsistencyService::FinishedApplyingCookieRequest(bool success) {
@@ -427,35 +395,6 @@ void AccountConsistencyService::FinishedApplyingCookieRequest(bool success) {
   }
 }
 
-WKWebView* AccountConsistencyService::GetWKWebView() {
-  if (!ActiveStateManager::FromBrowserState(browser_state_)->IsActive()) {
-    // |browser_state_| is not active, WKWebView linked to this browser state
-    // should not exist or be created.
-    return nil;
-  }
-  if (!web_view_) {
-    web_view_ = BuildWKWebView();
-    navigation_delegate_ = [[AccountConsistencyNavigationDelegate alloc]
-        initWithCallback:base::BindRepeating(&AccountConsistencyService::
-                                                 FinishedApplyingCookieRequest,
-                                             base::Unretained(this), true)];
-    [web_view_ setNavigationDelegate:navigation_delegate_];
-  }
-  return web_view_;
-}
-
-WKWebView* AccountConsistencyService::BuildWKWebView() {
-  return web::BuildWKWebView(CGRectZero, browser_state_);
-}
-
-void AccountConsistencyService::ResetWKWebView() {
-  [web_view_ setNavigationDelegate:nil];
-  [web_view_ stopLoading];
-  web_view_ = nil;
-  navigation_delegate_ = nil;
-  applying_cookie_requests_ = false;
-}
-
 void AccountConsistencyService::AddChromeConnectedCookies() {
   DCHECK(!browser_state_->IsOffTheRecord());
   // These cookie request are preventive and not a strong signal (unlike
@@ -469,7 +408,6 @@ void AccountConsistencyService::AddChromeConnectedCookies() {
 void AccountConsistencyService::OnBrowsingDataRemoved() {
   // CHROME_CONNECTED cookies have been removed, update internal state
   // accordingly.
-  ResetWKWebView();
   for (auto& cookie_request : cookie_requests_) {
     base::OnceClosure callback(std::move(cookie_request.callback));
     if (!callback.is_null()) {
@@ -509,10 +447,4 @@ void AccountConsistencyService::OnActive() {
   // |browser_state_| is now active. There might be some pending cookie requests
   // to apply.
   ApplyCookieRequests();
-}
-
-void AccountConsistencyService::OnInactive() {
-  // |browser_state_| is now inactive. Stop using |web_view_| and don't create
-  // a new one until it is active.
-  ResetWKWebView();
 }

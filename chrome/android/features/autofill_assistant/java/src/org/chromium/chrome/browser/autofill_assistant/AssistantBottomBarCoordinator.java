@@ -92,6 +92,9 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     /** A token held while the assistant is obscuring all tabs. */
     private int mObscuringToken;
 
+    /** Height of the sheet's shadow used to compute the resize offset. */
+    private int mShadowHeight;
+
     AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
             BottomSheetController controller,
             ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
@@ -100,6 +103,9 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mModel = model;
         mBottomSheetController = controller;
         mTabObscuringHandler = tabObscuringHandler;
+
+        mShadowHeight = activity.getResources().getDimensionPixelSize(
+                R.dimen.bottom_sheet_toolbar_shadow_height);
 
         mWindowApplicationInsetSupplier = applicationViewportInsetSupplier;
         mWindowApplicationInsetSupplier.addSupplier(mInsetSupplier);
@@ -410,8 +416,11 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
             return;
         }
 
-        setVisualViewportResizing((int) Math.floor(mBottomSheetController.getCurrentOffset()
-                - mBottomSheetController.getTopShadowHeight()));
+        // In order to align the bottom of a website with the top of the bottom sheet, we need to
+        // remove the shadow height from the sheet's current offset. Note that mShadowHeight is
+        // different from the sheet controller's getTopShadowHeight().
+        int offset = mBottomSheetController.getCurrentOffset() - mShadowHeight;
+        setVisualViewportResizing(offset);
     }
 
     private void resetVisualViewportHeight() {

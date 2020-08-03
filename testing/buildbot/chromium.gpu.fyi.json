@@ -7916,8 +7916,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--flash"
+          "--test-launcher-retry-limit=0"
         ],
         "merge": {
           "args": [],
@@ -7953,8 +7952,7 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=validating",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7990,8 +7988,7 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8027,8 +8024,7 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8064,8 +8060,7 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8105,8 +8100,7 @@
           "0",
           "--expected-device-id",
           "0",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8146,8 +8140,7 @@
           "--test-machine-name",
           "${buildername}",
           "--remote=variable_chromeos_device_hostname",
-          "--git-revision=${got_revision}",
-          "--flash"
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8192,8 +8185,7 @@
           "--test-machine-name",
           "${buildername}",
           "--remote=variable_chromeos_device_hostname",
-          "--git-revision=${got_revision}",
-          "--flash"
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8235,8 +8227,7 @@
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8272,8 +8263,7 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8310,8 +8300,7 @@
           "-v",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
-          "--remote=variable_chromeos_device_hostname",
-          "--flash"
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {

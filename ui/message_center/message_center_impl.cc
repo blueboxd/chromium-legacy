@@ -247,10 +247,14 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
 
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(copied_id);
+
+  // Remove notification before calling the Close method in case it calls
+  // RemoveNotification reentrantly.
+  notification_list_->RemoveNotification(copied_id);
+
   if (delegate.get())
     delegate->Close(by_user);
 
-  notification_list_->RemoveNotification(copied_id);
   visible_notifications_ =
       notification_list_->GetVisibleNotifications(blockers_);
   for (auto& observer : observer_list_)

@@ -88,7 +88,7 @@ const base::Feature kAutofillEnableStickyPaymentsBubble{
 // app, Autofill will surface these nicknames in suggestions.
 const base::Feature kAutofillEnableSurfacingServerCardNickname{
     "AutofillEnableSurfacingServerCardNickname",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Autofill data related icons will be shown in the status
 // chip in toolbar along with the avatar toolbar button.

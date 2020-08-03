@@ -9,6 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#include "ios/web/common/features.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -79,7 +80,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
 // Returns the platform name of the current device.
 std::string platform() {
-  return base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
+  BOOL isMobileByDefault = web::features::UseWebClientDefaultUserAgent()
+                               ? ![ChromeEarlGrey isIPadIdiom]
+                               : YES;
+  return isMobileByDefault
+             ? base::SysNSStringToUTF8([[UIDevice currentDevice] model])
+             : "MacIntel";
 }
 
 }  // namespace

@@ -145,6 +145,9 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
         widget_(hover_card),
         fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   }
+  WidgetFadeAnimationDelegate(const WidgetFadeAnimationDelegate&) = delete;
+  WidgetFadeAnimationDelegate& operator=(const WidgetFadeAnimationDelegate&) =
+      delete;
   ~WidgetFadeAnimationDelegate() override = default;
 
   enum class FadeAnimationState {
@@ -248,8 +251,6 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
 #endif
   std::unique_ptr<gfx::LinearAnimation> fade_animation_;
   FadeAnimationState animation_state_ = FadeAnimationState::IDLE;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetFadeAnimationDelegate);
 };
 
 class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
@@ -262,7 +263,10 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
         slide_animation_(std::make_unique<gfx::LinearAnimation>(this)) {
     slide_animation_->SetDuration(base::TimeDelta::FromMilliseconds(75));
   }
-  ~WidgetSlideAnimationDelegate() override {}
+  WidgetSlideAnimationDelegate(const WidgetSlideAnimationDelegate&) = delete;
+  WidgetSlideAnimationDelegate& operator=(const WidgetSlideAnimationDelegate&) =
+      delete;
+  ~WidgetSlideAnimationDelegate() override = default;
 
   void AnimateToAnchorView(views::View* desired_anchor_view) {
     DCHECK(!current_bubble_bounds_.IsEmpty());
@@ -326,8 +330,6 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   gfx::Rect starting_bubble_bounds_;
   gfx::Rect target_bubble_bounds_;
   gfx::Rect current_bubble_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetSlideAnimationDelegate);
 };
 
 // This is a label with two tweaks:

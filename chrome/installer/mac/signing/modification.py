@@ -14,7 +14,6 @@ from . import commands, parts
 
 _CF_BUNDLE_EXE = 'CFBundleExecutable'
 _CF_BUNDLE_ID = 'CFBundleIdentifier'
-_CF_BUNDLE_NAME = 'CFBundleName'
 _ENT_APP_ID = 'com.apple.application-identifier'
 _KS_BRAND_ID = 'KSBrandID'
 _KS_CHANNEL_ID = 'KSChannelID'
@@ -49,8 +48,6 @@ def _modify_plists(paths, dist, config):
 
             app_plist[_CF_BUNDLE_ID] = config.base_bundle_id
             app_plist[_CF_BUNDLE_EXE] = config.app_product
-            app_plist[_CF_BUNDLE_NAME] = '{} {}'.format(
-                app_plist[_CF_BUNDLE_NAME], dist.app_name_fragment)
             app_plist[_KS_PRODUCT_ID] += '.' + dist.channel
 
         # Apply the channel and brand code changes.

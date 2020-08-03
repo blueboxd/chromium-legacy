@@ -4,6 +4,8 @@
 
 package com.android.webview.chromium;
 
+import android.webkit.PacProcessor;
+
 class WebViewChromiumFactoryProviderForR extends WebViewChromiumFactoryProvider {
     public static WebViewChromiumFactoryProvider create(android.webkit.WebViewDelegate delegate) {
         return new WebViewChromiumFactoryProviderForR(delegate);
@@ -11,5 +13,10 @@ class WebViewChromiumFactoryProviderForR extends WebViewChromiumFactoryProvider 
 
     protected WebViewChromiumFactoryProviderForR(android.webkit.WebViewDelegate delegate) {
         super(delegate);
+    }
+
+    @Override
+    public PacProcessor getPacProcessor() {
+        return PacProcessorImpl.getInstance();
     }
 }

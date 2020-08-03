@@ -11,7 +11,7 @@
 
 namespace ui {
 
-WaylandOutput::WaylandOutput(const uint32_t output_id, wl_output* output)
+WaylandOutput::WaylandOutput(uint32_t output_id, wl_output* output)
     : output_id_(output_id),
       output_(output),
       scale_factor_(kDefaultScaleFactor),
@@ -31,7 +31,7 @@ void WaylandOutput::Initialize(Delegate* delegate) {
   wl_output_add_listener(output_.get(), &output_listener, this);
 }
 
-void WaylandOutput::TriggerDelegateNotification() const {
+void WaylandOutput::TriggerDelegateNotifications() const {
   DCHECK(!rect_in_physical_pixels_.IsEmpty());
   delegate_->OnOutputHandleMetrics(output_id_, rect_in_physical_pixels_,
                                    scale_factor_);
@@ -67,9 +67,8 @@ void WaylandOutput::OutputHandleMode(void* data,
 
 // static
 void WaylandOutput::OutputHandleDone(void* data, struct wl_output* wl_output) {
-  WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data);
-  if (wayland_output)
-    wayland_output->TriggerDelegateNotification();
+  if (auto* output = static_cast<WaylandOutput*>(data))
+    output->TriggerDelegateNotifications();
 }
 
 // static

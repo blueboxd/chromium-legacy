@@ -4,6 +4,8 @@
 
 #include "services/device/usb/usb_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -21,7 +23,9 @@
 #elif defined(USE_UDEV)
 #include "services/device/usb/usb_service_linux.h"
 #else
-#if defined(OS_WIN)
+#if defined(OS_MAC)
+#include "services/device/usb/usb_service_mac.h"
+#elif defined(OS_WIN)
 #include "services/device/usb/usb_service_win.h"
 #endif
 #include "services/device/usb/usb_service_impl.h"
@@ -55,7 +59,10 @@ std::unique_ptr<UsbService> UsbService::Create() {
   else
     return base::WrapUnique(new UsbServiceImpl());
 #elif defined(OS_MAC)
-  return base::WrapUnique(new UsbServiceImpl());
+  if (base::FeatureList::IsEnabled(kNewUsbBackend))
+    return base::WrapUnique(new UsbServiceMac());
+  else
+    return base::WrapUnique(new UsbServiceImpl());
 #else
   return nullptr;
 #endif

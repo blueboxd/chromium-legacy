@@ -65,7 +65,7 @@ function assertSafetyCheckChild({
 
 suite('SafetyCheckChromeCleanerUiTests', function() {
   /**
-   * @implements {BrowserProxy}
+   * @implements {ChromeCleanupProxy}
    * @extends {TestBrowserProxy}
    */
   let chromeCleanupBrowserProxy = null;

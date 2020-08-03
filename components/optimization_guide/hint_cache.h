@@ -74,13 +74,14 @@ class HintCache {
   // Process |get_hints_response| to be stored in the hint cache store.
   // |callback| is asynchronously run when the hints are successfully stored or
   // if the store is not available. |update_time| specifies when the hints
-  // within |get_hints_response| will need to be updated next. |urls_fetched|
-  // specifies the URLs for which specific hints were requested to be fetched.
-  // It is expected for |this| to keep track of the result, even if a hint was
-  // not returned for the URL.
+  // within |get_hints_response| will need to be updated next. |hosts_fetched|
+  // and |urls_fetched| specifies the hosts and URLs for which specific hints
+  // were requested to be fetched. It is expected for |this| to keep track of
+  // the result, even if a hint was not returned for the URL.
   void UpdateFetchedHints(
       std::unique_ptr<proto::GetHintsResponse> get_hints_response,
       base::Time update_time,
+      const base::flat_set<std::string>& hosts_fetched,
       const base::flat_set<GURL>& urls_fetched,
       base::OnceClosure callback);
 
@@ -98,7 +99,7 @@ class HintCache {
 
   // Returns whether the cache has a hint data for |host| locally (whether
   // in the host-keyed cache or persisted on disk).
-  bool HasHint(const std::string& host) const;
+  bool HasHint(const std::string& host);
 
   // Requests that hint data for |host| be loaded asynchronously and passed to
   // |callback| if/when loaded.
@@ -145,8 +146,7 @@ class HintCache {
 
  private:
   using HostKeyedHintCache =
-      base::HashingMRUCache<OptimizationGuideStore::EntryKey,
-                            std::unique_ptr<MemoryHint>>;
+      base::HashingMRUCache<std::string, std::unique_ptr<MemoryHint>>;
 
   using URLKeyedHintCache =
       base::HashingMRUCache<std::string, std::unique_ptr<MemoryHint>>;
@@ -160,6 +160,7 @@ class HintCache {
   // used element, and then runs the callback initially provided by the
   // LoadHint() call.
   void OnLoadStoreHint(
+      const std::string& host,
       HintLoadedCallback callback,
       const OptimizationGuideStore::EntryKey& store_hint_entry_key,
       std::unique_ptr<MemoryHint> hint);

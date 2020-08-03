@@ -22,6 +22,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -160,10 +161,11 @@ public class SelectFileDialogTest {
     }
 
     @Test
-    public void testFilePathSelected() {
+    public void testFilePathSelected() throws IOException {
         SelectFileDialog selectFileDialog = new SelectFileDialog(0);
         PathUtils.setPrivateDataDirectorySuffix("test");
-        String dataDir = PathUtils.getDataDirectory();
+        String dataDir = new File(PathUtils.getDataDirectory()).getCanonicalPath();
+
         SelectFileDialog.FilePathSelectedTask task = selectFileDialog.new FilePathSelectedTask(
                 ContextUtils.getApplicationContext(), dataDir, null);
         assertFalse(task.doInBackground());

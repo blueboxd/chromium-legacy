@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.profiles;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.NativeMethods;
@@ -46,7 +47,7 @@ public class Profile implements BrowserContextHandle {
         if (sLastUsedProfileForTesting != null) {
             return sLastUsedProfileForTesting;
         }
-
+        assert ThreadUtils.runningOnUiThread();
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!ProfileManager.isInitialized()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");

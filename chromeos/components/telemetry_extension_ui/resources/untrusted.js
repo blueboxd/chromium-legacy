@@ -15,3 +15,14 @@ async function requestTelemetryInfo() {
       await parentMessagePipe.sendMessage(Message.PROBE_TELEMETRY_INFO));
   return response;
 }
+
+/**
+ * Requests a list of available routines.
+ * @return {!Promise<DiagnosticsGetAvailableRoutinesResponse>}
+ */
+async function getAvailableRoutines() {
+  const response = /** @type {!DiagnosticsGetAvailableRoutinesResponse} */ (
+      await parentMessagePipe.sendMessage(
+        Message.DIAGNOSTICS_AVAILABLE_ROUTINES));
+  return response;
+}

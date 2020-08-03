@@ -28,13 +28,12 @@ class ProtoChromePromptIPC : public ChromePromptIPC {
   void Initialize(ErrorHandler* error_handler) override;
 
   void PostPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
-                          const std::vector<base::string16>& registry_keys,
-                          const std::vector<base::string16>& extension_ids,
+                          const std::vector<std::wstring>& registry_keys,
+                          const std::vector<std::wstring>& extension_ids,
                           PromptUserCallback callback) override;
 
-  void PostDisableExtensionsTask(
-      const std::vector<base::string16>& extension_ids,
-      DisableExtensionsCallback callback) override;
+  void PostDisableExtensionsTask(const std::vector<std::wstring>& extension_ids,
+                                 DisableExtensionsCallback callback) override;
 
   void TryDeleteExtensions(
       base::OnceClosure delete_allowed_callback,
@@ -46,8 +45,8 @@ class ProtoChromePromptIPC : public ChromePromptIPC {
   void InitializeImpl();
 
   void RunPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
-                         const std::vector<base::string16>& registry_keys,
-                         const std::vector<base::string16>& extension_ids,
+                         const std::vector<std::wstring>& registry_keys,
+                         const std::vector<std::wstring>& extension_ids,
                          PromptUserCallback callback);
 
   // Invokes error_handler_->OnConnectionClosed() and updates state_. This

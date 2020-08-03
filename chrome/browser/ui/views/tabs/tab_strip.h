@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -85,6 +84,8 @@ class TabStrip : public views::AccessiblePaneView,
                  public BrowserRootView::DropTarget {
  public:
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
+  TabStrip(const TabStrip&) = delete;
+  TabStrip& operator=(const TabStrip&) = delete;
   ~TabStrip() override;
 
   void SetAvailableWidthCallback(
@@ -379,6 +380,8 @@ class TabStrip : public views::AccessiblePaneView,
     DropArrow(const BrowserRootView::DropIndex& index,
               bool point_down,
               views::Widget* context);
+    DropArrow(const DropArrow&) = delete;
+    DropArrow& operator=(const DropArrow&) = delete;
     ~DropArrow() override;
 
     void set_index(const BrowserRootView::DropIndex& index) { index_ = index; }
@@ -407,8 +410,6 @@ class TabStrip : public views::AccessiblePaneView,
     views::ImageView* arrow_view_ = nullptr;
 
     ScopedObserver<views::Widget, views::WidgetObserver> scoped_observer_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(DropArrow);
   };
 
   void Init();
@@ -783,8 +784,6 @@ class TabStrip : public views::AccessiblePaneView,
   std::unique_ptr<TabDragContextImpl> drag_context_;
 
   TabContextMenuController context_menu_controller_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_

@@ -90,6 +90,18 @@ luci.notify(
     tree_closing_enabled = True,
 )
 
+# An all-purpose public realm.
+luci.realm(
+    name = 'public',
+    bindings = [
+        luci.binding(
+            roles = 'role/buildbucket.reader',
+            groups = 'all',
+        ),
+        # Other roles are inherited from @root which grants them to group:all.
+    ],
+)
+
 exec('//recipes.star')
 
 exec('//notifiers.star')

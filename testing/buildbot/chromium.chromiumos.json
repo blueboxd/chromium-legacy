@@ -747,8 +747,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter",
-          "--flash"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter"
         ],
         "merge": {
           "args": [],
@@ -772,9 +771,6 @@
         }
       },
       {
-        "args": [
-          "--flash"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -798,9 +794,6 @@
         }
       },
       {
-        "args": [
-          "--flash"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -828,8 +821,7 @@
         "args": [
           "--browser=cros-chrome",
           "--remote=variable_chromeos_device_hostname",
-          "--xvfb",
-          "--flash"
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
@@ -859,8 +851,7 @@
         "args": [
           "--browser=cros-chrome",
           "--remote=variable_chromeos_device_hostname",
-          "--jobs=1",
-          "--flash"
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_unittests",
         "merge": {

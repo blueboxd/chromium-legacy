@@ -80,6 +80,7 @@ void HintCache::UpdateComponentHints(
 void HintCache::UpdateFetchedHints(
     std::unique_ptr<proto::GetHintsResponse> get_hints_response,
     base::Time update_time,
+    const base::flat_set<std::string>& hosts_fetched,
     const base::flat_set<GURL>& urls_fetched,
     base::OnceClosure callback) {
   std::unique_ptr<StoreUpdateData> fetched_hints_update_data =
@@ -117,29 +118,50 @@ void HintCache::ClearHostKeyedHints() {
   optimization_guide_store_->ClearFetchedHintsFromDatabase();
 }
 
-bool HintCache::HasHint(const std::string& host) const {
+bool HintCache::HasHint(const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OptimizationGuideStore::EntryKey hint_entry_key;
-  return optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key);
+
+  auto hint_it = host_keyed_cache_.Get(host);
+  if (hint_it == host_keyed_cache_.end()) {
+    // If not in-memory, check database.
+    OptimizationGuideStore::EntryKey hint_entry_key;
+    return optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key);
+  }
+
+  // The hint for |host| was requested but no hint was returned.
+  if (!hint_it->second)
+    return false;
+
+  MemoryHint* hint = hint_it->second.get();
+  if (!hint->expiry_time() || *hint->expiry_time() > clock_->Now())
+    return true;
+
+  // The hint is expired so remove it from the cache.
+  host_keyed_cache_.Erase(hint_it);
+  return false;
 }
 
 void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key)) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
   // Search for the entry key in the host-keyed cache; if it is not already
   // there, then asynchronously load it from the store and return.
-  auto hint_it = host_keyed_cache_.Get(hint_entry_key);
+  auto hint_it = host_keyed_cache_.Get(host);
   if (hint_it == host_keyed_cache_.end()) {
+    OptimizationGuideStore::EntryKey hint_entry_key;
+    if (!optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key)) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
     optimization_guide_store_->LoadHint(
         hint_entry_key,
         base::BindOnce(&HintCache::OnLoadStoreHint, base::Unretained(this),
-                       std::move(callback)));
+                       host, std::move(callback)));
+    return;
+  }
+
+  if (!hint_it->second) {
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -151,19 +173,16 @@ const proto::Hint* HintCache::GetHostKeyedHintIfLoaded(
     const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Try to retrieve the hint entry key for the host. If no hint exists for the
-  // host, then simply return.
-  OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key))
-    return nullptr;
-
   // Find the hint within the host-keyed cache. It will only be available here
   // if it has been loaded recently enough to be retained within the MRU cache.
-  auto hint_it = host_keyed_cache_.Get(hint_entry_key);
-  if (hint_it == host_keyed_cache_.end())
+  auto hint_it = host_keyed_cache_.Get(host);
+  if (hint_it == host_keyed_cache_.end() || !hint_it->second)
     return nullptr;
 
   MemoryHint* hint = hint_it->second.get();
+  if (!hint)
+    return nullptr;
+
   // Make sure the hint is not expired before propagating it up.
   if (hint->expiry_time().has_value() && *hint->expiry_time() < clock_->Now()) {
     // The hint is expired so remove it from the cache.
@@ -235,6 +254,7 @@ void HintCache::OnStoreInitialized(base::OnceClosure callback) {
 }
 
 void HintCache::OnLoadStoreHint(
+    const std::string& host,
     HintLoadedCallback callback,
     const OptimizationGuideStore::EntryKey& hint_entry_key,
     std::unique_ptr<MemoryHint> hint) {
@@ -247,11 +267,14 @@ void HintCache::OnLoadStoreHint(
   // Check if the hint was cached in the host-keyed cache after the load was
   // requested from the store. This can occur if multiple loads for the same
   // entry key occur consecutively prior to any returning.
-  auto hint_it = host_keyed_cache_.Get(hint_entry_key);
-  if (hint_it == host_keyed_cache_.end()) {
-    hint_it = host_keyed_cache_.Put(hint_entry_key, std::move(hint));
-  }
+  auto hint_it = host_keyed_cache_.Get(host);
+  if (hint_it == host_keyed_cache_.end())
+    hint_it = host_keyed_cache_.Put(host, std::move(hint));
 
+  if (!hint_it->second) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
   std::move(callback).Run(hint_it->second.get()->hint());
 }
 
@@ -285,6 +308,11 @@ bool HintCache::ProcessAndCacheHints(
     switch (hint.key_representation()) {
       case proto::HOST_SUFFIX:
       case proto::HOST:
+        host_keyed_cache_.Put(
+            hint_key,
+            std::make_unique<MemoryHint>(
+                expiry_time,
+                std::make_unique<optimization_guide::proto::Hint>(hint)));
         update_data->MoveHintIntoUpdateData(std::move(hint));
         processed_hints_to_store = true;
         break;

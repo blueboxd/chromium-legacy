@@ -378,6 +378,10 @@ class CSSProperties(object):
         return self._last_unresolved_property_id
 
     @property
+    def property_id_bit_length(self):
+        return int.bit_length(self._last_unresolved_property_id)
+
+    @property
     def alias_offset(self):
         return self._alias_offset
 

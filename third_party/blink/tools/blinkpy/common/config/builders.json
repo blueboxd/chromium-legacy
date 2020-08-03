@@ -101,12 +101,6 @@
         "specifiers": ["Mac10.13", "Release"],
         "is_try_builder": true
     },
-    "mac10.13_retina-blink-rel": {
-        "master": "tryserver.blink",
-        "port_name": "mac-retina",
-        "specifiers": ["Retina", "Release"],
-        "is_try_builder": true
-    },
     "mac10.14-blink-rel": {
         "master": "tryserver.blink",
         "port_name": "mac-mac10.14",

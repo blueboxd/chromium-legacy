@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -224,6 +223,8 @@ class KeyEventTracker : public ui::EventObserver {
     event_monitor_ = views::EventMonitor::CreateApplicationMonitor(
         this, context, {ui::ET_KEY_PRESSED});
   }
+  KeyEventTracker(const KeyEventTracker&) = delete;
+  KeyEventTracker& operator=(const KeyEventTracker&) = delete;
   ~KeyEventTracker() override = default;
 
  private:
@@ -241,8 +242,6 @@ class KeyEventTracker : public ui::EventObserver {
   base::OnceClosure end_drag_callback_;
   base::OnceClosure revert_drag_callback_;
   std::unique_ptr<views::EventMonitor> event_monitor_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyEventTracker);
 };
 
 class TabDragController::SourceTabStripEmptinessTracker
@@ -307,6 +306,10 @@ class TabDragController::DeferredTargetTabstripObserver
     : public aura::WindowObserver {
  public:
   DeferredTargetTabstripObserver() = default;
+  DeferredTargetTabstripObserver(const DeferredTargetTabstripObserver&) =
+      delete;
+  DeferredTargetTabstripObserver& operator=(
+      const DeferredTargetTabstripObserver&) = delete;
   ~DeferredTargetTabstripObserver() override {
     if (deferred_target_context_) {
       GetWindowForTabDraggingProperties(deferred_target_context_)
@@ -364,8 +367,6 @@ class TabDragController::DeferredTargetTabstripObserver
 
  private:
   TabDragContext* deferred_target_context_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DeferredTargetTabstripObserver);
 };
 
 #endif

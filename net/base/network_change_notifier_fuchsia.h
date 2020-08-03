@@ -9,6 +9,7 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/atomicops.h"
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/threading/thread_checker.h"
@@ -37,7 +38,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // Interfaces can be filtered out by passing in |required_features|, which is
   // defined in fuchsia::hardware::ethernet.
   NetworkChangeNotifierFuchsia(
-      fuchsia::netstack::NetstackPtr netstack,
+      fidl::InterfaceHandle<fuchsia::netstack::Netstack> netstack,
       uint32_t required_features,
       SystemDnsConfigChangeNotifier* system_dns_config_notifier = nullptr);
 
@@ -58,6 +59,10 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   const uint32_t required_features_;
 
   fuchsia::netstack::NetstackPtr netstack_;
+
+  // Used to allow the constructor to block until the initial state is received
+  // from |netstack_|.
+  base::OnceClosure on_initial_interfaces_received_;
 
   // The ConnectionType of the default network interface, stored as an atomic
   // 32-bit int for safe concurrent access.

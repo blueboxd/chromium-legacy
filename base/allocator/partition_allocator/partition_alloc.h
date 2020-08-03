@@ -470,10 +470,22 @@ struct BASE_EXPORT PartitionRoot {
   // padding, and can be passed to |Free()| later.
   //
   // NOTE: Doesn't work when DCHECK_IS_ON(), as it is incompatible with cookies.
-  ALWAYS_INLINE void* AlignedAlloc(size_t alignment, size_t size);
+  ALWAYS_INLINE void* AlignedAllocFlags(int flags,
+                                        size_t alignment,
+                                        size_t size);
 
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
+  // Same as |AllocFlags()|, but bypasses the allocator hooks.
+  //
+  // This is separate from AllocFlags() because other callers of AllocFlags()
+  // should not have the extra branch checking whether the hooks should be
+  // ignored or not. This is the same reason why |FreeNoHooks()|
+  // exists. However, |AlignedAlloc()| and |Realloc()| have few callers, so
+  // taking the extra branch in the non-malloc() case doesn't hurt. In addition,
+  // for the malloc() case, the compiler correctly removes the branch, since
+  // this is marked |ALWAYS_INLINE|.
+  ALWAYS_INLINE void* AllocFlagsNoHooks(int flags, size_t size);
 
   ALWAYS_INLINE void* Realloc(void* ptr,
                               size_t new_size,
@@ -488,6 +500,8 @@ struct BASE_EXPORT PartitionRoot {
                               size_t new_size,
                               const char* type_name);
   ALWAYS_INLINE static void Free(void* ptr);
+  // Same as |Free()|, bypasses the allocator hooks.
+  ALWAYS_INLINE static void FreeNoHooks(void* ptr);
 
   ALWAYS_INLINE static size_t GetSizeFromPointer(void* ptr);
   ALWAYS_INLINE size_t GetSize(void* ptr) const;
@@ -607,6 +621,17 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
     if (PartitionAllocHooks::FreeOverrideHookIfEnabled(ptr))
       return;
   }
+
+  FreeNoHooks(ptr);
+#endif  // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+}
+
+// static
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* ptr) {
+  if (UNLIKELY(!ptr))
+    return;
+
   // No check as the pointer hasn't been adjusted yet.
   Page* page = Page::FromPointerNoAlignmentCheck(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
@@ -655,7 +680,6 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
 #endif
 
   root->RawFree(ptr, page);
-#endif
 }
 
 template <bool thread_safe>
@@ -830,6 +854,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
     size_t size,
     const char* type_name) {
   PA_DCHECK(flags < PartitionAllocLastFlag << 1);
+  PA_DCHECK((flags & PartitionAllocNoHooks) == 0);  // Internal only.
+  PA_DCHECK(initialized);
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags);
@@ -849,13 +875,27 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
       return ret;
     }
   }
+
+  ret = AllocFlagsNoHooks(flags, size);
+
+  if (UNLIKELY(hooks_enabled)) {
+    PartitionAllocHooks::AllocationObserverHookIfEnabled(ret, size, type_name);
+  }
+
+  return ret;
+#endif  // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(int flags,
+                                                                  size_t size) {
   size_t requested_size = size;
   size = internal::PartitionSizeAdjustAdd(allow_extras, size);
   PA_CHECK(size >= requested_size);  // check for overflows
 
   size_t allocated_size;
   bool is_already_zeroed;
-  ret = RawAlloc(flags, size, &allocated_size, &is_already_zeroed);
+  void* ret = RawAlloc(flags, size, &allocated_size, &is_already_zeroed);
   if (UNLIKELY(!ret))
     return nullptr;
 
@@ -906,15 +946,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
     internal::PartitionTagSetValue(ret, slot_size_with_no_extras,
                                    GetNewPartitionTag());
   }
-#endif
-
-  if (UNLIKELY(hooks_enabled)) {
-    PartitionAllocHooks::AllocationObserverHookIfEnabled(ret, requested_size,
-                                                         type_name);
-  }
-
+#endif  // !ENABLE_TAG_FOR_MTE_CHECKED_PTR || !MTE_CHECKED_PTR_SET_TAG_AT_FREE
   return ret;
-#endif
 }
 
 template <bool thread_safe>
@@ -934,31 +967,37 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::RawAlloc(
 }
 
 template <bool thread_safe>
-ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
-                                                             size_t size) {
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAllocFlags(
+    int flags,
+    size_t alignment,
+    size_t size) {
   // Aligned allocation support relies on the natural alignment guarantees of
   // PartitionAlloc. Since cookies and tags are layered on top of
   // PartitionAlloc, they change the guarantees. As a consequence, forbid both.
   PA_DCHECK(!allow_extras);
+
   // This is mandated by |posix_memalign()|, so should never fire.
   PA_CHECK(base::bits::IsPowerOfTwo(alignment));
 
-  void* ptr;
+  size_t requested_size;
   // Handle cases such as size = 16, alignment = 64.
   // Wastes memory when a large alignment is requested with a small size, but
   // this is hard to avoid, and should not be too common.
   if (UNLIKELY(size < alignment)) {
-    ptr = Alloc(alignment, "");
+    requested_size = alignment;
   } else {
     // PartitionAlloc only guarantees alignment for power-of-two sized
     // allocations. To make sure this applies here, round up the allocation
     // size.
-    size_t size_rounded_up =
+    requested_size =
         static_cast<size_t>(1)
         << (sizeof(size_t) * 8 - base::bits::CountLeadingZeroBits(size - 1));
-    PA_CHECK(size_rounded_up >= size);  // Overflow check.
-    ptr = Alloc(size_rounded_up, "");
   }
+
+  PA_CHECK(requested_size >= size);  // Overflow check.
+  bool no_hooks = flags & PartitionAllocNoHooks;
+  void* ptr = no_hooks ? AllocFlagsNoHooks(0, requested_size)
+                       : Alloc(requested_size, "");
 
   // |alignment| is a power of two, but the compiler doesn't necessarily know
   // that. A regular % operation is very slow, make sure to use the equivalent,

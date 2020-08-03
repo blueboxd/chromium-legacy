@@ -10,8 +10,10 @@
 #include "base/stl_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
+#include "ui/display/display_list.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
@@ -26,9 +28,10 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
 
 WaylandScreen::~WaylandScreen() = default;
 
-void WaylandScreen::OnOutputAdded(uint32_t output_id) {
-  display_list_.AddDisplay(display::Display(output_id),
-                           display::DisplayList::Type::NOT_PRIMARY);
+void WaylandScreen::OnOutputAddedOrUpdated(uint32_t output_id,
+                                           const gfx::Rect& bounds,
+                                           int32_t scale) {
+  AddOrUpdateDisplay(output_id, bounds, scale);
 }
 
 void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
@@ -49,41 +52,32 @@ void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
   display_list_.RemoveDisplay(output_id);
 }
 
-void WaylandScreen::OnOutputMetricsChanged(uint32_t output_id,
-                                           const gfx::Rect& new_bounds,
-                                           int32_t device_pixel_ratio) {
+void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
+                                       const gfx::Rect& new_bounds,
+                                       int32_t scale_factor) {
   display::Display changed_display(output_id);
   if (!display::Display::HasForceDeviceScaleFactor())
-    changed_display.set_device_scale_factor(device_pixel_ratio);
+    changed_display.set_device_scale_factor(scale_factor);
   changed_display.set_bounds(new_bounds);
   changed_display.set_work_area(new_bounds);
 
-  bool is_primary = false;
-  display::Display display_nearest_origin =
-      GetDisplayNearestPoint(gfx::Point(0, 0));
-  // If bounds of the nearest to origin display are empty, it must have been the
-  // very first and the same display added before.
-  if (display_nearest_origin.bounds().IsEmpty()) {
-    DCHECK_EQ(display_nearest_origin.id(), changed_display.id());
-    is_primary = true;
-  } else if (changed_display.bounds().origin() <
-             display_nearest_origin.bounds().origin()) {
-    // If changed display is nearer to the origin than the previous display,
-    // that one must become a primary display.
-    is_primary = true;
-  } else if (changed_display.bounds().OffsetFromOrigin() ==
-             display_nearest_origin.bounds().OffsetFromOrigin()) {
-    // If changed display has the same origin as the nearest to origin display,
-    // |changed_display| must become a primary one or it has already been the
-    // primary one. If a user changed positions of two displays (the second at
-    // x,x was set to 0,0), the second change will modify geometry of the
-    // display, which used to be the one nearest to the origin.
-    is_primary = true;
+  // There are 2 cases where |changed_display| must be set as primary:
+  // 1. When it is the first one being added to the |display_list_|. Or
+  // 2. If it is nearest the origin than the previous primary or has the same
+  // origin as it. When an user, for example, swaps two side-by-side displays,
+  // at some point, as the notification come in, both will have the same
+  // origin.
+  auto type = display::DisplayList::Type::NOT_PRIMARY;
+  if (display_list_.displays().empty()) {
+    type = display::DisplayList::Type::PRIMARY;
+  } else {
+    auto nearest_origin = GetDisplayNearestPoint({0, 0}).bounds().origin();
+    auto changed_origin = changed_display.bounds().origin();
+    if (changed_origin < nearest_origin || changed_origin == nearest_origin)
+      type = display::DisplayList::Type::PRIMARY;
   }
 
-  display_list_.UpdateDisplay(
-      changed_display, is_primary ? display::DisplayList::Type::PRIMARY
-                                  : display::DisplayList::Type::NOT_PRIMARY);
+  display_list_.AddOrUpdateDisplay(changed_display, type);
 
   auto* wayland_window_manager = connection_->wayland_window_manager();
   for (auto* window : wayland_window_manager->GetWindowsOnOutput(output_id))

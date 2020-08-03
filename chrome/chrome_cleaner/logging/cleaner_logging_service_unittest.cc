@@ -923,7 +923,7 @@ TEST_P(CleanerLoggingServiceTest, AddInstalledProgram) {
   FolderInformation folder_information =
       report.system_report().installed_programs(0).folder_information();
 
-  const base::string16 sanitized_path = SanitizePath(installed_program_path);
+  const std::wstring sanitized_path = SanitizePath(installed_program_path);
   EXPECT_EQ(base::WideToUTF8(sanitized_path), folder_information.path());
   EXPECT_FALSE(folder_information.creation_date().empty());
   EXPECT_FALSE(folder_information.last_modified_date().empty());
@@ -994,7 +994,7 @@ TEST_P(CleanerLoggingServiceTest, AddLayeredServiceProvider) {
   ASSERT_TRUE(report.ParseFromString(logging_service_->RawReportContent()));
   ASSERT_EQ(0, report.system_report().layered_service_providers_size());
 
-  std::vector<base::string16> guids;
+  std::vector<std::wstring> guids;
   guids.push_back(kGuid1);
   guids.push_back(kGuid2);
   logging_service_->AddLayeredServiceProvider(guids, kFileInformation1);
@@ -1076,8 +1076,8 @@ TEST_P(CleanerLoggingServiceTest, AddInstalledExtension) {
   ASSERT_EQ(report.system_report().installed_extensions_size(), 0);
 
   internal::FileInformation file1, file2;
-  const base::string16 kFilePath1 = L"path/file1";
-  const base::string16 kFilePath2 = L"path/file2";
+  const std::wstring kFilePath1 = L"path/file1";
+  const std::wstring kFilePath2 = L"path/file2";
   file1.path = kFilePath1;
   file2.path = kFilePath2;
   logging_service_->AddInstalledExtension(
@@ -1509,12 +1509,11 @@ TEST_P(CleanerLoggingServiceTest, AllExpectedRemovalsConfirmed) {
 }
 
 TEST_P(CleanerLoggingServiceTest, AddShortcutData) {
-  const base::string16 kLnkPath = L"C:\\Users\\SomeUser";
-  const base::string16 kExecutablePath1 =
-      L"C:\\executable_path\\executable.exe";
-  const base::string16 kExecutablePath2 = L"C:\\executable_path\\bad_file.exe";
+  const std::wstring kLnkPath = L"C:\\Users\\SomeUser";
+  const std::wstring kExecutablePath1 = L"C:\\executable_path\\executable.exe";
+  const std::wstring kExecutablePath2 = L"C:\\executable_path\\bad_file.exe";
   const std::string kHash = "HASHSTRING";
-  const std::vector<base::string16> kCommandLineArguments = {
+  const std::vector<std::wstring> kCommandLineArguments = {
       L"some-argument", L"-ha", L"-ha", L"-ha"};
 
   logging_service_->AddShortcutData(kLnkPath, kExecutablePath1, kHash, {});

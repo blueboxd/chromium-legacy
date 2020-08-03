@@ -46,6 +46,8 @@ constexpr ShapeModifier kNoLowerRightArc = 0x02;
 class GM2TabStyle : public TabStyleViews {
  public:
   explicit GM2TabStyle(Tab* tab);
+  GM2TabStyle(const GM2TabStyle&) = delete;
+  GM2TabStyle& operator=(const GM2TabStyle&) = delete;
 
  protected:
   // TabStyle:
@@ -153,8 +155,6 @@ class GM2TabStyle : public TabStyleViews {
   std::unique_ptr<GlowHoverController> hover_controller_;
   gfx::FontList normal_font_;
   gfx::FontList heavy_font_;
-
-  DISALLOW_COPY_AND_ASSIGN(GM2TabStyle);
 };
 
 void DrawHighlight(gfx::Canvas* canvas,

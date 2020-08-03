@@ -10,6 +10,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/browser/browser_context.h"
 
 namespace safe_browsing {
@@ -35,9 +36,13 @@ BinaryUploadServiceFactory::BinaryUploadServiceFactory()
 KeyedService* BinaryUploadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new BinaryUploadService(
-      g_browser_process->safe_browsing_service()->GetURLLoaderFactory(),
-      profile);
+  if (base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts)) {
+    return new BinaryUploadService(profile);
+  } else {
+    return new BinaryUploadService(
+        g_browser_process->safe_browsing_service()->GetURLLoaderFactory(),
+        profile);
+  }
 }
 
 content::BrowserContext* BinaryUploadServiceFactory::GetBrowserContextToUse(

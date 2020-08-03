@@ -33,10 +33,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "v8/include/v8.h"
 
-#if !defined(OS_ANDROID)
-#include "content/renderer/performance_manager/v8_per_frame_memory_reporter_impl.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -224,14 +220,6 @@ void ExposeRendererInterfacesToBrowser(
 
   binders->Add(base::BindRepeating(&CreateFrameFactory),
                base::ThreadTaskRunnerHandle::Get());
-
-#if !defined(OS_ANDROID)
-  // Currently nothing on Android samples V8PerFrameMemory, so only initialize
-  // the reporter on desktop to save memory.
-  binders->Add(base::BindRepeating(
-                   &performance_manager::V8PerFrameMemoryReporterImpl::Create),
-               base::SequencedTaskRunnerHandle::Get());
-#endif
 
   GetContentClient()->renderer()->ExposeInterfacesToBrowser(binders);
 }

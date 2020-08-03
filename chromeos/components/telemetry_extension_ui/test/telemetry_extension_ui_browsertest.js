@@ -81,3 +81,10 @@ TEST_F(
       await runTestInUntrusted('UntrustedRequestTelemetryInfo');
       testDone();
     });
+
+TEST_F(
+  'TelemetryExtensionUIBrowserTest', 'UntrustedRequestAvailableRoutines',
+  async () => {
+    await runTestInUntrusted('UntrustedRequestAvailableRoutines');
+    testDone();
+  });

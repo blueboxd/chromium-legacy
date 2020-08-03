@@ -4,10 +4,12 @@
 
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 
-#include <stdlib.h>
 #include <sys/socket.h>
 #include <wayland-server.h>
+
+#include <cstdlib>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -50,10 +52,6 @@ bool TestWaylandServerThread::Start(uint32_t shell_version) {
   base::ScopedFD server_fd(fd[0]);
   base::ScopedFD client_fd(fd[1]);
 
-  // If client has not specified rect before, user standard ones.
-  if (output_.GetRect().IsEmpty())
-    output_.SetRect(gfx::Rect(0, 0, 800, 600));
-
   if (wl_display_init_shm(display_.get()) < 0)
     return false;
   if (!compositor_.Initialize(display_.get()))
@@ -62,6 +60,8 @@ bool TestWaylandServerThread::Start(uint32_t shell_version) {
     return false;
   if (!output_.Initialize(display_.get()))
     return false;
+  SetupOutputs();
+
   if (!data_device_manager_.Initialize(display_.get()))
     return false;
   if (!seat_.Initialize(display_.get()))
@@ -113,6 +113,18 @@ MockWpPresentation* TestWaylandServerThread::EnsureWpPresentation() {
   if (wp_presentation_.Initialize(display_.get()))
     return &wp_presentation_;
   return nullptr;
+}
+
+// By default, just make sure primary screen has bounds set. Otherwise delegates
+// it, making it possible to emulate different scenarios, such as, multi-screen,
+// lazy configuration, arbitrary ordering of the outputs metadata sending, etc.
+void TestWaylandServerThread::SetupOutputs() {
+  if (output_delegate_) {
+    output_delegate_->SetupOutputs(&output_);
+    return;
+  }
+  if (output_.GetRect().IsEmpty())
+    output_.SetRect(gfx::Rect{0, 0, 800, 600});
 }
 
 void TestWaylandServerThread::DoPause() {

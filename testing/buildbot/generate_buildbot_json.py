@@ -671,9 +671,6 @@ class BBJSONGenerator(object):
         test['trigger_script'] = {
           'script': '//testing/trigger_scripts/chromeos_device_trigger.py',
         }
-        args = test.get('args', [])
-        args.append('--flash')
-        test['args'] = args
 
   def add_android_presentation_args(self, tester_config, test_name, result):
     args = result.get('args', [])

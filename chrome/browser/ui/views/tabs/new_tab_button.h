@@ -30,6 +30,8 @@ class NewTabButton : public views::ImageButton,
   static const gfx::Size kButtonSize;
 
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
+  NewTabButton(const NewTabButton&) = delete;
+  NewTabButton& operator=(const NewTabButton&) = delete;
   ~NewTabButton() override;
 
   // Called when the tab strip transitions to/from single tab mode, the frame
@@ -90,8 +92,6 @@ class NewTabButton : public views::ImageButton,
 
   // were we destroyed?
   bool* destroyed_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_NEW_TAB_BUTTON_H_

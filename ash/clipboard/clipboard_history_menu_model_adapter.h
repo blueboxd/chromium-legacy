@@ -39,6 +39,10 @@ class ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
   // Shows the menu, anchored below |anchor_rect|.
   void Run(const gfx::Rect& anchor_rect);
 
+  bool IsRunning() const;
+
+  gfx::Rect GetClipboardHistoryMenuBoundsForTest() const;
+
  private:
   // The model which holds the contents of the menu.
   std::unique_ptr<ui::SimpleMenuModel> const model_;

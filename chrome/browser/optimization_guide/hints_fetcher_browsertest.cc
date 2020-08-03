@@ -91,20 +91,6 @@ int RetryForHistogramUntilCountReached(
   }
 }
 
-int GetCountBucketSamples(const base::HistogramTester* histogram_tester,
-                          const std::string& histogram_name,
-                          size_t bucket_min) {
-  std::vector<base::Bucket> buckets =
-      histogram_tester->GetAllSamples(histogram_name);
-
-  for (const auto& bucket : buckets) {
-    if (bucket_min == static_cast<size_t>(bucket.min))
-      return bucket.count;
-  }
-
-  return 0;
-}
-
 enum class HintsFetcherRemoteResponseType {
   kSuccessful = 0,
   kUnsuccessful = 1,
@@ -665,20 +651,10 @@ IN_PROC_BROWSER_TEST_F(
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 
-  // Verifies that the fetched hint is loaded and not the component hint as
-  // fetched hints are prioritized.
-
-  histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(optimization_guide::OptimizationGuideStore::
-                           StoreEntryType::kFetchedHint),
-      1);
-
-  histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(optimization_guide::OptimizationGuideStore::
-                           StoreEntryType::kComponentHint),
-      0);
+  // Verifies that the fetched hint is just used in memory and nothing is
+  // loaded.
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintCache.HintType.Loaded", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -782,16 +758,11 @@ IN_PROC_BROWSER_TEST_F(
 
   // Verifies that no Fetched Hint was added to the store, only the
   // Component hint is loaded.
-  histogram_tester->ExpectBucketCount(
+  histogram_tester->ExpectUniqueSample(
       "OptimizationGuide.HintCache.HintType.Loaded",
       static_cast<int>(optimization_guide::OptimizationGuideStore::
                            StoreEntryType::kComponentHint),
       1);
-  histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(optimization_guide::OptimizationGuideStore::
-                           StoreEntryType::kFetchedHint),
-      0);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -869,19 +840,10 @@ IN_PROC_BROWSER_TEST_F(
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 
-  // Verifies that the fetched hint is loaded and not the component hint as
-  // fetched hints are prioritized.
-  EXPECT_LE(1,
-            GetCountBucketSamples(
-                histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::OptimizationGuideStore::
-                                     StoreEntryType::kFetchedHint)));
-
-  EXPECT_EQ(0,
-            GetCountBucketSamples(
-                histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::OptimizationGuideStore::
-                                     StoreEntryType::kComponentHint)));
+  // Verifies that the fetched hint is used in-memory and no hint is loaded
+  // from store.
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintCache.HintType.Loaded", 0);
 
   // Wipe the browser history - clear all the fetched hints.
   browser()->profile()->Wipe();
@@ -891,18 +853,11 @@ IN_PROC_BROWSER_TEST_F(
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 
-  // Fetched Hints count should not change.
-  EXPECT_LE(1,
-            GetCountBucketSamples(
-                histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::OptimizationGuideStore::
-                                     StoreEntryType::kFetchedHint)));
-
-  EXPECT_LE(0,
-            GetCountBucketSamples(
-                histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::OptimizationGuideStore::
-                                     StoreEntryType::kComponentHint)));
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kComponentHint),
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
@@ -947,19 +902,9 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 
-  // Verifies that the fetched hint is loaded and not the component hint as
-  // fetched hints are prioritized.
-  histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(optimization_guide::OptimizationGuideStore::
-                           StoreEntryType::kFetchedHint),
-      1);
-
-  histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(optimization_guide::OptimizationGuideStore::
-                           StoreEntryType::kComponentHint),
-      0);
+  // Verifies that the fetched hint is used from memory and no hints are loaded.
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintCache.HintType.Loaded", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1302,7 +1247,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
     EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        2);
+        1);
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::
@@ -1388,7 +1333,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        2);
+        1);
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::
@@ -1482,7 +1427,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        2);
+        1);
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::

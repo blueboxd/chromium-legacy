@@ -47,7 +47,7 @@ class MockHttpResponse : public chrome_cleaner::HttpResponse {
   }
 
   bool GetContentType(bool* has_content_type,
-                      base::string16* content_type) override {
+                      std::wstring* content_type) override {
     ADD_FAILURE() << "This method should not be called.";
     return false;
   }
@@ -91,11 +91,11 @@ class MockHttpAgent : public chrome_cleaner::HttpAgent {
 
   // chrome_cleaner::HttpAgent:
   std::unique_ptr<chrome_cleaner::HttpResponse> Post(
-      const base::string16& host,
+      const std::wstring& host,
       uint16_t port,
-      const base::string16& path,
+      const std::wstring& path,
       bool secure,
-      const base::string16& extra_headers,
+      const std::wstring& extra_headers,
       const std::string& body,
       const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) override {
     const bool post_succeeds = config_->GetCurrentCalls().request_succeeds;
@@ -115,11 +115,11 @@ class MockHttpAgent : public chrome_cleaner::HttpAgent {
 
   // chrome_cleaner::HttpAgent:
   std::unique_ptr<chrome_cleaner::HttpResponse> Get(
-      const base::string16& host,
+      const std::wstring& host,
       uint16_t port,
-      const base::string16& path,
+      const std::wstring& path,
       bool secure,
-      const base::string16& extra_headers,
+      const std::wstring& extra_headers,
       const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) override {
     const bool get_succeeds = config_->GetCurrentCalls().request_succeeds;
     MockHttpAgentConfig::RequestData get_data;

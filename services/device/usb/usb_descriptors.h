@@ -41,7 +41,7 @@ struct UsbDeviceDescriptor {
   // be used to populate this struct's fields. This function may be called more
   // than once (i.e. for multiple buffers containing a configuration descriptor
   // each).
-  bool Parse(const std::vector<uint8_t>& buffer);
+  bool Parse(base::span<const uint8_t> buffer);
 
   uint8_t i_manufacturer = 0;
   uint8_t i_product = 0;

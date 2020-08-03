@@ -426,6 +426,9 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
 // Tests that the tray remains visible when leaving tablet mode due to external
 // mouse being connected.
 TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
+  // Make sure no mouse is attached as that prevents tablet mode.
+  TabletModeControllerTestApi().DetachAllMice();
+
   TabletModeControllerTestApi().OpenLidToAngle(315.0f);
   EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   ASSERT_TRUE(GetTray()->GetVisible());
@@ -438,6 +441,9 @@ TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
 // Using the developers keyboard shortcut to enable tablet mode should force the
 // overview tray button visible, even though the events are not blocked.
 TEST_F(OverviewButtonTrayTest, ForDevTabletModeForcesTheButtonShown) {
+  // Make sure no mouse is attached as that prevents tablet mode.
+  TabletModeControllerTestApi().DetachAllMice();
+
   Shell::Get()->tablet_mode_controller()->SetEnabledForDev(true);
   EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_FALSE(TabletModeControllerTestApi().AreEventsBlocked());

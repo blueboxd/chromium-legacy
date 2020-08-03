@@ -17,7 +17,7 @@ namespace blink {
 class Document;
 
 // A helper class that will increment a document's loadEventDelayCount on
-// contruction and decrement it on destruction (semantics similar to RefPtr).
+// construction and decrement it on destruction (semantics similar to RefPtr).
 class CORE_EXPORT IncrementLoadEventDelayCount {
   USING_FAST_MALLOC(IncrementLoadEventDelayCount);
 

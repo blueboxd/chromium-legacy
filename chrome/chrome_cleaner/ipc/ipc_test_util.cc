@@ -90,7 +90,7 @@ void ParentProcess::AppendSwitch(const std::string& switch_string,
 }
 
 void ParentProcess::AppendSwitchNative(const std::string& switch_string,
-                                       const base::string16& value) {
+                                       const std::wstring& value) {
   command_line_.AppendSwitchNative(switch_string, value);
 }
 

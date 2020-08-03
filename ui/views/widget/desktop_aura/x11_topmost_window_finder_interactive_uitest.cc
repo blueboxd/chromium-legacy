@@ -376,7 +376,9 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
 
 // Test that the TopmostWindowFinder finds windows which belong to menus
 // (which may or may not belong to Chrome).
-TEST_F(X11TopmostWindowFinderTest, Menu) {
+//
+// Flakes (https://crbug.com/955316)
+TEST_F(X11TopmostWindowFinderTest, DISABLED_Menu) {
   x11::Window window = CreateAndShowXWindow(gfx::Rect(100, 100, 100, 100));
 
   x11::Window root = ui::GetX11RootWindow();

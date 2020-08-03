@@ -629,6 +629,7 @@ if (is_android) {
       "//components/infobars/core",
       "//components/translate/core/browser",
       "//content/public/browser",
+      "//content/public/test/android:content_native_test_support",
       "//content/test:test_support",
       "//testing/gtest",
       "//weblayer/browser/java:test_jni",
@@ -701,11 +702,15 @@ if (is_android) {
 
   shared_library("libweblayer_test") {
     testonly = true
-    sources = [ "app/entry_point.cc" ]
+    sources = [
+      "$target_gen_dir/browser/java/test_weblayer_jni_registration.h",
+      "app/entry_point.cc",
+    ]
     deps = [
       ":weblayer_lib_webview_test",
       "//base",
       "//content/public/app",
+      "//weblayer/browser/java:test_weblayer_jni_registration",
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]

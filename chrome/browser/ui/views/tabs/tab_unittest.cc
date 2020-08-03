@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -43,7 +42,9 @@ using views::Widget;
 
 class FakeTabController : public TabController {
  public:
-  FakeTabController() {}
+  FakeTabController() = default;
+  FakeTabController(const FakeTabController&) = delete;
+  FakeTabController& operator=(const FakeTabController&) = delete;
 
   void set_active_tab(bool value) { active_tab_ = value; }
   void set_paint_throbber_to_layer(bool value) {
@@ -157,8 +158,6 @@ class FakeTabController : public TabController {
   SkColor tab_fg_color_active_ = gfx::kPlaceholderColor;
   SkColor tab_bg_color_inactive_ = gfx::kPlaceholderColor;
   SkColor tab_fg_color_inactive_ = gfx::kPlaceholderColor;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeTabController);
 };
 
 class TabTest : public ChromeViewsTestBase {
@@ -344,8 +343,10 @@ class TabTest : public ChromeViewsTestBase {
 
 class AlertIndicatorTest : public ChromeViewsTestBase {
  public:
-  AlertIndicatorTest() {}
-  ~AlertIndicatorTest() override {}
+  AlertIndicatorTest() = default;
+  AlertIndicatorTest(const AlertIndicatorTest&) = delete;
+  AlertIndicatorTest& operator=(const AlertIndicatorTest&) = delete;
+  ~AlertIndicatorTest() override = default;
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
@@ -395,9 +396,6 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
   FakeBaseTabStripController* controller_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AlertIndicatorTest);
 };
 
 TEST_F(TabTest, HitTestTopPixel) {

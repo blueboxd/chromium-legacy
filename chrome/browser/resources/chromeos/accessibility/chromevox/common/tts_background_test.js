@@ -10,11 +10,24 @@ GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 /**
  * Test fixture.
  */
-ChromeVoxTtsBackgroundTest = class extends ChromeVoxE2ETest {};
+ChromeVoxTtsBackgroundTest = class extends ChromeVoxE2ETest {
+  /** @override */
+  setUp() {
+    window.tts = new TtsBackground();
+  }
 
+  expectUtteranceQueueIsLike(expectedObjects) {
+    const queue = tts.getUtteranceQueueForTest();
+    assertEquals(expectedObjects.length, queue.length);
+    for (let i = 0; i < expectedObjects.length; i++) {
+      for (const key in expectedObjects[i]) {
+        assertEquals(expectedObjects[i][key], queue[i][key]);
+      }
+    }
+  }
+};
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
-  const tts = new TtsBackground(false);
   const preprocess = tts.preprocess.bind(tts);
 
   // Punctuation.
@@ -47,7 +60,6 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
 });
 
 TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
-  const tts = new TtsBackground(false);
   const voices = [
     {lang: 'zh-CN', voiceName: 'Chinese'},
     {lang: 'zh-TW', voiceName: 'Chinese (Taiwan)'},
@@ -109,7 +121,6 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
 TEST_F(
     'ChromeVoxTtsBackgroundTest', 'DISABLED_EmptyStringCallsCallbacks',
     function() {
-      const tts = new TtsBackground(false);
       let startCalls = 0, endCalls = 0;
       assertCallsCallbacks = function(text, speakCalls) {
         tts.speak(text, QueueMode.QUEUE, {
@@ -132,7 +143,6 @@ TEST_F(
 SYNC_TEST_F(
     'ChromeVoxTtsBackgroundTest', 'CapitalizeSingleLettersAfterNumbers',
     function() {
-      const tts = new TtsBackground(false);
       const preprocess = tts.preprocess.bind(tts);
 
       // Capitalize single letters if they appear directly after a number.
@@ -149,7 +159,6 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
-  const tts = new TtsBackground(false);
   const preprocess = tts.preprocess.bind(tts);
 
   assertEquals('A', preprocess('A'));
@@ -165,7 +174,6 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
 });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
-  const tts = new TtsBackground();
   let lastSpokenTextString = '';
   tts.speakUsingQueue_ = function(utterance, _) {
     lastSpokenTextString = utterance.textString;
@@ -191,7 +199,6 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
 });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitLongText', function() {
-  const tts = new TtsBackground();
   const spokenTextStrings = [];
   tts.speakUsingQueue_ = function(utterance, _) {
     spokenTextStrings.push(utterance.textString);
@@ -248,7 +255,6 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitUntilSmall', function() {
 });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Phonetics', function() {
-  const tts = new TtsBackground(false);
   let spokenStrings = [];
   tts.speakUsingQueue_ = (utterance, ...rest) => {
     spokenStrings.push(utterance.textString);
@@ -291,7 +297,6 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Phonetics', function() {
 });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'PitchChanges', function() {
-  const tts = new TtsBackground(false);
   const preprocess = tts.preprocess.bind(tts);
   const props = {relativePitch: -0.3};
   localStorage['usePitchChanges'] = 'true';
@@ -300,4 +305,102 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'PitchChanges', function() {
   localStorage['usePitchChanges'] = 'false';
   preprocess('Hello world', props);
   assertFalse(props.hasOwnProperty('relativePitch'));
+});
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'InterjectUtterances', function() {
+  // Fake out setTimeout for our purposes.
+  let lastSetTimeoutCallback;
+  window.setTimeout = (callback, delay) => {
+    lastSetTimeoutCallback = callback;
+  };
+
+  // Mock out to not trigger any events.
+  chrome.tts.speak = () => {};
+
+  // Flush and queue a few utterances to build the speech queue.
+  tts.speak('Hi', QueueMode.FLUSH, {});
+  tts.speak('there.', QueueMode.QUEUE, {});
+  tts.speak('How are you?', QueueMode.QUEUE, {});
+
+  // Verify the contents of the speech queue at this point.
+  this.expectUtteranceQueueIsLike([
+    {textString: 'Hi', queueMode: QueueMode.FLUSH},
+    {textString: 'there.', queueMode: QueueMode.QUEUE},
+    {textString: 'How are you?', queueMode: QueueMode.QUEUE}
+  ]);
+
+  // Interject a single utterance now.
+  tts.speak('Sorry; busy!', QueueMode.INTERJECT, {});
+  this.expectUtteranceQueueIsLike(
+      [{textString: 'Sorry; busy!', queueMode: QueueMode.INTERJECT}]);
+
+  // The above call should have resulted in a setTimeout; call it.
+  assertTrue(!!lastSetTimeoutCallback);
+  lastSetTimeoutCallback();
+  lastSetTimeoutCallback = undefined;
+
+  // The previous utterances should now be restored.
+  this.expectUtteranceQueueIsLike([
+    {textString: 'Sorry; busy!', queueMode: QueueMode.INTERJECT},
+    {textString: 'Hi', queueMode: QueueMode.FLUSH},
+    {textString: 'there.', queueMode: QueueMode.QUEUE},
+    {textString: 'How are you?', queueMode: QueueMode.QUEUE}
+  ]);
+
+  // Try interjecting again. Notice it interrupts the previous interjection.
+  tts.speak('Actually, not busy after all!', QueueMode.INTERJECT, {});
+  this.expectUtteranceQueueIsLike([{
+    textString: 'Actually, not busy after all!',
+    queueMode: QueueMode.INTERJECT
+  }]);
+
+  // Before the end of the current callstack, simulated by calling the callback
+  // to setTimeout, we can keep calling speak. These are also interjections (see
+  // below).
+  tts.speak('I am good.', QueueMode.QUEUE, {});
+  tts.speak('How about you?', QueueMode.QUEUE, {});
+  this.expectUtteranceQueueIsLike([
+    {
+      textString: 'Actually, not busy after all!',
+      queueMode: QueueMode.INTERJECT
+    },
+    {textString: 'I am good.', queueMode: QueueMode.QUEUE},
+    {textString: 'How about you?', queueMode: QueueMode.QUEUE}
+  ]);
+
+  // The above call should have resulted in a setTimeout; call it.
+  assertTrue(!!lastSetTimeoutCallback);
+  lastSetTimeoutCallback();
+  lastSetTimeoutCallback = undefined;
+
+  // The previous utterances should now be restored.
+  this.expectUtteranceQueueIsLike([
+    {
+      textString: 'Actually, not busy after all!',
+      queueMode: QueueMode.INTERJECT
+    },
+    {textString: 'I am good.', queueMode: QueueMode.INTERJECT},
+    {textString: 'How about you?', queueMode: QueueMode.INTERJECT},
+    {textString: 'Hi', queueMode: QueueMode.FLUSH},
+    {textString: 'there.', queueMode: QueueMode.QUEUE},
+    {textString: 'How are you?', queueMode: QueueMode.QUEUE}
+  ]);
+
+  // Interject again. Notice all previous interjections get cancelled again.
+  // This is crucial to not leak utterances out of the chaining that some
+  // modules like Output do.
+  tts.speak('Sorry! Gotta go!', QueueMode.INTERJECT, {});
+  this.expectUtteranceQueueIsLike(
+      [{textString: 'Sorry! Gotta go!', queueMode: QueueMode.INTERJECT}]);
+  assertTrue(!!lastSetTimeoutCallback);
+  lastSetTimeoutCallback();
+  lastSetTimeoutCallback = undefined;
+
+  // All other interjections except the last one are gone.
+  this.expectUtteranceQueueIsLike([
+    {textString: 'Sorry! Gotta go!', queueMode: QueueMode.INTERJECT},
+    {textString: 'Hi', queueMode: QueueMode.FLUSH},
+    {textString: 'there.', queueMode: QueueMode.QUEUE},
+    {textString: 'How are you?', queueMode: QueueMode.QUEUE}
+  ]);
 });

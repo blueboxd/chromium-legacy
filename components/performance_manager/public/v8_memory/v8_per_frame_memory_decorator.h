@@ -20,7 +20,7 @@
 #include "components/performance_manager/public/graph/process_node.h"
 #include "components/performance_manager/public/render_process_host_id.h"
 #include "content/public/browser/global_routing_id.h"
-#include "content/public/common/performance_manager/v8_per_frame_memory.mojom.h"
+#include "third_party/blink/public/mojom/performance_manager/v8_per_frame_memory.mojom.h"
 
 namespace performance_manager {
 
@@ -493,7 +493,7 @@ namespace internal {
 // communicate with the given process. Exposed so that it can be overridden to
 // implement the interface with a test fake.
 using BindV8PerFrameMemoryReporterCallback = base::RepeatingCallback<void(
-    mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>,
+    mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>,
     RenderProcessHostProxy)>;
 
 // Sets a callback that will be used to bind the V8PerFrameMemoryReporter

@@ -63,4 +63,14 @@ class PasswordCheckMediator implements PasswordCheckCoordinator.CredentialEventH
     public void onRemove(CompromisedCredential credential) {
         mDelegate.removeCredential(credential);
     }
+
+    @Override
+    public void onChangePasswordButtonClick(CompromisedCredential credential) {
+        // TODO(crbug.com/1092444): Implement the action for the button.
+    }
+
+    @Override
+    public void onChangePasswordWithScriptButtonClick(CompromisedCredential credential) {
+        // TODO(crbug.com/1086109): Implement the action for the button.
+    }
 }

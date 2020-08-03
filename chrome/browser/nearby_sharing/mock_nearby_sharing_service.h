@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_SHARING_SERVICE_H_
 
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class MockNearbySharingService : public NearbySharingService {
+class MockNearbySharingService : public NearbySharingService,
+                                 public KeyedService {
  public:
   MockNearbySharingService();
   ~MockNearbySharingService() override;
@@ -57,6 +59,10 @@ class MockNearbySharingService : public NearbySharingService {
   MOCK_METHOD(void,
               Open,
               (const ShareTarget&, StatusCodesCallback),
+              (override));
+  MOCK_METHOD(NearbyNotificationDelegate*,
+              GetNotificationDelegate,
+              (const std::string&),
               (override));
   MOCK_METHOD(NearbyShareSettings*, GetSettings, (), (override));
   MOCK_METHOD(NearbyShareHttpNotifier*, GetHttpNotifier, (), (override));

@@ -14,13 +14,25 @@ public interface SurfaceActionsHandler {
 
     /**
      * Navigates the current tab to a particular URL.
+     * @param url The url for which to navigate.
+     * @param actionSourceView The View from which the user tap originated. May be null.
      */
-    default void navigateTab(String url) {}
+    default void navigateTab(String url, View actionSourceView) {}
+    @Deprecated
+    default void navigateTab(String url) {
+        navigateTab(url, null);
+    }
 
     /**
      * Navigates a new tab to a particular URL.
+     * @param url The url for which to navigate.
+     * @param actionSourceView The View from which the user tap originated. May be null.
      */
-    default void navigateNewTab(String url) {}
+    default void navigateNewTab(String url, View actionSourceView) {}
+    @Deprecated
+    default void navigateNewTab(String url) {
+        navigateNewTab(url, null);
+    }
 
     /**
      * Navigate a new incognito tab to a URL.
@@ -34,11 +46,22 @@ public interface SurfaceActionsHandler {
 
     /**
      * Open a bottom sheet with the view as contents.
+     * @param view The bottom sheet contents view.
+     * @param actionSourceView The View from which the user tap originated. May be null.
      */
-    default void showBottomSheet(View view) {}
+    default void showBottomSheet(View view, View actionSourceView) {}
+    @Deprecated
+    default void showBottomSheet(View view) {
+        showBottomSheet(view, null);
+    }
 
     /**
      * Dismiss the open bottom sheet (or do nothing if there isn't one).
      */
     default void dismissBottomSheet() {}
+
+    /**
+     * Indicates that the "Manage Interests" action was taken. Has no effect other than to log UMA.
+     */
+    default void recordActionManageInterests() {}
 }

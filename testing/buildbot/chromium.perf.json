@@ -484,7 +484,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-chrome",
+          "--browser=android-chrome-64-bundle",
           "--upload-results",
           "--test-shard-map-filename=android-pixel2-perf_map.json"
         ],

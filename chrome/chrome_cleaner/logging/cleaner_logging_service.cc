@@ -5,6 +5,7 @@
 #include "chrome/chrome_cleaner/logging/cleaner_logging_service.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -264,10 +264,10 @@ void CleanerLoggingService::Initialize(RegistryLogger* registry_logger) {
 
   const bool post_reboot = Rebooter::IsPostReboot();
 
-  std::vector<base::string16> languages;
+  std::vector<std::wstring> languages;
   base::win::i18n::GetUserPreferredUILanguageList(&languages);
 
-  base::string16 chrome_version_string;
+  std::wstring chrome_version_string;
   bool chrome_version_string_succeeded =
       RetrieveChromeVersionAndInstalledDomain(&chrome_version_string, nullptr);
 
@@ -468,7 +468,7 @@ void CleanerLoggingService::SetExitCode(ResultCode exit_code) {
 }
 
 void CleanerLoggingService::AddLoadedModule(
-    const base::string16& name,
+    const std::wstring& name,
     ModuleHost module_host,
     const internal::FileInformation& file_information) {
   FileInformation reported_file_information;
@@ -483,8 +483,8 @@ void CleanerLoggingService::AddLoadedModule(
 }
 
 void CleanerLoggingService::AddService(
-    const base::string16& display_name,
-    const base::string16& service_name,
+    const std::wstring& display_name,
+    const std::wstring& service_name,
     const internal::FileInformation& file_information) {
   FileInformation reported_file_information;
   FileInformationToProtoObject(file_information, &reported_file_information);
@@ -510,7 +510,7 @@ void CleanerLoggingService::AddInstalledProgram(
 }
 
 void CleanerLoggingService::AddProcess(
-    const base::string16& name,
+    const std::wstring& name,
     const internal::FileInformation& file_information) {
   FileInformation reported_file_information;
   FileInformationToProtoObject(file_information, &reported_file_information);
@@ -543,7 +543,7 @@ void CleanerLoggingService::AddRegistryValue(
 }
 
 void CleanerLoggingService::AddLayeredServiceProvider(
-    const std::vector<base::string16>& guids,
+    const std::vector<std::wstring>& guids,
     const internal::FileInformation& file_information) {
   ChromeCleanerReport_SystemReport_LayeredServiceProvider
       layered_service_provider;
@@ -560,9 +560,9 @@ void CleanerLoggingService::AddLayeredServiceProvider(
 }
 
 void CleanerLoggingService::SetWinInetProxySettings(
-    const base::string16& config,
-    const base::string16& bypass,
-    const base::string16& auto_config_url,
+    const std::wstring& config,
+    const std::wstring& bypass,
+    const std::wstring& auto_config_url,
     bool autodetect) {
   base::AutoLock lock(lock_);
   ChromeCleanerReport_SystemReport_SystemProxySettings*
@@ -576,8 +576,8 @@ void CleanerLoggingService::SetWinInetProxySettings(
 }
 
 void CleanerLoggingService::SetWinHttpProxySettings(
-    const base::string16& config,
-    const base::string16& bypass) {
+    const std::wstring& config,
+    const std::wstring& bypass) {
   base::AutoLock lock(lock_);
   ChromeCleanerReport_SystemReport_SystemProxySettings*
       win_http_proxy_settings = chrome_cleaner_report_.mutable_system_report()
@@ -587,7 +587,7 @@ void CleanerLoggingService::SetWinHttpProxySettings(
 }
 
 void CleanerLoggingService::AddInstalledExtension(
-    const base::string16& extension_id,
+    const std::wstring& extension_id,
     ExtensionInstallMethod install_method,
     const std::vector<internal::FileInformation>& extension_files) {
   base::AutoLock lock(lock_);
@@ -604,8 +604,8 @@ void CleanerLoggingService::AddInstalledExtension(
 }
 
 void CleanerLoggingService::AddScheduledTask(
-    const base::string16& name,
-    const base::string16& description,
+    const std::wstring& name,
+    const std::wstring& description,
     const std::vector<internal::FileInformation>& actions) {
   ScheduledTask scheduled_task;
   scheduled_task.set_name(base::WideToUTF8(name));
@@ -623,10 +623,10 @@ void CleanerLoggingService::AddScheduledTask(
 }
 
 void CleanerLoggingService::AddShortcutData(
-    const base::string16& lnk_path,
-    const base::string16& executable_path,
+    const std::wstring& lnk_path,
+    const std::wstring& executable_path,
     const std::string& executable_hash,
-    const std::vector<base::string16>& command_line_arguments) {
+    const std::vector<std::wstring>& command_line_arguments) {
   base::AutoLock lock(lock_);
   ChromeCleanerReport_SystemReport_ShortcutData* shortcut_data =
       chrome_cleaner_report_.mutable_system_report()->add_shortcut_data();
@@ -662,7 +662,7 @@ bool CleanerLoggingService::AllExpectedRemovalsConfirmed() const {
     if (uws.state() != UwS::REMOVABLE)
       continue;
     for (const MatchedFile& file : uws.files()) {
-      base::string16 sanitized_path =
+      std::wstring sanitized_path =
           base::UTF8ToWide(file.file_information().path());
       RemovalStatus removal_status =
           status_updater->GetRemovalStatusOfSanitizedPath(sanitized_path);

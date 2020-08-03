@@ -7,7 +7,6 @@ package org.chromium.weblayer;
 import android.content.Context;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.util.Pair;
 
 import androidx.test.filters.SmallTest;
 
@@ -17,8 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-
-import java.util.concurrent.Callable;
 
 /**
  * Tests for (@link WebViewCompatibilityHelper}.
@@ -30,34 +27,10 @@ public class WebViewCompatibilityHelperTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.N)
     public void testLibraryPaths() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> result =
-                WebViewCompatibilityHelper.initialize(appContext);
-        Assert.assertEquals(result.second, WebLayer.WebViewCompatibilityResult.SUCCESS);
-        String[] libraryPaths = WebViewCompatibilityHelper.getLibraryPaths(result.first.call());
+        ClassLoader classLoader = WebViewCompatibilityHelper.initialize(appContext);
+        String[] libraryPaths = WebViewCompatibilityHelper.getLibraryPaths(classLoader);
         for (String path : libraryPaths) {
             Assert.assertTrue(path.startsWith("/./"));
         }
-    }
-
-    @Test
-    @SmallTest
-    public void testSupportedVersion() throws Exception {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            Assert.assertFalse(WebViewCompatibilityHelper.isSupportedVersion(
-                    WebViewCompatibilityHelper.parseMajorVersion("81.0.2.5")));
-        } else {
-            Assert.assertTrue(WebViewCompatibilityHelper.isSupportedVersion(
-                    WebViewCompatibilityHelper.parseMajorVersion("81.0.2.5")));
-        }
-        Assert.assertTrue(WebViewCompatibilityHelper.isSupportedVersion(
-                WebViewCompatibilityHelper.parseMajorVersion("82.0.2.5")));
-        Assert.assertFalse(WebViewCompatibilityHelper.isSupportedVersion(
-                WebViewCompatibilityHelper.parseMajorVersion("80.0.2.5")));
-        Assert.assertFalse(WebViewCompatibilityHelper.isSupportedVersion(
-                WebViewCompatibilityHelper.parseMajorVersion("")));
-        Assert.assertFalse(WebViewCompatibilityHelper.isSupportedVersion(
-                WebViewCompatibilityHelper.parseMajorVersion("82.0")));
-        Assert.assertFalse(WebViewCompatibilityHelper.isSupportedVersion(
-                WebViewCompatibilityHelper.parseMajorVersion(null)));
     }
 }

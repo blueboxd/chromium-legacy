@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -118,6 +117,8 @@ class BrowserTabStripController::TabContextMenuContents
                           views::MenuRunner::FORCE_VIEWS;
     menu_runner_ = std::make_unique<views::MenuRunner>(model_.get(), run_flags);
   }
+  TabContextMenuContents(const TabContextMenuContents&) = delete;
+  TabContextMenuContents& operator=(const TabContextMenuContents&) = delete;
 
   void Cancel() { controller_ = nullptr; }
 
@@ -179,8 +180,6 @@ class BrowserTabStripController::TabContextMenuContents
   BrowserTabStripController* controller_;
 
   TabGroupsIPHController* const tab_groups_iph_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabContextMenuContents);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

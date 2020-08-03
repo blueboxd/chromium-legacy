@@ -61,7 +61,7 @@
   <permission android:name="$PACKAGE.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
   <permission android:name="$PACKAGE.TOS_ACKED" android:protectionLevel="signatureOrSystem"/>
   <permission android:label="Debug web pages" android:name="$PACKAGE.permission.DEBUG" android:permissionGroup="android.permission-group.DEVELOPMENT_TOOLS" android:protectionLevel="signature"/>
-  <application  # DIFF-ANCHOR: fb4067c5
+  <application  # DIFF-ANCHOR: 8b4c7922
       android:allowBackup="false"
       android:extractNativeLibs="false"
       android:icon="@drawable/ic_launcher"
@@ -475,6 +475,12 @@
         android:name="org.chromium.chrome.browser.LauncherShortcutActivity"
         android:taskAffinity=""
         android:theme="@android:style/Theme.NoDisplay"/>
+    <activity  # DIFF-ANCHOR: f490b994
+        android:excludeFromRecents="true"
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.app.reengagement.ReengagementActivity"
+        android:taskAffinity=""
+        android:theme="@android:style/Theme.Translucent"/>
     <activity  # DIFF-ANCHOR: 9ad44b6b
         android:excludeFromRecents="true"
         android:exported="false"
@@ -1454,5 +1460,5 @@
         android:exported="true"
         android:name="org.chromium.chrome.browser.prerender.ChromePrerenderService"
         tools:ignore="ExportedService"/>
-  </application>  # DIFF-ANCHOR: fb4067c5
+  </application>  # DIFF-ANCHOR: 8b4c7922
 </manifest>

@@ -6,8 +6,10 @@
 #define CHROME_CHROME_CLEANER_HTTP_USER_AGENT_H_
 
 #include <stdint.h>
+
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 
 namespace chrome_cleaner {
 
@@ -21,13 +23,13 @@ class UserAgent {
   // attributes. The client must do so.
   // @param product_name The product name.
   // @param product_version The product version.
-  UserAgent(const base::string16& product_name,
-            const base::string16& product_version);
+  UserAgent(const std::wstring& product_name,
+            const std::wstring& product_version);
   ~UserAgent();
 
   // @returns A string suitable for use as the value of a User-Agent header, and
   //     incorporating the various properties of this class.
-  base::string16 AsString();
+  std::wstring AsString();
 
   // Sets the OS version.
   // @param major_version The OS major version number.
@@ -45,17 +47,17 @@ class UserAgent {
 
   // Sets the WinHttp library version.
   // @winhttp_version The WinHttp library version.
-  void set_winhttp_version(const base::string16& winhttp_version) {
+  void set_winhttp_version(const std::wstring& winhttp_version) {
     winhttp_version_ = winhttp_version;
   }
 
  private:
-  base::string16 product_name_;
-  base::string16 product_version_;
+  std::wstring product_name_;
+  std::wstring product_version_;
   int32_t os_major_version_;
   int32_t os_minor_version_;
   Architecture architecture_;
-  base::string16 winhttp_version_;
+  std::wstring winhttp_version_;
 
   DISALLOW_COPY_AND_ASSIGN(UserAgent);
 };

@@ -40,8 +40,8 @@ class LoadStreamTask : public offline_pages::Task {
     Result();
     explicit Result(LoadStreamStatus status);
     ~Result();
-    Result(const Result&);
-    Result& operator=(const Result&);
+    Result(Result&&);
+    Result& operator=(Result&&);
 
     // Final status of loading the stream.
     LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
@@ -52,6 +52,7 @@ class LoadStreamTask : public offline_pages::Task {
     // Information about the network request, if one was made.
     base::Optional<NetworkResponseInfo> network_response_info;
     bool loaded_new_content_from_network = false;
+    std::unique_ptr<LoadLatencyTimes> latencies;
   };
 
   LoadStreamTask(LoadType load_type,
@@ -81,6 +82,8 @@ class LoadStreamTask : public offline_pages::Task {
   base::Optional<NetworkResponseInfo> network_response_info_;
   bool loaded_new_content_from_network_ = false;
 
+  std::unique_ptr<LoadLatencyTimes> latencies_;
+  base::TimeTicks task_creation_time_;
   base::TimeTicks fetch_start_time_;
   base::OnceCallback<void(Result)> done_callback_;
   std::unique_ptr<UploadActionsTask> upload_actions_task_;

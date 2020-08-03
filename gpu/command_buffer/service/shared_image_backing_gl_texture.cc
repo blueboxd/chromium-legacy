@@ -281,6 +281,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 #endif  // DCHECK_IS_ON()
   if (color_space.IsValid())
     image->SetColorSpace(color_space);
+  if (usage & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
+    image->DisableInUseByWindowServer();
 
   viz::ResourceFormat format = viz::GetResourceFormat(buffer_format);
   const bool for_framebuffer_attachment =
@@ -522,6 +524,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
+    if (usage & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
+      image->DisableInUseByWindowServer();
   }
 
   InitializeGLTextureParams params;

@@ -17,7 +17,6 @@ import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -54,7 +53,10 @@ public class NotificationUmaTracker {
             SystemNotificationType.PERMISSION_REQUESTS,
             SystemNotificationType.PERMISSION_REQUESTS_HIGH, SystemNotificationType.ANNOUNCEMENT,
             SystemNotificationType.SHARE_SAVE_IMAGE, SystemNotificationType.TWA_DISCLOSURE_INITIAL,
-            SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT})
+            SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT,
+            SystemNotificationType.CHROME_REENGAGEMENT_1,
+            SystemNotificationType.CHROME_REENGAGEMENT_2,
+            SystemNotificationType.CHROME_REENGAGEMENT_3})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -83,8 +85,11 @@ public class NotificationUmaTracker {
         int SHARE_SAVE_IMAGE = 22;
         int TWA_DISCLOSURE_INITIAL = 23;
         int TWA_DISCLOSURE_SUBSEQUENT = 24;
+        int CHROME_REENGAGEMENT_1 = 25;
+        int CHROME_REENGAGEMENT_2 = 26;
+        int CHROME_REENGAGEMENT_3 = 27;
 
-        int NUM_ENTRIES = 25;
+        int NUM_ENTRIES = 28;
     }
 
     /*
@@ -316,7 +321,6 @@ public class NotificationUmaTracker {
     private static void recordHistogram(String name, @SystemNotificationType int type) {
         if (type == SystemNotificationType.UNKNOWN) return;
 
-        if (!LibraryLoader.getInstance().isInitialized()) return;
         RecordHistogram.recordEnumeratedHistogram(name, type, SystemNotificationType.NUM_ENTRIES);
     }
 

@@ -120,6 +120,12 @@ static bool ShouldCreateSubsequence(
   if (!paint_layer.SupportsSubsequenceCaching())
     return false;
 
+  // Don't create subsequence during special painting to avoid cache conflict
+  // with normal painting.
+  if (painting_info.GetGlobalPaintFlags() &
+      kGlobalPaintFlattenCompositingLayers)
+    return false;
+
   // Don't create subsequence for a composited layer because if it can be
   // cached, we can skip the whole painting in GraphicsLayer::paint() with
   // CachedDisplayItemList.  This also avoids conflict of
@@ -127,12 +133,6 @@ static bool ShouldCreateSubsequence(
   // painted twice for GraphicsLayers of container and scrolling contents.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       paint_layer.GetCompositingState() == kPaintsIntoOwnBacking)
-    return false;
-
-  // Don't create subsequence during special painting to avoid cache conflict
-  // with normal painting.
-  if (painting_info.GetGlobalPaintFlags() &
-      kGlobalPaintFlattenCompositingLayers)
     return false;
 
   return true;
@@ -378,6 +378,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   PhysicalOffset subpixel_accumulation =
       (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+       !(painting_info.GetGlobalPaintFlags() &
+         kGlobalPaintFlattenCompositingLayers) &&
        paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking)
           ? paint_layer_.SubpixelAccumulation()
           : painting_info.sub_pixel_accumulation;

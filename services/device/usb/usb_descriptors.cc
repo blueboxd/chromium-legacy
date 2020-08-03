@@ -110,8 +110,7 @@ void OnReadConfigDescriptor(UsbDeviceDescriptor* desc,
                             scoped_refptr<base::RefCountedBytes> buffer,
                             size_t length) {
   if (status == UsbTransferStatus::COMPLETED) {
-    if (!desc->Parse(
-            std::vector<uint8_t>(buffer->front(), buffer->front() + length))) {
+    if (!desc->Parse(base::make_span(buffer->front(), length))) {
       LOG(ERROR) << "Failed to parse configuration descriptor.";
     }
   } else {
@@ -157,8 +156,7 @@ void OnReadDeviceDescriptor(
   }
 
   std::unique_ptr<UsbDeviceDescriptor> desc(new UsbDeviceDescriptor());
-  if (!desc->Parse(
-          std::vector<uint8_t>(buffer->front(), buffer->front() + length))) {
+  if (!desc->Parse(base::make_span(buffer->front(), length))) {
     LOG(ERROR) << "Device descriptor parsing error.";
     std::move(callback).Run(nullptr);
     return;
@@ -262,7 +260,7 @@ UsbDeviceDescriptor::UsbDeviceDescriptor()
 
 UsbDeviceDescriptor::~UsbDeviceDescriptor() = default;
 
-bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
+bool UsbDeviceDescriptor::Parse(base::span<const uint8_t> buffer) {
   mojom::UsbConfigurationInfo* last_config = nullptr;
   mojom::UsbInterfaceInfo* last_interface = nullptr;
   mojom::UsbEndpointInfo* last_endpoint = nullptr;

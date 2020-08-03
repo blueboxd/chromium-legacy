@@ -25,6 +25,7 @@ import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
+import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.WebLayer;
 
 import java.io.File;
@@ -50,6 +51,9 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
         });
 
         try {
+            // Browser tests cannot be run in WebView compatibility mode since the class loader
+            // WebLayer uses needs to match the class loader used for setup.
+            TestWebLayer.disableWebViewCompatibilityMode();
             WebLayer.loadAsync(getApplication(), webLayer -> {
                 mWebLayer = webLayer;
                 createShell();

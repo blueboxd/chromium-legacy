@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -84,6 +85,10 @@ void MultipartUploadRequest::SendRequest() {
   resource_request->url = base_url_;
   resource_request->method = "POST";
   resource_request->headers.SetHeader("X-Goog-Upload-Protocol", "multipart");
+
+  if (base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts)) {
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  }
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation_);

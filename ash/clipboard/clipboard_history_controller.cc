@@ -140,15 +140,6 @@ bool ClipboardHistoryController::CanShowMenu() const {
 }
 
 void ClipboardHistoryController::ShowMenu() {
-  auto* host = ash::GetWindowTreeHostForDisplay(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  // Some web apps render the caret in an IFrame, and we will not get the
-  // bounds in that case.
-  // TODO(https://crbug.com/1099930): Show the menu in the middle of the
-  // webview if the bounds are empty.
-  const gfx::Rect textfield_bounds =
-      host->GetInputMethod()->GetTextInputClient()->GetCaretBounds();
-
   if (!CanShowMenu())
     return;
 
@@ -175,7 +166,7 @@ void ClipboardHistoryController::ShowMenu() {
 
   context_menu_ =
       std::make_unique<ClipboardHistoryMenuModelAdapter>(std::move(menu_model));
-  context_menu_->Run(textfield_bounds);
+  context_menu_->Run(CalculateAnchorRect());
 }
 
 void ClipboardHistoryController::MenuOptionSelected(int index) {
@@ -217,6 +208,48 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
       base::BindOnce(&WriteClipboardDataToClipboard,
                      *(clipboard_items_.begin())),
       base::TimeDelta::FromMilliseconds(100));
+}
+
+bool ClipboardHistoryController::IsMenuShowing() const {
+  return context_menu_ && context_menu_->IsRunning();
+}
+
+gfx::Rect ClipboardHistoryController::GetClipboardHistoryMenuBoundsForTest()
+    const {
+  return context_menu_->GetClipboardHistoryMenuBoundsForTest();
+}
+
+gfx::Rect ClipboardHistoryController::CalculateAnchorRect() const {
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  auto* host = ash::GetWindowTreeHostForDisplay(display.id());
+
+  // Some web apps render the caret in an IFrame, and we will not get the
+  // bounds in that case.
+  // TODO(https://crbug.com/1099930): Show the menu in the middle of the
+  // webview if the bounds are empty.
+  ui::TextInputClient* text_input_client =
+      host->GetInputMethod()->GetTextInputClient();
+
+  // |text_input_client| may be null. For example, in clamshell mode and without
+  // any window open.
+  const gfx::Rect textfield_bounds =
+      text_input_client ? text_input_client->GetCaretBounds() : gfx::Rect();
+
+  // Note that the width of caret's bounds may be zero in some views (such as
+  // the search bar of Google search web page). So we cannot use
+  // gfx::Size::IsEmpty() here. In addition, the applications using IFrame may
+  // provide unreliable |textfield_bounds| which are not fully contained by the
+  // display bounds.
+  // TODO(https://crbug.com/1110027).
+  const bool textfield_bounds_are_valid =
+      textfield_bounds.size() != gfx::Size() &&
+      display.bounds().Contains(textfield_bounds);
+
+  if (textfield_bounds_are_valid)
+    return textfield_bounds;
+
+  return gfx::Rect(display::Screen::GetScreen()->GetCursorScreenPoint(),
+                   gfx::Size());
 }
 
 }  // namespace ash

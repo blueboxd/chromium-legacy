@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_NEARBY_NOTIFICATION_MANAGER_H_
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_NOTIFICATION_MANAGER_H_
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/nearby_sharing/nearby_notification_delegate.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
@@ -61,9 +63,23 @@ class NearbyNotificationManager : public TransferUpdateCallback,
   // connection).
   void CloseTransfer();
 
+  // Gets the currently registered delegate for |notification_id|.
+  NearbyNotificationDelegate* GetNotificationDelegate(
+      const std::string& notification_id);
+
+  // Cancels the currently in progress transfer.
+  void CancelTransfer();
+
  private:
   NotificationDisplayService* notification_display_service_;
   NearbySharingService* nearby_service_;
+
+  // Maps notification ids to notification delegates.
+  base::flat_map<std::string, std::unique_ptr<NearbyNotificationDelegate>>
+      delegate_map_;
+
+  // ShareTarget of the current transfer.
+  base::Optional<ShareTarget> share_target_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_NOTIFICATION_MANAGER_H_

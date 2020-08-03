@@ -47,6 +47,7 @@ if (is_android) {
       "//weblayer/browser/java",
       "//weblayer/browser/java:gms_bridge_java",
       "//weblayer/public/java",
+      "//weblayer/public/javatestutil:test_java",
     ]
 
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

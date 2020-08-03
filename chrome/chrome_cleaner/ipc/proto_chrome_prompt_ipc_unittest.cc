@@ -44,11 +44,11 @@ constexpr wchar_t kInvalidUTF16String[] = {0xDC00, 0xD800, 0xD800, 0xDFFF,
                                            0xDFFF, 0xDBFF, 0};
 const base::FilePath kInvalidFilePath(kInvalidUTF16String);
 const base::FilePath kNonASCIIFilePath(L"ééààçç");
-const base::string16 kInvalidRegistryKey(kInvalidUTF16String);
-const base::string16 kInvalidExtensionID(kInvalidUTF16String);
+const std::wstring kInvalidRegistryKey(kInvalidUTF16String);
+const std::wstring kInvalidExtensionID(kInvalidUTF16String);
 
 const base::FilePath kBadFilePath(L"/path/to/bad.dll");
-const base::string16 kBadRegistryKey(L"HKCU:32\\Software\\ugly-uws\\nasty");
+const std::wstring kBadRegistryKey(L"HKCU:32\\Software\\ugly-uws\\nasty");
 
 constexpr int kEarlyDisconnectionExitCode = 100;
 constexpr int kSuccessExitCode = 0;
@@ -145,7 +145,7 @@ std::pair<ScopedHandle, ScopedHandle> CreateMessagePipe(
   // Handles to inherit will be added to the LaunchOptions explicitly.
   security_attributes.bInheritHandle = false;
 
-  base::string16 pipe_name = base::UTF8ToWide(
+  std::wstring pipe_name = base::UTF8ToWide(
       base::StrCat({"\\\\.\\pipe\\chrome-cleaner-",
                     base::UnguessableToken::Create().ToString()}));
 
@@ -638,7 +638,7 @@ class ParentProcess {
     chrome_prompt_ipc.Initialize(error_handler.get());
 
     std::vector<base::FilePath> files_to_delete;
-    std::vector<base::string16> registry_keys;
+    std::vector<std::wstring> registry_keys;
     if (test_config_.uws_expected) {
       files_to_delete.push_back(kBadFilePath);
       registry_keys.push_back(kBadRegistryKey);

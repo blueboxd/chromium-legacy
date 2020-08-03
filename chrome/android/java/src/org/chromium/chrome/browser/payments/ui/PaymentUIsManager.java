@@ -77,8 +77,6 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
 
     /** The delegate of this class. */
     public interface Delegate {
-        /** Provide payment information to the Payment Request UI. */
-        void providePaymentInformation();
     }
 
     /**
@@ -276,11 +274,6 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
      */
     public void setUiShippingOptions(SectionInformation uiShippingOptions) {
         mUiShippingOptions = uiShippingOptions;
-    }
-
-    /** Get the PaymentInformation callback. */
-    public Callback<PaymentInformation> getPaymentInformationCallback() {
-        return mPaymentInformationCallback;
     }
 
     /**
@@ -565,13 +558,17 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
     }
 
     /**
-     * Update Payment Request UI with the update event's information and enable the UI (The user
-     * interface is disabled with a "↻" spinner being displayed and the user is unable to interact
-     * with the user interface until this "enableUserInterface" method is called).
+     * Update Payment Request UI with the update event's information and enable the UI. This method
+     * should be called when the user interface is disabled with a "↻" spinner being displayed. The
+     * user is unable to interact with the user interface until this method is called.
+     * @return Whether this is the first time that payment information has been provided to the user
+     *         interface, which indicates that the "UI shown" event should be recorded now.
      */
-    public void enableUserInterfaceAfterPaymentRequestUpdateEvent() {
+    public boolean enableAndUpdatePaymentRequestUIWithPaymentInfo() {
+        boolean isFirstUpdate = false;
         if (mPaymentInformationCallback != null && mPaymentMethodsSection != null) {
-            mDelegate.providePaymentInformation();
+            providePaymentInformationToPaymentRequestUI();
+            isFirstUpdate = true;
         } else {
             mPaymentRequestUI.updateOrderSummarySection(mUiShoppingCart);
             if (shouldShowShippingSection()) {
@@ -579,6 +576,7 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
                         PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
             }
         }
+        return isFirstUpdate;
     }
 
     /** Implements {@link PaymentRequestUI.Client.shouldShowShippingSection}. */
@@ -666,5 +664,17 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         if (mPaymentHandlerUi == null) return false;
         mPaymentHandlerUi.clickSecurityIconForTest();
         return true;
+    }
+
+    /** Provide PaymentInformation to the PaymentRequest UI. */
+    public void providePaymentInformationToPaymentRequestUI() {
+        // Do not display service worker payment apps summary in single line so as to display its
+        // origin completely.
+        mPaymentMethodsSection.setDisplaySelectedItemSummaryInSingleLineInNormalMode(
+                getSelectedPaymentAppType() != PaymentAppType.SERVICE_WORKER_APP);
+        mPaymentInformationCallback.onResult(
+                new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
+                        mUiShippingOptions, mContactSection, mPaymentMethodsSection));
+        mPaymentInformationCallback = null;
     }
 }

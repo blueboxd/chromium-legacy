@@ -3,6 +3,7 @@ include_rules = [
   "+chromeos/grit/chromeos_telemetry_extension_resources.h",
   "+content/public/browser",
   "+content/public/common",
+  "+mojo/public/js/grit",
   "+ui/base/resource/resource_bundle.h",
   "+ui/webui",
 ]

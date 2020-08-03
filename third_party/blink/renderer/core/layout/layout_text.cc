@@ -84,10 +84,11 @@ namespace {
 
 struct SameSizeAsLayoutText : public LayoutObject {
   uint32_t bitfields : 12;
+  DOMNodeId node_id;
   float widths[4];
   String text;
   void* pointers[2];
-  DOMNodeId node_id;
+  PhysicalOffset previous_starting_point;
 };
 
 ASSERT_SIZE(LayoutText, SameSizeAsLayoutText);
@@ -1688,6 +1689,25 @@ PhysicalOffset LayoutText::FirstLineBoxTopLeft() const {
     return PhysicalOffset(location);
   }
   return PhysicalOffset();
+}
+
+LogicalOffset LayoutText::LogicalStartingPoint() const {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    if (!cursor)
+      return LogicalOffset();
+    PhysicalOffset physical_offset = cursor.Current().OffsetInContainerBlock();
+    if (StyleRef().GetWritingDirection().IsHorizontalLtr())
+      return {physical_offset.left, physical_offset.top};
+    return physical_offset.ConvertToLogical(
+        StyleRef().GetWritingDirection(),
+        PhysicalSizeToBeNoop(ContainingBlock()->Size()),
+        cursor.Current().Size());
+  }
+  if (const auto* text_box = FirstTextBox())
+    return {text_box->LogicalLeft(), text_box->LogicalTop()};
+  return LogicalOffset();
 }
 
 bool LayoutText::CanOptimizeSetText() const {

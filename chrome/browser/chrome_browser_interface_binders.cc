@@ -171,6 +171,7 @@
 #endif
 
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
+#include "chromeos/components/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"
 #include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
 #include "chromeos/components/telemetry_extension_ui/telemetry_extension_ui.h"
 #endif
@@ -599,6 +600,9 @@ void PopulateChromeWebUIFrameBinders(
 
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
   if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
+    RegisterWebUIControllerInterfaceBinder<
+        chromeos::health::mojom::DiagnosticsService,
+        chromeos::TelemetryExtensionUI>(map);
     RegisterWebUIControllerInterfaceBinder<
         chromeos::health::mojom::ProbeService, chromeos::TelemetryExtensionUI>(
         map);

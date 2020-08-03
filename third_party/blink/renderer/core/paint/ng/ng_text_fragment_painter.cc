@@ -660,7 +660,7 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
   const unsigned length = fragment_paint_info.to - fragment_paint_info.from;
   if (!selection || !selection->ShouldPaintSelectedTextOnly()) {
     // Paint text decorations except line-through.
-    DecorationInfo decoration_info;
+    base::Optional<TextDecorationInfo> decoration_info;
     bool has_line_through_decoration = false;
     if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
         // Ellipsis should not have text decorations. This is not defined, but 4
@@ -672,14 +672,14 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
       const ComputedStyle* decorating_box_style =
           decorating_box ? &decorating_box->Style() : nullptr;
 
-      text_painter.ComputeDecorationInfo(
-          decoration_info, box_rect.offset, local_origin, width,
-          style.GetFontBaseline(), style, decorating_box_style);
+      decoration_info.emplace(box_rect.offset, local_origin, width,
+                              style.GetFontBaseline(), style,
+                              decorating_box_style);
 
       NGTextDecorationOffset decoration_offset(
-          *decoration_info.style, text_item.Style(), decorating_box);
+          decoration_info->Style(), text_item.Style(), decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
-          decoration_offset, decoration_info, paint_info,
+          decoration_offset, decoration_info.value(), paint_info,
           style.AppliedTextDecorations(), text_style,
           &has_line_through_decoration);
     }
@@ -697,7 +697,7 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
     // Paint line-through decoration if needed.
     if (has_line_through_decoration) {
       text_painter.PaintDecorationsOnlyLineThrough(
-          decoration_info, paint_info, style.AppliedTextDecorations(),
+          decoration_info.value(), paint_info, style.AppliedTextDecorations(),
           text_style);
     }
   }

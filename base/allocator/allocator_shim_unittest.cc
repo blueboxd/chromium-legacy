@@ -7,13 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <atomic>
 #include <memory>
 #include <new>
 #include <vector>
 
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/atomicops.h"
 #include "base/process/process_metrics.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -23,8 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <malloc.h>
+#include <windows.h>
 #elif defined(OS_APPLE)
 #include <malloc/malloc.h>
 #include "base/allocator/allocator_interception_mac.h"
@@ -51,8 +51,8 @@ namespace base {
 namespace allocator {
 namespace {
 
-using testing::MockFunction;
 using testing::_;
+using testing::MockFunction;
 
 // Special sentinel values used for testing GetSizeEstimate() interception.
 const char kTestSizeEstimateData[] = "test_value";
@@ -223,11 +223,11 @@ class AllocatorShimTest : public testing::Test {
   static void NewHandler() {
     if (!instance_)
       return;
-    subtle::Barrier_AtomicIncrement(&instance_->num_new_handler_calls, 1);
+    instance_->num_new_handler_calls.fetch_add(1, std::memory_order_relaxed);
   }
 
   int32_t GetNumberOfNewHandlerCalls() {
-    return subtle::Acquire_Load(&instance_->num_new_handler_calls);
+    return instance_->num_new_handler_calls.load(std::memory_order_acquire);
   }
 
   void SetUp() override {
@@ -247,7 +247,7 @@ class AllocatorShimTest : public testing::Test {
     memset(&aligned_reallocs_intercepted_by_addr, 0, array_size);
     memset(&aligned_frees_intercepted_by_addr, 0, array_size);
     did_fail_realloc_0xfeed_once.reset(new ThreadLocalBoolean());
-    subtle::Release_Store(&num_new_handler_calls, 0);
+    num_new_handler_calls.store(0, std::memory_order_release);
     instance_ = this;
 
 #if defined(OS_APPLE)
@@ -278,7 +278,7 @@ class AllocatorShimTest : public testing::Test {
   size_t aligned_reallocs_intercepted_by_addr[kMaxSizeTracked];
   size_t aligned_frees_intercepted_by_addr[kMaxSizeTracked];
   std::unique_ptr<ThreadLocalBoolean> did_fail_realloc_0xfeed_once;
-  subtle::Atomic32 num_new_handler_calls;
+  std::atomic<uint32_t> num_new_handler_calls;
 
  private:
   static AllocatorShimTest* instance_;
@@ -296,7 +296,8 @@ struct TestStruct2 {
 
 class ThreadDelegateForNewHandlerTest : public PlatformThread::Delegate {
  public:
-  ThreadDelegateForNewHandlerTest(WaitableEvent* event) : event_(event) {}
+  explicit ThreadDelegateForNewHandlerTest(WaitableEvent* event)
+      : event_(event) {}
 
   void ThreadMain() override {
     event_->Wait();
@@ -445,7 +446,7 @@ TEST_F(AllocatorShimTest, InterceptLibcSymbolsFreeDefiniteSize) {
   ASSERT_GE(allocs_intercepted_by_size[19], 1u);
 
   ChromeMallocZone* default_zone =
-          reinterpret_cast<ChromeMallocZone*>(malloc_default_zone());
+      reinterpret_cast<ChromeMallocZone*>(malloc_default_zone());
   default_zone->free_definite_size(malloc_default_zone(), alloc_ptr, 19);
   ASSERT_GE(free_definite_sizes_intercepted_by_size[19], 1u);
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);

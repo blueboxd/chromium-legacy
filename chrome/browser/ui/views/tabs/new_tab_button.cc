@@ -44,15 +44,14 @@ class NewTabButton::HighlightPathGenerator
     : public views::HighlightPathGenerator {
  public:
   HighlightPathGenerator() = default;
+  HighlightPathGenerator(const HighlightPathGenerator&) = delete;
+  HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
     return static_cast<const NewTabButton*>(view)->GetBorderPath(
         view->GetContentsBounds().origin(), 1.0f, false);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
 };
 
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)

@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
+#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
+#include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
 
 namespace {
 
@@ -38,3 +40,30 @@ TelemetryExtensionUiBrowserTest::TelemetryExtensionUiBrowserTest()
            base::FilePath(kUntrustedTestCases)}) {}
 
 TelemetryExtensionUiBrowserTest::~TelemetryExtensionUiBrowserTest() = default;
+
+void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
+  {
+    namespace cros_diagnostics = ::chromeos::cros_healthd::mojom;
+
+    std::vector<cros_diagnostics::DiagnosticRoutineEnum> input{
+        cros_diagnostics::DiagnosticRoutineEnum::kBatteryCapacity,
+        cros_diagnostics::DiagnosticRoutineEnum::kBatteryHealth,
+        cros_diagnostics::DiagnosticRoutineEnum::kUrandom,
+        cros_diagnostics::DiagnosticRoutineEnum::kSmartctlCheck,
+        cros_diagnostics::DiagnosticRoutineEnum::kAcPower,
+        cros_diagnostics::DiagnosticRoutineEnum::kCpuCache,
+        cros_diagnostics::DiagnosticRoutineEnum::kCpuStress,
+        cros_diagnostics::DiagnosticRoutineEnum::kFloatingPointAccuracy,
+        cros_diagnostics::DiagnosticRoutineEnum::kNvmeWearLevel,
+        cros_diagnostics::DiagnosticRoutineEnum::kNvmeSelfTest,
+        cros_diagnostics::DiagnosticRoutineEnum::kDiskRead,
+        cros_diagnostics::DiagnosticRoutineEnum::kPrimeSearch,
+        cros_diagnostics::DiagnosticRoutineEnum::kBatteryDischarge,
+    };
+
+    chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+        ->SetAvailableRoutinesForTesting(input);
+  }
+
+  SandboxedWebUiAppTestBase::SetUpOnMainThread();
+}

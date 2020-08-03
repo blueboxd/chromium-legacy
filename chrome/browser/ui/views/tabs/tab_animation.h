@@ -21,7 +21,8 @@ class TabAnimation {
 
   // Creates a TabAnimation for a tab with no active animations.
   explicit TabAnimation(TabAnimationState static_state);
-
+  TabAnimation(const TabAnimation&) = delete;
+  TabAnimation& operator=(const TabAnimation&) = delete;
   ~TabAnimation();
 
   // Returns whether this tab is currently animating closed.
@@ -58,8 +59,6 @@ class TabAnimation {
   TabAnimationState target_state_;
   base::TimeTicks start_time_;
   base::TimeDelta duration_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabAnimation);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_ANIMATION_H_

@@ -11,17 +11,22 @@ import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.PackageManagerUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A utility class for querying information about the default browser setting.
@@ -56,18 +62,39 @@ public final class DefaultBrowserInfo {
         int NUM_ENTRIES = 5;
     }
 
-    /**
-     * Helper class for passing information about the system's default browser settings back from a
-     * worker task.
-     */
-    private static class DefaultInfo {
-        public boolean isChromeSystem;
-        public boolean isChromeDefault;
-        public boolean isDefaultSystem;
-        public boolean hasDefault;
-        public int browserCount;
-        public int systemCount;
+    /** Contains all status related to the default browser state on the device. */
+    public static class DefaultInfo {
+        /** Whether or not Chrome is the system browser. */
+        public final boolean isChromeSystem;
+
+        /** Whether or not Chrome is the default browser. */
+        public final boolean isChromeDefault;
+
+        /** Whether or not the default browser is the system browser. */
+        public final boolean isDefaultSystem;
+
+        /** Whether or not the user has set a default browser. */
+        public final boolean hasDefault;
+
+        /** The number of browsers installed on this device. */
+        public final int browserCount;
+
+        /** The number of system browsers installed on this device. */
+        public final int systemCount;
+
+        /** Creates an instance of the {@link DefaultInfo} class. */
+        public DefaultInfo(boolean isChromeSystem, boolean isChromeDefault, boolean isDefaultSystem,
+                boolean hasDefault, int browserCount, int systemCount) {
+            this.isChromeSystem = isChromeSystem;
+            this.isChromeDefault = isChromeDefault;
+            this.isDefaultSystem = isDefaultSystem;
+            this.hasDefault = hasDefault;
+            this.browserCount = browserCount;
+            this.systemCount = systemCount;
+        }
     }
+
+    private static DefaultInfoTask sDefaultInfoTask;
 
     /** A lock to synchronize background tasks to retrieve browser information. */
     private static final Object sDirCreationLock = new Object();
@@ -81,6 +108,8 @@ public final class DefaultBrowserInfo {
      * Initialize an AsyncTask for getting menu title of opening a link in default browser.
      */
     public static void initBrowserFetcher() {
+        // TODO(crbug.com/1107527): Make this depend on getDefaultBrowserInfo instead of rolling
+        //  it's own AsyncTask.  Potentially update DefaultInfo to include extra data if necessary.
         synchronized (sDirCreationLock) {
             if (sDefaultBrowserFetcher == null) {
                 sDefaultBrowserFetcher = new BackgroundOnlyAsyncTask<ArrayList<String>>() {
@@ -143,62 +172,146 @@ public final class DefaultBrowserInfo {
     }
 
     /**
+     * Determines various information about browsers on the system.
+     * @param callback To be called with a {@link DefaultInfo} instance if possible.  Can be {@code
+     *         null}.
+     * @see DefaultInfo
+     */
+    public static void getDefaultBrowserInfo(Callback<DefaultInfo> callback) {
+        ThreadUtils.checkUiThread();
+        if (sDefaultInfoTask == null) sDefaultInfoTask = new DefaultInfoTask();
+        sDefaultInfoTask.get(callback);
+    }
+
+    /**
      * Log statistics about the current default browser to UMA.
      */
     public static void logDefaultBrowserStats() {
-        assert BrowserStartupController.getInstance().isFullBrowserStarted();
+        getDefaultBrowserInfo(info -> {
+            if (info == null) return;
 
-        try {
-            new AsyncTask<DefaultInfo>() {
-                @Override
-                protected DefaultInfo doInBackground() {
-                    Context context = ContextUtils.getApplicationContext();
+            RecordHistogram.recordCount100Histogram(
+                    getSystemBrowserCountUmaName(info), info.systemCount);
+            RecordHistogram.recordCount100Histogram(
+                    getDefaultBrowserCountUmaName(info), info.browserCount);
+            RecordHistogram.recordEnumeratedHistogram("Mobile.DefaultBrowser.State",
+                    getDefaultBrowserUmaState(info), MobileDefaultBrowserState.NUM_ENTRIES);
+        });
+    }
 
-                    DefaultInfo info = new DefaultInfo();
+    @VisibleForTesting
+    public static void setDefaultInfoForTests(DefaultInfo info) {
+        DefaultInfoTask.setDefaultInfoForTests(info);
+    }
 
-                    // Query the default handler first.
-                    ResolveInfo defaultRi = PackageManagerUtils.resolveDefaultWebBrowserActivity();
-                    if (defaultRi != null && defaultRi.match != 0) {
-                        info.hasDefault = true;
-                        info.isChromeDefault = isSamePackage(context, defaultRi);
-                        info.isDefaultSystem = isSystemPackage(defaultRi);
-                    }
+    @VisibleForTesting
+    public static void clearDefaultInfoForTests() {
+        DefaultInfoTask.clearDefaultInfoForTests();
+    }
 
-                    // Query all other intent handlers.
-                    Set<String> uniquePackages = new HashSet<>();
-                    List<ResolveInfo> ris = PackageManagerUtils.queryAllWebBrowsersInfo();
-                    if (ris != null) {
-                        for (ResolveInfo ri : ris) {
-                            String packageName = ri.activityInfo.applicationInfo.packageName;
-                            if (!uniquePackages.add(packageName)) continue;
+    private static class DefaultInfoTask extends AsyncTask<DefaultInfo> {
+        private static AtomicReference<DefaultInfo> sTestInfo;
 
-                            if (isSystemPackage(ri)) {
-                                if (isSamePackage(context, ri)) info.isChromeSystem = true;
-                                info.systemCount++;
-                            }
-                        }
-                    }
+        private final ObserverList<Callback<DefaultInfo>> mObservers = new ObserverList<>();
 
-                    info.browserCount = uniquePackages.size();
+        @VisibleForTesting
+        public static void setDefaultInfoForTests(DefaultInfo info) {
+            sTestInfo = new AtomicReference<DefaultInfo>(info);
+        }
 
-                    return info;
+        public static void clearDefaultInfoForTests() {
+            sTestInfo = null;
+        }
+
+        /**
+         *  Queues up {@code callback} to be notified of the result of this {@link AsyncTask}.  If
+         *  the task has not been started, this will start it.  If the task is finished, this will
+         *  send the result.  If the task is running this will queue the callback up until the task
+         *  is done.
+         *
+         * @param callback The {@link Callback} to notify with the right {@link DefaultInfo}.
+         */
+        public void get(Callback<DefaultInfo> callback) {
+            ThreadUtils.checkUiThread();
+
+            if (getStatus() == Status.FINISHED) {
+                DefaultInfo info = null;
+                try {
+                    info = sTestInfo == null ? get() : sTestInfo.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    // Fail silently here since this is not a critical task.
                 }
 
-                @Override
-                protected void onPostExecute(DefaultInfo info) {
-                    if (info == null) return;
+                final DefaultInfo postInfo = info;
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(postInfo));
+            } else {
+                if (getStatus() == Status.PENDING) {
+                    try {
+                        executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } catch (RejectedExecutionException e) {
+                        // Fail silently here since this is not a critical task.
+                        PostTask.postTask(
+                                UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
+                        return;
+                    }
+                }
+                mObservers.addObserver(callback);
+            }
+        }
 
-                    RecordHistogram.recordCount100Histogram(
-                            getSystemBrowserCountUmaName(info), info.systemCount);
-                    RecordHistogram.recordCount100Histogram(
-                            getDefaultBrowserCountUmaName(info), info.browserCount);
-                    RecordHistogram.recordEnumeratedHistogram("Mobile.DefaultBrowser.State",
-                            getDefaultBrowserUmaState(info), MobileDefaultBrowserState.NUM_ENTRIES);
+        @Override
+        protected DefaultInfo doInBackground() {
+            Context context = ContextUtils.getApplicationContext();
+
+            boolean isChromeSystem = false;
+            boolean isChromeDefault = false;
+            boolean isDefaultSystem = false;
+            boolean hasDefault = false;
+            int browserCount = 0;
+            int systemCount = 0;
+
+            // Query the default handler first.
+            ResolveInfo defaultRi = PackageManagerUtils.resolveDefaultWebBrowserActivity();
+            if (defaultRi != null && defaultRi.match != 0) {
+                hasDefault = true;
+                isChromeDefault = isSamePackage(context, defaultRi);
+                isDefaultSystem = isSystemPackage(defaultRi);
+            }
+
+            // Query all other intent handlers.
+            Set<String> uniquePackages = new HashSet<>();
+            List<ResolveInfo> ris = PackageManagerUtils.queryAllWebBrowsersInfo();
+            if (ris != null) {
+                for (ResolveInfo ri : ris) {
+                    String packageName = ri.activityInfo.applicationInfo.packageName;
+                    if (!uniquePackages.add(packageName)) continue;
+
+                    if (isSystemPackage(ri)) {
+                        if (isSamePackage(context, ri)) isChromeSystem = true;
+                        systemCount++;
+                    }
                 }
             }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } catch (RejectedExecutionException ex) {
-            // Fail silently here since this is not a critical task.
+
+            browserCount = uniquePackages.size();
+
+            return new DefaultInfo(isChromeSystem, isChromeDefault, isDefaultSystem, hasDefault,
+                    browserCount, systemCount);
+        }
+
+        @Override
+        protected void onPostExecute(DefaultInfo defaultInfo) {
+            flushCallbacks(sTestInfo == null ? defaultInfo : sTestInfo.get());
+        }
+
+        @Override
+        protected void onCancelled() {
+            flushCallbacks(null);
+        }
+
+        private void flushCallbacks(DefaultInfo info) {
+            for (Callback<DefaultInfo> callback : mObservers) callback.onResult(info);
+            mObservers.clear();
         }
     }
 

@@ -19,6 +19,7 @@
 #include "components/signin/ios/browser/active_state_manager.h"
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
+#include "net/cookies/cookie_access_result.h"
 
 namespace content_settings {
 class CookieSettings;
@@ -33,18 +34,18 @@ class WebStatePolicyDecider;
 class AccountReconcilor;
 class PrefService;
 
-@class AccountConsistencyNavigationDelegate;
-@class WKWebView;
-
 // Handles actions necessary for Account Consistency to work on iOS. This
 // includes setting the Account Consistency cookie (informing Gaia that the
 // Account Consistency is on).
-//
-// This is currently only used when WKWebView is enabled.
 class AccountConsistencyService : public KeyedService,
                                   public signin::IdentityManager::Observer,
                                   public ActiveStateManager::Observer {
  public:
+  // Name of the cookie that is managed by AccountConsistencyService and is used
+  // to inform Google web properties that the browser is connected and that
+  // Google authentication cookies are managed by |AccountReconcilor|).
+  static const char kChromeConnectedCookieName[];
+
   // Name of the preference property that persists the domains that have a
   // CHROME_CONNECTED cookie set by this service.
   static const char kDomainsWithCookiePref[];
@@ -125,16 +126,10 @@ class AccountConsistencyService : public KeyedService,
   // Applies the pending CHROME_CONNECTED cookie requests one by one.
   void ApplyCookieRequests();
 
+  void FinishedSetCookie(net::CookieAccessResult cookie_access_result);
+
   // Called when the current CHROME_CONNECTED cookie request is done.
   void FinishedApplyingCookieRequest(bool success);
-
-  // Returns the cached WKWebView if it exists, or creates one if necessary.
-  // Can return nil if the browser state is not active.
-  WKWebView* GetWKWebView();
-  // Actually creates a WKWebView. Virtual for testing.
-  virtual WKWebView* BuildWKWebView();
-  // Stops any page loading in the WKWebView currently in use and releases it.
-  void ResetWKWebView();
 
   // Returns whether the CHROME_CONNECTED cookie should be added to |domain|.
   // If the cookie is already on |domain|, this function will return false
@@ -156,9 +151,8 @@ class AccountConsistencyService : public KeyedService,
 
   // ActiveStateManager::Observer implementation.
   void OnActive() override;
-  void OnInactive() override;
 
-  // Browser state associated with the service, used to create WKWebViews.
+  // Browser state associated with the service.
   web::BrowserState* browser_state_;
   // Used to update kDomainsWithCookiePref.
   PrefService* prefs_;
@@ -179,12 +173,6 @@ class AccountConsistencyService : public KeyedService,
   // The map between domains where a CHROME_CONNECTED cookie is present and
   // the time when the cookie was last updated.
   std::map<std::string, base::Time> last_cookie_update_map_;
-
-  // Web view used to apply the CHROME_CONNECTED cookie requests.
-  __strong WKWebView* web_view_;
-  // Navigation delegate of |web_view_| that informs the service when a cookie
-  // request has been applied.
-  AccountConsistencyNavigationDelegate* navigation_delegate_;
 
   // Handlers reacting on GAIA responses with the X-Chrome-Manage-Accounts
   // header set.

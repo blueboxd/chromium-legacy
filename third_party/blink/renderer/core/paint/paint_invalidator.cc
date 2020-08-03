@@ -141,45 +141,129 @@ void PaintInvalidator::UpdateDirectlyCompositedContainer(
   DCHECK(context.painting_layer == object.PaintingLayer());
 }
 
-void PaintInvalidator::UpdateForPaintOffsetChange(
-    const LayoutObject& object,
-    FragmentData& fragment_data,
+void PaintInvalidator::UpdateFromTreeBuilderContext(
+    const PaintPropertyTreeBuilderFragmentContext& tree_builder_context,
     PaintInvalidatorContext& context) {
-  const auto* tree_context = context.tree_builder_context_;
-  DCHECK(tree_context);
-  DCHECK_EQ(tree_context->current.paint_offset, fragment_data.PaintOffset());
-
-  // LayoutShiftTracker doesn't track SVG children. Also the visual rect
-  // calculation below works for non-SVG-child objects only.
-  if (!object.IsSVGChild()) {
-    PhysicalRect new_visual_rect = object.LocalVisualRect();
-    new_visual_rect.Move(fragment_data.PaintOffset());
-    // If the layout shift root has changed, LayoutShiftTracker can't use the
-    // current paint property tree to map the old visual rect.
-    if (!tree_context->current.layout_shift_root_changed) {
-      // Adjust old_visual_rect so that LayoutShiftTracker can see the change of
-      // offset caused by change of transforms below the 2d translation root.
-      PhysicalRect old_visual_rect =
-          fragment_data.VisualRectForLayoutShiftTracking();
-      old_visual_rect.Move(
-          -tree_context->current.additional_offset_to_layout_shift_root_delta);
-      object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
-          object,
-          PropertyTreeStateOrAlias(*tree_context->current.transform,
-                                   *tree_context->current.clip,
-                                   *tree_context->current_effect),
-          old_visual_rect, new_visual_rect);
-    }
-    fragment_data.SetVisualRectForLayoutShiftTracking(new_visual_rect);
-  }
+  DCHECK_EQ(tree_builder_context.current.paint_offset,
+            context.fragment_data->PaintOffset());
 
   // For performance, we ignore subpixel movement of composited layers for paint
   // invalidation. This will result in imperfect pixel-snapped painting.
   // See crbug.com/833083 for details.
-  if (tree_context->current
+  if (tree_builder_context.current
           .directly_composited_container_paint_offset_subpixel_delta ==
-      fragment_data.PaintOffset() - context.old_paint_offset)
-    context.old_paint_offset = fragment_data.PaintOffset();
+      tree_builder_context.current.paint_offset -
+          tree_builder_context.old_paint_offset) {
+    context.old_paint_offset = tree_builder_context.current.paint_offset;
+  } else {
+    context.old_paint_offset = tree_builder_context.old_paint_offset;
+  }
+
+  context.transform_ = tree_builder_context.current.transform;
+}
+
+void PaintInvalidator::UpdateLayoutShiftTracking(
+    const LayoutObject& object,
+    const PaintPropertyTreeBuilderFragmentContext& tree_builder_context,
+    PaintInvalidatorContext& context) {
+  if (!object.ShouldCheckGeometryForPaintInvalidation())
+    return;
+
+  auto& layout_shift_tracker = object.GetFrameView()->GetLayoutShiftTracker();
+  if (!layout_shift_tracker.NeedsToTrack(object))
+    return;
+
+  PropertyTreeStateOrAlias property_tree_state(
+      *tree_builder_context.current.transform,
+      *tree_builder_context.current.clip, *tree_builder_context.current_effect);
+
+  if (object.IsText()) {
+    const auto& text = ToLayoutText(object);
+    LogicalOffset new_starting_point = text.LogicalStartingPoint();
+    LogicalOffset old_starting_point = text.PreviousLogicalStartingPoint();
+    if (new_starting_point == old_starting_point)
+      return;
+    text.SetPreviousLogicalStartingPoint(new_starting_point);
+    if (old_starting_point == LayoutText::UninitializedLogicalStartingPoint())
+      return;
+    // If the layout shift root has changed, LayoutShiftTracker can't use the
+    // current paint property tree to map the old rect.
+    if (tree_builder_context.current.layout_shift_root_changed)
+      return;
+
+    layout_shift_tracker.NotifyTextPrePaint(
+        text, property_tree_state, old_starting_point, new_starting_point,
+        // Similar to the adjustment of old_paint_offset for LayoutBox.
+        context.old_paint_offset -
+            tree_builder_context.current
+                .additional_offset_to_layout_shift_root_delta,
+        tree_builder_context.current.paint_offset);
+    return;
+  }
+
+  DCHECK(object.IsBox());
+  const auto& box = ToLayoutBox(object);
+
+  PhysicalRect new_rect = box.HasOverflowClip()
+                              ? box.PhysicalBorderBoxRect()
+                              : box.PhysicalLayoutOverflowRect();
+  // If we didn't save the previous physical layout overflow rect, (e.g. if
+  // there was no layout overflow or we clipped overflow and there was no other
+  // reason for saving the value) this is the previous PhysicalBorderBoxRect(),
+  // so it is mostly the correct previous rect for layout shift tracking.
+  PhysicalRect old_rect = box.PreviousPhysicalLayoutOverflowRect();
+
+  bool should_report_layout_shift = [&]() -> bool {
+    // If the layout shift root has changed, LayoutShiftTracker can't use the
+    // current paint property tree to map the old rect.
+    if (tree_builder_context.current.layout_shift_root_changed)
+      return false;
+    if (new_rect.IsEmpty() || old_rect.IsEmpty())
+      return false;
+    // The parent of out-of-flow-positioned object may not be its container.
+    if (object.IsOutOfFlowPositioned())
+      return true;
+    // We don't report shift for anonymous objects but report for the children.
+    if (object.Parent()->IsAnonymous())
+      return true;
+    // Report if the parent is in a different transform space.
+    const auto* parent_context = context.ParentContext();
+    if (!parent_context || !parent_context->transform_ ||
+        parent_context->transform_ != tree_builder_context.current.transform)
+      return true;
+    // Report if this object has local movement (i.e. delta of paint offset is
+    // different from that of the parent).
+    return parent_context->fragment_data->PaintOffset() -
+               parent_context->old_paint_offset !=
+           tree_builder_context.current.paint_offset - context.old_paint_offset;
+  }();
+
+  if (!should_report_layout_shift && !box.ChildrenInline())
+    return;
+
+  new_rect.Move(tree_builder_context.current.paint_offset);
+  old_rect.Move(context.old_paint_offset);
+  // Adjust old_visual_rect so that LayoutShiftTracker can see the change of
+  // offset caused by change of transforms below the 2d translation root.
+  old_rect.Move(-tree_builder_context.current
+                     .additional_offset_to_layout_shift_root_delta);
+
+  if (box.ChildrenInline()) {
+    // For layout shift tracking of contained LayoutTexts.
+    context.containing_block_scope_.emplace(
+        PhysicalSizeToBeNoop(box.PreviousSize()),
+        PhysicalSizeToBeNoop(box.Size()), old_rect, new_rect);
+    if (!should_report_layout_shift)
+      return;
+  }
+
+  // Adjust old_paint_offset similarly.
+  PhysicalOffset old_paint_offset =
+      context.old_paint_offset -
+      tree_builder_context.current.additional_offset_to_layout_shift_root_delta;
+  layout_shift_tracker.NotifyBoxPrePaint(
+      box, property_tree_state, old_rect, new_rect, old_paint_offset,
+      tree_builder_context.current.paint_offset);
 }
 
 bool PaintInvalidator::InvalidatePaint(
@@ -222,12 +306,11 @@ bool PaintInvalidator::InvalidatePaint(
 
     if (tree_builder_context) {
       DCHECK_EQ(tree_builder_context->fragments.size(), 1u);
-      context.tree_builder_context_ = &tree_builder_context->fragments[0];
-      context.old_paint_offset =
-          context.tree_builder_context_->old_paint_offset;
-      UpdateForPaintOffsetChange(object, fragment_data, context);
+      const auto& fragment_tree_builder_context =
+          tree_builder_context->fragments[0];
+      UpdateFromTreeBuilderContext(fragment_tree_builder_context, context);
+      UpdateLayoutShiftTracking(object, fragment_tree_builder_context, context);
     } else {
-      context.tree_builder_context_ = nullptr;
       context.old_paint_offset = fragment_data.PaintOffset();
     }
 
@@ -244,13 +327,12 @@ bool PaintInvalidator::InvalidatePaint(
              tree_builder_index < tree_builder_context->fragments.size());
 
       if (tree_builder_context) {
-        context.tree_builder_context_ =
-            &tree_builder_context->fragments[tree_builder_index];
-        context.old_paint_offset =
-            context.tree_builder_context_->old_paint_offset;
-        UpdateForPaintOffsetChange(object, *fragment_data, context);
+        const auto& fragment_tree_builder_context =
+            tree_builder_context->fragments[tree_builder_index];
+        UpdateFromTreeBuilderContext(fragment_tree_builder_context, context);
+        UpdateLayoutShiftTracking(object, fragment_tree_builder_context,
+                                  context);
       } else {
-        context.tree_builder_context_ = nullptr;
         context.old_paint_offset = fragment_data->PaintOffset();
       }
 

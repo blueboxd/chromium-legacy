@@ -203,8 +203,9 @@ static const unsigned char kFreedByte = 0xCD;
 enum PartitionAllocFlags {
   PartitionAllocReturnNull = 1 << 0,
   PartitionAllocZeroFill = 1 << 1,
+  PartitionAllocNoHooks = 1 << 2,  // Internal only.
 
-  PartitionAllocLastFlag = PartitionAllocZeroFill
+  PartitionAllocLastFlag = PartitionAllocNoHooks
 };
 
 }  // namespace base

@@ -1299,7 +1299,9 @@ public class PaymentRequestImpl
             mPaymentUIsManager.getShippingAddressesSection().setErrorMessage(details.error);
         }
 
-        mPaymentUIsManager.enableUserInterfaceAfterPaymentRequestUpdateEvent();
+        boolean providedInformationToPaymentRequestUI =
+                mPaymentUIsManager.enableAndUpdatePaymentRequestUIWithPaymentInfo();
+        if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
     }
 
     private void initializeWithUpdatedDetails(PaymentDetails details) {
@@ -1343,7 +1345,9 @@ public class PaymentRequestImpl
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
 
         if (mIsFinishedQueryingPaymentApps && !mShouldSkipShowingPaymentRequestUi) {
-            mPaymentUIsManager.enableUserInterfaceAfterPaymentRequestUpdateEvent();
+            boolean providedInformationToPaymentRequestUI =
+                    mPaymentUIsManager.enableAndUpdatePaymentRequestUIWithPaymentInfo();
+            if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
         }
     }
 
@@ -1367,7 +1371,9 @@ public class PaymentRequestImpl
             return;
         }
 
-        mPaymentUIsManager.enableUserInterfaceAfterPaymentRequestUpdateEvent();
+        boolean providedInformationToPaymentRequestUI =
+                mPaymentUIsManager.enableAndUpdatePaymentRequestUIWithPaymentInfo();
+        if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
     }
 
     /**
@@ -1457,37 +1463,24 @@ public class PaymentRequestImpl
         if (mWaitForUpdatedDetails) return;
 
         mHandler.post(() -> {
-            if (mPaymentUIsManager.getPaymentRequestUI() != null) providePaymentInformation();
+            if (mPaymentUIsManager.getPaymentRequestUI() != null) {
+                mPaymentUIsManager.providePaymentInformationToPaymentRequestUI();
+                recordShowEventAndTransactionAmount();
+            }
         });
     }
 
-    // Implement PaymentUIsManager.Delegate:
-    @Override
-    public void providePaymentInformation() {
-        // Do not display service worker payment apps summary in single line so as to display its
-        // origin completely.
-        mPaymentUIsManager.getPaymentMethodsSection()
-                .setDisplaySelectedItemSummaryInSingleLineInNormalMode(
-                        mPaymentUIsManager.getSelectedPaymentAppType()
-                        != PaymentAppType.SERVICE_WORKER_APP);
-        mPaymentUIsManager.getPaymentInformationCallback().onResult(new PaymentInformation(
-                mPaymentUIsManager.getUiShoppingCart(),
-                mPaymentUIsManager.getShippingAddressesSection(),
-                mPaymentUIsManager.getUiShippingOptions(), mPaymentUIsManager.getContactSection(),
-                mPaymentUIsManager.getPaymentMethodsSection()));
-        mPaymentUIsManager.setPaymentInformationCallback(null);
-
-        if (!mDidRecordShowEvent) {
-            mDidRecordShowEvent = true;
-            mJourneyLogger.setEventOccurred(Event.SHOWN);
-            // Record the triggered transaction amount only when the total amount in details is
-            // finalized (i.e. mWaitForUpdatedDetails == false). Otherwise it will get recorded when
-            // the updated details become available.
-            if (!mWaitForUpdatedDetails) {
-                assert mRawTotal != null;
-                mJourneyLogger.recordTransactionAmount(
-                        mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
-            }
+    private void recordShowEventAndTransactionAmount() {
+        if (mDidRecordShowEvent) return;
+        mDidRecordShowEvent = true;
+        mJourneyLogger.setEventOccurred(Event.SHOWN);
+        // Record the triggered transaction amount only when the total amount in details is
+        // finalized (i.e. mWaitForUpdatedDetails == false). Otherwise it will get recorded when
+        // the updated details become available.
+        if (!mWaitForUpdatedDetails) {
+            assert mRawTotal != null;
+            mJourneyLogger.recordTransactionAmount(
+                    mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
         }
     }
 
@@ -1676,7 +1669,8 @@ public class PaymentRequestImpl
                         // information when cancelled).
                         mPaymentUIsManager.getShippingAddressesSection().setSelectedItemIndex(
                                 SectionInformation.NO_SELECTION);
-                        providePaymentInformation();
+                        mPaymentUIsManager.providePaymentInformationToPaymentRequestUI();
+                        recordShowEventAndTransactionAmount();
                     } else {
                         if (toEdit == null) {
                             // Address is complete and user was in the "Add flow": add an item to
@@ -1699,7 +1693,8 @@ public class PaymentRequestImpl
                         startShippingAddressChangeNormalization(editedAddress);
                     }
                 } else {
-                    providePaymentInformation();
+                    mPaymentUIsManager.providePaymentInformationToPaymentRequestUI();
+                    recordShowEventAndTransactionAmount();
                 }
 
                 if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());

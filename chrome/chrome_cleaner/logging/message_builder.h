@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
 namespace chrome_cleaner {
@@ -113,7 +112,7 @@ class MessageBuilder {
 
   MessageBuilder::ScopedIndent Indent();
 
-  base::string16 content() const { return content_; }
+  std::wstring content() const { return content_; }
 
  protected:
   // Updates the current indentation level and appends a L'\n' if it's not the
@@ -131,16 +130,16 @@ class MessageBuilder {
     explicit MessageItem(base::StringPiece value);
     explicit MessageItem(int value);
 
-    const base::string16& value() const { return value_; }
+    const std::wstring& value() const { return value_; }
 
    private:
-    base::string16 value_;
+    std::wstring value_;
   };
 
   void AddInternal(std::initializer_list<MessageItem> values);
   void IndentIfNewLine();
 
-  base::string16 content_;
+  std::wstring content_;
   int indentation_level_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBuilder);

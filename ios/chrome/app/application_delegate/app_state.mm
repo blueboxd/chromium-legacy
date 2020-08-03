@@ -564,6 +564,14 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
 }
 
+- (void)setLastTappedWindow:(UIWindow*)window {
+  if (_lastTappedWindow == window) {
+    return;
+  }
+  _lastTappedWindow = window;
+  [self.observers appState:self lastTappedWindowChanged:window];
+}
+
 #pragma mark - SafeModeCoordinatorDelegate Implementation
 
 - (void)coordinatorDidExitSafeMode:(nonnull SafeModeCoordinator*)coordinator {

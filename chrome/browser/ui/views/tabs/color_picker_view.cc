@@ -36,6 +36,10 @@ namespace {
 class ColorPickerHighlightPathGenerator : public views::HighlightPathGenerator {
  public:
   ColorPickerHighlightPathGenerator() = default;
+  ColorPickerHighlightPathGenerator(const ColorPickerHighlightPathGenerator&) =
+      delete;
+  ColorPickerHighlightPathGenerator& operator=(
+      const ColorPickerHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
@@ -45,9 +49,6 @@ class ColorPickerHighlightPathGenerator : public views::HighlightPathGenerator {
     const gfx::PointF center = bounds.CenterPoint();
     return SkPath().addCircle(center.x(), center.y(), bounds.width() / 2.0f);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ColorPickerHighlightPathGenerator);
 };
 
 }  // namespace

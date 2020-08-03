@@ -28,6 +28,8 @@ class TabGroupHeader : public TabSlotView,
                        public views::ViewTargeterDelegate {
  public:
   TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
+  TabGroupHeader(const TabGroupHeader&) = delete;
+  TabGroupHeader& operator=(const TabGroupHeader&) = delete;
   ~TabGroupHeader() override;
 
   // TabSlotView:
@@ -100,8 +102,6 @@ class TabGroupHeader : public TabSlotView,
   };
 
   EditorBubbleTracker editor_bubble_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabGroupHeader);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_

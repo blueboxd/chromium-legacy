@@ -33,6 +33,7 @@ source_set("browser_test_support") {
     "../:telemetry_extension_ui",
     "//chrome/test:test_support_ui",
     "//chromeos/components/web_applications/test:test_support",
+    "//chromeos/dbus/cros_healthd:cros_healthd",
   ]
 
   data = [

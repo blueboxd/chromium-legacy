@@ -49,7 +49,7 @@ namespace {
 // Forwards the pending receiver to the RenderProcessHost and binds it on the
 // UI thread.
 void BindReceiverOnUIThread(
-    mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>
+    mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
         pending_receiver,
     RenderProcessHostProxy proxy) {
   auto* render_process_host = proxy.Get();
@@ -157,12 +157,11 @@ class NodeAttachedProcessData
   void StartMeasurement();
   void EnsureRemote();
   void OnPerFrameV8MemoryUsageData(
-      performance_manager::mojom::PerProcessV8MemoryUsageDataPtr result);
+      blink::mojom::PerProcessV8MemoryUsageDataPtr result);
 
   const ProcessNode* const process_node_;
 
-  mojo::Remote<performance_manager::mojom::V8PerFrameMemoryReporter>
-      resource_usage_reporter_;
+  mojo::Remote<blink::mojom::V8PerFrameMemoryReporter> resource_usage_reporter_;
 
   enum class State {
     kWaiting,    // Waiting to take a measurement.
@@ -243,7 +242,7 @@ void NodeAttachedProcessData::StartMeasurement() {
 }
 
 void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
-    performance_manager::mojom::PerProcessV8MemoryUsageDataPtr result) {
+    blink::mojom::PerProcessV8MemoryUsageDataPtr result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kMeasuring);
 
@@ -254,14 +253,15 @@ void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
   uint64_t unassociated_v8_bytes_used = result->unassociated_bytes_used;
 
   // Create a mapping from token to per-frame usage for the merge below.
-  std::vector<std::pair<FrameToken, mojom::PerFrameV8MemoryUsageDataPtr>> tmp;
+  std::vector<std::pair<FrameToken, blink::mojom::PerFrameV8MemoryUsageDataPtr>>
+      tmp;
   for (auto& entry : result->associated_memory) {
     tmp.emplace_back(
         std::make_pair(FrameToken(entry->frame_token), std::move(entry)));
   }
   DCHECK_EQ(tmp.size(), result->associated_memory.size());
 
-  base::flat_map<FrameToken, mojom::PerFrameV8MemoryUsageDataPtr>
+  base::flat_map<FrameToken, blink::mojom::PerFrameV8MemoryUsageDataPtr>
       associated_memory(std::move(tmp));
   // Validate that the frame tokens were all unique. If there are duplicates,
   // the map will arbirarily drop all but one record per unique token.
@@ -315,7 +315,7 @@ void NodeAttachedProcessData::EnsureRemote() {
     return;
 
   // This interface is implemented in //content/renderer/performance_manager.
-  mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>
+  mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
       pending_receiver = resource_usage_reporter_.BindNewPipeAndPassReceiver();
 
   RenderProcessHostProxy proxy = process_node_->GetRenderProcessHostProxy();

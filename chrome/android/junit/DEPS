@@ -15,6 +15,7 @@ include_rules = [
   "+components/browser_ui/notifications/android",
   "+components/browser_ui/widget/android",
   "+components/dom_distiller/core",
+  "+components/feature_engagement/public/android",
   "+components/offline_items_collection/core/android/java/src",
   "+components/omnibox/browser/android/java/src/org/chromium/components/omnibox",
   "+components/payments/content/android/java/src/org/chromium/components/payments",

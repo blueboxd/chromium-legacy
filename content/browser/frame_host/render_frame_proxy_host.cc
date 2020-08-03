@@ -172,9 +172,7 @@ void RenderFrameProxyHost::SetChildRWHView(
 }
 
 RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
-  return frame_tree_node_->frame_tree()
-      ->GetRenderViewHost(site_instance_.get())
-      .get();
+  return render_view_host_.get();
 }
 
 RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {

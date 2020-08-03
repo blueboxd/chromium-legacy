@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
@@ -109,19 +108,19 @@ class RegistryLogger {
  protected:
   // Return the full path of the key where the cleaner / reporter info is
   // stored. Exposed for tests.
-  base::string16 GetLoggingKeyPath(Mode mode) const;
+  std::wstring GetLoggingKeyPath(Mode mode) const;
 
   // Return the full path of the key where the PUP scan times are
   // stored. Exposed for tests.
-  base::string16 GetScanTimesKeyPath(Mode mode) const;
+  std::wstring GetScanTimesKeyPath(Mode mode) const;
 
   // Return the registry key suffix. Exposed for tests.
-  base::string16 GetKeySuffix() const;
+  std::wstring GetKeySuffix() const;
 
   // Read values from the given registry key. Exposed for tests.
   static bool ReadValues(const base::win::RegKey& logging_key,
                          const wchar_t* name,
-                         std::vector<base::string16>* values,
+                         std::vector<std::wstring>* values,
                          RegistryError* registry_error);
 
   // Exposed for testing.
@@ -129,14 +128,14 @@ class RegistryLogger {
   static const size_t kMaxUploadResultLength;
 
  private:
-  bool ReadPendingLogFiles(std::vector<base::string16>* log_files,
+  bool ReadPendingLogFiles(std::vector<std::wstring>* log_files,
                            RegistryError* registry_error);
 
   THREAD_CHECKER(thread_checker_);
   base::win::RegKey logging_key_;
   base::win::RegKey scan_times_key_;
   Mode mode_;
-  base::string16 suffix_;
+  std::wstring suffix_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryLogger);
 };

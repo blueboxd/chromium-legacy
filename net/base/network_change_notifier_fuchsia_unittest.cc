@@ -102,26 +102,27 @@ std::vector<fuchsia::netstack::NetInterface> CloneNetInterfaces(
 // Partial fake implementation of a Netstack.
 class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
  public:
-  explicit FakeNetstack(
-      fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request)
-      : binding_(this) {
-    CHECK_EQ(ZX_OK, binding_.Bind(std::move(netstack_request)));
-  }
+  explicit FakeNetstack() : binding_(this) {}
   ~FakeNetstack() override = default;
+
+  void Bind(
+      fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request) {
+    CHECK_EQ(ZX_OK, binding_.Bind(std::move(netstack_request)));
+    binding_.events().OnInterfacesChanged(CloneNetInterfaces(interfaces_));
+  }
 
   // Sets the interfaces reported by the fake Netstack and sends an
   // OnInterfacesChanged() event to the client.
   void SetInterfaces(std::vector<fuchsia::netstack::NetInterface> interfaces) {
     interfaces_ = std::move(interfaces);
-    binding_.events().OnInterfacesChanged(CloneNetInterfaces(interfaces_));
+    if (binding_.is_bound()) {
+      binding_.events().OnInterfacesChanged(CloneNetInterfaces(interfaces_));
+    }
   }
 
  private:
-  void GetInterfaces(GetInterfacesCallback callback) override {
-    callback(CloneNetInterfaces(interfaces_));
-  }
-
   void GetRouteTable(GetRouteTableCallback callback) override {
+    CHECK(binding_.is_bound());
     std::vector<fuchsia::netstack::RouteTableEntry> table(2);
 
     table[0].nicid = kDefaultInterfaceId;
@@ -149,15 +150,17 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
 
 class FakeNetstackAsync {
  public:
-  explicit FakeNetstackAsync(
-      fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request)
-      : thread_("Netstack Thread") {
+  explicit FakeNetstackAsync() : thread_("Netstack Thread") {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
     CHECK(thread_.StartWithOptions(options));
-    netstack_ = base::SequenceBound<FakeNetstack>(thread_.task_runner(),
-                                                  std::move(netstack_request));
+    netstack_ = base::SequenceBound<FakeNetstack>(thread_.task_runner());
   }
   ~FakeNetstackAsync() = default;
+
+  void Bind(
+      fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request) {
+    netstack_.Post(FROM_HERE, &FakeNetstack::Bind, std::move(netstack_request));
+  }
 
   // Asynchronously update the state of the netstack.
   void SetInterfaces(
@@ -291,7 +294,7 @@ class FakeIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
 
 class NetworkChangeNotifierFuchsiaTest : public testing::Test {
  public:
-  NetworkChangeNotifierFuchsiaTest() : netstack_(netstack_ptr_.NewRequest()) {}
+  NetworkChangeNotifierFuchsiaTest() {}
   ~NetworkChangeNotifierFuchsiaTest() override = default;
 
   // Creates a NetworkChangeNotifier and spins the MessageLoop to allow it to
@@ -303,11 +306,14 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
     // notifier queries it.
     netstack_.FlushNetstackThread();
 
+    CHECK(!netstack_handle_);
+    netstack_.Bind(netstack_handle_.NewRequest());
+
     // Use a noop DNS notifier.
     dns_config_notifier_ = std::make_unique<SystemDnsConfigChangeNotifier>(
         nullptr /* task_runner */, nullptr /* dns_config_service */);
     notifier_.reset(new NetworkChangeNotifierFuchsia(
-        std::move(netstack_ptr_), required_features,
+        std::move(netstack_handle_), required_features,
         dns_config_notifier_.get()));
 
     type_observer_ = std::make_unique<FakeConnectionTypeObserver>();
@@ -324,7 +330,7 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
-  fuchsia::netstack::NetstackPtr netstack_ptr_;
+  fidl::InterfaceHandle<fuchsia::netstack::Netstack> netstack_handle_;
   FakeNetstackAsync netstack_;
 
   // Allows us to allocate our own NetworkChangeNotifier for unit testing.

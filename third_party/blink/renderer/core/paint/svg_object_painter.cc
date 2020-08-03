@@ -15,7 +15,8 @@ void SVGObjectPainter::PaintResourceSubtree(GraphicsContext& context) {
   DCHECK(!layout_object_.NeedsLayout());
 
   PaintInfo info(context, LayoutRect::InfiniteIntRect(),
-                 PaintPhase::kForeground, kGlobalPaintNormalPhase,
+                 PaintPhase::kForeground,
+                 kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers,
                  kPaintLayerPaintingRenderingResourceSubtree,
                  &layout_object_.PaintingLayer()->GetLayoutObject());
   layout_object_.Paint(info);

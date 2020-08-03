@@ -34,9 +34,8 @@ public final class TestWebLayer {
     }
 
     private TestWebLayer(@NonNull Context appContext) {
-        ClassLoader remoteClassLoader;
         try {
-            remoteClassLoader = WebLayer.getOrCreateRemoteContext(appContext).getClassLoader();
+            ClassLoader remoteClassLoader = WebLayer.getOrCreateRemoteClassLoader(appContext);
             Class TestWebLayerClass = remoteClassLoader.loadClass(
                     "org.chromium.weblayer_private.test.TestWebLayerImpl");
             mITestWebLayer = ITestWebLayer.Stub.asInterface(
@@ -117,5 +116,9 @@ public final class TestWebLayer {
 
     public String getDisplayedUrl(View urlBarView) throws RemoteException {
         return mITestWebLayer.getDisplayedUrl(ObjectWrapper.wrap(urlBarView));
+    }
+
+    public static void disableWebViewCompatibilityMode() {
+        WebLayer.disableWebViewCompatibilityMode();
     }
 }

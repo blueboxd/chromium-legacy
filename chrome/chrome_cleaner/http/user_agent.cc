@@ -29,8 +29,8 @@ const wchar_t* ArchitectureToString(UserAgent::Architecture architecture) {
 
 }  // namespace
 
-UserAgent::UserAgent(const base::string16& product_name,
-                     const base::string16& product_version)
+UserAgent::UserAgent(const std::wstring& product_name,
+                     const std::wstring& product_version)
     : product_name_(product_name),
       product_version_(product_version),
       os_major_version_(0),
@@ -39,7 +39,7 @@ UserAgent::UserAgent(const base::string16& product_name,
 
 UserAgent::~UserAgent() {}
 
-base::string16 UserAgent::AsString() {
+std::wstring UserAgent::AsString() {
   return product_name_ + L"/" + product_version_ + L" (Windows NT " +
          base::NumberToWString(os_major_version_) + L"." +
          base::NumberToWString(os_minor_version_) +

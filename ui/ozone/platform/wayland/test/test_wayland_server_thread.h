@@ -5,9 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_WAYLAND_SERVER_THREAD_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_WAYLAND_SERVER_THREAD_H_
 
+#include <wayland-server-core.h>
+
 #include <memory>
 #include <vector>
-#include <wayland-server-core.h>
 
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/synchronization/waitable_event.h"
@@ -37,6 +38,8 @@ struct DisplayDeleter {
 class TestWaylandServerThread : public base::Thread,
                                 base::MessagePumpLibevent::FdWatcher {
  public:
+  class OutputDelegate;
+
   TestWaylandServerThread();
   ~TestWaylandServerThread() override;
 
@@ -84,7 +87,12 @@ class TestWaylandServerThread : public base::Thread,
 
   wl_display* display() const { return display_.get(); }
 
+  void set_output_delegate(OutputDelegate* delegate) {
+    output_delegate_ = delegate;
+  }
+
  private:
+  void SetupOutputs();
   void DoPause();
 
   std::unique_ptr<base::MessagePump> CreateMessagePump();
@@ -116,7 +124,20 @@ class TestWaylandServerThread : public base::Thread,
 
   base::MessagePumpLibevent::FdWatchController controller_;
 
+  OutputDelegate* output_delegate_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(TestWaylandServerThread);
+};
+
+class TestWaylandServerThread::OutputDelegate {
+ public:
+  // Tests may implement this such that it emulates different display/output
+  // test scenarios. For example, multi-screen, lazy configuration, arbitrary
+  // ordering of the outputs metadata events, etc.
+  virtual void SetupOutputs(TestOutput* primary_output) = 0;
+
+ protected:
+  virtual ~OutputDelegate() = default;
 };
 
 }  // namespace wl

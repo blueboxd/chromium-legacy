@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//chrome/chrome_cleaner/mojom/footprints.mojom"
-public_headers = [
-  "//base/files/file_path.h",
-  "//base/strings/string16.h",
-]
+public_headers = [ "//base/files/file_path.h" ]
 traits_headers =
     [ "//chrome/chrome_cleaner/mojom/typemaps/footprints_mojom_traits.h" ]
 sources =

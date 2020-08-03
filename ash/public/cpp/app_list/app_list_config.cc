@@ -325,7 +325,10 @@ AppListConfig::AppListConfig(AppListConfigType type)
       all_apps_opacity_start_px_(8.0f),
       all_apps_opacity_end_px_(144.0f),
       search_result_title_font_style_(ui::ResourceBundle::BaseFont),
-      search_tile_height_(92) {}
+      search_tile_height_(92),
+      cardified_background_color_(SkColorSetA(SK_ColorWHITE, 26 /* 10% */)),
+      cardified_background_color_active_(
+          SkColorSetA(SK_ColorWHITE, 41 /* 16% */)) {}
 
 AppListConfig::AppListConfig(const AppListConfig& base_config,
                              float scale_x,
@@ -469,7 +472,10 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       all_apps_opacity_end_px_(base_config.all_apps_opacity_end_px_),
       search_result_title_font_style_(
           base_config.search_result_title_font_style_),
-      search_tile_height_(base_config.search_tile_height_) {}
+      search_tile_height_(base_config.search_tile_height_),
+      cardified_background_color_(base_config.cardified_background_color_),
+      cardified_background_color_active_(
+          base_config.cardified_background_color_active_) {}
 
 AppListConfig::~AppListConfig() = default;
 
@@ -521,6 +527,11 @@ int AppListConfig::GetIdealHorizontalMargin(
 int AppListConfig::GetIdealVerticalMargin(
     const gfx::Rect& available_bounds) const {
   return available_bounds.height() / kAppsGridMarginRatio;
+}
+
+SkColor AppListConfig::GetCardifiedBackgroundColor(bool is_active) const {
+  return is_active ? cardified_background_color_active_
+                   : cardified_background_color_;
 }
 
 }  // namespace ash

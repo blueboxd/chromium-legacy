@@ -39,6 +39,10 @@ enum SharedImageUsage : uint32_t {
   SHARED_IMAGE_USAGE_VIDEO_DECODE = 1 << 10,
   // Image will be used as a WebGPU swapbuffer
   SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE = 1 << 11,
+  // Image will be used by VideoToolbox on macOS. If this is set, then
+  // GLImage::DisableInUseByWindowServer should be called on any GLImages that
+  // use this SharedImage.
+  SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX = 1 << 12,
 };
 
 }  // namespace gpu

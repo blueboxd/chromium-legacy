@@ -390,7 +390,7 @@ public class TabsTest {
     }
 
     private void scrollDown() {
-        fling(0.f, 0.5f, 0.f, 0.75f, 100);
+        fling(0.f, 0.9f, 0.f, 0.1f, 100);
     }
 
     /**

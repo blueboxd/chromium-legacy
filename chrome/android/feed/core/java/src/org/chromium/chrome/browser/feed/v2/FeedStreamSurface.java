@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.ContextThemeWrapper;
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -85,7 +86,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final long mNativeFeedStreamSurface;
     private final FeedListContentManager mContentManager;
     private final SurfaceScope mSurfaceScope;
-    private final RecyclerView mRootView;
+    @VisibleForTesting
+    RecyclerView mRootView;
     private final HybridListRenderer mHybridListRenderer;
     private final SnackbarManager mSnackbarManager;
     private final Activity mActivity;
@@ -97,6 +99,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     private int mHeaderCount;
     private BottomSheetContent mBottomSheetContent;
+    // If the bottom sheet was opened in response to an action on a slice, this is the slice ID.
+    private String mBottomSheetOriginatingSliceId;
     private final int mLoadMoreTriggerLookahead;
     private boolean mIsLoadingMoreContent;
 
@@ -512,8 +516,57 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         return new FeedListContentManager.NativeViewContent(sliceId, R.layout.no_content_v2);
     }
 
+    /**
+     * Returns the immediate child of parentView which contains descendentView.
+     * If descendentView is not in parentView's view heirarchy, this returns null.
+     * Note that the returned view may be descendentView, or descendentView.getParent(),
+     * or descendentView.getParent().getParent(), etc...
+     */
+    View findChildViewContainingDescendent(View parentView, View descendentView) {
+        if (parentView == null || descendentView == null) return null;
+        // Find the direct child of parentView which owns view.
+        if (parentView == descendentView.getParent()) {
+            return descendentView;
+        } else {
+            // One of the view's ancestors might be the child.
+            ViewParent p = descendentView.getParent();
+            while (true) {
+                if (p == null) {
+                    return null;
+                }
+                if (p.getParent() == parentView) {
+                    if (p instanceof View) return (View) p;
+                    return null;
+                }
+                p = p.getParent();
+            }
+        }
+    }
+
+    @VisibleForTesting
+    String getSliceIdFromView(View view) {
+        View childOfRoot = findChildViewContainingDescendent(mRootView, view);
+
+        if (childOfRoot != null) {
+            // View is a child of the recycler view, find slice using the index.
+            int position = mRootView.getChildAdapterPosition(childOfRoot);
+            if (position >= 0 && position < mContentManager.getItemCount()) {
+                return mContentManager.getContent(position).getKey();
+            }
+        } else if (mBottomSheetContent != null
+                && findChildViewContainingDescendent(mBottomSheetContent.getContentView(), view)
+                        != null) {
+            // View is a child of the bottom sheet, return slice associated with the bottom sheet.
+            return mBottomSheetOriginatingSliceId;
+        }
+        return "";
+    }
+
     @Override
-    public void navigateTab(String url) {
+    public void navigateTab(String url, View actionSourceView) {
+        FeedStreamSurfaceJni.get().reportOpenAction(mNativeFeedStreamSurface,
+                FeedStreamSurface.this, getSliceIdFromView(actionSourceView));
+
         openUrl(url, WindowOpenDisposition.CURRENT_TAB);
 
         // Attempts to load more content if needed.
@@ -521,7 +574,10 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     @Override
-    public void navigateNewTab(String url) {
+    public void navigateNewTab(String url, View actionSourceView) {
+        FeedStreamSurfaceJni.get().reportOpenInNewTabAction(mNativeFeedStreamSurface,
+                FeedStreamSurface.this, getSliceIdFromView(actionSourceView));
+
         openUrl(url, WindowOpenDisposition.NEW_FOREGROUND_TAB);
 
         // Attempts to load more content if needed.
@@ -530,6 +586,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void navigateIncognitoTab(String url) {
+        FeedStreamSurfaceJni.get().reportOpenInNewIncognitoTabAction(
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
+
         openUrl(url, WindowOpenDisposition.OFF_THE_RECORD);
 
         // Attempts to load more content if needed.
@@ -538,17 +597,23 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void downloadLink(String url) {
+        FeedStreamSurfaceJni.get().reportDownloadAction(
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
         RequestCoordinatorBridge.getForProfile(Profile.getLastUsedRegularProfile())
                 .savePageLater(
                         url, OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, true /* user requested*/);
     }
 
     @Override
-    public void showBottomSheet(View view) {
+    public void showBottomSheet(View view, View actionSourceView) {
         dismissBottomSheet();
+
+        FeedStreamSurfaceJni.get().reportContextMenuOpened(
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
 
         // Make a sheetContent with the view.
         mBottomSheetContent = new CardMenuBottomSheetContent(view);
+        mBottomSheetOriginatingSliceId = getSliceIdFromView(actionSourceView);
         mBottomSheetController.requestShowContent(mBottomSheetContent, true);
     }
 
@@ -558,6 +623,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             mBottomSheetController.hideContent(mBottomSheetContent, true);
         }
         mBottomSheetContent = null;
+        mBottomSheetOriginatingSliceId = null;
+    }
+
+    @Override
+    public void recordActionManageInterests() {
+        FeedStreamSurfaceJni.get().reportManageInterestsAction(
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
     }
 
     @Override
@@ -573,6 +645,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void sendFeedback(Map<String, String> productSpecificDataMap) {
+        FeedStreamSurfaceJni.get().reportSendFeedbackAction(
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
+
         Profile profile = Profile.getLastUsedRegularProfile();
         if (profile == null) {
             return;
@@ -721,36 +796,28 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     interface Natives {
         long init(FeedStreamSurface caller);
         int[] getExperimentIds();
-        // TODO(jianli): Call this function at the appropriate time.
         void reportSliceViewed(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);
         void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportPageLoaded(long nativeFeedStreamSurface, FeedStreamSurface caller, String url,
                 boolean inNewTab);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportOpenAction(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportOpenInNewTabAction(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportOpenInNewIncognitoTabAction(
                 long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportSendFeedbackAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
-        void reportLearnMoreAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportDownloadAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
-        void reportRemoveAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
-        void reportNotInterestedInAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
-        void reportManageInterestsAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportContextMenuOpened(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        void reportManageInterestsAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+
+        // TODO(crbug.com/1111101): These actions aren't visible to the client, so these functions
+        // are never called.
+        void reportLearnMoreAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        void reportRemoveAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        void reportNotInterestedInAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+
         // TODO(jianli): Call this function at the appropriate time.
         void reportStreamScrolled(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, int distanceDp);

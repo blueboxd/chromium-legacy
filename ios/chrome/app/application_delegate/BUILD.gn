@@ -134,10 +134,16 @@ source_set("metric_kit_subscriber") {
   ]
 }
 
+source_set("app_state_header") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "app_state.h" ]
+  public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
+}
+
 source_set("application_delegate_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [ ":app_state_header" ]
   sources = [
-    "app_state.h",
     "app_state.mm",
     "browser_launcher.h",
     "metrics_mediator.h",
@@ -204,7 +210,6 @@ source_set("application_delegate_internal") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
 
   frameworks = [
     "CoreSpotlight.framework",

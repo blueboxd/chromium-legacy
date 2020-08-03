@@ -586,8 +586,6 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
 LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
     const ComputedStyle& style,
     LogicalSize percent_resolution_sizes) {
-  if (!RuntimeEnabledFeatures::FlexGapsEnabled())
-    return LayoutUnit();
   DCHECK_GE(percent_resolution_sizes.inline_size, 0);
   if (IsColumnFlow(style)) {
     if (const base::Optional<Length>& row_gap = style.RowGap()) {
@@ -607,8 +605,6 @@ LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
 LayoutUnit FlexLayoutAlgorithm::GapBetweenLines(
     const ComputedStyle& style,
     LogicalSize percent_resolution_sizes) {
-  if (!RuntimeEnabledFeatures::FlexGapsEnabled())
-    return LayoutUnit();
   DCHECK_GE(percent_resolution_sizes.inline_size, 0);
   if (!IsColumnFlow(style)) {
     if (const base::Optional<Length>& row_gap = style.RowGap()) {

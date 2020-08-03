@@ -40,6 +40,7 @@ class TraceWrapperV8Reference {
   }
 
   bool IsEmpty() const { return handle_.IsEmpty(); }
+  bool IsEmptySafe() const { return handle_.IsEmptyThreadSafe(); }
   void Clear() { handle_.Reset(); }
   ALWAYS_INLINE const v8::TracedReference<T>& Get() const { return handle_; }
   ALWAYS_INLINE v8::TracedReference<T>& Get() { return handle_; }
@@ -137,6 +138,14 @@ struct VectorTraits<blink::TraceWrapperV8Reference<T>>
   static const bool kCanClearUnusedSlotsWithMemset = true;
   static const bool kCanCopyWithMemcpy = false;
   static const bool kCanMoveWithMemcpy = false;
+  static constexpr bool kCanTraceConcurrently = true;
+};
+
+template <typename T>
+struct HashTraits<blink::TraceWrapperV8Reference<T>>
+    : GenericHashTraits<blink::TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(HashTraits);
+  static constexpr bool kCanTraceConcurrently = true;
 };
 
 }  // namespace WTF

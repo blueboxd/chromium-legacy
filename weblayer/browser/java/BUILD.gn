@@ -256,6 +256,13 @@ android_library("test_java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
+generate_jni_registration("test_weblayer_jni_registration") {
+  testonly = true
+  targets = [ ":test_java" ]
+  header_output = "$target_gen_dir/$target_name.h"
+  namespace = "weblayer_test"
+}
+
 generate_jni("test_jni") {
   testonly = true
   sources = [

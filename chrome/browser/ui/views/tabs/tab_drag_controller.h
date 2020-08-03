@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
@@ -74,6 +73,8 @@ class TabDragController : public views::WidgetObserver {
   static const int kVerticalDetachMagnetism;
 
   TabDragController();
+  TabDragController(const TabDragController&) = delete;
+  TabDragController& operator=(const TabDragController&) = delete;
   ~TabDragController() override;
 
   // Initializes TabDragController to drag the views in |dragging_views|
@@ -226,6 +227,8 @@ class TabDragController : public views::WidgetObserver {
   // Stores the date associated with a single tab that is being dragged.
   struct TabDragData {
     TabDragData();
+    TabDragData(const TabDragData&) = delete;
+    TabDragData& operator=(const TabDragData&) = delete;
     ~TabDragData();
     TabDragData(TabDragData&&);
 
@@ -256,9 +259,6 @@ class TabDragController : public views::WidgetObserver {
     // Stores the information of the group the tab is in, or nullopt if tab is
     // not grouped.
     base::Optional<TabGroupData> tab_group_data;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TabDragData);
   };
 
   typedef std::vector<TabDragData> DragData;
@@ -696,8 +696,6 @@ class TabDragController : public views::WidgetObserver {
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 
   base::WeakPtrFactory<TabDragController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TabDragController);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_H_

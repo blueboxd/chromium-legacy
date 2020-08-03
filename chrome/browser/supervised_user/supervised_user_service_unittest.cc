@@ -22,8 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
-#include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -34,7 +32,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -57,12 +54,6 @@ using extensions::Extension;
 using content::MessageLoopRunner;
 
 namespace {
-
-#if !defined(OS_ANDROID)
-void OnProfileDownloadedFail(const base::string16& full_name) {
-  ASSERT_TRUE(false) << "Profile download should not have succeeded.";
-}
-#endif
 
 // Base class for helper objects that wait for certain events to happen.
 // This class will ensure that calls to QuitRunLoop() (triggered by a subclass)
@@ -206,10 +197,6 @@ class SupervisedUserServiceTest : public ::testing::Test {
                             base::Unretained(result_holder)));
   }
 
-  signin::IdentityTestEnvironment* identity_test_env() {
-    return identity_test_environment_adaptor_->identity_test_env();
-  }
-
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
   content::BrowserTaskEnvironment task_environment_;
@@ -218,22 +205,6 @@ class SupervisedUserServiceTest : public ::testing::Test {
 };
 
 }  // namespace
-
-#if !defined(OS_ANDROID)
-// Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
-// DCHECK is hit when the service is destroyed, this test passed.
-TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
-  CustodianProfileDownloaderService* downloader_service =
-      CustodianProfileDownloaderServiceFactory::GetForProfile(profile_.get());
-
-  // Emulate being logged in, then start to download a profile so a
-  // ProfileDownloader gets created.
-  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
-      "logged_in@gmail.com");
-
-  downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
-}
-#endif
 
 namespace {
 

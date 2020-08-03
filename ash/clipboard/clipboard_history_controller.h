@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -22,7 +23,7 @@ class ClipboardHistoryMenuModelAdapter;
 
 // Shows a menu with the last few things saved in the clipboard when the
 // keyboard shortcut is pressed.
-class ClipboardHistoryController {
+class ASH_EXPORT ClipboardHistoryController {
  public:
   ClipboardHistoryController();
   ClipboardHistoryController(const ClipboardHistoryController&) = delete;
@@ -42,9 +43,15 @@ class ClipboardHistoryController {
   // Called when a menu option is selected.
   void MenuOptionSelected(int index);
 
+  bool IsMenuShowing() const;
+
+  gfx::Rect GetClipboardHistoryMenuBoundsForTest() const;
+
   ClipboardHistory* clipboard_history() { return clipboard_history_.get(); }
 
  private:
+  gfx::Rect CalculateAnchorRect() const;
+
   // The menu being shown.
   std::unique_ptr<ClipboardHistoryMenuModelAdapter> context_menu_;
   // Used to keep track of what is being copied to the clipboard.

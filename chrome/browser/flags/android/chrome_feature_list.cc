@@ -182,6 +182,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
+    &kReengagementNotification,
     &kRelatedSearches,
     &kRevampedContextMenu,
     &kSearchEnginePromoExistingDevice,
@@ -547,6 +548,9 @@ const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kReengagementNotification{
+    "ReengagementNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRelatedSearches{"RelatedSearches",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

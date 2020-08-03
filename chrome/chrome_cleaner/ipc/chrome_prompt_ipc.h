@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 
 namespace chrome_cleaner {
@@ -63,14 +62,14 @@ class ChromePromptIPC {
   // response on the right thread.
   virtual void PostPromptUserTask(
       const std::vector<base::FilePath>& files_to_delete,
-      const std::vector<base::string16>& registry_keys,
-      const std::vector<base::string16>& extension_ids,
+      const std::vector<std::wstring>& registry_keys,
+      const std::vector<std::wstring>& extension_ids,
       PromptUserCallback callback) = 0;
 
   // Posts a PromptDisableExtensions() task to the IPC controller's thread.
   // Internal state must be State::kDoneInteraction when the posted task runs.
   virtual void PostDisableExtensionsTask(
-      const std::vector<base::string16>& extension_ids,
+      const std::vector<std::wstring>& extension_ids,
       DisableExtensionsCallback callback) = 0;
 
   // Calls |delete_allowed_callback| if the IPC version supports deleting

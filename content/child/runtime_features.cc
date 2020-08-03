@@ -378,7 +378,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kUseFeatureState},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints, kUseFeatureState},
-          {"FlexGaps", blink::features::kFlexGaps, kEnableOnly},
           {"FontAccess", blink::features::kFontAccess, kUseFeatureState},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching,
            kUseFeatureState},

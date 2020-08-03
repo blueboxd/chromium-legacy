@@ -69,6 +69,9 @@ extern const base::Feature kIPHTabGroupsDragAndDropFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
 extern const base::Feature kIPHFeedHeaderMenuFeature;
+extern const base::Feature kIPHChromeReengagementNotification1;
+extern const base::Feature kIPHChromeReengagementNotification2;
+extern const base::Feature kIPHChromeReengagementNotification3;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

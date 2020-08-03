@@ -47,6 +47,30 @@ void ReportUserActionHistogram(FeedUserActionType action_type) {
                                 action_type);
 }
 
+std::string LoadLatencyStepName(LoadLatencyTimes::StepKind kind) {
+  switch (kind) {
+    case LoadLatencyTimes::kTaskExecution:
+      return "TaskStart";
+    case LoadLatencyTimes::kLoadFromStore:
+      return "LoadFromStore";
+    case LoadLatencyTimes::kUploadActions:
+      return "ActionUpload";
+    case LoadLatencyTimes::kQueryRequest:
+      return "QueryRequest";
+    case LoadLatencyTimes::kStreamViewed:
+      return "StreamView";
+  }
+}
+
+void ReportLoadLatencies(std::unique_ptr<LoadLatencyTimes> latencies) {
+  for (const LoadLatencyTimes::Step& step : latencies->steps()) {
+    base::UmaHistogramCustomTimes(
+        "ContentSuggestions.Feed.LoadStepLatency." +
+            LoadLatencyStepName(step.kind),
+        step.latency, base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
+  }
+}
+
 }  // namespace
 
 MetricsReporter::MetricsReporter(const base::TickClock* clock,
@@ -146,7 +170,17 @@ void MetricsReporter::ContentSliceViewed(SurfaceId surface_id,
                                          int index_in_stream) {
   base::UmaHistogramExactLinear("NewTabPage.ContentSuggestions.Shown",
                                 index_in_stream, kMaxSuggestionsTotal);
-
+  if (load_latencies_) {
+    load_latencies_->StepComplete(LoadLatencyTimes::kStreamViewed);
+    if (!load_latencies_recorded_) {
+      // Use |load_latencies_recorded_| to only report load latencies once.
+      // This generally will be the worst-case, since caches are likely to be
+      // cold, a network request is more likely to be required, and Chrome
+      // may be working on initializing other systems.
+      load_latencies_recorded_ = true;
+      ReportLoadLatencies(std::move(load_latencies_));
+    }
+  }
   ReportOpenFeedIfNeeded(surface_id, true);
 }
 
@@ -229,6 +263,14 @@ void MetricsReporter::ContextMenuOpened() {
   ReportUserActionHistogram(FeedUserActionType::kOpenedContextMenu);
   base::RecordAction(base::UserMetricsAction(
       "ContentSuggestions.Feed.CardAction.ContextMenu"));
+}
+
+void MetricsReporter::EphemeralStreamChange() {
+  ReportUserActionHistogram(FeedUserActionType::kEphemeralChange);
+}
+
+void MetricsReporter::EphemeralStreamChangeRejected() {
+  ReportUserActionHistogram(FeedUserActionType::kEphemeralChangeRejected);
 }
 
 void MetricsReporter::SurfaceOpened(SurfaceId surface_id) {
@@ -344,10 +386,13 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
   }
 }
 
-void MetricsReporter::OnLoadStream(LoadStreamStatus load_from_store_status,
-                                   LoadStreamStatus final_status) {
+void MetricsReporter::OnLoadStream(
+    LoadStreamStatus load_from_store_status,
+    LoadStreamStatus final_status,
+    std::unique_ptr<LoadLatencyTimes> load_latencies) {
   DVLOG(1) << "OnLoadStream load_from_store_status=" << load_from_store_status
            << " final_status=" << final_status;
+  load_latencies_ = std::move(load_latencies);
   base::UmaHistogramEnumeration(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial", final_status);
   if (load_from_store_status != LoadStreamStatus::kNoStatus) {

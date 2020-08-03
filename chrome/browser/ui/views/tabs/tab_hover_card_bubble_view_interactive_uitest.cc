@@ -26,7 +26,10 @@ class TabHoverCardBubbleViewInteractiveUiTest : public InProcessBrowserTest {
     TabHoverCardBubbleView::disable_animations_for_testing_ = true;
     scoped_feature_list_.InitAndEnableFeature(features::kTabHoverCards);
   }
-
+  TabHoverCardBubbleViewInteractiveUiTest(
+      const TabHoverCardBubbleViewInteractiveUiTest&) = delete;
+  TabHoverCardBubbleViewInteractiveUiTest& operator=(
+      const TabHoverCardBubbleViewInteractiveUiTest&) = delete;
   ~TabHoverCardBubbleViewInteractiveUiTest() override = default;
 
   static TabHoverCardBubbleView* GetHoverCard(const TabStrip* tabstrip) {
@@ -34,8 +37,6 @@ class TabHoverCardBubbleViewInteractiveUiTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewInteractiveUiTest);
-
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

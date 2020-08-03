@@ -239,6 +239,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int GetIdealHorizontalMargin(const gfx::Rect& abailable_bounds) const;
   int GetIdealVerticalMargin(const gfx::Rect& abailable_bounds) const;
 
+  // Returns the color and opacity for the page background.
+  SkColor GetCardifiedBackgroundColor(bool is_active) const;
+
  private:
   const AppListConfigType type_;
 
@@ -458,6 +461,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // Max number of search result list items in the launcher suggestion window.
   const size_t max_search_result_list_items_ = 5;
+
+  // Cardified app list background properties
+  const SkColor cardified_background_color_;
+  const SkColor cardified_background_color_active_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListConfig);
 };

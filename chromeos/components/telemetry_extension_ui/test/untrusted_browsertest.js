@@ -71,3 +71,27 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
     }
   });
 });
+
+// Tests that array of available routines can be successfully
+// requested from chrome-untrusted://.
+UNTRUSTED_TEST('UntrustedRequestAvailableRoutines', async () => {
+  /** @type {!DiagnosticsGetAvailableRoutinesResponse} */
+  const response = await getAvailableRoutines();
+  assertDeepEquals(response, {
+    'availableRoutines': [
+      chromeos.health.mojom.DiagnosticRoutineEnum.kBatteryCapacity,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kBatteryHealth,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kUrandom,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kSmartctlCheck,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kAcPower,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kCpuCache,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kCpuStress,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kFloatingPointAccuracy,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kNvmeWearLevel,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kNvmeSelfTest,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kDiskRead,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kPrimeSearch,
+      chromeos.health.mojom.DiagnosticRoutineEnum.kBatteryDischarge,
+    ]
+  });
+});

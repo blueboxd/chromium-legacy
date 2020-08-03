@@ -622,17 +622,20 @@ void OptimizationGuideHintsManager::FetchTopHostsHints() {
   batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
       top_hosts, std::vector<GURL>{}, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_BATCH_UPDATE,
-      base::BindOnce(&OptimizationGuideHintsManager::OnTopHostsHintsFetched,
-                     ui_weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &OptimizationGuideHintsManager::OnTopHostsHintsFetched,
+          ui_weak_ptr_factory_.GetWeakPtr(),
+          base::flat_set<std::string>(top_hosts.begin(), top_hosts.end())));
 }
 
 void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
+    const base::flat_set<std::string>& hosts_fetched,
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   if (get_hints_response) {
     hint_cache_->UpdateFetchedHints(
         std::move(*get_hints_response),
-        clock_->Now() + kUpdateFetchedHintsDelay,
+        clock_->Now() + kUpdateFetchedHintsDelay, hosts_fetched,
         /*urls_fetched=*/{},
         base::BindOnce(
             &OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored,
@@ -665,7 +668,7 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
 
   hint_cache_->UpdateFetchedHints(
       std::move(*get_hints_response), clock_->Now() + kUpdateFetchedHintsDelay,
-      page_navigation_urls_requested,
+      page_navigation_hosts_requested, page_navigation_urls_requested,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored,
           ui_weak_ptr_factory_.GetWeakPtr(), navigation_data_weak_ptr,
@@ -698,9 +701,6 @@ void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
     CleanUpFetcherForNavigation(*navigation_url);
     PrepareToInvokeRegisteredCallbacks(*navigation_url);
   }
-
-  for (const auto& host : page_navigation_hosts_requested)
-    LoadHintForHost(host, base::DoNothing());
 }
 
 bool OptimizationGuideHintsManager::IsHintBeingFetchedForNavigation(
@@ -853,9 +853,6 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
           ui_weak_ptr_factory_.GetWeakPtr(), nullptr, base::nullopt,
           target_urls, target_hosts));
-
-  for (const auto& host : target_hosts)
-    LoadHintForHost(host, base::DoNothing());
 }
 
 void OptimizationGuideHintsManager::OnHintLoaded(

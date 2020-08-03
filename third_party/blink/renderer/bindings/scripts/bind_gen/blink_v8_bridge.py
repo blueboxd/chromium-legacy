@@ -405,9 +405,11 @@ def make_default_value_expr(idl_type, default_value):
         assignment_value = "{}()".format(type_info.value_t)
     elif default_value.idl_type.is_object:
         dict_name = blink_class_name(idl_type.unwrap().type_definition_object)
-        value = _format("{}::Create()", dict_name)
+        value = _format("{}::Create(${isolate})", dict_name)
         initializer_expr = value
+        initializer_deps = ["isolate"]
         assignment_value = value
+        assignment_deps = ["isolate"]
     elif default_value.idl_type.is_boolean:
         value = "true" if default_value.value else "false"
         initializer_expr = value

@@ -755,19 +755,28 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
 
 void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info,
                                               NGInlineCursor* cursor) {
-  for (; *cursor; cursor->MoveToNext()) {
+  while (*cursor) {
     const NGFragmentItem* item = cursor->Current().Item();
     DCHECK(item);
     const NGPhysicalBoxFragment* child_fragment = item->BoxFragment();
-    if (!child_fragment || child_fragment->HasSelfPaintingLayer() ||
-        !child_fragment->IsFloating())
-      continue;
-    if (child_fragment->CanTraverse()) {
-      NGBoxFragmentPainter(*child_fragment).Paint(paint_info);
+    if (!child_fragment) {
+      cursor->MoveToNext();
       continue;
     }
-    ObjectPainter(*child_fragment->GetLayoutObject())
-        .PaintAllPhasesAtomically(paint_info);
+    if (child_fragment->HasSelfPaintingLayer()) {
+      cursor->MoveToNextSkippingChildren();
+      continue;
+    }
+    if (child_fragment->IsFloating()) {
+      if (child_fragment->CanTraverse()) {
+        NGBoxFragmentPainter(*child_fragment).Paint(paint_info);
+      } else {
+        ObjectPainter(*child_fragment->GetLayoutObject())
+            .PaintAllPhasesAtomically(paint_info);
+      }
+    }
+    DCHECK(child_fragment->IsInlineBox() || !cursor->Current().HasChildren());
+    cursor->MoveToNext();
   }
 }
 
@@ -1462,6 +1471,8 @@ void NGBoxFragmentPainter::PaintLineBoxChildItems(
   for (; *children; children->MoveToNextSkippingChildren()) {
     const NGFragmentItem* child_item = children->CurrentItem();
     DCHECK(child_item);
+    if (child_item->IsFloating())
+      continue;
 
     // Check if CullRect intersects with this child, only in block direction
     // because soft-wrap and <br> needs to paint outside of InkOverflow() in
@@ -1496,6 +1507,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildItems(
 
     if (const NGPhysicalBoxFragment* child_fragment =
             child_item->BoxFragment()) {
+      DCHECK(!child_fragment->IsOutOfFlowPositioned());
       if (child_fragment->IsListMarker()) {
         PaintBoxItem(*child_item, *child_fragment, *children, paint_info,
                      paint_offset);

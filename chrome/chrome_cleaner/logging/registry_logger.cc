@@ -60,7 +60,7 @@ uint32_t GetVersionNumber() {
   return version_number;
 }
 
-void CreateRegKey(base::win::RegKey* reg_key, const base::string16& path) {
+void CreateRegKey(base::win::RegKey* reg_key, const std::wstring& path) {
   if (reg_key->Create(HKEY_CURRENT_USER, path.c_str(),
                       KEY_SET_VALUE | KEY_QUERY_VALUE) != ERROR_SUCCESS) {
     PLOG(ERROR) << "Failed to open registry key" << path;
@@ -165,7 +165,7 @@ void RegistryLogger::WriteMemoryUsage(size_t memory_used_kb) {
 
 void RegistryLogger::AppendLogUploadResult(bool success) {
   if (logging_key_.Valid()) {
-    base::string16 upload_results;
+    std::wstring upload_results;
     // Ignore the return value, if this fails, just overwrite what is there.
     LONG result =
         logging_key_.ReadValue(kUploadResultsValueName, &upload_results);
@@ -202,8 +202,8 @@ bool RegistryLogger::AppendLogFilePath(const base::FilePath& log_file) {
   if (!logging_key_.Valid())
     return false;
 
-  base::string16 registry_value;
-  std::vector<base::string16> log_files;
+  std::wstring registry_value;
+  std::vector<std::wstring> log_files;
   if (ReadPendingLogFiles(&log_files, nullptr)) {
     log_files.push_back(log_file.value());
     registry_value =
@@ -217,7 +217,7 @@ bool RegistryLogger::AppendLogFilePath(const base::FilePath& log_file) {
   LONG result = logging_key_.WriteValue(
       kPendingLogFilesValue,
       reinterpret_cast<const void*>(registry_value.c_str()),
-      registry_value.size() * sizeof(base::string16::value_type), REG_MULTI_SZ);
+      registry_value.size() * sizeof(std::wstring::value_type), REG_MULTI_SZ);
   if (result != ERROR_SUCCESS) {
     PLOG(ERROR) << "Failed to write '" << registry_value
                 << "' to pending logs registry entry. Error: " << result;
@@ -234,7 +234,7 @@ void RegistryLogger::GetNextLogFilePath(base::FilePath* log_file) {
   if (!logging_key_.Valid() || !logging_key_.HasValue(kPendingLogFilesValue))
     return;
 
-  std::vector<base::string16> log_files;
+  std::vector<std::wstring> log_files;
   RegistryError registry_error = RegistryError::SUCCESS;
   if (!ReadPendingLogFiles(&log_files, &registry_error)) {
     PLOG(WARNING)
@@ -256,7 +256,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
   if (!logging_key_.HasValue(kPendingLogFilesValue))
     return false;
 
-  std::vector<base::string16> log_files;
+  std::vector<std::wstring> log_files;
   RegistryError registry_error = RegistryError::SUCCESS;
   if (!ReadPendingLogFiles(&log_files, &registry_error)) {
     PLOG(WARNING) << "Empty pending log files registry entry when trying to "
@@ -266,7 +266,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
     return false;
   }
 
-  std::vector<base::string16>::const_iterator iter =
+  std::vector<std::wstring>::const_iterator iter =
       std::find(log_files.begin(), log_files.end(), log_file.value());
   if (iter == log_files.end()) {
     PLOG(WARNING) << "Requested log file '" << SanitizePath(log_file)
@@ -282,14 +282,14 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
     return false;
   }
 
-  base::string16 registry_value(
+  std::wstring registry_value(
       base::JoinString(log_files, base::WStringPiece(&kMultiSzSeparator, 1)));
   // REG_MULTI_SZ requires an extra \0 at the end of the string.
   registry_value.append(1, L'\0');
   LONG result = logging_key_.WriteValue(
       kPendingLogFilesValue,
       reinterpret_cast<const void*>(registry_value.c_str()),
-      registry_value.size() * sizeof(base::string16::value_type), REG_MULTI_SZ);
+      registry_value.size() * sizeof(std::wstring::value_type), REG_MULTI_SZ);
   if (result != ERROR_SUCCESS) {
     LOG(ERROR) << "Failed to write '" << registry_value
                << "' to pending logs registry entry. Error: " << std::hex
@@ -304,7 +304,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
 }
 
 bool RegistryLogger::RecordFoundPUPs(const std::vector<UwSId>& pups_to_store) {
-  base::string16 multi_sz_value;
+  std::wstring multi_sz_value;
   for (UwSId pup_to_store : pups_to_store) {
     multi_sz_value += base::NumberToWString(pup_to_store);
     multi_sz_value += kMultiSzSeparator;
@@ -313,7 +313,7 @@ bool RegistryLogger::RecordFoundPUPs(const std::vector<UwSId>& pups_to_store) {
 
   LONG result = logging_key_.WriteValue(
       kFoundUwsValueName, reinterpret_cast<const void*>(multi_sz_value.c_str()),
-      multi_sz_value.size() * sizeof(base::string16::value_type), REG_MULTI_SZ);
+      multi_sz_value.size() * sizeof(std::wstring::value_type), REG_MULTI_SZ);
 
   if (result != ERROR_SUCCESS) {
     LOG(ERROR) << "Failed to write '" << multi_sz_value
@@ -351,33 +351,33 @@ void RegistryLogger::ResetCompletedCleanup() {
   }
 }
 
-base::string16 RegistryLogger::GetLoggingKeyPath(Mode mode) const {
-  base::string16 key_path = base::string16(kSoftwareRemovalToolRegistryKey);
+std::wstring RegistryLogger::GetLoggingKeyPath(Mode mode) const {
+  std::wstring key_path = std::wstring(kSoftwareRemovalToolRegistryKey);
   if (mode == Mode::REMOVER)
-    key_path += base::string16(L"\\") + kCleanerSubKey;
+    key_path += std::wstring(L"\\") + kCleanerSubKey;
   if (!suffix_.empty())
-    key_path += base::string16(L"\\") + suffix_;
+    key_path += std::wstring(L"\\") + suffix_;
   return key_path;
 }
 
-base::string16 RegistryLogger::GetScanTimesKeyPath(Mode mode) const {
+std::wstring RegistryLogger::GetScanTimesKeyPath(Mode mode) const {
   return base::StrCat({GetLoggingKeyPath(mode), L"\\", kScanTimesSubKey});
 }
 
-base::string16 RegistryLogger::GetKeySuffix() const {
+std::wstring RegistryLogger::GetKeySuffix() const {
   return suffix_;
 }
 
 // static.
 bool RegistryLogger::ReadValues(const base::win::RegKey& logging_key,
                                 const wchar_t* name,
-                                std::vector<base::string16>* values,
+                                std::vector<std::wstring>* values,
                                 RegistryError* registry_error) {
   DCHECK(name);
   DCHECK(values);
   values->clear();
 
-  base::string16 content;
+  std::wstring content;
   uint32_t content_type;
   if (!ReadRegistryValue(logging_key, name, &content, &content_type,
                          registry_error) ||
@@ -393,7 +393,7 @@ bool RegistryLogger::ReadValues(const base::win::RegKey& logging_key,
     const wchar_t* buffer_end = entry + content.size();
     while (entry < buffer_end && entry[0] != '\0') {
       const wchar_t* entry_end = std::find(entry, buffer_end, L'\0');
-      base::string16 value(entry, entry_end);
+      std::wstring value(entry, entry_end);
       DCHECK(!value.empty());
       values->push_back(value);
       entry = entry_end + 1;
@@ -402,7 +402,7 @@ bool RegistryLogger::ReadValues(const base::win::RegKey& logging_key,
   return true;
 }
 
-bool RegistryLogger::ReadPendingLogFiles(std::vector<base::string16>* log_files,
+bool RegistryLogger::ReadPendingLogFiles(std::vector<std::wstring>* log_files,
                                          RegistryError* registry_error) {
   DCHECK(log_files);
   if (!ReadValues(logging_key_, kPendingLogFilesValue, log_files,

@@ -40,7 +40,10 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.FEED_CARD_MENU_FEATURE, FeatureConstants.IDENTITY_DISC_FEATURE,
         FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
         FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
-        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, FeatureConstants.FEED_HEADER_MENU_FEATURE})
+        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, FeatureConstants.FEED_HEADER_MENU_FEATURE,
+        FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE,
+        FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
+        FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -154,4 +157,19 @@ public @interface FeatureConstants {
      * An IPH feature to show on the feed header menu button of the FeedNewTabPage.
      */
     String FEED_HEADER_MENU_FEATURE = "IPH_FeedHeaderMenu";
+
+    /**
+     * An IPH feature to show the first re-engagement notification.
+     */
+    String CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE = "IPH_ChromeReengagementNotification1";
+
+    /**
+     * An IPH feature to show the second re-engagement notification.
+     */
+    String CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE = "IPH_ChromeReengagementNotification2";
+
+    /**
+     * An IPH feature to show the third re-engagement notification.
+     */
+    String CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE = "IPH_ChromeReengagementNotification3";
 }

@@ -61,6 +61,11 @@ jumbo_component("controller") {
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
     ]
+  } else {
+    sources += [
+      "performance_manager/v8_per_frame_memory_reporter_impl.cc",
+      "performance_manager/v8_per_frame_memory_reporter_impl.h",
+    ]
   }
   if (is_win) {
     sources += [

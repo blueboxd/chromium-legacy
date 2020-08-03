@@ -37,6 +37,11 @@ const CSSPropertyID lastCSSProperty = static_cast<CSSPropertyID>(kIntLastCSSProp
 const CSSPropertyID lastUnresolvedCSSProperty = static_cast<CSSPropertyID>({{last_unresolved_property_id}});
 const int numCSSPropertyIDs = static_cast<int>(lastUnresolvedCSSProperty) + 1;
 const size_t maxCSSPropertyNameLength = {{max_name_length}};
+constexpr size_t kCSSPropertyIDBitLength = {{property_id_bit_length}};
+
+static_assert((static_cast<size_t>(1) << kCSSPropertyIDBitLength) >
+                  static_cast<size_t>(lastUnresolvedCSSProperty),
+              "kCSSPropertyIDBitLength has enough bits");
 
 inline int GetCSSPropertyIDIndex(CSSPropertyID id) {
     DCHECK_GE(id, firstCSSProperty);

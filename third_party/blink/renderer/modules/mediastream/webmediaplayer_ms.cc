@@ -182,7 +182,8 @@ class WebMediaPlayerMS::FrameDeliverer {
 #endif  // defined(OS_ANDROID)
 
     if (!gpu_memory_buffer_pool_) {
-      EnqueueFrame(frame, frame);
+      int original_frame_id = frame->unique_id();
+      EnqueueFrame(original_frame_id, std::move(frame));
       return;
     }
 
@@ -201,13 +202,16 @@ class WebMediaPlayerMS::FrameDeliverer {
     // frames is unnecessary, because the frames are not going to be shown for
     // the time period.
     if (render_frame_suspended_ || skip_creating_gpu_memory_buffer) {
-      EnqueueFrame(frame, frame);
+      int original_frame_id = frame->unique_id();
+      EnqueueFrame(original_frame_id, std::move(frame));
       // If there are any existing MaybeCreateHardwareFrame() calls, we do not
       // want those frames to be placed after the current one, so just drop
       // them.
       DropCurrentPoolTasks();
       return;
     }
+
+    int original_frame_id = frame->unique_id();
 
     // |gpu_memory_buffer_pool_| deletion is going to be posted to
     // |media_task_runner_|. base::Unretained() usage is fine since
@@ -219,10 +223,10 @@ class WebMediaPlayerMS::FrameDeliverer {
         FROM_HERE,
         base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
-            base::Unretained(gpu_memory_buffer_pool_.get()), frame,
-            media::BindToCurrentLoop(
-                base::BindOnce(&FrameDeliverer::EnqueueFrame,
-                               weak_factory_for_pool_.GetWeakPtr(), frame))));
+            base::Unretained(gpu_memory_buffer_pool_.get()), std::move(frame),
+            media::BindToCurrentLoop(base::BindOnce(
+                &FrameDeliverer::EnqueueFrame,
+                weak_factory_for_pool_.GetWeakPtr(), original_frame_id))));
   }
 
   void SetRenderFrameSuspended(bool render_frame_suspended) {
@@ -240,7 +244,7 @@ class WebMediaPlayerMS::FrameDeliverer {
  private:
   friend class WebMediaPlayerMS;
 
-  void EnqueueFrame(scoped_refptr<media::VideoFrame> original_frame,
+  void EnqueueFrame(int original_frame_id,
                     scoped_refptr<media::VideoFrame> frame) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
@@ -257,7 +261,7 @@ class WebMediaPlayerMS::FrameDeliverer {
       }
     }
 
-    bool is_copy = original_frame != frame;
+    bool is_copy = original_frame_id != frame->unique_id();
     enqueue_frame_cb_.Run(std::move(frame), is_copy);
   }
 

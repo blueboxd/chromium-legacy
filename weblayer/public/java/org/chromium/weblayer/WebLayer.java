@@ -14,7 +14,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
-import android.util.Pair;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
@@ -38,7 +37,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
@@ -56,15 +54,18 @@ public class WebLayer {
     private static Context sRemoteContext;
 
     @Nullable
+    private static ClassLoader sRemoteClassLoader;
+
+    @Nullable
     private static Context sAppContext;
 
     @Nullable
     private static WebLayerLoader sLoader;
 
+    private static boolean sDisableWebViewCompatibilityMode;
+
     @NonNull
     private final IWebLayer mImpl;
-
-    private static Callable<ClassLoader> sWebViewCompatClassLoaderGetter;
 
     /** The result of calling {@link #initializeWebViewCompatibilityMode}. */
     public enum WebViewCompatibilityResult {
@@ -100,31 +101,13 @@ public class WebLayer {
     }
 
     /**
-     * Performs initialization needed to run WebView and WebLayer in the same process.
-     *
-     * @param appContext The hosting application's Context.
+     * Deprecated. This is no longer necessary since WebView compatibility mode is now enabled by
+     * default. This will be removed once the client app is updated.
      */
     public static WebViewCompatibilityResult initializeWebViewCompatibilityMode(
             @NonNull Context appContext) {
         ThreadCheck.ensureOnUiThread();
-        if (sWebViewCompatClassLoaderGetter != null) {
-            throw new AndroidRuntimeException(
-                    "initializeWebViewCompatibilityMode() has already been called.");
-        }
-        if (sLoader != null) {
-            throw new AndroidRuntimeException(
-                    "initializeWebViewCompatibilityMode() must be called before WebLayer is "
-                    + "loaded.");
-        }
-        try {
-            Pair<Callable<ClassLoader>, WebLayer.WebViewCompatibilityResult> result =
-                    WebViewCompatibilityHelper.initialize(appContext);
-            sWebViewCompatClassLoaderGetter = result.first;
-            return result.second;
-        } catch (Exception e) {
-            Log.e(TAG, "Unable to initialize WebView compatibility", e);
-            return WebViewCompatibilityResult.FAILURE_OTHER;
-        }
+        return WebViewCompatibilityResult.SUCCESS;
     }
 
     /**
@@ -266,19 +249,13 @@ public class WebLayer {
          * Creates WebLayerLoader. This does a minimal amount of loading
          */
         public WebLayerLoader(@NonNull Context appContext) {
-            ClassLoader remoteClassLoader = null;
             boolean available = false;
             int majorVersion = -1;
             String version = "<unavailable>";
             try {
-                if (sWebViewCompatClassLoaderGetter != null) {
-                    remoteClassLoader = sWebViewCompatClassLoaderGetter.call();
-                }
-                if (remoteClassLoader == null) {
-                    remoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
-                }
-                Class factoryClass = remoteClassLoader.loadClass(
-                        "org.chromium.weblayer_private.WebLayerFactoryImpl");
+                Class factoryClass =
+                        getOrCreateRemoteClassLoader(appContext)
+                                .loadClass("org.chromium.weblayer_private.WebLayerFactoryImpl");
                 mFactory = IWebLayerFactory.Stub.asInterface(
                         (IBinder) factoryClass
                                 .getMethod("create", String.class, int.class, int.class)
@@ -607,6 +584,25 @@ public class WebLayer {
     }
 
     /**
+     * Creates a ClassLoader for the remote (weblayer implementation) side.
+     */
+    static ClassLoader getOrCreateRemoteClassLoader(Context appContext)
+            throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        if (sRemoteClassLoader != null) {
+            return sRemoteClassLoader;
+        }
+
+        // Child processes do not need WebView compatibility since there is no chance
+        // WebView will run in the same process.
+        if (sDisableWebViewCompatibilityMode) {
+            sRemoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
+        } else {
+            sRemoteClassLoader = WebViewCompatibilityHelper.initialize(appContext);
+        }
+        return sRemoteClassLoader;
+    }
+
+    /**
      * Creates a Context for the remote (weblayer implementation) side.
      */
     static Context getOrCreateRemoteContext(Context appContext)
@@ -630,6 +626,10 @@ public class WebLayer {
             sRemoteContext = createRemoteContextFromPackageName(appContext, implPackageName);
         }
         return sRemoteContext;
+    }
+
+    /* package */ static void disableWebViewCompatibilityMode() {
+        sDisableWebViewCompatibilityMode = true;
     }
 
     /**

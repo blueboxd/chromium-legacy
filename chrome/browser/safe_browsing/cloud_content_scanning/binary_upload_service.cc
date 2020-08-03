@@ -34,6 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -106,6 +107,14 @@ base::Optional<GURL> GetUrlOverride() {
 }
 
 }  // namespace
+
+BinaryUploadService::BinaryUploadService(Profile* profile)
+    : url_loader_factory_(profile->GetURLLoaderFactory()),
+      binary_fcm_service_(BinaryFCMService::Create(profile)),
+      profile_(profile),
+      weakptr_factory_(this) {
+  DCHECK(base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts));
+}
 
 BinaryUploadService::BinaryUploadService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -351,7 +360,7 @@ void BinaryUploadService::OnGetConnectorResponse(
     if (result.has_tag() && !result.tag().empty()) {
       VLOG(1) << "Request " << request->request_token()
               << " finished scanning tag <" << result.tag() << ">";
-      *received_connector_responses_[request].add_results() = result;
+      received_connector_results_[request][result.tag()] = result;
     }
   }
 
@@ -382,10 +391,11 @@ void BinaryUploadService::OnGetLegacyResponse(
 
 void BinaryUploadService::MaybeFinishConnectorRequest(Request* request) {
   for (const std::string& tag : request->content_analysis_request().tags()) {
-    const auto& results = received_connector_responses_[request].results();
-    if (std::none_of(
-            results.begin(), results.end(),
-            [&tag](const auto& result) { return result.tag() == tag; })) {
+    const auto& results = received_connector_results_[request];
+    if (std::none_of(results.begin(), results.end(),
+                     [&tag](const auto& tag_and_result) {
+                       return tag_and_result.first == tag;
+                     })) {
       VLOG(1) << "Request " << request->request_token() << " is waiting for <"
               << tag << "> scanning to complete.";
       return;
@@ -393,9 +403,10 @@ void BinaryUploadService::MaybeFinishConnectorRequest(Request* request) {
   }
 
   // It's OK to move here since the map entry is about to be removed.
-  enterprise_connectors::ContentAnalysisResponse response =
-      std::move(received_connector_responses_[request]);
+  enterprise_connectors::ContentAnalysisResponse response;
   response.set_request_token(request->request_token());
+  for (auto& tag_and_result : received_connector_results_[request])
+    *response.add_results() = std::move(tag_and_result.second);
   FinishConnectorRequest(request, Result::SUCCESS, std::move(response));
 }
 
@@ -494,7 +505,7 @@ void BinaryUploadService::FinishRequestCleanup(Request* request,
   active_uploads_.erase(request);
   received_malware_verdicts_.erase(request);
   received_dlp_verdicts_.erase(request);
-  received_connector_responses_.erase(request);
+  received_connector_results_.erase(request);
 
   auto token_it = active_tokens_.find(request);
   DCHECK(token_it != active_tokens_.end());

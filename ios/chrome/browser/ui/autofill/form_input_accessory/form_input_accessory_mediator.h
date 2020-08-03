@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 
+@class AppState;
 @class ChromeCoordinator;
 @protocol FormInputAccessoryConsumer;
 @class FormInputAccessoryMediator;
@@ -55,7 +56,8 @@ class WebStateList;
            webStateList:(WebStateList*)webStateList
     personalDataManager:(autofill::PersonalDataManager*)personalDataManager
           passwordStore:
-              (scoped_refptr<password_manager::PasswordStore>)passwordStore;
+              (scoped_refptr<password_manager::PasswordStore>)passwordStore
+               appState:(AppState*)appState;
 
 // Unavailable, use initWithConsumer:webStateList: instead.
 - (instancetype)init NS_UNAVAILABLE;

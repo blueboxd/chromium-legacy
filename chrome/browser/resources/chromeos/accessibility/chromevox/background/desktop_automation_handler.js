@@ -423,7 +423,6 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       this.lastValueChanged_ = new Date();
 
       const output = new Output();
-      output.withQueueMode(QueueMode.CATEGORY_FLUSH);
 
       if (fromDesktop &&
           (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
@@ -435,6 +434,8 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         output.format(
             '$if($value, $value, $if($valueForRange, $valueForRange))', t);
       }
+
+      Output.forceModeForNextSpeechUtterance(QueueMode.INTERJECT);
       output.go();
     }
   }

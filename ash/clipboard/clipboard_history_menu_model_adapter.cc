@@ -10,6 +10,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
+#include "ui/views/controls/menu/submenu_view.h"
 
 namespace ash {
 
@@ -31,6 +32,15 @@ void ClipboardHistoryMenuModelAdapter::Run(const gfx::Rect& anchor_rect) {
   menu_runner_->RunMenuAt(
       /*widget_owner=*/nullptr, /*menu_button_controller=*/nullptr, anchor_rect,
       views::MenuAnchorPosition::kBubbleRight, ui::MENU_SOURCE_KEYBOARD);
+}
+
+bool ClipboardHistoryMenuModelAdapter::IsRunning() const {
+  return menu_runner_ && menu_runner_->IsRunning();
+}
+
+gfx::Rect
+ClipboardHistoryMenuModelAdapter::GetClipboardHistoryMenuBoundsForTest() const {
+  return root_view_->GetSubmenu()->GetBoundsInScreen();
 }
 
 }  // namespace ash

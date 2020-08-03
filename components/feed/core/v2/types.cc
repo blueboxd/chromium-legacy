@@ -138,4 +138,12 @@ PersistentMetricsData PersistentMetricsDataFromValue(const base::Value& value) {
   return result;
 }
 
+LoadLatencyTimes::LoadLatencyTimes() : last_time_(base::TimeTicks::Now()) {}
+LoadLatencyTimes::~LoadLatencyTimes() = default;
+void LoadLatencyTimes::StepComplete(StepKind kind) {
+  auto now = base::TimeTicks::Now();
+  steps_.push_back(Step{kind, now - last_time_});
+  last_time_ = now;
+}
+
 }  // namespace feed

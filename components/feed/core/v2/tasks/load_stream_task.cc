@@ -42,19 +42,22 @@ feedwire::FeedQuery::RequestReason GetRequestReason(LoadType load_type) {
 Result::Result() = default;
 Result::Result(LoadStreamStatus status) : final_status(status) {}
 Result::~Result() = default;
-Result::Result(const Result&) = default;
-Result& Result::operator=(const Result&) = default;
+Result::Result(Result&&) = default;
+Result& Result::operator=(Result&&) = default;
 
 LoadStreamTask::LoadStreamTask(LoadType load_type,
                                FeedStream* stream,
                                base::OnceCallback<void(Result)> done_callback)
     : load_type_(load_type),
       stream_(stream),
-      done_callback_(std::move(done_callback)) {}
+      done_callback_(std::move(done_callback)) {
+  latencies_ = std::make_unique<LoadLatencyTimes>();
+}
 
 LoadStreamTask::~LoadStreamTask() = default;
 
 void LoadStreamTask::Run() {
+  latencies_->StepComplete(LoadLatencyTimes::kTaskExecution);
   // Phase 1: Try to load from persistent storage.
 
   // TODO(harringtond): We're checking ShouldAttemptLoad() here and before the
@@ -83,6 +86,8 @@ void LoadStreamTask::Run() {
 void LoadStreamTask::LoadFromStoreComplete(
     LoadStreamFromStoreTask::Result result) {
   load_from_store_status_ = result.status;
+  latencies_->StepComplete(LoadLatencyTimes::kLoadFromStore);
+
   // Phase 2.
   //  - If loading from store works, update the model.
   //  - Otherwise, try to load from the network.
@@ -110,6 +115,7 @@ void LoadStreamTask::LoadFromStoreComplete(
 }
 
 void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
+  latencies_->StepComplete(LoadLatencyTimes::kUploadActions);
   stream_->GetNetwork()->SendQueryRequest(
       CreateFeedQueryRefreshRequest(
           GetRequestReason(load_type_), stream_->GetRequestMetadata(),
@@ -119,6 +125,8 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
 
 void LoadStreamTask::QueryRequestComplete(
     FeedNetwork::QueryRequestResult result) {
+  latencies_->StepComplete(LoadLatencyTimes::kQueryRequest);
+
   DCHECK(!stream_->GetModel());
 
   network_response_info_ = result.response_info;
@@ -166,7 +174,8 @@ void LoadStreamTask::Done(LoadStreamStatus status) {
   result.load_type = load_type_;
   result.network_response_info = network_response_info_;
   result.loaded_new_content_from_network = loaded_new_content_from_network_;
-  std::move(done_callback_).Run(result);
+  result.latencies = std::move(latencies_);
+  std::move(done_callback_).Run(std::move(result));
   TaskComplete();
 }
 

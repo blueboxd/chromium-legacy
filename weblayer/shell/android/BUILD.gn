@@ -202,6 +202,11 @@ android_apk("weblayer_support_apk") {
   # default upstream safebrowsing related classes
   deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
 
+  # Add the Chromium linker for WebView compatibility support on L-M.
+  deps += [ "//base/android/linker:chromium_android_linker" ]
+  loadable_modules =
+      [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
+
   apk_name = "WebLayerSupport"
   android_manifest = weblayer_support_manifest
   min_sdk_version = 21

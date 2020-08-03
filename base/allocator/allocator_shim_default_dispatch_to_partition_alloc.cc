@@ -19,14 +19,14 @@ base::ThreadSafePartitionRoot& Allocator() {
 using base::allocator::AllocatorDispatch;
 
 void* PartitionMalloc(const AllocatorDispatch*, size_t size, void* context) {
-  return Allocator().Alloc(size, "");
+  return Allocator().AllocFlagsNoHooks(0, size);
 }
 
 void* PartitionCalloc(const AllocatorDispatch*,
                       size_t n,
                       size_t size,
                       void* context) {
-  return Allocator().AllocFlags(base::PartitionAllocZeroFill, n * size, "");
+  return Allocator().AllocFlagsNoHooks(base::PartitionAllocZeroFill, n * size);
 }
 
 void* PartitionMemalign(const AllocatorDispatch*,
@@ -35,18 +35,20 @@ void* PartitionMemalign(const AllocatorDispatch*,
                         void* context) {
   static base::NoDestructor<base::ThreadSafePartitionRoot> aligned_allocator{
       true /* enforce_alignment */};
-  return aligned_allocator->AlignedAlloc(alignment, size);
+  return aligned_allocator->AlignedAllocFlags(base::PartitionAllocNoHooks,
+                                              alignment, size);
 }
 
 void* PartitionRealloc(const AllocatorDispatch*,
                        void* address,
                        size_t size,
                        void* context) {
-  return Allocator().Realloc(address, size, "");
+  return Allocator().ReallocFlags(base::PartitionAllocNoHooks, address, size,
+                                  "");
 }
 
 void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
-  base::ThreadSafePartitionRoot::Free(address);
+  base::ThreadSafePartitionRoot::FreeNoHooks(address);
 }
 
 size_t PartitionGetSizeEstimate(const AllocatorDispatch*,

@@ -103,8 +103,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final {
 
 // This class is for throttling WebSocket connections. WebSocketThrottler is
 // a set of per-renderer throttlers.
-// This class is only used in the network service. content::WebSocketManager
-// uses WebSocketPerProcessThrottler directly.
 class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketThrottler final {
  public:
   using PendingConnection = WebSocketPerProcessThrottler::PendingConnection;

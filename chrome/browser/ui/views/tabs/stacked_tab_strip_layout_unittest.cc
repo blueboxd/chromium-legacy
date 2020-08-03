@@ -35,7 +35,10 @@ struct CommonTestData {
 
 class StackedTabStripLayoutTest : public testing::Test {
  public:
-  StackedTabStripLayoutTest() {}
+  StackedTabStripLayoutTest() = default;
+  StackedTabStripLayoutTest(const StackedTabStripLayoutTest&) = delete;
+  StackedTabStripLayoutTest& operator=(const StackedTabStripLayoutTest&) =
+      delete;
 
  protected:
   void Reset(StackedTabStripLayout* layout,
@@ -132,8 +135,6 @@ class StackedTabStripLayoutTest : public testing::Test {
 
  private:
   views::View view_;
-
-  DISALLOW_COPY_AND_ASSIGN(StackedTabStripLayoutTest);
 };
 
 // Random data.

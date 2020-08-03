@@ -45,7 +45,7 @@ constexpr uint64_t kUnassociatedBytes = 0xABBA;
 namespace {
 
 class LenientMockV8PerFrameMemoryReporter
-    : public mojom::V8PerFrameMemoryReporter {
+    : public blink::mojom::V8PerFrameMemoryReporter {
  public:
   LenientMockV8PerFrameMemoryReporter() : receiver_(this) {}
 
@@ -54,13 +54,13 @@ class LenientMockV8PerFrameMemoryReporter
               (GetPerFrameV8MemoryUsageDataCallback callback),
               (override));
 
-  void Bind(
-      mojo::PendingReceiver<mojom::V8PerFrameMemoryReporter> pending_receiver) {
+  void Bind(mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
+                pending_receiver) {
     return receiver_.Bind(std::move(pending_receiver));
   }
 
  private:
-  mojo::Receiver<mojom::V8PerFrameMemoryReporter> receiver_;
+  mojo::Receiver<blink::mojom::V8PerFrameMemoryReporter> receiver_;
 };
 
 using MockV8PerFrameMemoryReporter =
@@ -122,7 +122,7 @@ class V8PerFrameMemoryDecoratorTestBase {
   GetMainThreadTaskRunner() = 0;
 
   void ReplyWithData(
-      mojom::PerProcessV8MemoryUsageDataPtr data,
+      blink::mojom::PerProcessV8MemoryUsageDataPtr data,
       MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
           callback) {
     std::move(callback).Run(std::move(data));
@@ -130,7 +130,7 @@ class V8PerFrameMemoryDecoratorTestBase {
 
   void DelayedReplyWithData(
       const base::TimeDelta& delay,
-      mojom::PerProcessV8MemoryUsageDataPtr data,
+      blink::mojom::PerProcessV8MemoryUsageDataPtr data,
       MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
           callback) {
     GetMainThreadTaskRunner()->PostDelayedTask(
@@ -152,16 +152,17 @@ class V8PerFrameMemoryDecoratorTestBase {
   }
 
   void ExpectQueryAndReply(MockV8PerFrameMemoryReporter* mock_reporter,
-                           mojom::PerProcessV8MemoryUsageDataPtr data) {
+                           blink::mojom::PerProcessV8MemoryUsageDataPtr data) {
     ExpectQuery(
         mock_reporter,
         base::BindRepeating(&V8PerFrameMemoryDecoratorTestBase::ReplyWithData,
                             base::Unretained(this), base::Passed(&data)));
   }
 
-  void ExpectQueryAndDelayReply(MockV8PerFrameMemoryReporter* mock_reporter,
-                                const base::TimeDelta& delay,
-                                mojom::PerProcessV8MemoryUsageDataPtr data) {
+  void ExpectQueryAndDelayReply(
+      MockV8PerFrameMemoryReporter* mock_reporter,
+      const base::TimeDelta& delay,
+      blink::mojom::PerProcessV8MemoryUsageDataPtr data) {
     ExpectQuery(mock_reporter,
                 base::BindRepeating(
                     &V8PerFrameMemoryDecoratorTestBase::DelayedReplyWithData,
@@ -170,26 +171,25 @@ class V8PerFrameMemoryDecoratorTestBase {
 
   void ExpectBindAndRespondToQuery(
       MockV8PerFrameMemoryReporter* mock_reporter,
-      mojom::PerProcessV8MemoryUsageDataPtr data,
+      blink::mojom::PerProcessV8MemoryUsageDataPtr data,
       RenderProcessHostId expected_process_id = kTestProcessID) {
     // Wrap the move-only |data| in a callback for the expectation below.
     ExpectQueryAndReply(mock_reporter, std::move(data));
 
     EXPECT_CALL(*this, BindReceiverWithProxyHost(_, _))
-        .WillOnce([mock_reporter, expected_process_id](
-                      mojo::PendingReceiver<
-                          performance_manager::mojom::V8PerFrameMemoryReporter>
-                          pending_receiver,
-                      RenderProcessHostProxy proxy) {
-          DCHECK_EQ(expected_process_id, proxy.render_process_host_id());
-          mock_reporter->Bind(std::move(pending_receiver));
-        });
+        .WillOnce(
+            [mock_reporter, expected_process_id](
+                mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
+                    pending_receiver,
+                RenderProcessHostProxy proxy) {
+              DCHECK_EQ(expected_process_id, proxy.render_process_host_id());
+              mock_reporter->Bind(std::move(pending_receiver));
+            });
   }
 
   MOCK_METHOD(void,
               BindReceiverWithProxyHost,
-              (mojo::PendingReceiver<
-                   performance_manager::mojom::V8PerFrameMemoryReporter>
+              (mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
                    pending_receiver,
                RenderProcessHostProxy proxy),
               (const));
@@ -197,8 +197,7 @@ class V8PerFrameMemoryDecoratorTestBase {
   // Always bind the receiver callback on the main sequence.
   internal::BindV8PerFrameMemoryReporterCallback bind_callback_ =
       base::BindLambdaForTesting(
-          [this](mojo::PendingReceiver<
-                     performance_manager::mojom::V8PerFrameMemoryReporter>
+          [this](mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
                      pending_receiver,
                  RenderProcessHostProxy proxy) {
             this->GetMainThreadTaskRunner()->PostTask(
@@ -211,11 +210,12 @@ class V8PerFrameMemoryDecoratorTestBase {
   base::TimeTicks last_query_time_;
 };
 
-void AddPerFrameIsolateMemoryUsage(FrameToken frame_token,
-                                   int64_t world_id,
-                                   uint64_t bytes_used,
-                                   mojom::PerProcessV8MemoryUsageData* data) {
-  mojom::PerFrameV8MemoryUsageData* per_frame_data = nullptr;
+void AddPerFrameIsolateMemoryUsage(
+    FrameToken frame_token,
+    int64_t world_id,
+    uint64_t bytes_used,
+    blink::mojom::PerProcessV8MemoryUsageData* data) {
+  blink::mojom::PerFrameV8MemoryUsageData* per_frame_data = nullptr;
   for (auto& datum : data->associated_memory) {
     if (datum->frame_token == frame_token.value()) {
       per_frame_data = datum.get();
@@ -224,15 +224,15 @@ void AddPerFrameIsolateMemoryUsage(FrameToken frame_token,
   }
 
   if (!per_frame_data) {
-    mojom::PerFrameV8MemoryUsageDataPtr datum =
-        mojom::PerFrameV8MemoryUsageData::New();
+    blink::mojom::PerFrameV8MemoryUsageDataPtr datum =
+        blink::mojom::PerFrameV8MemoryUsageData::New();
     datum->frame_token = frame_token.value();
     per_frame_data = datum.get();
     data->associated_memory.push_back(std::move(datum));
   }
   ASSERT_FALSE(base::Contains(per_frame_data->associated_bytes, world_id));
 
-  auto isolated_world_usage = mojom::V8IsolatedWorldMemoryUsage::New();
+  auto isolated_world_usage = blink::mojom::V8IsolatedWorldMemoryUsage::New();
   isolated_world_usage->bytes_used = bytes_used;
   per_frame_data->associated_bytes[world_id] = std::move(isolated_world_usage);
 }
@@ -267,7 +267,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnEmptyGraph) {
   V8PerFrameMemoryRequest memory_request(kMinTimeBetweenRequests, graph());
 
   MockV8PerFrameMemoryReporter mock_reporter;
-  auto data = mojom::PerProcessV8MemoryUsageData::New();
+  auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
   data->unassociated_bytes_used = kUnassociatedBytes;
   ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
 
@@ -296,7 +296,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnNonEmptyGraph) {
       RenderProcessHostProxy::CreateForTesting(kTestProcessID));
 
   MockV8PerFrameMemoryReporter mock_reporter;
-  auto data = mojom::PerProcessV8MemoryUsageData::New();
+  auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
   data->unassociated_bytes_used = kUnassociatedBytes;
   ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
 
@@ -341,7 +341,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
 
   MockV8PerFrameMemoryReporter mock_reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     // Response to request 1.
     data->unassociated_bytes_used = 1;
     ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
@@ -384,7 +384,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
 
   // Expect another query once completing the query above.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     // Response to request 3.
     data->unassociated_bytes_used = 3;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
@@ -392,7 +392,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
 
   // Reply to the request above.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     // Response to request 2.
     data->unassociated_bytes_used = 2;
     std::move(callback).Run(std::move(data));
@@ -417,7 +417,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MultipleProcessesHaveDistinctSchedules) {
   // Create a process node and validate that it gets a request.
   MockV8PerFrameMemoryReporter reporter1;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1;
     ExpectBindAndRespondToQuery(&reporter1, std::move(data));
   }
@@ -432,7 +432,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MultipleProcessesHaveDistinctSchedules) {
   // Create a second process node and validate that it gets a request.
   MockV8PerFrameMemoryReporter reporter2;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 2;
     ExpectBindAndRespondToQuery(&reporter2, std::move(data));
   }
@@ -457,7 +457,8 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MultipleProcessesHaveDistinctSchedules) {
          MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
              callback) {
         *request_time = base::TimeTicks::Now();
-        std::move(callback).Run(mojom::PerProcessV8MemoryUsageData::New());
+        std::move(callback).Run(
+            blink::mojom::PerProcessV8MemoryUsageData::New());
       };
 
   base::TimeTicks process1_request_time;
@@ -483,7 +484,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
 
   MockV8PerFrameMemoryReporter reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     // Add data for an unknown frame.
     AddPerFrameIsolateMemoryUsage(FrameToken(base::UnguessableToken::Create()),
                                   0, 1024u, data.get());
@@ -514,7 +515,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   auto frame2 = CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 3,
                                           4, frame2_id);
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     AddPerFrameIsolateMemoryUsage(frame1_id, 0, 1001u, data.get());
     AddPerFrameIsolateMemoryUsage(frame2_id, 0, 1002u, data.get());
     ExpectQueryAndReply(&reporter, std::move(data));
@@ -535,7 +536,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   // Now verify that data is cleared for any frame that doesn't get an update,
   // plus verify that unknown frame data toes to unassociated bytes.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     AddPerFrameIsolateMemoryUsage(frame1_id, 0, 1003u, data.get());
     AddPerFrameIsolateMemoryUsage(FrameToken(base::UnguessableToken::Create()),
                                   0, 2233u, data.get());
@@ -577,7 +578,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // frequency.
   MockV8PerFrameMemoryReporter mock_reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1U;
     ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
   }
@@ -598,7 +599,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // Another measurement should be taken after the shortest interval.
   EXPECT_EQ(kShortInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 2U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -612,7 +613,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   short_memory_request.reset();
   EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 3U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -629,7 +630,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   long_memory_request.reset();
   EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 4U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -642,7 +643,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   medium_memory_request.reset();
   EXPECT_TRUE(decorator->GetMinTimeBetweenRequestsPerProcess().is_zero());
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 5U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -662,7 +663,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
                     ->unassociated_v8_bytes_used());
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 6U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -679,7 +680,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 7U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -689,7 +690,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   }
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 8U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -713,7 +714,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 9U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -729,7 +730,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 10U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -744,7 +745,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   EXPECT_EQ(kLongInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 11U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -758,7 +759,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   EXPECT_EQ(kLongInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 12U;
     ExpectQueryAndReply(&mock_reporter, std::move(data));
 
@@ -788,7 +789,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   // and QueryAndDelayReply expectations.
   MockV8PerFrameMemoryReporter mock_reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 0U;
     ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
   }
@@ -803,7 +804,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   // update GetMinTimeBetweenRequestsPerProcess but not start a new
   // measurement until the existing measurement finishes.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1U;
     ExpectQueryAndDelayReply(&mock_reporter, kMeasurementLength,
                              std::move(data));
@@ -828,7 +829,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   // Next measurement should start kMediumInterval secs after the START of the
   // last measurement.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 2U;
     ExpectQueryAndDelayReply(&mock_reporter, kMeasurementLength,
                              std::move(data));
@@ -850,7 +851,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   // Create a request that would be sent in the middle of a measurement. It
   // should start immediately after the measurement finishes.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 3U;
     ExpectQueryAndDelayReply(&mock_reporter, kMeasurementLength,
                              std::move(data));
@@ -869,7 +870,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   EXPECT_EQ(last_query_time_, measurement_start_time);
 
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 4U;
     ExpectQueryAndDelayReply(&mock_reporter, kMeasurementLength,
                              std::move(data));
@@ -896,7 +897,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   // Delete the last request while a measurement is in process. The
   // measurement should finish successfully but no more should be sent.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 5U;
     ExpectQueryAndDelayReply(&mock_reporter, kMeasurementLength,
                              std::move(data));
@@ -931,7 +932,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestOutlivesDecorator) {
 
   MockV8PerFrameMemoryReporter mock_reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1U;
     ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
   }
@@ -962,7 +963,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, NotifyObservers) {
   // measurement is available for it.
   MockV8PerFrameMemoryReporter reporter1;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1U;
     ExpectBindAndRespondToQuery(&reporter1, std::move(data));
   }
@@ -984,12 +985,12 @@ TEST_F(V8PerFrameMemoryDecoratorTest, NotifyObservers) {
   // for process2 and the second measurement for process1 will arrive.
   MockV8PerFrameMemoryReporter reporter2;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 2U;
     ExpectBindAndRespondToQuery(&reporter2, std::move(data));
   }
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 3U;
     ExpectQueryAndReply(&reporter1, std::move(data));
   }
@@ -1012,12 +1013,12 @@ TEST_F(V8PerFrameMemoryDecoratorTest, NotifyObservers) {
   // Remove an observer and make sure the other is still notified after the
   // next measurement.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 4U;
     ExpectQueryAndReply(&reporter1, std::move(data));
   }
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 5U;
     ExpectQueryAndReply(&reporter2, std::move(data));
   }
@@ -1047,7 +1048,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, ObserverOutlivesDecorator) {
   // Create a process node and move past the initial request to it.
   MockV8PerFrameMemoryReporter reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1U;
     ExpectBindAndRespondToQuery(&reporter, std::move(data));
   }
@@ -1064,7 +1065,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, ObserverOutlivesDecorator) {
 
   // Start the next measurement.
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 2U;
     ExpectQueryAndDelayReply(&reporter, kMinTimeBetweenRequests,
                              std::move(data));
@@ -1148,7 +1149,7 @@ TEST_F(V8PerFrameMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
 
   MockV8PerFrameMemoryReporter reporter;
   {
-    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = kUnassociatedBytes;
     AddPerFrameIsolateMemoryUsage(frame_token, 0, kAssociatedBytes, data.get());
     ExpectBindAndRespondToQuery(&reporter, std::move(data), process_id);

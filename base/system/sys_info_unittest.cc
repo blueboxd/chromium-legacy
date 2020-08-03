@@ -21,6 +21,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -193,7 +194,7 @@ TEST_F(SysInfoTest, GetHardwareInfo) {
 #endif
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
   int32_t os_major_version = -1;
@@ -297,6 +298,6 @@ TEST_F(SysInfoTest, NoCrashOnLinuxBuild) {
   SysInfo::CrashIfChromeOSNonTestImage();
 }
 
-#endif  // OS_CHROMEOS
+#endif  // OS_CHROMEOS || BUILDFLAG(IS_LACROS)
 
 }  // namespace base

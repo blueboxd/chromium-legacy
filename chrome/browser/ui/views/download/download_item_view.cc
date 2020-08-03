@@ -268,6 +268,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
   const base::string16 filename = ElidedFilename(*file_name_label);
   file_name_label->SetText(filename);
+  file_name_label->set_can_process_events_within_subtree(false);
   file_name_label_ = AddChildView(std::move(file_name_label));
 
   auto status_label = std::make_unique<views::Label>(

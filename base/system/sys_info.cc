@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 
 namespace base {
 namespace {
@@ -83,7 +84,8 @@ bool SysInfo::IsLowEndDeviceImpl() {
 }
 #endif
 
-#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_LACROS)
 std::string SysInfo::HardwareModelName() {
   return std::string();
 }

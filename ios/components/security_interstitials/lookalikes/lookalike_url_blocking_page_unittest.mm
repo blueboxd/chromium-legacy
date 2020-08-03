@@ -33,6 +33,7 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kSpinDelaySeconds;
 
 namespace {
+
 // Constants used for testing metrics.
 const char kInterstitialDecisionMetric[] = "interstitial.lookalike.decision";
 const char kInterstitialInteractionMetric[] =
@@ -53,7 +54,6 @@ std::unique_ptr<LookalikeUrlBlockingPage> CreateBlockingPage(
       std::make_unique<LookalikeUrlControllerClient>(web_state, safe_url,
                                                      request_url, "en-US"));
 }
-}  // namespace
 
 // A Test web state that sets the visible URL to the last opened URL.
 class TestWebState : public web::TestWebState {
@@ -62,6 +62,8 @@ class TestWebState : public web::TestWebState {
     SetVisibleURL(params.url);
   }
 };
+
+}  // namespace
 
 // Test fixture for SafeBrowsingBlockingPage.
 class LookalikeUrlBlockingPageTest : public PlatformTest {

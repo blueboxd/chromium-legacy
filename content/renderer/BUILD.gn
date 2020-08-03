@@ -189,8 +189,6 @@ target(link_target_type, "renderer") {
     "navigation_state.h",
     "net_info_helper.cc",
     "net_info_helper.h",
-    "performance_manager/v8_per_frame_memory_reporter_impl.cc",
-    "performance_manager/v8_per_frame_memory_reporter_impl.h",
     "peripheral_content_heuristic.cc",
     "peripheral_content_heuristic.h",
     "queue_message_swap_promise.cc",

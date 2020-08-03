@@ -622,7 +622,10 @@ public class BrowserControlsManager
         TabBrowserControlsOffsetHelper offsetHelper = null;
         if (tab != null) offsetHelper = TabBrowserControlsOffsetHelper.get(tab);
 
-        if (offsetHelper != null && offsetHelper.offsetInitialized()) {
+        // Browser controls should always be shown on native pages and restoring offsets might cause
+        // the controls to get stuck in an invalid position.
+        if (offsetHelper != null && offsetHelper.offsetInitialized() && tab != null
+                && !tab.isNativePage()) {
             updateBrowserControlsOffsets(false, offsetHelper.topControlsOffset(),
                     offsetHelper.bottomControlsOffset(), offsetHelper.contentOffset(),
                     offsetHelper.topControlsMinHeightOffset(),

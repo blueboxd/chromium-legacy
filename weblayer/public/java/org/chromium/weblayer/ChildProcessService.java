@@ -27,6 +27,7 @@ public abstract class ChildProcessService extends Service {
     public void onCreate() {
         super.onCreate();
         try {
+            WebLayer.disableWebViewCompatibilityMode();
             Context appContext = getApplicationContext();
             Context remoteContext = WebLayer.getOrCreateRemoteContext(appContext);
             if (WebLayer.getSupportedMajorVersion(appContext) < 81) {

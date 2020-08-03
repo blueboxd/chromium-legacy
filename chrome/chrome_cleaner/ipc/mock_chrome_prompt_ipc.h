@@ -28,20 +28,19 @@ class MockChromePromptIPC : public ChromePromptIPC {
   // accept base::OnceCallback parameters. Will forward any calls to
   // MockPost*() and pass along a raw pointer for |callback|.
   void PostPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
-                          const std::vector<base::string16>& registry_keys,
-                          const std::vector<base::string16>& extension_ids,
+                          const std::vector<std::wstring>& registry_keys,
+                          const std::vector<std::wstring>& extension_ids,
                           PromptUserCallback callback) override;
-  void PostDisableExtensionsTask(
-      const std::vector<base::string16>& extension_ids,
-      DisableExtensionsCallback callback) override;
+  void PostDisableExtensionsTask(const std::vector<std::wstring>& extension_ids,
+                                 DisableExtensionsCallback callback) override;
 
   MOCK_METHOD4(MockPostPromptUserTask,
                void(const std::vector<base::FilePath>& files_to_delete,
-                    const std::vector<base::string16>& registry_keys,
-                    const std::vector<base::string16>& extension_ids,
+                    const std::vector<std::wstring>& registry_keys,
+                    const std::vector<std::wstring>& extension_ids,
                     PromptUserCallback* callback));
   MOCK_METHOD2(MockPostDisableExtensionsTask,
-               void(const std::vector<base::string16>& extension_ids,
+               void(const std::vector<std::wstring>& extension_ids,
                     DisableExtensionsCallback* callback));
 };
 

@@ -24,9 +24,10 @@ const Utterance = class {
    * @param {string} textString The string of text to be spoken.
    * @param {Object} properties Speech properties to use for this utterance.
    */
-  constructor(textString, properties) {
+  constructor(textString, properties, queueMode) {
     this.textString = textString;
     this.properties = properties;
+    this.queueMode = queueMode;
     this.id = Utterance.nextUtteranceId_++;
   }
 };
@@ -118,10 +119,15 @@ TtsBackground = class extends ChromeTtsBase {
 
     /**
      * The utterance queue.
-     * @type {Array<Utterance>}
-     * @private
+     * @private {!Array<Utterance>}
      */
     this.utteranceQueue_ = [];
+
+    /**
+     * Queue of utterances interrupted by interjected utterances.
+     * @private {!Array<Utterance>}
+     */
+    this.utteranceQueueInterruptedByInterjection_ = [];
 
     /**
      * The current voice name.
@@ -243,12 +249,17 @@ TtsBackground = class extends ChromeTtsBase {
       queueMode = QueueMode.FLUSH;
     }
 
-    const utterance = new Utterance(textString, mergedProperties);
-    this.speakUsingQueue_(utterance, queueMode);
+    const utterance = new Utterance(textString, mergedProperties, queueMode);
+    this.speakUsingQueue_(utterance);
     // Attempt to queue phonetic speech with property['delay']. This ensures
     // that phonetic hints are delayed when we process them.
     this.pronouncePhonetically_(originalTextString, properties);
     return this;
+  }
+
+  /** @return {!Array<Utterance>} */
+  getUtteranceQueueForTest() {
+    return this.utteranceQueue_;
   }
 
   /**
@@ -311,17 +322,19 @@ TtsBackground = class extends ChromeTtsBase {
   /**
    * Use the speech queue to handle the given speech request.
    * @param {Utterance} utterance The utterance to speak.
-   * @param {QueueMode} queueMode The queue mode.
    * @private
    */
-  speakUsingQueue_(utterance, queueMode) {
+  speakUsingQueue_(utterance) {
+    const queueMode = utterance.queueMode;
+
     // First, take care of removing the current utterance and flushing
     // anything from the queue we need to. If we remove the current utterance,
     // make a note that we're going to stop speech.
-    if (queueMode == QueueMode.FLUSH || queueMode == QueueMode.CATEGORY_FLUSH) {
+    if (queueMode == QueueMode.FLUSH || queueMode == QueueMode.CATEGORY_FLUSH ||
+        queueMode == QueueMode.INTERJECT) {
       (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
 
-      if (this.shouldCancel_(this.currentUtterance_, utterance, queueMode)) {
+      if (this.shouldCancel_(this.currentUtterance_, utterance)) {
         // Clear timeout in case currentUtterance_ is a delayed utterance.
         this.clearTimeout_();
         this.cancelUtterance_(this.currentUtterance_);
@@ -329,7 +342,7 @@ TtsBackground = class extends ChromeTtsBase {
       }
       let i = 0;
       while (i < this.utteranceQueue_.length) {
-        if (this.shouldCancel_(this.utteranceQueue_[i], utterance, queueMode)) {
+        if (this.shouldCancel_(this.utteranceQueue_[i], utterance)) {
           this.cancelUtterance_(this.utteranceQueue_[i]);
           this.utteranceQueue_.splice(i, 1);
         } else {
@@ -338,8 +351,36 @@ TtsBackground = class extends ChromeTtsBase {
       }
     }
 
-    // Next, add the new utterance to the queue.
-    this.utteranceQueue_.push(utterance);
+    // Now, some special handling for interjections.
+    if (queueMode == QueueMode.INTERJECT) {
+      // Move all utterances to a secondary queue to be restored later.
+      this.utteranceQueueInterruptedByInterjection_ = this.utteranceQueue_;
+
+      // The interjection is the only utterance.
+      this.utteranceQueue_ = [utterance];
+
+      // Ensure to clear the current utterance and prepend it for it to repeat
+      // later.
+      if (this.currentUtterance_) {
+        this.utteranceQueueInterruptedByInterjection_.unshift(
+            this.currentUtterance_);
+        this.currentUtterance_ = null;
+      }
+
+      // Restore the interrupted utterances after allowing all other utterances
+      // in this callstack to process.
+      setTimeout(() => {
+        // Utterances on the current queue are now also interjections.
+        for (let i = 0; i < this.utteranceQueue_.length; i++) {
+          this.utteranceQueue_[i].queueMode = QueueMode.INTERJECT;
+        }
+        this.utteranceQueue_ = this.utteranceQueue_.concat(
+            this.utteranceQueueInterruptedByInterjection_);
+      }, 0);
+    } else {
+      // Next, add the new utterance to the queue.
+      this.utteranceQueue_.push(utterance);
+    }
 
     // Now start speaking the next item in the queue.
     this.startSpeakingNextItemInQueue_();
@@ -485,20 +526,21 @@ TtsBackground = class extends ChromeTtsBase {
    *
    * @param {Utterance} utteranceToCancel The utterance in question.
    * @param {Utterance} newUtterance The new utterance we're enqueueing.
-   * @param {QueueMode} queueMode The queue mode.
    * @return {boolean} True if this utterance should be canceled.
    * @private
    */
-  shouldCancel_(utteranceToCancel, newUtterance, queueMode) {
+  shouldCancel_(utteranceToCancel, newUtterance) {
     if (!utteranceToCancel) {
       return false;
     }
     if (utteranceToCancel.properties['doNotInterrupt']) {
       return false;
     }
-    switch (queueMode) {
+    switch (newUtterance.queueMode) {
       case QueueMode.QUEUE:
         return false;
+      case QueueMode.INTERJECT:
+        return utteranceToCancel.queueMode == QueueMode.INTERJECT;
       case QueueMode.FLUSH:
         return true;
       case QueueMode.CATEGORY_FLUSH:
@@ -563,7 +605,13 @@ TtsBackground = class extends ChromeTtsBase {
       this.cancelUtterance_(this.utteranceQueue_[i]);
     }
 
+    for (let i = 0; i < this.utteranceQueueInterruptedByInterjection_.length;
+         i++) {
+      this.cancelUtterance_(this.utteranceQueueInterruptedByInterjection_[i]);
+    }
+
     this.utteranceQueue_.length = 0;
+    this.utteranceQueueInterruptedByInterjection_.length = 0;
 
     (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
     chrome.tts.stop();

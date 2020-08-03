@@ -23,6 +23,19 @@ source_set("scene_guts") {
   frameworks = [ "UIKit.framework" ]
 }
 
+source_set("scene_state_header") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "scene_state.h",
+    "scene_state_browser_agent.h",
+  ]
+  public_deps = [
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/scoped_ui_blocker",
+    "//ios/chrome/browser/window_activities",
+  ]
+}
+
 source_set("scene") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -31,7 +44,6 @@ source_set("scene") {
     "scene_controller.mm",
     "scene_delegate.h",
     "scene_delegate.mm",
-    "scene_state.h",
     "scene_state.mm",
     "ui_blocker_scene_agent.h",
     "ui_blocker_scene_agent.mm",
@@ -48,6 +60,7 @@ source_set("scene") {
     "//ios/chrome/app:blocking_scene_commands",
     "//ios/chrome/app:mode",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:tab_opening",
     "//ios/chrome/app/application_delegate:url_opener_params",
     "//ios/chrome/browser",
@@ -88,8 +101,7 @@ source_set("scene") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
   ]
-  public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
-
+  public_deps = [ ":scene_state_header" ]
   allow_circular_includes_from = [
     ":main",
 
@@ -108,7 +120,6 @@ source_set("main") {
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
-    "scene_state_browser_agent.h",
     "scene_state_browser_agent.mm",
   ]
   deps = [
@@ -161,6 +172,8 @@ source_set("main") {
   if (ios_enable_multi_window || ios_enable_scene_startup) {
     deps += [ "//ios/chrome/app/resources:base_scene_storyboard" ]
   }
+
+  public_deps = [ ":scene_state_header" ]
 
   # TODO(crbug.com/1103553): remove circular dependency.
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/settings/sync" ]

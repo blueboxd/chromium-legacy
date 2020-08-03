@@ -15,6 +15,8 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/controls/menu/menu_config.h"
 
 namespace {
 
@@ -28,12 +30,41 @@ void SetClipboardText(const std::string& text) {
   base::RunLoop().RunUntilIdle();
 }
 
-const std::list<ui::ClipboardData>& GetClipboardData() {
-  return ash::Shell::Get()
-      ->clipboard_history_controller()
-      ->clipboard_history()
-      ->GetItems();
+ash::ClipboardHistoryController* GetClipboardHistoryController() {
+  return ash::Shell::Get()->clipboard_history_controller();
 }
+
+const std::list<ui::ClipboardData>& GetClipboardData() {
+  return GetClipboardHistoryController()->clipboard_history()->GetItems();
+}
+
+gfx::Rect GetClipboardHistoryMenuScreenBounds() {
+  return GetClipboardHistoryController()
+      ->GetClipboardHistoryMenuBoundsForTest();
+}
+
+class ClipboardTestHelper {
+ public:
+  ClipboardTestHelper() = default;
+  ~ClipboardTestHelper() = default;
+
+  void Init() {
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        ash::Shell::GetPrimaryRootWindow());
+  }
+
+  ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
+
+  void ShowContextMenuViaAccelerator() {
+    event_generator_->PressKey(ui::KeyboardCode::VKEY_COMMAND, ui::EF_NONE);
+    event_generator_->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+    event_generator_->ReleaseKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+    event_generator_->ReleaseKey(ui::KeyboardCode::VKEY_COMMAND, ui::EF_NONE);
+  }
+
+ private:
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
+};
 
 }  // namespace
 
@@ -51,10 +82,27 @@ class ClipboardHistoryWithMultiProfileBrowserTest
 
   ~ClipboardHistoryWithMultiProfileBrowserTest() override = default;
 
+  ui::test::EventGenerator* GetEventGenerator() {
+    return test_helper_->event_generator();
+  }
+
  protected:
+  void ShowContextMenuViaAccelerator() {
+    test_helper_->ShowContextMenuViaAccelerator();
+  }
+
+  void SetUpOnMainThread() override {
+    chromeos::LoginManagerTest::SetUpOnMainThread();
+
+    test_helper_ = std::make_unique<ClipboardTestHelper>();
+    test_helper_->Init();
+  }
+
   AccountId account_id1_;
   AccountId account_id2_;
   chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
+
+  std::unique_ptr<ClipboardTestHelper> test_helper_;
 
   base::test::ScopedFeatureList feature_list_;
 };
@@ -110,4 +158,34 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
     std::advance(it, 1u);
     EXPECT_EQ(copypaste_data1, it->text());
   }
+}
+
+// Verifies that the history menu is anchored at the cursor's location when
+// not having any textfield.
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+                       ShowHistoryMenuWhenNoTextfieldExists) {
+  LoginUser(account_id1_);
+
+  // Close the browser window to ensure that textfield does not exist.
+  CloseAllBrowsers();
+
+  // No clipboard data. So the clipboard history menu should not show.
+  ASSERT_TRUE(GetClipboardData().empty());
+  ShowContextMenuViaAccelerator();
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+
+  SetClipboardText("test");
+
+  const gfx::Point mouse_location =
+      ash::Shell::Get()->GetPrimaryRootWindow()->bounds().CenterPoint();
+  GetEventGenerator()->MoveMouseTo(mouse_location);
+  ShowContextMenuViaAccelerator();
+
+  // Verifies that the menu is anchored at the cursor's location.
+  ASSERT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  const gfx::Point menu_origin = GetClipboardHistoryMenuScreenBounds().origin();
+  EXPECT_EQ(mouse_location.x() +
+                views::MenuConfig::instance().touchable_anchor_offset,
+            menu_origin.x());
+  EXPECT_EQ(mouse_location.y(), menu_origin.y());
 }

@@ -26,12 +26,12 @@ class ToggleImageButton;
 }  // namespace views
 
 namespace ash {
-class LoginButton;
+class ArrowButtonView;
 enum class EasyUnlockIconId;
 
-// Contains a textfield instance with a submit button when the display password
-// button feature is disabled, and a display password button otherwise. The user
-// can type a password into the textfield and hit enter to submit.
+// Contains a textfield and a submit button. When the display password button
+// feature is enabled, the textfield contains a button in the form of an eye
+// icon that the user can click on to reveal the password.
 //
 // This view is always rendered via layers.
 //
@@ -39,18 +39,18 @@ enum class EasyUnlockIconId;
 // When the display password button feature is disabled, the password view looks
 // like this:
 //
-// * * * * * *     =>
+// * * * * * *         (=>)
 // ------------------
 //
 // When the display password button feature is enabled, the password view looks
 // like this by default:
 //
-//  * * * * * *    (\)
+//  * * * * * *    (\)  (=>)
 //  ------------------
 //
 //  or this, in display mode:
 //
-//  1 2 3 4 5 6    (o)
+//  1 2 3 4 5 6    (o)  (=>)
 //  ------------------
 class ASH_EXPORT LoginPasswordView : public views::View,
                                      public views::ButtonListener,
@@ -208,7 +208,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   views::View* password_row_ = nullptr;
 
   LoginTextfield* textfield_ = nullptr;
-  LoginButton* submit_button_ = nullptr;
+  ArrowButtonView* submit_button_ = nullptr;
   DisplayPasswordButton* display_password_button_ = nullptr;
   views::ImageView* capslock_icon_ = nullptr;
   views::Separator* separator_ = nullptr;

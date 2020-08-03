@@ -433,9 +433,13 @@ bool GLImageIOSurface::IsInUseByWindowServer() const {
   // IOSurfaceIsInUse() will always return true if the IOSurface is wrapped in
   // a CVPixelBuffer. Ignore the signal for such IOSurfaces (which are the ones
   // output by hardware video decode).
-  if (cv_pixel_buffer_)
+  if (disable_in_use_by_window_server_)
     return false;
   return IOSurfaceIsInUse(io_surface_.get());
+}
+
+void GLImageIOSurface::DisableInUseByWindowServer() {
+  disable_in_use_by_window_server_ = true;
 }
 
 void GLImageIOSurface::SetColorSpaceForYUVToRGBConversion(

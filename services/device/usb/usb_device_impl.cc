@@ -78,7 +78,7 @@ void UsbDeviceImpl::ReadAllConfigurations() {
         continue;
       }
 
-      if (!usb_descriptor.Parse(std::vector<uint8_t>(buffer, buffer + rv)))
+      if (!usb_descriptor.Parse(base::make_span(buffer, rv)))
         USB_LOG(EVENT) << "Config descriptor index " << i << " was corrupt.";
       free(buffer);
 

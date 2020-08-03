@@ -79,8 +79,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void StartReceiving() override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
-  bool handshake_succeeded() const { return handshake_succeeded_; }
-
   // Whether to allow sending/setting cookies during WebSocket handshakes for
   // |url|. This decision is based on the |options_| and |origin_| this
   // WebSocket was created with.
@@ -202,8 +200,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // For 3rd-party cookie permission checking.
   net::SiteForCookies site_for_cookies_;
 
-  // handshake_succeeded_ is used by WebSocketManager to manage counters for
-  // per-renderer WebSocket throttling.
   bool handshake_succeeded_ = false;
   const HasRawHeadersAccess has_raw_headers_access_;
 

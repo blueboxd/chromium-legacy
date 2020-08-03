@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -19,6 +18,9 @@
 class FakeBaseTabStripController : public TabStripController {
  public:
   FakeBaseTabStripController();
+  FakeBaseTabStripController(const FakeBaseTabStripController&) = delete;
+  FakeBaseTabStripController& operator=(const FakeBaseTabStripController&) =
+      delete;
   ~FakeBaseTabStripController() override;
 
   void AddTab(int index, bool is_active);
@@ -101,8 +103,6 @@ class FakeBaseTabStripController : public TabStripController {
   std::vector<base::Optional<tab_groups::TabGroupId>> tab_groups_;
 
   ui::ListSelectionModel selection_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBaseTabStripController);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_

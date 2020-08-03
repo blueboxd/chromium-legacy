@@ -63,6 +63,8 @@
 #if defined(OS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
+#else
+#include "third_party/blink/renderer/controller/performance_manager/v8_per_frame_memory_reporter_impl.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -203,7 +205,14 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
                   &CrashMemoryMetricsReporterImpl::Bind)),
               main_thread->GetTaskRunner());
+#else
+  // Currently nothing on Android samples V8PerFrameMemory, so only initialize
+  // the reporter on desktop to save memory.
+  binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  &V8PerFrameMemoryReporterImpl::Create)),
+              main_thread->GetTaskRunner());
 #endif
+
 #if defined(OS_LINUX)
   binders.Add(ConvertToBaseRepeatingCallback(
                   CrossThreadBindRepeating(&MemoryUsageMonitorPosix::Bind)),

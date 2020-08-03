@@ -134,6 +134,9 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // storage for the image.
   virtual bool IsInUseByWindowServer() const;
 
+  // If called, then IsInUseByWindowServer will always return false.
+  virtual void DisableInUseByWindowServer();
+
 #if defined(OS_ANDROID)
   // Provides the buffer backing this image, if it is backed by an
   // AHardwareBuffer. The ScopedHardwareBuffer returned may include a fence

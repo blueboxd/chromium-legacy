@@ -36,6 +36,10 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
     TabHoverCardBubbleView::disable_animations_for_testing_ = true;
     scoped_feature_list_.InitAndEnableFeature(features::kTabHoverCards);
   }
+  TabHoverCardBubbleViewBrowserTest(const TabHoverCardBubbleViewBrowserTest&) =
+      delete;
+  TabHoverCardBubbleViewBrowserTest& operator=(
+      const TabHoverCardBubbleViewBrowserTest&) = delete;
   ~TabHoverCardBubbleViewBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -91,8 +95,6 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   TabStrip* tab_strip_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,

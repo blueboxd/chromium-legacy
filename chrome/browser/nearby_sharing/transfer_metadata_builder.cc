@@ -8,6 +8,12 @@ TransferMetadataBuilder::TransferMetadataBuilder() = default;
 
 TransferMetadataBuilder::~TransferMetadataBuilder() = default;
 
+TransferMetadataBuilder& TransferMetadataBuilder::set_is_final_status(
+    bool is_final_status) {
+  is_final_status_ = is_final_status;
+  return *this;
+}
+
 TransferMetadataBuilder& TransferMetadataBuilder::set_progress(
     double progress) {
   progress_ = progress;
@@ -28,6 +34,5 @@ TransferMetadataBuilder& TransferMetadataBuilder::set_token(
 
 TransferMetadata TransferMetadataBuilder::build() const {
   return TransferMetadata(status_, progress_, token_,
-                          /*is_original=*/false,
-                          /*is_final_status=*/false);
+                          /*is_original=*/false, is_final_status_);
 }

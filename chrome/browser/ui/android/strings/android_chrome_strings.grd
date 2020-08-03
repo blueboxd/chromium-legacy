@@ -251,7 +251,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_ANNOUNCEMENT" desc="Label for announcements notifications, within a list of notification categories. [CHAR-LIMIT=32]">
         Announcements
       </message>
-
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests
       </message>
@@ -3969,6 +3968,26 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_LITE_MODE_HTTPS_IMAGE_COMPRESSION_SETTINGS_LINK" desc="This link opens the Lite Mode settings page to explain the feature and configure the settings.">
         Manage
+      </message>
+
+      <!-- Browser Promo Notification Strings -->
+      <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_1_TITLE" desc="The title of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.  Promotes relevant articles Chrome has.">
+        Read today's news <ph name="NEWS_ICON">📰</ph>
+      </message>
+      <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_1_DESCRIPTION" desc="The body text of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.  Promotes relevant articles Chrome has.">
+        Articles on your interests on Chrome
+      </message>
+      <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_2_TITLE" desc="The title of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.  Promotes data savings.">
+        Save up to 60% data
+      </message>
+      <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_2_DESCRIPTION" desc="The body text of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.  Promotes data savings.">
+        Use Lite mode on Google Chrome
+      </message>
+      <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_3_TITLE" desc="The title of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.">
+        Google recommends Chrome
+      </message>
+      <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_3_DESCRIPTION" desc="The title of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.  Promotes data savings and relevant news.">
+        Save up to 60% data, read today's news
       </message>
     </messages>
   </release>

@@ -15,6 +15,8 @@ class TransferMetadataBuilder {
   TransferMetadataBuilder();
   ~TransferMetadataBuilder();
 
+  TransferMetadataBuilder& set_is_final_status(bool is_final_status);
+
   TransferMetadataBuilder& set_progress(double progress);
 
   TransferMetadataBuilder& set_status(TransferMetadata::Status status);
@@ -24,6 +26,7 @@ class TransferMetadataBuilder {
   TransferMetadata build() const;
 
  private:
+  bool is_final_status_ = false;
   double progress_ = 0;
   TransferMetadata::Status status_ = TransferMetadata::Status::kInProgress;
   base::Optional<std::string> token_;

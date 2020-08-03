@@ -10,7 +10,6 @@
 #include <new>
 
 #include "base/allocator/buildflags.h"
-#include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/check_op.h"
 #include "base/macros.h"
@@ -37,13 +36,12 @@
 
 namespace {
 
-base::subtle::AtomicWord g_chain_head =
-    reinterpret_cast<base::subtle::AtomicWord>(
-        &base::allocator::AllocatorDispatch::default_dispatch);
+std::atomic<const base::allocator::AllocatorDispatch*> g_chain_head{
+    &base::allocator::AllocatorDispatch::default_dispatch};
 
 bool g_call_new_handler_on_malloc_failure = false;
 
-inline size_t GetCachedPageSize() {
+ALWAYS_INLINE size_t GetCachedPageSize() {
   static size_t pagesize = 0;
   if (!pagesize)
     pagesize = base::GetPageSize();
@@ -66,9 +64,8 @@ bool CallNewHandler(size_t size) {
 #endif
 }
 
-inline const base::allocator::AllocatorDispatch* GetChainHead() {
-  return reinterpret_cast<const base::allocator::AllocatorDispatch*>(
-      base::subtle::NoBarrier_Load(&g_chain_head));
+ALWAYS_INLINE const base::allocator::AllocatorDispatch* GetChainHead() {
+  return g_chain_head.load(std::memory_order_relaxed);
 }
 
 }  // namespace
@@ -99,13 +96,11 @@ void InsertAllocatorDispatch(AllocatorDispatch* dispatch) {
     // we don't really want this to be a release-store with a corresponding
     // acquire-load during malloc().
     std::atomic_thread_fence(std::memory_order_seq_cst);
-    subtle::AtomicWord old_value =
-        reinterpret_cast<subtle::AtomicWord>(chain_head);
     // Set the chain head to the new dispatch atomically. If we lose the race,
-    // the comparison will fail, and the new head of chain will be returned.
-    if (subtle::NoBarrier_CompareAndSwap(
-            &g_chain_head, old_value,
-            reinterpret_cast<subtle::AtomicWord>(dispatch)) == old_value) {
+    // retry.
+    if (g_chain_head.compare_exchange_strong(chain_head, dispatch,
+                                             std::memory_order_relaxed,
+                                             std::memory_order_relaxed)) {
       // Success.
       return;
     }
@@ -116,8 +111,7 @@ void InsertAllocatorDispatch(AllocatorDispatch* dispatch) {
 
 void RemoveAllocatorDispatchForTesting(AllocatorDispatch* dispatch) {
   DCHECK_EQ(GetChainHead(), dispatch);
-  subtle::NoBarrier_Store(&g_chain_head,
-                          reinterpret_cast<subtle::AtomicWord>(dispatch->next));
+  g_chain_head.store(dispatch->next, std::memory_order_relaxed);
 }
 
 }  // namespace allocator

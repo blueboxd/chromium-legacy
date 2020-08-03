@@ -160,7 +160,9 @@ class AlertIndicator::FadeAnimationDelegate
  public:
   explicit FadeAnimationDelegate(AlertIndicator* indicator)
       : AnimationDelegateViews(indicator), indicator_(indicator) {}
-  ~FadeAnimationDelegate() override {}
+  FadeAnimationDelegate(const FadeAnimationDelegate&) = delete;
+  FadeAnimationDelegate& operator=(const FadeAnimationDelegate&) = delete;
+  ~FadeAnimationDelegate() override = default;
 
  private:
   // views::AnimationDelegateViews
@@ -179,8 +181,6 @@ class AlertIndicator::FadeAnimationDelegate
   }
 
   AlertIndicator* const indicator_;
-
-  DISALLOW_COPY_AND_ASSIGN(FadeAnimationDelegate);
 };
 
 AlertIndicator::AlertIndicator(Tab* parent_tab)

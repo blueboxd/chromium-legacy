@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 
 #include "base/ios/block_types.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -13,6 +14,7 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -36,7 +38,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FormInputAccessoryMediator () <FormActivityObserver,
+@interface FormInputAccessoryMediator () <AppStateObserver,
+                                          FormActivityObserver,
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
                                           KeyboardObserverHelperConsumer,
@@ -83,6 +86,10 @@
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
 
+// Contains information about the application state, for example the last window
+// that was tapped.
+@property(nonatomic, weak) AppState* appState;
+
 @end
 
 @implementation FormInputAccessoryMediator {
@@ -124,7 +131,8 @@
            webStateList:(WebStateList*)webStateList
     personalDataManager:(autofill::PersonalDataManager*)personalDataManager
           passwordStore:
-              (scoped_refptr<password_manager::PasswordStore>)passwordStore {
+              (scoped_refptr<password_manager::PasswordStore>)passwordStore
+               appState:(AppState*)appState {
   self = [super init];
   if (self) {
     _consumer = consumer;
@@ -208,6 +216,10 @@
       consumer.creditCardButtonHidden = YES;
       consumer.addressButtonHidden = YES;
     }
+    _appState = appState;
+    if (!base::ios::IsRunningOnIOS14OrLater()) {
+      [_appState addObserver:self];
+    }
   }
   return self;
 }
@@ -231,6 +243,9 @@
     _webStateList->RemoveObserver(_webStateListObserver.get());
     _webStateListObserver.reset();
     _webStateList = nullptr;
+  }
+  if (!base::ios::IsRunningOnIOS14OrLater()) {
+    [_appState removeObserver:self];
   }
 }
 
@@ -544,6 +559,16 @@
 
   UIView* webStateContainerView = self.webState->GetView();
   BOOL webStateInKeyWindow = webStateContainerView.window.isKeyWindow;
+  if (!base::ios::IsRunningOnIOS14OrLater()) {
+    // This is a workaround for a bug in iOS multiwindow, in which you can touch
+    // a webView without the window getting the keyboard focus. The result is
+    // that you focus a field in the new window gains focus, but keyboard typing
+    // continue to happen in the other window.
+    // TODO(crbug.com/1109124): Remove this workaround.
+    webStateInKeyWindow =
+        webStateInKeyWindow &&
+        webStateContainerView.window == self.appState.lastTappedWindow;
+  }
   if (webStateInKeyWindow) {
     UIResponder* firstResponder = GetFirstResponder();
     while (firstResponder) {
@@ -601,6 +626,11 @@
 
   self.consumer.addressButtonHidden =
       _personalDataManager->GetProfilesToSuggest().empty();
+}
+
+#pragma mark - AppStateObserver
+- (void)appState:(AppState*)appState lastTappedWindowChanged:(UIWindow*)window {
+  [self verifyFirstResponderAndUpdateCustomKeyboardView];
 }
 
 #pragma mark - Tests

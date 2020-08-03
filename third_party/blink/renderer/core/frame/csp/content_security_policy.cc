@@ -1441,12 +1441,12 @@ void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
     cspDetails->frame_ancestor = std::move(affected_frame);
   }
   if (violation_data.sourceFile() && violation_data.lineNumber()) {
-    auto source_code_location = mojom::blink::SourceCodeLocation::New();
-    source_code_location->url = violation_data.sourceFile();
+    auto source_location = network::mojom::blink::SourceLocation::New();
+    source_location->url = violation_data.sourceFile();
     // The frontend expects 0-based line numbers.
-    source_code_location->line_number = violation_data.lineNumber() - 1;
-    source_code_location->column_number = violation_data.columnNumber();
-    cspDetails->source_code_location = std::move(source_code_location);
+    source_location->line = violation_data.lineNumber() - 1;
+    source_location->column = violation_data.columnNumber();
+    cspDetails->source_location = std::move(source_location);
   }
 
   auto details = mojom::blink::InspectorIssueDetails::New();

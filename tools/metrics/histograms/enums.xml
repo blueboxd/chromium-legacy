@@ -28886,6 +28886,12 @@ Called by update_feature_policy_enum.py.-->
   <int value="8" label="Tapped Open in New Tab"/>
   <int value="9" label="Opened context menu"/>
   <int value="10" label="Opened feed surface"/>
+  <int value="11" label="Tapped Open in Incognito tab"/>
+  <int value="12"
+      label="Ephemeral change, likely due to hide story or not interested in"/>
+  <int value="13"
+      label="Ephemeral change undone, likely due to pressing 'undo' on the
+             snackbar"/>
 </enum>
 
 <enum name="FeedZeroStateShowReason">
@@ -41468,6 +41474,7 @@ from previous Chrome versions.
   <int value="-396046249" label="PhotoPickerVideoSupport:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>
   <int value="-395454065" label="DisablePostScriptPrinting:disabled"/>
+  <int value="-394734604" label="FillingPasswordsFromAnyOrigin:disabled"/>
   <int value="-389664522"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:enabled"/>
   <int value="-387606010" label="ArcBootCompletedBroadcast:enabled"/>
@@ -42184,6 +42191,7 @@ from previous Chrome versions.
   <int value="393704200" label="account-consistency"/>
   <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
   <int value="399039205" label="enable-webrtc-hw-vp9-encoding"/>
+  <int value="399177140" label="FillingPasswordsFromAnyOrigin:enabled"/>
   <int value="399398207"
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:enabled"/>
   <int value="400272381" label="LazyFrameLoading:disabled"/>
@@ -68556,6 +68564,11 @@ would be helpful to identify which type is being sent.
   <int value="20" label="Permission Requests High"/>
   <int value="21" label="Announcement"/>
   <int value="22" label="Share Save Image"/>
+  <int value="23" label="TWA Disclosure Initial"/>
+  <int value="24" label="TWA Disclosure Subsequent"/>
+  <int value="25" label="Chrome Reengagement 1"/>
+  <int value="26" label="Chrome Reengagement 2"/>
+  <int value="27" label="Chrome Reengagement 3"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

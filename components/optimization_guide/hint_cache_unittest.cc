@@ -96,10 +96,11 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
   void UpdateFetchedHintsAndWait(
       std::unique_ptr<proto::GetHintsResponse> get_hints_response,
       base::Time stored_time,
+      const base::flat_set<std::string>& hosts_fetched,
       const base::flat_set<GURL>& urls_fetched) {
     are_fetched_hints_updated_ = false;
     hint_cache_->UpdateFetchedHints(
-        std::move(get_hints_response), stored_time, urls_fetched,
+        std::move(get_hints_response), stored_time, hosts_fetched, urls_fetched,
         base::BindOnce(&HintCacheTest::OnHintsUpdated, base::Unretained(this)));
 
     while (!are_fetched_hints_updated_)
@@ -541,7 +542,8 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {});
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            {"host.domain.org"}, {});
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
@@ -556,14 +558,13 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {});
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {}, {});
   // Empty Fetched Hints causes the metadata entry to be updated.
   EXPECT_TRUE(are_fetched_hints_updated());
   EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 }
 
 TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
-  base::HistogramTester histogram_tester;
   const int kMemoryCacheSize = 5;
   const int kFetchedHintExpirationSecs = 60;
   CreateAndInitializeHintCache(kMemoryCacheSize);
@@ -585,22 +586,22 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   base::Time stored_time = base::Time().Now();
   GURL navigation_url("https://foo.com");
   UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
-                            {navigation_url});
+                            {"host.domain.org"}, {navigation_url});
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
   EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 
-  LoadHint("host.domain.org");
-  // HISTOGRAM TEST!
-  histogram_tester.ExpectTimeBucketCount(
-      "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
-      base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs), 1);
-  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(navigation_url));
+  // Should be loaded right when response is received.
+  EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
+
+  // Set time so hint should be expired.
+  MoveClockForwardBy(
+      base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs + 1));
+  EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 }
 
 TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
-  base::HistogramTester histogram_tester;
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -617,16 +618,21 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {});
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            {"host.domain.org"}, {});
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
   EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 
-  LoadHint("host.domain.org");
-  histogram_tester.ExpectTimeBucketCount(
-      "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
-      optimization_guide::features::StoredFetchedHintsFreshnessDuration(), 1);
+  // Should be loaded right when response is received.
+  EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
+
+  // Set time so hint should be expired.
+  MoveClockForwardBy(
+      optimization_guide::features::StoredFetchedHintsFreshnessDuration() +
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 }
 
 TEST_F(HintCacheTest, CacheValidURLKeyedHint) {
@@ -702,7 +708,8 @@ TEST_F(HintCacheTest, PurgeExpiredFetchedHints) {
   page_hint2->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {});
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            {"shouldpurge.com", "notpurged.com"}, {});
   EXPECT_TRUE(are_fetched_hints_updated());
   EXPECT_TRUE(hint_cache()->HasHint("shouldpurge.com"));
   EXPECT_TRUE(hint_cache()->HasHint("notpurged.com"));
@@ -741,7 +748,8 @@ TEST_F(HintCacheTest, ClearFetchedHints) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {});
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            {"host.com"}, {});
   EXPECT_TRUE(are_fetched_hints_updated());
   LoadHint(host);
 
@@ -824,7 +832,7 @@ TEST_F(HintCacheTest, URLsWithNoURLKeyedHints) {
 
   base::Time stored_time = base::Time().Now();
   UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
-                            {https_url_without_hint});
+                            {"host.com"}, {https_url_without_hint});
 
   EXPECT_TRUE(hint_cache()->HasURLKeyedEntryForURL(https_url_with_hint));
   EXPECT_TRUE(hint_cache()->HasURLKeyedEntryForURL(https_url_with_hint));

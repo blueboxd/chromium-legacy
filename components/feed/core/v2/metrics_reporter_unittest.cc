@@ -161,7 +161,8 @@ TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
   reporter_->OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
-                          LoadStreamStatus::kLoadedFromNetwork);
+                          LoadStreamStatus::kLoadedFromNetwork,
+                          std::make_unique<LoadLatencyTimes>());
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
@@ -173,13 +174,40 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
   reporter_->OnLoadStream(LoadStreamStatus::kNoStatus,
-                          LoadStreamStatus::kLoadedFromNetwork);
+                          LoadStreamStatus::kLoadedFromNetwork,
+                          std::make_unique<LoadLatencyTimes>());
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
       LoadStreamStatus::kLoadedFromNetwork, 1);
   histogram_.ExpectTotalCount(
       "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore", 0);
+}
+
+TEST_F(MetricsReporterTest, ReportsLoadStepLatenciesOnFirstView) {
+  {
+    auto latencies = std::make_unique<LoadLatencyTimes>();
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(150));
+    latencies->StepComplete(LoadLatencyTimes::kLoadFromStore);
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+    latencies->StepComplete(LoadLatencyTimes::kUploadActions);
+    reporter_->OnLoadStream(LoadStreamStatus::kNoStatus,
+                            LoadStreamStatus::kLoadedFromNetwork,
+                            std::move(latencies));
+  }
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(300));
+  reporter_->ContentSliceViewed(kSurfaceId, 0);
+  reporter_->ContentSliceViewed(kSurfaceId, 1);
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.LoadStepLatency.LoadFromStore",
+      base::TimeDelta::FromMilliseconds(150), 1);
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.LoadStepLatency.ActionUpload",
+      base::TimeDelta::FromMilliseconds(50), 1);
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.LoadStepLatency.StreamView",
+      base::TimeDelta::FromMilliseconds(300), 1);
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadMoreStatus) {

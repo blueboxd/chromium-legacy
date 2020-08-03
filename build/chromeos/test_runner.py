@@ -933,7 +933,20 @@ def main():
       help='A Tast test to run in the device (eg: "ui.ChromeLogin").')
 
   add_common_args(gtest_parser, tast_test_parser, host_cmd_parser)
-  args, unknown_args = parser.parse_known_args()
+
+  args = sys.argv[1:]
+  unknown_args = []
+  # If a '--' is present in the args, treat everything to the right of it as
+  # args to the test and everything to the left as args to this test runner.
+  # Otherwise treat all known args as args to this test runner and all unknown
+  # args as test args.
+  if '--' in args:
+    unknown_args = args[args.index('--') + 1:]
+    args = args[0:args.index('--')]
+  if unknown_args:
+    args = parser.parse_args(args=args)
+  else:
+    args, unknown_args = parser.parse_known_args()
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 

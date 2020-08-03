@@ -742,8 +742,6 @@ crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-001.html [ Failure 
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/1111708 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
-crbug.com/1111710 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
-crbug.com/1111710 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
@@ -2104,6 +2102,10 @@ crbug.com/796619 [ Win10 ] external/wpt/css/css-fonts/matching/fixed-stretch-sty
 crbug.com/796619 [ Win10 ] external/wpt/css/css-fonts/matching/stretch-distance-over-weight-distance.html [ Failure ]
 crbug.com/796619 [ Win10 ] external/wpt/css/css-fonts/matching/style-ranges-over-weight-direction.html [ Failure ]
 
+# CSS Font Feature Resolution is not implemented yet
+crbug.com/450619 external/wpt/css/css-fonts/font-feature-resolution-001.html [ Failure ]
+crbug.com/450619 external/wpt/css/css-fonts/font-feature-resolution-002.html [ Failure ]
+
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 
@@ -3440,8 +3442,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-symbols.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-extends-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-builtin.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-fonts/font-feature-resolution-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-fonts/font-feature-resolution-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-05.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
@@ -3477,8 +3477,6 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2j.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2k.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2l.html [ Failure ]
-crbug.com/626703 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-minimum.html [ Timeout ]
-crbug.com/626703 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-01.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-02.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-03.html [ Failure ]

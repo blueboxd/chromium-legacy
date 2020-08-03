@@ -68,6 +68,8 @@
     ]
   },
 
+  "CloudPolicyOverridesPlatformPolicy": {},
+
   "DefaultPopupsSetting": {
     "os": [ "ios" ],
     "note": "TODO(crbug.com/106682): Flag this with can_be_recommended",

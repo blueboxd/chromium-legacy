@@ -285,7 +285,8 @@ void AutofillControllerTest::SetUp() {
                                                   delegate:nil
                                               webStateList:NULL
                                        personalDataManager:NULL
-                                             passwordStore:nullptr];
+                                             passwordStore:nullptr
+                                                  appState:nil];
 
   [accessory_mediator_ injectWebState:web_state()];
   [accessory_mediator_ injectProvider:suggestion_controller_];

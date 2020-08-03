@@ -29,7 +29,8 @@ class Tab;
 class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
  public:
   explicit TabHoverCardBubbleView(Tab* tab);
-
+  TabHoverCardBubbleView(const TabHoverCardBubbleView&) = delete;
+  TabHoverCardBubbleView& operator=(const TabHoverCardBubbleView&) = delete;
   ~TabHoverCardBubbleView() override;
 
   // Updates card content and anchoring and shows the tab hover card.
@@ -122,8 +123,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   bool waiting_for_decompress_ = false;
 
   base::OneShotTimer delayed_show_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_

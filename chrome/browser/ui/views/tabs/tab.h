@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
@@ -68,6 +67,8 @@ class Tab : public gfx::AnimationDelegate,
   static void SetShowHoverCardOnMouseHoverForTesting(bool value);
 
   explicit Tab(TabController* controller);
+  Tab(const Tab&) = delete;
+  Tab& operator=(const Tab&) = delete;
   ~Tab() override;
 
   // gfx::AnimationDelegate:
@@ -277,8 +278,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // Focus ring for accessibility.
   views::FocusRing* focus_ring_;
-
-  DISALLOW_COPY_AND_ASSIGN(Tab);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_H_

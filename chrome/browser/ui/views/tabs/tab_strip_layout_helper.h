@@ -39,6 +39,8 @@ class TabStripLayoutHelper {
   TabStripLayoutHelper(const TabStripController* controller,
                        GetTabsCallback get_tabs_callback,
                        GetGroupHeadersCallback get_group_headers_callback);
+  TabStripLayoutHelper(const TabStripLayoutHelper&) = delete;
+  TabStripLayoutHelper& operator=(const TabStripLayoutHelper&) = delete;
   ~TabStripLayoutHelper();
 
   // Returns a vector of all tabs in the strip, including both closing tabs
@@ -190,8 +192,6 @@ class TabStripLayoutHelper {
 
   int first_non_pinned_tab_index_;
   int first_non_pinned_tab_x_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripLayoutHelper);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_LAYOUT_HELPER_H_

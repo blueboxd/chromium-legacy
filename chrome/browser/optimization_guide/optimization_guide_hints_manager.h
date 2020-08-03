@@ -269,6 +269,7 @@ class OptimizationGuideHintsManager
   // Optimization Guide Service and are ready for parsing. This is used when
   // fetching hints in batch mode.
   void OnTopHostsHintsFetched(
+      const base::flat_set<std::string>& hosts_fetched,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);

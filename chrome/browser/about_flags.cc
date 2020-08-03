@@ -3576,11 +3576,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kGdiTextPrinting)},
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MAC)
     {"new-usb-backend", flag_descriptions::kNewUsbBackendName,
-     flag_descriptions::kNewUsbBackendDescription, kOsWin,
+     flag_descriptions::kNewUsbBackendDescription, kOsWin | kOsMac,
      FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 #if defined(OS_ANDROID)
     {"omnibox-adaptive-suggestions-count",
@@ -6169,6 +6169,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFrameThrottleFpsDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kFrameThrottleFpsChoices)}
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    {"filling-passwords-from-any-origin",
+     flag_descriptions::kFillingPasswordsFromAnyOriginName,
+     flag_descriptions::kFillingPasswordsFromAnyOriginDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kFillingPasswordsFromAnyOrigin)},
+#endif  // OS_ANDROID
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

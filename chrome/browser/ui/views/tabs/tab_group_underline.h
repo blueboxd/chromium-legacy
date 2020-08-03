@@ -20,6 +20,8 @@ class TabGroupUnderline : public views::View {
 
   TabGroupUnderline(TabGroupViews* tab_group_views,
                     const tab_groups::TabGroupId& group);
+  TabGroupUnderline(const TabGroupUnderline&) = delete;
+  TabGroupUnderline& operator=(const TabGroupUnderline&) = delete;
 
   const tab_groups::TabGroupId& group() const { return group_; }
 
@@ -46,8 +48,6 @@ class TabGroupUnderline : public views::View {
 
   TabGroupViews* const tab_group_views_;
   const tab_groups::TabGroupId group_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabGroupUnderline);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_UNDERLINE_H_

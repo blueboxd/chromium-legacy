@@ -32,6 +32,9 @@
 // Called after the app exits safe mode.
 - (void)appStateDidExitSafeMode:(AppState*)appState;
 
+// Called when |AppState.lastTappedWindow| changes.
+- (void)appState:(AppState*)appState lastTappedWindowChanged:(UIWindow*)window;
+
 @end
 
 // Represents the application state and responds to application state changes
@@ -65,6 +68,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // interaction with the app is allowed) is shown, this tracks the scene where it
 // is shown. When there is no blocking UI shown in any scene, this is nil.
 @property(nonatomic, weak, readonly) SceneState* sceneShowingBlockingUI;
+
+// The last window which received a tap.
+@property(nonatomic, weak) UIWindow* lastTappedWindow;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch

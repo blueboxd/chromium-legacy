@@ -6,6 +6,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -36,6 +37,14 @@ message_center::Notification CreateNearbyNotification(const std::string& id) {
       /*optional_fields=*/{},
       /*delegate=*/nullptr);
   notification.set_vector_small_image(kNearbyShareIcon);
+
+  // TODO(crbug.com/1102348): Also show settings for other platforms once there
+  // is a nearby settings page in Chrome browser.
+#if defined(OS_CHROMEOS)
+  notification.set_settings_button_handler(
+      message_center::SettingsButtonHandler::DELEGATE);
+#endif
+
   return notification;
 }
 
@@ -164,6 +173,31 @@ gfx::Image GetImageFromShareTarget(const ShareTarget& share_target) {
   return gfx::Image();
 }
 
+class ProgressNotificationDelegate : public NearbyNotificationDelegate {
+ public:
+  explicit ProgressNotificationDelegate(NearbyNotificationManager* manager)
+      : manager_(manager) {}
+  ~ProgressNotificationDelegate() override = default;
+
+  // NearbyNotificationDelegate:
+  void OnClick(const std::string& notification_id,
+               const base::Optional<int>& action_index) override {
+    // Clicking on the notification is a noop.
+    if (!action_index)
+      return;
+    // Clicking on the only (cancel) button cancels the transfer.
+    DCHECK_EQ(0, *action_index);
+    manager_->CancelTransfer();
+  }
+
+  void OnClose(const std::string& notification_id) override {
+    manager_->CancelTransfer();
+  }
+
+ private:
+  NearbyNotificationManager* manager_;
+};
+
 }  // namespace
 
 NearbyNotificationManager::NearbyNotificationManager(
@@ -187,6 +221,10 @@ NearbyNotificationManager::~NearbyNotificationManager() {
 void NearbyNotificationManager::OnTransferUpdate(
     const ShareTarget& share_target,
     const TransferMetadata& transfer_metadata) {
+  if (!share_target_)
+    share_target_ = share_target;
+  DCHECK_EQ(share_target_->id, share_target.id);
+
   switch (transfer_metadata.status()) {
     case TransferMetadata::Status::kInProgress:
       ShowProgress(share_target, transfer_metadata);
@@ -217,6 +255,9 @@ void NearbyNotificationManager::OnTransferUpdate(
         ShowFailure(share_target);
       break;
   }
+
+  if (transfer_metadata.is_final_status())
+    share_target_.reset();
 }
 
 void NearbyNotificationManager::OnShareTargetDiscovered(
@@ -249,6 +290,9 @@ void NearbyNotificationManager::ShowProgress(
   notification_actions.emplace_back(l10n_util::GetStringUTF16(IDS_APP_CANCEL));
   notification.set_buttons(notification_actions);
 
+  delegate_map_[notification.id()] =
+      std::make_unique<ProgressNotificationDelegate>(this);
+
   notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
@@ -278,6 +322,9 @@ void NearbyNotificationManager::ShowConnectionRequest(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
   notification.set_buttons(notification_actions);
 
+  // TODO(crbug.com/1102348): Handle ConnectionRequest actions.
+  delegate_map_.erase(kNearbyNotificationId);
+
   notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
@@ -306,6 +353,7 @@ void NearbyNotificationManager::ShowSuccess(const ShareTarget& share_target) {
   notification.set_title(GetSuccessNotificationTitle(share_target));
 
   // TODO(crbug.com/1102348): Show content specific actions and preview images.
+  delegate_map_.erase(kNearbyNotificationId);
 
   notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
@@ -319,12 +367,29 @@ void NearbyNotificationManager::ShowFailure(const ShareTarget& share_target) {
       CreateNearbyNotification(kNearbyNotificationId);
   notification.set_title(GetFailureNotificationTitle(share_target));
 
+  delegate_map_.erase(kNearbyNotificationId);
+
   notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
 }
 
 void NearbyNotificationManager::CloseTransfer() {
+  delegate_map_.erase(kNearbyNotificationId);
   notification_display_service_->Close(NotificationHandler::Type::NEARBY_SHARE,
                                        kNearbyNotificationId);
+}
+
+NearbyNotificationDelegate* NearbyNotificationManager::GetNotificationDelegate(
+    const std::string& notification_id) {
+  auto iter = delegate_map_.find(notification_id);
+  if (iter == delegate_map_.end())
+    return nullptr;
+
+  return iter->second.get();
+}
+
+void NearbyNotificationManager::CancelTransfer() {
+  CloseTransfer();
+  nearby_service_->Cancel(*share_target_, base::DoNothing());
 }

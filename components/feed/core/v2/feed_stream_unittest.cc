@@ -397,11 +397,13 @@ class TestMetricsReporter : public MetricsReporter {
     MetricsReporter::ContentSliceViewed(surface_id, index_in_stream);
   }
   void OnLoadStream(LoadStreamStatus load_from_store_status,
-                    LoadStreamStatus final_status) override {
+                    LoadStreamStatus final_status,
+                    std::unique_ptr<LoadLatencyTimes> latencies) override {
     load_stream_status = final_status;
     LOG(INFO) << "OnLoadStream: " << final_status
               << " (store status: " << load_from_store_status << ")";
-    MetricsReporter::OnLoadStream(load_from_store_status, final_status);
+    MetricsReporter::OnLoadStream(load_from_store_status, final_status,
+                                  std::move(latencies));
   }
   void OnLoadMore(LoadStreamStatus final_status) override {
     load_more_status = final_status;

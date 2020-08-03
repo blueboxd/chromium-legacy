@@ -29,14 +29,14 @@ namespace chrome_cleaner {
 bool PendingLogsService::retrying_ = false;
 
 // static.
-base::string16 PendingLogsService::LogsUploadRetryTaskName(
-    const base::string16& product_shortname) {
+std::wstring PendingLogsService::LogsUploadRetryTaskName(
+    const std::wstring& product_shortname) {
   return product_shortname + L" logs upload retry";
 }
 
 // static.
 void PendingLogsService::ScheduleLogsUploadTask(
-    const base::string16& product_shortname,
+    const std::wstring& product_shortname,
     const ChromeCleanerReport& chrome_cleaner_report,
     base::FilePath* log_file,
     RegistryLogger* registry_logger) {
@@ -105,7 +105,7 @@ void PendingLogsService::ScheduleLogsUploadTask(
 
 // static.
 void PendingLogsService::ClearPendingLogFile(
-    const base::string16& product_shortname,
+    const std::wstring& product_shortname,
     const base::FilePath& log_file,
     RegistryLogger* registry_logger) {
   DCHECK(registry_logger);
@@ -130,7 +130,7 @@ PendingLogsService::PendingLogsService() {
 PendingLogsService::~PendingLogsService() = default;
 
 void PendingLogsService::RetryNextPendingLogsUpload(
-    const base::string16& product_shortname,
+    const std::wstring& product_shortname,
     base::OnceCallback<void(bool)> done_callback,
     RegistryLogger* registry_logger) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -168,7 +168,7 @@ void PendingLogsService::RetryNextPendingLogsUpload(
 }
 
 void PendingLogsService::UploadResultCallback(
-    const base::string16& product_shortname,
+    const std::wstring& product_shortname,
     RegistryLogger* registry_logger,
     bool success) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

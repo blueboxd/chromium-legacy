@@ -164,7 +164,9 @@ class QuitDraggingObserver : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
                    content::NotificationService::AllSources());
   }
-  ~QuitDraggingObserver() override {}
+  QuitDraggingObserver(const QuitDraggingObserver&) = delete;
+  QuitDraggingObserver& operator=(const QuitDraggingObserver&) = delete;
+  ~QuitDraggingObserver() override = default;
 
   void Observe(int type,
                const content::NotificationSource& source,
@@ -180,8 +182,6 @@ class QuitDraggingObserver : public content::NotificationObserver {
  private:
   content::NotificationRegistrar registrar_;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuitDraggingObserver);
 };
 
 void SetID(WebContents* web_contents, int id) {
@@ -340,7 +340,10 @@ class TestDesktopBrowserFrameAura : public DESKTOP_BROWSER_FRAME_AURA {
                               BrowserView* browser_view)
       : DESKTOP_BROWSER_FRAME_AURA(browser_frame, browser_view),
         release_capture_(false) {}
-  ~TestDesktopBrowserFrameAura() override {}
+  TestDesktopBrowserFrameAura(const TestDesktopBrowserFrameAura&) = delete;
+  TestDesktopBrowserFrameAura& operator=(const TestDesktopBrowserFrameAura&) =
+      delete;
+  ~TestDesktopBrowserFrameAura() override = default;
 
   void ReleaseCaptureOnNextClear() {
     release_capture_ = true;
@@ -357,23 +360,21 @@ class TestDesktopBrowserFrameAura : public DESKTOP_BROWSER_FRAME_AURA {
  private:
   // If true ReleaseCapture() is invoked in ClearNativeFocus().
   bool release_capture_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDesktopBrowserFrameAura);
 };
 
 // Factory for creating a TestDesktopBrowserFrameAura.
 class TestNativeBrowserFrameFactory : public NativeBrowserFrameFactory {
  public:
-  TestNativeBrowserFrameFactory() {}
-  ~TestNativeBrowserFrameFactory() override {}
+  TestNativeBrowserFrameFactory() = default;
+  TestNativeBrowserFrameFactory(const TestNativeBrowserFrameFactory&) = delete;
+  TestNativeBrowserFrameFactory& operator=(
+      const TestNativeBrowserFrameFactory&) = delete;
+  ~TestNativeBrowserFrameFactory() override = default;
 
   NativeBrowserFrame* Create(BrowserFrame* browser_frame,
                              BrowserView* browser_view) override {
     return new TestDesktopBrowserFrameAura(browser_frame, browser_view);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestNativeBrowserFrameFactory);
 };
 
 class TabDragCaptureLostTest : public TabDragControllerTest {
@@ -381,9 +382,8 @@ class TabDragCaptureLostTest : public TabDragControllerTest {
   TabDragCaptureLostTest() {
     NativeBrowserFrameFactory::Set(new TestNativeBrowserFrameFactory);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabDragCaptureLostTest);
+  TabDragCaptureLostTest(const TabDragCaptureLostTest&) = delete;
+  TabDragCaptureLostTest& operator=(const TabDragCaptureLostTest&) = delete;
 };
 
 // See description above for details.
@@ -441,6 +441,10 @@ class DetachToBrowserTabDragControllerTest
         {features::kMixBrowserTypeTabs} /* enabled_features */,
         {features::kWebUITabStrip} /* disabled_features */);
   }
+  DetachToBrowserTabDragControllerTest(
+      const DetachToBrowserTabDragControllerTest&) = delete;
+  DetachToBrowserTabDragControllerTest& operator=(
+      const DetachToBrowserTabDragControllerTest&) = delete;
 
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
@@ -656,8 +660,6 @@ class DetachToBrowserTabDragControllerTest
 #endif
   base::test::ScopedFeatureList scoped_feature_list_;
   base::Optional<web_app::AppId> tabbed_app_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
 };
 
 class DetachToBrowserTabDragControllerTestWithTabGroupsEnabled
@@ -1431,7 +1433,9 @@ class CaptureLoseWindowFinder : public WindowFinder {
  public:
   explicit CaptureLoseWindowFinder(TabStrip* tab_strip)
       : tab_strip_(tab_strip) {}
-  ~CaptureLoseWindowFinder() override {}
+  CaptureLoseWindowFinder(const CaptureLoseWindowFinder&) = delete;
+  CaptureLoseWindowFinder& operator=(const CaptureLoseWindowFinder&) = delete;
+  ~CaptureLoseWindowFinder() override = default;
 
   // WindowFinder:
   gfx::NativeWindow GetLocalProcessWindowAtPoint(
@@ -1443,8 +1447,6 @@ class CaptureLoseWindowFinder : public WindowFinder {
 
  private:
   TabStrip* tab_strip_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptureLoseWindowFinder);
 };
 
 }  // namespace
@@ -1493,6 +1495,9 @@ class MaximizedBrowserWindowWaiter {
  public:
   explicit MaximizedBrowserWindowWaiter(BrowserWindow* window)
       : window_(window) {}
+  MaximizedBrowserWindowWaiter(const MaximizedBrowserWindowWaiter&) = delete;
+  MaximizedBrowserWindowWaiter& operator=(const MaximizedBrowserWindowWaiter&) =
+      delete;
   ~MaximizedBrowserWindowWaiter() = default;
 
   // Blocks until the browser window becomes maximized.
@@ -1527,8 +1532,6 @@ class MaximizedBrowserWindowWaiter {
 
   // The waiter's RunLoop quit closure.
   base::Closure quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(MaximizedBrowserWindowWaiter);
 };
 
 }  // namespace
@@ -3045,7 +3048,8 @@ class DraggedWindowObserver : public aura::WindowObserver {
                         const gfx::Rect& bounds,
                         const gfx::Point& end_point)
       : test_(test), end_bounds_(bounds), end_point_(end_point) {}
-
+  DraggedWindowObserver(const DraggedWindowObserver&) = delete;
+  DraggedWindowObserver& operator=(const DraggedWindowObserver&) = delete;
   ~DraggedWindowObserver() override {
     if (window_)
       window_->RemoveObserver(this);
@@ -3097,8 +3101,6 @@ class DraggedWindowObserver : public aura::WindowObserver {
   gfx::Rect end_bounds_;
   // The position that the mouse/touch event will move to when the drag ends.
   gfx::Point end_point_;
-
-  DISALLOW_COPY_AND_ASSIGN(DraggedWindowObserver);
 };
 
 void DoNotObserveDraggedWidgetAfterDragEndsStep2(
@@ -3549,6 +3551,10 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
  public:
   DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
+  DetachToBrowserInSeparateDisplayTabDragControllerTest(
+      const DetachToBrowserInSeparateDisplayTabDragControllerTest&) = delete;
+  DetachToBrowserInSeparateDisplayTabDragControllerTest& operator=(
+      const DetachToBrowserInSeparateDisplayTabDragControllerTest&) = delete;
   virtual ~DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -3557,10 +3563,6 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "0+0-800x600,800+0-800x600");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      DetachToBrowserInSeparateDisplayTabDragControllerTest);
 };
 
 namespace {
@@ -3982,6 +3984,10 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
  public:
   DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
+  DifferentDeviceScaleFactorDisplayTabDragControllerTest(
+      const DifferentDeviceScaleFactorDisplayTabDragControllerTest&) = delete;
+  DifferentDeviceScaleFactorDisplayTabDragControllerTest& operator=(
+      const DifferentDeviceScaleFactorDisplayTabDragControllerTest&) = delete;
   virtual ~DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -3996,10 +4002,6 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
         ->GetCursor()
         .image_scale_factor();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      DifferentDeviceScaleFactorDisplayTabDragControllerTest);
 };
 
 namespace {
@@ -4074,16 +4076,18 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
  public:
   DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest() {}
+  DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest(
+      const DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest&) =
+      delete;
+  DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest& operator=(
+      const DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest&) =
+      delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "0+0-800x600,800+0-800x600");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest);
 };
 
 namespace {
@@ -4205,12 +4209,13 @@ class DetachToBrowserTabDragControllerTestTouch
     : public DetachToBrowserTabDragControllerTest {
  public:
   DetachToBrowserTabDragControllerTestTouch() {}
+  DetachToBrowserTabDragControllerTestTouch(
+      const DetachToBrowserTabDragControllerTestTouch&) = delete;
+  DetachToBrowserTabDragControllerTestTouch& operator=(
+      const DetachToBrowserTabDragControllerTestTouch&) = delete;
   virtual ~DetachToBrowserTabDragControllerTestTouch() {}
 
   void TearDown() override { ui::SetEventTickClockForTesting(nullptr); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTestTouch);
 };
 
 namespace {

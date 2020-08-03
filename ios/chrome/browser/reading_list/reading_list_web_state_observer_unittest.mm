@@ -26,7 +26,6 @@ const char kTestURL[] = "http://foo.bar";
 const char kTestTitle[] = "title";
 const char kTestDistilledPath[] = "distilled/page.html";
 const char kTestDistilledURL[] = "http://foo.bar/distilled";
-}
 
 // A Test navigation manager that checks if Reload was called.
 class TestNavigationManager : public web::TestNavigationManager {
@@ -59,6 +58,8 @@ class TestWebState : public web::TestWebState {
  private:
   GURL last_opened_url_;
 };
+
+}  // namespace
 
 // Test fixture to test loading of Reading list entries.
 class ReadingListWebStateObserverTest : public web::WebTest {

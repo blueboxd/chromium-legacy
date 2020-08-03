@@ -29,6 +29,8 @@ UnifiedHeapMarkingVisitorBase::UnifiedHeapMarkingVisitorBase(
 void UnifiedHeapMarkingVisitorBase::VisitImpl(
     const TraceWrapperV8Reference<v8::Value>& v8_reference) {
   DCHECK(isolate_);
+  if (v8_reference.IsEmptySafe())
+    return;
   if (task_id_ != WorklistTaskId::MutatorThread) {
     // This is a temporary solution. Pushing directly from concurrent threads
     // to V8 marking worklist will currently result in data races. This
@@ -38,8 +40,6 @@ void UnifiedHeapMarkingVisitorBase::VisitImpl(
     v8_references_worklist_.Push(&v8_reference);
     return;
   }
-  if (v8_reference.Get().IsEmpty())
-    return;
   controller_->RegisterEmbedderReference(
       v8_reference.template Cast<v8::Data>().Get());
 }

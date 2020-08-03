@@ -1570,6 +1570,9 @@ extern const char kEphemeralTabUsingBottomSheetDescription[];
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
+extern const char kFillingPasswordsFromAnyOriginName[];
+extern const char kFillingPasswordsFromAnyOriginDescription[];
+
 extern const char kGamesHubName[];
 extern const char kGamesHubDescription[];
 

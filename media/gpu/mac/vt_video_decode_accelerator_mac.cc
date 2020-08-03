@@ -1383,6 +1383,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
                   SFT_PLATFORM_ERROR);
   }
+  gl_image->DisableInUseByWindowServer();
   gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
 

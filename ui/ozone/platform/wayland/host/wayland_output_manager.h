@@ -44,9 +44,6 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   WaylandScreen* wayland_screen() const { return wayland_screen_.get(); }
 
  private:
-  void OnWaylandOutputAdded(uint32_t output_id);
-  void OnWaylandOutputRemoved(uint32_t output_id);
-
   // WaylandOutput::Delegate:
   void OnOutputHandleMetrics(uint32_t output_id,
                              const gfx::Rect& new_bounds,

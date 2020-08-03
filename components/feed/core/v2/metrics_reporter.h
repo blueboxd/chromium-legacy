@@ -47,7 +47,9 @@ enum class FeedUserActionType {
   // User action not reported here. See Suggestions.SurfaceVisible.
   kOpenedFeedSurface = 10,
   kTappedOpenInNewIncognitoTab = 11,
-  kMaxValue = kTappedOpenInNewIncognitoTab,
+  kEphemeralChange = 12,
+  kEphemeralChangeRejected = 13,
+  kMaxValue = kEphemeralChangeRejected,
 };
 
 }  // namespace internal
@@ -77,6 +79,9 @@ class MetricsReporter {
   void NotInterestedInAction();
   void ManageInterestsAction();
   void ContextMenuOpened();
+  void EphemeralStreamChange();
+  void EphemeralStreamChangeRejected();
+
   // Indicates the user scrolled the feed by |distance_dp| and then stopped
   // scrolling.
   void StreamScrolled(int distance_dp);
@@ -94,7 +99,8 @@ class MetricsReporter {
   // Stream events.
 
   virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
-                            LoadStreamStatus final_status);
+                            LoadStreamStatus final_status,
+                            std::unique_ptr<LoadLatencyTimes> load_latencies);
   virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
   void OnLoadMoreBegin(SurfaceId surface_id);
   virtual void OnLoadMore(LoadStreamStatus final_status);
@@ -151,6 +157,9 @@ class MetricsReporter {
   base::Optional<base::TimeTicks> time_in_feed_start_;
   // For TimeSpentOnFeed.
   base::TimeDelta tracked_visit_time_in_feed_;
+  // Non-null only directly after a stream load.
+  std::unique_ptr<LoadLatencyTimes> load_latencies_;
+  bool load_latencies_recorded_ = false;
 
   base::WeakPtrFactory<MetricsReporter> weak_ptr_factory_{this};
 };

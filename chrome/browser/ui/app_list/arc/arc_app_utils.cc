@@ -709,16 +709,6 @@ std::string ArcPackageNameToAppId(const std::string& package_name,
   return arc_prefs->GetAppIdByPackageName(package_name);
 }
 
-bool IsArcAppSticky(const std::string& app_id, Profile* profile) {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id);
-
-  DCHECK(app_info) << "Couldn't retrieve ARC package name for AppID: "
-                   << app_id;
-  return app_info->sticky;
-}
-
 void AddAppLaunchObserver(content::BrowserContext* context,
                           AppLaunchObserver* observer) {
   class ProfileDestroyedObserver : public ProfileObserver {

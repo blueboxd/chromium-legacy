@@ -24,6 +24,7 @@ extern const base::Feature kDeleteCorruptedPasswords;
 extern const base::Feature kEnableOverwritingPlaceholderUsernames;
 extern const base::Feature kEnablePasswordsAccountStorage;
 extern const base::Feature KEnablePasswordGenerationForClearTextFields;
+extern const base::Feature kFillingPasswordsFromAnyOrigin;
 extern const base::Feature kFillOnAccountSelect;
 extern const base::Feature kGooglePasswordManager;
 extern const base::Feature kPasswordChange;

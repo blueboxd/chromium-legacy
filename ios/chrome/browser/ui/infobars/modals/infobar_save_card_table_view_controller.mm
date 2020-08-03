@@ -220,7 +220,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - InfobarSaveCardModalConsumer
 
 - (void)setupModalViewControllerWithPrefs:(NSDictionary*)prefs {
-  self.cardholderName = [prefs[kCardholderNamePrefKey] stringValue];
+  self.cardholderName = prefs[kCardholderNamePrefKey];
   self.cardIssuerIcon = prefs[kCardIssuerIconNamePrefKey];
   self.cardNumber = prefs[kCardNumberPrefKey];
   self.expirationMonth = prefs[kExpirationMonthPrefKey];

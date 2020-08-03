@@ -65,22 +65,19 @@ def main():
         if task not in dispatch_table:
             sys.exit("Unknown task: {}".format(task))
 
-    web_idl_database = web_idl.Database.read_from_file(
-        options.web_idl_database)
     component_reldirs = {
         web_idl.Component('core'): options.output_core_reldir,
         web_idl.Component('modules'): options.output_modules_reldir,
     }
-    bind_gen.init(
-        root_src_dir=options.root_src_dir,
-        root_gen_dir=options.root_gen_dir,
-        component_reldirs=component_reldirs)
+    bind_gen.init(web_idl_database_path=options.web_idl_database,
+                  root_src_dir=options.root_src_dir,
+                  root_gen_dir=options.root_gen_dir,
+                  component_reldirs=component_reldirs)
 
     task_queue = bind_gen.TaskQueue()
 
     for task in tasks:
-        dispatch_table[task](task_queue=task_queue,
-                             web_idl_database=web_idl_database)
+        dispatch_table[task](task_queue)
 
     def print_to_console(message):
         out = sys.stdout

@@ -16,6 +16,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_fragment_data.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -85,7 +87,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void AdjustBorderScrollbarPaddingForTableCell() {
     if (!space_->IsTableCell())
       return;
-
     border_scrollbar_padding_ +=
         ComputeIntrinsicPadding(*space_, *style_, Scrollbar());
   }
@@ -133,6 +134,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 #endif
     size_.block_size = block_size;
   }
+
   LayoutUnit FragmentBlockSize() const {
 #if DCHECK_IS_ON()
     if (has_block_fragmentation_)
@@ -440,6 +442,34 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // circumstances. This function updates |LastBaseline| in such cases.
   void SetLastBaselineToBlockEndMarginEdgeIfNeeded();
 
+  void SetTableGridRect(const PhysicalRect& table_grid_rect) {
+    table_grid_rect_ = table_grid_rect;
+  }
+
+  void SetTableColumnGeometry(
+      const NGTableFragmentData::ColumnGeometries& table_column_geometries) {
+    table_column_geometries_ = table_column_geometries;
+  }
+
+  void SetTableCollapsedBorders(const NGTableBorders& table_collapsed_borders) {
+    table_collapsed_borders_ = &table_collapsed_borders;
+  }
+
+  void SetTableCollapsedBordersGeometry(
+      std::unique_ptr<NGTableFragmentData::CollapsedBordersGeometry>
+          table_collapsed_borders_geometry) {
+    table_collapsed_borders_geometry_ =
+        std::move(table_collapsed_borders_geometry);
+  }
+
+  void SetTableColumnCount(wtf_size_t table_column_count) {
+    table_column_count_ = table_column_count;
+  }
+
+  void SetTableCellColumnIndex(wtf_size_t table_cell_column_index) {
+    table_cell_column_index_ = table_cell_column_index;
+  }
+
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
@@ -529,6 +559,19 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   base::Optional<LayoutUnit> baseline_;
   base::Optional<LayoutUnit> last_baseline_;
+
+  // Table specific types.
+  base::Optional<PhysicalRect> table_grid_rect_;
+  base::Optional<NGTableFragmentData::ColumnGeometries>
+      table_column_geometries_;
+  scoped_refptr<const NGTableBorders> table_collapsed_borders_;
+  std::unique_ptr<NGTableFragmentData::CollapsedBordersGeometry>
+      table_collapsed_borders_geometry_;
+  base::Optional<wtf_size_t> table_column_count_;
+
+  // Table cell specific types.
+  base::Optional<wtf_size_t> table_cell_column_index_;
+
   NGBorderEdges border_edges_;
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;

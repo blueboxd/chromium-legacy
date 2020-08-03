@@ -51,7 +51,7 @@ let DeviceSetting;
 export class BaseSettings extends View {
   /**
    * @param {ViewName} name Name of the view.
-   * @param {!Object<string, !function(Event=)>=} itemHandlers Click-handlers
+   * @param {!Object<string, function(Event=)>=} itemHandlers Click-handlers
    *     mapped by element ids.
    */
   constructor(name, itemHandlers = {}) {
@@ -60,7 +60,7 @@ export class BaseSettings extends View {
     this.root.querySelector('.menu-header button')
         .addEventListener('click', () => this.leave());
     this.root.querySelectorAll('.menu-item').forEach((element) => {
-      /** @type {!function(Event=)|undefined} */
+      /** @type {function(Event=)|undefined} */
       const handler = itemHandlers[element.id];
       if (handler) {
         element.addEventListener('click', handler);
@@ -145,7 +145,7 @@ export class ResolutionSettings extends BaseSettings {
      * @param {function(): ?DeviceSetting} getSetting
      * @param {function(): !HTMLElement} getElement
      * @param {boolean} isPhoto
-     * @return {!function()}
+     * @return {function()}
      */
     const createOpenMenuHandler = (getSetting, getElement, isPhoto) => () => {
       const setting = getSetting();
@@ -423,7 +423,7 @@ export class ResolutionSettings extends BaseSettings {
      * @param {!HTMLElement} item
      * @param {string} id
      * @param {!ResolutionConfig} config
-     * @param {!function(!Resolution, !ResolutionList): string} optTextTempl
+     * @param {function(!Resolution, !ResolutionList): string} optTextTempl
      */
     const prepItem = (item, id, {prefResol, resols}, optTextTempl) => {
       item.dataset.deviceId = id;
@@ -626,10 +626,10 @@ export class ResolutionSettings extends BaseSettings {
    * Updates resolution menu with specified resolutions.
    * @param {!HTMLElement} resolItem DOM element holding selected resolution.
    * @param {!HTMLElement} menu Menu holding all resolution option elements.
-   * @param {!function(!Resolution, !ResolutionList): string} optTextTempl
+   * @param {function(!Resolution, !ResolutionList): string} optTextTempl
    *     Template generating text content for each resolution option from its
    *     width and height.
-   * @param {!function(!Resolution)} onChange Called when selected option
+   * @param {function(!Resolution)} onChange Called when selected option
    *     changed with resolution of newly selected option.
    * @param {!ResolutionList} resolutions Resolutions of its width and height to
    *     be updated with.

@@ -24,10 +24,15 @@ abstract class NavigationGlow {
     public abstract void prepare(float startX, float startY);
 
     /**
-     * Called when user scroll is performed.
-     * @param xDelta Amount of x scroll in pixel.
+     * @return The total amount of pull offset.
      */
-    public abstract void onScroll(float xDelta);
+    public abstract float getPullOffset();
+
+    /**
+     * Called when user scroll is performed.
+     * @param offset Newly updated pull offset.
+     */
+    public abstract void onScroll(float offset);
 
     /**
      * Releases the glow UI in action.

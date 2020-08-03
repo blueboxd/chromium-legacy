@@ -257,6 +257,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Set when the window enters in shutdown process.
   bool shutting_down_ = false;
 
+  // AcceleratedWidget for this window. This will be unique even over time.
+  gfx::AcceleratedWidget accelerated_widget_;
+
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };
 

@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,6 +106,8 @@ void WebAppsChromeOs::Initialize() {
 
   notification_display_service_.Add(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
+
+  chromeos::default_app_order::Get(&default_app_ids_);
 }
 
 void WebAppsChromeOs::LaunchAppWithIntent(
@@ -384,12 +387,13 @@ IconEffects WebAppsChromeOs::GetIconEffects(const web_app::WebApp* web_app,
                                             bool paused,
                                             bool is_disabled) {
   IconEffects icon_effects = IconEffects::kNone;
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      !base::Contains(default_app_ids_, (web_app->app_id()))) {
     icon_effects = web_app->is_generated_icon()
                        ? static_cast<IconEffects>(
                              icon_effects | IconEffects::kCrOsStandardMask)
-                       : static_cast<IconEffects>(icon_effects |
-                                                  IconEffects::kResizeAndPad);
+                       : static_cast<IconEffects>(
+                             icon_effects | IconEffects::kCrOsStandardIcon);
 
     // TODO(crbug.com/1083331): If the icon is maskable, modify the icon effect,
     // don't apply the kResizeAndPad effect to shrink the icon, add the

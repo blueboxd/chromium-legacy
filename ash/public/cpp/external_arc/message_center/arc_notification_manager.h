@@ -75,6 +75,10 @@ class ArcNotificationManager
   void CancelPress(const std::string& key);
   void SetNotificationConfiguration();
 
+  // Methods called from |visibility_manager_|:
+  void OnMessageCenterVisibilityChanged(
+      arc::mojom::MessageCenterVisibility visibility);
+
   // ArcNotificationManagerBase implementation:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -96,6 +100,7 @@ class ArcNotificationManager
   message_center::MessageCenter* message_center_ = nullptr;
   std::unique_ptr<message_center::MessageCenterObserver>
       do_not_disturb_manager_;
+  std::unique_ptr<message_center::MessageCenterObserver> visibility_manager_;
 
   using ItemMap =
       std::unordered_map<std::string, std::unique_ptr<ArcNotificationItem>>;

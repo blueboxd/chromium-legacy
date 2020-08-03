@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 25
+// Next MinVersion: 26
 
 module arc.mojom;
 
@@ -201,6 +201,15 @@ struct NotificationConfiguration {
   bool expansion_animation;
 };
 
+// These values represent an visibility of MessageCenter on Chrome OS.
+[Extensible, MinVersion=25]
+enum MessageCenterVisibility {
+  // When nothing or just toast popups are being displayed.
+  VISIBILITY_TRANSIENT = 0,
+  // When the message center view is being displayed.
+  VISIBILITY_MESSAGE_CENTER = 1,
+};
+
 // Next Method ID: 11
 interface NotificationsHost {
   // Set the Do-Not-Disturb status on Chrome side from Android side.
@@ -239,7 +248,7 @@ interface NotificationsHost {
   OnLockScreenSettingUpdated@10(ArcLockScreenNotificationSetting setting);
 };
 
-// Next Method ID: 13
+// Next Method ID: 14
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 interface NotificationsInstance {
   // DEPRECATED: Please use Init@5 instead.
@@ -302,4 +311,8 @@ interface NotificationsInstance {
   // Set configuration variables for notifications.
   [MinVersion=22]
   SetNotificationConfiguration@12(NotificationConfiguration configuration);
+
+  // Reports that Message Center visibility has changed.
+  [MinVersion=25]
+  OnMessageCenterVisibilityChanged@13(MessageCenterVisibility visibility);
 };

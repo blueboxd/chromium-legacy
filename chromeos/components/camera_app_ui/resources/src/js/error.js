@@ -174,7 +174,6 @@ export function reportError(type, level, error) {
     onTestingError({type, level, stack: formatErrorStack(error), time});
     return;
   }
-  metrics.log(
-      metrics.Type.ERROR, type, level, errorName, fileName, funcName, lineNo,
-      colNo);
+  metrics.sendErrorEvent(
+      {type, level, errorName, fileName, funcName, lineNo, colNo});
 }

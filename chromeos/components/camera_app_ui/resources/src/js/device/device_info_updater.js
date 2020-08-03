@@ -39,7 +39,7 @@ export class DeviceInfoUpdater {
 
     /**
      * Listeners to be called after new camera information is available.
-     * @type {!Array<!function(!DeviceInfoUpdater): Promise>}
+     * @type {!Array<function(!DeviceInfoUpdater): Promise>}
      * @private
      */
     this.deviceChangeListeners_ = [];
@@ -181,7 +181,7 @@ export class DeviceInfoUpdater {
 
   /**
    * Registers listener to be called when state of available devices changes.
-   * @param {!function(!DeviceInfoUpdater)} listener
+   * @param {function(!DeviceInfoUpdater)} listener
    */
   addDeviceChangeListener(listener) {
     this.deviceChangeListeners_.push(listener);
@@ -191,7 +191,7 @@ export class DeviceInfoUpdater {
    * Requests to lock update of device information. This function is preserved
    * for device information reader to lock the update capability so as to ensure
    * getting consistent data between all information providers.
-   * @param {!function(): Promise} callback Called after
+   * @param {function(): Promise} callback Called after
    *     update capability is locked. Getting information from all providers in
    *     callback are guaranteed to be consistent.
    */

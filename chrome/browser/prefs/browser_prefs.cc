@@ -218,6 +218,7 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 #include "chrome/browser/android/usage_stats/usage_stats_bridge.h"
+#include "chrome/browser/first_run/android/first_run_prefs.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -746,7 +747,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   ::android::RegisterPrefs(registry);
-#else
+
+  registry->RegisterBooleanPref(first_run::kCCTToSDialogEnabled, true);
+#else   // defined(OS_ANDROID)
   enterprise_connectors::RegisterLocalStatePrefs(registry);
   enterprise_reporting::RegisterLocalStatePrefs(registry);
   gcm::RegisterPrefs(registry);
@@ -759,7 +762,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   UpgradeDetector::RegisterPrefs(registry);
 
   registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   arc::prefs::RegisterLocalStatePrefs(registry);

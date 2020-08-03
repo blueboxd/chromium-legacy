@@ -43,14 +43,6 @@ const gfx::Size kTinySize = gfx::Size(kTinyEdgeSize, kTinyEdgeSize);
 const gfx::Size kSmallSize = gfx::Size(kSmallEdgeSize, kSmallEdgeSize);
 const gfx::Size kLargeSize = gfx::Size(kLargeEdgeSize, kLargeEdgeSize);
 
-// Used to test if a vector of FaviconRawBitmapResult is empty. This is
-// necessitated by GetFaviconsForUrl() potentially returning a non-empty
-// vector with a single empty entry.
-bool IsBitmapResultsEmpty(
-    const std::vector<favicon_base::FaviconRawBitmapResult>& results) {
-  return results.empty() || (results.size() == 1 && !results[0].is_valid());
-}
-
 }  // namespace
 
 class FaviconBackendTest : public testing::Test, public FaviconBackendDelegate {
@@ -1171,7 +1163,7 @@ TEST_F(FaviconBackendTest, GetFaviconsForUrlFallbackToHost) {
                                     {IconType::kFavicon, IconType::kTouchIcon},
                                     {kSmallEdgeSize}, false);
 
-    EXPECT_TRUE(IsBitmapResultsEmpty(bitmap_results_out));
+    EXPECT_TRUE(bitmap_results_out.empty());
 
     // Querying for the http URL with |fallback_to_host|=true should not return
     // the favicon associated with a different host, even when that host has the
@@ -1180,7 +1172,7 @@ TEST_F(FaviconBackendTest, GetFaviconsForUrlFallbackToHost) {
         page_url_http, {IconType::kFavicon, IconType::kTouchIcon},
         {kSmallEdgeSize}, true);
 
-    EXPECT_TRUE(IsBitmapResultsEmpty(bitmap_results_out));
+    EXPECT_TRUE(bitmap_results_out.empty());
   }
 
   SetFavicons({page_url_https}, IconType::kFavicon, icon_url3,
@@ -1193,7 +1185,7 @@ TEST_F(FaviconBackendTest, GetFaviconsForUrlFallbackToHost) {
                                     {IconType::kFavicon, IconType::kTouchIcon},
                                     {kSmallEdgeSize}, false);
 
-    EXPECT_TRUE(IsBitmapResultsEmpty(bitmap_results_out));
+    EXPECT_TRUE(bitmap_results_out.empty());
 
     // Querying for the http URL with |fallback_to_host|=true returns the
     // favicon associated with the https URL.
@@ -1213,13 +1205,13 @@ TEST_F(FaviconBackendTest, GetFaviconsForUrlFallbackToHost) {
                                     {IconType::kFavicon, IconType::kTouchIcon},
                                     {kSmallEdgeSize}, false);
 
-    EXPECT_TRUE(IsBitmapResultsEmpty(bitmap_results_out));
+    EXPECT_TRUE(bitmap_results_out.empty());
 
     bitmap_results_out = backend_->GetFaviconsForUrl(
         page_url_different_scheme, {IconType::kFavicon, IconType::kTouchIcon},
         {kSmallEdgeSize}, true);
 
-    EXPECT_TRUE(IsBitmapResultsEmpty(bitmap_results_out));
+    EXPECT_TRUE(bitmap_results_out.empty());
   }
 }
 

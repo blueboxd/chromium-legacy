@@ -64,5 +64,7 @@ void FakeNotificationsInstance::SetLockScreenSettingOnAndroid(
     mojom::ArcLockScreenNotificationSettingPtr setting) {}
 void FakeNotificationsInstance::SetNotificationConfiguration(
     mojom::NotificationConfigurationPtr configuration) {}
+void FakeNotificationsInstance::OnMessageCenterVisibilityChanged(
+    mojom::MessageCenterVisibility visibility) {}
 
 }  // namespace arc

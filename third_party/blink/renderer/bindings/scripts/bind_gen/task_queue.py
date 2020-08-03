@@ -14,10 +14,7 @@ class TaskQueue(object):
     """
 
     def __init__(self):
-        # More processes do not mean better performance.  The pool size was
-        # chosen heuristically.
-        cpu_count = multiprocessing.cpu_count()
-        self._pool_size = max(2, cpu_count / 4)
+        self._pool_size = multiprocessing.cpu_count()
         self._pool = multiprocessing.Pool(self._pool_size,
                                           package_initializer().init)
         self._requested_tasks = []  # List of (func, args, kwargs)
@@ -49,7 +46,7 @@ class TaskQueue(object):
         self._did_run = True
 
         num_of_requested_tasks = len(self._requested_tasks)
-        chunk_size = min(20, num_of_requested_tasks / (4 * self._pool_size))
+        chunk_size = 1
         i = 0
         while i < num_of_requested_tasks:
             tasks = self._requested_tasks[i:i + chunk_size]
@@ -58,7 +55,7 @@ class TaskQueue(object):
                 self._pool.apply_async(_task_queue_run_tasks, [tasks]))
         self._pool.close()
 
-        timeout_in_sec = 2
+        timeout_in_sec = 1
         while True:
             self._report_worker_task_progress(report_progress)
             for worker_task in self._worker_tasks:

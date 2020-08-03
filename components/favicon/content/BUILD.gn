@@ -17,7 +17,6 @@ static_library("content") {
   deps = [
     "//base",
     "//components/favicon_base",
-    "//components/history/core/browser",
     "//content/public/browser",
     "//content/public/common",
     "//url",

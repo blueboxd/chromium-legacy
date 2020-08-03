@@ -1027,13 +1027,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // the subresource loader factories are updated.
   bool initialize_global_scope_after_main_script_loaded_ = false;
 
-  // Populated via net::HttpResponseInfo of the main script.
+  // Populated via network::mojom::URLResponseHead of the main script.
   std::unique_ptr<MainScriptResponse> main_script_response_;
 
   // DevTools requires each service worker's script receive time, even for
   // the ones that haven't started. However, a ServiceWorkerVersion's field
   // |main_script_http_info_| is not set until starting up. Rather than
-  // reading HttpResponseInfo for all service workers from disk cache and
+  // reading URLResponseHead for all service workers from disk cache and
   // populating |main_script_http_info_| just in order to expose that timestamp,
   // we provide that timestamp here.
   base::Time script_response_time_for_devtools_;

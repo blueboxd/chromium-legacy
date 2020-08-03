@@ -56,6 +56,7 @@ public class NavigationHandlerTest {
     private static final int PAGELOAD_TIMEOUT_MS = 4000;
 
     private EmbeddedTestServer mTestServer;
+    private HistoryNavigationLayout mNavigationLayout;
     private NavigationHandler mNavigationHandler;
     private float mEdgeWidthPx;
 
@@ -73,8 +74,10 @@ public class NavigationHandlerTest {
         TabbedRootUiCoordinator uiCoordinator =
                 (TabbedRootUiCoordinator) mActivityTestRule.getActivity()
                         .getRootUiCoordinatorForTesting();
-        mNavigationHandler = uiCoordinator.getHistoryNavigationCoordinatorForTesting()
-                                     .getNavigationHandlerForTesting();
+        HistoryNavigationCoordinator coordinator =
+                uiCoordinator.getHistoryNavigationCoordinatorForTesting();
+        mNavigationLayout = coordinator.getLayoutForTesting();
+        mNavigationHandler = coordinator.getNavigationHandlerForTesting();
     }
 
     @After
@@ -139,7 +142,8 @@ public class NavigationHandlerTest {
     public void testShortSwipeDoesNotTriggerNavigation() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         shortSwipeFromEdge(LEFT_EDGE);
-        CriteriaHelper.pollUiThread(mNavigationHandler::isLayoutDetached);
+        CriteriaHelper.pollUiThread(mNavigationLayout::isLayoutDetached,
+                "Navigation Layout should be detached after use");
         Assert.assertEquals("Current page should not change", UrlConstants.NTP_URL,
                 currentTab().getUrlString());
     }
@@ -162,8 +166,9 @@ public class NavigationHandlerTest {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
         swipeFromEdge(LEFT_EDGE);
-        CriteriaHelper.pollUiThread(mNavigationHandler::isLayoutDetached,
+        CriteriaHelper.pollUiThread(mNavigationLayout::isLayoutDetached,
                 "Navigation Layout should be detached after use");
+        Assert.assertNull(mNavigationLayout.getDetachLayoutRunnable());
     }
 
     @Test

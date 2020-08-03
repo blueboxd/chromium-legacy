@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_constraint_space_data.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -298,10 +299,33 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->TableCellBorders() : NGBoxStrut();
   }
 
+  wtf_size_t TableCellColumnIndex() const {
+    return HasRareData() ? rare_data_->TableCellColumnIndex() : 0;
+  }
+
   // Return the "intrinsic" padding for a table-cell.
   NGBoxStrut TableCellIntrinsicPadding() const {
     return HasRareData() ? rare_data_->TableCellIntrinsicPadding()
                          : NGBoxStrut();
+  }
+
+  // Return the baseline offset which the table-cell children should align
+  // their baseline to.
+  base::Optional<LayoutUnit> TableCellAlignmentBaseline() const {
+    return HasRareData() ? rare_data_->TableCellAlignmentBaseline()
+                         : base::nullopt;
+  }
+
+  const NGTableConstraintSpaceData* TableData() const {
+    return HasRareData() ? rare_data_->TableData() : nullptr;
+  }
+
+  wtf_size_t TableRowIndex() const {
+    return HasRareData() ? rare_data_->TableRowIndex() : kNotFound;
+  }
+
+  wtf_size_t TableSectionIndex() const {
+    return HasRareData() ? rare_data_->TableSectionIndex() : kNotFound;
   }
 
   LayoutUnit FragmentainerBlockSize() const {
@@ -347,6 +371,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Whether the current node is a table-cell.
   bool IsTableCell() const { return bitfields_.is_table_cell; }
+  bool IsLegacyTableCell() const { return bitfields_.is_legacy_table_cell; }
 
   // Whether the table-cell fragment should be hidden (not painted) if it has
   // no children.
@@ -670,10 +695,12 @@ class CORE_EXPORT NGConstraintSpace final {
     // They fall into the following categories:
     enum DataUnionType {
       kNone,
-      kBlockData,      // An inflow block which doesn't establish a new FC.
-      kTableCellData,  // A table-cell (display: table-cell).
-      kCustomData,     // A custom layout (display: layout(foo)).
-      kStretchData     // The target inline/block stretch sizes for MathML.
+      kBlockData,         // An inflow block which doesn't establish a new FC.
+      kTableCellData,     // A table-cell (display: table-cell).
+      kTableRowData,      // A table-row (display: table-row).
+      kTableSectionData,  // A table-section (display: table-section).
+      kCustomData,        // A custom layout (display: layout(foo)).
+      kStretchData        // The target inline/block stretch sizes for MathML.
     };
 
     explicit RareData(const NGBfcOffset bfc_offset)
@@ -712,6 +739,13 @@ class CORE_EXPORT NGConstraintSpace final {
         case kTableCellData:
           new (&table_cell_data_) TableCellData(other.table_cell_data_);
           break;
+        case kTableRowData:
+          new (&table_row_data_) TableRowData(other.table_row_data_);
+          break;
+        case kTableSectionData:
+          new (&table_section_data_)
+              TableSectionData(other.table_section_data_);
+          break;
         case kCustomData:
           new (&custom_data_) CustomData(other.custom_data_);
           break;
@@ -731,6 +765,12 @@ class CORE_EXPORT NGConstraintSpace final {
           break;
         case kTableCellData:
           table_cell_data_.~TableCellData();
+          break;
+        case kTableRowData:
+          table_row_data_.~TableRowData();
+          break;
+        case kTableSectionData:
+          table_section_data_.~TableSectionData();
           break;
         case kCustomData:
           custom_data_.~CustomData();
@@ -757,20 +797,24 @@ class CORE_EXPORT NGConstraintSpace final {
           early_break_appeal != other.early_break_appeal)
         return false;
 
-      if (data_union_type == kNone)
-        return true;
-
-      if (data_union_type == kBlockData)
-        return block_data_.MaySkipLayout(other.block_data_);
-
-      if (data_union_type == kTableCellData)
-        return table_cell_data_.MaySkipLayout(other.table_cell_data_);
-
-      if (data_union_type == kCustomData)
-        return custom_data_.MaySkipLayout(other.custom_data_);
-
-      DCHECK_EQ(data_union_type, kStretchData);
-      return stretch_data_.MaySkipLayout(other.stretch_data_);
+      switch (data_union_type) {
+        case kNone:
+          return true;
+        case kBlockData:
+          return block_data_.MaySkipLayout(other.block_data_);
+        case kTableCellData:
+          return table_cell_data_.MaySkipLayout(other.table_cell_data_);
+        case kTableRowData:
+          return table_row_data_.MaySkipLayout(other.table_row_data_);
+        case kTableSectionData:
+          return table_section_data_.MaySkipLayout(other.table_section_data_);
+        case kCustomData:
+          return custom_data_.MaySkipLayout(other.custom_data_);
+        case kStretchData:
+          return stretch_data_.MaySkipLayout(other.stretch_data_);
+      }
+      NOTREACHED();
+      return false;
     }
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
@@ -783,20 +827,24 @@ class CORE_EXPORT NGConstraintSpace final {
           early_break_appeal != kBreakAppealLastResort)
         return false;
 
-      if (data_union_type == kNone)
-        return true;
-
-      if (data_union_type == kBlockData)
-        return block_data_.IsInitialForMaySkipLayout();
-
-      if (data_union_type == kTableCellData)
-        return table_cell_data_.IsInitialForMaySkipLayout();
-
-      if (data_union_type == kCustomData)
-        return custom_data_.IsInitialForMaySkipLayout();
-
-      DCHECK_EQ(data_union_type, kStretchData);
-      return stretch_data_.IsInitialForMaySkipLayout();
+      switch (data_union_type) {
+        case kNone:
+          return true;
+        case kBlockData:
+          return block_data_.IsInitialForMaySkipLayout();
+        case kTableCellData:
+          return table_cell_data_.IsInitialForMaySkipLayout();
+        case kTableRowData:
+          return table_row_data_.IsInitialForMaySkipLayout();
+        case kTableSectionData:
+          return table_section_data_.IsInitialForMaySkipLayout();
+        case kCustomData:
+          return custom_data_.IsInitialForMaySkipLayout();
+        case kStretchData:
+          return stretch_data_.IsInitialForMaySkipLayout();
+      }
+      NOTREACHED();
+      return false;
     }
 
     LayoutUnit BlockStartAnnotationSpace() const {
@@ -882,6 +930,61 @@ class CORE_EXPORT NGConstraintSpace final {
           table_cell_intrinsic_padding.block_end;
     }
 
+    wtf_size_t TableCellColumnIndex() const {
+      return data_union_type == kTableCellData
+                 ? table_cell_data_.table_cell_column_index
+                 : 0;
+    }
+
+    void SetTableCellColumnIndex(wtf_size_t table_cell_column_index) {
+      EnsureTableCellData()->table_cell_column_index = table_cell_column_index;
+    }
+
+    base::Optional<LayoutUnit> TableCellAlignmentBaseline() const {
+      return data_union_type == kTableCellData
+                 ? table_cell_data_.table_cell_alignment_baseline
+                 : base::nullopt;
+    }
+
+    void SetTableCellAlignmentBaseline(
+        LayoutUnit table_cell_alignment_baseline) {
+      EnsureTableCellData()->table_cell_alignment_baseline =
+          table_cell_alignment_baseline;
+    }
+
+    void SetTableRowData(
+        scoped_refptr<const NGTableConstraintSpaceData> table_data,
+        wtf_size_t row_index) {
+      EnsureTableRowData()->table_data = std::move(table_data);
+      EnsureTableRowData()->row_index = row_index;
+    }
+
+    void SetTableSectionData(
+        scoped_refptr<const NGTableConstraintSpaceData> table_data,
+        wtf_size_t section_index) {
+      EnsureTableSectionData()->table_data = std::move(table_data);
+      EnsureTableSectionData()->section_index = section_index;
+    }
+
+    const NGTableConstraintSpaceData* TableData() {
+      if (data_union_type == kTableRowData)
+        return EnsureTableRowData()->table_data.get();
+      if (data_union_type == kTableSectionData)
+        return EnsureTableSectionData()->table_data.get();
+      return nullptr;
+    }
+
+    wtf_size_t TableRowIndex() {
+      return data_union_type == kTableRowData ? EnsureTableRowData()->row_index
+                                              : kNotFound;
+    }
+
+    wtf_size_t TableSectionIndex() {
+      return data_union_type == kTableSectionData
+                 ? EnsureTableSectionData()->section_index
+                 : kNotFound;
+    }
+
     SerializedScriptValue* CustomLayoutData() const {
       return data_union_type == kCustomData ? custom_data_.data.get() : nullptr;
     }
@@ -964,18 +1067,52 @@ class CORE_EXPORT NGConstraintSpace final {
                table_cell_intrinsic_padding_block_start ==
                    other.table_cell_intrinsic_padding_block_start &&
                table_cell_intrinsic_padding_block_end ==
-                   other.table_cell_intrinsic_padding_block_end;
+                   other.table_cell_intrinsic_padding_block_end &&
+               table_cell_alignment_baseline ==
+                   other.table_cell_alignment_baseline &&
+               table_cell_column_index == other.table_cell_column_index;
       }
 
       bool IsInitialForMaySkipLayout() const {
         return table_cell_borders == NGBoxStrut() &&
                table_cell_intrinsic_padding_block_start == LayoutUnit() &&
-               table_cell_intrinsic_padding_block_end == LayoutUnit();
+               table_cell_intrinsic_padding_block_end == LayoutUnit() &&
+               table_cell_column_index == kNotFound &&
+               table_cell_alignment_baseline == base::nullopt;
       }
 
       NGBoxStrut table_cell_borders;
       LayoutUnit table_cell_intrinsic_padding_block_start;
       LayoutUnit table_cell_intrinsic_padding_block_end;
+      wtf_size_t table_cell_column_index = kNotFound;
+      base::Optional<LayoutUnit> table_cell_alignment_baseline;
+    };
+
+    struct TableRowData {
+      bool MaySkipLayout(const TableRowData& other) const {
+        return table_data->EqualTableSpecificData(other.table_data.get()) &&
+               table_data->MaySkipRowLayout(other.table_data.get(), row_index);
+      }
+      bool IsInitialForMaySkipLayout() const {
+        return !table_data && row_index == kNotFound;
+      }
+
+      scoped_refptr<const NGTableConstraintSpaceData> table_data;
+      wtf_size_t row_index = kNotFound;
+    };
+
+    struct TableSectionData {
+      bool MaySkipLayout(const TableSectionData& other) const {
+        return table_data->EqualTableSpecificData(other.table_data.get()) &&
+               table_data->MaySkipSectionLayout(other.table_data.get(),
+                                                section_index);
+      }
+      bool IsInitialForMaySkipLayout() const {
+        return !table_data && section_index == kNotFound;
+      }
+
+      scoped_refptr<const NGTableConstraintSpaceData> table_data;
+      wtf_size_t section_index = kNotFound;
     };
 
     struct CustomData {
@@ -1024,6 +1161,24 @@ class CORE_EXPORT NGConstraintSpace final {
       return &table_cell_data_;
     }
 
+    TableRowData* EnsureTableRowData() {
+      DCHECK(data_union_type == kNone || data_union_type == kTableRowData);
+      if (data_union_type != kTableRowData) {
+        data_union_type = kTableRowData;
+        new (&table_row_data_) TableRowData();
+      }
+      return &table_row_data_;
+    }
+
+    TableSectionData* EnsureTableSectionData() {
+      DCHECK(data_union_type == kNone || data_union_type == kTableSectionData);
+      if (data_union_type != kTableSectionData) {
+        data_union_type = kTableSectionData;
+        new (&table_section_data_) TableSectionData();
+      }
+      return &table_section_data_;
+    }
+
     CustomData* EnsureCustomData() {
       DCHECK(data_union_type == kNone || data_union_type == kCustomData);
       if (data_union_type != kCustomData) {
@@ -1045,6 +1200,8 @@ class CORE_EXPORT NGConstraintSpace final {
     union {
       BlockData block_data_;
       TableCellData table_cell_data_;
+      TableRowData table_row_data_;
+      TableSectionData table_section_data_;
       CustomData custom_data_;
       StretchData stretch_data_;
     };
@@ -1065,6 +1222,7 @@ class CORE_EXPORT NGConstraintSpace final {
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
           is_table_cell(false),
+          is_legacy_table_cell(false),
           is_anonymous(false),
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
@@ -1090,6 +1248,7 @@ class CORE_EXPORT NGConstraintSpace final {
              writing_mode == other.writing_mode &&
              direction == other.direction &&
              is_table_cell == other.is_table_cell &&
+             is_legacy_table_cell == other.is_legacy_table_cell &&
              is_anonymous == other.is_anonymous &&
              is_new_formatting_context == other.is_new_formatting_context &&
              is_orthogonal_writing_mode_root ==
@@ -1117,6 +1276,8 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned direction : 1;
 
     unsigned is_table_cell : 1;
+    unsigned is_legacy_table_cell : 1;
+
     unsigned is_anonymous : 1;
     unsigned is_new_formatting_context : 1;
     unsigned is_orthogonal_writing_mode_root : 1;

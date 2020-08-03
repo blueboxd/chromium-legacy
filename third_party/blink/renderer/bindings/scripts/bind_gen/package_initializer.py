@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import web_idl
+
 from . import style_format
 from .path_manager import PathManager
 
@@ -48,13 +50,18 @@ class PackageInitializer(object):
     # package.
     _the_instance = None
 
+    # The instance of web_idl.Database.
+    _the_web_idl_database = None
+
     @classmethod
     def the_instance(cls):
         return cls._the_instance
 
-    def __init__(self, root_src_dir, root_gen_dir, component_reldirs):
+    def __init__(self, web_idl_database_path, root_src_dir, root_gen_dir,
+                 component_reldirs):
         """
         Args:
+            web_idl_database_path: File path to the web_idl.Database.
             root_src_dir: Project's root directory, which corresponds to "//"
                 in GN.
             root_gen_dir: Root directory of generated files, which corresponds
@@ -62,6 +69,7 @@ class PackageInitializer(object):
             component_reldirs: Pairs of component and output directory.
         """
 
+        self._web_idl_database_path = web_idl_database_path
         self._root_src_dir = root_src_dir
         self._root_gen_dir = root_gen_dir
         self._component_reldirs = component_reldirs
@@ -74,9 +82,21 @@ class PackageInitializer(object):
         self._init()
 
     def _init(self):
+        # Load the web_idl.Database as a global object so that every worker or
+        # every function running in a worker of 'multiprocessing' does not need
+        # to load it.
+        PackageInitializer._the_web_idl_database = (
+            web_idl.Database.read_from_file(self._web_idl_database_path))
+
         style_format.init(self._root_src_dir)
 
         PathManager.init(
             root_src_dir=self._root_src_dir,
             root_gen_dir=self._root_gen_dir,
             component_reldirs=self._component_reldirs)
+
+    def web_idl_database(self):
+        """Returns the global instance of web_idl.Database."""
+        assert isinstance(PackageInitializer._the_web_idl_database,
+                          web_idl.Database)
+        return PackageInitializer._the_web_idl_database

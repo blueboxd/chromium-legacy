@@ -85,8 +85,8 @@ TEST_P(WaylandPointerTest, Leave) {
 
   Sync();
 
-  wl::MockSurface* other_surface =
-      server_.GetObject<wl::MockSurface>(other_widget);
+  wl::MockSurface* other_surface = server_.GetObject<wl::MockSurface>(
+      other_window->root_surface()->GetSurfaceId());
   ASSERT_TRUE(other_surface);
 
   wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(), 0, 0);

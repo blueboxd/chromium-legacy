@@ -159,7 +159,7 @@ export class CameraIntent extends Camera {
         }
       })();
       const result = this.photoResult_ || this.videoResult_;
-      metrics.log(metrics.Type.CAPTURE, {
+      metrics.sendCaptureEvent({
         facing: this.facingMode_,
         duration: result.duration || undefined,
         resolution: result.resolution,

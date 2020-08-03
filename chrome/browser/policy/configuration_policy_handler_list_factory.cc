@@ -95,6 +95,7 @@
 #include "ppapi/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/first_run/android/first_run_prefs.h"
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
 #else  // defined(OS_ANDROID)
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
@@ -1334,6 +1335,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kInsecureFormsWarningsEnabled,
     prefs::kMixedFormsWarningsEnabled,
     base::Value::Type::BOOLEAN },
+
+#if defined(OS_ANDROID)
+  { key::kCCTToSDialogEnabled,
+    first_run::kCCTToSDialogEnabled,
+    base::Value::Type::BOOLEAN },
+#endif  // defined(OS_ANDROID)
 };
 // clang-format on
 

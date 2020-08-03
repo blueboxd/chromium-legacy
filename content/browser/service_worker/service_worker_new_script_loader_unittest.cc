@@ -94,11 +94,9 @@ class MockNetwork {
         mock_server_->Get(url_request.url);
 
     // Pass the response header to the client.
-    net::HttpResponseInfo info;
-    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(response.headers));
     auto response_head = network::mojom::URLResponseHead::New();
-    response_head->headers = info.headers;
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(response.headers));
     response_head->headers->GetMimeType(&response_head->mime_type);
     response_head->network_accessed = access_network_;
     if (response.has_certificate_error) {

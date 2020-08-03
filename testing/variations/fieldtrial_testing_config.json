@@ -1107,7 +1107,7 @@
             ]
         }
     ],
-    "BlinkSchedulerPrioritizeCompositingAfterInput": [
+    "BlinkSchedulerPerAgentSchedulingStudy": [
         {
             "platforms": [
                 "android",
@@ -1120,17 +1120,15 @@
             ],
             "experiments": [
                 {
-                    "name": "ExplicitSignals_1task_high",
+                    "name": "disable_timer-queues_until_onload",
                     "params": {
-                        "number_of_tasks": "1"
+                        "delay_ms": "0",
+                        "method": "disable",
+                        "queues": "timer-queues",
+                        "signal": "onload"
                     },
                     "enable_features": [
-                        "BlinkSchedulerPrioritizeCompositingAfterInput",
-                        "BlinkSchedulerUseExplicitSignalForTriggeringCompositingPrioritization",
-                        "BlinkSchedulerUseWillBeginMainFrameForCompositingPrioritization"
-                    ],
-                    "disable_features": [
-                        "BlinkSchedulerHighestPriorityForCompostingAfterInput"
+                        "BlinkSchedulerPerAgentSchedulingExperiments"
                     ]
                 }
             ]

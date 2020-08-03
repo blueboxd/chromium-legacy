@@ -604,7 +604,7 @@ ScriptPromise CredentialsContainer::get(
     }
 
     auto mojo_options =
-        MojoPublicKeyCredentialRequestOptions::From(options->publicKey());
+        MojoPublicKeyCredentialRequestOptions::From(*options->publicKey());
     if (mojo_options) {
       if (!mojo_options->relying_party_id) {
         mojo_options->relying_party_id = resolver->GetFrame()
@@ -839,7 +839,7 @@ ScriptPromise CredentialsContainer::create(
     }
 
     auto mojo_options =
-        MojoPublicKeyCredentialCreationOptions::From(options->publicKey());
+        MojoPublicKeyCredentialCreationOptions::From(*options->publicKey());
     if (!mojo_options) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,

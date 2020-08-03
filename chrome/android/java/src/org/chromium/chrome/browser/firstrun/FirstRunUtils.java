@@ -113,9 +113,17 @@ public class FirstRunUtils {
         FirstRunUtilsJni.get().setEulaAccepted();
     }
 
+    /**
+     * @return Whether the ToS should be shown during the first-run for CCTs/PWAs.
+     */
+    public static boolean isCctTosDialogEnabled() {
+        return FirstRunUtilsJni.get().getCctTosDialogEnabled();
+    }
+
     @NativeMethods
     public interface Natives {
         boolean getFirstRunEulaAccepted();
         void setEulaAccepted();
+        boolean getCctTosDialogEnabled();
     }
 }

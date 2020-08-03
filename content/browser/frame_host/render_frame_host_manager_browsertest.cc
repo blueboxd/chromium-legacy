@@ -6050,6 +6050,17 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // 3. Go back to A1 (should reuse A2's process).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcess) {
+  if (IsBackForwardCacheEnabled()) {
+    // This test expects a renderer process to eventually get deleted when we
+    // navigate away from the page using it, which won't happen if the page is
+    // kept alive in the back-forward cache.  So, we should disable back-forward
+    // cache for this test.
+    shell()
+        ->web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+  }
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
@@ -6130,6 +6141,17 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // 3. Go forward to A2 (should reuse A1's process).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcess_SkipSameSiteEntry) {
+  if (IsBackForwardCacheEnabled()) {
+    // This test expects a renderer process to eventually get deleted when we
+    // navigate away from the page using it, which won't happen if the page is
+    // kept alive in the back-forward cache.  So, we should disable back-forward
+    // cache for this test.
+    shell()
+        ->web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+  }
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
@@ -6211,6 +6233,17 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // 3. Go forward to B (should use new process).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcess_SkipCrossSiteEntry) {
+  if (IsBackForwardCacheEnabled()) {
+    // This test expects a renderer process to eventually get deleted when we
+    // navigate away from the page using it, which won't happen if the page is
+    // kept alive in the back-forward cache.  So, we should disable back-forward
+    // cache for this test.
+    shell()
+        ->web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+  }
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -6280,6 +6313,17 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // used originally).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcessThatIsStillAlive) {
+  if (IsBackForwardCacheEnabled()) {
+    // This test expects a renderer process to eventually get deleted when we
+    // navigate away from the page using it, which won't happen if the page is
+    // kept alive in the back-forward cache.  So, we should disable back-forward
+    // cache for this test.
+    shell()
+        ->web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+  }
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_to_open(embedded_test_server()->GetURL("/empty.html"));
@@ -6396,6 +6440,17 @@ class ProactivelySwapBrowsingInstancesSameSiteCoopTest
 // Note: This test is currently disabled due to crbug.com/1107814.
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteCoopTest,
                        DISABLED_HistoryNavigationReusesProcess_COOP) {
+  if (IsBackForwardCacheEnabled()) {
+    // This test expects a renderer process to eventually get deleted when we
+    // navigate away from the page using it, which won't happen if the page is
+    // kept alive in the back-forward cache.  So, we should disable back-forward
+    // cache for this test.
+    shell()
+        ->web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+  }
   GURL url_1(https_server()->GetURL("a.com", "/title1.html"));
   GURL url_2(https_server()->GetURL("a.com", "/title2.html"));
   GURL coop_url(

@@ -158,6 +158,8 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
                  extensions::AppWindowRegistry::Observer>
       app_window_registry_{this};
 
+  std::vector<std::string> default_app_ids_;
+
   PausedApps paused_apps_;
 
   std::set<std::string> disabled_apps_;

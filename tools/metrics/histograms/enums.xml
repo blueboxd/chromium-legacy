@@ -21340,6 +21340,7 @@ Called by update_document_policy_enum.py.-->
   <int value="757" label="DeviceChannelDowngradeBehavior"/>
   <int value="758" label="BackForwardCacheEnabled"/>
   <int value="759" label="NoteTakingAppsLockScreenAllowlist"/>
+  <int value="760" label="CCTToSDialogEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -72131,6 +72132,12 @@ Full version information for the fingerprint enum values:
 
 <enum name="VirtualKeyboardErrorTypeHashes">
   <int value="30998784" label="Generic Error"/>
+</enum>
+
+<enum name="VirtualKeyboardHandwritingCommitType">
+  <int value="0" label="Commit text only"/>
+  <int value="1" label="Commit text with newline"/>
+  <int value="2" label="Commit text with space"/>
 </enum>
 
 <enum name="VisibleTab">

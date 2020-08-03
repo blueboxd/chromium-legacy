@@ -35,10 +35,10 @@ import {RecordTime} from './recordtime.js';
 /**
  * Contains video recording result.
  * @typedef {{
- *     resolution: {width: number, height: number},
- *     duration: number,
- *     videoSaver: !VideoSaver,
- *     everPaused: boolean,
+ *   resolution: !Resolution,
+ *   duration: number,
+ *   videoSaver: !VideoSaver,
+ *   everPaused: boolean,
  * }}
  */
 export let VideoResult;
@@ -46,9 +46,9 @@ export let VideoResult;
 /**
  * Contains photo taking result.
  * @typedef {{
- *     resolution: {width: number, height: number},
- *     blob: !Blob,
- *     isVideoSnapshot: (boolean|undefined),
+ *   resolution: !Resolution,
+ *   blob: !Blob,
+ *   isVideoSnapshot: (boolean|undefined),
  * }}
  */
 export let PhotoResult;
@@ -707,7 +707,11 @@ export class Video extends ModeBase {
       const {width, height} = await util.blobToImage(blob);
       const imageName = (new Filenamer()).newImageName();
       await this.doSaveSnapshot_(
-          {resolution: {width, height}, blob, isVideoSnapshot: true},
+          {
+            resolution: new Resolution(width, height),
+            blob,
+            isVideoSnapshot: true,
+          },
           imageName);
     };
     this.snapshots_.push(doSnapshot);
@@ -1192,7 +1196,10 @@ class Portrait extends Photo {
         throw e;
       }
       const {width, height} = await util.blobToImage(blob);
-      await this.doSavePhoto_({resolution: {width, height}, blob}, imageName);
+      await this.doSavePhoto_(
+          {resolution: new Resolution(width, height), blob},
+          imageName,
+      );
     };
 
     const refSave = saveResult(reference, refImageName);

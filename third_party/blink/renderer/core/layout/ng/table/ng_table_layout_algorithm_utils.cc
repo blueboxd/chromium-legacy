@@ -67,7 +67,7 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     builder.SetPercentageResolutionSize(percentage_resolution_size);
     builder.SetReplacedPercentageResolutionSize(percentage_resolution_size);
     builder.SetIsFixedInlineSize(true);
-    builder.SetIsTableCell(true);
+    builder.SetIsTableCell(true, /* is_legacy_table_cell */ false);
     builder.SetIsRestrictedBlockSizeTableCell(is_restricted_block_size_table);
     builder.SetNeedsBaseline(true);
     builder.SetCacheSlot(NGCacheSlot::kMeasure);

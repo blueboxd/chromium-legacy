@@ -182,7 +182,7 @@ FaviconBackend::GetFaviconsForUrl(const GURL& page_url,
   std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results =
       GetFaviconsFromDB(page_url, icon_types, desired_sizes, fallback_to_host);
 
-  if (desired_sizes.size() == 1) {
+  if (desired_sizes.size() == 1 && !bitmap_results.empty()) {
     bitmap_results.assign(1, favicon_base::ResizeFaviconBitmapResult(
                                  bitmap_results, desired_sizes[0]));
   }
@@ -193,17 +193,13 @@ std::vector<favicon_base::FaviconRawBitmapResult>
 FaviconBackend::GetFaviconForId(favicon_base::FaviconID favicon_id,
                                 int desired_size) {
   TRACE_EVENT0("browser", "FaviconBackend::GetFaviconForID");
-  std::vector<favicon_base::FaviconID> favicon_ids;
-  favicon_ids.push_back(favicon_id);
-  std::vector<int> desired_sizes;
-  desired_sizes.push_back(desired_size);
 
-  // Get results from DB.
   std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results =
-      GetFaviconBitmapResultsForBestMatch(favicon_ids, desired_sizes);
-
-  bitmap_results.assign(
-      1, favicon_base::ResizeFaviconBitmapResult(bitmap_results, desired_size));
+      GetFaviconBitmapResultsForBestMatch({favicon_id}, {desired_size});
+  if (!bitmap_results.empty()) {
+    bitmap_results.assign(1, favicon_base::ResizeFaviconBitmapResult(
+                                 bitmap_results, desired_size));
+  }
 
   return bitmap_results;
 }

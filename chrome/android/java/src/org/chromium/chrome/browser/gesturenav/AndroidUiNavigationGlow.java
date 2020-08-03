@@ -28,6 +28,11 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
      */
     private final GlowView mGlowView;
 
+    /**
+     * Total amount of pull offset.
+     */
+    private float mTotalPullOffset;
+
     public AndroidUiNavigationGlow(ViewGroup parentView) {
         super(parentView);
         mGlowView = new GlowView(mParentView.getContext());
@@ -43,7 +48,14 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
     }
 
     @Override
-    public void onScroll(float xDelta) {
+    public float getPullOffset() {
+        return mTotalPullOffset;
+    }
+
+    @Override
+    public void onScroll(float offset) {
+        float xDelta = -(offset - mTotalPullOffset);
+        mTotalPullOffset = offset;
         mGlowView.onPull(xDelta / mParentView.getWidth());
     }
 
@@ -54,6 +66,7 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
         if (mGlowView.getParent() != null) {
             mParentView.postDelayed(mRemoveGlowViewRunnable, REMOVE_RUNNABLE_DELAY_MS);
         }
+        mTotalPullOffset = 0.f;
     }
 
     @Override

@@ -34,6 +34,7 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .package_initializer import package_initializer
 from .path_manager import PathManager
 from .task_queue import TaskQueue
 
@@ -985,8 +986,11 @@ def make_dict_trace_func(cg_context):
     return func_decl, func_def
 
 
-def generate_dictionary(dictionary):
-    assert isinstance(dictionary, web_idl.Dictionary)
+def generate_dictionary(dictionary_identifier):
+    assert isinstance(dictionary_identifier, web_idl.Identifier)
+
+    web_idl_database = package_initializer().web_idl_database()
+    dictionary = web_idl_database.find(dictionary_identifier)
 
     assert len(dictionary.components) == 1, (
         "We don't support partial dictionaries across components yet.")
@@ -1176,9 +1180,10 @@ def generate_dictionary(dictionary):
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_dictionaries(task_queue, web_idl_database):
+def generate_dictionaries(task_queue):
     assert isinstance(task_queue, TaskQueue)
-    assert isinstance(web_idl_database, web_idl.Database)
+
+    web_idl_database = package_initializer().web_idl_database()
 
     for dictionary in web_idl_database.dictionaries:
-        task_queue.post_task(generate_dictionary, dictionary)
+        task_queue.post_task(generate_dictionary, dictionary.identifier)

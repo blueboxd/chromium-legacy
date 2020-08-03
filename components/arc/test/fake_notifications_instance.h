@@ -41,6 +41,8 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
       mojom::ArcLockScreenNotificationSettingPtr setting) override;
   void SetNotificationConfiguration(
       mojom::NotificationConfigurationPtr configuration) override;
+  void OnMessageCenterVisibilityChanged(
+      mojom::MessageCenterVisibility visibility) override;
 
   const std::vector<std::pair<std::string, mojom::ArcNotificationEvent>>&
   events() const;

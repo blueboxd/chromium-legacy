@@ -96,6 +96,8 @@ NGLayoutResult::NGLayoutResult(
         static_cast<unsigned>(builder->previous_break_after_);
     bitfields_.has_forced_break = builder->has_forced_break_;
   }
+  if (builder->table_column_count_)
+    EnsureRareData()->table_column_count_ = *builder->table_column_count_;
 }
 
 NGLayoutResult::NGLayoutResult(

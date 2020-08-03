@@ -45,6 +45,7 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .package_initializer import package_initializer
 from .path_manager import PathManager
 from .task_queue import TaskQueue
 
@@ -6448,8 +6449,11 @@ def _collect_include_headers(interface):
     return headers
 
 
-def generate_interface(interface):
-    assert isinstance(interface, web_idl.Interface)
+def generate_interface(interface_identifier):
+    assert isinstance(interface_identifier, web_idl.Identifier)
+
+    web_idl_database = package_initializer().web_idl_database()
+    interface = web_idl_database.find(interface_identifier)
 
     path_manager = PathManager(interface)
     api_component = path_manager.api_component
@@ -6975,14 +6979,14 @@ def generate_interface(interface):
                                 path_manager.gen_path_to(impl_source_path))
 
 
-def generate_install_properties_per_feature(web_idl_database,
-                                            function_name,
+def generate_install_properties_per_feature(function_name,
                                             filepath_basename,
                                             for_testing=False):
-    assert isinstance(web_idl_database, web_idl.Database)
     assert isinstance(function_name, str)
     assert isinstance(filepath_basename, str)
     assert isinstance(for_testing, bool)
+
+    web_idl_database = package_initializer().web_idl_database()
 
     # Filepaths
     header_path = PathManager.component_path("modules",
@@ -7187,14 +7191,14 @@ for (const auto& pair : wrapper_type_info_list) {
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_init_idl_interfaces(web_idl_database,
-                                 function_name,
+def generate_init_idl_interfaces(function_name,
                                  filepath_basename,
                                  for_testing=False):
-    assert isinstance(web_idl_database, web_idl.Database)
     assert isinstance(function_name, str)
     assert isinstance(filepath_basename, str)
     assert isinstance(for_testing, bool)
+
+    web_idl_database = package_initializer().web_idl_database()
 
     # Filepaths
     header_path = PathManager.component_path("modules",
@@ -7272,25 +7276,24 @@ def generate_init_idl_interfaces(web_idl_database,
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_interfaces(task_queue, web_idl_database):
+def generate_interfaces(task_queue):
     assert isinstance(task_queue, TaskQueue)
-    assert isinstance(web_idl_database, web_idl.Database)
+
+    web_idl_database = package_initializer().web_idl_database()
 
     for interface in web_idl_database.interfaces:
-        task_queue.post_task(generate_interface, interface)
+        task_queue.post_task(generate_interface, interface.identifier)
 
     task_queue.post_task(generate_install_properties_per_feature,
-                         web_idl_database, "InstallPropertiesPerFeature",
+                         "InstallPropertiesPerFeature",
                          "properties_per_feature_installer")
     task_queue.post_task(generate_install_properties_per_feature,
-                         web_idl_database,
                          "InstallPropertiesPerFeatureForTesting",
                          "properties_per_feature_installer_for_testing",
                          for_testing=True)
-    task_queue.post_task(generate_init_idl_interfaces, web_idl_database,
-                         "InitIDLInterfaces", "init_idl_interfaces")
+    task_queue.post_task(generate_init_idl_interfaces, "InitIDLInterfaces",
+                         "init_idl_interfaces")
     task_queue.post_task(generate_init_idl_interfaces,
-                         web_idl_database,
                          "InitIDLInterfacesForTesting",
                          "init_idl_interfaces_for_testing",
                          for_testing=True)

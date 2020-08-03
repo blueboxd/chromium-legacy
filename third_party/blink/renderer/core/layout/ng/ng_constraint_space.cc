@@ -92,7 +92,8 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     const ComputedStyle& cell_style = cell.ToLayoutObject()->StyleRef();
     const ComputedStyle& table_style =
         cell.TableInterface()->ToLayoutObject()->StyleRef();
-    builder.SetIsTableCell(true);
+    DCHECK(block.IsTableCellLegacy());
+    builder.SetIsTableCell(true, /* is_table_cell_legacy */ true);
     builder.SetIsRestrictedBlockSizeTableCell(
         !cell_style.LogicalHeight().IsAuto() ||
         !table_style.LogicalHeight().IsAuto());

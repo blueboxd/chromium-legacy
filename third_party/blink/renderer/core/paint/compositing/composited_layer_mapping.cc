@@ -1309,11 +1309,12 @@ bool CompositedLayerMapping::UpdateScrollingContentsLayer(
           CreateGraphicsLayer(CompositingReason::kLayerForScrollingContents);
       scrolling_contents_layer_->SetHitTestable(true);
 
+      DCHECK(scrollable_area);
       auto element_id = scrollable_area->GetScrollElementId();
       scrolling_contents_layer_->SetElementId(element_id);
 
       layer_changed = true;
-      if (scrolling_coordinator && scrollable_area) {
+      if (scrolling_coordinator) {
         scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
             scrollable_area);
         const auto& object = GetLayoutObject();

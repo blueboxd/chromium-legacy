@@ -22570,6 +22570,33 @@ If you disable this policy, web page scrolling to specific text fragments via UR
        If the policy is enabled or unset, a full page warning will be shown when an insecure form is submitted. Additionally, a warning bubble will be shown next to the form fields when they are focused, and autofill will be disabled for those forms.
        If the policy is disabled, warnings will not be shown for insecure forms, and autofill will work normally.''',
     },
+    {
+      'name': 'CCTToSDialogEnabled',
+      'owners': ['skym@chromium.org', 'wenyufu@chromium.org', 'twellington@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [],
+      'future_on': ['android'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 760,
+      'caption': 'Enable ToS during first-run for CCT/PWA',
+      'tags': [],
+      'desc': '''By default the Terms of Service are shown when CCT/PWA is first-run. Setting this policy to Disabled will cause the Terms of Service dialog to not appear during the first-run-experience or subsequent runs. Setting this policy to Enabled or leaving it unset will cause the Terms of Service dialog to appear during the first-run-experience. The other caveats are:
+
+      - This policy only works on fully managed Android devices that can be configured by Unified Endpoint Management vendors.
+
+      - If this policy is Disabled the BrowserSignin policy will have no effect.
+
+      - If this policy is Disabled metrics​ will not be sent to the server.
+
+      - If this policy is Disabled the browser will have limited functionality.
+
+      - If this policy is Disabled admins must communicate this to end users of the device.''',
+    },
   ],
 
   'messages': {
@@ -23478,6 +23505,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 759,
+  'highest_id_currently_used': 760,
   'highest_atomic_group_id_currently_used': 39
 }

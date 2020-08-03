@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Build;
-import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -25,7 +25,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.WebContents;
-
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
  * Coordinator object for gesture navigation.
  */
@@ -33,7 +34,7 @@ public class HistoryNavigationCoordinator
         implements InsetObserverView.WindowInsetObserver, PauseResumeWithNativeObserver {
     private final Runnable mUpdateNavigationStateRunnable = this::onNavigationStateChanged;
 
-    private CompositorViewHolder mCompositorViewHolder;
+    private ViewGroup mParentView;
     private HistoryNavigationLayout mNavigationLayout;
     private InsetObserverView mInsetObserverView;
     private ActivityTabTabObserver mActivityTabObserver;
@@ -48,6 +49,15 @@ public class HistoryNavigationCoordinator
 
     private NavigationHandler mNavigationHandler;
     private HistoryNavigationDelegate mDelegate;
+    private NavigationSheet mNavigationSheet;
+
+    private NavigationGlow mCompositorGlowEffect;
+    private NavigationGlow mJavaGlowEffect;
+
+    private WebContents mWebContents;
+
+    private Runnable mInitRunnable;
+    private Runnable mCleanupRunnable;
 
     /**
      * Creates the coordinator for gesture navigation and initializes internal objects.
@@ -86,10 +96,11 @@ public class HistoryNavigationCoordinator
             InsetObserverView insetObserverView, Function<Tab, Boolean> backShouldCloseTab,
             Runnable onBackPressed, Consumer<Tab> showHistoryManager, String historyMenu,
             Supplier<BottomSheetController> bottomSheetControllerSupplier) {
-        mNavigationLayout =
-                new HistoryNavigationLayout(compositorViewHolder.getContext(), this::isNativePage);
+        mNavigationLayout = new HistoryNavigationLayout(compositorViewHolder.getContext(),
+                this::getGlowEffect, this::getNavigationSheet,
+                (direction) -> mNavigationHandler.navigate(direction));
 
-        mCompositorViewHolder = compositorViewHolder;
+        mParentView = compositorViewHolder;
         mActivityLifecycleDispatcher = lifecycleDispatcher;
         mBackShouldCloseTab = backShouldCloseTab;
         mOnBackPressed = onBackPressed;
@@ -104,7 +115,7 @@ public class HistoryNavigationCoordinator
             @Override
             protected void onObservingDifferentTab(Tab tab) {
                 if (mTab != null && mTab.isInitialized()) {
-                    SwipeRefreshHandler.from(mTab).setNavigationHandler(null);
+                    SwipeRefreshHandler.from(mTab).setNavigationCoordinator(null);
                 }
                 mTab = tab;
                 updateNavigationHandler();
@@ -121,6 +132,16 @@ public class HistoryNavigationCoordinator
             }
         };
 
+        mInitRunnable = () -> {
+            compositorViewHolder.addTouchEventObserver(mNavigationHandler);
+        };
+        mCleanupRunnable = () -> {
+            compositorViewHolder.removeCallbacks(mUpdateNavigationStateRunnable);
+            if (mNavigationHandler != null) {
+                compositorViewHolder.removeTouchEventObserver(mNavigationHandler);
+            }
+        };
+
         // We wouldn't hear about the first tab until the content changed or we switched tabs
         // if tabProvider.get() != null. Do here what we do when tab switching happens.
         if (tabProvider.get() != null) {
@@ -128,7 +149,6 @@ public class HistoryNavigationCoordinator
             onNavigationStateChanged();
         }
 
-        mNavigationLayout.setVisibility(View.INVISIBLE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             mInsetObserverView = insetObserverView;
             insetObserverView.addObserver(this);
@@ -183,10 +203,8 @@ public class HistoryNavigationCoordinator
             return true;
         } else {
             // Preserve the previous enabled status if queried when the view is in detached state.
-            if (mCompositorViewHolder == null || !mCompositorViewHolder.isAttachedToWindow()) {
-                return mEnabled;
-            }
-            Insets insets = mCompositorViewHolder.getRootWindowInsets().getSystemGestureInsets();
+            if (mParentView == null || !mParentView.isAttachedToWindow()) return mEnabled;
+            Insets insets = mParentView.getRootWindowInsets().getSystemGestureInsets();
             return insets.left == 0 && insets.right == 0;
         }
     }
@@ -220,13 +238,37 @@ public class HistoryNavigationCoordinator
                                 mShowHistoryManager, mHistoryMenu, mBottomSheetControllerSupplier)
                         : HistoryNavigationDelegate.DEFAULT;
                 initNavigationHandler(delegate);
-                mNavigationLayout.resetCompositorGlow(webContents);
+
+                // Reset CompositorGlowEffect for new a WebContents. Destroy the current one
+                // (for its native object) so it can be created again lazily.
+                if (mWebContents != webContents) {
+                    resetCompositorGlowEffect();
+                    mWebContents = webContents;
+                }
             }
         } else {
-            mNavigationLayout.destroy();
+            resetCompositorGlowEffect();
         }
-        if (mTab != null) {
-            SwipeRefreshHandler.from(mTab).setNavigationHandler(mNavigationHandler);
+        if (mTab != null) SwipeRefreshHandler.from(mTab).setNavigationCoordinator(this);
+    }
+
+    /**
+     * Create {@link NavigationGlow} object lazily.
+     * TODO(jinsukkim): Consider using SceneOverlay to replace this.
+     */
+    private NavigationGlow getGlowEffect() {
+        if (isNativePage()) {
+            if (mJavaGlowEffect == null) {
+                mJavaGlowEffect = new AndroidUiNavigationGlow(mNavigationLayout);
+            }
+            return mJavaGlowEffect;
+        } else {
+            // TODO(crbug.com/1102275): Investigate when this is called with nulled mWebContents.
+            if (mCompositorGlowEffect == null && mWebContents != null) {
+                mCompositorGlowEffect =
+                        new CompositorNavigationGlow(mNavigationLayout, mWebContents);
+            }
+            return mCompositorGlowEffect;
         }
     }
 
@@ -237,14 +279,30 @@ public class HistoryNavigationCoordinator
      */
     private void initNavigationHandler(HistoryNavigationDelegate delegate) {
         if (mNavigationHandler == null) {
-            mNavigationHandler = new NavigationHandler(
-                    mNavigationLayout, mNavigationLayout::getGlowEffect, this::isNativePage);
-            mCompositorViewHolder.addTouchEventObserver(mNavigationHandler);
+            PropertyModel model =
+                    new PropertyModel.Builder(GestureNavigationProperties.ALL_KEYS).build();
+
+            PropertyModelChangeProcessor.create(
+                    model, mNavigationLayout, GestureNavigationViewBinder::bind);
+
+            mNavigationHandler = new NavigationHandler(model, mNavigationLayout, this::isNativePage,
+                    () -> mNavigationSheet.isExpanded());
+            mInitRunnable.run();
         }
         if (mDelegate != delegate) {
             mNavigationHandler.setDelegate(delegate);
             mDelegate = delegate;
+
+            mNavigationSheet = NavigationSheet.isEnabled()
+                    ? NavigationSheet.create(mNavigationLayout, mNavigationLayout.getContext(),
+                            mDelegate.getBottomSheetController())
+                    : NavigationSheet.DUMMY;
+            mNavigationSheet.setDelegate(mDelegate.createSheetDelegate());
         }
+    }
+
+    private NavigationSheet getNavigationSheet() {
+        return mNavigationSheet;
     }
 
     @Override
@@ -254,11 +312,58 @@ public class HistoryNavigationCoordinator
     public void onResumeWithNative() {
         // Check the enabled status again since the system gesture settings might have changed.
         // Post the task to work around wrong gesture insets returned from the framework.
-        mNavigationLayout.post(mUpdateNavigationStateRunnable);
+        mParentView.post(mUpdateNavigationStateRunnable);
     }
 
     @Override
     public void onPauseWithNative() {}
+
+    /**
+     * Starts preparing an edge swipe gesture.
+     */
+    public void startGesture() {
+        assert mNavigationHandler != null;
+
+        // Simulates the initial onDown event to update the internal state.
+        mNavigationHandler.onDown();
+    }
+
+    /**
+     * Makes UI (either arrow puck or overscroll glow) visible when an edge swipe
+     * is made big enough to trigger it.
+     * @param forward {@code true} for forward navigation, or {@code false} for back.
+     * @param x X coordinate of the current position.
+     * @param y Y coordinate of the current position.
+     * @return {@code true} if the navigation can be triggered.
+     */
+    public boolean triggerUi(boolean forward, float x, float y) {
+        return mNavigationHandler != null && mNavigationHandler.triggerUi(forward, x, y);
+    }
+
+    /**
+     * Processes a motion event releasing the finger off the screen and possibly
+     * initializing the navigation.
+     * @param allowNav {@code true} if release action is supposed to trigger navigation.
+     */
+    public void release(boolean allowNav) {
+        if (mNavigationHandler != null) mNavigationHandler.release(allowNav);
+    }
+
+    /**
+     * Resets a gesture as the result of the successful navigation or cancellation.
+     */
+    public void reset() {
+        if (mNavigationHandler != null) mNavigationHandler.reset();
+    }
+
+    /**
+     * Signals a pull update.
+     * @param delta The change in horizontal pull distance (positive if toward right,
+     *         negative if left).
+     */
+    public void pull(float delta) {
+        if (mNavigationHandler != null) mNavigationHandler.pull(delta);
+    }
 
     /**
      * Destroy HistoryNavigationCoordinator object.
@@ -272,15 +377,9 @@ public class HistoryNavigationCoordinator
             mInsetObserverView.removeObserver(this);
             mInsetObserverView = null;
         }
-        if (mCompositorViewHolder != null && mNavigationHandler != null) {
-            mCompositorViewHolder.removeTouchEventObserver(mNavigationHandler);
-            mCompositorViewHolder = null;
-        }
-        if (mNavigationLayout != null) {
-            mNavigationLayout.removeCallbacks(mUpdateNavigationStateRunnable);
-            mNavigationLayout.destroy();
-            mNavigationLayout = null;
-        }
+        mCleanupRunnable.run();
+        mNavigationLayout = null;
+        resetCompositorGlowEffect();
         mDelegate = HistoryNavigationDelegate.DEFAULT;
         if (mNavigationHandler != null) {
             mNavigationHandler.setDelegate(mDelegate);
@@ -293,8 +392,20 @@ public class HistoryNavigationCoordinator
         }
     }
 
+    private void resetCompositorGlowEffect() {
+        if (mCompositorGlowEffect != null) {
+            mCompositorGlowEffect.destroy();
+            mCompositorGlowEffect = null;
+        }
+    }
+
     @VisibleForTesting
     NavigationHandler getNavigationHandlerForTesting() {
         return mNavigationHandler;
+    }
+
+    @VisibleForTesting
+    HistoryNavigationLayout getLayoutForTesting() {
+        return mNavigationLayout;
     }
 }

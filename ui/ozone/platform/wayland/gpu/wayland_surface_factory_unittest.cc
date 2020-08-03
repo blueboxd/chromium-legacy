@@ -234,7 +234,8 @@ TEST_P(WaylandSurfaceFactoryTest,
   }
 
   // Now, schedule 3 buffers for swap.
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget_);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   CallbacksHelper cbs_helper;
   // Submit all the available buffers.

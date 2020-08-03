@@ -53,7 +53,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/ui/app_list/icon_standardizer.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #endif
 
@@ -515,6 +517,20 @@ void IconLoadingPipeline::LoadIconFromCompressedData(
 
 void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+#if defined(OS_CHROMEOS)
+  if (icon_resource == IDR_LOGO_CROSTINI_DEFAULT_192 ||
+      icon_resource == IDR_APP_DEFAULT_ICON) {
+    // For the Crostini penguin icon, clear the standard icon effects, and use
+    // the raw icon.
+    //
+    // For the default icon, use the raw icon, because the standard icon image
+    // convert could break the test cases.
+    icon_effects_ = static_cast<apps::IconEffects>(
+        icon_effects_ & ~apps::IconEffects::kCrOsStandardIcon);
+  }
+#endif
+
   if (icon_resource == kInvalidIconResource) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
@@ -694,11 +710,6 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     return;
   }
   gfx::ImageSkia processed_image = image;
-
-  // TODO(crbug.com/1083331):
-  // 1. For kStandard icons, shrink and apply the mask.
-  // 2. For the default apps, use the raw image, and don't shrink and apply the
-  // mask.
 
   // Apply the icon effects on the uncompressed data. If the caller requests
   // an uncompressed icon, return the uncompressed result; otherwise, encode
@@ -942,6 +953,10 @@ void ApplyIconEffects(IconEffects icon_effects,
   if (icon_effects & IconEffects::kCrOsStandardMask) {
     *image_skia = gfx::ImageSkiaOperations::CreateMaskedImage(
         *image_skia, LoadMaskImage(image_skia->size()));
+  }
+
+  if (icon_effects & IconEffects::kCrOsStandardIcon) {
+    *image_skia = app_list::CreateStandardIconImage(*image_skia);
   }
 #endif
 

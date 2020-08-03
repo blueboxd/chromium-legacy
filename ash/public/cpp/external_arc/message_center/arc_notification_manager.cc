@@ -32,6 +32,7 @@ using arc::mojom::ArcNotificationData;
 using arc::mojom::ArcNotificationDataPtr;
 using arc::mojom::ArcNotificationEvent;
 using arc::mojom::ArcNotificationPriority;
+using arc::mojom::MessageCenterVisibility;
 using arc::mojom::NotificationConfiguration;
 using arc::mojom::NotificationConfigurationPtr;
 using arc::mojom::NotificationsHost;
@@ -64,6 +65,31 @@ class DoNotDisturbManager : public message_center::MessageCenterObserver {
   ArcNotificationManager* const manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DoNotDisturbManager);
+};
+
+class VisibilityManager : public message_center::MessageCenterObserver {
+ public:
+  explicit VisibilityManager(ArcNotificationManager* manager)
+      : manager_(manager) {}
+  void OnCenterVisibilityChanged(
+      message_center::Visibility visibility) override {
+    manager_->OnMessageCenterVisibilityChanged(toMojom(visibility));
+  }
+
+ private:
+  static MessageCenterVisibility toMojom(
+      message_center::Visibility visibility) {
+    if (visibility == message_center::Visibility::VISIBILITY_TRANSIENT)
+      return MessageCenterVisibility::VISIBILITY_TRANSIENT;
+    if (visibility == message_center::Visibility::VISIBILITY_MESSAGE_CENTER)
+      return MessageCenterVisibility::VISIBILITY_MESSAGE_CENTER;
+    VLOG(2) << "Unknown message_center::Visibility: " << visibility;
+    return MessageCenterVisibility::VISIBILITY_TRANSIENT;
+  }
+
+  ArcNotificationManager* const manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilityManager);
 };
 
 }  // namespace
@@ -116,6 +142,7 @@ ArcNotificationManager::~ArcNotificationManager() {
     obs.OnArcNotificationManagerDestroyed(this);
 
   message_center_->RemoveObserver(do_not_disturb_manager_.get());
+  message_center_->RemoveObserver(visibility_manager_.get());
 
   instance_owner_->holder()->RemoveObserver(this);
   instance_owner_->holder()->SetHost(nullptr);
@@ -142,6 +169,12 @@ void ArcNotificationManager::OnConnectionReady() {
 
   // Sync the initial quiet mode state with Android.
   SetDoNotDisturbStatusOnAndroid(message_center_->IsQuietMode());
+
+  // Sync the initial visibility of message center with Android.
+  auto visibility = message_center_->IsMessageCenterVisible()
+                        ? MessageCenterVisibility::VISIBILITY_MESSAGE_CENTER
+                        : MessageCenterVisibility::VISIBILITY_TRANSIENT;
+  OnMessageCenterVisibilityChanged(visibility);
 
   // Set configuration variables for notifications on arc.
   SetNotificationConfiguration();
@@ -577,6 +610,20 @@ void ArcNotificationManager::SetNotificationConfiguration() {
       std::move(configuration));
 }
 
+void ArcNotificationManager::OnMessageCenterVisibilityChanged(
+    MessageCenterVisibility visibility) {
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      instance_owner_->holder(), OnMessageCenterVisibilityChanged);
+
+  if (!notifications_instance) {
+    VLOG(2) << "Trying to report message center visibility (" << visibility
+            << "), but the ARC channel has already gone.";
+    return;
+  }
+
+  notifications_instance->OnMessageCenterVisibilityChanged(visibility);
+}
+
 void ArcNotificationManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -594,6 +641,7 @@ void ArcNotificationManager::Init(
   main_profile_id_ = main_profile_id;
   message_center_ = message_center;
   do_not_disturb_manager_ = std::make_unique<DoNotDisturbManager>(this);
+  visibility_manager_ = std::make_unique<VisibilityManager>(this);
 
   instance_owner_->holder()->SetHost(this);
   instance_owner_->holder()->AddObserver(this);
@@ -602,6 +650,7 @@ void ArcNotificationManager::Init(
     SetCustomNotificationViewFactory();
   }
   message_center_->AddObserver(do_not_disturb_manager_.get());
+  message_center_->AddObserver(visibility_manager_.get());
 }
 
 }  // namespace ash

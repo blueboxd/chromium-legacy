@@ -10,6 +10,8 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_fragment_data.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -60,6 +62,31 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     if (has_last_baseline_)
       return last_baseline_;
     return base::nullopt;
+  }
+
+  PhysicalRect TableGridRect() const {
+    return ComputeRareDataAddress()->table_grid_rect_;
+  }
+
+  const NGTableFragmentData::ColumnGeometries* TableColumnGeometries() const {
+    return &ComputeRareDataAddress()->table_column_geometries_;
+  }
+
+  const NGTableBorders* TableCollapsedBorders() const {
+    return ComputeRareDataAddress()->table_collapsed_borders_.get();
+  }
+
+  const NGTableFragmentData::CollapsedBordersGeometry*
+  TableCollapsedBordersGeometry() const {
+    auto& table_collapsed_borders_geometry =
+        ComputeRareDataAddress()->table_collapsed_borders_geometry_;
+    if (!table_collapsed_borders_geometry)
+      return nullptr;
+    return table_collapsed_borders_geometry.get();
+  }
+
+  wtf_size_t TableCellColumnIndex() const {
+    return ComputeRareDataAddress()->table_cell_column_index_;
   }
 
   const NGPhysicalBoxStrut Borders() const {
@@ -198,6 +225,14 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     Vector<NGPhysicalOutOfFlowPositionedNode>
         oof_positioned_fragmentainer_descendants;
     const std::unique_ptr<NGMathMLPaintInfo> mathml_paint_info;
+
+    // TablesNG rare data.
+    PhysicalRect table_grid_rect_;
+    NGTableFragmentData::ColumnGeometries table_column_geometries_;
+    scoped_refptr<const NGTableBorders> table_collapsed_borders_;
+    std::unique_ptr<NGTableFragmentData::CollapsedBordersGeometry>
+        table_collapsed_borders_geometry_;
+    wtf_size_t table_cell_column_index_;
   };
 
   const NGFragmentItems* ComputeItemsAddress() const {

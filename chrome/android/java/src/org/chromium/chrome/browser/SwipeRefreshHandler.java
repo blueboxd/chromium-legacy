@@ -16,7 +16,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.gesturenav.NavigationHandler;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsUserData;
@@ -72,7 +72,7 @@ public class SwipeRefreshHandler
     // Handles overscroll history navigation. Gesture events from native layer are forwarded
     // to this object. Remains null while navigation feature is disabled due to feature flag,
     // system settings (Q and forward), etc.
-    private NavigationHandler mNavigationHandler;
+    private HistoryNavigationCoordinator mNavigationCoordinator;
 
     public static SwipeRefreshHandler from(Tab tab) {
         SwipeRefreshHandler handler = get(tab);
@@ -155,7 +155,7 @@ public class SwipeRefreshHandler
     public void cleanupWebContents(WebContents webContents) {
         detachSwipeRefreshLayoutIfNecessary();
         mContainerView = null;
-        mNavigationHandler = null;
+        mNavigationCoordinator = null;
         setEnabled(false);
     }
 
@@ -188,9 +188,10 @@ public class SwipeRefreshHandler
             attachSwipeRefreshLayoutIfNecessary();
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION) {
-            if (mNavigationHandler != null) {
-                mNavigationHandler.onDown(); // Simulates the initial onDown event.
-                boolean navigable = mNavigationHandler.navigate(navigateForward, startX, startY);
+            if (mNavigationCoordinator != null) {
+                mNavigationCoordinator.startGesture();
+                boolean navigable =
+                        mNavigationCoordinator.triggerUi(navigateForward, startX, startY);
                 boolean showGlow = navigateForward && !mTab.canGoForward();
                 return showGlow || navigable;
             }
@@ -200,11 +201,11 @@ public class SwipeRefreshHandler
     }
 
     /**
-     * Sets {@link NavigationHandler} object.
-     * @param layout {@link NavigationHandler} object.
+     * Sets {@link HistoryNavigationCoordinator} object.
+     * @param layout {@link HistoryNavigationCoordinator} object.
      */
-    public void setNavigationHandler(NavigationHandler navigationHandler) {
-        mNavigationHandler = navigationHandler;
+    public void setNavigationCoordinator(HistoryNavigationCoordinator navigationHandler) {
+        mNavigationCoordinator = navigationHandler;
     }
 
     @Override
@@ -213,7 +214,7 @@ public class SwipeRefreshHandler
         if (mSwipeType == OverscrollAction.PULL_TO_REFRESH) {
             mSwipeRefreshLayout.pull(yDelta);
         } else if (mSwipeType == OverscrollAction.HISTORY_NAVIGATION) {
-            if (mNavigationHandler != null) mNavigationHandler.pull(xDelta);
+            if (mNavigationCoordinator != null) mNavigationCoordinator.pull(xDelta);
         }
         TraceEvent.end("SwipeRefreshHandler.pull");
     }
@@ -224,7 +225,7 @@ public class SwipeRefreshHandler
         if (mSwipeType == OverscrollAction.PULL_TO_REFRESH) {
             mSwipeRefreshLayout.release(allowRefresh);
         } else if (mSwipeType == OverscrollAction.HISTORY_NAVIGATION) {
-            if (mNavigationHandler != null) mNavigationHandler.release(allowRefresh);
+            if (mNavigationCoordinator != null) mNavigationCoordinator.release(allowRefresh);
         }
         TraceEvent.end("SwipeRefreshHandler.release");
     }
@@ -233,7 +234,7 @@ public class SwipeRefreshHandler
     public void reset() {
         cancelStopRefreshingRunnable();
         if (mSwipeRefreshLayout != null) mSwipeRefreshLayout.reset();
-        if (mNavigationHandler != null) mNavigationHandler.reset();
+        if (mNavigationCoordinator != null) mNavigationCoordinator.reset();
     }
 
     @Override

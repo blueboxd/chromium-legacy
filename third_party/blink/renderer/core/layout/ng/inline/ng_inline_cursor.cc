@@ -254,32 +254,6 @@ bool NGInlineCursorPosition::IsInlineLeaf() const {
   return !IsListMarker();
 }
 
-bool NGInlineCursorPosition::IsPartOfCulledInlineBox(
-    const LayoutInline& layout_inline) const {
-  DCHECK(!layout_inline.ShouldCreateBoxFragment());
-  DCHECK(*this);
-  const LayoutObject* const layout_object = GetLayoutObject();
-  // We use |IsInline()| to exclude floating and out-of-flow objects.
-  if (!layout_object || !layout_object->IsInline() ||
-      layout_object->IsAtomicInlineLevel())
-    return false;
-  DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
-  DCHECK(!BoxFragment() || !BoxFragment()->IsFormattingContextRoot());
-  for (const LayoutObject* parent = layout_object->Parent(); parent;
-       parent = parent->Parent()) {
-    // Children of culled inline should be included.
-    if (parent == &layout_inline)
-      return true;
-    // Grand children should be included only if children are also culled.
-    if (const auto* parent_layout_inline = ToLayoutInlineOrNull(parent)) {
-      if (!parent_layout_inline->ShouldCreateBoxFragment())
-        continue;
-    }
-    return false;
-  }
-  return false;
-}
-
 bool NGInlineCursor::IsLastLineInInlineBlock() const {
   DCHECK(Current().IsLineBox());
   if (!GetLayoutBlockFlow()->IsAtomicInlineLevel())
@@ -1503,33 +1477,7 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   current_.Set(items_.begin() + item_index);
 }
 
-void NGInlineCursor::MoveToIncludingCulledInline(
-    const LayoutObject& layout_object) {
-  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
-  MoveTo(layout_object);
-  if (*this || !HasRoot()) {
-    layout_inline_ = nullptr;
-    return;
-  }
-
-  // Try to find ancestors if this is a culled inline.
-  layout_inline_ = ToLayoutInlineOrNull(&layout_object);
-  if (!layout_inline_)
-    return;
-
-  MoveToFirst();
-  while (Current() && !Current().IsPartOfCulledInlineBox(*layout_inline_))
-    MoveToNext();
-}
-
-void NGInlineCursor::MoveToNextForSameLayoutObject() {
-  if (layout_inline_) {
-    // Move to next fragment in culled inline box undef |layout_inline_|.
-    do {
-      MoveToNext();
-    } while (Current() && !Current().IsPartOfCulledInlineBox(*layout_inline_));
-    return;
-  }
+void NGInlineCursor::MoveToNextForSameLayoutObjectExceptCulledInline() {
   if (current_.paint_fragment_) {
     if (auto* paint_fragment =
             current_.paint_fragment_->NextForSameLayoutObject()) {
@@ -1575,6 +1523,115 @@ void NGInlineCursor::MoveToLastForSameLayoutObject() {
   MoveTo(last);
 }
 
+//
+// Functions to enumerate fragments that contribute to a culled inline.
+//
+
+// Traverse the |LayoutObject| tree in pre-order DFS and find a |LayoutObject|
+// that contributes to the culled inline.
+const LayoutObject* NGInlineCursor::CulledInlineTraversal::SetCurrent(
+    const LayoutObject* child) {
+  while (child) {
+    if (UNLIKELY(child->IsFloatingOrOutOfFlowPositioned())) {
+      child = child->NextInPreOrderAfterChildren(layout_inline_);
+      continue;
+    }
+
+    if (child->HasInlineFragments()) {
+      current_object_ = child;
+      return child;
+    }
+
+    // A culled inline can be computed from its direct children, but when the
+    // child is also culled, traverse its grand children.
+    if (const LayoutInline* child_layout_inline = ToLayoutInlineOrNull(child)) {
+      DCHECK(!child_layout_inline->ShouldCreateBoxFragment());
+      if (const LayoutObject* grand_child = child_layout_inline->FirstChild()) {
+        child = grand_child;
+        continue;
+      }
+    }
+    child = child->NextInPreOrderAfterChildren(layout_inline_);
+  }
+  current_object_ = nullptr;
+  return nullptr;
+}
+
+const LayoutObject* NGInlineCursor::CulledInlineTraversal::MoveToFirstFor(
+    const LayoutInline& layout_inline) {
+  layout_inline_ = &layout_inline;
+  return SetCurrent(layout_inline.FirstChild());
+}
+
+const LayoutObject* NGInlineCursor::CulledInlineTraversal::MoveToNext() {
+  return SetCurrent(
+      current_object_->NextInPreOrderAfterChildren(layout_inline_));
+}
+
+void NGInlineCursor::MoveToFirstForCulledInline(
+    const LayoutInline& layout_inline) {
+  if (const LayoutObject* layout_object =
+          culled_inline_.MoveToFirstFor(layout_inline)) {
+    MoveTo(*layout_object);
+    // This |MoveTo| may fail if |this| is a descendant cursor. Try the next
+    // |LayoutObject|.
+    MoveToNextCulledInlineDescendantIfNeeded();
+  }
+}
+
+void NGInlineCursor::MoveToNextForCulledInline() {
+  DCHECK(culled_inline_);
+  MoveToNextForSameLayoutObjectExceptCulledInline();
+  // If we're at the end of fragments for the current |LayoutObject| that
+  // contributes to the current culled inline, find the next |LayoutObject|.
+  MoveToNextCulledInlineDescendantIfNeeded();
+}
+
+void NGInlineCursor::MoveToNextCulledInlineDescendantIfNeeded() {
+  DCHECK(culled_inline_);
+  if (Current())
+    return;
+
+  while (const LayoutObject* layout_object = culled_inline_.MoveToNext()) {
+    MoveTo(*layout_object);
+    if (Current())
+      return;
+
+    // This |MoveTo| may fail if |this| is a descendant cursor. Try the next
+    // |LayoutObject|.
+    DCHECK(IsDescendantsCursor());
+  }
+}
+
+void NGInlineCursor::MoveToIncludingCulledInline(
+    const LayoutObject& layout_object) {
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
+
+  culled_inline_.Reset();
+  MoveTo(layout_object);
+  if (Current() || !HasRoot())
+    return;
+
+  // If this is a culled inline, find fragments for descendant |LayoutObject|s
+  // that contribute to the culled inline.
+  if (const LayoutInline* layout_inline =
+          ToLayoutInlineOrNull(&layout_object)) {
+    if (!layout_inline->ShouldCreateBoxFragment())
+      MoveToFirstForCulledInline(*layout_inline);
+  }
+}
+
+void NGInlineCursor::MoveToNextForSameLayoutObject() {
+  if (UNLIKELY(culled_inline_)) {
+    MoveToNextForCulledInline();
+    return;
+  }
+  MoveToNextForSameLayoutObjectExceptCulledInline();
+}
+
+//
+// |NGInlineBackwardCursor| functions.
+//
 NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
     : cursor_(cursor) {
   if (cursor.root_paint_fragment_) {

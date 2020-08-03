@@ -456,7 +456,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   ProcessCreatedBufferResourcesWithExpectation(2u /* expected size */,
                                                false /* fail */);
 
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   constexpr uint32_t kNumberOfCommits = 3;
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
@@ -565,7 +566,8 @@ TEST_P(WaylandBufferManagerTest,
   ProcessCreatedBufferResourcesWithExpectation(3u /* expected size */,
                                                false /* fail */);
 
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
   auto* mock_wp_presentation = server_.EnsureWpPresentation();
   ASSERT_TRUE(mock_wp_presentation);
 
@@ -685,7 +687,8 @@ TEST_P(WaylandBufferManagerTest,
   ProcessCreatedBufferResourcesWithExpectation(3u /* expected size */,
                                                false /* fail */);
 
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   constexpr uint32_t kNumberOfCommits = 3;
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
@@ -804,7 +807,8 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
   constexpr uint32_t kDmabufBufferId2 = 2;
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
   auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
@@ -902,7 +906,8 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
 
     Sync();
 
-    auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+    auto* mock_surface = server_.GetObject<wl::MockSurface>(
+        temp_window->root_surface()->GetSurfaceId());
     MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget);
 
     auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
@@ -970,7 +975,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
   ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
                                                false /* fail */);
 
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   constexpr uint32_t kNumberOfCommits = 3;
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
@@ -1121,7 +1127,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   auto widget = temp_window->GetWidget();
   auto bounds = temp_window->GetBounds();
 
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      temp_window->root_surface()->GetSurfaceId());
   ASSERT_TRUE(mock_surface);
 
   ActivateSurface(mock_surface->xdg_surface());
@@ -1190,7 +1197,8 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferCommittedTwiceInARow) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = window_->GetBounds();
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget);
 
@@ -1253,7 +1261,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseBufferCommittedTwiceInARow) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = window_->GetBounds();
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget);
 
@@ -1315,7 +1324,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseOrderDifferentToCommitOrder) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = window_->GetBounds();
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget);
 
@@ -1413,7 +1423,8 @@ TEST_P(WaylandBufferManagerTest,
       .Times(1);
   ASSERT_TRUE(!connection_->presentation());
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
-  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
   EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
   EXPECT_CALL(*mock_surface,

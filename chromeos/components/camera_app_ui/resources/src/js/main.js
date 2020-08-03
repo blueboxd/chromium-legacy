@@ -192,7 +192,7 @@ export class App {
       // Migrate pictures might take some time. Since it won't affect other
       // camera functions, we don't await here to avoid harming UX.
       filesystem.checkMigration(promptMigrate).then((ackMigrate) => {
-        metrics.log(metrics.Type.LAUNCH, ackMigrate);
+        metrics.sendLaunchEvent({ackMigrate});
       });
 
       const externalDir = filesystem.getExternalDirectory();
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Setup listener for performance events.
   perfLogger.addListener((event, duration, extras) => {
-    metrics.log(metrics.Type.PERF, event, duration, extras);
+    metrics.sendPerfEvent({event, duration, extras});
   });
   const states = Object.values(PerfEvent);
   states.push(state.State.TAKING);

@@ -419,7 +419,8 @@ TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
   ValidateTheDisplayForWidget(widget, primary_display.id());
 
   // Now, send enter event for the surface, which was created before.
-  wl::MockSurface* surface = server_.GetObject<wl::MockSurface>(widget);
+  wl::MockSurface* surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
   ASSERT_TRUE(surface);
   wl_surface_send_enter(surface->resource(), output_->resource());
 
@@ -463,7 +464,8 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
                                         PlatformWindowType::kWindow,
                                         gfx::kNullAcceleratedWidget, &delegate);
 
-  auto* surface = server_.GetObject<wl::MockSurface>(window_->GetWidget());
+  auto* surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
   ASSERT_TRUE(surface);
 
   // Announce pointer capability so that WaylandPointer is created on the client
@@ -488,8 +490,8 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   // WaylandScreen must return the last pointer location.
   EXPECT_EQ(gfx::Point(10, 20), platform_screen_->GetCursorScreenPoint());
 
-  auto* second_surface =
-      server_.GetObject<wl::MockSurface>(second_window->GetWidget());
+  auto* second_surface = server_.GetObject<wl::MockSurface>(
+      second_window->root_surface()->GetSurfaceId());
   ASSERT_TRUE(second_surface);
   // Now, leave the first surface and enter second one.
   wl_pointer_send_leave(pointer->resource(), ++serial, surface->resource());
@@ -530,8 +532,8 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
 
   Sync();
 
-  auto* menu_surface =
-      server_.GetObject<wl::MockSurface>(menu_window->GetWidget());
+  auto* menu_surface = server_.GetObject<wl::MockSurface>(
+      menu_window->root_surface()->GetSurfaceId());
   ASSERT_TRUE(menu_surface);
 
   wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
@@ -577,8 +579,8 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
 
   Sync();
 
-  auto* nested_menu_surface =
-      server_.GetObject<wl::MockSurface>(nested_menu_window->GetWidget());
+  auto* nested_menu_surface = server_.GetObject<wl::MockSurface>(
+      nested_menu_window->root_surface()->GetSurfaceId());
   ASSERT_TRUE(nested_menu_surface);
 
   wl_pointer_send_enter(pointer->resource(), ++serial,

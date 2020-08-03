@@ -25,7 +25,7 @@ export const PerfEvent = {
 };
 
 /**
- * @typedef {function(PerfEvent, number, Object=)}
+ * @typedef {function(PerfEvent, number, !Object=)}
  */
 let PerfEventListener;  // eslint-disable-line no-unused-vars
 

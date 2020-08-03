@@ -13,11 +13,11 @@ import * as state from '../../state.js';
  */
 export class Preview {
   /**
-   * @param {!function()} onNewStreamNeeded Callback to request new stream.
+   * @param {function()} onNewStreamNeeded Callback to request new stream.
    */
   constructor(onNewStreamNeeded) {
     /**
-     * @type {!function()}
+     * @type {function()}
      * @private
      */
     this.onNewStreamNeeded_ = onNewStreamNeeded;

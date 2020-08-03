@@ -27,7 +27,10 @@ namespace ui {
 
 WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
                              WaylandConnection* connection)
-    : delegate_(delegate), connection_(connection) {}
+    : delegate_(delegate),
+      connection_(connection),
+      accelerated_widget_(
+          connection->wayland_window_manager()->AllocateAcceleratedWidget()) {}
 
 WaylandWindow::~WaylandWindow() {
   shutting_down_ = true;
@@ -84,10 +87,7 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
 }
 
 gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
-  // TODO(https://crbug.com/1110354): We should not use wl_surface id as widget.
-  // Wayland Server can reuse ids for wl_surface but AcceleratedWidgets are not
-  // expected to be reused very soon.
-  return root_surface_->GetSurfaceId();
+  return accelerated_widget_;
 }
 
 void WaylandWindow::SetPointerFocus(bool focus) {

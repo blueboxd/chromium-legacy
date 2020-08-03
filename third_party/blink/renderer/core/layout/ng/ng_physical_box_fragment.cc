@@ -53,7 +53,11 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
           builder->GetWritingMode(), builder->Direction());
   bool has_rare_data =
       builder->mathml_paint_info_ ||
-      !builder->oof_positioned_fragmentainer_descendants_.IsEmpty();
+      !builder->oof_positioned_fragmentainer_descendants_.IsEmpty() ||
+      builder->table_grid_rect_ || builder->table_column_geometries_ ||
+      builder->table_collapsed_borders_.get() ||
+      builder->table_collapsed_borders_geometry_ ||
+      builder->table_cell_column_index_;
   size_t byte_size = sizeof(NGPhysicalBoxFragment) +
                      sizeof(NGLink) * builder->children_.size() +
                      (borders.IsZero() ? 0 : sizeof(borders)) +
@@ -171,6 +175,18 @@ NGPhysicalBoxFragment::RareData::RareData(NGBoxFragmentBuilder* builder,
                 : PhysicalSize()),
         descendant.containing_block_fragment);
   }
+  if (builder->table_grid_rect_)
+    table_grid_rect_ = *builder->table_grid_rect_;
+  if (builder->table_column_geometries_)
+    table_column_geometries_ = *builder->table_column_geometries_;
+  if (builder->table_collapsed_borders_.get())
+    table_collapsed_borders_ = builder->table_collapsed_borders_.get();
+  if (builder->table_collapsed_borders_geometry_) {
+    table_collapsed_borders_geometry_ =
+        std::move(builder->table_collapsed_borders_geometry_);
+  }
+  if (builder->table_cell_column_index_)
+    table_cell_column_index_ = *builder->table_cell_column_index_;
 }
 
 scoped_refptr<const NGLayoutResult>
@@ -501,12 +517,12 @@ UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
 
 NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxFragment::BorderWidths() const {
   unsigned edges = BorderEdges();
-  NGPhysicalBoxStrut box_strut(
-      BorderWidth(edges, NGBorderEdges::kTop, Style().BorderTopWidth()),
-      BorderWidth(edges, NGBorderEdges::kRight, Style().BorderRightWidth()),
-      BorderWidth(edges, NGBorderEdges::kBottom, Style().BorderBottomWidth()),
-      BorderWidth(edges, NGBorderEdges::kLeft, Style().BorderLeftWidth()));
-  return box_strut.SnapToDevicePixels();
+  NGPhysicalBoxStrut borders = Borders();
+  borders.top = BorderWidth(edges, NGBorderEdges::kTop, borders.top);
+  borders.right = BorderWidth(edges, NGBorderEdges::kRight, borders.right);
+  borders.bottom = BorderWidth(edges, NGBorderEdges::kBottom, borders.bottom);
+  borders.left = BorderWidth(edges, NGBorderEdges::kLeft, borders.left);
+  return borders.SnapToDevicePixels();
 }
 
 #if DCHECK_IS_ON()

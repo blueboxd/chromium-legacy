@@ -49,6 +49,7 @@ inline void InlineSizesFromStyle(
   }
   if (length.IsPercent())
     *percentage_inline_size = length.Percent();
+
   if (*percentage_inline_size && max_length.IsPercent()) {
     *percentage_inline_size =
         std::min(**percentage_inline_size, max_length.Percent());
@@ -105,14 +106,14 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
                        &css_inline_size, &css_min_inline_size,
                        &css_max_inline_size, &css_percentage_inline_size);
 
-  MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kContent);
+  MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kIntrinsic);
   MinMaxSizesResult min_max_size;
   if (is_collapsed) {
     NGConstraintSpaceBuilder builder(table_writing_mode,
                                      node.Style().GetWritingMode(),
                                      /* is_new_fc */ false);
     builder.SetTableCellBorders(cell_border);
-    builder.SetIsTableCell(true);
+    builder.SetIsTableCell(true, /* is_legacy_table_cell */ false);
     NGConstraintSpace space = builder.ToConstraintSpace();
     // It'd be nice to avoid computing minmax if not needed, but the criteria
     // is not clear.
@@ -148,8 +149,11 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
   } else {
     content_max = min_max_size.sizes.max_size;
   }
-  if (css_max_inline_size)
+  if (css_max_inline_size) {
     content_max = std::min(content_max, *css_max_inline_size);
+    resolved_min_inline_size =
+        std::min(resolved_min_inline_size, *css_max_inline_size);
+  }
   LayoutUnit resolved_max_inline_size =
       std::max(resolved_min_inline_size, content_max);
 
@@ -169,7 +173,7 @@ NGTableTypes::Section NGTableTypes::CreateSection(
   const Length& section_css_block_size = section.Style().LogicalHeight();
   // TODO(crbug.com/1105272): Decide what to do with |Length::IsCalculated()|.
   bool is_constrained =
-      section_css_block_size.IsPercent() || section_css_block_size.IsFixed();
+      section_css_block_size.IsFixed() || section_css_block_size.IsPercent();
   base::Optional<float> percent;
   if (section_css_block_size.IsPercent())
     percent = section_css_block_size.Percent();

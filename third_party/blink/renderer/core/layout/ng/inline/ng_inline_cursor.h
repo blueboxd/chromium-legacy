@@ -195,9 +195,6 @@ class CORE_EXPORT NGInlineCursorPosition {
     item_ = nullptr;
   }
 
-  // True if current position is part of culled inline box |layout_inline|.
-  bool IsPartOfCulledInlineBox(const LayoutInline& layout_inline) const;
-
   const NGPaintFragment* paint_fragment_ = nullptr;
   const NGFragmentItem* item_ = nullptr;
   ItemsSpan::iterator item_iter_;
@@ -416,10 +413,20 @@ class CORE_EXPORT NGInlineCursor {
   // Returns true if the current position moves to last child.
   bool TryToMoveToLastChild();
 
+  //
+  // Functions to enumerate fragments for a |LayoutObject|.
+  //
+
   // Move to first |NGFragmentItem| or |NGPaintFragment| associated to
   // |layout_object|. When |layout_object| has no associated fragments, this
   // cursor points nothing.
   void MoveTo(const LayoutObject& layout_object);
+
+  // Same as |MoveTo|, except that this enumerates fragments for descendants
+  // if |layout_object| is a culled inline.
+  //
+  // Note, for a culled inline, fragments may not be in the visual order in
+  // the inline direction if RTL or mixed bidi for a performance reason.
   void MoveToIncludingCulledInline(const LayoutObject& layout_object);
 
   // Move the current position to next fragment on same layout object.
@@ -435,6 +442,16 @@ class CORE_EXPORT NGInlineCursor {
 #endif
 
  private:
+  // Returns true if |this| is only for a part of an inline formatting context;
+  // in other words, if |this| is created by |CursorForDescendants|.
+  bool IsDescendantsCursor() const {
+    if (fragment_items_)
+      return !fragment_items_->Equals(items_);
+    if (root_paint_fragment_)
+      return root_paint_fragment_->Parent();
+    return false;
+  }
+
   // True if the current position is a last line in inline block. It is error
   // to call at end or the current position is not line.
   bool IsLastLineInInlineBlock() const;
@@ -471,6 +488,35 @@ class CORE_EXPORT NGInlineCursor {
   wtf_size_t SpanBeginItemIndex() const;
   wtf_size_t SpanIndexFromItemIndex(unsigned index) const;
 
+  // |MoveToNextForSameLayoutObject| that doesn't check |culled_inline_|.
+  void MoveToNextForSameLayoutObjectExceptCulledInline();
+
+  // A helper class to enumerate |LayoutObject|s that contribute to a culled
+  // inline.
+  class CulledInlineTraversal {
+    STACK_ALLOCATED();
+
+   public:
+    CulledInlineTraversal() = default;
+
+    explicit operator bool() const { return current_object_; }
+    void Reset() { current_object_ = nullptr; }
+
+    // Returns first/next |LayoutObject| that contribute to |layout_inline|.
+    const LayoutObject* MoveToFirstFor(const LayoutInline& layout_inline);
+    const LayoutObject* MoveToNext();
+
+   private:
+    const LayoutObject* SetCurrent(const LayoutObject* child);
+
+    const LayoutObject* current_object_ = nullptr;
+    const LayoutInline* layout_inline_ = nullptr;
+  };
+
+  void MoveToFirstForCulledInline(const LayoutInline& layout_inline);
+  void MoveToNextForCulledInline();
+  void MoveToNextCulledInlineDescendantIfNeeded();
+
   NGInlineCursorPosition current_;
 
   ItemsSpan items_;
@@ -478,8 +524,7 @@ class CORE_EXPORT NGInlineCursor {
 
   const NGPaintFragment* root_paint_fragment_ = nullptr;
 
-  // Used in |MoveToNextForSameLayoutObject()| to support culled inline.
-  const LayoutInline* layout_inline_ = nullptr;
+  CulledInlineTraversal culled_inline_;
 
   friend class NGInlineBackwardCursor;
 };

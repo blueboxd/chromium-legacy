@@ -5,8 +5,6 @@
 import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assert} from './chrome_util.js';
 // eslint-disable-next-line no-unused-vars
-import {Intent} from './intent.js';
-// eslint-disable-next-line no-unused-vars
 import {PerfEvent} from './perf.js';
 import * as state from './state.js';
 // eslint-disable-next-line no-unused-vars
@@ -38,7 +36,11 @@ let ready = null;
  * @param {Map<number, Object>=} dimen Optional object contains dimension
  *     information.
  */
-function sendEvent(event, dimen = null) {
+async function sendEvent(event, dimen = null) {
+  assert(window.ga !== null);
+  assert(ready !== null);
+  await ready;
+
   const assignDimension = (e, d) => {
     d.forEach((value, key) => e[`dimension${key}`] = value);
   };
@@ -126,10 +128,17 @@ export function initMetrics() {
 }
 
 /**
- * Sends launch type event.
- * @param {boolean} ackMigrate Whether acknowledged to migrate during launch.
+ * Parameters for logging launch event. |ackMigrate| stands for whether
+ * the user acknowledged to migrate during launch.
+ * @typedef {{ackMigrate: boolean}}
  */
-function sendLaunchEvent(ackMigrate) {
+export let LaunchEventParam;
+
+/**
+ * Sends launch type event.
+ * @param {!LaunchEventParam} param
+ */
+export function sendLaunchEvent({ackMigrate}) {
   sendEvent({
     eventCategory: 'launch',
     eventAction: 'start',
@@ -211,7 +220,7 @@ export class CaptureEventParam {
  * Sends capture type event.
  * @param {!CaptureEventParam} param
  */
-function sendCaptureEvent({
+export function sendCaptureEvent({
   facing,
   duration = 0,
   resolution,
@@ -265,13 +274,38 @@ function sendCaptureEvent({
       ]));
 }
 
+
+/**
+ * Parameters for logging perf event.
+ * @record
+ */
+export class PerfEventParam {
+  /**
+   * @public
+   */
+  constructor() {
+    /**
+     * @type {!PerfEvent} Target event type.
+     */
+    this.event;
+
+    /**
+     * @type {number} Duration of the event in ms.
+     */
+    this.duration;
+
+    /**
+     * @type {!Object|undefined} Optional information for the event.
+     */
+    this.extras;
+  }
+}
+
 /**
  * Sends perf type event.
- * @param {PerfEvent} event The target event type.
- * @param {number} duration The duration of the event in ms.
- * @param {Object=} extras Optional information for the event.
+ * @param {!PerfEventParam} param
  */
-function sendPerfEvent(event, duration, extras = {}) {
+export function sendPerfEvent({event, duration, extras = {}}) {
   const {resolution = '', facing = ''} = extras;
   sendEvent(
       {
@@ -289,38 +323,59 @@ function sendPerfEvent(event, duration, extras = {}) {
 }
 
 /**
- * Sends intent type event.
- * @param {!Intent} intent Intent to be logged.
- * @param {!IntentResultType} intentResult
+ * See Intent class in intent.js for the descriptions of each field.
+ * TODO(b/131133953): Pass an Intent directly once the type-only import feature
+ * is implemented in Closure Compiler.
+ * @typedef {{
+ *   mode: Mode,
+ *   result: IntentResultType,
+ *   shouldHandleResult: boolean,
+ *   shouldDownScale: boolean,
+ *   isSecure: boolean,
+ * }}
  */
-function sendIntentEvent(intent, intentResult) {
+export let IntentEventParam;
+
+/**
+ * Sends intent type event.
+ * @param {!IntentEventParam} param
+ */
+export function sendIntentEvent(
+    {mode, result, shouldHandleResult, shouldDownScale, isSecure}) {
   const getBoolValue = (b) => b ? '1' : '0';
   sendEvent(
       {
         eventCategory: 'intent',
-        eventAction: intent.mode,
-        eventLabel: intentResult,
+        eventAction: mode,
+        eventLabel: result,
       },
       new Map([
-        [12, intentResult],
-        [13, getBoolValue(intent.shouldHandleResult)],
-        [14, getBoolValue(intent.shouldDownScale)],
-        [15, getBoolValue(intent.isSecure)],
+        [12, result],
+        [13, getBoolValue(shouldHandleResult)],
+        [14, getBoolValue(shouldDownScale)],
+        [15, getBoolValue(isSecure)],
       ]));
 }
 
 /**
- * Sends error type event.
- * @param {string} type
- * @param {string} level
- * @param {string} errorName
- * @param {string} fileName
- * @param {string} funcName
- * @param {string} lineNo
- * @param {string} colNo
+ * @typedef {{
+ *   type: string,
+ *   level: string,
+ *   errorName: string,
+ *   fileName: string,
+ *   funcName: string,
+ *   lineNo: string,
+ *   colNo: string,
+ * }}
  */
-function sendErrorEvent(
-    type, level, errorName, fileName, funcName, lineNo, colNo) {
+export let ErrorEventParam;
+
+/**
+ * Sends error type event.
+ * @param {!ErrorEventParam} param
+ */
+export function sendErrorEvent(
+    {type, level, errorName, fileName, funcName, lineNo, colNo}) {
   sendEvent(
       {
         eventCategory: 'error',
@@ -334,30 +389,4 @@ function sendErrorEvent(
         [19, lineNo],
         [20, colNo],
       ]));
-}
-
-/**
- * Metrics types.
- * @enum {function(...)}
- */
-export const Type = {
-  LAUNCH: sendLaunchEvent,
-  CAPTURE: sendCaptureEvent,
-  PERF: sendPerfEvent,
-  INTENT: sendIntentEvent,
-  ERROR: sendErrorEvent,
-};
-
-/**
- * Logs the given metrics.
- * @param {!Type} type Metrics type.
- * @param {...*} args Optional rest parameters for logging metrics.
- * @return {!Promise}
- */
-export async function log(type, ...args) {
-  assert(window.ga !== null);
-  assert(ready !== null);
-
-  await ready;
-  type(...args);
 }

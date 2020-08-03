@@ -109,7 +109,7 @@ export class Intent {
     }
     this.done_ = true;
     await this.chromeHelper_.finish(this.intentId);
-    metrics.log(metrics.Type.INTENT, this, metrics.IntentResultType.CONFIRMED);
+    this.logResult(metrics.IntentResultType.CONFIRMED);
   }
 
   /**
@@ -122,7 +122,7 @@ export class Intent {
     }
     this.done_ = true;
     await this.chromeHelper_.cancel(this.intentId);
-    metrics.log(metrics.Type.INTENT, this, metrics.IntentResultType.CANCELED);
+    this.logResult(metrics.IntentResultType.CANCELED);
   }
 
   /**
@@ -146,6 +146,20 @@ export class Intent {
       return;
     }
     await this.chromeHelper_.clearData(this.intentId);
+  }
+
+  /**
+   * Logs the intent result to metrics.
+   * @param {metrics.IntentResultType} result
+   */
+  logResult(result) {
+    metrics.sendIntentEvent({
+      mode: this.mode,
+      result,
+      shouldHandleResult: this.shouldHandleResult,
+      shouldDownScale: this.shouldDownScale,
+      isSecure: this.isSecure,
+    });
   }
 
   /**

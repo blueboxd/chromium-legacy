@@ -128,6 +128,10 @@ void WaylandWindowManager::RemoveSubsurface(gfx::AcceleratedWidget widget,
     observer.OnSubsurfaceRemoved(window, subsurface);
 }
 
+gfx::AcceleratedWidget WaylandWindowManager::AllocateAcceleratedWidget() {
+  return ++last_accelerated_widget_;
+}
+
 std::vector<WaylandWindow*> WaylandWindowManager::GetAllWindows() const {
   std::vector<WaylandWindow*> result;
   for (auto entry : window_map_)

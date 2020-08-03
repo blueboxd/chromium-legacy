@@ -374,7 +374,7 @@ export class Camera extends View {
    * @protected
    */
   async doSavePhoto_({resolution, blob, isVideoSnapshot = false}, name) {
-    metrics.log(metrics.Type.CAPTURE, {
+    metrics.sendCaptureEvent({
       facing: this.facingMode_,
       resolution,
       shutterType: this.shutterType_,
@@ -395,7 +395,7 @@ export class Camera extends View {
    * @protected
    */
   async doSaveVideo_({resolution, duration, videoSaver, everPaused}) {
-    metrics.log(metrics.Type.CAPTURE, {
+    metrics.sendCaptureEvent({
       facing: this.facingMode_,
       duration,
       resolution,

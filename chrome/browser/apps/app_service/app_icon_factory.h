@@ -46,8 +46,12 @@ enum IconEffects : uint32_t {
                                // have not been launched locally yet. They
                                // should appear gray until they are launched.
   kCrOsStandardBackground =
-      0x40,                  // Add the white background to the standard icon.
-  kCrOsStandardMask = 0x80,  // Apply the mask to the standard icon.
+      0x40,                   // Add the white background to the standard icon.
+  kCrOsStandardMask = 0x80,   // Apply the mask to the standard icon.
+  kCrOsStandardIcon = 0x100,  // Add the white background, maybe shrink the
+                              // icon, and apply the mask to the standard icon
+                              // This effect combines kCrOsStandardBackground
+                              // and kCrOsStandardMask together.
 };
 
 // Returns a callback that converts compressed data to an ImageSkia.

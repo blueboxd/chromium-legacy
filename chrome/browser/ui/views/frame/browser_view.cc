@@ -568,6 +568,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       contents_container->AddChildView(std::move(devtools_web_view));
   contents_web_view_ =
       contents_container->AddChildView(std::move(contents_web_view));
+  contents_web_view_->set_is_primary_web_contents_for_window(true);
   contents_container->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
       devtools_web_view_, contents_web_view_));
 

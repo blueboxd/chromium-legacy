@@ -69,12 +69,19 @@ class WaylandWindowManager {
   void RemoveSubsurface(gfx::AcceleratedWidget widget,
                         WaylandSubsurface* subsurface);
 
+  // Creates a new unique gfx::AcceleratedWidget.
+  gfx::AcceleratedWidget AllocateAcceleratedWidget();
+
  private:
   base::ObserverList<WaylandWindowObserver> observers_;
 
   base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
 
   WaylandWindow* located_events_grabber_ = nullptr;
+
+  // Stores strictly monotonically increasing counter for allocating unique
+  // AccelerateWidgets.
+  gfx::AcceleratedWidget last_accelerated_widget_ = gfx::kNullAcceleratedWidget;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindowManager);
 };

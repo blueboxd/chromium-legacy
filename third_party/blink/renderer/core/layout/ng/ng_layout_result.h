@@ -216,6 +216,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
   }
 
+  wtf_size_t TableColumnCount() const {
+    return HasRareData() ? rare_data_->table_column_count_ : 0;
+  }
+
   // The break-before value on the first child needs to be propagated to the
   // container, in search of a valid class A break point.
   EBreakBetween InitialBreakBefore() const {
@@ -400,14 +404,17 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     };
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
+
     LayoutUnit overflow_block_size = kIndefiniteSize;
     LayoutUnit annotation_overflow;
     LayoutUnit block_end_annotation_space;
+
 #if DCHECK_IS_ON()
     bool has_tallest_unbreakable_block_size = false;
 #endif
     bool is_single_use = false;
     int lines_until_clamp = 0;
+    wtf_size_t table_column_count_ = 0;
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }

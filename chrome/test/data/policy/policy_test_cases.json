@@ -7920,5 +7920,14 @@
         }
       }
     ]
+  },
+  "CCTToSDialogEnabled": {
+    "os": ["android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "CCTToSDialogEnabled": false },
+        "prefs": { "policy.cct_tos_dialog_enabled": { "local_state": true } }
+      }
+    ]
   }
 }

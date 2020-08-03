@@ -68,9 +68,9 @@ const WindowState = {
 /**
  * Callbacks called when specific window events happened.
  * @typedef {{
- *   onActive: !function(CCAWindow),
- *   onSuspended: !function(CCAWindow),
- *   onClosed: !function(CCAWindow),
+ *   onActive: function(CCAWindow),
+ *   onSuspended: function(CCAWindow),
+ *   onClosed: function(CCAWindow),
  * }}
  */
 let WindowEventCallbacks;  // eslint-disable-line no-unused-vars
@@ -80,8 +80,8 @@ let WindowEventCallbacks;  // eslint-disable-line no-unused-vars
  * onCreated()/onClosed() is called when AppWindow created/closed with window
  * url. onError() is called with error happening in AppWindow.
  * @typedef {{
- *   onCreated: !function(string),
- *   onClosed: !function(string),
+ *   onCreated: function(string),
+ *   onClosed: function(string),
  *   onError: !TestingErrorCallback,
  * }}
  */

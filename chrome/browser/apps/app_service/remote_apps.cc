@@ -93,10 +93,12 @@ void RemoteApps::LoadIcon(const std::string& app_id,
 
   gfx::ImageSkia icon_image = delegate_->GetIcon(app_id);
   if (!icon_image.isNull()) {
-    icon->icon_type = mojom::IconType::kUncompressed;
+    icon->icon_type = icon_type;
+    IconEffects icon_effects = (icon_type == mojom::IconType::kStandard)
+                                   ? IconEffects::kCrOsStandardIcon
+                                   : IconEffects::kResizeAndPad;
     icon->uncompressed = icon_image;
-    apps::ApplyIconEffects(apps::IconEffects::kResizeAndPad, size_hint_in_dip,
-                           &icon->uncompressed);
+    apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &icon->uncompressed);
   }
 
   std::move(callback).Run(std::move(icon));

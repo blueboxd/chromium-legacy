@@ -53,12 +53,6 @@ void DidReadInfo(
     return;
   }
 
-  // URLResponseHead fields filled here are the same as
-  // ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(). Once
-  // https://crbug.com/1060076 is done CreateResourceResponseHeadAndMetadata()
-  // will be removed, but we still need HttpResponseInfo -> URLResponseHead
-  // conversion to restore a response from the storage.
-  // TODO(bashi): Remove the above comment ater the issue is closed.
   auto head = network::mojom::URLResponseHead::New();
   head->request_time = http_info->request_time;
   head->response_time = http_info->response_time;

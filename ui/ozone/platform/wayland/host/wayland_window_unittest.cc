@@ -100,9 +100,9 @@ class WaylandWindowTest : public WaylandTest {
   }
 
  protected:
-  void SendConfigureEventPopup(gfx::AcceleratedWidget menu_widget,
+  void SendConfigureEventPopup(WaylandWindow* menu_window,
                                const gfx::Rect bounds) {
-    auto* popup = GetPopupByWidget(menu_widget);
+    auto* popup = GetPopupByWindow(menu_window);
     ASSERT_TRUE(popup);
     if (GetParam() == kXdgShellV6) {
       zxdg_popup_v6_send_configure(popup->resource(), bounds.x(), bounds.y(),
@@ -166,9 +166,9 @@ class WaylandWindowTest : public WaylandTest {
     Mock::VerifyAndClearExpectations(&delegate_);
   }
 
-  void VerifyXdgPopupPosition(gfx::AcceleratedWidget menu_widget,
+  void VerifyXdgPopupPosition(WaylandWindow* menu_window,
                               const PopupPosition& position) {
-    auto* popup = GetPopupByWidget(menu_widget);
+    auto* popup = GetPopupByWindow(menu_window);
     ASSERT_TRUE(popup);
 
     EXPECT_EQ(popup->anchor_rect(), position.anchor_rect);
@@ -209,8 +209,9 @@ class WaylandWindowTest : public WaylandTest {
       EXPECT_FALSE(window->CanDispatchEvent(&test_key_event));
   }
 
-  wl::TestXdgPopup* GetPopupByWidget(gfx::AcceleratedWidget widget) {
-    wl::MockSurface* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  wl::TestXdgPopup* GetPopupByWindow(WaylandWindow* window) {
+    wl::MockSurface* mock_surface = server_.GetObject<wl::MockSurface>(
+        window->root_surface()->GetSurfaceId());
     if (mock_surface) {
       auto* mock_xdg_surface = mock_surface->xdg_surface();
       if (mock_xdg_surface)
@@ -1200,8 +1201,8 @@ TEST_P(WaylandWindowTest, CanDispatchEvent) {
   uint32_t serial = 0;
 
   // Test that CanDispatchEvent is set correctly.
-  wl::MockSurface* toplevel_surface =
-      server_.GetObject<wl::MockSurface>(widget_);
+  wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
   wl_pointer_send_enter(server_.seat()->pointer()->resource(), ++serial,
                         toplevel_surface->resource(), 0, 0);
 
@@ -1356,11 +1357,10 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
 
   Sync();
 
-  gfx::AcceleratedWidget menu_window_widget = menu_window->GetWidget();
-  VerifyXdgPopupPosition(menu_window_widget, menu_window_positioner);
+  VerifyXdgPopupPosition(menu_window.get(), menu_window_positioner);
 
   EXPECT_CALL(menu_window_delegate, OnBoundsChanged(_)).Times(0);
-  SendConfigureEventPopup(menu_window_widget, menu_window_bounds);
+  SendConfigureEventPopup(menu_window.get(), menu_window_bounds);
 
   Sync();
 
@@ -1372,15 +1372,13 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
                                       nested_menu_window_positioner.size);
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(
-          PlatformWindowType::kMenu, menu_window_widget,
+          PlatformWindowType::kMenu, menu_window->GetWidget(),
           nested_menu_window_bounds, &nested_menu_window_delegate);
   EXPECT_TRUE(nested_menu_window);
 
   Sync();
 
-  gfx::AcceleratedWidget nested_menu_window_widget =
-      nested_menu_window->GetWidget();
-  VerifyXdgPopupPosition(nested_menu_window_widget,
+  VerifyXdgPopupPosition(nested_menu_window.get(),
                          nested_menu_window_positioner);
 
   EXPECT_CALL(nested_menu_window_delegate, OnBoundsChanged(_)).Times(0);
@@ -1389,7 +1387,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
                           nested_menu_window_positioner.anchor_rect.y());
   gfx::Rect calculated_nested_bounds = nested_menu_window_bounds;
   calculated_nested_bounds.set_origin(origin);
-  SendConfigureEventPopup(nested_menu_window_widget, calculated_nested_bounds);
+  SendConfigureEventPopup(nested_menu_window.get(), calculated_nested_bounds);
 
   Sync();
 
@@ -1407,7 +1405,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
       nested_menu_window_delegate,
       OnBoundsChanged(gfx::Rect({139, 156}, nested_menu_window_bounds.size())));
   calculated_nested_bounds.set_origin({-301, 80});
-  SendConfigureEventPopup(nested_menu_window_widget, calculated_nested_bounds);
+  SendConfigureEventPopup(nested_menu_window.get(), calculated_nested_bounds);
 
   Sync();
 
@@ -1422,7 +1420,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
                              gfx::Rect({0, 363}, window_->GetBounds().size())));
   EXPECT_CALL(menu_window_delegate,
               OnBoundsChanged(gfx::Rect({440, 0}, menu_window_bounds.size())));
-  SendConfigureEventPopup(menu_window_widget,
+  SendConfigureEventPopup(menu_window.get(),
                           gfx::Rect({440, -363}, menu_window_bounds.size()));
 
   Sync();
@@ -1433,23 +1431,22 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
   nested_menu_window.reset();
   nested_menu_window_bounds.set_origin({723, 258});
   nested_menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::kMenu, menu_window_widget, nested_menu_window_bounds,
-      &nested_menu_window_delegate);
+      PlatformWindowType::kMenu, menu_window->GetWidget(),
+      nested_menu_window_bounds, &nested_menu_window_delegate);
   EXPECT_TRUE(nested_menu_window);
 
   Sync();
 
-  nested_menu_window_widget = nested_menu_window->GetWidget();
   // We must get the anchor on gfx::Point(4, 258).
   nested_menu_window_positioner.anchor_rect.set_origin({4, 258});
-  VerifyXdgPopupPosition(nested_menu_window_widget,
+  VerifyXdgPopupPosition(nested_menu_window.get(),
                          nested_menu_window_positioner);
 
   Sync();
 
   EXPECT_CALL(nested_menu_window_delegate, OnBoundsChanged(_)).Times(0);
   calculated_nested_bounds.set_origin({283, 258});
-  SendConfigureEventPopup(nested_menu_window_widget, calculated_nested_bounds);
+  SendConfigureEventPopup(nested_menu_window.get(), calculated_nested_bounds);
 
   Sync();
 
@@ -1464,7 +1461,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
       nested_menu_window_delegate,
       OnBoundsChanged(gfx::Rect({149, 258}, nested_menu_window_bounds.size())));
   calculated_nested_bounds.set_origin({-291, 258});
-  SendConfigureEventPopup(nested_menu_window_widget, calculated_nested_bounds);
+  SendConfigureEventPopup(nested_menu_window.get(), calculated_nested_bounds);
 
   Sync();
 
@@ -1477,7 +1474,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
               OnBoundsChanged(gfx::Rect({0, 0}, window_->GetBounds().size())));
   EXPECT_CALL(menu_window_delegate,
               OnBoundsChanged(gfx::Rect({440, 76}, menu_window_bounds.size())));
-  SendConfigureEventPopup(menu_window_widget,
+  SendConfigureEventPopup(menu_window.get(),
                           gfx::Rect({440, 76}, menu_window_bounds.size()));
 
   Sync();
@@ -1625,27 +1622,26 @@ TEST_P(WaylandWindowTest, NestedPopupMenu) {
   VerifyAndClearExpectations();
 
   gfx::Rect nestedPopup_bounds(gfx::Rect(10, 30, 40, 20));
-  std::unique_ptr<WaylandWindow> nestedPopup_window =
+  std::unique_ptr<WaylandWindow> nested_popup_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kPopup,
                                     menu_window->GetWidget(),
                                     nestedPopup_bounds, &delegate_);
-  EXPECT_TRUE(nestedPopup_window);
+  EXPECT_TRUE(nested_popup_window);
 
   VerifyAndClearExpectations();
 
-  nestedPopup_window->SetPointerFocus(true);
+  nested_popup_window->SetPointerFocus(true);
 
   Sync();
 
-  auto* mock_surface_nested_popup =
-      GetPopupByWidget(nestedPopup_window->GetWidget());
+  auto* mock_surface_nested_popup = GetPopupByWindow(nested_popup_window.get());
 
   ASSERT_TRUE(mock_surface_nested_popup);
 
   auto anchor_width = (mock_surface_nested_popup->anchor_rect()).width();
   EXPECT_EQ(4, anchor_width);
 
-  nestedPopup_window->SetPointerFocus(false);
+  nested_popup_window->SetPointerFocus(false);
 }
 
 // Case 2: When the menu bounds are positive and there is a negative or
@@ -1662,27 +1658,26 @@ TEST_P(WaylandWindowTest, NestedPopupMenu1) {
   VerifyAndClearExpectations();
 
   gfx::Rect nestedPopup_bounds(gfx::Rect(10, 30, 10, 20));
-  std::unique_ptr<WaylandWindow> nestedPopup_window =
+  std::unique_ptr<WaylandWindow> nested_popup_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kPopup,
                                     menu_window->GetWidget(),
                                     nestedPopup_bounds, &delegate_);
-  EXPECT_TRUE(nestedPopup_window);
+  EXPECT_TRUE(nested_popup_window);
 
   VerifyAndClearExpectations();
 
-  nestedPopup_window->SetPointerFocus(true);
+  nested_popup_window->SetPointerFocus(true);
 
   Sync();
 
-  auto* mock_surface_nested_popup =
-      GetPopupByWidget(nestedPopup_window->GetWidget());
+  auto* mock_surface_nested_popup = GetPopupByWindow(nested_popup_window.get());
 
   ASSERT_TRUE(mock_surface_nested_popup);
 
   auto anchor_width = (mock_surface_nested_popup->anchor_rect()).width();
   EXPECT_EQ(1, anchor_width);
 
-  nestedPopup_window->SetPointerFocus(false);
+  nested_popup_window->SetPointerFocus(false);
 }
 
 // Case 3: When the menu bounds are negative and there is a positive,
@@ -1699,27 +1694,26 @@ TEST_P(WaylandWindowTest, NestedPopupMenu2) {
   VerifyAndClearExpectations();
 
   gfx::Rect nestedPopup_bounds(gfx::Rect(5, 30, 21, 20));
-  std::unique_ptr<WaylandWindow> nestedPopup_window =
+  std::unique_ptr<WaylandWindow> nested_popup_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kPopup,
                                     menu_window->GetWidget(),
                                     nestedPopup_bounds, &delegate_);
-  EXPECT_TRUE(nestedPopup_window);
+  EXPECT_TRUE(nested_popup_window);
 
   VerifyAndClearExpectations();
 
-  nestedPopup_window->SetPointerFocus(true);
+  nested_popup_window->SetPointerFocus(true);
 
   Sync();
 
-  auto* mock_surface_nested_popup =
-      GetPopupByWidget(nestedPopup_window->GetWidget());
+  auto* mock_surface_nested_popup = GetPopupByWindow(nested_popup_window.get());
 
   ASSERT_TRUE(mock_surface_nested_popup);
 
   auto anchor_width = (mock_surface_nested_popup->anchor_rect()).width();
   EXPECT_EQ(8, anchor_width);
 
-  nestedPopup_window->SetPointerFocus(false);
+  nested_popup_window->SetPointerFocus(false);
 }
 
 // Case 4: When the menu bounds are negative and there is a negative,
@@ -1736,20 +1730,19 @@ TEST_P(WaylandWindowTest, NestedPopupMenu3) {
   VerifyAndClearExpectations();
 
   gfx::Rect nestedPopup_bounds(gfx::Rect(5, 30, 21, 20));
-  std::unique_ptr<WaylandWindow> nestedPopup_window =
+  std::unique_ptr<WaylandWindow> nested_popup_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kPopup,
                                     menu_window->GetWidget(),
                                     nestedPopup_bounds, &delegate_);
-  EXPECT_TRUE(nestedPopup_window);
+  EXPECT_TRUE(nested_popup_window);
 
   VerifyAndClearExpectations();
 
-  nestedPopup_window->SetPointerFocus(true);
+  nested_popup_window->SetPointerFocus(true);
 
   Sync();
 
-  auto* mock_surface_nested_popup =
-      GetPopupByWidget(nestedPopup_window->GetWidget());
+  auto* mock_surface_nested_popup = GetPopupByWindow(nested_popup_window.get());
 
   ASSERT_TRUE(mock_surface_nested_popup);
 
@@ -1757,7 +1750,7 @@ TEST_P(WaylandWindowTest, NestedPopupMenu3) {
 
   EXPECT_EQ(1, anchor_width);
 
-  nestedPopup_window->SetPointerFocus(false);
+  nested_popup_window->SetPointerFocus(false);
 }
 
 TEST_P(WaylandWindowTest, AuxiliaryWindowNestedParent) {
@@ -1989,7 +1982,7 @@ TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
 
   Sync();
 
-  auto* test_popup = GetPopupByWidget(popup->GetWidget());
+  auto* test_popup = GetPopupByWindow(popup.get());
   ASSERT_TRUE(test_popup);
   EXPECT_NE(test_popup->grab_serial(), button_release_serial);
   EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
@@ -2033,7 +2026,7 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
 
   Sync();
 
-  auto* test_popup = GetPopupByWidget(popup->GetWidget());
+  auto* test_popup = GetPopupByWindow(popup.get());
   ASSERT_TRUE(test_popup);
   EXPECT_NE(test_popup->grab_serial(), touch_up_serial);
   EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
@@ -2087,7 +2080,7 @@ TEST_P(WaylandWindowTest, DoesNotGrabPopupIfNoSeat) {
 
   Sync();
 
-  auto* test_popup = GetPopupByWidget(popup->GetWidget());
+  auto* test_popup = GetPopupByWindow(popup.get());
   ASSERT_TRUE(test_popup);
   EXPECT_EQ(test_popup->grab_serial(), 0u);
 }

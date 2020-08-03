@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -53,13 +54,12 @@ struct NGBoxStrut;
 //   |   |   |    |
 //   |9  |11 |13  |15
 
-class NGTableBorders {
-  STACK_ALLOCATED();
-
+class NGTableBorders : public RefCounted<NGTableBorders> {
  public:
   // |table_border_padding| as computed from css values.
   NGTableBorders(const ComputedStyle& table_style,
-                 const NGBoxStrut& table_border_padding);
+                 const NGBoxStrut& table_border,
+                 const NGBoxStrut& table_padding);
 
 #if DCHECK_IS_ON()
   String DumpEdges();
@@ -67,7 +67,7 @@ class NGTableBorders {
 #endif
 
   // Side of the style the collapsed border belongs to.
-  enum class LogicalBoxSide {
+  enum class LogicalEdgeSide {
     kInlineStart,
     kInlineEnd,
     kBlockStart,
@@ -83,53 +83,75 @@ class NGTableBorders {
   // Edge is defined by a style, and box side. Box side specifies which
   // style border defines the edge.
   struct Edge {
-    const ComputedStyle* style;
+    scoped_refptr<const ComputedStyle> style;
     EdgeSide edge_side;
   };
 
-  static inline BoxSide ToBoxSide(EdgeSide edge_side) {
-    DCHECK_NE(edge_side, EdgeSide::kDoNotFill);
-    return static_cast<BoxSide>(edge_side);
-  }
-
-  static LayoutUnit BorderWidth(const ComputedStyle* style, BoxSide box_side) {
-    switch (box_side) {
-      case BoxSide::kLeft:
+  static LayoutUnit BorderWidth(const ComputedStyle* style,
+                                EdgeSide edge_side) {
+    if (!style)
+      return LayoutUnit();
+    switch (edge_side) {
+      case EdgeSide::kLeft:
         return LayoutUnit(style->BorderLeftWidth());
-      case BoxSide::kRight:
+      case EdgeSide::kRight:
         return LayoutUnit(style->BorderRightWidth());
-      case BoxSide::kTop:
+      case EdgeSide::kTop:
         return LayoutUnit(style->BorderTopWidth());
-      case BoxSide::kBottom:
+      case EdgeSide::kBottom:
         return LayoutUnit(style->BorderBottomWidth());
+      case EdgeSide::kDoNotFill:
+        return LayoutUnit();
     }
   }
 
   static EBorderStyle BorderStyle(const ComputedStyle* style,
-                                  BoxSide box_side) {
-    switch (box_side) {
-      case BoxSide::kLeft:
+                                  EdgeSide edge_side) {
+    if (!style)
+      return EBorderStyle::kNone;
+    switch (edge_side) {
+      case EdgeSide::kLeft:
         return style->BorderLeftStyle();
-      case BoxSide::kRight:
+      case EdgeSide::kRight:
         return style->BorderRightStyle();
-      case BoxSide::kTop:
+      case EdgeSide::kTop:
         return style->BorderTopStyle();
-      case BoxSide::kBottom:
+      case EdgeSide::kBottom:
         return style->BorderBottomStyle();
+      case EdgeSide::kDoNotFill:
+        return EBorderStyle::kNone;
     }
   }
 
-  static Color BorderColor(const ComputedStyle* style, BoxSide box_side) {
-    switch (box_side) {
-      case BoxSide::kLeft:
+  static Color BorderColor(const ComputedStyle* style, EdgeSide edge_side) {
+    switch (edge_side) {
+      case EdgeSide::kLeft:
         return style->VisitedDependentColor(GetCSSPropertyBorderLeftColor());
-      case BoxSide::kRight:
+      case EdgeSide::kRight:
         return style->VisitedDependentColor(GetCSSPropertyBorderRightColor());
-      case BoxSide::kTop:
+      case EdgeSide::kTop:
         return style->VisitedDependentColor(GetCSSPropertyBorderTopColor());
-      case BoxSide::kBottom:
+      case EdgeSide::kBottom:
+        return style->VisitedDependentColor(GetCSSPropertyBorderBottomColor());
+      case EdgeSide::kDoNotFill:
+        NOTREACHED();
         return style->VisitedDependentColor(GetCSSPropertyBorderBottomColor());
     }
+  }
+
+  LayoutUnit BorderWidth(wtf_size_t edge_index) const {
+    return BorderWidth(edges_[edge_index].style.get(),
+                       edges_[edge_index].edge_side);
+  }
+
+  EBorderStyle BorderStyle(wtf_size_t edge_index) const {
+    return BorderStyle(edges_[edge_index].style.get(),
+                       edges_[edge_index].edge_side);
+  }
+
+  Color BorderColor(wtf_size_t edge_index) const {
+    return BorderColor(edges_[edge_index].style.get(),
+                       edges_[edge_index].edge_side);
   }
 
   using Edges = Vector<Edge>;
@@ -145,18 +167,14 @@ class NGTableBorders {
 
   wtf_size_t EdgesPerRow() const { return edges_per_row_; }
 
-  LayoutUnit BorderWidth(wtf_size_t edge_index) const {
-    if (edge_index < edges_.size() && edges_[edge_index].style &&
-        edges_[edge_index].edge_side != EdgeSide::kDoNotFill) {
-      return BorderWidth(edges_[edge_index].style,
-                         ToBoxSide(edges_[edge_index].edge_side));
-    }
-    return LayoutUnit();
+  NGBoxStrut TableBorderPadding() const {
+    DCHECK(cached_table_border_);
+    return *cached_table_border_ + cached_table_padding_;
   }
 
-  NGBoxStrut TableBorderPadding() const {
-    DCHECK(cached_table_border_padding_);
-    return *cached_table_border_padding_;
+  NGBoxStrut TableBorder() const {
+    DCHECK(cached_table_border_);
+    return *cached_table_border_;
   }
 
   WritingDirectionMode TableWritingDirection() const {
@@ -211,6 +229,21 @@ class NGTableBorders {
 
   Edges::const_iterator end() const { return edges_.end(); }
 
+  wtf_size_t EdgeCount() const { return edges_.size(); }
+
+  bool HasEdgeAtIndex(wtf_size_t edge_index) const {
+    return edge_index < edges_.size() && edges_[edge_index].style;
+  }
+
+  // Is there and edge at edges[edge_index + index_offset]?
+  bool HasEdgeAtIndex(wtf_size_t edge_index, int index_offset) const {
+    return (index_offset >= 0 ||
+            (index_offset < 0 &&
+             edge_index >= static_cast<wtf_size_t>(abs(index_offset)))) &&
+           edge_index + index_offset < edges_.size() &&
+           edges_[edge_index + index_offset].style;
+  }
+
  private:
   wtf_size_t ClampColspan(wtf_size_t column, wtf_size_t colspan) const {
     DCHECK_GE(last_column_index_, column);
@@ -242,79 +275,79 @@ class NGTableBorders {
                           wtf_size_t start_column,
                           wtf_size_t colspan,
                           const ComputedStyle* source_style,
-                          LogicalBoxSide side);
+                          LogicalEdgeSide side);
 
   void MergeColumnAxisBorder(wtf_size_t start_row,
                              wtf_size_t start_column,
                              wtf_size_t rowspan,
                              const ComputedStyle* source_style,
-                             LogicalBoxSide side);
+                             LogicalEdgeSide side);
 
   void MarkInnerBordersAsDoNotFill(wtf_size_t start_row,
                                    wtf_size_t start_column,
                                    wtf_size_t rowspan,
                                    wtf_size_t colspan);
 
-  BoxSide LogicalToPhysical(LogicalBoxSide logical_side) const {
+  EdgeSide LogicalToPhysical(LogicalEdgeSide logical_side) const {
     // https://www.w3.org/TR/css-writing-modes-4/#logical-to-physical
     switch (logical_side) {
-      case LogicalBoxSide::kInlineStart:
+      case LogicalEdgeSide::kInlineStart:
         switch (writing_direction_.GetWritingMode()) {
           case WritingMode::kHorizontalTb:
             return writing_direction_.Direction() == TextDirection::kLtr
-                       ? BoxSide::kLeft
-                       : BoxSide::kRight;
+                       ? EdgeSide::kLeft
+                       : EdgeSide::kRight;
           case WritingMode::kVerticalLr:
           case WritingMode::kVerticalRl:
           case WritingMode::kSidewaysRl:
             return writing_direction_.Direction() == TextDirection::kLtr
-                       ? BoxSide::kTop
-                       : BoxSide::kBottom;
+                       ? EdgeSide::kTop
+                       : EdgeSide::kBottom;
           case WritingMode::kSidewaysLr:
             return writing_direction_.Direction() == TextDirection::kLtr
-                       ? BoxSide::kBottom
-                       : BoxSide::kTop;
+                       ? EdgeSide::kBottom
+                       : EdgeSide::kTop;
         }
-      case LogicalBoxSide::kInlineEnd:
+      case LogicalEdgeSide::kInlineEnd:
         switch (writing_direction_.GetWritingMode()) {
           case WritingMode::kHorizontalTb:
             return writing_direction_.Direction() == TextDirection::kLtr
-                       ? BoxSide::kRight
-                       : BoxSide::kLeft;
+                       ? EdgeSide::kRight
+                       : EdgeSide::kLeft;
           case WritingMode::kVerticalLr:
           case WritingMode::kVerticalRl:
           case WritingMode::kSidewaysRl:
             return writing_direction_.Direction() == TextDirection::kLtr
-                       ? BoxSide::kBottom
-                       : BoxSide::kTop;
+                       ? EdgeSide::kBottom
+                       : EdgeSide::kTop;
           case WritingMode::kSidewaysLr:
             return writing_direction_.Direction() == TextDirection::kLtr
-                       ? BoxSide::kTop
-                       : BoxSide::kBottom;
+                       ? EdgeSide::kTop
+                       : EdgeSide::kBottom;
         }
-      case LogicalBoxSide::kBlockStart:
+      case LogicalEdgeSide::kBlockStart:
         switch (writing_direction_.GetWritingMode()) {
           case WritingMode::kHorizontalTb:
-            return BoxSide::kTop;
+            return EdgeSide::kTop;
           case WritingMode::kVerticalLr:
-            return BoxSide::kLeft;
+            return EdgeSide::kLeft;
           case WritingMode::kVerticalRl:
           case WritingMode::kSidewaysRl:
-            return BoxSide::kRight;
+            return EdgeSide::kRight;
           case WritingMode::kSidewaysLr:
-            return BoxSide::kLeft;
+            return EdgeSide::kLeft;
         }
-      case LogicalBoxSide::kBlockEnd:
+      case LogicalEdgeSide::kBlockEnd:
         switch (writing_direction_.GetWritingMode()) {
           case WritingMode::kHorizontalTb:
-            return BoxSide::kBottom;
+            return EdgeSide::kBottom;
           case WritingMode::kVerticalLr:
-            return BoxSide::kRight;
+            return EdgeSide::kRight;
           case WritingMode::kVerticalRl:
           case WritingMode::kSidewaysRl:
-            return BoxSide::kLeft;
+            return EdgeSide::kLeft;
           case WritingMode::kSidewaysLr:
-            return BoxSide::kRight;
+            return EdgeSide::kRight;
         }
     }
   }
@@ -324,7 +357,8 @@ class NGTableBorders {
   wtf_size_t edges_per_row_ = 0;
   // Table border/padding are expensive to compute for collapsed tables.
   // We compute them once, and cache them.
-  base::Optional<NGBoxStrut> cached_table_border_padding_;
+  base::Optional<NGBoxStrut> cached_table_border_;
+  NGBoxStrut cached_table_padding_;
   // Collapsed tables use first border to compute inline start/end.
   // Visual overflow use enclosing rectangle of all borders
   // to compute inline start/end.

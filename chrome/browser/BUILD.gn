@@ -2711,6 +2711,8 @@ static_library("browser") {
       "enterprise/util/android_enterprise_info.h",
       "file_select_helper_contacts_android.cc",
       "file_select_helper_contacts_android.h",
+      "first_run/android/first_run_prefs.cc",
+      "first_run/android/first_run_prefs.h",
       "first_run/android/first_run_utils.cc",
       "flags/android/chrome_feature_list.cc",
       "flags/android/chrome_feature_list.h",

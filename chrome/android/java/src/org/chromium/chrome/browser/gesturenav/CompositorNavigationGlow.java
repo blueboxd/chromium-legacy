@@ -38,9 +38,15 @@ class CompositorNavigationGlow extends NavigationGlow {
     }
 
     @Override
-    public void onScroll(float xDelta) {
+    public float getPullOffset() {
+        return mAccumulatedScroll;
+    }
+
+    @Override
+    public void onScroll(float offset) {
         if (mNativeNavigationGlow == 0) return;
-        mAccumulatedScroll += xDelta;
+        float xDelta = -(offset - mAccumulatedScroll);
+        mAccumulatedScroll = offset;
         CompositorNavigationGlowJni.get().onOverscroll(
                 mNativeNavigationGlow, CompositorNavigationGlow.this, mAccumulatedScroll, xDelta);
     }

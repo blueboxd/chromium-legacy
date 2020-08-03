@@ -64,11 +64,12 @@ void WaylandTest::SetUp() {
   // Pause the server after it has responded to all incoming events.
   server_.Pause();
 
-  surface_ = server_.GetObject<wl::MockSurface>(widget_);
+  auto id = window_->root_surface()->GetSurfaceId();
+  surface_ = server_.GetObject<wl::MockSurface>(id);
   ASSERT_TRUE(surface_);
 
   // The surface must be activated before buffers are attached.
-  ActivateSurface(server_.GetObject<wl::MockSurface>(widget_)->xdg_surface());
+  ActivateSurface(server_.GetObject<wl::MockSurface>(id)->xdg_surface());
 
   Sync();
 

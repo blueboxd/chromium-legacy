@@ -117,6 +117,7 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
     }
 
     std::vector<EGLDeviceEXT> devices(DRM_MAX_MINOR, EGL_NO_DEVICE_EXT);
+    EGLDeviceEXT virgl_device = EGL_NO_DEVICE_EXT;
     EGLDeviceEXT amdgpu_device = EGL_NO_DEVICE_EXT;
     EGLDeviceEXT i915_device = EGL_NO_DEVICE_EXT;
     EGLint num_devices = 0;
@@ -128,10 +129,18 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
           eglQueryDeviceStringEXT(device, EGL_DRM_DEVICE_FILE_EXT);
       if (!filename)  // Not a DRM device.
         continue;
+      if (IsDriverName(filename, "virtio_gpu"))
+        virgl_device = device;
       if (IsDriverName(filename, "amdgpu"))
         amdgpu_device = device;
       if (IsDriverName(filename, "i915"))
         i915_device = device;
+    }
+
+    if (virgl_device != EGL_NO_DEVICE_EXT) {
+      native_display_ = gl::EGLDisplayPlatform(
+          reinterpret_cast<EGLNativeDisplayType>(virgl_device),
+          EGL_PLATFORM_DEVICE_EXT);
     }
 
     if (amdgpu_device != EGL_NO_DEVICE_EXT) {

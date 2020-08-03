@@ -255,8 +255,14 @@ p, h2, h3, h4 {
 
   <h3>Querying Results</h3>
 
-  <p>Select the results you are interested in using "Query" buttons.
-  Narrow down the results further with "Filter" checkboxes.</p>
+  <p>Select the results you are interested in using "Query" buttons.</p>
+  <p>Narrow down the results further with "Filter" search box and checkboxes.
+  The following types of search strings are supported:</p>
+  <ul>
+  <li>Test name: full or partial,</li>
+  <li>Bug number: full or partial,</li>
+  <li>Range of test time duration: 'time:min-' or 'time:min-max' or 'time:-max' in seconds.</li>
+  </ul>
 
 
   <h3>Displaying results.</h3>
@@ -377,7 +383,9 @@ TestResult(TIMEOUT CRASH) + TextExpectation(Timeout Failure) => [ Failure <span 
   </div>
   <div id="filters">
     <span class="fix-width">Filters</span>
-    <input id="text-filter" onchange="Query.filterChanged()" type="text" placeholder="test name/bug#, hit enter">
+    <input id="text-filter" onsearch="Query.filterChanged()" type="search"
+           placeholder="test name | bug | time &#9166;"
+           title="Format of time: 'time:min-' or 'time:min-max' or 'time:-max' in seconds">
     <label id="CRASH"><input type="checkbox">Crash <span></span></label>
     <label id="TIMEOUT"><input type="checkbox">Timeout <span></span></label>
     <label id="TEXT"><input type="checkbox">Text failure <span></span></label>
@@ -781,7 +789,10 @@ const Report = {
   getResultToolbars: (test) => {
     let toolbars = [];
     let pathParser = new PathParser(test.expectPath);
-    toolbars.push(new PlainHtmlToolbar().createDom(test.actual));
+    let actual = test.actual;
+    if (test.time)
+      actual = actual.replace(/ |$/, `(${test.time}s)` + "$&");
+    toolbars.push(new PlainHtmlToolbar().createDom(actual));
     for (let result of test.actualMap.keys()) {
       switch(result) {
         case "PASS":
@@ -798,8 +809,7 @@ const Report = {
             pathParser.resultLink("-crash-log.txt"), "Crash log", "crash log"));
           break;
         case "TIMEOUT":
-          toolbars.push(new PlainHtmlToolbar().createDom("Test timed out. "
-            + ("time" in test ? `(${test.time}s)` : "")));
+          toolbars.push(new PlainHtmlToolbar().createDom("Test timed out. "));
           if (test.text_mismatch)
             toolbars.push(new TextResultsToolbar().createDom(test));
           break;
@@ -906,7 +916,14 @@ const Query = {
         if (el.querySelector('input').checked)
           filterMap.set(el.id.replace("_", "+"), true);
     }
-    let searchText = document.querySelector("#text-filter").value;
+    let searchText = document.querySelector("#text-filter").value.trim();
+    let timeRange = searchText.match(/^time:([ .0-9]*)-([ .0-9]*)$/);
+    let timeMin = 0, timeMax = Number.MAX_VALUE;
+    if (timeRange) {
+      timeMin = parseFloat(timeRange[1]);
+      if (timeRange[2] != "")
+        timeMax = parseFloat(timeRange[2]);
+    }
     let textFilter = (!searchText || searchText.length < 1)
       ? _ => true
       : test => {
@@ -917,6 +934,11 @@ const Query = {
               if (bug.includes(searchText))
                 return true;
             }
+          }
+          if (timeRange) {
+            let time = test.time || 0;
+            if (time >= timeMin && time <= timeMax)
+              return true;
           }
           return false;
         };
@@ -1108,6 +1130,9 @@ const GUI = {
     let is_audio = artifacts.hasOwnProperty('actual_audio') ||
                    artifacts.hasOwnProperty('expected_audio');
     let is_leak = artifacts.hasOwnProperty('leak_log');
+
+    if (artifacts.hasOwnProperty('reference_file_mismatch'))
+      test.reference = artifacts.reference_file_mismatch;
 
     if (is_image && is_text)
       return 'IMAGE+TEXT';
@@ -1800,23 +1825,25 @@ class ImageResultsToolbar extends TXToolbar {
     this.toolbar.showDefault = _ => this.viewOptionsChangeHandler({target: this.toolbar.querySelector(".view-options")});
     this.toolbar.classList.add("image-toolbar");
     this.toolbar.classList.add("tx-toolbar");
-    let html = `
-      image:
-      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>
-      <a class="expected" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>
-      <a class="diff" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>
-      `;
+
+    let html = "image: ";
+    html += `<a class="toggle" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a> `;
+    html += `<a class="toggle" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>`;
+    if (test.reference)
+      html += `(<a style="padding: 0" target="reference" href="../${test.reference}">ref</a>) `;
+    html += `<a class="toggle" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>`;
 
     html += `
       <label><select class="view-options">
         <option value="single">Single view</option>
         <option value="animated">Animated view</option>
         <option value="multiple">Side by side view</option>
-      </label>
+      </select></label>
     `;
+
     this.toolbar.innerHTML = html;
     this.toolbar.addEventListener("click", ev => {
-      if (ev.target.tagName == "A") {
+      if (ev.target.tagName == "A" && ev.target.className == "toggle") {
         this.selectAnchor(ev.target);
         ev.preventDefault();
         if (this.animationIntervalId) {
@@ -1862,7 +1889,7 @@ class ImageResultsToolbar extends TXToolbar {
       break;
     case "multiple": {
       this.setAnimation(false);
-      for (let anchor of Array.from(this.toolbar.querySelectorAll("a")))
+      for (let anchor of Array.from(this.toolbar.querySelectorAll("a.toggle")))
         this.selectAnchor(anchor, true);
       }
       break;
@@ -1906,7 +1933,7 @@ class ImageResultsToolbar extends TXToolbar {
           if (this.animationPaused)
             return;
           // Find next anchor.
-          let allAnchors = Array.from(this.toolbar.querySelectorAll("a"));
+          let allAnchors = Array.from(this.toolbar.querySelectorAll("a.toggle"));
           let nextAnchor = allAnchors[0];
           for (let i = 0; i < allAnchors.length; i++) {
             if (allAnchors[i].hasAttribute("data-selected")) {
@@ -2537,6 +2564,16 @@ class AudioResultsViewer {
   }
 } // class AudioResultsViewer
 
+(function setTextFilterWidth() {
+  let textFilter = document.querySelector("#text-filter");
+  let div = document.createElement('div');
+  div.style.position = 'absolute';
+  div.style.top = '-200px';
+  div.style.fontSize = getComputedStyle(textFilter).fontSize;
+  div.textContent = textFilter.getAttribute('placeholder');
+  document.body.appendChild(div);
+  textFilter.style.width = div.offsetWidth + 30 + 'px';
+})();
 </script>
 <script>
 // jsonp callback

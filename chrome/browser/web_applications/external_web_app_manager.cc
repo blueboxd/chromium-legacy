@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/external_app_install_features.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -58,7 +59,9 @@ constexpr char kHideFromUser[] = "hide_from_user";
 constexpr char kCreateShortcuts[] = "create_shortcuts";
 
 // kFeatureName is an optional string parameter specifying a feature
-// associated with this app. If specified:
+// associated with this app. The feature must be present in
+// |kExternalAppInstallFeatures| to be applicable.
+// If specified:
 //  - if the feature is enabled, the app will be installed
 //  - if the feature is not enabled, the app will be removed.
 constexpr char kFeatureName[] = "feature_name";
@@ -84,30 +87,6 @@ const base::FilePath::CharType kWebAppsSubDirectory[] =
 
 bool g_skip_startup_scan_for_testing_ = false;
 
-bool IsFeatureEnabled(const std::string& feature_name) {
-  // The feature system ensures there is only ever one Feature instance for each
-  // given feature name. To enable multiple apps to be gated by the same field
-  // trial this means there needs to be a global map of Features that is used.
-  static base::NoDestructor<
-      std::map<std::string, std::unique_ptr<base::Feature>>>
-      feature_map;
-  if (!feature_map->count(feature_name)) {
-    // To ensure the string used in the feature (which is a char*) is stable
-    // (i.e. is not freed later on), the key of the map is used. So, first
-    // insert a null Feature into the map, and then swap it with a real Feature
-    // constructed using the pointer from the key.
-    auto it = feature_map->insert(std::make_pair(feature_name, nullptr)).first;
-    it->second = std::make_unique<base::Feature>(
-        base::Feature{it->first.c_str(), base::FEATURE_DISABLED_BY_DEFAULT});
-  }
-
-  // Use the feature from the map, not the one in the pair above, as it has a
-  // stable address.
-  const auto it = feature_map->find(feature_name);
-  DCHECK(it != feature_map->end());
-  return base::FeatureList::IsEnabled(*it->second);
-}
-
 base::Optional<ExternalInstallOptions> ParseConfig(
     base::FilePath file,
     const std::string& user_type,
@@ -127,9 +106,11 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   const base::Value* value =
       app_config.FindKeyOfType(kFeatureName, base::Value::Type::STRING);
   if (value) {
-    std::string feature_name = value->GetString();
+    // TODO(crbug.com/1104696): Add metrics for whether the app was
+    // enabled/disabled by the feature.
+    const std::string& feature_name = value->GetString();
     VLOG(1) << file << " checking feature " << feature_name;
-    if (!IsFeatureEnabled(feature_name)) {
+    if (!IsExternalAppInstallFeatureEnabled(feature_name)) {
       VLOG(1) << file << " feature not enabled";
       return base::nullopt;
     }

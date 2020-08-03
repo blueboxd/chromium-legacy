@@ -5957,7 +5957,9 @@
       },
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "--target",
+          "Release_x64"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {
@@ -5977,7 +5979,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
+          "shards": 28
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       },

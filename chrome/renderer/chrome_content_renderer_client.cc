@@ -39,6 +39,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
@@ -1665,8 +1666,52 @@ void ChromeContentRendererClient::DidSetUserAgent(
 }
 
 bool ChromeContentRendererClient::RequiresWebComponentsV0(const GURL& url) {
+  if (url.SchemeIs(content::kChromeUIScheme)) {
+    base::StringPiece host_piece = url.host_piece();
+    // TODO(crbug.com/1014322): Remove when migrated to Polymer3.
+    return host_piece == chrome::kChromeUIMdUserManagerHost ||
+           host_piece == content::kChromeUIResourcesHost ||
+           // TODO(crbug.com/1006778): Remove when chrome://tracing is fully
+           // removed.
+           host_piece == content::kChromeUITracingHost ||
+           // TODO(crbug.com/1110954): Remove when migrated away from HTML
+           // imports.
+           host_piece == chrome::kChromeUIBluetoothInternalsHost ||
+#if defined(OS_CHROMEOS)
+           // TODO(crbug.com/1111430): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIAccountManagerErrorHost ||
+           host_piece == chrome::kChromeUIAccountManagerWelcomeHost ||
+           host_piece == chrome::kChromeUIAccountMigrationWelcomeHost ||
+           // TODO(crbug.com/1111430): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIAddSupervisionHost ||
+           // TODO(crbug.com/1111849): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIAssistantOptInHost ||
+           // TODO(crbug.com/1111477): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUICellularSetupHost ||
+           // TODO(crbug.com/1090884): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIInternetConfigDialogHost ||
+           // TODO(crbug.com/1090883): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIInternetDetailDialogHost ||
+           // TODO(crbug.com/1022196): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIMultiDeviceSetupHost ||
+           // TODO(crbug.com/1111852): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUINetworkHost ||
+           // TODO(crbug.com/1111387): Remove when migrated away from HTML
+           // Imports.
+           host_piece == chrome::kChromeUIOobeHost ||
+           // TODO(crbug.com/1045266): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIOSSettingsHost ||
+           // TODO(crbug.com/1022192): Remove when migrated to Polymer3.
+           host_piece == chrome::kChromeUIPasswordChangeHost ||
+           // TODO(crbug.com/1111393): Remove when migrated away from HTML
+           // imports.
+           host_piece == "file_manager_test" ||
+#endif
+           false;
+  }
+
   // TODO(1025782): For now, file:// URLs are allowed to access Web Components
   // v0 features. This will be removed once origin trials support file:// URLs
   // for this purpose.
-  return url.SchemeIs(content::kChromeUIScheme) || url.SchemeIs("file");
+  return url.SchemeIs("file");
 }

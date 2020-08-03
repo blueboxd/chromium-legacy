@@ -2050,6 +2050,9 @@ extern const char kCrostiniUsbAllowUnsupportedDescription[];
 extern const char kCrostiniWebUIUpgraderName[];
 extern const char kCrostiniWebUIUpgraderDescription[];
 
+extern const char kCrostiniUseDlcName[];
+extern const char kCrostiniUseDlcDescription[];
+
 extern const char kCryptAuthV2DeviceActivityStatusName[];
 extern const char kCryptAuthV2DeviceActivityStatusDescription[];
 

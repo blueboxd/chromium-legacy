@@ -27,8 +27,7 @@ class WebBundleParser : public mojom::WebBundleParser {
   class ResponseParser;
 
   class SharedBundleDataSource
-      : public base::RefCounted<SharedBundleDataSource>,
-        public mojom::BundleDataSource {
+      : public base::RefCounted<SharedBundleDataSource> {
    public:
     class Observer;
 
@@ -38,13 +37,14 @@ class WebBundleParser : public mojom::WebBundleParser {
     void AddObserver(Observer* observer);
     void RemoveObserver(Observer* observer);
 
-    // Implements mojom::BundleDataSource.
-    void Read(uint64_t offset, uint64_t length, ReadCallback callback) override;
+    void Read(uint64_t offset,
+              uint64_t length,
+              mojom::BundleDataSource::ReadCallback callback);
 
    private:
     friend class base::RefCounted<SharedBundleDataSource>;
 
-    ~SharedBundleDataSource() override;
+    ~SharedBundleDataSource();
 
     void OnDisconnect();
 

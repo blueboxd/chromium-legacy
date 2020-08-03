@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {browserProxy} from './browser_proxy/browser_proxy.js';
+import {ErrorLevel, ErrorType, reportError} from './error.js';
 import * as state from './state.js';
 import * as tooltip from './tooltip.js';
 import {Facing} from './type.js';
@@ -335,37 +336,48 @@ export function getDefaultFacing() {
  *     ratio of input picture.
  * @return {!Promise<!Blob>} Promise for the result.
  */
-export function scalePicture(url, isVideo, width, height = undefined) {
+export async function scalePicture(url, isVideo, width, height = undefined) {
   const element = document.createElement(isVideo ? 'video' : 'img');
   if (isVideo) {
     element.preload = 'auto';
   }
+  await new Promise((resolve, reject) => {
+    element.addEventListener(isVideo ? 'canplay' : 'load', resolve);
+    element.addEventListener('error', reject);
+    element.src = url;
+  });
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  if (height === undefined) {
+    const ratio = isVideo ? element.videoHeight / element.videoWidth :
+                            element.height / element.width;
+    height = Math.round(width * ratio);
+  }
+  canvas.width = width;
+  canvas.height = height;
+  context.drawImage(element, 0, 0, width, height);
+
+  /**
+   * @type {Uint8ClampedArray} A one-dimensional pixels array in RGBA order.
+   */
+  const data = context.getImageData(0, 0, width, height).data;
+  if (data.every((byte) => byte === 0)) {
+    reportError(
+        ErrorType.BROKEN_THUMBNAIL, ErrorLevel.ERROR,
+        new Error('The thumbnail content is broken.'));
+    // Do not throw an error here. A black thumbnail is still better than no
+    // thumbnail to let user open the corresponding picutre in gallery.
+  }
+
   return new Promise((resolve, reject) => {
-           element.addEventListener(isVideo ? 'canplay' : 'load', resolve);
-           element.addEventListener('error', reject);
-           element.src = url;
-         })
-      .then(() => {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (height === undefined) {
-          const ratio = isVideo ? element.videoHeight / element.videoWidth :
-                                  element.height / element.width;
-          height = Math.round(width * ratio);
-        }
-        canvas.width = width;
-        canvas.height = height;
-        context.drawImage(element, 0, 0, width, height);
-        return new Promise((resolve, reject) => {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to create thumbnail.'));
-            }
-          }, 'image/jpeg');
-        });
-      });
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error('Failed to create thumbnail.'));
+      }
+    }, 'image/jpeg');
+  });
 }
 
 /**

@@ -40250,6 +40250,7 @@ from previous Chrome versions.
   <int value="-1670137340"
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
+  <int value="-1668306615" label="CrostiniUseDlc:enabled"/>
   <int value="-1665720309"
       label="ArcNativeBridge64BitSupportExperiment:disabled"/>
   <int value="-1664795930" label="StorageAccessAPI:disabled"/>
@@ -43578,6 +43579,7 @@ from previous Chrome versions.
   <int value="1919917329" label="ImplicitRootScroller:disabled"/>
   <int value="1920894670"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:enabled"/>
+  <int value="1923052799" label="CrostiniUseDlc:disabled"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>

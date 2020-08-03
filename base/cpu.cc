@@ -15,6 +15,16 @@
 
 #include "base/stl_util.h"
 
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#include "base/containers/flat_set.h"
+#include "base/files/file_util.h"
+#include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
+#include "base/threading/thread_restrictions.h"
+#endif
+
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
 #include "base/files/file_util.h"
 #endif
@@ -309,5 +319,75 @@ CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
   if (has_sse()) return SSE;
   return PENTIUM;
 }
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+// static
+std::vector<CPU::CoreType> CPU::GuessCoreTypes() {
+  // Try to guess the CPU architecture and cores of each cluster by comparing
+  // the maximum frequencies of the available (online and offline) cores.
+  const char kCPUMaxFreqPath[] =
+      "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq";
+  int num_cpus = base::SysInfo::NumberOfProcessors();
+  std::vector<CPU::CoreType> core_index_to_type(num_cpus, CoreType::kUnknown);
+
+  std::vector<uint32_t> max_core_frequencies_mhz(num_cpus, 0);
+  base::flat_set<uint32_t> frequencies_mhz;
+
+  {
+    // Reading from cpuinfo_max_freq doesn't block (it amounts to reading a
+    // struct field from the cpufreq kernel driver).
+    ThreadRestrictions::ScopedAllowIO allow_io;
+    for (int core_index = 0; core_index < num_cpus; ++core_index) {
+      std::string content;
+      uint32_t frequency_khz = 0;
+      auto path = base::StringPrintf(kCPUMaxFreqPath, core_index);
+      if (ReadFileToString(base::FilePath(path), &content))
+        base::StringToUint(content, &frequency_khz);
+      uint32_t frequency_mhz = frequency_khz / 1000;
+      max_core_frequencies_mhz[core_index] = frequency_mhz;
+      if (frequency_mhz > 0)
+        frequencies_mhz.insert(frequency_mhz);
+    }
+  }
+
+  size_t num_frequencies = frequencies_mhz.size();
+
+  for (int core_index = 0; core_index < num_cpus; ++core_index) {
+    uint32_t core_frequency_mhz = max_core_frequencies_mhz[core_index];
+
+    CoreType core_type = CoreType::kOther;
+    if (num_frequencies == 1u) {
+      core_type = CoreType::kSymmetric;
+    } else if (num_frequencies == 2u || num_frequencies == 3u) {
+      auto it = frequencies_mhz.find(core_frequency_mhz);
+      if (it != frequencies_mhz.end()) {
+        // base::flat_set is sorted.
+        size_t frequency_index = it - frequencies_mhz.begin();
+        switch (frequency_index) {
+          case 0:
+            core_type = num_frequencies == 2u
+                            ? CoreType::kBigLittle_Little
+                            : CoreType::kBigLittleBigger_Little;
+            break;
+          case 1:
+            core_type = num_frequencies == 2u ? CoreType::kBigLittle_Big
+                                              : CoreType::kBigLittleBigger_Big;
+            break;
+          case 2:
+            DCHECK_EQ(num_frequencies, 3u);
+            core_type = CoreType::kBigLittleBigger_Bigger;
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      }
+    }
+    core_index_to_type[core_index] = core_type;
+  }
+
+  return core_index_to_type;
+}
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 
 }  // namespace base

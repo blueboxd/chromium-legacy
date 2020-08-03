@@ -3547,6 +3547,11 @@ const char kCrostiniWebUIUpgraderName[] = "Crostini WebUI Upgrader";
 const char kCrostiniWebUIUpgraderDescription[] =
     "Enable the new WebUI Crostini Upgrader Dialog.";
 
+const char kCrostiniUseDlcName[] = "Crostini Use DLC";
+const char kCrostiniUseDlcDescription[] =
+    "Download the termina VM using the new DLC service instead of the old "
+    "component updater.";
+
 const char kCryptAuthV2DeviceActivityStatusName[] =
     "CryptAuth Device Activity Status";
 const char kCryptAuthV2DeviceActivityStatusDescription[] =

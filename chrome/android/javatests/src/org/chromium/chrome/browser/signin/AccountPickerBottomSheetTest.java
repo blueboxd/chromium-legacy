@@ -57,8 +57,6 @@ import java.io.IOException;
 
 /**
  * Tests account picker bottom sheet of the web signin flow.
- *
- * TODO(https://crbug.com/1090356): Add render tests for bottomsheet.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})

@@ -10,6 +10,7 @@ import * as metrics from './metrics.js';
  * @enum {string}
  */
 export const ErrorType = {
+  BROKEN_THUMBNAIL: 'broken-thumbnail',
   UNCAUGHT_PROMISE: 'uncaught-promise',
 };
 
@@ -156,6 +157,14 @@ const triggeredErrorSet = new Set();
  * @param {!Error} error
  */
 export function reportError(type, level, error) {
+  // uncaught promise is already logged in console
+  if (type !== ErrorType.UNCAUGHT_PROMISE) {
+    if (level === ErrorLevel.ERROR) {
+      console.error(type, error);
+    } else {
+      console.warn(type, error);
+    }
+  }
   const time = Date.now();
   const frames = getStackFrames(error);
   const errorName = error.name;

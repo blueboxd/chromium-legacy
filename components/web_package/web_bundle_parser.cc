@@ -1314,9 +1314,10 @@ void WebBundleParser::SharedBundleDataSource::OnDisconnect() {
     observer->OnDisconnect();
 }
 
-void WebBundleParser::SharedBundleDataSource::Read(uint64_t offset,
-                                                   uint64_t length,
-                                                   ReadCallback callback) {
+void WebBundleParser::SharedBundleDataSource::Read(
+    uint64_t offset,
+    uint64_t length,
+    mojom::BundleDataSource::ReadCallback callback) {
   data_source_->Read(offset, length, std::move(callback));
 }
 

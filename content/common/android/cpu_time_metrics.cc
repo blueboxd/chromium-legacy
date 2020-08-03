@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -91,9 +92,8 @@ const char* GetPerThreadHistogramNameForProcessType(ProcessTypeForUma type) {
   }
 }
 
-std::string GetPerCoreCpuTimeHistogramName(
-    ProcessTypeForUma process_type,
-    base::ProcessMetrics::CoreType core_type) {
+std::string GetPerCoreCpuTimeHistogramName(ProcessTypeForUma process_type,
+                                           base::CPU::CoreType core_type) {
   std::string process_suffix;
   switch (process_type) {
     case ProcessTypeForUma::kBrowser:
@@ -112,28 +112,28 @@ std::string GetPerCoreCpuTimeHistogramName(
 
   std::string cpu_suffix;
   switch (core_type) {
-    case base::ProcessMetrics::CoreType::kUnknown:
+    case base::CPU::CoreType::kUnknown:
       cpu_suffix = "Unknown";
       break;
-    case base::ProcessMetrics::CoreType::kOther:
+    case base::CPU::CoreType::kOther:
       cpu_suffix = "Other";
       break;
-    case base::ProcessMetrics::CoreType::kSymmetric:
+    case base::CPU::CoreType::kSymmetric:
       cpu_suffix = "Symmetric";
       break;
-    case base::ProcessMetrics::CoreType::kBigLittle_Little:
+    case base::CPU::CoreType::kBigLittle_Little:
       cpu_suffix = "BigLittle.Little";
       break;
-    case base::ProcessMetrics::CoreType::kBigLittle_Big:
+    case base::CPU::CoreType::kBigLittle_Big:
       cpu_suffix = "BigLittle.Big";
       break;
-    case base::ProcessMetrics::CoreType::kBigLittleBigger_Little:
+    case base::CPU::CoreType::kBigLittleBigger_Little:
       cpu_suffix = "BigLittleBigger.Little";
       break;
-    case base::ProcessMetrics::CoreType::kBigLittleBigger_Big:
+    case base::CPU::CoreType::kBigLittleBigger_Big:
       cpu_suffix = "BigLittleBigger.Big";
       break;
-    case base::ProcessMetrics::CoreType::kBigLittleBigger_Bigger:
+    case base::CPU::CoreType::kBigLittleBigger_Bigger:
       cpu_suffix = "BigLittleBigger.Bigger";
       break;
   }
@@ -251,7 +251,7 @@ CpuTimeMetricsThreadType GetThreadTypeFromName(const char* const thread_name) {
 class TimeInStateReporter {
  public:
   TimeInStateReporter(ProcessTypeForUma process_type,
-                      base::ProcessMetrics::CoreType core_type)
+                      base::CPU::CoreType core_type)
       : histogram_(GetPerCoreCpuTimeHistogramName(process_type, core_type),
                    1,
                    // ScaledLinearHistogram requires buckets of size 1. Each
@@ -452,7 +452,7 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
     uint32_t last_updated_cycle = 0;
     CpuTimeMetricsThreadType type = CpuTimeMetricsThreadType::kOtherThread;
 
-    using ClusterFrequency = std::tuple<base::ProcessMetrics::CoreType,
+    using ClusterFrequency = std::tuple<base::CPU::CoreType,
                                         uint32_t /*cluster_core_index*/,
                                         uint32_t /*frequency_mhz*/>;
     base::flat_map<ClusterFrequency, base::TimeDelta /*time_in_state*/>
@@ -499,8 +499,7 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
   base::TimeDelta reported_cpu_time_;
   base::flat_map<base::PlatformThreadId, ThreadDetails> thread_details_;
   std::array<std::unique_ptr<TimeInStateReporter>,
-             static_cast<size_t>(base::ProcessMetrics::CoreType::kMaxValue) +
-                 1u>
+             static_cast<size_t>(base::CPU::CoreType::kMaxValue) + 1u>
       time_in_state_reporters_ = {};
   // Stored as instance variables to avoid allocation churn.
   base::ProcessMetrics::CPUUsagePerThread cumulative_thread_times_;

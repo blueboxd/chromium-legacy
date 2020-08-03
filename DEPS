@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '92d72ce6af7e1a5634a7c9959ca11eafbb32bba2',
+  'skia_revision': 'fdd736ffce1c60424e4c35f28585ddc04eaba091',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '0d6b7df7bd2b3c92dd5137fdcdc8408cdeaf6b17',
+  'devtools_frontend_revision': 'f3a9afdfa19b5cafa890087b71760c63c736debf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -946,7 +946,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'e46493b9148e0d1e63f55b5890bff503822616e5',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '7ab4564696a79243a48d6d5169eafdfb117e44fc',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '928b7b26bd73bcf020687a54e6a8c74052e1e7b2',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),

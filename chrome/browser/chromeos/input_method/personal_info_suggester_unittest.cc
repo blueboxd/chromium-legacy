@@ -74,7 +74,9 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     return false;
   }
 
-  void ClickButton(const ui::ime::AssistiveWindowButton& button) override {}
+  void ClickButton(const ui::ime::AssistiveWindowButton& button) override {
+    button_clicked_ = button.id;
+  }
 
   bool SetButtonHighlighted(int context_id,
                             const ui::ime::AssistiveWindowButton& button,
@@ -102,6 +104,9 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   void VerifyShowSettingLink(const bool show_setting_link) {
     EXPECT_EQ(show_setting_link_, show_setting_link);
   }
+  void VerifyButtonClicked(const ui::ime::ButtonId id) {
+    EXPECT_EQ(button_clicked_, id);
+  }
 
   bool IsSuggestionAccepted() { return suggestion_accepted_; }
 
@@ -111,6 +116,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   bool show_annotation_ = false;
   bool show_setting_link_ = false;
   bool suggestion_accepted_ = false;
+  ui::ime::ButtonId button_clicked_ = ui::ime::ButtonId::kNone;
   std::vector<std::string> previous_suggestions_;
 };
 
@@ -382,11 +388,25 @@ TEST_F(PersonalInfoSuggesterTest, DoNotSuggestPhoneNumber) {
   suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
 }
 
-TEST_F(PersonalInfoSuggesterTest, AcceptSuggestion) {
+TEST_F(PersonalInfoSuggesterTest, AcceptSuggestionWithDownEnter) {
   profile_->set_profile_name(base::UTF16ToUTF8(email_));
 
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
+
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+  EXPECT_TRUE(suggestion_handler_->IsSuggestionAccepted());
+}
+
+TEST_F(PersonalInfoSuggesterTest, AcceptSuggestionWithUpEnter) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->SetIntKey(kPersonalInfoSuggesterAcceptanceCount, 1);
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  SendKeyboardEvent("Up");
   SendKeyboardEvent("Enter");
 
   suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
@@ -509,6 +529,37 @@ TEST_F(PersonalInfoSuggesterTest, DoNotShowSettingLinkAfterAcceptance) {
   SendKeyboardEvent("Enter");
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   suggestion_handler_->VerifyShowSettingLink(false);
+}
+
+TEST_F(PersonalInfoSuggesterTest, ClickSettingsWithDownDownEnter) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->RemoveKey(kPersonalInfoSuggesterShowSettingCount);
+  update->RemoveKey(kPersonalInfoSuggesterAcceptanceCount);
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
+
+  suggestion_handler_->VerifyButtonClicked(
+      ui::ime::ButtonId::kSmartInputsSettingLink);
+}
+
+TEST_F(PersonalInfoSuggesterTest, ClickSettingsWithUpEnter) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->RemoveKey(kPersonalInfoSuggesterShowSettingCount);
+  update->RemoveKey(kPersonalInfoSuggesterAcceptanceCount);
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  SendKeyboardEvent("Up");
+  SendKeyboardEvent("Enter");
+
+  suggestion_handler_->VerifyButtonClicked(
+      ui::ime::ButtonId::kSmartInputsSettingLink);
 }
 
 }  // namespace chromeos

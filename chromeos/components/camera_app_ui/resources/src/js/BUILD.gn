@@ -145,6 +145,7 @@ js_library("tooltip") {
 
 js_library("util") {
   deps = [
+    ":error",
     ":state",
     ":tooltip",
     ":type",

@@ -62,6 +62,8 @@ extern const base::Feature kCrostiniUsbAllowUnsupported;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniShowMicSetting;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kCrostiniUseDlc;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDisableCryptAuthV1DeviceSync;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceActivityStatus;

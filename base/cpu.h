@@ -71,6 +71,28 @@ class BASE_EXPORT CPU final {
   IntelMicroArchitecture GetIntelMicroArchitecture() const;
   const std::string& cpu_brand() const { return cpu_brand_; }
 
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+  enum class CoreType {
+    kUnknown = 0,
+    kOther,
+    kSymmetric,
+    kBigLittle_Little,
+    kBigLittle_Big,
+    kBigLittleBigger_Little,
+    kBigLittleBigger_Big,
+    kBigLittleBigger_Bigger,
+    kMaxValue = kBigLittleBigger_Bigger
+  };
+
+  // Attempts to guess the core types of individual CPU cores based on frequency
+  // information from /sys/devices/system/cpu/cpuN/cpufreq/cpuinfo_max_freq.
+  // Beware that it is kernel/hardware dependent whether the information from
+  // sys is accurate.
+  //
+  // Returns a vector with the guessed type for core N at index N.
+  static std::vector<CoreType> GuessCoreTypes();
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+
  private:
   // Query the processor for CPUID information.
   void Initialize();

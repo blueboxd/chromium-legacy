@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/cpu.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -140,20 +141,9 @@ class BASE_EXPORT ProcessMetrics {
   // combination with a non-zero CPU time value.
   // NOTE: Currently only supported on Linux/Android, and only on devices that
   // expose per-pid/tid time_in_state files in /proc.
-  enum class CoreType {
-    kUnknown = 0,
-    kOther,
-    kSymmetric,
-    kBigLittle_Little,
-    kBigLittle_Big,
-    kBigLittleBigger_Little,
-    kBigLittleBigger_Big,
-    kBigLittleBigger_Bigger,
-    kMaxValue = kBigLittleBigger_Bigger
-  };
   struct ThreadTimeInState {
     PlatformThreadId thread_id;
-    CoreType core_type;           // type of the cores in this cluster.
+    CPU::CoreType core_type;      // type of the cores in this cluster.
     uint32_t cluster_core_index;  // index of the first core in the cluster.
     uint64_t core_frequency_khz;
     TimeDelta cumulative_cpu_time;
@@ -253,11 +243,10 @@ class BASE_EXPORT ProcessMetrics {
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
-  CoreType GetCoreType(int core_index);
-  void GuessCoreTypes();
+  CPU::CoreType GetCoreType(int core_index);
 
   // Initialized on the first call to GetCoreType().
-  base::Optional<std::vector<CoreType>> core_index_to_type_;
+  base::Optional<std::vector<CPU::CoreType>> core_index_to_type_;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 
 #if defined(OS_WIN)

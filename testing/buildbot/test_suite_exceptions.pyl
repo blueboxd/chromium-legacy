@@ -258,6 +258,15 @@
           'Debug_x64',
         ],
       },
+      'Win10 Tests x64 1909': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 28
+        },
+      },
       'Win10 Tests x64 Code Coverage': {
         'args': [
           '--target',

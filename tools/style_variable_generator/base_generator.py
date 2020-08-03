@@ -126,26 +126,24 @@ class BaseGenerator:
     def AddJSONFileToModel(self, path):
         try:
             with open(path, 'r') as f:
-                return self.AddJSONToModel(f.read(), self.GetName(), path)
+                return self.AddJSONToModel(f.read(), path)
         except ValueError as err:
             raise ValueError('\n%s:\n    %s' % (path, err))
 
-    def AddJSONToModel(self, json_string, generator_name=None, in_file=None):
+    def AddJSONToModel(self, json_string, in_file=None):
         '''Adds a |json_string| with variable definitions to the model.
 
         See *test.json5 files for a defacto format reference.
 
-        |generator_name| is used to get the generator-specific context from the
-        'options' object.
         |in_file| is used to populate a file-to-context map.
         '''
         # TODO(calamity): Add allow_duplicate_keys=False once pyjson5 is
         # rolled.
         data = json5.loads(json_string,
                            object_pairs_hook=collections.OrderedDict)
-        if generator_name is None:
-            generator_name = self.GetName()
-        generator_context = data.get('options', {}).get(generator_name, None)
+        # Use the generator's name to get the generator-specific context from
+        # the input.
+        generator_context = data.get('options', {}).get(self.GetName(), None)
         self.in_file_to_context[in_file] = generator_context
 
         for name, value in data['colors'].items():

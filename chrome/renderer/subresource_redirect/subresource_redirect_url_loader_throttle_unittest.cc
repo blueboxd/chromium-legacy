@@ -5,6 +5,7 @@
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -36,6 +37,7 @@ class TestSubresourceRedirectURLLoaderThrottle
   }
 
  private:
+  base::test::SingleThreadTaskEnvironment task_environment_;
   SubresourceRedirectHintsAgent subresource_redirect_hints_agent_;
 };
 

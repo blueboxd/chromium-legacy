@@ -570,21 +570,37 @@ void IsolatedPrerenderTabHelper::Prefetch() {
     page_->isolated_network_context_->CloseIdleConnections(base::DoNothing());
   }
 
-  if (page_->urls_to_prefetch_.empty()) {
-    return;
-  }
-
-  if (IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
-      page_->srp_metrics_->prefetch_attempted_count_ >=
-          IsolatedPrerenderMaximumNumberOfPrefetches().value()) {
-    return;
-  }
-
   if (web_contents()->GetVisibility() != content::Visibility::VISIBLE) {
     // |OnVisibilityChanged| will restart prefetching when the tab becomes
     // visible again.
     return;
   }
+
+  DCHECK_GT(IsolatedPrerenderMaximumNumberOfConcurrentPrefetches(), 0U);
+
+  while (
+      // Checks that the total number of prefetches has not been met.
+      !(IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
+        page_->srp_metrics_->prefetch_attempted_count_ >=
+            IsolatedPrerenderMaximumNumberOfPrefetches().value()) &&
+
+      // Checks that there are still urls to prefetch.
+      !page_->urls_to_prefetch_.empty() &&
+
+      // Checks that the max number of concurrent prefetches has not been met.
+      page_->url_loaders_.size() <
+          IsolatedPrerenderMaximumNumberOfConcurrentPrefetches()) {
+    StartSinglePrefetch();
+  }
+}
+
+void IsolatedPrerenderTabHelper::StartSinglePrefetch() {
+  DCHECK(!page_->urls_to_prefetch_.empty());
+  DCHECK(!(IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
+           page_->srp_metrics_->prefetch_attempted_count_ >=
+               IsolatedPrerenderMaximumNumberOfPrefetches().value()));
+  DCHECK(page_->url_loaders_.size() <
+         IsolatedPrerenderMaximumNumberOfConcurrentPrefetches());
 
   page_->srp_metrics_->prefetch_attempted_count_++;
 
@@ -1095,8 +1111,10 @@ void IsolatedPrerenderTabHelper::OnGotEligibilityResult(
     }
   }
 
-  if (!PrefetchingActive()) {
-    Prefetch();
+  Prefetch();
+
+  for (auto& observer : observer_list_) {
+    observer.OnNewEligiblePrefetchStarted();
   }
 }
 

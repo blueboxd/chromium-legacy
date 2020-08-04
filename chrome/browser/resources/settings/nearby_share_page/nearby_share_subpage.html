@@ -8,6 +8,8 @@
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="nearby_share_device_name_dialog.html">
+<link rel="import" href="nearby_share_data_usage_dialog.html">
+<link rel="import" href="types.html">
 
 <dom-module id="settings-nearby-share-subpage">
   <template>
@@ -32,7 +34,6 @@
           [[prefs.nearby_sharing.device_name.value]]
         </div>
       </div>
-      <div class="separator"></div>
       <cr-button id="editDeviceNameButton" on-click="onDeviceNameTap_"
           aria-description="[[getEditNameButtonAriaDescription_(
               prefs.nearby_sharing.device_name.value)]]">
@@ -43,6 +44,26 @@
       <nearby-share-device-name-dialog prefs="{{prefs}}" id="deviceNameDialog"
           on-close="onDeviceNameDialogClose_">
       </nearby-share-device-name-dialog>
+    </template>
+    <div class="settings-box two-line">
+      <div class="start">
+        <div aria-hidden="true">
+          [[getDataUsageLabel_(prefs.nearby_sharing.data_usage.value)]]
+        </div>
+        <div aria-hidden="true" class="secondary">
+          [[getDataUsageSubLabel_(prefs.nearby_sharing.data_usage.value)]]
+        </div>
+      </div>
+      <cr-button id="editDataUsageButton" on-click="onDataUsageTap_"
+          aria-description="[[getEditDataUsageButtonAriaDescription_(
+              prefs.nearby_sharing.data_usage.value)]]">
+        $i18n{editDataUsage}
+      </cr-button>
+    </div>
+    <template is="dom-if" if="[[showDataUsageDialog_]]" restamp>
+      <nearby-share-data-usage-dialog prefs="{{prefs}}" id="dataUsageDialog"
+          on-close="onDataUsageDialogClose_">
+      </nearby-share-data-usage-dialog>
     </template>
   </template>
   <script src="nearby_share_subpage.js"></script>

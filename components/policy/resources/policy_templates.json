@@ -9617,9 +9617,9 @@
       'id': 163,
       'caption': '''Device-local accounts''',
       'tags': [],
-      'desc': '''Specifies the list of device-local accounts to be shown on the login screen.
+      'desc': '''Setting the policy specifies the list of device-local accounts to display on the sign-in screen. Identifiers tell the different device-local accounts apart.
 
-      Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.''',
+      If the policy is unset or an empty list, there are no device-local accounts.''',
     },
     {
       'name': 'DeviceLocalAccountAutoLoginId',
@@ -9636,11 +9636,9 @@
       'id': 194,
       'caption': '''Device-local account for auto-login''',
       'tags': [],
-      'desc': '''A device-local account to auto-login after a delay.
+      'desc': '''Setting the policy means the specified session is automatically signed if there is no user interaction at the sign-in screen within the time specified in <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME">DeviceLocalAccountAutoLoginDelay</ph>. The device-local account must already be set up (see <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME">DeviceLocalAccounts</ph>).
 
-      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The device-local account must already be configured (see |DeviceLocalAccounts|).
-
-      If this policy is unset, there will be no auto-login.''',
+      Leaving it unset means there's no automatic sign-in.''',
     },
     {
       'name': 'DeviceLocalAccountAutoLoginDelay',
@@ -9657,15 +9655,11 @@
       'id': 195,
       'caption': '''Device-local account auto-login timer''',
       'tags': [],
-      'desc': '''The device-local account auto-login delay.
+      'desc': '''Setting the policy determines the amount of time in milliseconds without user activity before automatically signing in to the device-local account specified by the <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME">DeviceLocalAccountAutoLoginId</ph> policy.
 
-      If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
+      Leaving it unset means 0 milliseconds is used as the timeout.
 
-      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the device-local account specified by the |DeviceLocalAccountAutoLoginId| policy.
-
-      If this policy is unset, 0 milliseconds will be used as the timeout.
-
-      This policy is specified in milliseconds.'''
+      If the <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME">DeviceLocalAccountAutoLoginId</ph> policy is unset, this policy has no effect.'''
     },
     {
       'name': 'DeviceLocalAccountAutoLoginBailoutEnabled',
@@ -9682,11 +9676,9 @@
       'id': 202,
       'caption': '''Enable bailout keyboard shortcut for auto-login''',
       'tags': [],
-      'desc': '''Enable bailout keyboard shortcut for auto-login.
+      'desc': '''Setting the policy to Enabled or leaving it unset means a device-local account is set up for zero-delay, automatic sign-in. <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> honors the keyboard shortcut Ctrl+Alt+S for bypassing automatic sign-in and showing the sign-in screen.
 
-      If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will honor the keyboard shortcut Ctrl+Alt+S for bypassing auto-login and showing the login screen.
-
-      If this policy is set to False, zero-delay auto-login (if configured) cannot be bypassed.'''
+      Setting the policy to Disabled means users can't bypass zero-delay automatic sign-in (if configured).'''
     },
     {
       'name': 'DeviceLocalAccountPromptForNetworkWhenOffline',
@@ -9703,11 +9695,9 @@
       'id': 250,
       'caption': '''Enable network configuration prompt when offline''',
       'tags': [],
-      'desc': '''Enable network configuration prompt when offline.
+      'desc': '''Setting the policy to Enabled or leaving it unset means when a device is offline, if a device-local account is set for zero-delay, automatic sign-in, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a network-configuration prompt.
 
-      If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login and the device does not have access to the Internet, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show a network configuration prompt.
-
-      If this policy is set to False, an error message will be displayed instead of the network configuration prompt.'''
+      Setting the policy to Disabled has an error message displayed instead.'''
     },
     {
       'name': 'DeviceLocalAccountManagedSessionEnabled',
@@ -14001,15 +13991,11 @@
       'id': 319,
       'caption': '''Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version''',
       'tags': ['system-security'],
-      'desc': '''Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version.
+      'desc': '''Setting the policy to Enabled means the value of the <ph name="REQUIRED_PLATFORM_VERSION">required_platform_version</ph> manifest key of the zero-delay, autolaunched kiosk app is used as the autoupdate target version prefix.
 
-      This policy controls whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version by declaring a required_platform_version in its manifest and use it as the auto update target version prefix.
+      Setting the policy to Disabled or leaving it unset means the <ph name="REQUIRED_PLATFORM_VERSION">required_platform_version</ph> manifest key is ignored and autoupdate proceeds as normal.
 
-      If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
-
-      If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.
-
-      Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version might leave users at risk.''',
+      Warning: Do not delegate control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version to a kiosk app, because it might prevent the device from getting software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version might leave users at risk.''',
       'arc_support': 'If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version, even if this policy is set to <ph name="TRUE">True</ph>.',
     },
     {

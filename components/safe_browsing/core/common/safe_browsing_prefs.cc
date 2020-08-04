@@ -185,6 +185,11 @@ bool IsExtendedReportingPolicyManaged(const PrefService& prefs) {
   return prefs.IsManagedPreference(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
+bool IsSafeBrowsingPolicyManaged(const PrefService& prefs) {
+  return prefs.IsManagedPreference(prefs::kSafeBrowsingEnabled) ||
+         prefs.IsManagedPreference(prefs::kSafeBrowsingEnhanced);
+}
+
 void RecordExtendedReportingMetrics(const PrefService& prefs) {
   // This metric tracks the extended browsing opt-in based on whichever setting
   // the user is currently seeing. It tells us whether extended reporting is

@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
@@ -58,7 +59,7 @@ enum AvatarShape {
 };
 
 // Returns the default guest avatar.
-gfx::ImageSkia GetGuestAvatar(int size = 256);
+ui::ImageModel GetGuestAvatar(int size = 256);
 
 // Returns a version of |image| of a specific size. Note that no checks are
 // done on the width/height so make sure they're reasonable values; in the

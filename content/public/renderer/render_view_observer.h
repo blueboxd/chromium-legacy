@@ -22,7 +22,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                                           public IPC::Sender {
  public:
   // A subclass can use this to delete itself. If it does not, the subclass must
-  // always null-check each call to render_view() becase the RenderView can
+  // always null-check each call to render_view() because the RenderView can
   // go away at any time.
   virtual void OnDestruct() = 0;
 

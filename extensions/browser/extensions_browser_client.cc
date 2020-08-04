@@ -118,4 +118,10 @@ ExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
   return nullptr;
 }
 
+bool ExtensionsBrowserClient::HasIsolatedStorage(
+    const std::string& extension_id,
+    content::BrowserContext* context) {
+  return false;
+}
+
 }  // namespace extensions

@@ -513,8 +513,8 @@ bool ClipboardX11::IsFormatAvailable(
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
   TargetList target_list = x11_details_->WaitAndGetTargetsList(buffer);
-  if (format.Equals(ClipboardFormatType::GetPlainTextType()) ||
-      format.Equals(ClipboardFormatType::GetUrlType())) {
+  if (format == ClipboardFormatType::GetPlainTextType() ||
+      format == ClipboardFormatType::GetUrlType()) {
     return target_list.ContainsText();
   }
   return target_list.ContainsFormat(format);

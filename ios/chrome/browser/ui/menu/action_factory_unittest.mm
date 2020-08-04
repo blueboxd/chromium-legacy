@@ -127,8 +127,8 @@ TEST_F(ActionFactoryTest, DeleteAction) {
   }
 }
 
-// Tests that the Open in New Tab action has the right title and image.
-TEST_F(ActionFactoryTest, OpenInNewTabAction) {
+// Tests that the Open in New Tab actions have the right titles and images.
+TEST_F(ActionFactoryTest, OpenInNewTabAction_URL) {
   if (@available(iOS 13.0, *)) {
     ActionFactory* factory =
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
@@ -140,17 +140,20 @@ TEST_F(ActionFactoryTest, OpenInNewTabAction) {
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
 
-    UIAction* action = [factory actionToOpenInNewTabWithURL:testURL
-                                                 completion:nil];
+    UIAction* actionWithURL = [factory actionToOpenInNewTabWithURL:testURL
+                                                        completion:nil];
+    EXPECT_TRUE([expectedTitle isEqualToString:actionWithURL.title]);
+    EXPECT_EQ(expectedImage, actionWithURL.image);
 
-    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
-    EXPECT_EQ(expectedImage, action.image);
+    UIAction* actionWithBlock = [factory actionToOpenInNewTabWithBlock:nil];
+    EXPECT_TRUE([expectedTitle isEqualToString:actionWithBlock.title]);
+    EXPECT_EQ(expectedImage, actionWithBlock.image);
   }
 }
 
-// Tests that the Open in New Incognito Tab action has the right title and
-// image.
-TEST_F(ActionFactoryTest, OpenInNewIncognitoTabAction) {
+// Tests that the Open in New Incognito Tab actions have the right titles
+// and images.
+TEST_F(ActionFactoryTest, OpenInNewIncognitoTabAction_URL) {
   if (@available(iOS 13.0, *)) {
     ActionFactory* factory =
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
@@ -161,11 +164,15 @@ TEST_F(ActionFactoryTest, OpenInNewIncognitoTabAction) {
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
 
-    UIAction* action = [factory actionToOpenInNewIncognitoTabWithURL:testURL
-                                                          completion:nil];
+    UIAction* actionWithURL =
+        [factory actionToOpenInNewIncognitoTabWithURL:testURL completion:nil];
+    EXPECT_TRUE([expectedTitle isEqualToString:actionWithURL.title]);
+    EXPECT_FALSE(!!actionWithURL.image);
 
-    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
-    EXPECT_FALSE(!!action.image);
+    UIAction* actionWithBlock =
+        [factory actionToOpenInNewIncognitoTabWithBlock:nil];
+    EXPECT_TRUE([expectedTitle isEqualToString:actionWithBlock.title]);
+    EXPECT_FALSE(!!actionWithBlock.image);
   }
 }
 

@@ -7,15 +7,26 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "chromecast/device/bluetooth/le/le_scan_result.h"
 #include "chromecast/device/bluetooth/le/scan_filter.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace chromecast {
+namespace bluetooth_v2_shlib {
+class LeScannerImpl;
+}  // namespace bluetooth_v2_shlib
+
 namespace bluetooth {
+class BluetoothManagerPlatform;
 
 class LeScanManager {
  public:
@@ -44,6 +55,16 @@ class LeScanManager {
     DISALLOW_COPY_AND_ASSIGN(ScanHandle);
   };
 
+  static std::unique_ptr<LeScanManager> Create(
+      BluetoothManagerPlatform* bluetooth_manager,
+      bluetooth_v2_shlib::LeScannerImpl* le_scanner);
+
+  virtual ~LeScanManager() = default;
+
+  virtual void Initialize(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) = 0;
+  virtual void Finalize() = 0;
+
   // Request a handle to enable BLE scanning. Can be called on any thread. |cb|
   // returns a handle. As long is there is at least one handle in existence, BLE
   // scanning will be enabled. Returns nullptr if failed to enable scanning.
@@ -71,7 +92,6 @@ class LeScanManager {
 
  protected:
   LeScanManager() = default;
-  virtual ~LeScanManager() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LeScanManager);

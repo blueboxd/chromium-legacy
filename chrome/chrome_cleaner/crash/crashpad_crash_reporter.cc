@@ -94,10 +94,10 @@ void StartCrashReporter(const std::string version) {
 }
 
 void RemoveSwitchIfExisting(const char* const switch_to_remove,
-                            std::vector<base::string16>* argv) {
-  const base::string16 pattern =
+                            std::vector<std::wstring>* argv) {
+  const std::wstring pattern =
       base::StrCat({L"--", base::UTF8ToWide(switch_to_remove)});
-  auto matches_switch = [&pattern](const base::string16& argument) -> bool {
+  auto matches_switch = [&pattern](const std::wstring& argument) -> bool {
     return base::StartsWith(argument, pattern, base::CompareCase::SENSITIVE);
   };
   base::EraseIf(*argv, matches_switch);
@@ -113,7 +113,7 @@ int CrashReporterMain() {
   // This function should only run if --crash-handler switch is present.
   DCHECK(command_line->HasSwitch(chrome_cleaner::kCrashHandlerSwitch));
 
-  std::vector<base::string16> argv = command_line->argv();
+  std::vector<std::wstring> argv = command_line->argv();
 
   // Because of https://bugs.chromium.org/p/crashpad/issues/detail?id=82,
   // Crashpad fails on the presence of flags it doesn't handle. Until that bug
@@ -143,13 +143,13 @@ int CrashReporterMain() {
                                /* user_stream_sources */ nullptr);
 }
 
-base::string16 GetCrashReporterIPCPipeName() {
+std::wstring GetCrashReporterIPCPipeName() {
   return g_is_connected_to_crash_handler
              ? GetCrashpadClient()->GetHandlerIPCPipe()
-             : base::string16();
+             : std::wstring();
 }
 
-void UseCrashReporter(const base::string16& ipc_pipe_name) {
+void UseCrashReporter(const std::wstring& ipc_pipe_name) {
   DCHECK(!ipc_pipe_name.empty());
   crashpad::CrashpadClient* crashpad_client = GetCrashpadClient();
   if (!crashpad_client->SetHandlerIPCPipe(ipc_pipe_name)) {

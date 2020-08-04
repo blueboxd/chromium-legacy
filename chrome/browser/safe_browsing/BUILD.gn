@@ -302,10 +302,13 @@ source_set("chrome_enterprise_url_lookup_service") {
   ]
 
   deps = [
+    "//components/prefs",
+    "//components/safe_browsing/core:csd_proto",
     "//components/safe_browsing/core:realtimeapi_proto",
     "//components/safe_browsing/core:verdict_cache_manager",
     "//components/safe_browsing/core/realtime:policy_engine",
     "//components/safe_browsing/core/realtime:url_lookup_service_base",
+    "//components/sync",
     "//services/network/public/cpp:cpp",
   ]
 }

@@ -354,6 +354,48 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank1sMidInterval) {
   EXPECT_THAT(reports_, ElementsAre(std::make_pair(1, 1)));
 }
 
+// Jank that lasts for 1.3 intervals should be rounded down to 1.
+TEST_F(ScopedBlockingCallIOJankMonitoringTest, JankRoundDown) {
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kIOJankInterval * 0.9);
+
+  constexpr auto kJankTiming =
+      internal::IOJankMonitoringWindow::kIOJankInterval * 1.3;
+  {
+    ScopedBlockingCall blocked_for_1s(FROM_HERE, BlockingType::MAY_BLOCK);
+    task_environment_.FastForwardBy(kJankTiming);
+  }
+
+  // No janks reported before the monitoring window completes.
+  EXPECT_THAT(reports_, ElementsAre());
+
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kMonitoringWindow);
+
+  EXPECT_THAT(reports_, ElementsAre(std::make_pair(1, 1)));
+}
+
+// Jank that lasts for 1.7 intervals should be rounded up to 2.
+TEST_F(ScopedBlockingCallIOJankMonitoringTest, JankRoundUp) {
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kIOJankInterval * 0.5);
+
+  constexpr auto kJankTiming =
+      internal::IOJankMonitoringWindow::kIOJankInterval * 1.7;
+  {
+    ScopedBlockingCall blocked_for_1s(FROM_HERE, BlockingType::MAY_BLOCK);
+    task_environment_.FastForwardBy(kJankTiming);
+  }
+
+  // No janks reported before the monitoring window completes.
+  EXPECT_THAT(reports_, ElementsAre());
+
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kMonitoringWindow);
+
+  EXPECT_THAT(reports_, ElementsAre(std::make_pair(2, 2)));
+}
+
 // Start mid-interval and perform an operation that overlaps into the next one
 // but is under the jank timing.
 TEST_F(ScopedBlockingCallIOJankMonitoringTest, NoJankMidInterval) {

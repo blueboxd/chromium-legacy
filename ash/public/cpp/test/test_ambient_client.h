@@ -15,7 +15,7 @@
 namespace ash {
 
 // An implementation for test support.
-// IsAmbientModeAllowedForProfile() returns true to run the unittests.
+// IsAmbientModeAllowed() returns true to run the unittests.
 class ASH_PUBLIC_EXPORT TestAmbientClient : public AmbientClient {
  public:
   explicit TestAmbientClient(device::TestWakeLockProvider* wake_lock_provider);

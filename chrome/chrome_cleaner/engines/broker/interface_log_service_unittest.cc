@@ -12,7 +12,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -82,7 +81,7 @@ class InterfaceLogServiceTest : public testing::Test {
 
   int64_t expected_file_size_;
   std::unique_ptr<InterfaceLogService> log_service_;
-  const base::string16 kLogFileName = L"interface_log_service_test";
+  const std::wstring kLogFileName = L"interface_log_service_test";
   const std::string kFileName = __FILE__;
 };
 

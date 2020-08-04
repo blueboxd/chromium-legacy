@@ -19,6 +19,8 @@
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libxml/chromium/xml_reader.h"
+#include "third_party/libxml/chromium/xml_writer.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_id_checker.h"
@@ -66,6 +68,12 @@ const base::FilePath kExtractorScript =
         .Append(FILE_PATH_LITERAL("traffic_annotation"))
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("extractor.py"));
+
+const base::FilePath kGroupingXmlPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("summary"))
+        .Append(FILE_PATH_LITERAL("grouping.xml"));
 
 // Checks if the list of |path_filters| include the given |file_path|, or there
 // are path filters which are a folder (don't have a '.' in their name), and
@@ -634,6 +642,8 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
         AuditorResult result = instance.IsComplete();
         if (result.IsOK())
           result = instance.IsConsistent();
+        if (result.IsOK())
+          result = instance.InGroupingXML(grouped_annotation_unique_ids_);
         if (!result.IsOK())
           errors_.push_back(result);
         break;
@@ -670,6 +680,9 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
 
         if (result.IsOK())
           result = completed.IsConsistent();
+
+        if (result.IsOK())
+          result = completed.InGroupingXML(grouped_annotation_unique_ids_);
 
         if (result.IsOK()) {
           new_annotations.push_back(completed);
@@ -719,6 +732,28 @@ void TrafficAnnotationAuditor::AddMissingAnnotations() {
   }
 }
 
+bool TrafficAnnotationAuditor::GetGroupingAnnotationsUniqueIDs(
+    base::FilePath grouping_xml_path,
+    std::set<std::string>* annotation_unique_ids) const {
+  XmlReader reader;
+  if (!reader.LoadFile(grouping_xml_path.MaybeAsASCII())) {
+    LOG(ERROR) << "Could not load '" << grouping_xml_path.MaybeAsASCII()
+               << "'.";
+    return false;
+  }
+
+  bool all_ok = true;
+  while (reader.Read()) {
+    if (reader.IsClosingElement() || reader.NodeName() != "traffic_annotation")
+      continue;
+
+    std::string unique_id;
+    all_ok &= reader.NodeAttribute("unique_id", &unique_id);
+    annotation_unique_ids->insert(unique_id);
+  }
+  return all_ok;
+}
+
 bool TrafficAnnotationAuditor::RunAllChecks(
     bool report_xml_updates) {
   if (exporter_.GetArchivedAnnotations().empty() &&
@@ -728,6 +763,11 @@ bool TrafficAnnotationAuditor::RunAllChecks(
 
   std::set<int> deprecated_ids;
   exporter_.GetDeprecatedHashCodes(&deprecated_ids);
+
+  if (!GetGroupingAnnotationsUniqueIDs(source_path_.Append(kGroupingXmlPath),
+                                       &grouped_annotation_unique_ids_)) {
+    return false;
+  }
 
   if (!path_filters_.empty())
     AddMissingAnnotations();

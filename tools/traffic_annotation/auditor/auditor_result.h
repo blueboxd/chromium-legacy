@@ -37,6 +37,8 @@ class AuditorResult {
     ERROR_MISSING_SECOND_ID,      // Annotation does not have a valid second id.
     ERROR_INCOMPLETE_ANNOTATION,  // Annotation has some missing fields.
     ERROR_INCONSISTENT_ANNOTATION,  // Annotation has some inconsistent fields.
+    ERROR_MISSING_GROUPING,         // Annotation is missing from
+                                    // summary/grouping.xml file.
     ERROR_MERGE_FAILED,            // Two annotations that are supposed to merge
                                    // cannot merge.
     ERROR_INCOMPLETED_ANNOTATION,  // A partial or [branched_] completing

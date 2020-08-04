@@ -4,6 +4,7 @@
 
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
+#include <stdint.h>
 #include <memory>
 #include <utility>
 
@@ -31,7 +32,11 @@ namespace {
 
 const char kServiceId[] = "service-id";
 const char kRemoteEndpointId[] = "remote_endpoint_id";
+const char kEndpointInfo[] = {0x0d, 0x07, 0x07, 0x07, 0x07};
 const char kRemoteEndpointInfo[] = {0x0d, 0x07, 0x06, 0x08, 0x09};
+const char kAuthenticationToken[] = "authentication_token";
+const char kRawAuthenticationToken[] = {0x00, 0x05, 0x04, 0x03, 0x02};
+const int32_t kQuality = 5201314;
 
 }  // namespace
 
@@ -52,6 +57,45 @@ class FakeEndpointDiscoveryListener : public mojom::EndpointDiscoveryListener {
       endpoint_found_cb = base::DoNothing();
   base::RepeatingCallback<void(const std::string&)> endpoint_lost_cb =
       base::DoNothing();
+};
+
+class FakeConnectionLifecycleListener
+    : public mojom::ConnectionLifecycleListener {
+ public:
+  void OnConnectionInitiated(const std::string& endpoint_id,
+                             mojom::ConnectionInfoPtr info) override {
+    initiated_cb.Run(endpoint_id, std::move(info));
+  }
+
+  void OnConnectionAccepted(const std::string& endpoint_id) override {
+    accepted_cb.Run(endpoint_id);
+  }
+
+  void OnConnectionRejected(const std::string& endpoint_id,
+                            mojom::Status status) override {
+    rejected_cb.Run(endpoint_id, status);
+  }
+
+  void OnDisconnected(const std::string& endpoint_id) override {
+    disconnected_cb.Run(endpoint_id);
+  }
+
+  void OnBandwidthChanged(const std::string& endpoint_id,
+                          int32_t quality) override {
+    bandwidth_changed_cb.Run(endpoint_id, quality);
+  }
+
+  mojo::Receiver<mojom::ConnectionLifecycleListener> receiver{this};
+  base::RepeatingCallback<void(const std::string&, mojom::ConnectionInfoPtr)>
+      initiated_cb = base::DoNothing();
+  base::RepeatingCallback<void(const std::string&)> accepted_cb =
+      base::DoNothing();
+  base::RepeatingCallback<void(const std::string&, mojom::Status)> rejected_cb =
+      base::DoNothing();
+  base::RepeatingCallback<void(const std::string&)> disconnected_cb =
+      base::DoNothing();
+  base::RepeatingCallback<void(const std::string&, int32_t)>
+      bandwidth_changed_cb = base::DoNothing();
 };
 
 class NearbyConnectionsTest : public testing::Test {
@@ -188,6 +232,178 @@ TEST_F(NearbyConnectionsTest, StartStopDiscovery) {
 
   // StopDiscovery is also called when Core is destroyed.
   EXPECT_CALL(*service_controller_ptr_, StopDiscovery(testing::_)).Times(1);
+}
+
+TEST_F(NearbyConnectionsTest, RequestConnection) {
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+
+  EXPECT_CALL(*service_controller_ptr_, StartDiscovery)
+      .WillOnce([](ClientProxy* client, const std::string& service_id,
+                   const ConnectionOptions& options,
+                   const DiscoveryListener& listener) {
+        client->StartedDiscovery(service_id, options.strategy, listener,
+                                 /*mediums=*/{});
+        client->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+        return Status{Status::kSuccess};
+      });
+
+  base::RunLoop start_discovery_run_loop;
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  nearby_connections_->StartDiscovery(
+      kServiceId,
+      mojom::DiscoveryOptions::New(mojom::Strategy::kP2pPointToPoint),
+      fake_discovery_listener.receiver.BindNewPipeAndPassRemote(),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        start_discovery_run_loop.Quit();
+      }));
+  start_discovery_run_loop.Run();
+
+  ClientProxy* client_proxy;
+  ConnectionListener connections_listener;
+  EXPECT_CALL(*service_controller_ptr_, RequestConnection)
+      .WillOnce([&client_proxy, &connections_listener](
+                    ClientProxy* client, const std::string& endpoint_id,
+                    const ConnectionRequestInfo& info) {
+        client_proxy = client;
+        connections_listener = info.listener;
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_EQ(
+            std::string(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
+            info.name);
+        return Status{Status::kSuccess};
+      });
+
+  base::RunLoop request_connection_run_loop;
+  nearby_connections_->RequestConnection(
+      std::vector<uint8_t>(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
+      kRemoteEndpointId,
+      fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        request_connection_run_loop.Quit();
+      }));
+  request_connection_run_loop.Run();
+
+  base::RunLoop initiated_run_loop;
+  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_EQ(kAuthenticationToken, info->authentication_token);
+        EXPECT_EQ(std::vector<uint8_t>(std::begin(kRawAuthenticationToken),
+                                       std::end(kRawAuthenticationToken)),
+                  info->raw_authentication_token);
+        EXPECT_EQ(std::vector<uint8_t>(std::begin(kRemoteEndpointInfo),
+                                       std::end(kRemoteEndpointInfo)),
+                  info->endpoint_info);
+        EXPECT_FALSE(info->is_incoming_connection);
+        initiated_run_loop.Quit();
+      });
+  client_proxy->OnConnectionInitiated(
+      kRemoteEndpointId,
+      {.authentication_token = kAuthenticationToken,
+       .raw_authentication_token =
+           ByteArray(kRawAuthenticationToken, sizeof(kRawAuthenticationToken)),
+       .endpoint_info =
+           ByteArray(kRemoteEndpointInfo, sizeof(kRemoteEndpointInfo)),
+       .is_incoming_connection = false},
+      connections_listener);
+  initiated_run_loop.Run();
+
+  base::RunLoop rejected_run_loop;
+  fake_connection_life_cycle_listener.rejected_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::Status status) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_EQ(mojom::Status::kConnectionRejected, status);
+        rejected_run_loop.Quit();
+      });
+  client_proxy->OnConnectionRejected(kRemoteEndpointId,
+                                     {Status::kConnectionRejected});
+  rejected_run_loop.Run();
+
+  // Initiate connection again to test accepted flow.
+  base::RunLoop initiated_run_loop_2;
+  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_FALSE(info->is_incoming_connection);
+        initiated_run_loop_2.Quit();
+      });
+  client_proxy->OnConnectionInitiated(kRemoteEndpointId,
+                                      {.is_incoming_connection = false},
+                                      connections_listener);
+  initiated_run_loop_2.Run();
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+  client_proxy->OnConnectionAccepted(kRemoteEndpointId);
+  accepted_run_loop.Run();
+
+  base::RunLoop bandwidth_changed_run_loop;
+  fake_connection_life_cycle_listener.bandwidth_changed_cb =
+      base::BindLambdaForTesting(
+          [&](const std::string& endpoint_id, int32_t quality) {
+            EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+            EXPECT_EQ(kQuality, quality);
+            bandwidth_changed_run_loop.Quit();
+          });
+  client_proxy->OnBandwidthChanged(kRemoteEndpointId, kQuality);
+  bandwidth_changed_run_loop.Run();
+
+  base::RunLoop disconnected_run_loop;
+  fake_connection_life_cycle_listener.disconnected_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        disconnected_run_loop.Quit();
+      });
+  client_proxy->OnDisconnected(kRemoteEndpointId, /*notify=*/true);
+  disconnected_run_loop.Run();
+
+  // Initiate and accept connection again to test DisconnectFromEndpoint.
+  base::RunLoop initiated_run_loop_3;
+  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_FALSE(info->is_incoming_connection);
+        initiated_run_loop_3.Quit();
+      });
+  client_proxy->OnConnectionInitiated(kRemoteEndpointId,
+                                      {.is_incoming_connection = false},
+                                      connections_listener);
+  initiated_run_loop_3.Run();
+
+  base::RunLoop accepted_run_loop_2;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        accepted_run_loop_2.Quit();
+      });
+  client_proxy->OnConnectionAccepted(kRemoteEndpointId);
+  accepted_run_loop_2.Run();
+
+  EXPECT_CALL(*service_controller_ptr_, DisconnectFromEndpoint)
+      .WillOnce([](ClientProxy* client, const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        return Status{Status::kSuccess};
+      });
+
+  base::RunLoop disconnect_from_endpoint_run_loop;
+  nearby_connections_->DisconnectFromEndpoint(
+      kRemoteEndpointId, base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        disconnect_from_endpoint_run_loop.Quit();
+      }));
+  disconnect_from_endpoint_run_loop.Run();
+
+  // DisconnectFromEndpoint is also called when Core is destroyed.
+  EXPECT_CALL(*service_controller_ptr_, DisconnectFromEndpoint).Times(1);
 }
 
 }  // namespace connections

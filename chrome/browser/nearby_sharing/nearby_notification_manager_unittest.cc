@@ -619,3 +619,118 @@ TEST_F(NearbyNotificationManagerTest, ProgressNotification_Cancelled) {
   // Notification should be closed.
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
 }
+
+TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Accept) {
+  ShareTarget share_target;
+  share_target.is_incoming = true;
+  TransferMetadata transfer_metadata =
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingLocalConfirmation)
+          .build();
+
+  // Simulate incoming connection request waiting for local confirmation.
+  manager()->OnTransferUpdate(share_target, transfer_metadata);
+
+  // Expect a notification with an accept button.
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  ASSERT_EQ(2u, notifications[0].buttons().size());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION),
+            notifications[0].buttons()[0].title);
+
+  // Expect call to Accept on button click.
+  EXPECT_CALL(*nearby_service_,
+              Accept(MatchesTarget(share_target), testing::_));
+  notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
+                                      notifications[0].id(), /*action_index=*/0,
+                                      /*reply=*/base::nullopt);
+
+  // Notification should still be present as it will soon be replaced.
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Reject_Local) {
+  ShareTarget share_target;
+  share_target.is_incoming = true;
+  TransferMetadata transfer_metadata =
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingLocalConfirmation)
+          .build();
+
+  // Simulate incoming connection request waiting for local confirmation.
+  manager()->OnTransferUpdate(share_target, transfer_metadata);
+
+  // Expect a notification with a reject button.
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  ASSERT_EQ(2u, notifications[0].buttons().size());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION),
+            notifications[0].buttons()[1].title);
+
+  // Expect call to Reject on button click.
+  EXPECT_CALL(*nearby_service_,
+              Reject(MatchesTarget(share_target), testing::_));
+  notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
+                                      notifications[0].id(), /*action_index=*/1,
+                                      /*reply=*/base::nullopt);
+
+  // Notification should be closed on button click.
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Reject_Remote) {
+  ShareTarget share_target;
+  share_target.is_incoming = true;
+  TransferMetadata transfer_metadata =
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingRemoteAcceptance)
+          .build();
+
+  // Simulate incoming connection request waiting for remote acceptance.
+  manager()->OnTransferUpdate(share_target, transfer_metadata);
+
+  // Expect a notification with only the reject button.
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  ASSERT_EQ(1u, notifications[0].buttons().size());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION),
+            notifications[0].buttons()[0].title);
+
+  // Expect call to Reject on button click.
+  EXPECT_CALL(*nearby_service_,
+              Reject(MatchesTarget(share_target), testing::_));
+  notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
+                                      notifications[0].id(), /*action_index=*/0,
+                                      /*reply=*/base::nullopt);
+
+  // Notification should be closed on button click.
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Close) {
+  ShareTarget share_target;
+  share_target.is_incoming = true;
+  TransferMetadata transfer_metadata =
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingLocalConfirmation)
+          .build();
+
+  // Simulate incoming connection request waiting for local confirmation.
+  manager()->OnTransferUpdate(share_target, transfer_metadata);
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  // Expect call to Reject on notification close.
+  EXPECT_CALL(*nearby_service_,
+              Reject(MatchesTarget(share_target), testing::_));
+  notification_tester_->RemoveNotification(
+      NotificationHandler::Type::NEARBY_SHARE, notifications[0].id(),
+      /*by_user=*/true);
+
+  // Notification should be closed.
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}

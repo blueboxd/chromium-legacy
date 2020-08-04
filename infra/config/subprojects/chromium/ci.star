@@ -587,6 +587,28 @@ ci.chromiumos_builder(
     main_console_view = settings.main_console_name,
 )
 
+ci.chromiumos_builder(
+    name = 'linux-lacros-builder-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'default',
+        short_name = 'lcr',
+    ),
+    main_console_view = settings.main_console_name,
+    # TODO(crbug.com/1104291): Enable tree closing.
+    tree_closing = False,
+)
+
+ci.chromiumos_builder(
+    name = 'linux-lacros-tester-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'default',
+        short_name = 'lcr',
+    ),
+    main_console_view = settings.main_console_name,
+    triggered_by = ['linux-lacros-builder-rel'],
+    # TODO(crbug.com/1104291): Enable tree closing.
+    tree_closing = False,
+)
 
 ci.dawn_builder(
     name = 'Dawn Linux x64 DEPS Builder',

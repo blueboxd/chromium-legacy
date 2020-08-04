@@ -322,7 +322,6 @@ ClientControlledShellSurface::ClientControlledShellSurface(
     : ShellSurfaceBase(surface, gfx::Point(), true, can_minimize, container),
       current_pin_(ash::WindowPinType::kNone),
       use_default_scale_cancellation_(default_scale_cancellation) {
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ClientControlledShellSurface::~ClientControlledShellSurface() {
@@ -333,7 +332,6 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
   if (client_controlled_state_)
     client_controlled_state_->ResetDelegate();
   wide_frame_.reset();
-  display::Screen::GetScreen()->RemoveObserver(this);
   if (current_pin_ != ash::WindowPinType::kNone)
     SetPinned(ash::WindowPinType::kNone);
 }
@@ -857,6 +855,8 @@ void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
 void ClientControlledShellSurface::OnDisplayMetricsChanged(
     const display::Display& new_display,
     uint32_t changed_metrics) {
+  SurfaceTreeHost::OnDisplayMetricsChanged(new_display, changed_metrics);
+
   if (!widget_)
     return;
 

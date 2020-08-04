@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/promo_browser_command/promo_browser_command.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/promo_browser_command/promo_browser_command_handler.h"
@@ -114,4 +116,22 @@ TEST_F(PromoBrowserCommandHandlerTest, SupportedCommands) {
   EXPECT_TRUE(ExecuteCommand(Command::kUnknownCommand, ClickInfo::New()));
   histogram_tester.ExpectBucketCount(
       PromoBrowserCommandHandler::kPromoBrowserCommandHistogramName, 0, 1);
+}
+
+TEST_F(PromoBrowserCommandHandlerTest, DisableHandlingCommands) {
+  base::HistogramTester histogram_tester;
+
+  // Disabling features::kEnablePromoBrowserCommands prevents the commands from
+  // being executed.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnablePromoBrowserCommands);
+
+  // The PromoBrowserCommandHandler instance needs to be recreated for the
+  // feature to take effect.
+  command_handler_ = std::make_unique<PromoBrowserCommandHandler>(
+      mojo::PendingReceiver<CommandHandler>(), &profile_);
+
+  EXPECT_FALSE(ExecuteCommand(Command::kUnknownCommand, ClickInfo::New()));
+  histogram_tester.ExpectTotalCount(
+      PromoBrowserCommandHandler::kPromoBrowserCommandHistogramName, 0);
 }

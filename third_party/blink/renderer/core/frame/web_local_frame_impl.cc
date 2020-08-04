@@ -1747,12 +1747,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
       util::PassKey<WebLocalFrameImpl>(),
       mojom::blink::TreeScopeType::kDocument, client, interface_registry,
       frame_token);
-  frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(
       page, nullptr, name,
-      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr, opener,
       sandbox_flags, opener_feature_state);
   return frame;
 }
@@ -1774,7 +1773,6 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
           : mojom::blink::TreeScopeType::kDocument,
       client, interface_registry, frame_token);
   web_frame->SetParent(previous_web_frame->Parent());
-  web_frame->SetOpener(previous_web_frame->Opener());
   network::mojom::blink::WebSandboxFlags sandbox_flags =
       network::mojom::blink::WebSandboxFlags::kNone;
   FeaturePolicyFeatureState feature_state;
@@ -1803,7 +1801,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
       frame_policy.disallow_document_access
           ? nullptr
           : &ToCoreFrame(*previous_web_frame)->window_agent_factory(),
-      sandbox_flags, feature_state);
+      previous_web_frame->Opener(), sandbox_flags, feature_state);
 
   LocalFrame* new_frame = web_frame->GetFrame();
   new_frame->SetOwner(previous_frame->Owner());
@@ -1886,6 +1884,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     FrameOwner* owner,
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory,
+    WebFrame* opener,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicyFeatureState& opener_feature_state) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(
@@ -1895,6 +1894,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
     frame_->SetOpenerFeatureState(opener_feature_state);
   frame_->Loader().ForceSandboxFlags(sandbox_flags);
+  SetOpener(opener);
 
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
@@ -1946,7 +1946,8 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
       *GetFrame()->GetPage(), owner_element, name,
       owner_element->GetFramePolicy().disallow_document_access
           ? nullptr
-          : &GetFrame()->window_agent_factory());
+          : &GetFrame()->window_agent_factory(),
+      nullptr);
 
   DCHECK(webframe_child->Parent());
   return webframe_child->GetFrame();

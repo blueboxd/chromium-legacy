@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "components/security_interstitials/core/controller_client.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
@@ -21,37 +22,18 @@ namespace security_interstitials {
 // when committed interstitials are on. It is bound to the JavaScript
 // window.certificateErrorPageController object.
 class SecurityInterstitialPageController
-    : public gin::Wrappable<SecurityInterstitialPageController> {
+    : public gin::Wrappable<SecurityInterstitialPageController>,
+      public content::RenderFrameObserver {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  class Delegate {
-   public:
-    // Called when the interstitial calls any of the installed JS methods.
-    // |command| describes the command sent by the interstitial.
-    // TODO(carlosil): This is declared virtual because some embedders are still
-    // using a non-componentized version, once that is not the case, this can
-    // become non-virtual
-    virtual void SendCommand(
-        security_interstitials::SecurityInterstitialCommand command);
-
-   protected:
-    virtual ~Delegate();
-
-    virtual mojo::AssociatedRemote<
-        security_interstitials::mojom::InterstitialCommands>
-    GetInterface() = 0;
-  };
-
-  // Will invoke methods on |delegate| in response to user actions taken on the
-  // interstitial. May call delegate methods even after the page has been
-  // navigated away from, so it is recommended consumers make sure the weak
-  // pointers are destroyed in response to navigations.
-  static void Install(content::RenderFrame* render_frame,
-                      base::WeakPtr<Delegate> delegate);
+  // Creates an instance of SecurityInterstitialPageController which will invoke
+  // SendCommand() in response to user actions taken on the interstitial page.
+  static void Install(content::RenderFrame* render_frame);
 
  private:
-  explicit SecurityInterstitialPageController(base::WeakPtr<Delegate> delegate);
+  explicit SecurityInterstitialPageController(
+      content::RenderFrame* render_frame);
   ~SecurityInterstitialPageController() override;
 
   void DontProceed();
@@ -74,7 +56,13 @@ class SecurityInterstitialPageController
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
-  base::WeakPtr<Delegate> const delegate_;
+  // RenderFrameObserver:
+  void OnDestruct() override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
+
+  // True if |this| forwards interstitial commands to the browser. This will be
+  // set to false after any navigation.
+  bool active_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialPageController);
 };

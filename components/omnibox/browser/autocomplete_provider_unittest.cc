@@ -783,6 +783,10 @@ TEST_F(AutocompleteProviderTest, Headers) {
   const int kRecentSearchesGroupId = 2;
   const char kRecentSearchesHeader[] = "Recent Searches";
 
+  // This exists to verify that we ignore group IDs without associated header
+  // text when sorting results.
+  const int kGroupIdWithoutHeaderText = 99;
+
   SearchSuggestionParser::HeadersMap headers_map = {
       {kRecommendedForYouGroupId, base::ASCIIToUTF16(kRecommendedForYouHeader)},
       {kRecentSearchesGroupId, base::ASCIIToUTF16(kRecentSearchesHeader)}};
@@ -820,6 +824,8 @@ TEST_F(AutocompleteProviderTest, Headers) {
                                     {base::nullopt},
                                 }};
     UpdateResultsWithHeaderTestData(test_data);
+
+    // Verifies that matches with group IDs sink to the bottom.
     EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
     EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
     EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());
@@ -828,16 +834,18 @@ TEST_F(AutocompleteProviderTest, Headers) {
     EXPECT_EQ(kRecommendedForYouGroupId,
               result_.match_at(4)->suggestion_group_id.value());
   }
+
   {
     HeaderTestData test_data = {headers_map,
-                                {
-                                    {kRecentSearchesGroupId},
-                                    {kRecommendedForYouGroupId},
-                                    {base::nullopt},
-                                    {base::nullopt},
-                                    {base::nullopt},
-                                }};
+                                {{kGroupIdWithoutHeaderText},
+                                 {kRecentSearchesGroupId},
+                                 {kRecommendedForYouGroupId},
+                                 {kGroupIdWithoutHeaderText},
+                                 {kGroupIdWithoutHeaderText}}};
     UpdateResultsWithHeaderTestData(test_data);
+
+    // Verifies that group IDs without associated header text are stripped out,
+    // and those matches float to the top.
     EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
     EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
     EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());

@@ -25,11 +25,15 @@ constexpr int kIconSize = 24;
 // Top padding of the image icon to the top of the item view.
 constexpr int kIconTopPadding = 17;
 
-// Top padding of the label of title to the top of the item view.
-constexpr int kTitleTopPadding = 52;
+// The distance from one line title's bottom to the top of the item view.
+constexpr int kTitleTopPaddingIncludesOneLineHeight =
+    kIconTopPadding + kIconSize + 22;
 
 // The amount of rounding applied to the corners of the focused menu item.
 constexpr int kFocusedItemRoundRectRadiusDp = 8;
+
+// Line height of the label.
+constexpr int kLineHeight = 20;
 
 }  // namespace
 
@@ -55,6 +59,10 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
       AshColorProvider::ContentLayerType::kTextColorPrimary,
       kPowerButtonMenuItemTitleColor));
   title_->SetText(title_text);
+  title_->SetVerticalAlignment(gfx::ALIGN_TOP);
+  title_->SetLineHeight(kLineHeight);
+  title_->SetMultiLine(true);
+  title_->SetMaxLines(2);
   AddChildView(title_);
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
   GetViewAccessibility().OverrideName(title_->GetText());
@@ -78,11 +86,10 @@ void PowerButtonMenuItemView::Layout() {
   icon_rect.set_y(kIconTopPadding);
   icon_view_->SetBoundsRect(icon_rect);
 
-  gfx::Rect title_rect(rect);
-  title_rect.ClampToCenteredSize(
-      gfx::Size(kMenuItemWidth, title_->font_list().GetHeight()));
-  title_rect.set_y(kTitleTopPadding);
-  title_->SetBoundsRect(title_rect);
+  const int kTitleTopPadding =
+      kTitleTopPaddingIncludesOneLineHeight - title_->font_list().GetHeight();
+  title_->SetBoundsRect(gfx::Rect(0, kTitleTopPadding, kMenuItemWidth,
+                                  kMenuItemHeight - kTitleTopPadding));
 }
 
 gfx::Size PowerButtonMenuItemView::CalculatePreferredSize() const {

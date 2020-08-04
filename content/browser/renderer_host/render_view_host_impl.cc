@@ -743,6 +743,12 @@ void RenderViewHostImpl::OnFocus() {
   delegate_->Activate();
 }
 
+void RenderViewHostImpl::BindPageBroadcast(
+    mojo::PendingAssociatedRemote<blink::mojom::PageBroadcast> page_broadcast) {
+  page_broadcast_.reset();
+  page_broadcast_.Bind(std::move(page_broadcast));
+}
+
 const mojo::AssociatedRemote<blink::mojom::PageBroadcast>&
 RenderViewHostImpl::GetAssociatedPageBroadcast() {
   return page_broadcast_;

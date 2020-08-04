@@ -181,7 +181,6 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
   auto* child = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebRemoteFrameImpl>(), scope, client, interface_registry,
       frame_token);
-  child->SetOpener(opener);
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, frame_owner_properties, frame_owner_element_type);
@@ -194,7 +193,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
   }
 
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name,
-                             window_agent_factory);
+                             window_agent_factory, opener);
   DCHECK(child->GetFrame());
   return child;
 }

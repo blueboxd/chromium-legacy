@@ -69,7 +69,7 @@ scoped_refptr<SandboxChildProcess> SetupChildProcess() {
 }
 
 base::ProcessId GetTestProcessId(const base::CommandLine& command_line) {
-  base::string16 pid_string =
+  std::wstring pid_string =
       command_line.GetSwitchValueNative(kLongRunningProcessIdSwitch);
   uint64_t pid;
   if (!base::StringToUint64(pid_string, &pid)) {
@@ -80,7 +80,7 @@ base::ProcessId GetTestProcessId(const base::CommandLine& command_line) {
 }
 
 base::FilePath GetTestFilePath(const base::CommandLine& command_line,
-                               const base::string16& file_name) {
+                               const std::wstring& file_name) {
   base::FilePath path =
       command_line.GetSwitchValuePath(kTempDirectoryPathSwitch);
   if (path.empty()) {
@@ -92,7 +92,7 @@ base::FilePath GetTestFilePath(const base::CommandLine& command_line,
 
 WStringEmbeddedNulls GetTestRegistryKeyPath(
     const base::CommandLine& command_line) {
-  base::string16 path = command_line.GetSwitchValueNative(kTempRegistryKeyPath);
+  std::wstring path = command_line.GetSwitchValueNative(kTempRegistryKeyPath);
   if (path.empty()) {
     LOG(ERROR) << "Missing temp registry key path switch";
     return WStringEmbeddedNulls();
@@ -590,7 +590,7 @@ MULTIPROCESS_TEST_MAIN(DeleteService) {
   scoped_refptr<CleanerEngineRequestsProxy> proxy(
       child_process->GetCleanerEngineRequestsProxy());
 
-  base::string16 service_name =
+  std::wstring service_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           kServiceNameSwitch);
   CHECK(!service_name.empty());
@@ -609,7 +609,7 @@ MULTIPROCESS_TEST_MAIN(DeleteServiceNoHang) {
       child_process->GetCleanerEngineRequestsProxy());
   child_process->UnbindRequestsRemotes();
 
-  base::string16 service_name =
+  std::wstring service_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           kServiceNameSwitch);
   CHECK(!service_name.empty());
@@ -664,7 +664,7 @@ class CleanerEngineRequestsProxyTerminateTest
     test_process_ = LongRunningProcess(/*command_line=*/nullptr);
     ASSERT_TRUE(test_process_.IsValid());
 
-    base::string16 switch_str = base::NumberToWString(test_process_.Pid());
+    std::wstring switch_str = base::NumberToWString(test_process_.Pid());
     parent_process_->AppendSwitchNative(kLongRunningProcessIdSwitch,
                                         switch_str);
   }

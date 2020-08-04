@@ -65,7 +65,7 @@ NtRegistryParamError ValidateNtRegistryKey(
 
 // Format a native registry key, value or value name (which may contain
 // embedded NULLs) for logging.
-base::string16 FormatNtRegistryMemberForLogging(
+std::wstring FormatNtRegistryMemberForLogging(
     const chrome_cleaner::WStringEmbeddedNulls& key);
 
 // Format NtRegistryParamError and write it to a stream for logging.

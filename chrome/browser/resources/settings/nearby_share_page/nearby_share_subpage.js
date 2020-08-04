@@ -7,7 +7,6 @@
  * 'settings-nearby-share-subpage' is the settings subpage for managing the
  * Nearby Share feature.
  */
-
 Polymer({
   is: 'settings-nearby-share-subpage',
 
@@ -28,6 +27,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {boolean} */
+    showDataUsageDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
@@ -41,14 +46,17 @@ Polymer({
     event.stopPropagation();
   },
 
-  /**
-   * @private
-   */
+  /** @private */
   onDeviceNameTap_() {
     if (this.showDeviceNameDialog_) {
       return;
     }
     this.showDeviceNameDialog_ = true;
+  },
+
+  /** @private */
+  onDataUsageTap_() {
+    this.showDataUsageDialog_ = true;
   },
 
   /**
@@ -57,6 +65,14 @@ Polymer({
    */
   onDeviceNameDialogClose_(event) {
     this.showDeviceNameDialog_ = false;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onDataUsageDialogClose_(event) {
+    this.showDataUsageDialog_ = false;
   },
 
   /**
@@ -77,5 +93,56 @@ Polymer({
    */
   getEditNameButtonAriaDescription_(name) {
     return this.i18n('nearbyShareDeviceNameAriaDescription', name);
+  },
+
+  /**
+   *    * @param {string} dataUsageValue enum value of data usage setting.
+   *       * @return {string} localized string
+   *          * @private
+   *             */
+  getDataUsageLabel_(dataUsageValue) {
+    if (dataUsageStringToEnum(dataUsageValue) === NearbyShareDataUsage.ONLINE) {
+      return this.i18n('nearbyShareDataUsageDataLabel');
+    } else if (
+        dataUsageStringToEnum(dataUsageValue) ===
+        NearbyShareDataUsage.OFFLINE) {
+      return this.i18n('nearbyShareDataUsageOfflineLabel');
+    } else {
+      return this.i18n('nearbyShareDataUsageWifiOnlyLabel');
+    }
+  },
+
+  /**
+   *    * @param {string} dataUsageValue enum value of data usage setting.
+   *       * @return {string} localized string
+   *          * @private
+   *             */
+  getDataUsageSubLabel_(dataUsageValue) {
+    if (dataUsageStringToEnum(dataUsageValue) === NearbyShareDataUsage.ONLINE) {
+      return this.i18n('nearbyShareDataUsageDataDescription');
+    } else if (
+        dataUsageStringToEnum(dataUsageValue) ===
+        NearbyShareDataUsage.OFFLINE) {
+      return this.i18n('nearbyShareDataUsageOfflineDescription');
+    } else {
+      return this.i18n('nearbyShareDataUsageWifiOnlyDescription');
+    }
+  },
+
+  /**
+   *    * @param {string} dataUsageValue enum value of data usage setting.
+   *       * @return {string} localized string
+   *          * @private
+   *             */
+  getEditDataUsageButtonAriaDescription_(dataUsageValue) {
+    if (dataUsageStringToEnum(dataUsageValue) === NearbyShareDataUsage.ONLINE) {
+      return this.i18n('nearbyShareDataUsageDataEditButtonDescription');
+    } else if (
+        dataUsageStringToEnum(dataUsageValue) ===
+        NearbyShareDataUsage.OFFLINE) {
+      return this.i18n('nearbyShareDataUsageOfflineEditButtonDescription');
+    } else {
+      return this.i18n('nearbyShareDataUsageWifiOnlyEditButtonDescription');
+    }
   },
 });

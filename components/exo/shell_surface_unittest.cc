@@ -13,6 +13,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
@@ -34,6 +35,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
@@ -1097,6 +1099,63 @@ TEST_F(ShellSurfaceTest, SkipImeProcessingPropagateToSurface) {
   window->SetProperty(aura::client::kSkipImeProcessing, true);
   EXPECT_TRUE(window->GetProperty(aura::client::kSkipImeProcessing));
   EXPECT_TRUE(surface->window()->GetProperty(aura::client::kSkipImeProcessing));
+}
+
+TEST_F(ShellSurfaceTest, NotifyLeaveEnter) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  auto func = [](int64_t* old_display_id, int64_t* new_display_id,
+                 int64_t old_id, int64_t new_id) {
+    DCHECK_EQ(0, *old_display_id);
+    DCHECK_EQ(0, *new_display_id);
+    *old_display_id = old_id;
+    *new_display_id = new_id;
+  };
+
+  int64_t old_display_id = 0, new_display_id = 0;
+
+  surface->set_leave_enter_callback(
+      base::BindRepeating(func, &old_display_id, &new_display_id));
+  ;
+  // Creating a new shell surface should notify on which display
+  // it is created.
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(display::kInvalidDisplayId, old_display_id);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+            new_display_id);
+
+  // Attaching a 2nd display should not change where the surface
+  // is located.
+  old_display_id = 0;
+  new_display_id = 0;
+  UpdateDisplay("800x600, 800x600");
+  EXPECT_EQ(0, old_display_id);
+  EXPECT_EQ(0, new_display_id);
+
+  // Move the window to 2nd display.
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(1000, 0, 256, 256));
+
+  int64_t secondary_id =
+      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+          .GetSecondaryDisplay()
+          .id();
+
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+            old_display_id);
+  EXPECT_EQ(secondary_id, new_display_id);
+
+  // Disconnect the display the surface is currently on.
+  old_display_id = 0;
+  new_display_id = 0;
+  UpdateDisplay("800x600");
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+            new_display_id);
+  EXPECT_EQ(secondary_id, old_display_id);
 }
 
 }  // namespace exo

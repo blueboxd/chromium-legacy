@@ -32,10 +32,13 @@ namespace content {
 using DatabaseStatus = storage::mojom::ServiceWorkerDatabaseStatus;
 using RegistrationData = storage::mojom::ServiceWorkerRegistrationDataPtr;
 using ResourceRecord = storage::mojom::ServiceWorkerResourceRecordPtr;
-using FindRegistrationResult =
-    storage::mojom::ServiceWorkerFindRegistrationResultPtr;
 
 namespace {
+
+struct FindRegistrationResult {
+  DatabaseStatus status;
+  storage::mojom::ServiceWorkerFindRegistrationResultPtr entry;
+};
 
 struct ReadResponseHeadResult {
   int status;
@@ -50,7 +53,7 @@ struct ReadDataResult {
 
 struct GetRegistrationsForOriginResult {
   DatabaseStatus status;
-  std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+  std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>
       registrations;
 };
 
@@ -208,10 +211,13 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     base::RunLoop loop;
     storage()->FindRegistrationForClientUrl(
         client_url,
-        base::BindLambdaForTesting([&](FindRegistrationResult result) {
-          return_value = std::move(result);
-          loop.Quit();
-        }));
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                storage::mojom::ServiceWorkerFindRegistrationResultPtr entry) {
+              return_value.status = status;
+              return_value.entry = std::move(entry);
+              loop.Quit();
+            }));
     loop.Run();
     return return_value;
   }
@@ -220,10 +226,14 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     FindRegistrationResult return_value;
     base::RunLoop loop;
     storage()->FindRegistrationForScope(
-        scope, base::BindLambdaForTesting([&](FindRegistrationResult result) {
-          return_value = std::move(result);
-          loop.Quit();
-        }));
+        scope,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                storage::mojom::ServiceWorkerFindRegistrationResultPtr entry) {
+              return_value.status = status;
+              return_value.entry = std::move(entry);
+              loop.Quit();
+            }));
     loop.Run();
     return return_value;
   }
@@ -235,10 +245,13 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     base::RunLoop loop;
     storage()->FindRegistrationForId(
         registration_id, origin,
-        base::BindLambdaForTesting([&](FindRegistrationResult result) {
-          return_value = std::move(result);
-          loop.Quit();
-        }));
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                storage::mojom::ServiceWorkerFindRegistrationResultPtr entry) {
+              return_value.status = status;
+              return_value.entry = std::move(entry);
+              loop.Quit();
+            }));
     loop.Run();
     return return_value;
   }
@@ -252,7 +265,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
         base::BindLambdaForTesting(
             [&](DatabaseStatus status,
                 std::vector<
-                    storage::mojom::SerializedServiceWorkerRegistrationPtr>
+                    storage::mojom::ServiceWorkerFindRegistrationResultPtr>
                     registrations) {
               result.status = status;
               result.registrations = std::move(registrations);
@@ -687,24 +700,24 @@ TEST_F(ServiceWorkerStorageControlImplTest, FindRegistration_NoRegistration) {
 
   {
     FindRegistrationResult result = FindRegistrationForClientUrl(kClientUrl);
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
   }
 
   {
     FindRegistrationResult result = FindRegistrationForScope(kScope);
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
   }
 
   {
     FindRegistrationResult result =
         FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
   }
 
   {
     FindRegistrationResult result =
         FindRegistrationForId(kRegistrationId, base::nullopt);
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
   }
 }
 
@@ -748,21 +761,21 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
   // Find the registration. Find operations should succeed.
   {
     FindRegistrationResult result = FindRegistrationForClientUrl(kClientUrl);
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_EQ(result->registration->registration_id, kRegistrationId);
-    EXPECT_EQ(result->registration->scope, kScope);
-    EXPECT_EQ(result->registration->script, kScriptUrl);
-    EXPECT_EQ(result->registration->version_id, kVersionId);
-    EXPECT_EQ(result->registration->resources_total_size_bytes,
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.entry->registration->registration_id, kRegistrationId);
+    EXPECT_EQ(result.entry->registration->scope, kScope);
+    EXPECT_EQ(result.entry->registration->script, kScriptUrl);
+    EXPECT_EQ(result.entry->registration->version_id, kVersionId);
+    EXPECT_EQ(result.entry->registration->resources_total_size_bytes,
               resources_total_size_bytes);
-    EXPECT_EQ(result->resources.size(), 1UL);
+    EXPECT_EQ(result.entry->resources.size(), 1UL);
 
     result = FindRegistrationForScope(kScope);
-    EXPECT_EQ(result->status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.status, DatabaseStatus::kOk);
     result = FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
-    EXPECT_EQ(result->status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.status, DatabaseStatus::kOk);
     result = FindRegistrationForId(kRegistrationId, base::nullopt);
-    EXPECT_EQ(result->status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.status, DatabaseStatus::kOk);
   }
 
   // Delete the registration.
@@ -778,11 +791,11 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
   // kErrorNotFound.
   {
     FindRegistrationResult result = FindRegistrationForClientUrl(kClientUrl);
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
     result = FindRegistrationForScope(kScope);
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
     result = FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
-    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(result.status, DatabaseStatus::kErrorNotFound);
   }
 }
 
@@ -806,8 +819,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateToActiveState) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_FALSE(result->registration->is_active);
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_FALSE(result.entry->registration->is_active);
   }
 
   // Set the registration is active in storage.
@@ -818,8 +831,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateToActiveState) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_TRUE(result->registration->is_active);
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_TRUE(result.entry->registration->is_active);
   }
 }
 
@@ -843,8 +856,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateLastUpdateCheckTime) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_EQ(result->registration->last_update_check, base::Time());
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.entry->registration->last_update_check, base::Time());
   }
 
   // Set the last update check time.
@@ -856,8 +869,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateLastUpdateCheckTime) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_EQ(result->registration->last_update_check, now);
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.entry->registration->last_update_check, now);
   }
 }
 
@@ -881,9 +894,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, Update) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_FALSE(result->registration->navigation_preload_state->enabled);
-    EXPECT_EQ(result->registration->navigation_preload_state->header, "true");
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_FALSE(result.entry->registration->navigation_preload_state->enabled);
+    EXPECT_EQ(result.entry->registration->navigation_preload_state->header,
+              "true");
   }
 
   // Update navigation preload fields.
@@ -899,9 +913,9 @@ TEST_F(ServiceWorkerStorageControlImplTest, Update) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    EXPECT_TRUE(result->registration->navigation_preload_state->enabled);
-    EXPECT_EQ(result->registration->navigation_preload_state->header,
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_TRUE(result.entry->registration->navigation_preload_state->enabled);
+    EXPECT_EQ(result.entry->registration->navigation_preload_state->header,
               header_value);
   }
 }
@@ -936,7 +950,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
   // Get registrations for the origin.
   {
     const url::Origin origin = url::Origin::Create(kScope1);
-    std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+    std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>
         registrations;
 
     GetRegistrationsForOriginResult result = GetRegistrationsForOrigin(origin);
@@ -944,10 +958,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
     EXPECT_EQ(result.registrations.size(), 2UL);
 
     for (auto& registration : result.registrations) {
-      EXPECT_EQ(registration->registration_data->scope.GetOrigin(),
-                origin.GetURL());
-      EXPECT_EQ(registration->registration_data->resources_total_size_bytes,
+      EXPECT_EQ(registration->registration->scope.GetOrigin(), origin.GetURL());
+      EXPECT_EQ(registration->registration->resources_total_size_bytes,
                 kScriptSize);
+      EXPECT_TRUE(registration->version_reference);
     }
   }
 
@@ -956,7 +970,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
   {
     const url::Origin origin =
         url::Origin::Create(GURL("https://www.example.test/"));
-    std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+    std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>
         registrations;
 
     GetRegistrationsForOriginResult result = GetRegistrationsForOrigin(origin);
@@ -1433,11 +1447,11 @@ TEST_F(ServiceWorkerStorageControlImplTest, ApplyPolicyUpdates) {
   RestartStorage();
   {
     FindRegistrationResult result = FindRegistrationForScope(kScope1);
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
   }
   {
     FindRegistrationResult result = FindRegistrationForScope(kScope2);
-    ASSERT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+    ASSERT_EQ(result.status, DatabaseStatus::kErrorNotFound);
   }
 }
 
@@ -1477,8 +1491,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
       StoreRegistration(std::move(registration_data), std::move(resources));
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
-  // Create two references, one from GetNewVersionId() and the other from
-  // FindRegistrationForId().
+  // Create three reference from 1. GetNewVersionId(), 2.
+  // FindRegistrationForId(), and 3. GetRegistrationsForOrigin().
   mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> reference1;
   ASSERT_TRUE(new_version_id_result.reference);
   reference1.Bind(std::move(new_version_id_result.reference));
@@ -1487,9 +1501,19 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
   {
     FindRegistrationResult result =
         FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    ASSERT_TRUE(result->version_reference);
-    reference2.Bind(std::move(result->version_reference));
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    ASSERT_TRUE(result.entry->version_reference);
+    reference2.Bind(std::move(result.entry->version_reference));
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> reference3;
+  {
+    GetRegistrationsForOriginResult result =
+        GetRegistrationsForOrigin(url::Origin::Create(kScope));
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    ASSERT_EQ(result.registrations.size(), 1UL);
+    ASSERT_TRUE(result.registrations[0]->version_reference);
+    reference3.Bind(std::move(result.registrations[0]->version_reference));
   }
 
   // Drop the first reference and delete the registration.
@@ -1504,7 +1528,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
   // TODO(bashi): Don't rely on RunAllTasksUntilIdle()?
   content::RunAllTasksUntilIdle();
 
-  // Resources shouldn't be purged because there is an active reference.
+  // Resources shouldn't be purged because there are two active references.
   {
     ReadDataResult read_resource_result1 =
         ReadResource(resource_id1, resource_data1.size());
@@ -1520,6 +1544,24 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
 
   // Drop the second reference.
   reference2.reset();
+  content::RunAllTasksUntilIdle();
+
+  // Resources shouldn't be purged because there is an active reference yet.
+  {
+    ReadDataResult read_resource_result1 =
+        ReadResource(resource_id1, resource_data1.size());
+    ASSERT_EQ(read_resource_result1.status,
+              static_cast<int32_t>(resource_data1.size()));
+    EXPECT_EQ(read_resource_result1.data, resource_data1);
+    ReadDataResult read_resource_result2 =
+        ReadResource(resource_id2, resource_data2.size());
+    ASSERT_EQ(read_resource_result2.status,
+              static_cast<int32_t>(resource_data2.size()));
+    EXPECT_EQ(read_resource_result2.data, resource_data2);
+  }
+
+  // Drop the third reference.
+  reference3.reset();
   content::RunAllTasksUntilIdle();
 
   // Resources should have been purged.

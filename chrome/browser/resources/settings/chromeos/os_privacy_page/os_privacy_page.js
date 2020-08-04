@@ -7,8 +7,6 @@
  * 'os-settings-privacy-page' is the settings page containing privacy and
  * security settings.
  */
-(function() {
-'use strict';
 
 Polymer({
   is: 'os-settings-privacy-page',
@@ -35,4 +33,3 @@ Polymer({
   },
 
 });
-})();

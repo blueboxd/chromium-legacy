@@ -485,6 +485,11 @@ void TestingBrowserProcess::ShutdownBrowserPolicyConnector() {
   browser_policy_connector_.reset();
 }
 
+TestingBrowserProcessPlatformPart*
+TestingBrowserProcess::GetTestPlatformPart() {
+  return platform_part_.get();
+}
+
 void TestingBrowserProcess::SetSafeBrowsingService(
     safe_browsing::SafeBrowsingService* sb_service) {
   sb_service_ = sb_service;

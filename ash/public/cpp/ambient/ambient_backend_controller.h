@@ -67,7 +67,7 @@ struct ASH_PUBLIC_EXPORT ScreenUpdate {
   // Fahrenheit. Will be a null-opt if:
   // 1. The weather setting was disabled in the request, or
   // 2. Fatal errors, such as response parsing failure, happened during the
-  // process, and a dummy |ScreenUpdate| instance was returned to indicate
+  // process, and a default |ScreenUpdate| instance was returned to indicate
   // the error.
   base::Optional<WeatherInfo> weather_info;
 };
@@ -96,7 +96,7 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   // server.
   // Upon completion, |callback| is run with the parsed |ScreenUpdate|. If any
   // errors happened during the process, e.g. failed to fetch access token, a
-  // dummy instance will be returned.
+  // default instance will be returned.
   virtual void FetchScreenUpdateInfo(
       int num_topics,
       OnScreenUpdateInfoFetchedCallback callback) = 0;

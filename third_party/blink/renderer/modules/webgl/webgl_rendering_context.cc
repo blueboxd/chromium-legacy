@@ -209,7 +209,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension(webgl_depth_texture_, kApprovedExtension, kBothPrefixes);
   RegisterExtension(webgl_draw_buffers_);
   RegisterExtension(webgl_lose_context_, kApprovedExtension, kBothPrefixes);
-  RegisterExtension(webgl_multi_draw_, kDraftExtension);
+  RegisterExtension(webgl_multi_draw_);
   RegisterExtension(webgl_video_texture_, kDraftExtension);
 }
 

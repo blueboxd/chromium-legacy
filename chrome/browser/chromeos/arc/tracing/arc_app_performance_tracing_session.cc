@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_session.h"
 
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
@@ -132,7 +133,7 @@ void ArcAppPerformanceTracingSession::HandleCommit(
 
   if (detect_idles_) {
     const uint64_t display_frames_passed =
-        (frame_delta + kTargetFrameTime / 2).IntDiv(kTargetFrameTime);
+        base::ClampRound<uint64_t>(frame_delta.FltDiv(kTargetFrameTime));
     if (display_frames_passed >= kIdleThresholdFrames) {
       // Idle is detected, try the next time.
       Stop();
@@ -174,7 +175,7 @@ void ArcAppPerformanceTracingSession::Analyze(base::TimeDelta tracing_period) {
     // fractional part of target frame interval |kTargetFrameTime| and is less
     // or equal half of it.
     const uint64_t display_frames_passed =
-        (frame_delta + kTargetFrameTime / 2).IntDiv(kTargetFrameTime);
+        base::ClampRound<uint64_t>(frame_delta.FltDiv(kTargetFrameTime));
     // Calculate difference from the ideal commit time, that should happen with
     // equal delay for each display frame.
     const base::TimeDelta vsync_error =

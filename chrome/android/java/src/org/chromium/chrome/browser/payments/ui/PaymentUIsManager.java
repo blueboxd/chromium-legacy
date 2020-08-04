@@ -4,17 +4,23 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import android.os.Handler;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentAppCreator;
 import org.chromium.chrome.browser.payments.AutofillPaymentAppFactory;
 import org.chromium.chrome.browser.payments.CardEditor;
+import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
@@ -30,10 +36,12 @@ import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestLifecycleObserver;
 import org.chromium.components.payments.PaymentRequestParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
+import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.url.GURL;
 
@@ -42,9 +50,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -54,6 +64,10 @@ import java.util.Set;
 public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Observer,
                                           PaymentRequestLifecycleObserver,
                                           PaymentHandlerUiObserver {
+    private final boolean mIsOffTheRecord;
+    private final Handler mHandler = new Handler();
+    private final Queue<Runnable> mRetryQueue = new LinkedList<>();
+    private ContactEditor mContactEditor;
     private PaymentHandlerCoordinator mPaymentHandlerUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private SectionInformation mUiShippingOptions;
@@ -72,11 +86,18 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
     private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
-
+    private boolean mHaveRequestedAutofillData = true;
+    private List<AutofillProfile> mAutofillProfiles;
     private Boolean mCanUserAddCreditCard;
 
     /** The delegate of this class. */
     public interface Delegate {
+        /** Dispatch the payer detail change event if needed. */
+        void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail);
+        /** Record the show event to the journey logger and record the transaction amount. */
+        void recordShowEventAndTransactionAmount();
+        /** Start the normalization of the new shipping address. */
+        void startShippingAddressChangeNormalization(AutofillAddress editedAddress);
     }
 
     /**
@@ -154,6 +175,7 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
 
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
         mCurrencyFormatterMap = new HashMap<>();
+        mIsOffTheRecord = isOffTheRecord;
     }
 
     /**
@@ -285,6 +307,26 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         mPaymentInformationCallback = paymentInformationCallback;
     }
 
+    /** Get the contact editor on PaymentRequest UI. */
+    public ContactEditor getContactEditor() {
+        return mContactEditor;
+    }
+
+    /** Get the retry queue. */
+    public Queue<Runnable> getRetryQueue() {
+        return mRetryQueue;
+    }
+
+    /** @return The autofill profiles. */
+    public List<AutofillProfile> getAutofillProfiles() {
+        return mAutofillProfiles;
+    }
+
+    /** @return Whether PaymentRequestUI has requested autofill data. */
+    public boolean haveRequestedAutofillData() {
+        return mHaveRequestedAutofillData;
+    }
+
     // Implement SettingsAutofillAndPaymentsObserver.Observer:
     @Override
     public void onAddressUpdated(AutofillAddress address) {
@@ -366,6 +408,45 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         mCanUserAddCreditCard = mMerchantSupportsAutofillCards
                 && !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
                         PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT);
+
+        if (PaymentOptionsUtils.requestAnyInformation(mParams.getPaymentOptions())) {
+            mAutofillProfiles = Collections.unmodifiableList(
+                    PersonalDataManager.getInstance().getProfilesToSuggest(
+                            false /* includeNameInLabel */));
+        }
+
+        if (PaymentOptionsUtils.requestShipping(mParams.getPaymentOptions())) {
+            boolean haveCompleteShippingAddress = false;
+            for (int i = 0; i < mAutofillProfiles.size(); i++) {
+                if (AutofillAddress.checkAddressCompletionStatus(
+                            mAutofillProfiles.get(i), AutofillAddress.CompletenessCheckType.NORMAL)
+                        == AutofillAddress.CompletionStatus.COMPLETE) {
+                    haveCompleteShippingAddress = true;
+                    break;
+                }
+            }
+            mHaveRequestedAutofillData &= haveCompleteShippingAddress;
+        }
+
+        PaymentOptions options = mParams.getPaymentOptions();
+        if (PaymentOptionsUtils.requestAnyContactInformation(mParams.getPaymentOptions())) {
+            // Do not persist changes on disk in OffTheRecord mode.
+            mContactEditor = new ContactEditor(PaymentOptionsUtils.requestPayerName(options),
+                    PaymentOptionsUtils.requestPayerPhone(options),
+                    PaymentOptionsUtils.requestPayerEmail(options),
+                    /*saveToDisk=*/!mIsOffTheRecord);
+            boolean haveCompleteContactInfo = false;
+            for (int i = 0; i < getAutofillProfiles().size(); i++) {
+                AutofillProfile profile = getAutofillProfiles().get(i);
+                if (getContactEditor().checkContactCompletionStatus(profile.getFullName(),
+                            profile.getPhoneNumber(), profile.getEmailAddress())
+                        == ContactEditor.COMPLETE) {
+                    haveCompleteContactInfo = true;
+                    break;
+                }
+            }
+            mHaveRequestedAutofillData &= haveCompleteContactInfo;
+        }
     }
 
     /** @return The selected payment app type. */
@@ -676,5 +757,101 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
                 new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
+    }
+
+    /**
+     * Edit the contact information on the PaymentRequest UI.
+     * @param toEdit The information to edit.
+     **/
+    public void editContactOnPaymentRequestUI(final AutofillContact toEdit) {
+        mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
+            @Override
+            public void onResult(AutofillContact editedContact) {
+                if (mPaymentRequestUI == null) return;
+
+                if (editedContact != null) {
+                    mContactEditor.setPayerErrors(null);
+
+                    // A partial or complete contact came back from the editor (could have been from
+                    // adding/editing or cancelling out of the edit flow).
+                    if (!editedContact.isComplete()) {
+                        // If the contact is not complete according to the requirements of the flow,
+                        // unselect it (editor can return incomplete information when cancelled).
+                        mContactSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
+                    } else if (toEdit == null) {
+                        // Contact is complete and we were in the "Add flow": add an item to the
+                        // list.
+                        mContactSection.addAndSelectItem(editedContact);
+                    } else {
+                        mDelegate.dispatchPayerDetailChangeEventIfNeeded(
+                                editedContact.toPayerDetail());
+                    }
+                    // If contact is complete and (toEdit != null), no action needed: the contact
+                    // was already selected in the UI.
+                }
+                // If |editedContact| is null, the user has cancelled out of the "Add flow". No
+                // action to take (if a contact was selected in the UI, it will stay selected).
+
+                mPaymentRequestUI.updateSection(
+                        PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+
+                if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
+            }
+        });
+    }
+
+    /**
+     * Edit the address on the PaymentRequest UI.
+     * @param toEdit The address to edit.
+     */
+    public void editAddress(final AutofillAddress toEdit) {
+        mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
+            @Override
+            public void onResult(AutofillAddress editedAddress) {
+                if (mPaymentRequestUI == null) return;
+
+                if (editedAddress != null) {
+                    mAddressEditor.setAddressErrors(null);
+
+                    // Sets or updates the shipping address label.
+                    editedAddress.setShippingAddressLabelWithCountry();
+
+                    mCardEditor.updateBillingAddressIfComplete(editedAddress);
+
+                    // A partial or complete address came back from the editor (could have been from
+                    // adding/editing or cancelling out of the edit flow).
+                    if (!editedAddress.isComplete()) {
+                        // If the address is not complete, unselect it (editor can return incomplete
+                        // information when cancelled).
+                        mShippingAddressesSection.setSelectedItemIndex(
+                                SectionInformation.NO_SELECTION);
+                        providePaymentInformationToPaymentRequestUI();
+                        mDelegate.recordShowEventAndTransactionAmount();
+                    } else {
+                        if (toEdit == null) {
+                            // Address is complete and user was in the "Add flow": add an item to
+                            // the list.
+                            mShippingAddressesSection.addAndSelectItem(editedAddress);
+                        }
+
+                        if (mContactSection != null) {
+                            // Update |mContactSection| with the new/edited
+                            // address, which will update an existing item or add a new one to the
+                            // end of the list.
+                            mContactSection.addOrUpdateWithAutofillAddress(editedAddress);
+                            mPaymentRequestUI.updateSection(
+                                    PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+                        }
+
+                        mDelegate.startShippingAddressChangeNormalization(editedAddress);
+                    }
+                } else {
+                    providePaymentInformationToPaymentRequestUI();
+                    mDelegate.recordShowEventAndTransactionAmount();
+                }
+
+                if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
+            }
+        });
     }
 }

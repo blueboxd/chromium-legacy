@@ -124,7 +124,10 @@ if (is_android) {
 mojom("common_mojom") {
   disable_variants = true
 
-  sources = [ "common/renderer_configuration.mojom" ]
+  sources = [
+    "common/error_page_helper.mojom",
+    "common/renderer_configuration.mojom",
+  ]
   deps = [ "//components/content_settings/core/common:mojo_bindings" ]
 }
 

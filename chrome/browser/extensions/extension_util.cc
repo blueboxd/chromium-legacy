@@ -76,11 +76,21 @@ std::string ReloadExtensionIfEnabled(const std::string& extension_id,
 
 }  // namespace
 
-bool SiteHasIsolatedStorage(const GURL& extension_site_url,
-                            content::BrowserContext* context) {
-  const Extension* extension = ExtensionRegistry::Get(context)
-                                   ->enabled_extensions()
-                                   .GetExtensionOrAppByURL(extension_site_url);
+bool IsExtensionSiteWithIsolatedStorage(const GURL& site_url,
+                                        content::BrowserContext* context) {
+  if (!site_url.SchemeIs(extensions::kExtensionScheme))
+    return false;
+
+  // The host in an extension site URL is the extension_id.
+  DCHECK(site_url.has_host());
+  return HasIsolatedStorage(site_url.host(), context);
+}
+
+bool HasIsolatedStorage(const std::string& extension_id,
+                        content::BrowserContext* context) {
+  const Extension* extension =
+      ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
+          extension_id);
 
 #if defined(OS_CHROMEOS)
   const bool is_policy_extension =
@@ -93,12 +103,6 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
 #endif
 
   return extension && AppIsolationInfo::HasIsolatedStorage(extension);
-}
-
-bool HasIsolatedStorage(const std::string& extension_id,
-                        content::BrowserContext* context) {
-  const GURL extension_site_url = GetSiteForExtensionId(extension_id, context);
-  return SiteHasIsolatedStorage(extension_site_url, context);
 }
 
 void SetIsIncognitoEnabled(const std::string& extension_id,

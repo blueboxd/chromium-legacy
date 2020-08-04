@@ -52,6 +52,9 @@ class SurfaceDelegate {
   // Called when the surface's application wants it to be activated.
   virtual void OnActivationRequested() = 0;
 
+  // Called when the new outoupt resource is created.
+  virtual void OnNewOutputAdded() = 0;
+
  protected:
   virtual ~SurfaceDelegate() {}
 };

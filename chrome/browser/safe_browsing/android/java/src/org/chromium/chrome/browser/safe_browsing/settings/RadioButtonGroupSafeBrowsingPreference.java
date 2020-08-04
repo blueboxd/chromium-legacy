@@ -15,6 +15,8 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
+import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionAndAuxButton;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout;
@@ -52,6 +54,7 @@ public class RadioButtonGroupSafeBrowsingPreference extends Preference
     private @SafeBrowsingState int mSafeBrowsingState;
     private boolean mIsEnhancedProtectionEnabled;
     private OnSafeBrowsingModeDetailsRequested mSafeBrowsingModeDetailsRequestedListener;
+    private ManagedPreferenceDelegate mManagedPrefDelegate;
 
     public RadioButtonGroupSafeBrowsingPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -112,6 +115,16 @@ public class RadioButtonGroupSafeBrowsingPreference extends Preference
         }
         mStandardProtection.setChecked(mSafeBrowsingState == SafeBrowsingState.STANDARD_PROTECTION);
         mNoProtection.setChecked(mSafeBrowsingState == SafeBrowsingState.NO_SAFE_BROWSING);
+
+        // If Safe Browsing is managed, disable the radio button group, but keep the aux buttons
+        // enabled to disclose information.
+        if (mManagedPrefDelegate.isPreferenceClickDisabledByPolicy(this)) {
+            groupLayout.setEnabled(false);
+            if (mIsEnhancedProtectionEnabled) {
+                mEnhancedProtection.setAuxButtonEnabled(true);
+            }
+            mStandardProtection.setAuxButtonEnabled(true);
+        }
     }
 
     @Override
@@ -137,6 +150,14 @@ public class RadioButtonGroupSafeBrowsingPreference extends Preference
     public void setSafeBrowsingModeDetailsRequestedListener(
             OnSafeBrowsingModeDetailsRequested listener) {
         mSafeBrowsingModeDetailsRequestedListener = listener;
+    }
+
+    /**
+     * Sets the ManagedPreferenceDelegate which will determine whether this preference is managed.
+     */
+    public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
+        mManagedPrefDelegate = delegate;
+        ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
     }
 
     @VisibleForTesting

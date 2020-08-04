@@ -15,6 +15,8 @@ using DiscoveryOptionsPtr =
     location::nearby::connections::mojom::DiscoveryOptionsPtr;
 using EndpointDiscoveryListener =
     location::nearby::connections::mojom::EndpointDiscoveryListener;
+using ConnectionLifecycleListener =
+    location::nearby::connections::mojom::ConnectionLifecycleListener;
 
 class MockNearbyConnections : public NearbyConnectionsMojom {
  public:
@@ -33,6 +35,18 @@ class MockNearbyConnections : public NearbyConnectionsMojom {
   MOCK_METHOD(void,
               StopDiscovery,
               (StopDiscoveryCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              RequestConnection,
+              (const std::vector<uint8_t>& endpoint_info,
+               const std::string& endpoint_id,
+               mojo::PendingRemote<ConnectionLifecycleListener> listener,
+               RequestConnectionCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              DisconnectFromEndpoint,
+              (const std::string& endpoint_id,
+               DisconnectFromEndpointCallback callback),
               (override));
 };
 

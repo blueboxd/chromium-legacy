@@ -136,8 +136,8 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   void SetUp() override {
     EXPECT_CALL(mock_chrome_prompt_ipc_, MockPostPromptUserTask(_, _, _, _))
         .WillRepeatedly([](const std::vector<base::FilePath>& files_to_delete,
-                           const std::vector<base::string16>& registry_keys,
-                           const std::vector<base::string16>& extension_ids,
+                           const std::vector<std::wstring>& registry_keys,
+                           const std::vector<std::wstring>& extension_ids,
                            ChromePromptIPC::PromptUserCallback* callback) {
           std::move(*callback).Run(PromptUserResponse::ACCEPTED_WITHOUT_LOGS);
         });
@@ -190,8 +190,8 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   }
 
   void AddForcelistExtension(HKEY hkey,
-                             const base::string16& name,
-                             const base::string16& value) {
+                             const std::wstring& name,
+                             const std::wstring& value) {
     base::win::RegKey policy_key;
     ASSERT_EQ(ERROR_SUCCESS,
               policy_key.Create(hkey, kChromePoliciesForcelistKeyPath,
@@ -202,8 +202,8 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   }
 
   void AddExtensionSettingsExtension(HKEY hkey,
-                                     const base::string16& name,
-                                     const base::string16& value) {
+                                     const std::wstring& name,
+                                     const std::wstring& value) {
     base::win::RegKey settings_key;
     ASSERT_EQ(ERROR_SUCCESS,
               settings_key.Create(hkey, kExtensionSettingsPolicyPath,

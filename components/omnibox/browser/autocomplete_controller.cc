@@ -682,9 +682,7 @@ void AutocompleteController::UpdateResult(
                                                      result_);
   }
 
-  if (zero_suggest_provider_) {
-    UpdateHeaders(&result_);
-  }
+  UpdateHeaders(&result_);
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);
@@ -776,30 +774,47 @@ void AutocompleteController::UpdateAssociatedKeywords(
 void AutocompleteController::UpdateHeaders(AutocompleteResult* result) {
   DCHECK(result);
 
-  // Sets the AutocompleteResult header metadata to what the ZeroSuggestProvider
-  // has fetched. In the future, if other search suggest providers also have
-  // header metadata, we will have to update this code to merge the metadata.
-  result->set_headers_map(zero_suggest_provider_->headers_map());
-  result->set_hidden_group_ids(zero_suggest_provider_->hidden_group_ids());
+  // Currently, we only populate the AutocompleteResult's header labels from
+  // ZeroSuggestProvider. Even if another provider has header metadata, we
+  // currently ignore it. This means that as-you-type suggestions will NEVER
+  // show headers in the UI. For now, this is hacky, but intended.
+  //
+  // TODO(tommycli): Stop special casing ZeroSuggestProvider here.
+  if (zero_suggest_provider_) {
+    result->set_headers_map(zero_suggest_provider_->headers_map());
+    result->set_hidden_group_ids(zero_suggest_provider_->hidden_group_ids());
+  }
+
+  for (AutocompleteMatch& match : *result) {
+    if (match.suggestion_group_id.has_value()) {
+      // Record header data into the additional_info field for chrome://omnibox.
+      // Note, to improve debugging, we record the original group ID sent by
+      // the server before stripping empty headers.
+      int group_id = match.suggestion_group_id.value();
+      match.RecordAdditionalInfo("suggestion_group_id", group_id);
+
+      const base::string16 header = result->GetHeaderForGroupId(group_id);
+      if (!header.empty()) {
+        match.RecordAdditionalInfo("header string", base::UTF16ToUTF8(header));
+      } else {
+        // Strip all match group IDs that don't have a header string. Otherwise,
+        // these matches will be shown at the bottom with an empty header row.
+        // They should be treated as an ordinary match with no group ID.
+        match.suggestion_group_id.reset();
+      }
+    }
+  }
 
   // Move all grouped matches to the bottom while maintaining the current order.
+  //
+  // TODO(tommycli): Currently, this pushes all suggestions with group IDs to
+  // the bottom, but doesn't group them together. That could lead to some
+  // awkward interleaving of groups.
   std::stable_sort(result->begin(), result->end(),
                    [](const auto& a, const auto& b) {
                      return !a.suggestion_group_id.has_value() &&
                             b.suggestion_group_id.has_value();
                    });
-
-  // Record header data into the additional_info field for chrome://omnibox.
-  for (AutocompleteMatch& match : *result) {
-    if (match.suggestion_group_id.has_value()) {
-      int group_id = match.suggestion_group_id.value();
-      const base::string16 header = result->GetHeaderForGroupId(group_id);
-      if (!header.empty()) {
-        match.RecordAdditionalInfo("suggestion_group_id", group_id);
-        match.RecordAdditionalInfo("header string", base::UTF16ToUTF8(header));
-      }
-    }
-  }
 }
 
 void AutocompleteController::UpdateKeywordDescriptions(

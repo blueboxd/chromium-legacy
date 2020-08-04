@@ -46,6 +46,13 @@ const int kMaxMessagesInQueue = 5;
 // static
 constexpr int LeScanManagerImpl::kMaxScanResultEntries;
 
+// static
+std::unique_ptr<LeScanManager> LeScanManager::Create(
+    BluetoothManagerPlatform* bluetooth_manager,
+    bluetooth_v2_shlib::LeScannerImpl* le_scanner) {
+  return std::make_unique<LeScanManagerImpl>(le_scanner);
+}
+
 class LeScanManagerImpl::ScanHandleImpl : public LeScanManager::ScanHandle {
  public:
   explicit ScanHandleImpl(LeScanManagerImpl* manager, int32_t id)
@@ -70,9 +77,15 @@ LeScanManagerImpl::~LeScanManagerImpl() = default;
 void LeScanManagerImpl::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   io_task_runner_ = std::move(io_task_runner);
+  InitializeOnIoThread();
 }
 
 void LeScanManagerImpl::Finalize() {}
+
+void LeScanManagerImpl::InitializeOnIoThread() {
+  MAKE_SURE_IO_THREAD(InitializeOnIoThread);
+  le_scanner_->SetDelegate(this);
+}
 
 void LeScanManagerImpl::AddObserver(Observer* observer) {
   observers_->AddObserver(observer);

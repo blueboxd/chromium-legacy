@@ -6,42 +6,20 @@
 
 #include <memory>
 
+#include "chrome/test/base/test_theme_provider.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/color_utils.h"
-
-namespace base {
-class RefCountedMemory;
-}
-
-namespace gfx {
-class ImageSkia;
-}
-
-class ChromeTestWidget::StubThemeProvider : public ui::ThemeProvider {
- public:
-  StubThemeProvider() = default;
-  ~StubThemeProvider() override = default;
-
-  // ui::ThemeProvider:
-  gfx::ImageSkia* GetImageSkiaNamed(int id) const override { return nullptr; }
-  SkColor GetColor(int id) const override { return gfx::kPlaceholderColor; }
-  color_utils::HSL GetTint(int id) const override { return color_utils::HSL(); }
-  int GetDisplayProperty(int id) const override { return -1; }
-  bool ShouldUseNativeFrame() const override { return false; }
-  bool HasCustomImage(int id) const override { return false; }
-  bool HasCustomColor(int id) const override { return false; }
-  base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
-      const override {
-    return nullptr;
-  }
-};
 
 ChromeTestWidget::ChromeTestWidget()
-    : theme_provider_(std::make_unique<StubThemeProvider>()) {}
+    : theme_provider_(std::make_unique<TestThemeProvider>()) {}
 
 ChromeTestWidget::~ChromeTestWidget() = default;
 
 const ui::ThemeProvider* ChromeTestWidget::GetThemeProvider() const {
   return theme_provider_.get();
+}
+
+void ChromeTestWidget::SetThemeProvider(
+    std::unique_ptr<ui::ThemeProvider> theme_provider) {
+  theme_provider_.swap(theme_provider);
+  ThemeChanged();
 }

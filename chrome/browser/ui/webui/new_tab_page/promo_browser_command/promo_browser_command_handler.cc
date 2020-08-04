@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/new_tab_page/promo_browser_command/promo_browser_command_handler.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/promos/promo_service.h"
@@ -25,6 +27,9 @@ PromoBrowserCommandHandler::PromoBrowserCommandHandler(
     : profile_(profile),
       command_updater_(std::make_unique<CommandUpdaterImpl>(this)),
       page_handler_(this, std::move(pending_page_handler)) {
+  if (!base::FeatureList::IsEnabled(features::kEnablePromoBrowserCommands))
+    return;
+
   // Explicitly enable supported commands.
   command_updater_->UpdateCommandEnabled(
       static_cast<int>(Command::kUnknownCommand), true);

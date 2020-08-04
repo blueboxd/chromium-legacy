@@ -44,9 +44,9 @@ bool SandboxNtChangeRegistryValue(
     const chrome_cleaner::WStringEmbeddedNulls& new_value,
     const ShouldNormalizeRegistryValue& should_normalize_callback);
 
-bool SandboxDeleteService(const base::string16& name);
+bool SandboxDeleteService(const std::wstring& name);
 
-bool SandboxDeleteTask(const base::string16& name);
+bool SandboxDeleteTask(const std::wstring& name);
 
 TerminateProcessResult SandboxTerminateProcess(uint32_t process_id);
 

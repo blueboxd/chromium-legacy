@@ -130,7 +130,7 @@ Server::Server(Display* display)
       wl_display_(wl_display_create()),
       serial_tracker_(std::make_unique<SerialTracker>(wl_display_.get())) {
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
-                   kWlCompositorVersion, display_, bind_compositor);
+                   kWlCompositorVersion, this, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
 #if defined(USE_OZONE)
   wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface,
@@ -329,6 +329,14 @@ void Server::OnDisplayAdded(const display::Display& new_display) {
 void Server::OnDisplayRemoved(const display::Display& old_display) {
   DCHECK_EQ(outputs_.count(old_display.id()), 1u);
   outputs_.erase(old_display.id());
+}
+
+wl_resource* Server::GetOutputResource(wl_client* client, int64_t display_id) {
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
+  auto iter = outputs_.find(display_id);
+  if (iter == outputs_.end())
+    return nullptr;
+  return iter->second.get()->GetOutputResourceForClient(client);
 }
 
 }  // namespace wayland

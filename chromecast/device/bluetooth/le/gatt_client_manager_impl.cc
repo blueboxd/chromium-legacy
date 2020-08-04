@@ -52,6 +52,14 @@ constexpr base::TimeDelta GattClientManagerImpl::kConnectTimeout;
 constexpr base::TimeDelta GattClientManagerImpl::kDisconnectTimeout;
 constexpr base::TimeDelta GattClientManagerImpl::kReadRemoteRssiTimeout;
 
+// static
+std::unique_ptr<GattClientManager> GattClientManager::Create(
+    bluetooth_v2_shlib::GattClient* gatt_client,
+    BluetoothManagerPlatform* bluetooth_manager,
+    LeScanManager* le_scan_manager) {
+  return std::make_unique<GattClientManagerImpl>(gatt_client);
+}
+
 GattClientManagerImpl::GattClientManagerImpl(
     bluetooth_v2_shlib::GattClient* gatt_client)
     : gatt_client_(gatt_client),
@@ -67,12 +75,16 @@ GattClientManagerImpl::~GattClientManagerImpl() {}
 void GattClientManagerImpl::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   io_task_runner_ = std::move(io_task_runner);
+  InitializeOnIoThread();
+}
+
+void GattClientManagerImpl::InitializeOnIoThread() {
+  MAKE_SURE_IO_THREAD(InitializeOnIoThread);
+  gatt_client_->SetDelegate(this);
 }
 
 void GattClientManagerImpl::Finalize() {
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&GattClientManagerImpl::FinalizeOnIoThread,
-                                std::move(weak_factory_)));
+  FinalizeOnIoThread();
 }
 
 void GattClientManagerImpl::AddObserver(Observer* o) {
@@ -588,10 +600,10 @@ void GattClientManagerImpl::OnReadRemoteRssiTimeout(
   RUN_ON_IO_THREAD(OnReadRemoteRssi, addr, false /* status */, 0 /* rssi */);
 }
 
-// static
-void GattClientManagerImpl::FinalizeOnIoThread(
-    std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>> weak_factory) {
-  weak_factory->InvalidateWeakPtrs();
+void GattClientManagerImpl::FinalizeOnIoThread() {
+  MAKE_SURE_IO_THREAD(FinalizeOnIoThread);
+  weak_factory_->InvalidateWeakPtrs();
+  gatt_client_->SetDelegate(nullptr);
 }
 
 }  // namespace bluetooth

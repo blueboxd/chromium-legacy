@@ -40,6 +40,8 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -365,6 +367,18 @@ void Surface::AddSubSurface(Surface* sub_surface) {
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
   sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
   sub_surfaces_changed_ = true;
+
+  // The shell might have not be added to the root yet.
+  if (window_->GetRootWindow()) {
+    auto display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window_.get());
+    sub_surface->UpdateDisplay(display::kInvalidDisplayId, display.id());
+  }
+}
+
+void Surface::OnNewOutputAdded() {
+  if (delegate_)
+    delegate_->OnNewOutputAdded();
 }
 
 void Surface::RemoveSubSurface(Surface* sub_surface) {
@@ -598,6 +612,15 @@ void Surface::Commit() {
     delegate_->OnSurfaceCommit();
   else
     CommitSurfaceHierarchy(false);
+}
+
+void Surface::UpdateDisplay(int64_t old_display, int64_t new_display) {
+  if (!leave_enter_callback_.is_null())
+    leave_enter_callback_.Run(old_display, new_display);
+  for (const auto& sub_surface_entry : base::Reversed(sub_surfaces_)) {
+    auto* sub_surface = sub_surface_entry.first;
+    sub_surface->UpdateDisplay(old_display, new_display);
+  }
 }
 
 void Surface::CommitSurfaceHierarchy(bool synchronized) {

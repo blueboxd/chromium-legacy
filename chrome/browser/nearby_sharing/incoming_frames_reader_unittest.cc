@@ -179,46 +179,30 @@ TEST_F(IncomingFramesReaderTest, ReadSuccessful_JumbledFramesOrdering) {
   run_loop_introduction.Run();
 }
 
-TEST_F(IncomingFramesReaderTest, ReadAfterTimeout) {
+TEST_F(IncomingFramesReaderTest, ReadAfterConnectionClosed) {
   EXPECT_CALL(decoder(), DecodeFrame(testing::_, testing::_)).Times(0);
 
-  base::RunLoop run_loop_timeout;
+  base::RunLoop run_loop_before_close;
   frames_reader().ReadFrame(
       sharing::mojom::V1Frame::Tag::INTRODUCTION,
       base::BindLambdaForTesting(
           [&](base::Optional<sharing::mojom::V1FramePtr> frame) {
             EXPECT_FALSE(frame);
-            run_loop_timeout.Quit();
+            run_loop_before_close.Quit();
           }),
       kTimeout);
-  run_loop_timeout.Run();
 
-  std::vector<uint8_t> introduction_frame = GetIntroductionFrame();
-  connection().AppendReadableData(introduction_frame);
+  connection().Close();
+  run_loop_before_close.Run();
 
-  EXPECT_CALL(decoder(),
-              DecodeFrame(testing::Eq(introduction_frame), testing::_))
-      .WillOnce(testing::Invoke(
-          [&](const std::vector<uint8_t>& data,
-              MockNearbySharingDecoder::DecodeFrameCallback callback) {
-            sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_introduction(
-                sharing::mojom::IntroductionFrame::New());
-
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
-            std::move(callback).Run(std::move(mojo_frame));
-          }));
-
-  base::RunLoop run_loop;
+  base::RunLoop run_loop_after_close;
   frames_reader().ReadFrame(
       sharing::mojom::V1Frame::Tag::INTRODUCTION,
       base::BindLambdaForTesting(
           [&](base::Optional<sharing::mojom::V1FramePtr> frame) {
-            ExpectIntroductionFrame(frame);
-            run_loop.Quit();
+            EXPECT_FALSE(frame);
+            run_loop_after_close.Quit();
           }),
       kTimeout);
-  run_loop.Run();
+  run_loop_after_close.Run();
 }

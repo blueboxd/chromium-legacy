@@ -141,7 +141,7 @@ bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
   return data_.cfFormat < other.data_.cfFormat;
 }
 
-bool ClipboardFormatType::Equals(const ClipboardFormatType& other) const {
+bool ClipboardFormatType::operator==(const ClipboardFormatType& other) const {
   return data_.cfFormat == other.data_.cfFormat;
 }
 

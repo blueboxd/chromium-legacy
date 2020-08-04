@@ -137,6 +137,11 @@ class TrafficAnnotationAuditor {
     extracted_calls_ = calls;
   }
 
+  void SetGroupedAnnotationUniqueIDsForTesting(
+      std::set<std::string>& annotation_unique_ids) {
+    grouped_annotation_unique_ids_ = annotation_unique_ids;
+  }
+
   const std::vector<CallInstance>& extracted_calls() const {
     return extracted_calls_;
   }
@@ -159,10 +164,17 @@ class TrafficAnnotationAuditor {
 
   std::unique_ptr<google::protobuf::Message> CreateAnnotationProto();
 
+  // Produces the set of annotation unique_ids that appear in grouping.xml
+  // Returns false if grouping.xml cannot be loaded.
+  bool GetGroupingAnnotationsUniqueIDs(
+      base::FilePath grouping_xml_path,
+      std::set<std::string>* annotation_unique_ids) const;
+
  private:
   const base::FilePath source_path_;
   const base::FilePath build_path_;
   std::vector<std::string> path_filters_;
+  std::set<std::string> grouped_annotation_unique_ids_;
 
   // Variables used to dynamic the NetworkTrafficAnnotation proto.
   std::unique_ptr<google::protobuf::DescriptorPool> descriptor_pool_;

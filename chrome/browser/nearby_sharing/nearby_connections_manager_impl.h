@@ -7,9 +7,11 @@
 
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 
-#include <set>
-
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/nearby_sharing/nearby_connection_impl.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -20,7 +22,8 @@ class Profile;
 class NearbyConnectionsManagerImpl
     : public NearbyConnectionsManager,
       public NearbyProcessManager::Observer,
-      public location::nearby::connections::mojom::EndpointDiscoveryListener {
+      public location::nearby::connections::mojom::EndpointDiscoveryListener,
+      public location::nearby::connections::mojom::ConnectionLifecycleListener {
  public:
   NearbyConnectionsManagerImpl(NearbyProcessManager* process_manager,
                                Profile* profile);
@@ -52,7 +55,7 @@ class NearbyConnectionsManagerImpl
             ConnectionsCallback callback) override;
   void RegisterPayloadStatusListener(int64_t payload_id,
                                      PayloadStatusListener* listener) override;
-  PayloadPtr GetIncomingPayload(int64_t payload_id) override;
+  Payload* GetIncomingPayload(int64_t payload_id) override;
   void Cancel(int64_t payload_id, ConnectionsCallback callback) override;
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
@@ -63,8 +66,14 @@ class NearbyConnectionsManagerImpl
       location::nearby::connections::mojom::DiscoveryOptions;
   using EndpointDiscoveryListener =
       location::nearby::connections::mojom::EndpointDiscoveryListener;
+  using ConnectionLifecycleListener =
+      location::nearby::connections::mojom::ConnectionLifecycleListener;
   using DiscoveredEndpointInfoPtr =
       location::nearby::connections::mojom::DiscoveredEndpointInfoPtr;
+  using ConnectionInfoPtr =
+      location::nearby::connections::mojom::ConnectionInfoPtr;
+  using Status = location::nearby::connections::mojom::Status;
+
   FRIEND_TEST_ALL_PREFIXES(NearbyConnectionsManagerImplTest,
                            DiscoveryProcessStopped);
 
@@ -78,20 +87,44 @@ class NearbyConnectionsManagerImpl
                        DiscoveredEndpointInfoPtr info) override;
   void OnEndpointLost(const std::string& endpoint_id) override;
 
+  // mojom::ConnectionLifecycleListener:
+  void OnConnectionInitiated(const std::string& endpoint_id,
+                             ConnectionInfoPtr info) override;
+  void OnConnectionAccepted(const std::string& endpoint_id) override;
+  void OnConnectionRejected(const std::string& endpoint_id,
+                            Status status) override;
+  void OnDisconnected(const std::string& endpoint_id) override;
+  void OnBandwidthChanged(const std::string& endpoint_id,
+                          int32_t quality) override;
+
+  void OnConnectionRequested(const std::string& endpoint_id,
+                             NearbyConnectionCallback callback,
+                             ConnectionsStatus status);
   bool BindNearbyConnections();
   void Reset();
 
   NearbyProcessManager* process_manager_;
   Profile* profile_;
   DiscoveryListener* discovery_listener_ = nullptr;
-  std::set<std::string> discovered_endpoints_;
+  base::flat_set<std::string> discovered_endpoints_;
+  // A map of endpoint_id to NearbyConnectionCallback.
+  base::flat_map<std::string, NearbyConnectionCallback>
+      pending_outgoing_connections_;
+  // A map of endpoint_id to ConnectionInfoPtr.
+  base::flat_map<std::string, ConnectionInfoPtr> connection_info_map_;
+  // A map of endpoint_id to NearbyConnection.
+  base::flat_map<std::string, std::unique_ptr<NearbyConnectionImpl>>
+      connections_;
 
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};
   mojo::Receiver<EndpointDiscoveryListener> endpoint_discovery_listener_{this};
+  mojo::Receiver<ConnectionLifecycleListener> connection_lifecycle_listener_{
+      this};
 
   location::nearby::connections::mojom::NearbyConnections* nearby_connections_ =
       nullptr;
+  base::WeakPtrFactory<NearbyConnectionsManagerImpl> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_CONNECTIONS_MANAGER_IMPL_H_

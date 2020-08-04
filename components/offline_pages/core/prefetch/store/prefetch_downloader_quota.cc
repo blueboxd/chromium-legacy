@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -85,9 +86,10 @@ int64_t PrefetchDownloaderQuota::GetAvailableQuotaBytes() {
       store_utils::FromDatabaseTime(statement.ColumnInt64(0));
   int64_t available_quota = statement.ColumnInt64(1);
 
-  int64_t remaining_quota = available_quota + (GetMaxDailyQuotaBytes() *
-                                               (clock_->Now() - update_time))
-                                                  .IntDiv(kQuotaPeriod);
+  int64_t remaining_quota =
+      available_quota + base::ClampFloor<int64_t>(
+                            GetMaxDailyQuotaBytes() *
+                            (clock_->Now() - update_time).FltDiv(kQuotaPeriod));
 
   if (remaining_quota < 0)
     SetAvailableQuotaBytes(0);

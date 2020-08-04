@@ -251,6 +251,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SetWillEnterBackForwardCacheCallbackForTesting(
       const WillEnterBackForwardCacheCallbackForTesting& callback);
 
+  void BindPageBroadcast(
+      mojo::PendingAssociatedRemote<blink::mojom::PageBroadcast>
+          page_broadcast);
+
   // The remote mojom::PageBroadcast interface that is used to send messages to
   // the renderer's blink::WebViewImpl when broadcasting messages to all
   // renderers hosting frames in the frame tree.

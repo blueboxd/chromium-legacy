@@ -10,7 +10,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -52,7 +54,10 @@ class ChromeEnterpriseRealTimeUrlLookupServiceTest : public PlatformTest {
     enterprise_rt_service_ =
         std::make_unique<ChromeEnterpriseRealTimeUrlLookupService>(
             test_shared_loader_factory_, cache_manager_.get(),
-            test_profile_.get());
+            test_profile_.get(), &test_sync_service_, &test_pref_service_,
+            ChromeUserPopulation::NOT_MANAGED,
+            /*is_under_advanced_protection=*/true,
+            /*is_off_the_record=*/false);
   }
 
   void TearDown() override {
@@ -119,6 +124,7 @@ class ChromeEnterpriseRealTimeUrlLookupServiceTest : public PlatformTest {
   content::BrowserTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   std::unique_ptr<TestingProfile> test_profile_;
+  syncer::TestSyncService test_sync_service_;
 };
 
 TEST_F(ChromeEnterpriseRealTimeUrlLookupServiceTest,
@@ -158,6 +164,12 @@ TEST_F(ChromeEnterpriseRealTimeUrlLookupServiceTest,
           [](std::unique_ptr<RTLookupRequest> request, std::string token) {
             EXPECT_EQ("http://example.test/", request->url());
             EXPECT_EQ("dm_token", request->dm_token());
+            EXPECT_EQ(ChromeUserPopulation::SAFE_BROWSING,
+                      request->population().user_population());
+            EXPECT_TRUE(request->population().is_history_sync_enabled());
+            EXPECT_EQ(ChromeUserPopulation::NOT_MANAGED,
+                      request->population().profile_management_status());
+            EXPECT_TRUE(request->population().is_under_advanced_protection());
             EXPECT_EQ("", token);
           }),
       response_callback.Get());

@@ -68,28 +68,21 @@ no_check_targets = [
   "//chrome/browser/safety_check/android:*",  # 3 errors
   "//chrome/browser/storage_access_api:*",  # 2 errors
   "//chrome/browser/touch_to_fill/android:*",  # 8 errors
-  "//chrome/browser/touch_to_fill:*",  # 5 errors
   "//chrome/browser/updates/announcement_notification:*",  # 15 errors
   "//chrome/browser/updates/internal:*",  # 8 errors
   "//chrome/browser/updates:*",  # 21 errors
   "//chrome/browser:*",  # 780 errors
   "//chrome/child:*",  # 3 errors
   "//chrome/credential_provider/gaiacp:*",  # 1 error
-  "//chrome/gpu:*",  # 2 errors
   "//chrome/install_static:*",  # 4 errors
   "//chrome/notification_helper:*",  # 4 errors
   "//chrome/renderer:*",  # 42 errors
   "//chrome/services/cups_proxy/public/cpp:*",  # 2 errors
   "//chrome/services/cups_proxy:*",  # 6 errors
-  "//chrome/services/file_util/public/cpp:*",  # 13 errors
-  "//chrome/services/file_util:*",  # 3 errors
   "//chrome/services/ipp_parser:*",  # 1 error
   "//chrome/services/media_gallery_util/public/cpp:*",  # 6 errors
   "//chrome/services/media_gallery_util:*",  # 3 errors
-  "//chrome/services/printing:*",  # 3 errors
-  "//chrome/services/qrcode_generator:*",  # 1 error
   "//chrome/services/removable_storage_writer:*",  # 1 error
-  "//chrome/services/sharing/public/cpp:*",  # 2 errors
   "//chrome/services/speech:*",  # 5 errors
   "//chrome/services/util_win:*",  # 1 error
   "//chrome/test/chromedriver:*",  # 115 errors

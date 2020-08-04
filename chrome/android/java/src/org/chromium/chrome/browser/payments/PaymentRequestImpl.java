@@ -116,10 +116,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -306,14 +304,11 @@ public class PaymentRequestImpl
     private final JourneyLogger mJourneyLogger;
     private final boolean mIsOffTheRecord;
 
-    private List<AutofillProfile> mAutofillProfiles;
-    private boolean mHaveRequestedAutofillData = true;
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
     private boolean mWasRetryCalled;
-    private final Queue<Runnable> mRetryQueue = new LinkedList<>();
 
     /**
      * The raw total amount being charged, as it was received from the website. This data is passed
@@ -350,7 +345,6 @@ public class PaymentRequestImpl
     private MinimalUICoordinator mMinimalUi;
     private PaymentApp mInvokedPaymentApp;
     private boolean mHideServerAutofillCards;
-    private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
     private boolean mWaitForUpdatedDetails;
     private TabModelSelector mObservedTabModelSelector;
@@ -575,42 +569,6 @@ public class PaymentRequestImpl
                 .onPaymentRequestParamsInitiated(
                         /*params=*/this);
 
-        if (PaymentOptionsUtils.requestAnyInformation(mPaymentOptions)) {
-            mAutofillProfiles = Collections.unmodifiableList(
-                    PersonalDataManager.getInstance().getProfilesToSuggest(
-                            false /* includeNameInLabel */));
-        }
-
-        if (mRequestShipping) {
-            boolean haveCompleteShippingAddress = false;
-            for (int i = 0; i < mAutofillProfiles.size(); i++) {
-                if (AutofillAddress.checkAddressCompletionStatus(
-                            mAutofillProfiles.get(i), AutofillAddress.CompletenessCheckType.NORMAL)
-                        == AutofillAddress.CompletionStatus.COMPLETE) {
-                    haveCompleteShippingAddress = true;
-                    break;
-                }
-            }
-            mHaveRequestedAutofillData &= haveCompleteShippingAddress;
-        }
-
-        if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            // Do not persist changes on disk in OffTheRecord mode.
-            mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
-                    mRequestPayerEmail, /*saveToDisk=*/!mIsOffTheRecord);
-            boolean haveCompleteContactInfo = false;
-            for (int i = 0; i < mAutofillProfiles.size(); i++) {
-                AutofillProfile profile = mAutofillProfiles.get(i);
-                if (mContactEditor.checkContactCompletionStatus(profile.getFullName(),
-                            profile.getPhoneNumber(), profile.getEmailAddress())
-                        == ContactEditor.COMPLETE) {
-                    haveCompleteContactInfo = true;
-                    break;
-                }
-            }
-            mHaveRequestedAutofillData &= haveCompleteContactInfo;
-        }
-
         PaymentAppService.getInstance().create(/*delegate=*/this);
 
         // Log the various types of payment methods that were requested by the merchant.
@@ -753,12 +711,13 @@ public class PaymentRequestImpl
         }
 
         if (shouldShowShippingSection() && !mWaitForUpdatedDetails) {
-            createShippingSection(activity, mAutofillProfiles);
+            createShippingSection(activity, mPaymentUIsManager.getAutofillProfiles());
         }
 
         if (shouldShowContactSection()) {
-            mPaymentUIsManager.setContactSection(new ContactDetailsSection(
-                    activity, mAutofillProfiles, mContactEditor, mJourneyLogger));
+            mPaymentUIsManager.setContactSection(
+                    new ContactDetailsSection(activity, mPaymentUIsManager.getAutofillProfiles(),
+                            mPaymentUIsManager.getContactEditor(), mJourneyLogger));
         }
 
         mPaymentUIsManager.setPaymentRequestUI(new PaymentRequestUI(activity, this,
@@ -797,8 +756,8 @@ public class PaymentRequestImpl
                 mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
         mPaymentUIsManager.getCardEditor().setEditorDialog(
                 mPaymentUIsManager.getPaymentRequestUI().getCardEditorDialog());
-        if (mContactEditor != null) {
-            mContactEditor.setEditorDialog(
+        if (mPaymentUIsManager.getContactEditor() != null) {
+            mPaymentUIsManager.getContactEditor().setEditorDialog(
                     mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
         }
 
@@ -1326,7 +1285,7 @@ public class PaymentRequestImpl
         // Do not create shipping section When UI is not built yet. This happens when the show
         // promise gets resolved before all apps are ready.
         if (mPaymentUIsManager.getPaymentRequestUI() != null && shouldShowShippingSection()) {
-            createShippingSection(chromeActivity, mAutofillProfiles);
+            createShippingSection(chromeActivity, mPaymentUIsManager.getAutofillProfiles());
         }
 
         mWaitForUpdatedDetails = false;
@@ -1470,7 +1429,8 @@ public class PaymentRequestImpl
         });
     }
 
-    private void recordShowEventAndTransactionAmount() {
+    @Override
+    public void recordShowEventAndTransactionAmount() {
         if (mDidRecordShowEvent) return;
         mDidRecordShowEvent = true;
         mJourneyLogger.setEventOccurred(Event.SHOWN);
@@ -1526,7 +1486,9 @@ public class PaymentRequestImpl
                 mPaymentUIsManager.getShippingAddressesSection().setSelectedItem(option);
                 startShippingAddressChangeNormalization(address);
             } else {
-                editAddress(address);
+                // Log the edit of a shipping address.
+                mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
+                mPaymentUIsManager.editAddress(address);
             }
             mPaymentUIsManager.setPaymentInformationCallback(callback);
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
@@ -1545,7 +1507,8 @@ public class PaymentRequestImpl
                 if (!mWasRetryCalled) return PaymentRequestUI.SelectionResult.NONE;
                 dispatchPayerDetailChangeEventIfNeeded(contact.toPayerDetail());
             } else {
-                editContact(contact);
+                mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
+                mPaymentUIsManager.editContactOnPaymentRequestUI(contact);
                 if (!mWasRetryCalled) return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
             }
             mPaymentUIsManager.setPaymentInformationCallback(callback);
@@ -1555,13 +1518,14 @@ public class PaymentRequestImpl
                     && mPaymentUIsManager.getShippingAddressesSection() == null) {
                 ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
                 assert activity != null;
-                createShippingSection(activity, mAutofillProfiles);
+                createShippingSection(activity, mPaymentUIsManager.getAutofillProfiles());
             }
             if (shouldShowContactSection() && mPaymentUIsManager.getContactSection() == null) {
                 ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
                 assert activity != null;
-                mPaymentUIsManager.setContactSection(new ContactDetailsSection(
-                        activity, mAutofillProfiles, mContactEditor, mJourneyLogger));
+                mPaymentUIsManager.setContactSection(new ContactDetailsSection(activity,
+                        mPaymentUIsManager.getAutofillProfiles(),
+                        mPaymentUIsManager.getContactEditor(), mJourneyLogger));
             }
             mPaymentUIsManager.onSelectedPaymentMethodUpdated();
             PaymentApp paymentApp = (PaymentApp) option;
@@ -1588,14 +1552,17 @@ public class PaymentRequestImpl
     public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, EditableOption option,
             Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
-            editAddress((AutofillAddress) option);
+            // Log the edit of a shipping address.
+            mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
+            mPaymentUIsManager.editAddress((AutofillAddress) option);
             mPaymentUIsManager.setPaymentInformationCallback(callback);
 
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         }
 
         if (optionType == PaymentRequestUI.DataType.CONTACT_DETAILS) {
-            editContact((AutofillContact) option);
+            mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
+            mPaymentUIsManager.editContactOnPaymentRequestUI((AutofillContact) option);
             return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
         }
 
@@ -1613,13 +1580,13 @@ public class PaymentRequestImpl
     public int onSectionAddOption(
             @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
-            editAddress(null);
+            mPaymentUIsManager.editAddress(null);
             mPaymentUIsManager.setPaymentInformationCallback(callback);
             // Log the add of shipping address.
             mJourneyLogger.incrementSelectionAdds(Section.SHIPPING_ADDRESS);
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.CONTACT_DETAILS) {
-            editContact(null);
+            mPaymentUIsManager.editContactOnPaymentRequestUI(null);
             // Log the add of contact info.
             mJourneyLogger.incrementSelectionAdds(Section.CONTACT_INFO);
             return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
@@ -1641,107 +1608,6 @@ public class PaymentRequestImpl
     @Override
     public boolean shouldShowContactSection() {
         return mPaymentUIsManager.shouldShowContactSection();
-    }
-
-    private void editAddress(final AutofillAddress toEdit) {
-        if (toEdit != null) {
-            // Log the edit of a shipping address.
-            mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
-        }
-        mPaymentUIsManager.getAddressEditor().edit(toEdit, new Callback<AutofillAddress>() {
-            @Override
-            public void onResult(AutofillAddress editedAddress) {
-                if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
-
-                if (editedAddress != null) {
-                    mPaymentUIsManager.getAddressEditor().setAddressErrors(null);
-
-                    // Sets or updates the shipping address label.
-                    editedAddress.setShippingAddressLabelWithCountry();
-
-                    mPaymentUIsManager.getCardEditor().updateBillingAddressIfComplete(
-                            editedAddress);
-
-                    // A partial or complete address came back from the editor (could have been from
-                    // adding/editing or cancelling out of the edit flow).
-                    if (!editedAddress.isComplete()) {
-                        // If the address is not complete, unselect it (editor can return incomplete
-                        // information when cancelled).
-                        mPaymentUIsManager.getShippingAddressesSection().setSelectedItemIndex(
-                                SectionInformation.NO_SELECTION);
-                        mPaymentUIsManager.providePaymentInformationToPaymentRequestUI();
-                        recordShowEventAndTransactionAmount();
-                    } else {
-                        if (toEdit == null) {
-                            // Address is complete and user was in the "Add flow": add an item to
-                            // the list.
-                            mPaymentUIsManager.getShippingAddressesSection().addAndSelectItem(
-                                    editedAddress);
-                        }
-
-                        if (mPaymentUIsManager.getContactSection() != null) {
-                            // Update |mPaymentUIsManager.getContactSection()| with the new/edited
-                            // address, which will update an existing item or add a new one to the
-                            // end of the list.
-                            mPaymentUIsManager.getContactSection().addOrUpdateWithAutofillAddress(
-                                    editedAddress);
-                            mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                                    PaymentRequestUI.DataType.CONTACT_DETAILS,
-                                    mPaymentUIsManager.getContactSection());
-                        }
-
-                        startShippingAddressChangeNormalization(editedAddress);
-                    }
-                } else {
-                    mPaymentUIsManager.providePaymentInformationToPaymentRequestUI();
-                    recordShowEventAndTransactionAmount();
-                }
-
-                if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
-            }
-        });
-    }
-
-    private void editContact(final AutofillContact toEdit) {
-        if (toEdit != null) {
-            // Log the edit of a contact info.
-            mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
-        }
-        mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
-            @Override
-            public void onResult(AutofillContact editedContact) {
-                if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
-
-                if (editedContact != null) {
-                    mContactEditor.setPayerErrors(null);
-
-                    // A partial or complete contact came back from the editor (could have been from
-                    // adding/editing or cancelling out of the edit flow).
-                    if (!editedContact.isComplete()) {
-                        // If the contact is not complete according to the requirements of the flow,
-                        // unselect it (editor can return incomplete information when cancelled).
-                        mPaymentUIsManager.getContactSection().setSelectedItemIndex(
-                                SectionInformation.NO_SELECTION);
-                    } else if (toEdit == null) {
-                        // Contact is complete and we were in the "Add flow": add an item to the
-                        // list.
-                        mPaymentUIsManager.getContactSection().addAndSelectItem(editedContact);
-                    } else {
-                        dispatchPayerDetailChangeEventIfNeeded(editedContact.toPayerDetail());
-                    }
-                    // If contact is complete and (toEdit != null), no action needed: the contact
-                    // was already selected in the UI.
-                }
-                // If |editedContact| is null, the user has cancelled out of the "Add flow". No
-                // action to take (if a contact was selected in the UI, it will stay selected).
-
-                mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                        PaymentRequestUI.DataType.CONTACT_DETAILS,
-                        mPaymentUIsManager.getContactSection());
-
-                if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
-            }
-        });
     }
 
     private void editCard(final AutofillPaymentInstrument toEdit) {
@@ -2018,25 +1884,30 @@ public class PaymentRequestImpl
         }
 
         if (shouldShowShippingSection() && hasShippingAddressError(errors.shippingAddress)) {
-            mRetryQueue.add(() -> {
+            mPaymentUIsManager.getRetryQueue().add(() -> {
                 mPaymentUIsManager.getAddressEditor().setAddressErrors(errors.shippingAddress);
                 AutofillAddress selectedAddress =
                         (AutofillAddress) mPaymentUIsManager.getShippingAddressesSection()
                                 .getSelectedItem();
-                editAddress(selectedAddress);
+                // Log the edit of a shipping address.
+                mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
+                mPaymentUIsManager.editAddress(selectedAddress);
             });
         }
 
         if (shouldShowContactSection() && hasPayerError(errors.payer)) {
-            mRetryQueue.add(() -> {
-                mContactEditor.setPayerErrors(errors.payer);
+            mPaymentUIsManager.getRetryQueue().add(() -> {
+                mPaymentUIsManager.getContactEditor().setPayerErrors(errors.payer);
                 AutofillContact selectedContact =
                         (AutofillContact) mPaymentUIsManager.getContactSection().getSelectedItem();
-                editContact(selectedContact);
+                mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
+                mPaymentUIsManager.editContactOnPaymentRequestUI(selectedContact);
             });
         }
 
-        if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
+        if (!mPaymentUIsManager.getRetryQueue().isEmpty()) {
+            mHandler.post(mPaymentUIsManager.getRetryQueue().remove());
+        }
     }
 
     private boolean hasShippingAddressError(AddressErrors errors) {
@@ -2304,7 +2175,7 @@ public class PaymentRequestImpl
         if (getClient() == null) return;
 
         mHideServerAutofillCards |= paymentApp.isServerAutofillInstrumentReplacement();
-        paymentApp.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
+        paymentApp.setHaveRequestedAutofillData(mPaymentUIsManager.haveRequestedAutofillData());
         mHasEnrolledInstrument |= paymentApp.canMakePayment();
         mHasNonAutofillApp |= !paymentApp.isAutofillInstrument();
 
@@ -2637,12 +2508,12 @@ public class PaymentRequestImpl
         onAddressNormalized(profile);
     }
 
-    /**
-     * Starts the normalization of the new shipping address. Will call back into either
-     * onAddressNormalized or onCouldNotNormalize which will send the result to the merchant.
-     */
-    private void startShippingAddressChangeNormalization(AutofillAddress address) {
-        PersonalDataManager.getInstance().normalizeAddress(address.getProfile(), this);
+    @Override
+    public void startShippingAddressChangeNormalization(AutofillAddress address) {
+        // Will call back into either onAddressNormalized or onCouldNotNormalize which will send the
+        // result to the merchant.
+        PersonalDataManager.getInstance().normalizeAddress(
+                address.getProfile(), /* delegate= */ this);
     }
 
     /**
@@ -2718,7 +2589,9 @@ public class PaymentRequestImpl
         PaymentDetailsUpdateServiceHelper.getInstance().reset();
     }
 
-    private void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail) {
+    // Implement PaymentUIsManager.Delegate:
+    @Override
+    public void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail) {
         PaymentRequestClient client = getClient();
         if (client == null || !mWasRetryCalled) return;
         client.onPayerDetailChange(detail);

@@ -23,7 +23,7 @@ namespace chrome_cleaner {
 // Currently this is only triggered for extensions installed through master
 // preferences. The |on_done| callback is triggered once this callback has
 // completed and can be used for error reporting.
-typedef base::OnceCallback<void(const std::vector<base::string16>& extensions,
+typedef base::OnceCallback<void(const std::vector<std::wstring>& extensions,
                                 base::OnceCallback<void(bool)> on_done)>
     DisableExtensionsCallback;
 

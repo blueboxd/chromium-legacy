@@ -32,8 +32,8 @@ class CleanerEngineRequestsProxy
   virtual bool NtChangeRegistryValue(const WStringEmbeddedNulls& key,
                                      const WStringEmbeddedNulls& value_name,
                                      const WStringEmbeddedNulls& new_value);
-  virtual bool DeleteService(const base::string16& name);
-  virtual bool DeleteTask(const base::string16& name);
+  virtual bool DeleteService(const std::wstring& name);
+  virtual bool DeleteTask(const std::wstring& name);
   virtual bool TerminateProcess(base::ProcessId process_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
@@ -75,11 +75,11 @@ class CleanerEngineRequestsProxy
       mojom::CleanerEngineRequests::SandboxNtChangeRegistryValueCallback
           result_callback);
   MojoCallStatus SandboxDeleteService(
-      const base::string16& name,
+      const std::wstring& name,
       mojom::CleanerEngineRequests::SandboxDeleteServiceCallback
           result_callback);
   MojoCallStatus SandboxDeleteTask(
-      const base::string16& name,
+      const std::wstring& name,
       mojom::CleanerEngineRequests::SandboxDeleteTaskCallback result_callback);
   MojoCallStatus SandboxTerminateProcess(
       uint32_t process_id,

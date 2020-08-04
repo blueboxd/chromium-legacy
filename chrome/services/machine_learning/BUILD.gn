@@ -1,4 +1,6 @@
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
+import("//chrome/services/machine_learning/features.gni")
 
 source_set("machine_learning") {
   sources = [
@@ -14,7 +16,23 @@ source_set("machine_learning") {
     "//mojo/public/cpp/bindings",
   ]
 
+  if (build_with_tflite_lib) {
+    sources += [
+      "machine_learning_tflite_predictor.cc",
+      "machine_learning_tflite_predictor.h",
+    ]
+
+    deps += [
+      ":tflite_lib",
+      ":tflite_simple_test",
+    ]
+
+    lib_dirs = [ "$root_out_dir" ]
+    libs = [ "tensorflowlite_c" ]
+  }
+
   public_deps = [
+    ":machine_learning_tflite_buildflags",
     "//chrome/services/machine_learning/public/cpp:decision_tree",
     "//chrome/services/machine_learning/public/mojom",
     "//mojo/public/mojom/base",
@@ -32,6 +50,10 @@ source_set("unit_tests") {
     "public/cpp/decision_tree_model_unittest.cc",
   ]
 
+  if (build_with_tflite_lib) {
+    sources += [ "machine_learning_tflite_predictor_unittest.cc" ]
+  }
+
   deps = [
     ":machine_learning",
     "//base",
@@ -40,4 +62,21 @@ source_set("unit_tests") {
     "//chrome/services/machine_learning/public/cpp:test_support",
     "//testing/gtest",
   ]
+}
+
+if (build_with_tflite_lib) {
+  copy("tflite_simple_test") {
+    sources = [ "//chrome/test/data/simple_test.tflite" ]
+    outputs = [ "$root_out_dir/test_data/simple_test.tflite" ]
+  }
+
+  copy("tflite_lib") {
+    sources = [ "//third_party/tensorflow/libtensorflowlite_c.so" ]
+    outputs = [ "$root_out_dir/libtensorflowlite_c.so" ]
+  }
+}
+
+buildflag_header("machine_learning_tflite_buildflags") {
+  header = "machine_learning_tflite_buildflags.h"
+  flags = [ "BUILD_WITH_TFLITE_LIB=$build_with_tflite_lib" ]
 }

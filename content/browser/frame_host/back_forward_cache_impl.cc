@@ -301,8 +301,19 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_) {
     result.No(
         BackForwardCacheMetrics::NotRestoredReason::kBackForwardCacheDisabled);
-  }
 
+    // In addition to the general "BackForwardCacheDisabled" reason above, also
+    // track more specific reasons on why BackForwardCache is disabled.
+    if (IsBackForwardCacheDisabledByCommandLine()) {
+      result.No(BackForwardCacheMetrics::NotRestoredReason::
+                    kBackForwardCacheDisabledByCommandLine);
+    }
+
+    if (!DeviceHasEnoughMemoryForBackForwardCache()) {
+      result.No(BackForwardCacheMetrics::NotRestoredReason::
+                    kBackForwardCacheDisabledByLowMemory);
+    }
+  }
   // Two pages in the same BrowsingInstance can script each other. When a page
   // can be scripted from outside, it can't enter the BackForwardCache.
   //

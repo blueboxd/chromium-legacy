@@ -131,6 +131,9 @@ class ClipboardHtmlWriter final : public ClipboardWriter {
                   DOMArrayBuffer* html_data) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+    promise_->GetExecutionContext()->CountUse(
+        WebFeature::kHtmlClipboardApiWrite);
+
     String html_string =
         String::FromUTF8(reinterpret_cast<const LChar*>(html_data->Data()),
                          html_data->ByteLengthAsSizeT());

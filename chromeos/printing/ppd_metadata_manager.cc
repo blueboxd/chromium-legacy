@@ -295,8 +295,6 @@ std::string PpdMetadataPathInServingRoot(
   return std::string();
 }
 
-}  // namespace
-
 // Note: generally, each Get*() method is segmented into three parts:
 // 1. check if query can be answered immediately,
 // 2. fetch appropriate metadata if it can't [defer to On*Fetched()],
@@ -707,6 +705,8 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
   // processing something off-sequence.
   base::WeakPtrFactory<PpdMetadataManagerImpl> weak_factory_;
 };
+
+}  // namespace
 
 // static
 std::unique_ptr<PpdMetadataManager> PpdMetadataManager::Create(

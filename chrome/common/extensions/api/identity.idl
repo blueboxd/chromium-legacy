@@ -114,12 +114,11 @@ namespace identity {
     // context. In particular, do not use <code>getAuthToken</code>
     // interactively when your app is first launched.
     //
-    // The <code>scopes</code> parameter in the callback function is not yet
-    // available. It will be populated in future versions of Chrome.
-    //
     // |details| : Token options.
     // |callback| : Called with an OAuth2 access token as specified by the
-    // manifest, or undefined if there was an error.
+    // manifest, or undefined if there was an error. The <code>scopes</code>
+    // parameter is not yet available. It will be populated in future versions
+    // of Chrome.
     static void getAuthToken(optional TokenDetails details,
                              optional GetAuthTokenCallback callback);
 

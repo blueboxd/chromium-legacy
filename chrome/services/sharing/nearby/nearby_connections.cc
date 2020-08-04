@@ -171,6 +171,73 @@ void NearbyConnections::StopDiscovery(StopDiscoveryCallback callback) {
   core_->StopDiscovery(ResultCallbackFromMojom(std::move(callback)));
 }
 
+void NearbyConnections::RequestConnection(
+    const std::vector<uint8_t>& endpoint_info,
+    const std::string& endpoint_id,
+    mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
+    RequestConnectionCallback callback) {
+  mojo::SharedRemote<mojom::ConnectionLifecycleListener> remote(
+      std::move(listener));
+  ConnectionRequestInfo connection_request_info{
+      .name = std::string(endpoint_info.begin(), endpoint_info.end()),
+      .listener = {
+          .initiated_cb =
+              [remote](const std::string& endpoint_id,
+                       const ConnectionResponseInfo& info) {
+                if (!remote)
+                  return;
+
+                remote->OnConnectionInitiated(
+                    endpoint_id,
+                    mojom::ConnectionInfo::New(
+                        info.authentication_token,
+                        ByteArrayToMojom(info.raw_authentication_token),
+                        ByteArrayToMojom(info.endpoint_info),
+                        info.is_incoming_connection));
+              },
+          .accepted_cb =
+              [remote](const std::string& endpoint_id) {
+                if (!remote)
+                  return;
+
+                remote->OnConnectionAccepted(endpoint_id);
+              },
+          .rejected_cb =
+              [remote](const std::string& endpoint_id, Status status) {
+                if (!remote)
+                  return;
+
+                remote->OnConnectionRejected(endpoint_id,
+                                             StatusToMojom(status.value));
+              },
+          .disconnected_cb =
+              [remote](const std::string& endpoint_id) {
+                if (!remote)
+                  return;
+
+                remote->OnDisconnected(endpoint_id);
+              },
+          .bandwidth_changed_cb =
+              [remote](const std::string& endpoint_id, std::int32_t quality) {
+                if (!remote)
+                  return;
+
+                remote->OnBandwidthChanged(endpoint_id, quality);
+              },
+      }};
+  ResultCallback result_callback = ResultCallbackFromMojom(std::move(callback));
+
+  core_->RequestConnection(endpoint_id, std::move(connection_request_info),
+                           std::move(result_callback));
+}
+
+void NearbyConnections::DisconnectFromEndpoint(
+    const std::string& endpoint_id,
+    DisconnectFromEndpointCallback callback) {
+  core_->DisconnectFromEndpoint(endpoint_id,
+                                ResultCallbackFromMojom(std::move(callback)));
+}
+
 }  // namespace connections
 }  // namespace nearby
 }  // namespace location

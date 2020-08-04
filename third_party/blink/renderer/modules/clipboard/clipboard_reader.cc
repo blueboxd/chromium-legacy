@@ -156,6 +156,10 @@ class ClipboardHtmlReader final : public ClipboardReader {
   // only be used on the main thread.
   void Read() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    promise_->GetExecutionContext()->CountUse(
+        WebFeature::kHtmlClipboardApiRead);
+
     KURL url;
     unsigned fragment_start = 0;
     unsigned fragment_end = 0;

@@ -29,31 +29,15 @@ final class WebViewCompatibilityHelper {
                 appContext.getPackageManager().getPackageInfo(remoteContext.getPackageName(),
                         PackageManager.GET_SHARED_LIBRARY_FILES
                                 | PackageManager.MATCH_UNINSTALLED_PACKAGES);
-
-        if (parseMajorVersion(info.versionName) >= 84) {
-            // Recreate the context without code to avoid wasting memory by accidentally using the
-            // class loader.
-            remoteContext = appContext.createPackageContext(
-                    remoteContext.getPackageName(), Context.CONTEXT_IGNORE_SECURITY);
-            WebLayer.setRemoteContext(remoteContext);
-        }
+        String[] libraryPaths = getLibraryPaths(remoteContext.getClassLoader());
         // Prepend "/." to all library paths. This changes the library path while still pointing to
         // the same directory, allowing us to get around a check in the JVM. This is only necessary
         // for N+, where we rely on linker namespaces.
-        String[] libraryPaths;
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            // Even if the context was recreated without code above, on N+ the library path list
-            // still contains the necessary paths to load WebLayer.
-            libraryPaths = getLibraryPaths(remoteContext.getClassLoader());
             for (int i = 0; i < libraryPaths.length; i++) {
                 assert libraryPaths[i].startsWith("/");
                 libraryPaths[i] = "/." + libraryPaths[i];
             }
-        } else {
-            // Android M- only need the native lib dir, since standalone WebView stores native libs
-            // compressed and they get extracted here. Standalone WebView also doesn't depend on any
-            // shared library APKs like Trichrome WebView.
-            libraryPaths = new String[] {info.applicationInfo.nativeLibraryDir};
         }
 
         String dexPath = getAllApkPaths(info.applicationInfo);
@@ -78,22 +62,6 @@ final class WebViewCompatibilityHelper {
             };
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    /** Parses the version name into an integer version number. */
-    static int parseMajorVersion(String versionName) {
-        if (versionName == null) {
-            return -1;
-        }
-        String[] parts = versionName.split("\\.", -1);
-        if (parts.length < 4) {
-            return -1;
-        }
-        try {
-            return Integer.parseInt(parts[0]);
-        } catch (NumberFormatException e) {
-            return -1;
         }
     }
 

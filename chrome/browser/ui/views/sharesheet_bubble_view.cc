@@ -44,7 +44,7 @@ class ShareSheetTargetButton : public views::Button {
  public:
   ShareSheetTargetButton(views::ButtonListener* listener,
                          const base::string16& display_name,
-                         const gfx::Image* icon)
+                         const gfx::ImageSkia* icon)
       : Button(listener) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -54,8 +54,8 @@ class ShareSheetTargetButton : public views::Button {
     auto* image = AddChildView(std::make_unique<views::ImageView>());
     image->set_can_process_events_within_subtree(false);
 
-    if (!icon->IsEmpty()) {
-      image->SetImage(*icon->ToImageSkia());
+    if (!icon->isNull()) {
+      image->SetImage(icon);
     }
 
     auto* label = AddChildView(std::make_unique<views::Label>(display_name));
@@ -101,9 +101,7 @@ SharesheetBubbleView::SharesheetBubbleView(
 
   auto share_action_view = std::make_unique<views::View>();
   share_action_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
   share_action_view_ = root_view_->AddChildView(std::move(share_action_view));
   share_action_view_->SetVisible(false);
 }

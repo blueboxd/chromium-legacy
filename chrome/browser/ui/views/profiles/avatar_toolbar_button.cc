@@ -279,7 +279,7 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
       return ui::ImageModel::FromVectorIcon(kIncognitoIcon, icon_color,
                                             icon_size);
     case State::kGuestSession:
-      return ui::ImageModel::FromImageSkia(profiles::GetGuestAvatar(icon_size));
+      return profiles::GetGuestAvatar(icon_size);
     case State::kGenericProfile:
       return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon, icon_color,
                                             icon_size);

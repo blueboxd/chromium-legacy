@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   ClipboardFormatType& operator=(const ClipboardFormatType& other);
 #endif
 
-  bool Equals(const ClipboardFormatType& other) const;
+  bool operator==(const ClipboardFormatType& other) const;
 
  private:
   friend class base::NoDestructor<ClipboardFormatType>;

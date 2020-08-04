@@ -8,6 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/common/subresource_redirect_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
 
@@ -67,6 +68,9 @@ class SubresourceRedirectHintsAgent {
   void RecordMetricsOnLoadFinished(const GURL& url,
                                    int64_t content_length,
                                    RedirectResult redirect_result);
+
+  // Clears the image hint urls.
+  void ClearImageHints();
 
  private:
   void OnHintsReceiveTimeout();

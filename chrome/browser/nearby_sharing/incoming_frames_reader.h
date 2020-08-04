@@ -51,6 +51,7 @@ class IncomingFramesReader : public NearbyProcessManager::Observer {
   void OnFrameDecoded(sharing::mojom::FramePtr mojo_frame);
   void OnTimeout();
   void Done(base::Optional<sharing::mojom::V1FramePtr> frame);
+  void OnConnectionClosed();
 
   NearbyProcessManager* process_manager_;
   Profile* profile_;

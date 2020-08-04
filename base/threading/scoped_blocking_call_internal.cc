@@ -12,6 +12,7 @@
 #include "base/check_op.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/thread_pool.h"
@@ -194,10 +195,15 @@ void IOJankMonitoringWindow::OnBlockingCallCompleted(TimeTicks call_start,
   if (call_end >= start_time_ + kMonitoringWindow)
     MonitorNextJankWindowIfNecessary(call_end);
 
+  // Begin attributing jank to the first interval in which it appeared, no
+  // matter how far into the interval the jank began.
   const int jank_start_index =
       (call_start - start_time_).IntDiv(kIOJankInterval);
+
+  // Round the jank duration so the total number of intervals marked janky is as
+  // close as possible to the actual jank duration.
   const int num_janky_intervals =
-      (call_end - call_start).IntDiv(kIOJankInterval);
+      ClampRound((call_end - call_start).FltDiv(kIOJankInterval));
 
   AddJank(jank_start_index, num_janky_intervals);
 }

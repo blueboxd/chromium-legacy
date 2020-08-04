@@ -1620,27 +1620,6 @@
             ]
         }
     ],
-    "ClientSideDetectionModel": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "ModelNum": "4"
-                    },
-                    "enable_features": [
-                        "ClientSideDetectionModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "CodeCacheDeletionWithoutFilter": [
         {
             "platforms": [
@@ -5539,7 +5518,7 @@
             ]
         }
     ],
-    "QRCodeGeneratorDesktopStudy": [
+    "QRCodeGenerator": [
         {
             "platforms": [
                 "chromeos",
@@ -7612,6 +7591,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseSurfaceLayerForVideo"
+                    ]
+                }
+            ]
+        }
+    ],
+    "VisualClientSideDetectionModel": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ModelNum": "5"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModel"
                     ]
                 }
             ]

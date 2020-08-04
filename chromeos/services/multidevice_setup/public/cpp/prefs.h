@@ -21,6 +21,10 @@ extern const char kInstantTetheringAllowedPrefName[];
 extern const char kMessagesAllowedPrefName[];
 extern const char kSmartLockAllowedPrefName[];
 extern const char kSmartLockSigninAllowedPrefName[];
+extern const char kPhoneHubAllowedPrefName[];
+// Note: Notification pref is shared with the notification badge feature.
+extern const char kPhoneHubNotificationsAllowedPrefName[];
+extern const char kPhoneHubTaskContinuationAllowedPrefName[];
 
 // Preferences which represent whether features are enabled by the user via
 // settings. If a feature is prohibited (see above preferences), the "enabled"
@@ -29,6 +33,10 @@ extern const char kBetterTogetherSuiteEnabledPrefName[];
 extern const char kInstantTetheringEnabledPrefName[];
 extern const char kMessagesEnabledPrefName[];
 extern const char kSmartLockEnabledPrefName[];
+extern const char kPhoneHubEnabledPrefName[];
+extern const char kPhoneHubNotificationsEnabledPrefName[];
+extern const char kPhoneHubNotificationBadgeEnabledPrefName[];
+extern const char kPhoneHubTaskContinuationEnabledPrefName[];
 
 // The old pref which controlled if Smart Lock was enabled, prior to the
 // introduction of MultiDeviceSetupService. It will be removed once old Smart

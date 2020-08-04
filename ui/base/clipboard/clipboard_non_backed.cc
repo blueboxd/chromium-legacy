@@ -393,20 +393,20 @@ bool ClipboardNonBacked::IsFormatAvailable(
   if (!clipboard_internal_->IsReadAllowed(data_dst))
     return false;
 
-  if (ClipboardFormatType::GetPlainTextType().Equals(format) ||
-      ClipboardFormatType::GetUrlType().Equals(format))
+  if (format == ClipboardFormatType::GetPlainTextType() ||
+      format == ClipboardFormatType::GetUrlType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kText);
-  if (ClipboardFormatType::GetHtmlType().Equals(format))
+  if (format == ClipboardFormatType::GetHtmlType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kHtml);
-  if (ClipboardFormatType::GetRtfType().Equals(format))
+  if (format == ClipboardFormatType::GetRtfType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kRtf);
-  if (ClipboardFormatType::GetBitmapType().Equals(format))
+  if (format == ClipboardFormatType::GetBitmapType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kBitmap);
-  if (ClipboardFormatType::GetWebKitSmartPasteType().Equals(format))
+  if (format == ClipboardFormatType::GetWebKitSmartPasteType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kWeb);
   const ClipboardData* data = clipboard_internal_->GetData();

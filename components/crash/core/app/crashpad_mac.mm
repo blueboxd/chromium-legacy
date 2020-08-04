@@ -39,10 +39,14 @@ std::map<std::string, std::string> GetProcessSimpleAnnotations() {
     std::map<std::string, std::string> process_annotations;
     @autoreleasepool {
       NSBundle* outer_bundle = base::mac::OuterBundle();
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      process_annotations["prod"] = "Chrome_Mac";
+#else
       NSString* product = base::mac::ObjCCast<NSString>([outer_bundle
           objectForInfoDictionaryKey:base::mac::CFToNSCast(kCFBundleNameKey)]);
       process_annotations["prod"] =
           base::SysNSStringToUTF8(product).append("_Mac");
+#endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       // Empty means stable.

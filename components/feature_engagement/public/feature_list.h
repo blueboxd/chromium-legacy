@@ -62,6 +62,12 @@ DEFINE_VARIATION_PARAM(kIPHChromeDuetTabSwitcherFeature,
 DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
 DEFINE_VARIATION_PARAM(kIPHChromeHomePullToRefreshFeature,
                        "IPH_ChromeHomePullToRefresh");
+DEFINE_VARIATION_PARAM(kIPHChromeReengagementNotification1Feature,
+                       "IPH_ChromeReengagementNotification1");
+DEFINE_VARIATION_PARAM(kIPHChromeReengagementNotification2Feature,
+                       "IPH_ChromeReengagementNotification2");
+DEFINE_VARIATION_PARAM(kIPHChromeReengagementNotification3Feature,
+                       "IPH_ChromeReengagementNotification3");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchWebSearchFeature,
                        "IPH_ContextualSearchWebSearch");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchPromoteTapFeature,
@@ -146,6 +152,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHChromeDuetTabSwitcherFeature),
         VARIATION_ENTRY(kIPHChromeHomeExpandFeature),
         VARIATION_ENTRY(kIPHChromeHomePullToRefreshFeature),
+        VARIATION_ENTRY(kIPHChromeReengagementNotification1Feature),
+        VARIATION_ENTRY(kIPHChromeReengagementNotification2Feature),
+        VARIATION_ENTRY(kIPHChromeReengagementNotification3Feature),
         VARIATION_ENTRY(kIPHContextualSearchWebSearchFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromoteTapFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromotePanelOpenFeature),

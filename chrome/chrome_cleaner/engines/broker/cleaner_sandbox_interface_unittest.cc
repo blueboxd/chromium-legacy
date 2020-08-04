@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
@@ -65,31 +65,31 @@ WStringEmbeddedNulls FullyQualifiedKeyPathWithTrailingNull(
   // key vectors are expected to end with NULL.
   DCHECK_EQ(key_name.back(), L'\0');
 
-  base::string16 full_key_path(temp_key.FullyQualifiedPath());
+  std::wstring full_key_path(temp_key.FullyQualifiedPath());
   full_key_path += L"\\";
   // Include key_name's trailing NULL.
   full_key_path.append(key_name.begin(), key_name.end());
   return WStringEmbeddedNulls(full_key_path);
 }
 
-WStringEmbeddedNulls StringWithTrailingNull(const base::string16& str) {
+WStringEmbeddedNulls StringWithTrailingNull(const std::wstring& str) {
   // string16::size() does not count the trailing null.
   return WStringEmbeddedNulls(str.c_str(), str.size() + 1);
 }
 
 WStringEmbeddedNulls VeryLongStringWithPrefix(
     const WStringEmbeddedNulls& prefix) {
-  return WStringEmbeddedNulls(base::string16(prefix.CastAsWCharArray()) +
-                              base::string16(kMaxRegistryParamLength, L'a'));
+  return WStringEmbeddedNulls(std::wstring(prefix.CastAsWCharArray()) +
+                              std::wstring(kMaxRegistryParamLength, L'a'));
 }
 
-base::FilePath GetNativePath(const base::string16& path) {
+base::FilePath GetNativePath(const std::wstring& path) {
   // Add the native \??\ prefix described at
   // https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
   return base::FilePath(base::StrCat({L"\\??\\", path}));
 }
 
-base::FilePath GetUniversalPath(const base::string16& path) {
+base::FilePath GetUniversalPath(const std::wstring& path) {
   // Add the universal \\?\ prefix described at
   // https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#namespaces
   return base::FilePath(base::StrCat({L"\\\\?\\", path}));

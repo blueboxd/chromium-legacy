@@ -276,7 +276,7 @@ class TestEngineRequestInvoker {
     } else if (request_name == "DeleteService") {
       // The broker should reject the empty string so we won't risk deleting a
       // real service.
-      const base::string16 empty_service_name;
+      const std::wstring empty_service_name;
       cleaner_requests_proxy_->task_runner()->PostTask(
           FROM_HERE, BindOnce(IgnoreResult(&CleanerProxy::SandboxDeleteService),
                               cleaner_requests_proxy_, empty_service_name,
@@ -361,14 +361,14 @@ class TestEngineRequestInvoker {
   static void GetLoadedModulesCallback(
       base::OnceClosure closure,
       bool /*result*/,
-      const std::vector<base::string16>& /*modules*/) {
+      const std::vector<std::wstring>& /*modules*/) {
     InvokeOnOtherSequence(std::move(closure));
   }
 
   static void GetProcessCommandLineCallback(
       base::OnceClosure closure,
       bool /*result*/,
-      const base::string16& /*command_line*/) {
+      const std::wstring& /*command_line*/) {
     InvokeOnOtherSequence(std::move(closure));
   }
 
@@ -450,7 +450,7 @@ MULTIPROCESS_TEST_MAIN(EngineRequestsNoBlocking) {
   std::string request_name =
       command_line->GetSwitchValueASCII(kTestRequestNameSwitch);
 
-  base::string16 test_native_reg_key_str =
+  std::wstring test_native_reg_key_str =
       command_line->GetSwitchValueNative(kTestRegKeySwitch);
   // Include the final null.
   WStringEmbeddedNulls test_native_reg_key(test_native_reg_key_str.data(),

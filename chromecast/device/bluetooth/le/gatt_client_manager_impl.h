@@ -40,15 +40,15 @@ class GattClientManagerImpl
   static constexpr base::TimeDelta kReadRemoteRssiTimeout =
       base::TimeDelta::FromSeconds(10);
 
-  using StatusCallback = base::OnceCallback<void(bool)>;
-
   explicit GattClientManagerImpl(bluetooth_v2_shlib::GattClient* gatt_client);
   ~GattClientManagerImpl() override;
 
-  void Initialize(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  void Finalize();
+  void InitializeOnIoThread();
 
   // GattClientManager implementation:
+  void Initialize(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) override;
+  void Finalize() override;
   void AddObserver(Observer* o) override;
   void RemoveObserver(Observer* o) override;
   void GetDevice(
@@ -60,6 +60,9 @@ class GattClientManagerImpl
   void GetNumConnected(base::OnceCallback<void(size_t)> cb) const override;
   void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) override;
   void NotifyBonded(const bluetooth_v2_shlib::Addr& addr) override;
+  bool IsConnectedLeDevice(const bluetooth_v2_shlib::Addr& addr) override;
+  bool SetGattClientConnectable(bool connectable) override;
+  void DisconnectAll(StatusCallback cb) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() override;
 
   // Add a Connect or Disconnect request to the queue. |is_connect| is true for
@@ -71,20 +74,6 @@ class GattClientManagerImpl
   // Add a ReadRemoteRssi request to the queue. They can only be executed
   // serially.
   void EnqueueReadRemoteRssiRequest(const bluetooth_v2_shlib::Addr& addr);
-
-  // Enable or disable GATT client connectability. Returns |true| if successful
-  // otherwise |false|.
-  bool SetGattClientConnectable(bool connectable);
-
-  // Disconnect all connected devices. Callback will return |true| if all
-  // devices are disconnected, otherwise false.
-  // When disabling GATT client, caller should call
-  // SetGattClientConnectable(false) before calling DisconnectAll so that
-  // upcoming GATT client connections can also be blocked.
-  void DisconnectAll(StatusCallback cb);
-
-  // True if it is a connected BLE device. Must be called on IO task runner.
-  bool IsConnectedLeDevice(const bluetooth_v2_shlib::Addr& addr);
 
   // TODO(bcf): Should be private and passed into objects which need it (e.g.
   // RemoteDevice, RemoteCharacteristic).
@@ -141,9 +130,7 @@ class GattClientManagerImpl
   void OnDisconnectTimeout(const bluetooth_v2_shlib::Addr& addr);
   void OnReadRemoteRssiTimeout(const bluetooth_v2_shlib::Addr& addr);
 
-  static void FinalizeOnIoThread(
-      std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>>
-          weak_factory);
+  void FinalizeOnIoThread();
 
   bluetooth_v2_shlib::GattClient* const gatt_client_;
 

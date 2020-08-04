@@ -25,6 +25,7 @@
 #include "ash/system/power/power_status.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -35,6 +36,7 @@
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -107,6 +109,16 @@ bool IsLockScreenUi(AmbientUiMode mode) {
 
 bool IsInSessionUi(AmbientUiMode mode) {
   return mode == AmbientUiMode::kInSessionUi;
+}
+
+bool IsAmbientModeEnabled() {
+  if (!AmbientClient::Get()->IsAmbientModeAllowed())
+    return false;
+
+  ash::SessionControllerImpl* controller = Shell::Get()->session_controller();
+  PrefService* prefs = controller->GetActivePrefService();
+  DCHECK(prefs);
+  return prefs->GetBoolean(ambient::prefs::kAmbientModeEnabled);
 }
 
 }  // namespace
@@ -256,7 +268,7 @@ void AmbientController::OnAutoShowTimeOut() {
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
-  if (!AmbientClient::Get()->IsAmbientModeAllowed()) {
+  if (!IsAmbientModeEnabled()) {
     VLOG(1) << "Ambient mode is not allowed.";
     return;
   }
@@ -339,7 +351,7 @@ void AmbientController::OnPowerStatusChanged() {
 
 void AmbientController::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& idle_state) {
-  if (!AmbientClient::Get()->IsAmbientModeAllowed())
+  if (!IsAmbientModeEnabled())
     return;
 
   if (!idle_state.dimmed())
@@ -366,7 +378,9 @@ void AmbientController::RemoveAmbientViewDelegateObserver(
 }
 
 void AmbientController::ShowUi(AmbientUiMode mode) {
-  if (!AmbientClient::Get()->IsAmbientModeAllowed()) {
+  // TODO(meilinw): move the eligibility check to the idle entry point once
+  // implemented: b/149246117.
+  if (!IsAmbientModeEnabled()) {
     LOG(WARNING) << "Ambient mode is not allowed.";
     return;
   }

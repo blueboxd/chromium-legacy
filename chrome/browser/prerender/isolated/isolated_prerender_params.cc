@@ -65,6 +65,11 @@ IsolatedPrerenderMaximumNumberOfNoStatePrefetchAttempts() {
   return max;
 }
 
+size_t IsolatedPrerenderMaximumNumberOfConcurrentPrefetches() {
+  return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+      features::kIsolatePrerenders, "max_concurrent_prefetches", 1));
+}
+
 base::TimeDelta IsolatedPrerenderProbeTimeout() {
   return base::TimeDelta::FromMilliseconds(
       base::GetFieldTrialParamByFeatureAsInt(

@@ -30,6 +30,10 @@ namespace views {
 class Button;
 }  // namespace views
 
+namespace ui {
+class ImageModel;
+}  // namespace ui
+
 // This class provides the UI for different menus that are created by user
 // clicking the avatar button.
 class ProfileMenuViewBase : public content::WebContentsDelegate,
@@ -113,21 +117,13 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // Override to supply a sync icon for the profile menu.
   virtual gfx::ImageSkia GetSyncIcon() const;
 
-  // If |profile_name| is empty, no heading will be displayed. If |image| is
-  // empty |icon| will be used instead.
-  // TODO(crbug.com/1100835): Consider simplifying the API by only passing
-  // |image| (and constructing it from |icon| upon calling when needed). This is
-  // especially relevant, if the icon color no longer depends on the theme
-  // through a color id.
+  // If |profile_name| is empty, no heading will be displayed.
   void SetProfileIdentityInfo(
       const base::string16& profile_name,
       base::Optional<EditButtonParams> edit_button_params,
-      const gfx::ImageSkia& image,
+      const ui::ImageModel& image_model,
       const base::string16& title,
-      const base::string16& subtitle = base::string16(),
-      const gfx::VectorIcon& icon = kUserAccountAvatarIcon,
-      ui::NativeTheme::ColorId icon_color_id =
-          ui::NativeTheme::kColorId_MenuIconColor);
+      const base::string16& subtitle = base::string16());
   void SetSyncInfo(const SyncInfo& sync_info,
                    const base::RepeatingClosure& action,
                    bool show_badge);
@@ -139,7 +135,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                         const gfx::VectorIcon& icon = gfx::kNoneIcon,
                         float icon_to_image_ratio = 1.0f);
   void SetProfileManagementHeading(const base::string16& heading);
-  void AddSelectableProfile(const gfx::ImageSkia& image,
+  void AddSelectableProfile(const ui::ImageModel& image_model,
                             const base::string16& name,
                             bool is_guest,
                             base::RepeatingClosure action);

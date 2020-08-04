@@ -4,38 +4,6 @@
 
 #include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
 
-FakeNearbyConnectionsManager::FakeNearbyConnection::FakeNearbyConnection() =
-    default;
-
-FakeNearbyConnectionsManager::FakeNearbyConnection::~FakeNearbyConnection() =
-    default;
-
-void FakeNearbyConnectionsManager::FakeNearbyConnection::Read(
-    ReadCallback callback) {
-  // TODO(alexchau): Implement.
-}
-
-void FakeNearbyConnectionsManager::FakeNearbyConnection::Write(
-    std::vector<uint8_t> bytes,
-    WriteCallback callback) {
-  // TODO(alexchau): Implement.
-}
-
-void FakeNearbyConnectionsManager::FakeNearbyConnection::Close() {
-  is_closed_ = true;
-  if (!disconnection_callback_.is_null())
-    std::move(disconnection_callback_).Run();
-}
-
-bool FakeNearbyConnectionsManager::FakeNearbyConnection::IsClosed() const {
-  return is_closed_;
-}
-
-void FakeNearbyConnectionsManager::FakeNearbyConnection::
-    RegisterForDisconnection(base::OnceClosure callback) {
-  disconnection_callback_ = std::move(callback);
-}
-
 FakeNearbyConnectionsManager::FakeNearbyConnectionsManager() = default;
 
 FakeNearbyConnectionsManager::~FakeNearbyConnectionsManager() = default;
@@ -111,7 +79,7 @@ void FakeNearbyConnectionsManager::RegisterPayloadStatusListener(
   // TODO(alexchau): Implement.
 }
 
-FakeNearbyConnectionsManager::PayloadPtr
+FakeNearbyConnectionsManager::Payload*
 FakeNearbyConnectionsManager::GetIncomingPayload(int64_t payload_id) {
   DCHECK(!IsShutdown());
   // TODO(alexchau): Implement.

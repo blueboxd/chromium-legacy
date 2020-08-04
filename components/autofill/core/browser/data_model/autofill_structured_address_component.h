@@ -21,17 +21,19 @@ namespace autofill {
 namespace structured_address {
 
 // Represents the validation status of value stored in the AutofillProfile.
+// The associated integer values used to store the verification code in SQL and
+// should not be modified.
 enum class VerificationStatus {
   // No verification status assigned.
-  kNoStatus,
+  kNoStatus = 0,
   // The value token was parsed from a parent token.
-  kParsed,
+  kParsed = 1,
   // Value was built from its subcomponents.
-  kFormatted,
+  kFormatted = 2,
   // The value was observed in a form transmission.
-  kObserved,
+  kObserved = 3,
   // The user used the autofill settings to verify and store this token.
-  kUserVerified,
+  kUserVerified = 4,
 };
 
 // An AddressComponent is a tree structure that represents a semi-structured

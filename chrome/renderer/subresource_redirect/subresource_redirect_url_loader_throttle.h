@@ -6,12 +6,17 @@
 #define CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace blink {
 class WebURLRequest;
 }  // namespace blink
+
+namespace previews {
+class ResourceLoadingHintsAgent;
+}  // namespace previews
 
 namespace subresource_redirect {
 
@@ -26,6 +31,8 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
                       int render_frame_id);
 
   ~SubresourceRedirectURLLoaderThrottle() override;
+
+  previews::ResourceLoadingHintsAgent* GetResourceLoadingHintsAgent();
 
   // virtual for testing.
   virtual SubresourceRedirectHintsAgent* GetSubresourceRedirectHintsAgent();
@@ -58,6 +65,9 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   SubresourceRedirectURLLoaderThrottle(int render_frame_id,
                                        bool allowed_to_redirect);
 
+  // Callback invoked when the redirect fetch times out.
+  void OnRedirectTimeout();
+
   // Render frame id to get the hints agent of the render frame.
   const int render_frame_id_;
 
@@ -71,6 +81,9 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   // coverage metrics recorded), or redirect was not needed when the initial URL
   // itself is compressed origin.
   bool did_redirect_compressed_origin_ = false;
+
+  // Timer to detect whether the response from compression server has timed out.
+  std::unique_ptr<base::OneShotTimer> redirect_timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectURLLoaderThrottle);
 };

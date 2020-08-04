@@ -5,12 +5,12 @@
 #ifndef WEBLAYER_RENDERER_ERROR_PAGE_HELPER_H_
 #define WEBLAYER_RENDERER_ERROR_PAGE_HELPER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
-#include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "weblayer/common/error_page_helper.mojom.h"
 
 namespace error_page {
 class Error;
@@ -26,9 +26,11 @@ namespace weblayer {
 class ErrorPageHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<ErrorPageHelper>,
-      public security_interstitials::SecurityInterstitialPageController::
-          Delegate {
+      public mojom::ErrorPageHelper {
  public:
+  ErrorPageHelper(const ErrorPageHelper&) = delete;
+  ErrorPageHelper& operator=(const ErrorPageHelper&) = delete;
+
   // Creates an ErrorPageHelper which will observe and tie its lifetime to
   // |render_frame|, if it's a main frame. ErrorPageHelpers will not be created
   // for sub frames.
@@ -45,12 +47,8 @@ class ErrorPageHelper
   void DidFinishLoad() override;
   void OnDestruct() override;
 
-  // security_interstitials::SecurityInterstitialPageController::Delegate:
-  void SendCommand(
-      security_interstitials::SecurityInterstitialCommand command) override;
-
-  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-  GetInterface() override;
+  // mojom::ErrorPageHelper:
+  void DisableErrorPageHelperForNextError() override;
 
  private:
   struct ErrorPageInfo;
@@ -60,6 +58,9 @@ class ErrorPageHelper
 
   void Reload();
 
+  void BindErrorPageHelper(
+      mojo::PendingAssociatedReceiver<mojom::ErrorPageHelper> receiver);
+
   // Information for the provisional / "pre-provisional" error page. Null when
   // there's no page pending, or the pending page is not an error page.
   std::unique_ptr<ErrorPageInfo> pending_error_page_info_;
@@ -68,9 +69,15 @@ class ErrorPageHelper
   // not an error page.
   std::unique_ptr<ErrorPageInfo> committed_error_page_info_;
 
-  base::WeakPtrFactory<ErrorPageHelper> weak_factory_{this};
+  // Set to true when the embedder injects its own error page. When the
+  // embedder injects its own error page the support here is not needed and
+  // disabled.
+  bool is_disabled_for_next_error_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ErrorPageHelper);
+  mojo::AssociatedReceiver<mojom::ErrorPageHelper> error_page_helper_receiver_{
+      this};
+
+  base::WeakPtrFactory<ErrorPageHelper> weak_factory_{this};
 };
 
 }  // namespace weblayer

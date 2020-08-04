@@ -18,6 +18,7 @@
 // A wrapper around the Nearby Connections mojo API.
 class NearbyConnectionsManager {
  public:
+  using Payload = location::nearby::connections::mojom::Payload;
   using PayloadPtr = location::nearby::connections::mojom::PayloadPtr;
   using ConnectionsStatus = location::nearby::connections::mojom::Status;
   using ConnectionsCallback =
@@ -112,7 +113,7 @@ class NearbyConnectionsManager {
       PayloadStatusListener* listener) = 0;
 
   // Gets the payload associated with |payload_id| if available.
-  virtual PayloadPtr GetIncomingPayload(int64_t payload_id) = 0;
+  virtual Payload* GetIncomingPayload(int64_t payload_id) = 0;
 
   // Cancels a Payload currently in-flight to or from remote endpoints.
   virtual void Cancel(int64_t payload_id, ConnectionsCallback callback) = 0;

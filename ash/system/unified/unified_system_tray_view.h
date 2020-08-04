@@ -136,6 +136,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void Layout() override;
+  void ChildPreferredSizeChanged(views::View* child) override;
   const char* GetClassName() const override;
   views::FocusTraversable* GetFocusTraversable() override;
   void AddedToWidget() override;

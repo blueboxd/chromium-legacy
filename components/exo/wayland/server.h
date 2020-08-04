@@ -14,6 +14,9 @@
 #include "components/exo/wayland/scoped_wl.h"
 #include "ui/display/display_observer.h"
 
+struct wl_resource;
+struct wl_client;
+
 namespace exo {
 class Display;
 
@@ -57,6 +60,10 @@ class Server : public display::DisplayObserver {
   // Overridden from display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
+
+  wl_resource* GetOutputResource(wl_client* client, int64_t display_id);
+
+  Display* GetDisplay() { return display_; }
 
  private:
   Display* const display_;

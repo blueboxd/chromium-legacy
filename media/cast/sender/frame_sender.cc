@@ -463,7 +463,8 @@ bool FrameSender::ShouldDropNextFrame(base::TimeDelta frame_duration) const {
   if (VLOG_IS_ON(1)) {
     const int64_t percent =
         allowed_in_flight > base::TimeDelta()
-            ? (100 * duration_would_be_in_flight).IntDiv(allowed_in_flight)
+            ? base::ClampRound<int64_t>(
+                  duration_would_be_in_flight.FltDiv(allowed_in_flight) * 100)
             : std::numeric_limits<int64_t>::max();
     VLOG_IF(1, percent > 50)
         << SENDER_SSRC

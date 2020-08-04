@@ -37,6 +37,7 @@ import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/mojom/loader/resource_load_info.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
+import "third_party/blink/public/mojom/page/page.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
@@ -318,6 +319,9 @@ struct CreateNewWindowReply {
   pending_associated_receiver<blink.mojom.FrameWidget> frame_widget;
   pending_associated_remote<blink.mojom.WidgetHost> widget_host;
   pending_associated_receiver<blink.mojom.Widget> widget;
+
+  // The communication interfaces for the PageBroadcast.
+  pending_associated_receiver<blink.mojom.PageBroadcast> page_broadcast;
 
   DocumentScopedInterfaceBundle main_frame_interface_bundle;
 

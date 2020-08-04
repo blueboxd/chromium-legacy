@@ -57,7 +57,7 @@ bool TestClipboard::IsFormatAvailable(
 #if defined(OS_LINUX)
   // The linux clipboard treats the presence of text on the clipboard
   // as the url format being available.
-  if (format.Equals(ClipboardFormatType::GetUrlType()))
+  if (format == ClipboardFormatType::GetUrlType())
     return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
                              data_dst);
 #endif  // OS_LINUX

@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -187,7 +186,7 @@ const char kMasterPreferencesJsonForTests[] = R"(
     })";
 
 const char kSanitizedLnkPath[] = "CSIDL_PROFILE\\appdata\\roaming";
-typedef std::map<base::string16, std::vector<base::string16>>
+typedef std::map<std::wstring, std::vector<std::wstring>>
     ExtensionIdToFileNamesMap;
 
 class SystemReportComponentTest : public testing::Test {
@@ -304,7 +303,7 @@ bool RegistryKeyCollected(
     const RepeatedPtrField<FileInformation> extension_files =
         installed_extension.extension_files();
 
-    std::unordered_set<base::string16> expected_files(
+    std::unordered_set<std::wstring> expected_files(
         extension_id_to_filenames_map
             .at(base::UTF8ToWide(installed_extension.extension_id()))
             .begin(),
@@ -318,7 +317,7 @@ bool RegistryKeyCollected(
              << installed_extension.extension_id();
 
     for (const auto& file : extension_files) {
-      base::string16 file_name =
+      std::wstring file_name =
           base::FilePath(base::UTF8ToWide(file.path())).BaseName().value();
 
       if (expected_files.find(file_name) == expected_files.end())
@@ -686,7 +685,7 @@ TEST_F(SystemReportComponentTest, ReportMasterPreferencesExtensions) {
 
 TEST_F(SystemReportComponentTest,
        ReportModifiedShortcutWithCommandLineArguments) {
-  const base::string16 kShortcutArguments =
+  const std::wstring kShortcutArguments =
       L"--some-flag --some-other-scary-flag --flag-with-personal-data=" +
       appdata_file_path_.value();
   const int kArgumentSize = 3;
@@ -722,8 +721,7 @@ TEST_F(SystemReportComponentTest,
 }
 
 TEST_F(SystemReportComponentTest, ReportShortcutWithPersonalSite) {
-  const base::string16 kPersonalSite =
-      L"http://www.somesite.com/user/happy_user";
+  const std::wstring kPersonalSite = L"http://www.somesite.com/user/happy_user";
   const std::string kSanitizedPersonalSite = "http://www.somesite.com";
   ShortcutInformation shortcut_with_personal_site;
   shortcut_with_personal_site.lnk_path = appdata_file_path_;

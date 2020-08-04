@@ -16,7 +16,6 @@
 #include "components/exo/shell_surface_base.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_lock.h"
-#include "ui/display/display_observer.h"
 
 namespace ash {
 class NonClientFrameViewAsh;
@@ -41,7 +40,6 @@ enum class ZoomChange { IN, OUT, RESET };
 // position specified as part of the geometry is relative to the origin of
 // the screen coordinate system.
 class ClientControlledShellSurface : public ShellSurfaceBase,
-                                     public display::DisplayObserver,
                                      public ui::CompositorLockClient {
  public:
   ClientControlledShellSurface(Surface* surface,

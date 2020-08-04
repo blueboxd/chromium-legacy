@@ -236,7 +236,7 @@ void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
     const std::string& access_token) {
   if (gaia_id.empty() || access_token.empty()) {
     LOG(ERROR) << "Failed to fetch access token";
-    // Returns a dummy instance to indicate the failure.
+    // Returns an empty instance to indicate the failure.
     std::move(callback).Run(ash::ScreenUpdate());
     return;
   }
@@ -263,7 +263,7 @@ void AmbientBackendControllerImpl::OnScreenUpdateInfoFetched(
   DCHECK(backdrop_url_loader);
 
   // Parse the |ScreenUpdate| out from the response string.
-  // Note that the |backdrop_screen_update| can be a dummy instance if the
+  // Note that the |backdrop_screen_update| can be an empty instance if the
   // parsing has failed.
   backdrop::ScreenUpdate backdrop_screen_update =
       BackdropClientConfig::ParseScreenUpdateFromResponse(*response);
@@ -355,7 +355,7 @@ void AmbientBackendControllerImpl::FetchSettingPreviewInternal(
     const std::string& access_token) {
   if (gaia_id.empty() || access_token.empty()) {
     LOG(ERROR) << "Failed to fetch access token";
-    // Returns a dummy instance to indicate the failure.
+    // Returns an empty instance to indicate the failure.
     std::move(callback).Run(/*preview_urls=*/{});
     return;
   }
@@ -398,7 +398,7 @@ void AmbientBackendControllerImpl::FetchPersonalAlbumsInternal(
     const std::string& access_token) {
   if (gaia_id.empty() || access_token.empty()) {
     LOG(ERROR) << "Failed to fetch access token";
-    // Returns a dummy instance to indicate the failure.
+    // Returns an empty instance to indicate the failure.
     std::move(callback).Run(ash::PersonalAlbums());
     return;
   }
@@ -426,7 +426,7 @@ void AmbientBackendControllerImpl::OnPersonalAlbumsFetched(
   DCHECK(backdrop_url_loader);
 
   // Parse the |PersonalAlbumsResponse| out from the response string.
-  // Note that the |personal_albums| can be a dummy instance if the parsing has
+  // Note that the |personal_albums| can be an empty instance if the parsing has
   // failed.
   ash::PersonalAlbums personal_albums =
       BackdropClientConfig::ParsePersonalAlbumsResponse(*response);

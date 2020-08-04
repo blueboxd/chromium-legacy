@@ -7,11 +7,11 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/crash/crash_client.h"
 #include "chrome/chrome_cleaner/settings/settings_types.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
@@ -41,7 +41,7 @@ class CrashpadCrashClient : public CrashClient {
 
   // Sets |client_id| to the current guid associated with crashes. |client_id|
   // may be empty if no guid is associated.
-  static void GetClientId(base::string16* client_id);
+  static void GetClientId(std::wstring* client_id);
 
   // Returns whether upload of crashes is enabled or not.
   static bool IsUploadEnabled();

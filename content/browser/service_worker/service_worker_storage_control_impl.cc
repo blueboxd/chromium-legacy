@@ -13,34 +13,6 @@ namespace content {
 
 namespace {
 
-void DidGetRegistrationsForOrigin(
-    ServiceWorkerStorageControlImpl::GetRegistrationsForOriginCallback callback,
-    storage::mojom::ServiceWorkerDatabaseStatus status,
-    std::unique_ptr<ServiceWorkerStorage::RegistrationList>
-        registration_data_list,
-    std::unique_ptr<std::vector<ServiceWorkerStorage::ResourceList>>
-        resources_list) {
-  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
-    std::move(callback).Run(
-        status,
-        std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>());
-    return;
-  }
-
-  DCHECK_EQ(registration_data_list->size(), resources_list->size());
-
-  std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
-      registrations;
-  for (size_t i = 0; i < registration_data_list->size(); ++i) {
-    registrations.push_back(
-        storage::mojom::SerializedServiceWorkerRegistration::New(
-            std::move((*registration_data_list)[i]),
-            std::move((*resources_list)[i])));
-  }
-
-  std::move(callback).Run(status, std::move(registrations));
-}
-
 void DidGetUserDataForAllRegistrations(
     ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrationsCallback
         callback,
@@ -193,7 +165,9 @@ void ServiceWorkerStorageControlImpl::GetRegistrationsForOrigin(
     GetRegistrationsForOriginCallback callback) {
   storage_->GetRegistrationsForOrigin(
       origin,
-      base::BindOnce(&DidGetRegistrationsForOrigin, std::move(callback)));
+      base::BindOnce(
+          &ServiceWorkerStorageControlImpl::DidGetRegistrationsForOrigin,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ServiceWorkerStorageControlImpl::GetUsageForOrigin(
@@ -406,30 +380,56 @@ void ServiceWorkerStorageControlImpl::ApplyPolicyUpdates(
 
 void ServiceWorkerStorageControlImpl::DidFindRegistration(
     base::OnceCallback<
-        void(storage::mojom::ServiceWorkerFindRegistrationResultPtr)> callback,
+        void(storage::mojom::ServiceWorkerDatabaseStatus status,
+             storage::mojom::ServiceWorkerFindRegistrationResultPtr)> callback,
     storage::mojom::ServiceWorkerRegistrationDataPtr data,
     std::unique_ptr<ResourceList> resources,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
-  ResourceList resource_list =
-      resources ? std::move(*resources) : ResourceList();
-
-  mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
-      remote_reference;
-  if (data &&
-      data->version_id != blink::mojom::kInvalidServiceWorkerVersionId) {
-    DCHECK_EQ(status, storage::mojom::ServiceWorkerDatabaseStatus::kOk);
-    auto it = live_versions_.find(data->version_id);
-    if (it == live_versions_.end()) {
-      remote_reference = CreateLiveVersionReference(data->version_id);
-    } else {
-      it->second->Add(remote_reference.InitWithNewPipeAndPassReceiver());
-    }
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
+    std::move(callback).Run(status, /*result=*/nullptr);
+    return;
   }
 
+  DCHECK(resources);
+  DCHECK(data);
+
+  ResourceList resource_list = std::move(*resources);
+  mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+      remote_reference = CreateLiveVersionReferenceRemote(data->version_id);
+
   std::move(callback).Run(
-      storage::mojom::ServiceWorkerFindRegistrationResult::New(
-          status, std::move(remote_reference), std::move(data),
-          std::move(resource_list)));
+      status, storage::mojom::ServiceWorkerFindRegistrationResult::New(
+                  std::move(remote_reference), std::move(data),
+                  std::move(resource_list)));
+}
+
+void ServiceWorkerStorageControlImpl::DidGetRegistrationsForOrigin(
+    GetRegistrationsForOriginCallback callback,
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    std::unique_ptr<ServiceWorkerStorage::RegistrationList>
+        registration_data_list,
+    std::unique_ptr<std::vector<ResourceList>> resources_list) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
+    std::move(callback).Run(
+        status,
+        std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>());
+    return;
+  }
+
+  DCHECK_EQ(registration_data_list->size(), resources_list->size());
+
+  std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>
+      registrations;
+  for (size_t i = 0; i < registration_data_list->size(); ++i) {
+    int64_t version_id = (*registration_data_list)[i]->version_id;
+    registrations.push_back(
+        storage::mojom::ServiceWorkerFindRegistrationResult::New(
+            CreateLiveVersionReferenceRemote(version_id),
+            std::move((*registration_data_list)[i]),
+            std::move((*resources_list)[i])));
+  }
+
+  std::move(callback).Run(status, std::move(registrations));
 }
 
 void ServiceWorkerStorageControlImpl::DidStoreRegistration(
@@ -457,23 +457,27 @@ void ServiceWorkerStorageControlImpl::DidGetNewVersionId(
   mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
       remote_reference;
   if (version_id != blink::mojom::kInvalidServiceWorkerVersionId) {
-    remote_reference = CreateLiveVersionReference(version_id);
+    remote_reference = CreateLiveVersionReferenceRemote(version_id);
   }
   std::move(callback).Run(version_id, std::move(remote_reference));
 }
 
 mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
-ServiceWorkerStorageControlImpl::CreateLiveVersionReference(
+ServiceWorkerStorageControlImpl::CreateLiveVersionReferenceRemote(
     int64_t version_id) {
   DCHECK_NE(version_id, blink::mojom::kInvalidServiceWorkerVersionId);
-  DCHECK(!base::Contains(live_versions_, version_id));
 
   mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
       remote_reference;
-  auto reference = std::make_unique<ServiceWorkerLiveVersionRefImpl>(
-      weak_ptr_factory_.GetWeakPtr(), version_id);
-  reference->Add(remote_reference.InitWithNewPipeAndPassReceiver());
-  live_versions_[version_id] = std::move(reference);
+  auto it = live_versions_.find(version_id);
+  if (it == live_versions_.end()) {
+    auto reference = std::make_unique<ServiceWorkerLiveVersionRefImpl>(
+        weak_ptr_factory_.GetWeakPtr(), version_id);
+    reference->Add(remote_reference.InitWithNewPipeAndPassReceiver());
+    live_versions_[version_id] = std::move(reference);
+  } else {
+    it->second->Add(remote_reference.InitWithNewPipeAndPassReceiver());
+  }
   return remote_reference;
 }
 

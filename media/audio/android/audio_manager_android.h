@@ -88,6 +88,8 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   // otherwise accounting for.
   base::TimeDelta GetOutputLatency();
 
+  bool IsUsingAAudioForTesting() { return UseAAudio(); }
+
  protected:
   void ShutdownOnAudioThread() override;
   AudioParameters GetPreferredOutputStreamParameters(

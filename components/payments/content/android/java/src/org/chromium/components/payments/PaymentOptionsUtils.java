@@ -24,6 +24,15 @@ public class PaymentOptionsUtils {
     }
 
     /**
+     * @param options Any PaymentOption, can be null.
+     * @return Whether a PaymentOptions has requested any payer's information (email, phone, name).
+     */
+    public static boolean requestAnyContactInformation(@Nullable PaymentOptions options) {
+        if (options == null) return false;
+        return options.requestPayerEmail || options.requestPayerPhone || options.requestPayerName;
+    }
+
+    /**
      * @param options Any PaymentOptions, can be null.
      * @return Return a JSON string indicating whether each information is requested in the
      *         PaymentOptions.

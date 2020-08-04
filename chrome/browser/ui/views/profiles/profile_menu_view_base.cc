@@ -26,11 +26,13 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -142,6 +144,15 @@ const gfx::ImageSkia ImageForMenu(const gfx::VectorIcon& icon,
   return gfx::CanvasImageSource::CreatePadded(sized_icon, gfx::Insets(padding));
 }
 
+gfx::ImageSkia SizeImageModel(const ui::ImageModel& image_model,
+                              const ui::NativeTheme* native_theme,
+                              int size) {
+  return image_model.IsImage()
+             ? CropCircle(SizeImage(image_model.GetImage().AsImageSkia(), size))
+             : ui::ThemedVectorIcon(image_model.GetVectorIcon())
+                   .GetImageSkia(native_theme, size);
+}
+
 class CircularImageButton : public views::ImageButton {
  public:
   CircularImageButton(
@@ -245,29 +256,26 @@ class ProfileManagementIconView : public views::ImageView {
 // current theme colors.
 class AvatarImageView : public views::ImageView {
  public:
-  AvatarImageView(gfx::ImageSkia avatar_image,
-                  const ProfileMenuViewBase* root_view,
-                  const gfx::VectorIcon& icon,
-                  ui::NativeTheme::ColorId icon_color_id)
-      : avatar_image_(avatar_image),
-        root_view_(root_view),
-        icon_(icon),
-        icon_color_id_(icon_color_id) {
+  AvatarImageView(const ui::ImageModel& avatar_image,
+                  const ProfileMenuViewBase* root_view)
+      : avatar_image_(avatar_image), root_view_(root_view) {
     SetBorder(views::CreateEmptyBorder(0, 0, kAvatarImageViewBottomMargin, 0));
+    if (avatar_image_.IsEmpty()) {
+      // This can happen if the account image hasn't been fetched yet, if there
+      // is no image, or in tests.
+      avatar_image_ = ui::ImageModel::FromVectorIcon(
+          kUserAccountAvatarIcon, ui::NativeTheme::kColorId_MenuIconColor,
+          kIdentityImageSize);
+    }
   }
 
   // views::ImageVIew:
   void OnThemeChanged() override {
     ImageView::OnThemeChanged();
-    // Fall back to |icon_| if |avatar_image_| is empty. This can happen if
-    // the account image hasn't been fetched yet, if there is no image (e.g. for
-    // incognito), or in tests.
     constexpr int kBadgePadding = 1;
-    const SkColor icon_color = GetNativeTheme()->GetSystemColor(icon_color_id_);
+    DCHECK(!avatar_image_.IsEmpty());
     gfx::ImageSkia sized_avatar_image =
-        avatar_image_.isNull()
-            ? gfx::CreateVectorIcon(icon_, kIdentityImageSize, icon_color)
-            : CropCircle(SizeImage(avatar_image_, kIdentityImageSize));
+        SizeImageModel(avatar_image_, GetNativeTheme(), kIdentityImageSize);
 
     const SkColor background_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_BubbleBackground);
@@ -285,10 +293,8 @@ class AvatarImageView : public views::ImageView {
   }
 
  private:
-  gfx::ImageSkia avatar_image_;
+  ui::ImageModel avatar_image_;
   const ProfileMenuViewBase* root_view_;
-  const gfx::VectorIcon& icon_;
-  ui::NativeTheme::ColorId icon_color_id_;
 };
 
 class SyncButton : public HoverButton {
@@ -501,11 +507,9 @@ gfx::ImageSkia ProfileMenuViewBase::GetSyncIcon() const {
 void ProfileMenuViewBase::SetProfileIdentityInfo(
     const base::string16& profile_name,
     base::Optional<EditButtonParams> edit_button_params,
-    const gfx::ImageSkia& image,
+    const ui::ImageModel& image_model,
     const base::string16& title,
-    const base::string16& subtitle,
-    const gfx::VectorIcon& icon,
-    ui::NativeTheme::ColorId icon_color_id) {
+    const base::string16& subtitle) {
   constexpr int kBottomMargin = kDefaultMargin;
   const bool new_design =
       base::FeatureList::IsEnabled(features::kNewProfilePicker);
@@ -521,8 +525,7 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
                       gfx::Insets(container_margin, container_margin,
                                   kBottomMargin, container_margin)));
 
-  auto avatar_image_view =
-      std::make_unique<AvatarImageView>(image, this, icon, icon_color_id);
+  auto avatar_image_view = std::make_unique<AvatarImageView>(image_model, this);
 
   if (!new_design) {
     if (!profile_name.empty()) {
@@ -746,10 +749,11 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   label->SetHandlesTooltips(false);
 }
 
-void ProfileMenuViewBase::AddSelectableProfile(const gfx::ImageSkia& image,
-                                               const base::string16& name,
-                                               bool is_guest,
-                                               base::RepeatingClosure action) {
+void ProfileMenuViewBase::AddSelectableProfile(
+    const ui::ImageModel& image_model,
+    const base::string16& name,
+    bool is_guest,
+    base::RepeatingClosure action) {
   constexpr int kImageSize = 20;
 
   // Initialize layout if this is the first time a button is added.
@@ -759,7 +763,10 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::ImageSkia& image,
             views::BoxLayout::Orientation::kVertical));
   }
 
-  gfx::ImageSkia sized_image = CropCircle(SizeImage(image, kImageSize));
+  DCHECK(!image_model.IsEmpty());
+  gfx::ImageSkia sized_image =
+      SizeImageModel(image_model, GetNativeTheme(), kImageSize);
+
   views::Button* button = selectable_profiles_container_->AddChildView(
       std::make_unique<HoverButton>(this, sized_image, name));
 

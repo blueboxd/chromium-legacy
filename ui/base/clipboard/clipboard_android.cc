@@ -380,7 +380,7 @@ bool ClipboardAndroid::IsFormatAvailable(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
-  if (ClipboardFormatType::GetBitmapType().Equals(format)) {
+  if (format == ClipboardFormatType::GetBitmapType()) {
     return g_map.Get().HasFormat(kMimeTypeImageURI);
   }
   return g_map.Get().HasFormat(format.GetName());

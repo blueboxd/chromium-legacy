@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
+#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
 
 namespace apps {
 class AppShimManager;
@@ -28,6 +29,11 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   AppShimListener* app_shim_listener();
   apps::AppShimManager* app_shim_manager();
+  GeolocationSystemPermissionManager* location_permission_manager();
+
+ protected:
+  std::unique_ptr<GeolocationSystemPermissionManager>
+      location_permission_manager_;
 
  private:
   std::unique_ptr<apps::AppShimManager> app_shim_manager_;

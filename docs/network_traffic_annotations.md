@@ -285,6 +285,11 @@ change list. These checks include:
 * All usages from Chrome have annotation.
 * Unique ids are unique, through history (even if an annotation gets deprecated,
   its unique id cannot be reused to keep the stats sound).
+* That the annotation appears in
+  `tools/traffic_annotation/summary/grouping.xml`. When adding a new annotation,
+  it must also be included in `grouping.xml` for reporting purposes (please
+  refer to the **Annotations Review**).
+  
 
 ### Presubmit tests
 To perform tests prior to submit, one can use the `traffic_annotation_auditor`
@@ -313,15 +318,22 @@ scope of tests have not neglected any issues.
 
 Network traffic annotations require review before landing in code and this is
 enforced through keeping a summary of annotations in
-`tools/traffic_annotation/summary/annotations.xml`.
-Once a new annotation is added, one is updated, or deleted, this file
-should also be updated. To update the file automatically, one can run
-`traffic_annotation_auditor` as specified in presubmit tests. But if it is not
-possible to do so (e.g., if you are changing the code from an unsupported
-platform or you don’t have a compiled build directory), the code can be
-submitted to the trybot and the test on trybot will tell you the required
-modifications.
+`tools/traffic_annotation/summary/annotations.xml`. Once a new annotation is added,
+one is updated, or deleted, this file should also be updated. To update the
+`annotations.xml` file automatically, one can run `traffic_annotation_auditor`
+as specified in presubmit tests. But if it is not possible to do so (e.g., if
+you are changing the code from an unsupported platform or you don’t have a
+compiled build directory), the code can be submitted to the trybot and the test
+on trybot will tell you the required modifications. 
 
+In order to help make external reports easier, annotation unique ids should be
+mentioned in `tools/traffic_annotation/summary/grouping.xml`. Once a new
+annotation is added, or a preexisting annotation's unique id changes, this file
+should also be updated. When adding a new annotation, make sure it is placed
+within an appropriate group of `grouping.xml`. In the rare case that none of
+the groups are appropriate, one can create a new group for the annotation; the
+arrangement of annotations and group names in `grouping.xml` may be later
+updated by a technical writer to better coincide with the external reports.
 
 ## Partial Annotations (Advanced)
 

@@ -23,7 +23,7 @@
 
 namespace {
 constexpr base::TimeDelta kTabsChangeDelay =
-    base::TimeDelta::FromMilliseconds(500);
+    base::TimeDelta::FromMilliseconds(50);
 }
 
 TabSearchPageHandler::TabSearchPageHandler(
@@ -159,6 +159,8 @@ void TabSearchPageHandler::OnTabStripModelChanged(
 void TabSearchPageHandler::TabChangedAt(content::WebContents* contents,
                                         int index,
                                         TabChangeType change_type) {
+  // TODO(crbug.com/1112496): Support more values for TabChangeType and filter
+  // out the changes we are not interested in.
   if (change_type == TabChangeType::kAll)
     ScheduleDebounce();
 }

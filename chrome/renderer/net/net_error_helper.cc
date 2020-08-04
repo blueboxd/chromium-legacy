@@ -31,7 +31,6 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
-#include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -155,20 +154,11 @@ content::RenderFrame* NetErrorHelper::GetRenderFrame() {
   return render_frame();
 }
 
-mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-NetErrorHelper::GetInterface() {
-  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-      interface;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
-  return interface;
-}
-
 void NetErrorHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
-  // Invalidate weak pointers from old error page controllers. If loading a new
-  // error page, the controller has not yet been attached, so this won't affect
-  // it.
+  // Invalidate weak pointers from the old error page controller. If loading a
+  // new error page, the controller has not yet been attached, so this won't
+  // affect it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
-  weak_security_interstitial_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
                       render_frame()->GetWebFrame()->GetDocument().Url());
@@ -273,8 +263,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
 
 void NetErrorHelper::EnablePageHelperFunctions() {
   security_interstitials::SecurityInterstitialPageController::Install(
-      render_frame(),
-      weak_security_interstitial_controller_delegate_factory_.GetWeakPtr());
+      render_frame());
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
 }

@@ -9,11 +9,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -24,8 +27,20 @@ ChromeEnterpriseRealTimeUrlLookupService::
     ChromeEnterpriseRealTimeUrlLookupService(
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         VerdictCacheManager* cache_manager,
-        Profile* profile)
-    : RealTimeUrlLookupServiceBase(url_loader_factory, cache_manager),
+        Profile* profile,
+        syncer::SyncService* sync_service,
+        PrefService* pref_service,
+        const ChromeUserPopulation::ProfileManagementStatus&
+            profile_management_status,
+        bool is_under_advanced_protection,
+        bool is_off_the_record)
+    : RealTimeUrlLookupServiceBase(url_loader_factory,
+                                   cache_manager,
+                                   sync_service,
+                                   pref_service,
+                                   profile_management_status,
+                                   is_under_advanced_protection,
+                                   is_off_the_record),
       profile_(profile) {}
 
 ChromeEnterpriseRealTimeUrlLookupService::
@@ -58,20 +73,14 @@ void ChromeEnterpriseRealTimeUrlLookupService::GetAccessToken(
   NOTREACHED() << "URL lookup with token is disabled for enterprise users.";
 }
 
-std::unique_ptr<RTLookupRequest>
-ChromeEnterpriseRealTimeUrlLookupService::FillRequestProto(const GURL& url) {
-  DCHECK(GetDMToken().is_valid())
-      << "Send a request only if the dm token is valid.";
-  auto request = std::make_unique<RTLookupRequest>();
-  request->set_url(SanitizeURL(url).spec());
-  request->set_lookup_type(RTLookupRequest::NAVIGATION);
-  request->set_dm_token(GetDMToken().value());
-  // TODO(crbug.com/1085261): Fill in user population.
-  return request;
-}
-
 policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {
   return ::safe_browsing::GetDMToken(profile_);
+}
+
+std::string ChromeEnterpriseRealTimeUrlLookupService::GetDMTokenString() const {
+  DCHECK(GetDMToken().is_valid())
+      << "Get a dm token string only if the dm token is valid.";
+  return GetDMToken().value();
 }
 
 net::NetworkTrafficAnnotationTag

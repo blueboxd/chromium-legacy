@@ -12,6 +12,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/subresource_redirect/https_image_compression_bypass_decider.h"
 #include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
 #include "chrome/browser/subresource_redirect/subresource_redirect_observer.h"
 #include "chrome/browser/ui/browser.h"
@@ -46,6 +47,13 @@
 #include "url/gurl.h"
 
 namespace {
+
+enum CompressionServerFailureMode {
+  NONE = 0,
+  EMPTY_RESPONSE,
+  LOADSHED_503_RETRY_AFTER_RESPONSE,
+  TIMEOUT,
+};
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 // TODO(rajendrant): Convert the tests to wait for image load to complete or the
@@ -286,6 +294,22 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     return compressed_url.ReplaceComponents(replacements);
   }
 
+  void VerifyAndClearBypassTimeout(base::TimeDelta minimum_bypass_until) {
+    auto* https_image_compression_bypass_decider =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetBrowserContext())
+            ->https_image_compression_bypass_decider();
+    EXPECT_LE(
+        base::TimeTicks::Now() + minimum_bypass_until,
+        https_image_compression_bypass_decider->GetBypassUntilTimeForTesting()
+            .value());
+    https_image_compression_bypass_decider->SetBypassUntilTimeForTesting(
+        base::TimeTicks::Now());
+  }
+
   GURL http_url() const { return http_url_; }
   GURL https_url() const { return https_url_; }
   GURL compression_url() const { return compression_url_; }
@@ -299,7 +323,9 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   }
 
   void SetHttpsServerImageToFail() { https_server_image_fail_ = true; }
-  void SetCompressionServerToFail() { compression_server_fail_ = true; }
+  void SetCompressionServerToFail(CompressionServerFailureMode mode) {
+    compression_server_failure_mode_ = mode;
+  }
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
@@ -327,9 +353,19 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
         std::make_unique<net::test_server::BasicHttpResponse>();
     request_url_ = request.GetURL();
 
-    // If |compression_server_fail_| is set to true, return a hung response.
-    if (compression_server_fail_ == true) {
+    if (compression_server_failure_mode_ ==
+        CompressionServerFailureMode::EMPTY_RESPONSE) {
       return std::make_unique<net::test_server::RawHttpResponse>("", "");
+    } else if (compression_server_failure_mode_ ==
+               CompressionServerFailureMode::
+                   LOADSHED_503_RETRY_AFTER_RESPONSE) {
+      response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
+      response->AddCustomHeader("Retry-After", "5");
+      return response;
+    } else if (compression_server_failure_mode_ ==
+               CompressionServerFailureMode::TIMEOUT) {
+      return std::make_unique<net::test_server::DelayedHttpResponse>(
+          base::TimeDelta::FromSeconds(10));
     }
 
     // For the purpose of this browsertest, a redirect to the compression server
@@ -389,7 +425,8 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
 
   // Whether the embedded test servers should return failure.
   bool https_server_image_fail_ = false;
-  bool compression_server_fail_ = false;
+  CompressionServerFailureMode compression_server_failure_mode_ =
+      CompressionServerFailureMode::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectBrowserTest);
 };
@@ -459,6 +496,63 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
   VerifyImageCompressionPageInfoState(true);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(TestBypassOnFetchTimeout)) {
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  GURL url = HttpsURLWithPath("/load_image/image_delayed_load.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+
+  // The first navigation will attempt to fetch image and timeout, which will
+  // trigger bypass.
+  SetCompressionServerToFail(CompressionServerFailureMode::TIMEOUT);
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      1);
+  RetryForHistogramUntilCountReached(histogram_tester(),
+                                     "SubresourceRedirect.BypassDuration", 1);
+  // TODO(rajendrant): Verify that the image got actually loaded too after
+  // https://crbug.com/1110113 is fixed.
+  histogram_tester()->ExpectUniqueSample(
+      "SubresourceRedirect.PageLoad.BypassResult", false, 1);
+  histogram_tester()->ExpectTotalCount("SubresourceRedirect.BypassDuration", 1);
+
+  // The second navigation should not attempt subresource redirect.
+  SetCompressionServerToFail(CompressionServerFailureMode::NONE);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      HttpsURLWithPath("/load_image/image_delayed_load.html?second"));
+
+  base::RunLoop().RunUntilIdle();
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.PageLoad.BypassResult", 2);
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.PageLoad.BypassResult", true, 1);
+
+  // The third navigation should attempt subresource redirect, once the bypass
+  // is cleared.
+  VerifyAndClearBypassTimeout(base::TimeDelta::FromSeconds(4));
+  url = HttpsURLWithPath("/load_image/image_delayed_load.html?third");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
 }
 
 //  This test loads private_url_image.html, which triggers a subresource
@@ -662,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   CreateUkmRecorder();
   GURL url = HttpsURLWithPath("/load_image/image_delayed_load.html");
   SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
-  SetCompressionServerToFail();
+  SetCompressionServerToFail(CompressionServerFailureMode::EMPTY_RESPONSE);
 
   base::RunLoop().RunUntilIdle();
   ui_test_utils::NavigateToURL(browser(), url);
@@ -696,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(
   GURL url = HttpsURLWithPath("/load_image/image_delayed_load.html");
   SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
   SetHttpsServerImageToFail();
-  SetCompressionServerToFail();
+  SetCompressionServerToFail(CompressionServerFailureMode::EMPTY_RESPONSE);
 
   base::RunLoop().RunUntilIdle();
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1132,6 +1226,72 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
   VerifyImageCompressionPageInfoState(false);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestBypassOn503LoadShedFailure)) {
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  GURL url = HttpsURLWithPath("/load_image/image_delayed_load.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+
+  // The first navigation will atttempt to fetch image and fail with 503, which
+  // will trigger bypass.
+  SetCompressionServerToFail(
+      CompressionServerFailureMode::LOADSHED_503_RETRY_AFTER_RESPONSE);
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      1);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 503, 1);
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+  base::RunLoop().RunUntilIdle();
+
+  RetryForHistogramUntilCountReached(histogram_tester(),
+                                     "SubresourceRedirect.BypassDuration", 1);
+  histogram_tester()->ExpectUniqueSample(
+      "SubresourceRedirect.PageLoad.BypassResult", false, 1);
+  histogram_tester()->ExpectTotalCount("SubresourceRedirect.BypassDuration", 1);
+
+  // The second navigation should not attempt subresource redirect.
+  SetCompressionServerToFail(CompressionServerFailureMode::NONE);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      HttpsURLWithPath("/load_image/image_delayed_load.html?second"));
+
+  base::RunLoop().RunUntilIdle();
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.PageLoad.BypassResult", 2);
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.PageLoad.BypassResult", true, 1);
+
+  // The third navigation should attempt subresource redirect, once the bypass
+  // is cleared.
+  VerifyAndClearBypassTimeout(base::TimeDelta::FromSeconds(4));
+  url = HttpsURLWithPath("/load_image/image_delayed_load.html?third");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
 }
 
 // This test verifies that the image redirect to lite page is disabled via

@@ -3500,8 +3500,9 @@ TEST_F(OverviewSessionFlingTest, BasicFling) {
       item_center, item_center + shift, base::TimeDelta::FromMilliseconds(10),
       10);
 
-  ui::DrawWaiterForTest::WaitForCompositingStarted(
-      windows[0]->GetRootWindow()->layer()->GetCompositor());
+  ui::Compositor* const compositor =
+      windows[0]->GetRootWindow()->layer()->GetCompositor();
+  ui::DrawWaiterForTest::WaitForCompositingStarted(compositor);
   ASSERT_TRUE(grid_event_handler->IsFlingInProgressForTesting());
 
   // Test that the scroll offset decreases as we advance the clock. Check the
@@ -3516,6 +3517,7 @@ TEST_F(OverviewSessionFlingTest, BasicFling) {
        i < kMaxLoops && grid_event_handler->IsFlingInProgressForTesting();
        ++i) {
     task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+    ui::DrawWaiterForTest::WaitForCompositingStarted(compositor);
 
     float scroll_offset = grid->scroll_offset();
     EXPECT_LE(scroll_offset, previous_scroll_offset);

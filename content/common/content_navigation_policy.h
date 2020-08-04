@@ -13,6 +13,7 @@
 namespace content {
 
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
+CONTENT_EXPORT bool IsBackForwardCacheDisabledByCommandLine();
 CONTENT_EXPORT bool DeviceHasEnoughMemoryForBackForwardCache();
 
 // Whether proactive BrowsingInstance swap can happen on cross-site navigations.

@@ -41,8 +41,8 @@ class QuickAnswersViewsTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    dummy_anchor_bounds_ = kDefaultAnchorBoundsInScreen;
-    CreateQuickAnswersView(dummy_anchor_bounds_, "dummy_title",
+    anchor_bounds_ = kDefaultAnchorBoundsInScreen;
+    CreateQuickAnswersView(anchor_bounds_, "default_title",
                            /*create_menu=*/false);
   }
 
@@ -62,7 +62,7 @@ class QuickAnswersViewsTest : public AshTestBase {
   QuickAnswersView* view() { return quick_answers_view_.get(); }
 
   // Needed to poll the current bounds of the mock anchor.
-  const gfx::Rect& dummy_anchor_bounds() { return dummy_anchor_bounds_; }
+  const gfx::Rect& GetAnchorBounds() { return anchor_bounds_; }
 
   // Create a QuickAnswersView instance with custom anchor-bounds and
   // title-text.
@@ -76,12 +76,12 @@ class QuickAnswersViewsTest : public AshTestBase {
     if (create_menu)
       CreateAndShowBasicMenu();
 
-    dummy_anchor_bounds_ = anchor_bounds;
+    anchor_bounds_ = anchor_bounds;
     auto* ui_controller =
         static_cast<QuickAnswersControllerImpl*>(QuickAnswersController::Get())
             ->quick_answers_ui_controller();
     quick_answers_view_ = std::make_unique<QuickAnswersView>(
-        dummy_anchor_bounds_, title, ui_controller);
+        anchor_bounds_, title, ui_controller);
   }
 
   void CreateAndShowBasicMenu() {
@@ -98,7 +98,7 @@ class QuickAnswersViewsTest : public AshTestBase {
 
  private:
   std::unique_ptr<QuickAnswersView> quick_answers_view_;
-  gfx::Rect dummy_anchor_bounds_;
+  gfx::Rect anchor_bounds_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // Menu.
@@ -110,7 +110,7 @@ class QuickAnswersViewsTest : public AshTestBase {
 
 TEST_F(QuickAnswersViewsTest, DefaultLayoutAroundAnchor) {
   gfx::Rect view_bounds = view()->GetBoundsInScreen();
-  gfx::Rect anchor_bounds = dummy_anchor_bounds();
+  gfx::Rect anchor_bounds = GetAnchorBounds();
 
   // Vertically aligned with anchor.
   EXPECT_EQ(view_bounds.x(), anchor_bounds.x());
@@ -121,12 +121,12 @@ TEST_F(QuickAnswersViewsTest, DefaultLayoutAroundAnchor) {
 }
 
 TEST_F(QuickAnswersViewsTest, PositionedBelowAnchorIfLessSpaceAbove) {
-  gfx::Rect anchor_bounds = dummy_anchor_bounds();
+  gfx::Rect anchor_bounds = GetAnchorBounds();
   // Update anchor-bounds' position so that it does not leave enough vertical
   // space above it to show the QuickAnswersView.
   anchor_bounds.set_y(kSmallTop);
 
-  CreateQuickAnswersView(anchor_bounds, "dummy_title", /*create_menu=*/false);
+  CreateQuickAnswersView(anchor_bounds, "title", /*create_menu=*/false);
   gfx::Rect view_bounds = view()->GetBoundsInScreen();
 
   // Anchor is positioned above the view.
@@ -143,7 +143,7 @@ TEST_F(QuickAnswersViewsTest, FocusProperties) {
   EXPECT_FALSE(view()->HasFocus());
 
   // Set up a companion menu before creating a new view.
-  CreateQuickAnswersView(dummy_anchor_bounds(), "dummy_title",
+  CreateQuickAnswersView(GetAnchorBounds(), "title",
                          /*create_menu=*/true);
   CHECK(views::MenuController::GetActiveInstance() &&
         views::MenuController::GetActiveInstance()->owner());

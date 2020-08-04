@@ -138,6 +138,14 @@ std::string AuditorResult::ToText() const {
           "Annotation at '%s:%i' has the following inconsistencies: %s",
           file_path_.c_str(), line_, details_[0].c_str());
 
+    case AuditorResult::Type::ERROR_MISSING_GROUPING:
+      DCHECK(!details_.empty());
+      return base::StringPrintf(
+          "Annotation at '%s:%i' with unique_id '%s' does not appear in "
+          "summary/grouping.xml. Add the annotation to an existing "
+          "group in summary/grouping.xml",
+          file_path_.c_str(), line_, details_[0].c_str());
+
     case AuditorResult::Type::ERROR_MERGE_FAILED:
       DCHECK(details_.size() == 3);
       return base::StringPrintf(
@@ -204,6 +212,9 @@ std::string AuditorResult::ToShortText() const {
       DCHECK(!details_.empty());
       return base::StringPrintf("the following inconsistencies: %s",
                                 details_[0].c_str());
+
+    case AuditorResult::Type::ERROR_MISSING_GROUPING:
+      return base::StringPrintf("missing from summary/grouping.xml");
 
     default:
       NOTREACHED();

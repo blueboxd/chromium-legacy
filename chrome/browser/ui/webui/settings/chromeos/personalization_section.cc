@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/personalization_section.h"
 
+#include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
@@ -111,7 +112,8 @@ const std::vector<SearchConcept>& GetAmbientModeOffSearchConcepts() {
 }
 
 bool IsAmbientModeAllowed() {
-  return chromeos::features::IsAmbientModeEnabled();
+  return chromeos::features::IsAmbientModeEnabled() &&
+         ash::AmbientClient::Get()->IsAmbientModeAllowed();
 }
 
 GURL GetGooglePhotosURL() {

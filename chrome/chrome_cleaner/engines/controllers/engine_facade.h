@@ -6,10 +6,10 @@
 #define CHROME_CHROME_CLEANER_ENGINES_CONTROLLERS_ENGINE_FACADE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client.h"
 #include "chrome/chrome_cleaner/engines/controllers/engine_facade_interface.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
@@ -40,7 +40,7 @@ class EngineFacade : public EngineFacadeInterface {
   base::TimeDelta GetScanningWatchdogTimeout() const override;
 
  private:
-  base::string16 interface_log_file_;
+  std::wstring interface_log_file_;
 
   // This must be declared before |scanner_| and |cleaner_| so that it is
   // deleted after them, since they hold raw pointers to it.

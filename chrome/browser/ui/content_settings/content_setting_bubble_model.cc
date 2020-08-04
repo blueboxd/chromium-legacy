@@ -81,6 +81,12 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/resources/grit/ui_resources.h"
 
+#if defined(OS_MAC)
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#endif
+
 using base::UserMetricsAction;
 using content::WebContents;
 using content_settings::SETTING_SOURCE_NONE;
@@ -100,6 +106,9 @@ static constexpr char kCameraSettingsURI[] =
 static constexpr char kMicSettingsURI[] =
     "x-apple.systempreferences:com.apple.preference.security?Privacy_"
     "Microphone";
+static constexpr char kLocationSettingsURI[] =
+    "x-apple.systempreferences:com.apple.preference.security?Privacy_"
+    "LocationServices";
 #endif  // defined(OS_MAC)
 
 // Returns a boolean indicating whether the setting should be managed by the
@@ -590,33 +599,10 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
 
 // ContentSettingDomainListBubbleModel -----------------------------------------
 
-class ContentSettingDomainListBubbleModel
-    : public ContentSettingSimpleBubbleModel {
- public:
-  ContentSettingDomainListBubbleModel(Delegate* delegate,
-                                      WebContents* web_contents,
-                                      ContentSettingsType content_type);
-  ~ContentSettingDomainListBubbleModel() override {}
-
- private:
-  void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
-  void SetDomainsAndCustomLink();
-  void OnCustomLinkClicked() override;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingDomainListBubbleModel);
-};
-
 ContentSettingDomainListBubbleModel::ContentSettingDomainListBubbleModel(
     Delegate* delegate,
-    WebContents* web_contents,
-    ContentSettingsType content_type)
-    : ContentSettingSimpleBubbleModel(delegate,
-                                      web_contents,
-                                      content_type) {
-  DCHECK_EQ(ContentSettingsType::GEOLOCATION, content_type)
-      << "SetDomains currently only supports geolocation content type";
-  SetDomainsAndCustomLink();
-}
+    WebContents* web_contents)
+    : ContentSettingBubbleModel(delegate, web_contents) {}
 
 void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
     const std::set<std::string>& hosts,
@@ -1460,6 +1446,86 @@ void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
   set_selected_device(GetMediaDeviceById(selected_device_id, devices));
 }
 
+// ContentSettingGeolocationBubbleModel --------------------------------------
+
+ContentSettingGeolocationBubbleModel::ContentSettingGeolocationBubbleModel(
+    Delegate* delegate,
+    content::WebContents* web_contents)
+    : ContentSettingDomainListBubbleModel(delegate, web_contents) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->geolocation_usages_state();
+
+  if (usages_state.state_map().empty())
+    return;
+
+  usages_state.GetDetailedInfo(nullptr, &state_flags_);
+
+  // If the permission is turned off in MacOS system preferences, overwrite
+  // the bubble to enable the user to trigger the system dialog.
+  if (ShouldShowSystemGeolocationPermissions()) {
+#if defined(OS_MAC)
+    InitializeSystemGeolocationPermissionBubble();
+    return;
+#endif  // defined(OS_MAC)
+  }
+
+  SetDomainsAndCustomLink();
+}
+
+ContentSettingGeolocationBubbleModel::~ContentSettingGeolocationBubbleModel() =
+    default;
+
+void ContentSettingGeolocationBubbleModel::OnDoneButtonClicked() {
+  if (ShouldShowSystemGeolocationPermissions()) {
+#if defined(OS_MAC)
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+        GURL(kLocationSettingsURI), web_contents());
+    return;
+#endif  // defined(OS_MAC)
+  }
+}
+
+void ContentSettingGeolocationBubbleModel::OnManageButtonClicked() {
+  if (delegate())
+    delegate()->ShowContentSettingsPage(ContentSettingsType::GEOLOCATION);
+}
+
+#if defined(OS_MAC)
+void ContentSettingGeolocationBubbleModel::
+    InitializeSystemGeolocationPermissionBubble() {
+  set_title(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TURNED_OFF_IN_MACOS));
+  AddListItem(ContentSettingBubbleModel::ListItem(
+      &vector_icons::kLocationOnIcon,
+      l10n_util::GetStringUTF16(IDS_GEOLOCATION),
+      l10n_util::GetStringUTF16(IDS_TURNED_OFF), false, true, 0));
+  set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
+  set_done_button_text(l10n_util::GetStringUTF16(IDS_OPEN_PREFERENCES_LINK));
+}
+#endif  // defined(OS_MAC)
+
+bool ContentSettingGeolocationBubbleModel::
+    ShouldShowSystemGeolocationPermissions() {
+#if defined(OS_MAC)
+  if (base::FeatureList::IsEnabled(
+          ::features::kMacCoreLocationImplementation)) {
+    GeolocationSystemPermissionManager* permission_delegate =
+        g_browser_process->platform_part()->location_permission_manager();
+    SystemPermissionStatus permission =
+        permission_delegate->GetSystemPermission();
+    return (permission != SystemPermissionStatus::kAllowed) &&
+           IsGeolocationAccessed();
+  }
+#endif
+  return false;
+}
+
+bool ContentSettingGeolocationBubbleModel::IsGeolocationAccessed() {
+  return ((state_flags_ &
+           ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED) != 0);
+}
+
 // ContentSettingSubresourceFilterBubbleModel ----------------------------------
 
 ContentSettingSubresourceFilterBubbleModel::
@@ -1784,10 +1850,6 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
   if (content_type == ContentSettingsType::POPUPS) {
     return std::make_unique<ContentSettingPopupBubbleModel>(delegate,
                                                             web_contents);
-  }
-  if (content_type == ContentSettingsType::GEOLOCATION) {
-    return std::make_unique<ContentSettingDomainListBubbleModel>(
-        delegate, web_contents, content_type);
   }
   if (content_type == ContentSettingsType::PLUGINS) {
     return std::make_unique<ContentSettingPluginBubbleModel>(delegate,

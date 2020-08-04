@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -91,14 +92,30 @@ const std::string& GetPartitionDomainForExtension(const Extension* extension) {
   return extension->id();
 }
 
+content::StoragePartitionConfig GetStoragePartitionConfigForExtensionId(
+    const std::string& extension_id,
+    content::BrowserContext* browser_context) {
+  if (ExtensionsBrowserClient::Get()->HasIsolatedStorage(extension_id,
+                                                         browser_context)) {
+    // For extensions with isolated storage, the |extension_id| is
+    // the |partition_domain|. The |in_memory| and |partition_name| are only
+    // used in guest schemes so they are cleared here.
+    return content::StoragePartitionConfig::Create(
+        extension_id, std::string() /* partition_name */, false /*in_memory */);
+  }
+
+  return content::StoragePartitionConfig::CreateDefault();
+}
+
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
     content::BrowserContext* browser_context,
     bool can_create) {
-  GURL site_url = GetSiteForExtensionId(extension_id, browser_context);
+  auto storage_partition_config =
+      GetStoragePartitionConfigForExtensionId(extension_id, browser_context);
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(browser_context,
-                                                          site_url, can_create);
+      content::BrowserContext::GetStoragePartition(
+          browser_context, storage_partition_config, can_create);
   return storage_partition;
 }
 

@@ -459,7 +459,7 @@ void ProfileMenuView::BuildIdentity() {
   if (account_info.has_value()) {
     SetProfileIdentityInfo(
         profile_name, edit_button_params,
-        account_info.value().account_image.AsImageSkia(),
+        ui::ImageModel::FromImage(account_info.value().account_image),
         base::UTF8ToUTF16(account_info.value().full_name),
         IsSyncPaused(profile)
             ? l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE)
@@ -467,7 +467,7 @@ void ProfileMenuView::BuildIdentity() {
   } else {
     SetProfileIdentityInfo(
         profile_name, edit_button_params,
-        profile_attributes->GetAvatarIcon().AsImageSkia(),
+        ui::ImageModel::FromImage(profile_attributes->GetAvatarIcon()),
         /*title=*/base::string16(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
@@ -624,7 +624,8 @@ void ProfileMenuView::BuildSelectableProfiles() {
       continue;
 
     AddSelectableProfile(
-        profile_entry->GetAvatarIcon().AsImageSkia(), profile_entry->GetName(),
+        ui::ImageModel::FromImage(profile_entry->GetAvatarIcon()),
+        profile_entry->GetName(),
         /*is_guest=*/false,
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                             base::Unretained(this), profile_entry->GetPath()));

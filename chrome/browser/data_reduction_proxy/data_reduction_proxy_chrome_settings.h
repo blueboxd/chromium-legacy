@@ -29,8 +29,9 @@ class DataReductionProxyData;
 class DataStore;
 }  // namespace data_reduction_proxy
 
-class PrefService;
+class HttpsImageCompressionBypassDecider;
 class HttpsImageCompressionInfoBarDecider;
+class PrefService;
 
 // Data reduction proxy settings class suitable for use with a Chrome browser.
 // It is keyed to a browser context.
@@ -86,6 +87,11 @@ class DataReductionProxyChromeSettings
     return https_image_compression_infobar_decider_.get();
   }
 
+  HttpsImageCompressionBypassDecider* https_image_compression_bypass_decider()
+      const {
+    return https_image_compression_bypass_decider_.get();
+  }
+
  private:
   // Helper method for migrating the Data Reduction Proxy away from using the
   // proxy pref. Returns the ProxyPrefMigrationResult value indicating the
@@ -97,6 +103,11 @@ class DataReductionProxyChromeSettings
   // before triggering https image compression.
   std::unique_ptr<HttpsImageCompressionInfoBarDecider>
       https_image_compression_infobar_decider_;
+
+  // Maintains the decider for this profile to contain logic for https image
+  // compression bypass.
+  std::unique_ptr<HttpsImageCompressionBypassDecider>
+      https_image_compression_bypass_decider_;
 
   // Null before InitDataReductionProxySettings is called.
   Profile* profile_;

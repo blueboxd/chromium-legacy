@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -438,9 +439,36 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
             initWithBrowser:strongSelf.browser
                    scenario:MenuScenario::kReadingListEntry];
 
-        UIAction* copyAction = [actionFactory actionToCopyURL:item.entryURL];
+        NSMutableArray<UIMenuElement*>* menuElements =
+            [[NSMutableArray alloc] init];
 
-        return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+        // Copy URL action.
+        [menuElements addObject:[actionFactory actionToCopyURL:item.entryURL]];
+
+        // "Open in" actions.
+        [menuElements addObject:[actionFactory actionToOpenInNewTabWithBlock:^{
+                        [weakSelf loadEntryURL:item.entryURL
+                                withOfflineURL:GURL::EmptyGURL()
+                                      inNewTab:YES
+                                     incognito:NO];
+                      }]];
+        [menuElements
+            addObject:[actionFactory actionToOpenInNewIncognitoTabWithBlock:^{
+              [weakSelf loadEntryURL:item.entryURL
+                      withOfflineURL:GURL::EmptyGURL()
+                            inNewTab:YES
+                           incognito:YES];
+            }]];
+        if (IsMultipleScenesSupported()) {
+          [menuElements
+              addObject:[actionFactory
+                            actionToOpenInNewWindowWithURL:item.entryURL
+                                            activityOrigin:
+                                                WindowActivityReadingListOrigin
+                                                completion:nil]];
+        }
+
+        return [UIMenu menuWithTitle:@"" children:menuElements];
       };
 
   return

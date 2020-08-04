@@ -43,6 +43,54 @@ interface EndpointDiscoveryListener {
   OnEndpointLost(string endpoint_id);
 };
 
+// Listener for lifecycle events associated with a connection to a remote
+// endpoint. Methods in this interface are called from utiltiiy process, and is
+// used by the browser process to listen for connection status associated with
+// remote endpoints.
+interface ConnectionLifecycleListener {
+  // A basic encrypted channel has been created between this device and the
+  // the remote endpoint. Both sides are now asked if they wish to accept or
+  // reject the connection before any data can be sent over this channel.
+  //
+  // Optionally, caller can verify if this device is connected to the correct
+  // remote before accepting the connection. Typically this involves showing
+  // ConnectionInfo::authentication_token on both devices and having the users
+  // manually compare and confirm. Both devices are given an identical
+  // authentication token.
+  //
+  // Call NearbyConnections::AcceptConnection() to accept the connection, or
+  // NearbyConnections::RejectConnection() to close the connection.
+  //
+  // endpoint_id - The identifier for the remote endpoint.
+  // info        -  Other relevant information about the connection.
+  OnConnectionInitiated(string endpoint_id, ConnectionInfo info);
+
+  // Called after both sides have accepted the connection.
+  //
+  // endpoint_id - The identifier for the remote endpoint.
+  OnConnectionAccepted(string endpoint_id);
+
+  // Called when either side rejected the connection.
+  // Call NearbyConnections::DisconnectFromEndpoint() to terminate connection.
+  //
+  // endpoint_id - The identifier for the remote endpoint.
+  // status      - The result of the connection. Valid values are
+  //               Status::kSuccess and Status::kConnectionRejected}.
+  OnConnectionRejected(string endpoint_id, Status status);
+
+  // Called when a remote endpoint is disconnected or has become unreachable.
+  // At this point service (re-)discovery may start again.
+  //
+  // endpoint_id - The identifier for the remote endpoint.
+  OnDisconnected(string endpoint_id);
+
+  // Called when the connection's available bandwidth has changed.
+  //
+  // endpoint_id - The identifier for the remote endpoint.
+  // quality     - The new quality for the connection.
+  OnBandwidthChanged(string endpoint_id, int32 quality);
+};
+
 // Main interface to control the NearbyConnections library. Implemented in a
 // sandboxed process. This interface is used by the browser process to connect
 // to remote devices and send / receive raw data packets. Parsing of those
@@ -73,6 +121,38 @@ interface NearbyConnections {
   // Possible return values include:
   //   Status::kSuccess returned after discovery got stopped.
   StopDiscovery() => (Status status);
+
+  // Sends a request to connect to a remote endpoint.
+  //
+  // endpoint_info - The local info including a human readable name to appear on
+  //                 the remote endpoint.
+  // endpoint_id   - The identifier for the remote endpoint to which a
+  //                 connection request will be sent. Should match the value
+  //                 provided in a call to
+  //                 EndpointDiscoveryListener::OnEndpointFound().
+  // listener      - A callback notified when the remote endpoint sends a
+  //                 response to the connection request.
+  // Possible return values include:
+  //   Status::kSuccess if the connection request was sent.
+  //   Status::kAlreadyConnectedToEndpoint if the app already
+  //       has a connection to the specified endpoint.
+  //   Status::kBluetoothError if we failed to connect because of an
+  //       issue with Bluetooth.
+  //   Status::kWifiLanError if we failed to connect because of an
+  //       issue with WiFi.
+  //   Status::kError if we failed to connect for any other reason.
+  // TODO(crbug/1076008): Add MediumSelector and bluetooth_mac_address.
+  RequestConnection(array<uint8> endpoint_info, string endpoint_id,
+                   pending_remote<ConnectionLifecycleListener> listener)
+      => (Status status);
+
+  // Disconnects from a remote endpoint. Payloads can no longer be sent
+  // to or received from the endpoint after this method is called.
+  //
+  // endpoint_id - The identifier for the remote endpoint to disconnect from.
+  // Possible return values include:
+  //   Status::kSuccess disconnected successfully.
+  DisconnectFromEndpoint(string endpoint_id) => (Status status);
 };
 
 // Provide all the dependencies that NearbyConnections library requires.

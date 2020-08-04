@@ -82,16 +82,20 @@
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   UrlLoadingBrowserAgent* loadingAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  return [self actionToOpenInNewTabWithBlock:^{
+    loadingAgent->Load(params);
+    if (completion) {
+      completion();
+    }
+  }];
+}
+
+- (UIAction*)actionToOpenInNewTabWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
                          image:[UIImage systemImageNamed:@"plus"]
                           type:MenuActionType::OpenInNewTab
-                         block:^{
-                           loadingAgent->Load(params);
-                           if (completion) {
-                             completion();
-                           }
-                         }];
+                         block:block];
 }
 
 - (UIAction*)actionToOpenInNewIncognitoTabWithURL:(const GURL)URL
@@ -100,17 +104,21 @@
   params.in_incognito = YES;
   UrlLoadingBrowserAgent* loadingAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  return [self actionToOpenInNewIncognitoTabWithBlock:^{
+    loadingAgent->Load(params);
+    if (completion) {
+      completion();
+    }
+  }];
+}
+
+- (UIAction*)actionToOpenInNewIncognitoTabWithBlock:(ProceduralBlock)block {
   return
       [self actionWithTitle:l10n_util::GetNSString(
                                 IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
                       image:nil
                        type:MenuActionType::OpenInNewIncognitoTab
-                      block:^{
-                        loadingAgent->Load(params);
-                        if (completion) {
-                          completion();
-                        }
-                      }];
+                      block:block];
 }
 
 - (UIAction*)actionToOpenInNewWindowWithURL:(const GURL)URL

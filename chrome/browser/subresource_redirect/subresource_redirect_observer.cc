@@ -10,6 +10,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/subresource_redirect/https_image_compression_bypass_decider.h"
 #include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
@@ -122,7 +123,8 @@ bool SubresourceRedirectObserver::IsHttpsImageCompressionApplied(
 
 SubresourceRedirectObserver::SubresourceRedirectObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      receivers_(web_contents, this) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect));
   auto* optimization_guide_decider =
       GetOptimizationGuideDeciderFromWebContents(web_contents);
@@ -166,6 +168,12 @@ void SubresourceRedirectObserver::DidFinishNavigation(
 
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
+
+  if (GetDataReductionProxyChromeSettings(web_contents())
+          ->https_image_compression_bypass_decider()
+          ->ShouldBypassNow()) {
+    return;
+  }
 
   auto* optimization_guide_decider = GetOptimizationGuideDeciderFromWebContents(
       navigation_handle->GetWebContents());
@@ -222,6 +230,13 @@ void SubresourceRedirectObserver::OnResourceLoadingImageHintsReceived(
       blink::mojom::CompressPublicImagesHints::New(public_image_urls));
   if (!public_image_urls.empty())
     is_https_image_compression_applied_ = true;
+}
+
+void SubresourceRedirectObserver::NotifyCompressedImageFetchFailed(
+    base::TimeDelta retry_after) {
+  GetDataReductionProxyChromeSettings(web_contents())
+      ->https_image_compression_bypass_decider()
+      ->NotifyCompressedImageFetchFailed(retry_after);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SubresourceRedirectObserver)

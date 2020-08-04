@@ -32,7 +32,7 @@ SpokenFeedbackEnabler::~SpokenFeedbackEnabler() {}
 
 void SpokenFeedbackEnabler::OnTimer() {
   base::TimeTicks now = ui::EventTimeForNow();
-  double tick_count_f = (now - start_time_).IntDiv(kTimerDelay);
+  double tick_count_f = (now - start_time_).FltDiv(kTimerDelay);
   int tick_count = roundf(tick_count_f);
 
   AccessibilityControllerImpl* controller =

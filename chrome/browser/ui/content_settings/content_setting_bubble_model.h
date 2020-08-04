@@ -411,6 +411,56 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
 };
 
+class ContentSettingDomainListBubbleModel : public ContentSettingBubbleModel {
+ public:
+  ContentSettingDomainListBubbleModel(Delegate* delegate,
+                                      content::WebContents* web_contents);
+  ~ContentSettingDomainListBubbleModel() override = default;
+
+ protected:
+  void SetDomainsAndCustomLink();
+
+ private:
+  void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
+  void OnCustomLinkClicked() override;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingDomainListBubbleModel);
+};
+
+// The bubble that informs users that Chrome does not have access to Location
+// and guides them to the system preferences to fix that problem if they wish.
+class ContentSettingGeolocationBubbleModel
+    : public ContentSettingDomainListBubbleModel {
+ public:
+  ContentSettingGeolocationBubbleModel(Delegate* delegate,
+                                       content::WebContents* web_contents);
+
+  ContentSettingGeolocationBubbleModel(
+      const ContentSettingGeolocationBubbleModel&) = delete;
+  ContentSettingGeolocationBubbleModel& operator=(
+      const ContentSettingGeolocationBubbleModel&) = delete;
+
+  ~ContentSettingGeolocationBubbleModel() override;
+
+  // ContentSettingBubbleModel:
+  void OnManageButtonClicked() override;
+  void OnDoneButtonClicked() override;
+
+ private:
+  // Initialize the bubble with the elements specific to the scenario when
+  // geolocation is disabled on the system (OS) level.
+  void InitializeSystemGeolocationPermissionBubble();
+
+  // Check if geolocation has been accessed in this context.
+  bool IsGeolocationAccessed();
+
+  // Whether or not to show the bubble UI specific to when geolocation
+  // permissions are turned off on a system level.
+  bool ShouldShowSystemGeolocationPermissions();
+
+  unsigned int state_flags_ = 0;
+};
+
 // The model of a bubble that acts as a quiet permission request prompt for
 // notifications. In contrast to other bubbles (which display the current
 // permission state after the user makes the initial decision), this is shown

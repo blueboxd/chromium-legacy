@@ -1006,8 +1006,8 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     GetRegistrationsCallback callback,
     const url::Origin& origin_filter,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
-    std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
-        serialized_registrations) {
+    std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>
+        entries) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   blink::ServiceWorkerStatusCode status =
@@ -1024,10 +1024,10 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
   // Add all stored registrations.
   std::set<int64_t> registration_ids;
   std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
-  for (const auto& entry : serialized_registrations) {
-    registration_ids.insert(entry->registration_data->registration_id);
+  for (const auto& entry : entries) {
+    registration_ids.insert(entry->registration->registration_id);
     registrations.push_back(
-        GetOrCreateRegistration(*entry->registration_data, entry->resources));
+        GetOrCreateRegistration(*entry->registration, entry->resources));
   }
 
   // Add unstored registrations that are being installed.

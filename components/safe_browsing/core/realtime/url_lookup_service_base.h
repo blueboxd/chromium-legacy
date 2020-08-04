@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
 
@@ -28,6 +29,12 @@ struct ResourceRequest;
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
+
+namespace syncer {
+class SyncService;
+}
+
+class PrefService;
 
 namespace safe_browsing {
 
@@ -45,7 +52,13 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
  public:
   explicit RealTimeUrlLookupServiceBase(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      VerdictCacheManager* cache_manager);
+      VerdictCacheManager* cache_manager,
+      syncer::SyncService* sync_service,
+      PrefService* pref_service,
+      const ChromeUserPopulation::ProfileManagementStatus&
+          profile_management_status,
+      bool is_under_advanced_protection,
+      bool is_off_the_record);
   ~RealTimeUrlLookupServiceBase() override;
 
   // Returns true if |url|'s scheme can be checked.
@@ -123,9 +136,8 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
                               RTLookupRequestCallback request_callback,
                               RTLookupResponseCallback response_callback) = 0;
 
-  // Fills in fields in |RTLookupRequest|.
-  virtual std::unique_ptr<RTLookupRequest> FillRequestProto(
-      const GURL& url) = 0;
+  // Gets a dm token string to be set in a request proto.
+  virtual std::string GetDMTokenString() const = 0;
 
   // Suffix for logging metrics.
   virtual std::string GetMetricSuffix() const = 0;
@@ -175,6 +187,11 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
                            base::TimeTicks request_start_time,
                            std::unique_ptr<std::string> response_body);
 
+  // Fills in fields in |RTLookupRequest|.
+  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url);
+
+  bool IsHistorySyncEnabled();
+
   // Count of consecutive failures to complete URL lookup requests. When it
   // reaches |kMaxFailuresToEnforceBackoff|, we enter the backoff mode. It gets
   // reset when we complete a lookup successfully or when the backoff reset
@@ -199,6 +216,22 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
 
   // Unowned object used for getting and storing real time url check cache.
   VerdictCacheManager* cache_manager_;
+
+  // Unowned object used for checking sync status of the profile.
+  syncer::SyncService* sync_service_;
+
+  // Unowned object used for getting preference settings.
+  PrefService* pref_service_;
+
+  const ChromeUserPopulation::ProfileManagementStatus
+      profile_management_status_;
+
+  // Whether the profile is enrolled in  advanced protection.
+  bool is_under_advanced_protection_;
+
+  // A boolean indicates whether the profile associated with this
+  // |url_lookup_service| is an off the record profile.
+  bool is_off_the_record_;
 
   // All requests that are sent but haven't received a response yet.
   PendingRTLookupRequests pending_requests_;

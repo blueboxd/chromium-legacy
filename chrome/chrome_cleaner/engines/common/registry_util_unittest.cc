@@ -169,8 +169,8 @@ class SandboxChildProcess : public chrome_cleaner::ChildProcess {
   std::unique_ptr<mojo::Remote<TestWindowsHandle>> test_windows_handle_;
 };
 
-base::string16 HandlePath(HANDLE handle) {
-  base::string16 full_path;
+std::wstring HandlePath(HANDLE handle) {
+  std::wstring full_path;
   // The size parameter of GetFinalPathNameByHandle does NOT include the null
   // terminator.
   DWORD result = ::GetFinalPathNameByHandleW(
@@ -181,7 +181,7 @@ base::string16 HandlePath(HANDLE handle) {
   }
   if (!result) {
     PLOG(ERROR) << "Could not get full path for handle " << handle;
-    return base::string16();
+    return std::wstring();
   }
   return full_path;
 }
@@ -189,11 +189,11 @@ base::string16 HandlePath(HANDLE handle) {
 ::testing::AssertionResult HandlesAreEqual(HANDLE handle1, HANDLE handle2) {
   // The best way to check this is CompareObjectHandles, but it isn't available
   // until Windows 10. So just check that both refer to the same path.
-  base::string16 path1 = HandlePath(handle1);
-  base::string16 path2 = HandlePath(handle2);
+  std::wstring path1 = HandlePath(handle1);
+  std::wstring path2 = HandlePath(handle2);
 
   if (path1.empty() || path2.empty() || path1 != path2) {
-    auto format_message = [](HANDLE handle, const base::string16& path) {
+    auto format_message = [](HANDLE handle, const std::wstring& path) {
       std::ostringstream s;
       s << handle;
       if (path.empty())

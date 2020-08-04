@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_engine_requests_impl.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_cleanup_results_impl.h"

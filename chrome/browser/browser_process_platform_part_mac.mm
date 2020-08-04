@@ -65,6 +65,8 @@ void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
   app_shim_manager_ = std::make_unique<apps::AppShimManager>(
       std::move(app_shim_manager_delegate));
 
+  location_permission_manager_ = GeolocationSystemPermissionManager::Create();
+
   // AppShimListener can not simply be reset, otherwise destroying the old
   // domain socket will cause the just-created socket to be unlinked.
   DCHECK(!app_shim_listener_.get());
@@ -77,4 +79,9 @@ apps::AppShimManager* BrowserProcessPlatformPart::app_shim_manager() {
 
 AppShimListener* BrowserProcessPlatformPart::app_shim_listener() {
   return app_shim_listener_.get();
+}
+
+GeolocationSystemPermissionManager*
+BrowserProcessPlatformPart::location_permission_manager() {
+  return location_permission_manager_.get();
 }

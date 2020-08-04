@@ -25,6 +25,7 @@ class SubresourceRedirect(IntegrationTest):
         'OptimizationHintsFetchingAnonymousDataConsent')
     test_driver.AddChromeArg('--enable-spdy-proxy-auth')
     test_driver.AddChromeArg('--dont-require-litepage-redirect-infobar')
+    test_driver.AddChromeArg('--override-https-image-compression-infobar')
 
   # Verifies that image subresources on a page have been returned
   # from the compression server.
@@ -40,6 +41,7 @@ class SubresourceRedirect(IntegrationTest):
 
       image_responses = 0
       for response in test_driver.GetHTTPResponses():
+        print response
         content_type = ''
         if 'content-type' in response.response_headers:
           content_type = response.response_headers['content-type']

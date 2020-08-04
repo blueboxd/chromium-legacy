@@ -5,6 +5,7 @@
 #ifndef CHROME_CHROME_CLEANER_CHROME_UTILS_EXTENSIONS_UTIL_H_
 #define CHROME_CHROME_CLEANER_CHROME_UTILS_EXTENSIONS_UTIL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -12,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/chrome_cleaner/chrome_utils/force_installed_extension.h"
 #include "chrome/chrome_cleaner/os/registry_util.h"
@@ -27,17 +27,17 @@ constexpr int64_t kParseAttemptTimeoutMilliseconds = 10000;
 
 // A registry key that holds some form of policy for |extension_id|.
 struct ExtensionPolicyRegistryEntry {
-  base::string16 extension_id;
+  std::wstring extension_id;
   HKEY hkey;
-  base::string16 path;
-  base::string16 name;
+  std::wstring path;
+  std::wstring name;
   ContentType content_type;
   scoped_refptr<RefValue> json;
 
-  ExtensionPolicyRegistryEntry(const base::string16& extension_id,
+  ExtensionPolicyRegistryEntry(const std::wstring& extension_id,
                                HKEY hkey,
-                               const base::string16& path,
-                               const base::string16& name,
+                               const std::wstring& path,
+                               const std::wstring& name,
                                ContentType content_type,
                                scoped_refptr<RefValue>);
   ExtensionPolicyRegistryEntry(ExtensionPolicyRegistryEntry&&);
@@ -49,11 +49,11 @@ struct ExtensionPolicyRegistryEntry {
 
 // A file that holds some form of policy for |extension_id|.
 struct ExtensionPolicyFile {
-  base::string16 extension_id;
+  std::wstring extension_id;
   base::FilePath path;
   scoped_refptr<RefValue> json;
 
-  ExtensionPolicyFile(const base::string16& extension_id,
+  ExtensionPolicyFile(const std::wstring& extension_id,
                       const base::FilePath& path,
                       scoped_refptr<RefValue> json);
   ExtensionPolicyFile(ExtensionPolicyFile&&);

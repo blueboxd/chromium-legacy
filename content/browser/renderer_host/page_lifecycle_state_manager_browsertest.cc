@@ -8,11 +8,13 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -158,6 +160,35 @@ IN_PROC_BROWSER_TEST_F(PageLifecycleStateManagerBrowserTest,
   shell()->web_contents()->WasShown();
   EXPECT_EQ(PageVisibilityState::kVisible, rfh_parent->GetVisibilityState());
   EXPECT_EQ(PageVisibilityState::kVisible, rfh_child->GetVisibilityState());
+}
+
+IN_PROC_BROWSER_TEST_F(PageLifecycleStateManagerBrowserTest,
+                       CreateNewWindowVisibilityChange) {
+  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+    return;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // 1) Navigate to A and open a popup.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_EQ(1u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+  Shell* popup = OpenPopup(rfh_a, url_a, "");
+  EXPECT_EQ(2u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  RenderFrameHostImpl* popup_frame =
+      static_cast<RenderFrameHostImpl*>(popup->web_contents()->GetMainFrame());
+  StartRecordingEvents(popup_frame);
+
+  popup->web_contents()->WasHidden();
+  EXPECT_EQ(PageVisibilityState::kHidden, popup_frame->GetVisibilityState());
+  popup->web_contents()->WasShown();
+  EXPECT_EQ(PageVisibilityState::kVisible, popup_frame->GetVisibilityState());
+
+  MatchEventList(popup_frame, ListValueOf("document.visibilitychange",
+                                          "document.visibilitychange"));
 }
 
 }  // namespace content

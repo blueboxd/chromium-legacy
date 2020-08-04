@@ -61,6 +61,13 @@ class NearbyConnections : public mojom::NearbyConnections {
       mojo::PendingRemote<mojom::EndpointDiscoveryListener> listener,
       StartDiscoveryCallback callback) override;
   void StopDiscovery(StopDiscoveryCallback callback) override;
+  void RequestConnection(
+      const std::vector<uint8_t>& endpoint_info,
+      const std::string& endpoint_id,
+      mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
+      RequestConnectionCallback callback) override;
+  void DisconnectFromEndpoint(const std::string& endpoint_id,
+                              DisconnectFromEndpointCallback callback) override;
 
  private:
   void OnDisconnect();

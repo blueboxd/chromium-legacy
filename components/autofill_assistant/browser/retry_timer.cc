@@ -24,8 +24,8 @@ void RetryTimer::Start(
   Reset();
   task_ = std::move(task);
   on_done_ = std::move(on_done);
-  remaining_attempts_ =
-      base::ClampAdd(1, std::max(int64_t{0}, max_wait_time.IntDiv(period_)));
+  remaining_attempts_ = base::ClampFloor<int64_t>(
+      std::max(0.0, max_wait_time.FltDiv(period_)) + 1.0);
   RunTask();
 }
 

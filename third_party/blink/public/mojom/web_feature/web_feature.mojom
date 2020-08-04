@@ -2691,6 +2691,8 @@ enum WebFeature {
   kMainFrameCSPViaHTTP = 3359,
   kMainFrameCSPViaMeta = 3360,
   kMainFrameCSPViaOriginPolicy = 3361,
+  kHtmlClipboardApiRead = 3362,
+  kHtmlClipboardApiWrite = 3363,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

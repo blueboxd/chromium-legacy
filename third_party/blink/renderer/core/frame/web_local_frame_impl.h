@@ -348,6 +348,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       FrameOwner*,
       const AtomicString& name,
       WindowAgentFactory*,
+      WebFrame* opener,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone,
       const FeaturePolicyFeatureState& opener_feature_state =

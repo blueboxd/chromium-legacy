@@ -764,5 +764,10 @@
                "http/tests/portals",
                "wpt_internal/portals" ],
     "args": [ "--enable-features=Portals,PortalsCrossOrigin" ]
+  },
+  {
+    "prefix": "restrict-gamepad",
+    "bases": [ "external/wpt/gamepad" ],
+    "args": [ "--enable-features=RestrictGamepadAccess" ]
   }
 ]

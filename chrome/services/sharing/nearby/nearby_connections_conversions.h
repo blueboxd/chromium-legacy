@@ -26,6 +26,8 @@ mojom::Status StatusToMojom(Status::Value status);
 
 ResultCallback ResultCallbackFromMojom(StatusCallback callback);
 
+std::vector<uint8_t> ByteArrayToMojom(const ByteArray& byte_array);
+
 }  // namespace connections
 }  // namespace nearby
 }  // namespace location

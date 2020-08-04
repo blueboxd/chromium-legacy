@@ -51,7 +51,11 @@ enum Feature {
   kBetterTogetherSuite,
   kInstantTethering,
   kMessages,
-  kSmartLock
+  kSmartLock,
+  kPhoneHub,
+  kPhoneHubNotifications,
+  kPhoneHubNotificationBadge,
+  kPhoneHubTaskContinuation
 };
 
 // This enum is tied directly to a UMA enum defined in
@@ -90,6 +94,12 @@ enum FeatureState {
   // The feature still requires further setup to be ready for use (e.g., Android
   // Messages requires a separate pairing flow after unified setup).
   kFurtherSetupRequired = 8,
+
+  // The feature has been enabled by the user, but it is still unavailable
+  // because it is a sub-feature of a top-level feature, and that top-level
+  // feature has been disabled (e.g., Phone Hub notifications are a sub-feature
+  // of Phone Hub).
+  kUnavailableTopLevelFeatureDisabled = 9
 };
 
 // Metadata describing a device that can used as the host for multidevice

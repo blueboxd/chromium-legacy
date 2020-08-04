@@ -15,22 +15,6 @@
 // Fake NearbyConnectionsManager for testing.
 class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
  public:
-  class FakeNearbyConnection : public NearbyConnection {
-   public:
-    FakeNearbyConnection();
-    ~FakeNearbyConnection() override;
-
-    // NearbyConnection:
-    void Read(ReadCallback callback) override;
-    void Write(std::vector<uint8_t> bytes, WriteCallback callback) override;
-    void Close() override;
-    bool IsClosed() const override;
-    void RegisterForDisconnection(base::OnceClosure callback) override;
-
-   private:
-    bool is_closed_{false};
-    base::OnceClosure disconnection_callback_;
-  };
 
   FakeNearbyConnectionsManager();
   ~FakeNearbyConnectionsManager() override;
@@ -58,7 +42,7 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
             ConnectionsCallback callback) override;
   void RegisterPayloadStatusListener(int64_t payload_id,
                                      PayloadStatusListener* listener) override;
-  PayloadPtr GetIncomingPayload(int64_t payload_id) override;
+  Payload* GetIncomingPayload(int64_t payload_id) override;
   void Cancel(int64_t payload_id, ConnectionsCallback callback) override;
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(

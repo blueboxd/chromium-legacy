@@ -335,9 +335,9 @@ constexpr size_t kPlaceholderAvatarIndex = 26;
 constexpr size_t kPlaceholderAvatarIndex = 0;
 #endif
 
-gfx::ImageSkia GetGuestAvatar(int size) {
-  return gfx::CreateVectorIcon(kUserAccountAvatarIcon, size,
-                               gfx::kGoogleGrey500);
+ui::ImageModel GetGuestAvatar(int size) {
+  return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon,
+                                        gfx::kGoogleGrey500, size);
 }
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,

@@ -4,6 +4,8 @@
 
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 
+#include <array>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -22,6 +24,11 @@ namespace multidevice_setup {
 
 namespace {
 
+constexpr std::array<mojom::Feature, 3> kPhoneHubSubFeatures{
+    mojom::Feature::kPhoneHubNotifications,
+    mojom::Feature::kPhoneHubNotificationBadge,
+    mojom::Feature::kPhoneHubTaskContinuation};
+
 base::flat_map<mojom::Feature, std::string>
 GenerateFeatureToEnabledPrefNameMap() {
   return base::flat_map<mojom::Feature, std::string>{
@@ -29,7 +36,14 @@ GenerateFeatureToEnabledPrefNameMap() {
        kBetterTogetherSuiteEnabledPrefName},
       {mojom::Feature::kInstantTethering, kInstantTetheringEnabledPrefName},
       {mojom::Feature::kMessages, kMessagesEnabledPrefName},
-      {mojom::Feature::kSmartLock, kSmartLockEnabledPrefName}};
+      {mojom::Feature::kSmartLock, kSmartLockEnabledPrefName},
+      {mojom::Feature::kPhoneHub, kPhoneHubEnabledPrefName},
+      {mojom::Feature::kPhoneHubNotifications,
+       kPhoneHubNotificationsEnabledPrefName},
+      {mojom::Feature::kPhoneHubNotificationBadge,
+       kPhoneHubNotificationBadgeEnabledPrefName},
+      {mojom::Feature::kPhoneHubTaskContinuation,
+       kPhoneHubTaskContinuationEnabledPrefName}};
 }
 
 base::flat_map<mojom::Feature, std::string>
@@ -37,7 +51,15 @@ GenerateFeatureToAllowedPrefNameMap() {
   return base::flat_map<mojom::Feature, std::string>{
       {mojom::Feature::kInstantTethering, kInstantTetheringAllowedPrefName},
       {mojom::Feature::kMessages, kMessagesAllowedPrefName},
-      {mojom::Feature::kSmartLock, kSmartLockAllowedPrefName}};
+      {mojom::Feature::kSmartLock, kSmartLockAllowedPrefName},
+      {mojom::Feature::kPhoneHub, kPhoneHubAllowedPrefName},
+      {mojom::Feature::kPhoneHubNotifications,
+       kPhoneHubNotificationsAllowedPrefName},
+      // Note: Shares "allowed" preference with kPhoneHubNotifications.
+      {mojom::Feature::kPhoneHubNotificationBadge,
+       kPhoneHubNotificationsAllowedPrefName},
+      {mojom::Feature::kPhoneHubTaskContinuation,
+       kPhoneHubTaskContinuationAllowedPrefName}};
 }
 
 // Each feature's default value is kUnavailableNoVerifiedHost until proven
@@ -52,44 +74,105 @@ GenerateInitialDefaultCachedStateMap() {
       {mojom::Feature::kMessages,
        mojom::FeatureState::kUnavailableNoVerifiedHost},
       {mojom::Feature::kSmartLock,
+       mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {mojom::Feature::kPhoneHub,
+       mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {mojom::Feature::kPhoneHubNotifications,
+       mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {mojom::Feature::kPhoneHubNotificationBadge,
+       mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {mojom::Feature::kPhoneHubTaskContinuation,
        mojom::FeatureState::kUnavailableNoVerifiedHost}};
 }
 
 void ProcessSuiteEdgeCases(
-    FeatureStateManager::FeatureStatesMap* feature_states_map) {
-  // First edge case: The Better Together suite does not have its own explicit
-  // device policy; instead, if all supported sub-features are prohibited by
-  // policy, the entire suite should be considered prohibited.
-  bool are_all_sub_features_prohibited = true;
-  for (const auto& map_entry : *feature_states_map) {
-    // Only check for sub-features.
-    if (map_entry.first == mojom::Feature::kBetterTogetherSuite)
-      continue;
+    FeatureStateManager::FeatureStatesMap* feature_states_map_ptr) {
+  FeatureStateManager::FeatureStatesMap& feature_states_map =
+      *feature_states_map_ptr;
 
-    if (map_entry.second != mojom::FeatureState::kProhibitedByPolicy) {
-      are_all_sub_features_prohibited = false;
-      break;
+  // If the top-level Phone Hub feature is prohibited by policy, all of the
+  // sub-features are implicitly prohibited as well.
+  if (feature_states_map[mojom::Feature::kPhoneHub] ==
+      mojom::FeatureState::kProhibitedByPolicy) {
+    for (const auto& phone_hub_sub_feature : kPhoneHubSubFeatures) {
+      feature_states_map[phone_hub_sub_feature] =
+          mojom::FeatureState::kProhibitedByPolicy;
     }
   }
 
-  if (are_all_sub_features_prohibited) {
-    (*feature_states_map)[mojom::Feature::kBetterTogetherSuite] =
+  bool are_all_sub_features_prohibited_or_unsupported = true;
+  bool is_at_least_one_feature_supported = false;
+  for (const auto& map_entry : feature_states_map) {
+    // Skip the suite feature, since it doesn't have its own policy.
+    if (map_entry.first == mojom::Feature::kBetterTogetherSuite)
+      continue;
+
+    const mojom::FeatureState feature_state = map_entry.second;
+
+    if (feature_state != mojom::FeatureState::kNotSupportedByChromebook)
+      is_at_least_one_feature_supported = true;
+
+    // Also check for features that are not supported by the Chromebook, since
+    // we should still consider the suite prohibited if all sub-features are
+    // prohibited except for those that aren't even shown in the UI at all.
+    if (feature_state != mojom::FeatureState::kProhibitedByPolicy &&
+        feature_state != mojom::FeatureState::kNotSupportedByChromebook) {
+      are_all_sub_features_prohibited_or_unsupported = false;
+    }
+  }
+
+  // If no features are supported, the suite as a whole is considered
+  // unsupported.
+  if (!is_at_least_one_feature_supported) {
+    feature_states_map[mojom::Feature::kBetterTogetherSuite] =
+        mojom::FeatureState::kNotSupportedByChromebook;
+    return;
+  }
+
+  // The Better Together suite does not have its own explicit device policy;
+  // instead, if all supported sub-features are prohibited by policy, the entire
+  // suite should be considered prohibited.
+  if (are_all_sub_features_prohibited_or_unsupported) {
+    feature_states_map[mojom::Feature::kBetterTogetherSuite] =
         mojom::FeatureState::kProhibitedByPolicy;
     return;
   }
 
-  // Second edge case: If the Better Together suite is disabled by the user, any
-  // sub-features which have been enabled by the user should be unavailable. In
-  // this context, the suite serves as a gatekeeper to all sub-features.
-  if ((*feature_states_map)[mojom::Feature::kBetterTogetherSuite] !=
-      mojom::FeatureState::kDisabledByUser)
-    return;
-
-  for (auto& map_entry : *feature_states_map) {
-    if (map_entry.second == mojom::FeatureState::kEnabledByUser ||
-        map_entry.second == mojom::FeatureState::kFurtherSetupRequired) {
-      map_entry.second = mojom::FeatureState::kUnavailableSuiteDisabled;
+  // If the Better Together suite is disabled by the user, any sub-features
+  // which have been enabled by the user should be unavailable. The suite serves
+  // as a gatekeeper to all sub-features.
+  if (feature_states_map[mojom::Feature::kBetterTogetherSuite] ==
+      mojom::FeatureState::kDisabledByUser) {
+    for (auto& map_entry : feature_states_map) {
+      mojom::FeatureState& feature_state = map_entry.second;
+      if (feature_state == mojom::FeatureState::kEnabledByUser ||
+          feature_state == mojom::FeatureState::kFurtherSetupRequired) {
+        feature_state = mojom::FeatureState::kUnavailableSuiteDisabled;
+      }
     }
+  }
+
+  // If the top-level Phone Hub feature is disabled, its sub-features are
+  // unavailable.
+  if (feature_states_map[mojom::Feature::kPhoneHub] ==
+      mojom::FeatureState::kDisabledByUser) {
+    for (const auto& phone_hub_sub_feature : kPhoneHubSubFeatures) {
+      mojom::FeatureState& feature_state =
+          feature_states_map[phone_hub_sub_feature];
+      if (feature_state == mojom::FeatureState::kEnabledByUser ||
+          feature_state == mojom::FeatureState::kUnavailableSuiteDisabled) {
+        feature_state =
+            mojom::FeatureState::kUnavailableTopLevelFeatureDisabled;
+      }
+    }
+  }
+
+  // If the Phone Hub notifications feature is disabled, the notification badge
+  // feature is unavailable.
+  if (feature_states_map[mojom::Feature::kPhoneHubNotifications] ==
+      mojom::FeatureState::kDisabledByUser) {
+    feature_states_map[mojom::Feature::kPhoneHubNotificationBadge] =
+        mojom::FeatureState::kUnavailableTopLevelFeatureDisabled;
   }
 }
 
@@ -134,6 +217,34 @@ void LogFeatureStates(
     UMA_HISTOGRAM_ENUMERATION(
         "SmartLock.MultiDeviceFeatureState",
         new_states.find(mojom::Feature::kSmartLock)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kPhoneHub)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PhoneHub.MultiDeviceFeatureState.TopLevelFeature",
+        new_states.find(mojom::Feature::kPhoneHub)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kPhoneHubNotifications)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PhoneHub.MultiDeviceFeatureState.NotificationsFeature",
+        new_states.find(mojom::Feature::kPhoneHubNotifications)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kPhoneHubNotificationBadge)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PhoneHub.MultiDeviceFeatureState.NotificationBadgeFeature",
+        new_states.find(mojom::Feature::kPhoneHubNotificationBadge)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kPhoneHubTaskContinuation)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PhoneHub.MultiDeviceFeatureState.TaskContinuationFeature",
+        new_states.find(mojom::Feature::kPhoneHubTaskContinuation)->second);
   }
 }
 
@@ -197,6 +308,12 @@ FeatureStateManagerImpl::FeatureStateManagerImpl(
 
   // Also listen for changes to each of the "allowed" feature names.
   for (const auto& map_entry : feature_to_allowed_pref_name_map_) {
+    // Phone Hub notification badge doesn't have its own policy since it
+    // piggybacks off of the notification policy. Don't attempt to register
+    // for change updates to that same preference twice.
+    if (map_entry.first == mojom::Feature::kPhoneHubNotificationBadge)
+      continue;
+
     registrar_.Add(
         map_entry.second,
         base::BindRepeating(&FeatureStateManagerImpl::OnPrefValueChanged,
@@ -322,7 +439,16 @@ bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
           {mojom::Feature::kMessages,
            multidevice::SoftwareFeature::kMessagesForWebClient},
           {mojom::Feature::kSmartLock,
-           multidevice::SoftwareFeature::kSmartLockClient}};
+           multidevice::SoftwareFeature::kSmartLockClient},
+          // Note: All Phone Hub-related features use the same SoftwareFeature.
+          {mojom::Feature::kPhoneHub,
+           multidevice::SoftwareFeature::kPhoneHubClient},
+          {mojom::Feature::kPhoneHubNotifications,
+           multidevice::SoftwareFeature::kPhoneHubClient},
+          {mojom::Feature::kPhoneHubNotificationBadge,
+           multidevice::SoftwareFeature::kPhoneHubClient},
+          {mojom::Feature::kPhoneHubTaskContinuation,
+           multidevice::SoftwareFeature::kPhoneHubClient}};
 
   for (const auto& pair : kFeatureAndClientSoftwareFeaturePairs) {
     if (pair.first != feature)
@@ -363,7 +489,16 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
           {mojom::Feature::kMessages,
            multidevice::SoftwareFeature::kMessagesForWebHost},
           {mojom::Feature::kSmartLock,
-           multidevice::SoftwareFeature::kSmartLockHost}};
+           multidevice::SoftwareFeature::kSmartLockHost},
+          // Note: All Phone Hub-related features use the same SoftwareFeature.
+          {mojom::Feature::kPhoneHub,
+           multidevice::SoftwareFeature::kPhoneHubHost},
+          {mojom::Feature::kPhoneHubNotifications,
+           multidevice::SoftwareFeature::kPhoneHubHost},
+          {mojom::Feature::kPhoneHubNotificationBadge,
+           multidevice::SoftwareFeature::kPhoneHubHost},
+          {mojom::Feature::kPhoneHubTaskContinuation,
+           multidevice::SoftwareFeature::kPhoneHubHost}};
 
   for (const auto& pair : kFeatureAndHostSoftwareFeaturePairs) {
     if (pair.first != feature)
@@ -377,6 +512,8 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
   return false;
 }
 
+// TODO(khorimoto): Add a way to determine whether Phone Hub notification
+// access has been granted by the user on the phone.
 bool FeatureStateManagerImpl::RequiresFurtherSetup(mojom::Feature feature) {
   if (feature != mojom::Feature::kMessages)
     return false;

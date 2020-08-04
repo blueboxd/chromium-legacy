@@ -124,6 +124,7 @@ int TestAppMain(int argc, const char** argv) {
   base::CommandLine::Init(argc, argv);
   updater::InitLogging(FILE_PATH_LITERAL("test_app.log"));
 
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   return MakeTestApp()->Run();
 }
 

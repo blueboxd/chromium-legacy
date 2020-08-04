@@ -125,6 +125,16 @@ void ResourceLoadingHintsAgent::SetCompressPublicImagesHints(
       std::move(images_hints));
 }
 
+void ResourceLoadingHintsAgent::NotifyHttpsImageCompressionFetchFailed(
+    base::TimeDelta retry_after) {
+  if (!subresource_redirect_service_remote_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &subresource_redirect_service_remote_);
+  }
+  subresource_redirect_service_remote_->NotifyCompressedImageFetchFailed(
+      retry_after);
+}
+
 void ResourceLoadingHintsAgent::SetLiteVideoHint(
     blink::mojom::LiteVideoHintPtr lite_video_hint) {
   auto* lite_video_hint_agent =

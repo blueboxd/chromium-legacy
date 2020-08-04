@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -85,6 +87,37 @@ class TestIsolatedPrerenderTabHelper : public IsolatedPrerenderTabHelper {
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+};
+
+class IsolatedPrerenderTabHelperTestObserver
+    : public IsolatedPrerenderTabHelper::Observer {
+ public:
+  explicit IsolatedPrerenderTabHelperTestObserver(
+      IsolatedPrerenderTabHelper* tab_helper) {
+    tab_helper->AddObserverForTesting(this);
+  }
+
+  void WaitForNEligibilityChecks(size_t n) {
+    if (on_eligibility_result_calls_before_wait_ >= n) {
+      return;
+    }
+    base::RunLoop run_loop;
+    on_eligibility_result_callback_ = base::BarrierClosure(
+        n - on_eligibility_result_calls_before_wait_, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void OnNewEligiblePrefetchStarted() override {
+    if (!on_eligibility_result_callback_) {
+      on_eligibility_result_calls_before_wait_++;
+      return;
+    }
+    on_eligibility_result_callback_.Run();
+  }
+
+ private:
+  size_t on_eligibility_result_calls_before_wait_ = 0;
+  base::RepeatingClosure on_eligibility_result_callback_;
 };
 
 class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
@@ -228,9 +261,10 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     EXPECT_FALSE(isolation_info.site_for_cookies().IsNull());
   }
 
-  network::ResourceRequest VerifyCommonRequestState(const GURL& url) {
+  network::ResourceRequest VerifyCommonRequestState(const GURL& url,
+                                                    int request_count = 1) {
     SCOPED_TRACE(url.spec());
-    EXPECT_EQ(RequestCount(), 1);
+    EXPECT_EQ(RequestCount(), request_count);
 
     network::TestURLLoaderFactory::PendingRequest* request =
         test_url_loader_factory_.GetPendingRequest(0);
@@ -1120,6 +1154,61 @@ TEST_F(IsolatedPrerenderTabHelperTest,
       IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchSuccessful);
   EXPECT_EQ(after_srp_prefetch_eligible_count(), 3U);
   EXPECT_EQ(base::Optional<size_t>(2), after_srp_clicked_link_srp_position());
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, ConcurrentPrefetches) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kIsolatePrerenders,
+      {{"max_concurrent_prefetches", "2"}, {"max_srp_prefetches", "-1"}});
+
+  IsolatedPrerenderTabHelperTestObserver observer(tab_helper());
+
+  NavigateSomewhere();
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url_1("https://www.cat-food.com/");
+  GURL prediction_url_2("https://www.dogs-r-dumb.com/");
+  MakeNavigationPrediction(web_contents(), doc_url,
+                           {prediction_url_1, prediction_url_2});
+
+  observer.WaitForNEligibilityChecks(2);
+  EXPECT_EQ(RequestCount(), 2);
+
+  VerifyCommonRequestState(prediction_url_1, 2);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
+  VerifyCommonRequestState(prediction_url_2);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
+
+  EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 2U);
+  EXPECT_EQ(prefetch_eligible_count(), 2U);
+  EXPECT_EQ(prefetch_attempted_count(), 2U);
+  EXPECT_EQ(prefetch_successful_count(), 2U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+  EXPECT_TRUE(navigation_to_prefetch_start().has_value());
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      2);
+
+  NavigateAndVerifyPrefetchStatus(
+      prediction_url_2,
+      IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchSuccessful);
+  EXPECT_EQ(after_srp_prefetch_eligible_count(), 2U);
+  EXPECT_EQ(base::Optional<size_t>(1), after_srp_clicked_link_srp_position());
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);

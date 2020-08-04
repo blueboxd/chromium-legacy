@@ -14,6 +14,8 @@
 #include "components/exo/surface_delegate.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -30,6 +32,7 @@ class LayerTreeFrameSinkHolder;
 // This class provides functionality for hosting a surface tree. The surface
 // tree is hosted in the |host_window_|.
 class SurfaceTreeHost : public SurfaceDelegate,
+                        public display::DisplayObserver,
                         public viz::ContextLostObserver {
  public:
   explicit SurfaceTreeHost(const std::string& window_name);
@@ -78,7 +81,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
     return active_presentation_callbacks_;
   }
 
-  // Overridden from SurfaceDelegate:
+  // SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
   bool IsInputEnabled(Surface* surface) const override;
@@ -90,11 +93,18 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnSetApplicationId(const char* application_id) override {}
   void SetUseImmersiveForFullscreen(bool value) override {}
   void OnActivationRequested() override {}
+  void OnNewOutputAdded() override;
 
-  // Overridden from viz::ContextLostObserver:
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
+  // viz::ContextLostObserver:
   void OnContextLost() override;
 
  protected:
+  void UpdateDisplayOnTree();
+
   // Call this to submit a compositor frame.
   void SubmitCompositorFrame();
 
@@ -136,6 +146,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   viz::FrameTokenGenerator next_token_;
 
   scoped_refptr<viz::ContextProvider> context_provider_;
+
+  int64_t display_id_ = display::kInvalidDisplayId;
 
   base::WeakPtrFactory<SurfaceTreeHost> weak_ptr_factory_{this};
 

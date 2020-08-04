@@ -18,6 +18,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -50,7 +51,13 @@
 #include "url/gurl.h"
 
 namespace autofill {
+
 namespace {
+
+// Constant to assign an unset verification status to structured address
+// components stored for legacy profiles.
+constexpr structured_address::VerificationStatus kNoStatus =
+    structured_address::VerificationStatus::kNoStatus;
 
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.
@@ -191,14 +198,70 @@ std::unique_ptr<CreditCard> CreditCardFromStatement(
   return credit_card;
 }
 
+bool AddAutofillProfileNames(const AutofillProfile& profile,
+                             sql::Database* db) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    sql::Statement s(db->GetUniqueStatement(
+        "INSERT INTO autofill_profile_names "
+        "(guid, "
+        "honorific_prefix, honorific_prefix_status, "
+        "first_name, first_name_status, "
+        "middle_name, middle_name_status, "
+        "first_last_name, first_last_name_status, "
+        "conjunction_last_name, conjunction_last_name_status, "
+        "second_last_name, second_last_name_status, "
+        "last_name, last_name_status, "
+        "full_name, full_name_status) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+    s.BindString(0, profile.guid());
+    s.BindString16(1, profile.GetRawInfo(NAME_HONORIFIC_PREFIX));
+    s.BindInt(2, profile.GetVerificationStatusInt(NAME_HONORIFIC_PREFIX));
+    s.BindString16(3, profile.GetRawInfo(NAME_FIRST));
+    s.BindInt(4, profile.GetVerificationStatusInt(NAME_FIRST));
+    s.BindString16(5, profile.GetRawInfo(NAME_MIDDLE));
+    s.BindInt(6, profile.GetVerificationStatusInt(NAME_MIDDLE));
+    s.BindString16(7, profile.GetRawInfo(NAME_LAST_FIRST));
+    s.BindInt(8, profile.GetVerificationStatusInt(NAME_LAST_FIRST));
+    s.BindString16(9, profile.GetRawInfo(NAME_LAST_CONJUNCTION));
+    s.BindInt(10, profile.GetVerificationStatusInt(NAME_LAST_CONJUNCTION));
+    s.BindString16(11, profile.GetRawInfo(NAME_LAST_SECOND));
+    s.BindInt(12, profile.GetVerificationStatusInt(NAME_LAST_SECOND));
+    s.BindString16(13, profile.GetRawInfo(NAME_LAST));
+    s.BindInt(14, profile.GetVerificationStatusInt(NAME_LAST));
+    s.BindString16(15, profile.GetRawInfo(NAME_FULL));
+    s.BindInt(16, profile.GetVerificationStatusInt(NAME_FULL));
+    return s.Run();
+  }
+  // Add the new name.
+  sql::Statement s(
+      db->GetUniqueStatement("INSERT INTO autofill_profile_names"
+                             " (guid, first_name, middle_name, last_name, "
+                             "full_name) "
+                             "VALUES (?,?,?,?,?)"));
+  s.BindString(0, profile.guid());
+  s.BindString16(1, profile.GetRawInfo(NAME_FIRST));
+  s.BindString16(2, profile.GetRawInfo(NAME_MIDDLE));
+  s.BindString16(3, profile.GetRawInfo(NAME_LAST));
+  s.BindString16(4, profile.GetRawInfo(NAME_FULL));
+  return s.Run();
+}
+
 bool AddAutofillProfileNamesToProfile(sql::Database* db,
                                       AutofillProfile* profile) {
-  // TODO(estade): update schema so that multiple names are not associated per
-  // unique profile guid. Please refer https://crbug.com/497934.
   sql::Statement s(db->GetUniqueStatement(
-      "SELECT guid, first_name, middle_name, last_name, full_name "
+      "SELECT "
+      "guid, "
+      "honorific_prefix, honorific_prefix_status, "
+      "first_name, first_name_status, "
+      "middle_name, middle_name_status, "
+      "first_last_name, first_last_name_status, "
+      "conjunction_last_name, conjunction_last_name_status, "
+      "second_last_name, second_last_name_status, "
+      "last_name, last_name_status, "
+      "full_name, full_name_status "
       "FROM autofill_profile_names "
-      "WHERE guid=?"
+      "WHERE guid=? "
       "LIMIT 1"));
   s.BindString(0, profile->guid());
 
@@ -207,18 +270,48 @@ bool AddAutofillProfileNamesToProfile(sql::Database* db,
 
   if (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
-    profile->SetRawInfo(NAME_FIRST, s.ColumnString16(1));
-    profile->SetRawInfo(NAME_MIDDLE, s.ColumnString16(2));
-    profile->SetRawInfo(NAME_LAST, s.ColumnString16(3));
-    profile->SetRawInfo(NAME_FULL, s.ColumnString16(4));
+
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableSupportForMoreStructureInNames)) {
+      // Whether or not the name has a legacy structure, set all
+      // components. The Profile can detect that it must be migrated because
+      // all values have the validation status |kNoStatus|.
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_HONORIFIC_PREFIX, s.ColumnString16(1), s.ColumnInt(2));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_FIRST, s.ColumnString16(3), s.ColumnInt(4));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_MIDDLE, s.ColumnString16(5), s.ColumnInt(6));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_LAST_FIRST, s.ColumnString16(7), s.ColumnInt(8));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_LAST_CONJUNCTION, s.ColumnString16(9), s.ColumnInt(10));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_LAST_SECOND, s.ColumnString16(11), s.ColumnInt(12));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_LAST, s.ColumnString16(13), s.ColumnInt(14));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_FULL, s.ColumnString16(15), s.ColumnInt(16));
+    } else {
+      // If structured components are not enabled, only use the legacy
+      // structure.
+      profile->SetRawInfoWithVerificationStatus(NAME_FULL, s.ColumnString16(15),
+                                                kNoStatus);
+      profile->SetRawInfoWithVerificationStatus(NAME_FIRST, s.ColumnString16(3),
+                                                kNoStatus);
+      profile->SetRawInfoWithVerificationStatus(NAME_MIDDLE,
+                                                s.ColumnString16(5), kNoStatus);
+      profile->SetRawInfoWithVerificationStatus(NAME_LAST, s.ColumnString16(13),
+                                                kNoStatus);
+    }
   }
   return s.Succeeded();
 }
 
 bool AddAutofillProfileEmailsToProfile(sql::Database* db,
                                        AutofillProfile* profile) {
-  // TODO(estade): update schema so that multiple emails are not associated per
-  // unique profile guid. Please refer https://crbug.com/497934.
+  // TODO(estade): update schema so that multiple emails are not associated
+  // per unique profile guid. Please refer https://crbug.com/497934.
   sql::Statement s(db->GetUniqueStatement(
       "SELECT guid, email FROM autofill_profile_emails WHERE guid=? LIMIT 1"));
   s.BindString(0, profile->guid());
@@ -236,7 +329,8 @@ bool AddAutofillProfileEmailsToProfile(sql::Database* db,
 bool AddAutofillProfilePhonesToProfile(sql::Database* db,
                                        AutofillProfile* profile) {
   // TODO(estade): update schema so that multiple phone numbers are not
-  // associated per unique profile guid. Please refer https://crbug.com/497934.
+  // associated per unique profile guid. Please refer
+  // https://crbug.com/497934.
   sql::Statement s(db->GetUniqueStatement(
       "SELECT guid, number FROM autofill_profile_phones WHERE guid=? LIMIT 1"));
   s.BindString(0, profile->guid());
@@ -250,23 +344,6 @@ bool AddAutofillProfilePhonesToProfile(sql::Database* db,
   }
   return s.Succeeded();
 }
-
-bool AddAutofillProfileNames(const AutofillProfile& profile,
-                             sql::Database* db) {
-  // Add the new name.
-  sql::Statement s(db->GetUniqueStatement(
-      "INSERT INTO autofill_profile_names"
-      " (guid, first_name, middle_name, last_name, full_name) "
-      "VALUES (?,?,?,?,?)"));
-  s.BindString(0, profile.guid());
-  s.BindString16(1, profile.GetRawInfo(NAME_FIRST));
-  s.BindString16(2, profile.GetRawInfo(NAME_MIDDLE));
-  s.BindString16(3, profile.GetRawInfo(NAME_LAST));
-  s.BindString16(4, profile.GetRawInfo(NAME_FULL));
-
-  return s.Run();
-}
-
 bool AddAutofillProfileEmails(const AutofillProfile& profile,
                               sql::Database* db) {
   // Add the new email.
@@ -360,9 +437,9 @@ CreditCard::ServerStatus ServerStatusStringToEnum(const std::string& status) {
   return CreditCard::OK;
 }
 
-// Returns |s| with |escaper| in front of each of occurrence of a character from
-// |special_chars|. Any occurrence of |escaper| in |s| is doubled. For example,
-// Substitute("hello_world!", "_%", '!'') returns "hello!_world!!".
+// Returns |s| with |escaper| in front of each of occurrence of a character
+// from |special_chars|. Any occurrence of |escaper| in |s| is doubled. For
+// example, Substitute("hello_world!", "_%", '!'') returns "hello!_world!!".
 base::string16 Substitute(const base::string16& s,
                           const base::string16& special_chars,
                           const base::char16& escaper) {
@@ -393,7 +470,7 @@ AutofillTable::AutofillTable()
   DCHECK(autofill_table_encryptor_);
 }
 
-AutofillTable::~AutofillTable() {}
+AutofillTable::~AutofillTable() = default;
 
 AutofillTable* AutofillTable::FromWebDatabase(WebDatabase* db) {
   return static_cast<AutofillTable*>(db->GetTable(GetKey()));
@@ -501,6 +578,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 87:
       *update_compatible_version = false;
       return MigrateToVersion87AddCreditCardNicknameColumn();
+    case 88:
+      *update_compatible_version = false;
+      return MigrateToVersion88AddNewNameColumns();
   }
   return true;
 }
@@ -2806,9 +2886,40 @@ bool AutofillTable::MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard() {
              "DEFAULT 0");
 }
 
+bool AutofillTable::MigrateToVersion88AddNewNameColumns() {
+  for (const std::string& column :
+       {"honorific_prefix", "first_last_name", "conjunction_last_name",
+        "second_last_name"}) {
+    if (!db_->DoesColumnExist("autofill_profile_names", column.c_str()) &&
+        !db_->Execute(
+            base::StrCat({"ALTER TABLE autofill_profile_names ADD COLUMN ",
+                          column, " VARCHAR"})
+                .c_str())) {
+      return false;
+    }
+  }
+
+  for (const std::string& column :
+       {"honorific_prefix_status", "first_name_status", "middle_name_status",
+        "last_name_status", "first_last_name_status",
+        "conjunction_last_name_status", "second_last_name_status",
+        "full_name_status"}) {
+    // The default value of 0 corresponds to the verification status
+    // |kNoStatus|.
+    if (!db_->DoesColumnExist("autofill_profile_names", column.c_str()) &&
+        !db_->Execute(
+            base::StrCat({"ALTER TABLE autofill_profile_names ADD COLUMN ",
+                          column, " INTEGER DEFAULT 0"})
+                .c_str())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool AutofillTable::MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns() {
-  // Sqlite does not support "alter table drop column" syntax, so it has be done
-  // manually.
+  // Sqlite does not support "alter table drop column" syntax, so it has be
+  // done manually.
   sql::Transaction transaction(db_);
   return transaction.Begin() &&
          db_->Execute(
@@ -2837,8 +2948,9 @@ bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
     base::Time time) {
-  // Only add one new entry for each unique element name.  Use |seen_names| to
-  // track this.  Add up to |kMaximumUniqueNames| unique entries per form.
+  // Only add one new entry for each unique element name.  Use |seen_names|
+  // to track this.  Add up to |kMaximumUniqueNames| unique entries per
+  // form.
   const size_t kMaximumUniqueNames = 256;
   std::set<base::string16> seen_names;
   bool result = true;
@@ -2964,9 +3076,9 @@ bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
   s.BindInt64(3, entry.date_created().ToTimeT());
   s.BindInt64(4, entry.date_last_used().ToTimeT());
   // TODO(isherman): The counts column is currently synced implicitly as the
-  // number of timestamps.  Sync the value explicitly instead, since the DB now
-  // only saves the first and last timestamp, which makes counting timestamps
-  // completely meaningless as a way to track frequency of usage.
+  // number of timestamps.  Sync the value explicitly instead, since the DB
+  // now only saves the first and last timestamp, which makes counting
+  // timestamps completely meaningless as a way to track frequency of usage.
   s.BindInt(5, entry.date_last_used() == entry.date_created() ? 1 : 2);
   return s.Run();
 }
@@ -3132,12 +3244,26 @@ bool AutofillTable::InitProfilesTable() {
 
 bool AutofillTable::InitProfileNamesTable() {
   if (!db_->DoesTableExist("autofill_profile_names")) {
+    // The default value of 0 corresponds to the verification status
+    // |kNoStatus|.
     if (!db_->Execute("CREATE TABLE autofill_profile_names ( "
                       "guid VARCHAR, "
                       "first_name VARCHAR, "
                       "middle_name VARCHAR, "
                       "last_name VARCHAR, "
-                      "full_name VARCHAR)")) {
+                      "full_name VARCHAR, "
+                      "honorific_prefix VARCHAR, "
+                      "first_last_name VARCHAR, "
+                      "conjunction_last_name VARCHAR, "
+                      "second_last_name VARCHAR, "
+                      "honorific_prefix_status INTEGER DEFAULT 0, "
+                      "first_name_status INTEGER DEFAULT 0, "
+                      "middle_name_status INTEGER DEFAULT 0, "
+                      "last_name_status INTEGER DEFAULT 0, "
+                      "first_last_name_status INTEGER DEFAULT 0, "
+                      "conjunction_last_name_status INTEGER DEFAULT 0, "
+                      "second_last_name_status INTEGER DEFAULT 0, "
+                      "full_name_status INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }

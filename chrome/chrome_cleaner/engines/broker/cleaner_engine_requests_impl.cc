@@ -5,9 +5,9 @@
 #include "chrome/chrome_cleaner/engines/broker/cleaner_engine_requests_impl.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
@@ -129,7 +129,7 @@ bool CleanerEngineRequestsImpl::NtChangeRegistryValue(
 }
 
 void CleanerEngineRequestsImpl::SandboxDeleteService(
-    const base::string16& name,
+    const std::wstring& name,
     SandboxDeleteServiceCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -138,14 +138,14 @@ void CleanerEngineRequestsImpl::SandboxDeleteService(
       std::move(result_callback));
 }
 
-bool CleanerEngineRequestsImpl::DeleteService(const base::string16& name) {
+bool CleanerEngineRequestsImpl::DeleteService(const std::wstring& name) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxDeleteService(name);
 }
 
 void CleanerEngineRequestsImpl::SandboxDeleteTask(
-    const base::string16& name,
+    const std::wstring& name,
     SandboxDeleteServiceCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -154,7 +154,7 @@ void CleanerEngineRequestsImpl::SandboxDeleteTask(
       std::move(result_callback));
 }
 
-bool CleanerEngineRequestsImpl::DeleteTask(const base::string16& name) {
+bool CleanerEngineRequestsImpl::DeleteTask(const std::wstring& name) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxDeleteTask(name);

@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/chrome_cleaner/engines/common/registry_util.h"
@@ -55,7 +54,7 @@ using KnownFolder = chrome_cleaner::mojom::KnownFolder;
 
 #define STATUS_OBJECT_PATH_SYNTAX_BAD ((NTSTATUS)0xC000003BL)
 
-WStringEmbeddedNulls StringWithTrailingNull(const base::string16& str) {
+WStringEmbeddedNulls StringWithTrailingNull(const std::wstring& str) {
   // string16::size() does not count the trailing null.
   return WStringEmbeddedNulls(str.c_str(), str.size() + 1);
 }
@@ -84,13 +83,13 @@ bool operator!=(const chrome_cleaner::TaskScheduler::TaskExecAction& left,
          left.arguments != right.arguments;
 }
 
-base::FilePath GetNativePath(const base::string16& path) {
+base::FilePath GetNativePath(const std::wstring& path) {
   // Add the native path \??\ prefix described at
   // https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
   return base::FilePath(base::StrCat({L"\\??\\", path}));
 }
 
-base::FilePath GetUniversalPath(const base::string16& path) {
+base::FilePath GetUniversalPath(const std::wstring& path) {
   // Add the universal \\?\ prefix described at
   // https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#namespaces
   return base::FilePath(base::StrCat({L"\\\\?\\", path}));
@@ -116,7 +115,7 @@ TEST(ScannerSandboxInterface, FindFirstFile_OneFile) {
 
   ASSERT_TRUE(chrome_cleaner::CreateEmptyFile(file_path));
 
-  base::string16 search_pattern = L"temp*";
+  std::wstring search_pattern = L"temp*";
   base::FilePath search_path = temp.GetPath().Append(search_pattern);
 
   HANDLE handle;
@@ -167,7 +166,7 @@ TEST(ScannerSandboxInterface, FindNextFile_MultipleFiles) {
 
   EXPECT_EQ(0U, SandboxFindFirstFile(search_path, &data, &handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, handle);
-  base::string16 first_found = data.cFileName;
+  std::wstring first_found = data.cFileName;
   EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(file_path_1.BaseName().value(),
                                                data.cFileName) ||
               base::EqualsCaseInsensitiveASCII(file_path_2.BaseName().value(),
@@ -230,7 +229,7 @@ TEST(ScannerSandboxInterface, FindFirstFile_Wow64Disabled) {
     WIN32_FIND_DATAW data;
     EXPECT_EQ(0U, SandboxFindFirstFile(search_path, &data, &handle));
     EXPECT_NE(INVALID_HANDLE_VALUE, handle);
-    base::string16 first_found = data.cFileName;
+    std::wstring first_found = data.cFileName;
     EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(kTestFile, data.cFileName));
 
     EXPECT_EQ(static_cast<uint32_t>(ERROR_NO_MORE_FILES),
@@ -283,7 +282,7 @@ TEST(ScannerSandboxInterface, FindNextFile_WithNetworkedFile) {
 
   EXPECT_EQ(0U, SandboxFindFirstFile(search_path, &data, &handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, handle);
-  base::string16 first_found = data.cFileName;
+  std::wstring first_found = data.cFileName;
   EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(file_path_1.BaseName().value(),
                                                data.cFileName))
       << "Returned file name doesn't match, expected "
@@ -484,7 +483,7 @@ TEST(ScannerSandboxInterface, GetProcessImagePath_InvalidPid) {
 TEST(ScannerSandboxInterface, GetLoadedModules_Self) {
   ASSERT_FALSE(SandboxGetLoadedModules(::GetCurrentProcessId(), nullptr));
 
-  std::set<base::string16> module_names;
+  std::set<std::wstring> module_names;
   ASSERT_TRUE(SandboxGetLoadedModules(::GetCurrentProcessId(), &module_names));
 
   // Every process contains its executable as a module.
@@ -495,7 +494,7 @@ TEST(ScannerSandboxInterface, GetLoadedModules_Self) {
 }
 
 TEST(ScannerSandboxInterface, GetLoadedModules_InvalidPid) {
-  std::set<base::string16> module_names;
+  std::set<std::wstring> module_names;
   // 0 is System Idle Process, and it's not possible to open it.
   EXPECT_FALSE(SandboxGetLoadedModules(0, &module_names));
 }
@@ -506,7 +505,7 @@ TEST(ScannerSandboxInterface, GetProcessCommandLine_Success) {
       chrome_cleaner::LongRunningProcess(&test_process_cmd);
   ASSERT_TRUE(test_process.IsValid());
 
-  base::string16 command_line;
+  std::wstring command_line;
   EXPECT_TRUE(SandboxGetProcessCommandLine(test_process.Pid(), &command_line));
   EXPECT_EQ(test_process_cmd.GetCommandLineString(), command_line);
 
@@ -523,7 +522,7 @@ TEST(ScannerSandboxInterface, GetProcessCommandLine_AccessDenied) {
     // Set up a ScopedProcessProtector that removes only some access rights.
     chrome_cleaner::ScopedProcessProtector process_protector(
         test_process.Pid(), PROCESS_QUERY_INFORMATION);
-    base::string16 command_line;
+    std::wstring command_line;
     EXPECT_FALSE(
         SandboxGetProcessCommandLine(test_process.Pid(), &command_line));
   }
@@ -534,7 +533,7 @@ TEST(ScannerSandboxInterface, GetProcessCommandLine_AccessDenied) {
 TEST(ScannerSandboxInterface, GetProcessCommandLine_InvalidInput) {
   EXPECT_FALSE(SandboxGetProcessCommandLine(::GetCurrentProcessId(), nullptr));
 
-  base::string16 command_line;
+  std::wstring command_line;
   // 0 is System Idle Process, and it's not possible to open it.
   EXPECT_FALSE(SandboxGetProcessCommandLine(0, &command_line));
 }
@@ -604,7 +603,7 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, BasicFile) {
   EXPECT_FALSE(universal_handle.IsValid()) << universal_path;
 
   // Make sure the file can be opened using a path with trailing whitespaces.
-  const base::string16 path_with_space = file_path.value() + L" ";
+  const std::wstring path_with_space = file_path.value() + L" ";
   handle = SandboxOpenReadOnlyFile(base::FilePath(path_with_space),
                                    FILE_ATTRIBUTE_NORMAL);
   EXPECT_TRUE(handle.IsValid());
@@ -780,7 +779,7 @@ class ScannerSandboxInterface_OpenReadOnlyRegistry : public ::testing::Test {
   }
 
  protected:
-  base::string16 key_value_name_;
+  std::wstring key_value_name_;
   registry_util::RegistryOverrideManager override_manager_;
 };
 
@@ -825,7 +824,7 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyRegistry, InvalidResultHandle) {
 }
 
 TEST_F(ScannerSandboxInterface_OpenReadOnlyRegistry, NonexistantPath) {
-  const base::string16 fake_key = L"fake_key_name";
+  const std::wstring fake_key = L"fake_key_name";
 
   HKEY handle = nullptr;
   EXPECT_EQ(
@@ -856,7 +855,7 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyRegistry, NullRootKey) {
 }
 
 TEST_F(ScannerSandboxInterface_OpenReadOnlyRegistry, EmptySubKey) {
-  const base::string16 empty_key;
+  const std::wstring empty_key;
   HKEY handle = nullptr;
   EXPECT_EQ(0U, SandboxOpenReadOnlyRegistry(HKEY_CURRENT_USER, empty_key, 0,
                                             &handle));
@@ -867,13 +866,13 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyRegistry, EmptySubKey) {
 class ScannerSandboxInterface_NtOpenReadOnlyRegistry : public ::testing::Test {
  public:
   void SetUp() override {
-    base::string16 hklm_path_string = L"\\REGISTRY\\MACHINE\\";
+    std::wstring hklm_path_string = L"\\REGISTRY\\MACHINE\\";
     hklm_path_ = StringWithTrailingNull(hklm_path_string);
 
-    base::string16 relative_path_string = temp_registry_key_.Path();
+    std::wstring relative_path_string = temp_registry_key_.Path();
     relative_path_ = StringWithTrailingNull(relative_path_string);
 
-    base::string16 fully_qualified_path_string =
+    std::wstring fully_qualified_path_string =
         temp_registry_key_.FullyQualifiedPath();
     fully_qualified_path_ = StringWithTrailingNull(fully_qualified_path_string);
   }
@@ -1021,7 +1020,7 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, ValidRootWithNullChars) {
 
 TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry,
        InvalidPathWithNullRootKey) {
-  base::string16 fake_path = L"\\REGISTRY\\MACHINE\\fake\\path";
+  std::wstring fake_path = L"\\REGISTRY\\MACHINE\\fake\\path";
 
   HANDLE handle;
   EXPECT_EQ(static_cast<uint32_t>(STATUS_OBJECT_NAME_NOT_FOUND),
@@ -1051,9 +1050,9 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, InvalidSubkey) {
                 nullptr, WStringEmbeddedNulls(nullptr), KEY_READ, &handle));
   EXPECT_EQ(INVALID_HANDLE_VALUE, handle);
 
-  base::string16 very_long_name =
-      base::string16(fully_qualified_path_.CastAsWCharArray()) +
-      base::string16(kMaxRegistryParamLength, L'a');
+  std::wstring very_long_name =
+      std::wstring(fully_qualified_path_.CastAsWCharArray()) +
+      std::wstring(kMaxRegistryParamLength, L'a');
   EXPECT_EQ(
       SandboxErrorCode::INVALID_SUBKEY_STRING,
       SandboxNtOpenReadOnlyRegistry(
@@ -1117,8 +1116,8 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, InvalidDwAccess) {
 }
 
 TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, NonRegistryPath) {
-  const base::string16 direct_path = L"\\DosDevice\\C:";
-  const base::string16 tricky_path =
+  const std::wstring direct_path = L"\\DosDevice\\C:";
+  const std::wstring tricky_path =
       L"\\Registry\\Machine\\..\\..\\DosDevice\\C:";
 
   HANDLE handle = INVALID_HANDLE_VALUE;

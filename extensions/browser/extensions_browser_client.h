@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/public/browser/bluetooth_chooser.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extensions_browser_api_provider.h"
@@ -357,6 +358,11 @@ class ExtensionsBrowserClient {
   // Retrieves the media router access logger for this session.
   virtual const MediaRouterExtensionAccessLogger* GetMediaRouterAccessLogger()
       const;
+
+  // Returns true if the |extension_id| requires its own isolated storage
+  // partition.
+  virtual bool HasIsolatedStorage(const std::string& extension_id,
+                                  content::BrowserContext* context);
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

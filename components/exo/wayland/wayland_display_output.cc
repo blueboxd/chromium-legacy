@@ -4,6 +4,8 @@
 
 #include "components/exo/wayland/wayland_display_output.h"
 
+#include <cstring>
+
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
@@ -44,6 +46,22 @@ void WaylandDisplayOutput::UnregisterOutput(wl_resource* output_resource) {
 void WaylandDisplayOutput::RegisterOutput(wl_resource* output_resource) {
   auto* client = wl_resource_get_client(output_resource);
   output_ids_.insert(std::make_pair(client, output_resource));
+
+  // Notify All wl surfaces that a new output was added.
+  wl_client_for_each_resource(
+      client,
+      [](wl_resource* resource, void*) {
+        constexpr char kWlSurfaceClass[] = "wl_surface";
+
+        const char* class_name = wl_resource_get_class(resource);
+        if (std::strcmp(kWlSurfaceClass, class_name) == 0) {
+          auto* surface = GetUserDataAs<Surface>(resource);
+          if (surface)
+            surface->OnNewOutputAdded();
+        }
+        return WL_ITERATOR_CONTINUE;
+      },
+      nullptr);
 }
 
 wl_resource* WaylandDisplayOutput::GetOutputResourceForClient(

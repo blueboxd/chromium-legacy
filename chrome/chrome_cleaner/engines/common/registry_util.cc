@@ -87,8 +87,7 @@ NtRegistryParamError ValidateNtRegistryKey(const WStringEmbeddedNulls& key) {
   return NtRegistryParamError::None;
 }
 
-base::string16 FormatNtRegistryMemberForLogging(
-    const WStringEmbeddedNulls& key) {
+std::wstring FormatNtRegistryMemberForLogging(const WStringEmbeddedNulls& key) {
   switch (ValidateNtRegistryKey(key)) {
     case NtRegistryParamError::NullParam:
       return L"(null)";
@@ -98,7 +97,7 @@ base::string16 FormatNtRegistryMemberForLogging(
       return L"(excessively long key)";
     default:
       // Replace null chars with 0s for printing.
-      base::string16 str(key.CastAsWStringPiece());
+      std::wstring str(key.CastAsWStringPiece());
       base::ReplaceChars(str, base::WStringPiece(L"\0", 1), L"\\0", &str);
       return str;
   }

@@ -21,10 +21,11 @@ class ChromeTestWidget : public views::Widget {
   // views::Widget:
   const ui::ThemeProvider* GetThemeProvider() const override;
 
- private:
-  class StubThemeProvider;
+  // Set new ThemeProvider. Calls ThemeChanged.
+  void SetThemeProvider(std::unique_ptr<ui::ThemeProvider> theme_provider);
 
-  std::unique_ptr<StubThemeProvider> theme_provider_;
+ private:
+  std::unique_ptr<ui::ThemeProvider> theme_provider_;
 };
 
 #endif  // CHROME_TEST_VIEWS_CHROME_TEST_WIDGET_H_

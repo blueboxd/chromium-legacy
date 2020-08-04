@@ -177,7 +177,7 @@ class TestMainController : public MainController {
     void ConfirmCleanup(
         const std::vector<UwSId>& found_pups,
         const FilePathSet& files_to_remove,
-        const std::vector<base::string16>& registry_keys) override {
+        const std::vector<std::wstring>& registry_keys) override {
       confirm_cleanup_called_ = true;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
@@ -190,7 +190,7 @@ class TestMainController : public MainController {
       delegate()->OnClose();
     }
     void Close() override { delegate()->OnClose(); }
-    void DisableExtensions(const std::vector<base::string16>& extensions,
+    void DisableExtensions(const std::vector<std::wstring>& extensions,
                            base::OnceCallback<void(bool)> on_disable) override {
       std::move(on_disable).Run(true);
     }
@@ -308,7 +308,7 @@ class SimpleTestPUPData : public TestPUPData {
 
       pup->expanded_registry_footprints.push_back(PUPData::RegistryFootprint(
           RegKeyPath(HKEY_USERS, L"Software\\bad-software\\bad-key"),
-          base::string16(), base::string16(), REGISTRY_VALUE_MATCH_KEY));
+          std::wstring(), std::wstring(), REGISTRY_VALUE_MATCH_KEY));
     }
   }
 };

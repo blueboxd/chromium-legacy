@@ -859,6 +859,10 @@ void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void ShellSurfaceBase::OnWindowAddedToRootWindow(aura::Window* window) {
+  UpdateDisplayOnTree();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // wm::ActivationChangeObserver overrides:
 
@@ -984,6 +988,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Show widget next time Commit() is called.
   if (show_state != ui::SHOW_STATE_MINIMIZED)
     pending_show_widget_ = true;
+
+  UpdateDisplayOnTree();
 }
 
 bool ShellSurfaceBase::IsResizing() const {

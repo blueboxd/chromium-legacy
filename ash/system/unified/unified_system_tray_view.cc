@@ -162,6 +162,10 @@ class UnifiedSystemTrayView::SystemTrayContainer : public views::View {
   }
 
   // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
   const char* GetClassName() const override { return "SystemTrayContainer"; }
 
  private:
@@ -447,6 +451,12 @@ void UnifiedSystemTrayView::Layout() {
     system_tray_container_->SetBoundsRect(GetContentsBounds());
   else if (detailed_view_container_->GetVisible())
     detailed_view_container_->SetBoundsRect(GetContentsBounds());
+}
+
+void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
+  // The size change is not caused by SetExpandedAmount(), because they don't
+  // trigger PreferredSizeChanged().
+  PreferredSizeChanged();
 }
 
 const char* UnifiedSystemTrayView::GetClassName() const {

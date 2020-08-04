@@ -33,7 +33,7 @@ const wchar_t kChromeShortcutFilename[] = L"Google Chrome.lnk";
 // The KO language version doesn't have the term Google in the filename.
 const wchar_t kKOChromeShortcutFilename[] = L"Chrome.lnk";
 
-bool RetrieveChromeVersionAndInstalledDomain(base::string16* chrome_version,
+bool RetrieveChromeVersionAndInstalledDomain(std::wstring* chrome_version,
                                              bool* system_install) {
   DCHECK(chrome_version);
 

@@ -5,9 +5,12 @@
 #include "weblayer/browser/navigation_error_navigation_throttle.h"
 
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "net/base/net_errors.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/common/error_page_helper.mojom.h"
 #include "weblayer/public/error_page.h"
 #include "weblayer/public/error_page_delegate.h"
 
@@ -48,12 +51,19 @@ NavigationErrorNavigationThrottle::WillFailRequest() {
   // The navigation this was created for should always outlive this.
   DCHECK(navigation);
   auto error_page = tab->error_page_delegate()->GetErrorPageContent(navigation);
-  if (error_page) {
-    return NavigationThrottle::ThrottleCheckResult(
-        NavigationThrottle::BLOCK_REQUEST,
-        navigation_handle()->GetNetErrorCode(), error_page->html);
-  }
-  return NavigationThrottle::PROCEED;
+  if (!error_page)
+    return NavigationThrottle::PROCEED;
+
+  mojo::AssociatedRemote<mojom::ErrorPageHelper> remote_error_page_helper;
+  navigation_handle()
+      ->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&remote_error_page_helper);
+  remote_error_page_helper->DisableErrorPageHelperForNextError();
+
+  return NavigationThrottle::ThrottleCheckResult(
+      NavigationThrottle::BLOCK_REQUEST, navigation_handle()->GetNetErrorCode(),
+      error_page->html);
 }
 
 const char* NavigationErrorNavigationThrottle::GetNameForLogging() {

@@ -577,13 +577,6 @@ public class WebLayer {
     }
 
     /**
-     * Forces setting the cached remote context.
-     */
-    static void setRemoteContext(Context remoteContext) {
-        sRemoteContext = remoteContext;
-    }
-
-    /**
      * Creates a ClassLoader for the remote (weblayer implementation) side.
      */
     static ClassLoader getOrCreateRemoteClassLoader(Context appContext)

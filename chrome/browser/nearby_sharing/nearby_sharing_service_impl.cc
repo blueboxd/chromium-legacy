@@ -718,7 +718,7 @@ void NearbySharingServiceImpl::WriteResponse(
   std::vector<uint8_t> data(frame.ByteSize());
   frame.SerializeToArray(data.data(), frame.ByteSize());
 
-  connection.Write(std::move(data), base::DoNothing());
+  connection.Write(std::move(data));
 }
 
 void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,

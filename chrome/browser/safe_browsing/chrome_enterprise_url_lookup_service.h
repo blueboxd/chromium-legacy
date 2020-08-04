@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "url/gurl.h"
 
@@ -23,6 +24,12 @@ namespace policy {
 class DMToken;
 }  // namespace policy
 
+namespace syncer {
+class SyncService;
+}
+
+class PrefService;
+
 class Profile;
 
 namespace safe_browsing {
@@ -36,7 +43,13 @@ class ChromeEnterpriseRealTimeUrlLookupService
   ChromeEnterpriseRealTimeUrlLookupService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       VerdictCacheManager* cache_manager,
-      Profile* profile);
+      Profile* profile,
+      syncer::SyncService* sync_service,
+      PrefService* pref_service,
+      const ChromeUserPopulation::ProfileManagementStatus&
+          profile_management_status,
+      bool is_under_advanced_protection,
+      bool is_off_the_record);
   ~ChromeEnterpriseRealTimeUrlLookupService() override;
 
   // RealTimeUrlLookupServiceBase:
@@ -51,7 +64,7 @@ class ChromeEnterpriseRealTimeUrlLookupService
   void GetAccessToken(const GURL& url,
                       RTLookupRequestCallback request_callback,
                       RTLookupResponseCallback response_callback) override;
-  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) override;
+  std::string GetDMTokenString() const override;
   std::string GetMetricSuffix() const override;
 
   policy::DMToken GetDMToken() const;

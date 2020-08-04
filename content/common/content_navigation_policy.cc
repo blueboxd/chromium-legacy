@@ -32,15 +32,22 @@ bool DeviceHasEnoughMemoryForBackForwardCache() {
   return true;
 }
 
+bool IsBackForwardCacheDisabledByCommandLine() {
+  if (base::CommandLine::InitializedForCurrentProcess() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBackForwardCache)) {
+    return true;
+  }
+  return false;
+}
+
 bool IsBackForwardCacheEnabled() {
   if (!DeviceHasEnoughMemoryForBackForwardCache())
     return false;
 
-  if (base::CommandLine::InitializedForCurrentProcess() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBackForwardCache)) {
+  if (IsBackForwardCacheDisabledByCommandLine())
     return false;
-  }
+
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
   // experiment group - such assignment should be final.

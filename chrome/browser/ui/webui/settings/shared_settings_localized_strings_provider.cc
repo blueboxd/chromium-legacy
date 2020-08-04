@@ -256,7 +256,29 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_INPUT_LABEL},
       {"nearbyShareEditDeviceName", IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME},
       {"nearbyShareDeviceNameAriaDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION}};
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION},
+      {"editDataUsage", IDS_SETTINGS_NEARBY_SHARE_EDIT_DATA_USAGE},
+      {"updateDataUsage", IDS_SETTINGS_NEARBY_SHARE_UPDATE_DATA_USAGE},
+      {"nearbyShareDataUsageDialogTitle",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DIALOG_TITLE},
+      {"nearbyShareDataUsageWifiOnlyLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_LABEL},
+      {"nearbyShareDataUsageWifiOnlyDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_DESCRIPTION},
+      {"nearbyShareDataUsageDataLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_LABEL},
+      {"nearbyShareDataUsageDataDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_DESCRIPTION},
+      {"nearbyShareDataUsageOfflineLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_LABEL},
+      {"nearbyShareDataUsageOfflineDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_DESCRIPTION},
+      {"nearbyShareDataUsageDataEditButtonDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_DATA_DESCRIPTION},
+      {"nearbyShareDataUsageWifiOnlyEditButtonDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_WIFI_ONLY_DESCRIPTION},
+      {"nearbyShareDataUsageOfflineEditButtonDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_OFFLINE_DESCRIPTION}};
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddBoolean(

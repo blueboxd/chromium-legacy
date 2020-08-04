@@ -5,8 +5,10 @@
 #include "chrome/browser/nearby_sharing/nearby_connections_manager_impl.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
+#include "crypto/random.h"
 
 namespace {
 
@@ -84,13 +86,45 @@ void NearbyConnectionsManagerImpl::Connect(
     DataUsage data_usage,
     NearbyConnectionCallback callback) {
   // TOOD(crbug/1076008): Implement.
+  if (!nearby_connections_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // TODO(crbug/10706008): Add MediumSelector and bluetooth_mac_address.
+  nearby_connections_->RequestConnection(
+      endpoint_info, endpoint_id,
+      connection_lifecycle_listener_.BindNewPipeAndPassRemote(),
+      base::BindOnce(&NearbyConnectionsManagerImpl::OnConnectionRequested,
+                     weak_ptr_factory_.GetWeakPtr(), endpoint_id,
+                     std::move(callback)));
+}
+
+void NearbyConnectionsManagerImpl::OnConnectionRequested(
+    const std::string& endpoint_id,
+    NearbyConnectionCallback callback,
+    ConnectionsStatus status) {
+  if (status != ConnectionsStatus::kSuccess) {
+    NS_LOG(ERROR) << "Failed to connect to the remote shareTarget: " << status;
+    nearby_connections_->DisconnectFromEndpoint(endpoint_id, base::DoNothing());
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  auto result =
+      pending_outgoing_connections_.emplace(endpoint_id, std::move(callback));
+  DCHECK(result.second);
+
+  // TODO(crbug/1111458): Support TransferManager.
 }
 
 void NearbyConnectionsManagerImpl::Disconnect(const std::string& endpoint_id) {
   if (!nearby_connections_)
     return;
 
-  // TOOD(crbug/1076008): Implement.
+  nearby_connections_->DisconnectFromEndpoint(endpoint_id, base::DoNothing());
+  OnDisconnected(endpoint_id);
+  NS_LOG(INFO) << "Disconnected from " << endpoint_id;
 }
 
 void NearbyConnectionsManagerImpl::Send(const std::string& endpoint_id,
@@ -114,11 +148,8 @@ void NearbyConnectionsManagerImpl::RegisterPayloadStatusListener(
   // TOOD(crbug/1076008): Implement.
 }
 
-NearbyConnectionsManagerImpl::PayloadPtr
+NearbyConnectionsManagerImpl::Payload*
 NearbyConnectionsManagerImpl::GetIncomingPayload(int64_t payload_id) {
-  if (!nearby_connections_)
-    return nullptr;
-
   // TOOD(crbug/1076008): Implement.
   return nullptr;
 }
@@ -134,20 +165,17 @@ void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id,
 }
 
 void NearbyConnectionsManagerImpl::ClearIncomingPayloads() {
-  if (!nearby_connections_)
-    return;
-
   // TOOD(crbug/1076008): Implement.
 }
 
 base::Optional<std::vector<uint8_t>>
 NearbyConnectionsManagerImpl::GetRawAuthenticationToken(
     const std::string& endpoint_id) {
-  if (!nearby_connections_)
+  auto it = connection_info_map_.find(endpoint_id);
+  if (it == connection_info_map_.end())
     return base::nullopt;
 
-  // TOOD(crbug/1076008): Implement.
-  return base::nullopt;
+  return it->second->raw_authentication_token;
 }
 
 void NearbyConnectionsManagerImpl::OnNearbyProfileChanged(Profile* profile) {
@@ -208,6 +236,75 @@ void NearbyConnectionsManagerImpl::OnEndpointLost(
 
   discovery_listener_->OnEndpointLost(endpoint_id);
   NS_LOG(INFO) << "Endpoint " << endpoint_id << " lost over Nearby Connections";
+}
+
+void NearbyConnectionsManagerImpl::OnConnectionInitiated(
+    const std::string& endpoint_id,
+    ConnectionInfoPtr info) {
+  auto result = connection_info_map_.emplace(endpoint_id, std::move(info));
+  DCHECK(result.second);
+  // TOOD(crbug/1076008): Implemnet AcceptConnection.
+  // nearby_connections_->AcceptConnection(
+  //     endpoint_id, payload_listener_.BindNewPipeAndPassRemote());
+}
+
+void NearbyConnectionsManagerImpl::OnConnectionAccepted(
+    const std::string& endpoint_id) {
+  auto it = connection_info_map_.find(endpoint_id);
+  if (it == connection_info_map_.end())
+    return;
+
+  if (it->second->is_incoming_connection) {
+    // TOOD(crbug/1076008): Handle incoming connection.
+  } else {
+    auto it = pending_outgoing_connections_.find(endpoint_id);
+    if (it == pending_outgoing_connections_.end()) {
+      Disconnect(endpoint_id);
+      return;
+    }
+
+    auto result = connections_.emplace(
+        endpoint_id, std::make_unique<NearbyConnectionImpl>(this, endpoint_id));
+    DCHECK(result.second);
+    std::move(it->second).Run(result.first->second.get());
+    pending_outgoing_connections_.erase(it);
+  }
+}
+
+void NearbyConnectionsManagerImpl::OnConnectionRejected(
+    const std::string& endpoint_id,
+    Status status) {
+  connection_info_map_.erase(endpoint_id);
+
+  auto it = pending_outgoing_connections_.find(endpoint_id);
+  if (it != pending_outgoing_connections_.end()) {
+    std::move(it->second).Run(nullptr);
+    pending_outgoing_connections_.erase(it);
+  }
+
+  // TODO(crbug/1111458): Support TransferManager.
+}
+
+void NearbyConnectionsManagerImpl::OnDisconnected(
+    const std::string& endpoint_id) {
+  connection_info_map_.erase(endpoint_id);
+
+  auto it = pending_outgoing_connections_.find(endpoint_id);
+  if (it != pending_outgoing_connections_.end()) {
+    std::move(it->second).Run(nullptr);
+    pending_outgoing_connections_.erase(it);
+  }
+
+  connections_.erase(endpoint_id);
+
+  // TODO(crbug/1111458): Support TransferManager.
+}
+
+void NearbyConnectionsManagerImpl::OnBandwidthChanged(
+    const std::string& endpoint_id,
+    int32_t quality) {
+  NS_LOG(VERBOSE) << __func__;
+  // TODO(crbug/1111458): Support TransferManager.
 }
 
 bool NearbyConnectionsManagerImpl::BindNearbyConnections() {

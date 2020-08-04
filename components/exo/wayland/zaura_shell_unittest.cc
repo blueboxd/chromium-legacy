@@ -80,6 +80,7 @@ class MockSurfaceDelegate : public SurfaceDelegate {
               (override));
   MOCK_METHOD(void, SetUseImmersiveForFullscreen, (bool value), (override));
   MOCK_METHOD(void, OnActivationRequested, (), (override));
+  MOCK_METHOD(void, OnNewOutputAdded, (), (override));
 };
 
 }  // namespace

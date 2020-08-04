@@ -11,7 +11,7 @@
 
 namespace ash {
 
-// A dummy implementation of AmbientBackendController.
+// A fake implementation of AmbientBackendController.
 class ASH_EXPORT FakeAmbientBackendControllerImpl
     : public AmbientBackendController {
  public:

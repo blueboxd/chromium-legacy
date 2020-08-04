@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "chrome/browser/subresource_redirect/https_image_compression_bypass_decider.h"
 #include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
@@ -53,6 +54,7 @@
 #include "net/proxy_resolution/proxy_list.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -243,9 +245,13 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   // unable to browse non-SSL sites for the most part (see
   // http://crbug.com/476610).
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
-  https_image_compression_infobar_decider_ =
-      std::make_unique<HttpsImageCompressionInfoBarDecider>(profile_prefs,
-                                                            this);
+  if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect)) {
+    https_image_compression_infobar_decider_ =
+        std::make_unique<HttpsImageCompressionInfoBarDecider>(profile_prefs,
+                                                              this);
+    https_image_compression_bypass_decider_ =
+        std::make_unique<HttpsImageCompressionBypassDecider>();
+  }
 }
 
 std::unique_ptr<data_reduction_proxy::DataReductionProxyData>

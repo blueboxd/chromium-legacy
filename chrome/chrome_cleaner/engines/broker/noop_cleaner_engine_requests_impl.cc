@@ -70,13 +70,13 @@ void CleanerEngineRequestsImpl::SandboxNtChangeRegistryValue(
 }
 
 void CleanerEngineRequestsImpl::SandboxDeleteService(
-    const base::string16& name,
+    const std::wstring& name,
     SandboxDeleteServiceCallback result_callback) {
   CHECK(false);
 }
 
 void CleanerEngineRequestsImpl::SandboxDeleteTask(
-    const base::string16& name,
+    const std::wstring& name,
     SandboxDeleteServiceCallback result_callback) {
   CHECK(false);
 }

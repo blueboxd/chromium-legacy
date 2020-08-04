@@ -97,16 +97,41 @@ struct PaymentsCustomerData;
 //                      A flag indicating whether the validity states of
 //                      different fields according to the client validity api is
 //                      updated or not. Added in version 80.
+//
 // autofill_profile_names
 //                      This table contains the multi-valued name fields
 //                      associated with a profile.
 //
 //   guid               The guid string that identifies the profile to which
 //                      the name belongs.
-//   first_name
-//   middle_name
-//   last_name
-//   full_name
+//   honorific_prefix   The honorific prefix of a person like Ms, Mr or Prof
+//   first_name         The first name of a person.
+//   middle_name        The middle name or even names of a person.
+//   last_name          The unstructured last name that is a combination of the
+//                      first and second last name.
+//   first_last_name    The first part of the last name. Mostly used for
+//                      Latinx/Hispanic last names.
+//   conjunction_last_name
+//                      An optional conjunction that is mostly used in
+//                      Hispanic/Latinx last names in between the first and
+//                      second last name in the unstructured representation.
+//   second_last_name   The second part of the last names. Last names only
+//                      consisting of a single part are stored in the second
+//                      part by default.
+//   full_name          The unstructured full name of a person.
+//   honorific_prefix_status
+//   first_name_status
+//   middle_name_status
+//   last_name_status
+//   first_last_name_status
+//   conjunction_last_name_status
+//   second_last_name_status
+//                      Each token of the names has an additional validation
+//                      status that indicates if Autofill parsed the value out
+//                      of an unstructured (last) name, or if autofill formatted
+//                      the token from its structured subcomponents, or if the
+//                      value was observed in a form submission, or even
+//                      validated by the user in the settings.
 //
 // autofill_profile_emails
 //                      This table contains the multi-valued email fields
@@ -559,6 +584,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
   bool MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
   bool MigrateToVersion87AddCreditCardNicknameColumn();
+  bool MigrateToVersion88AddNewNameColumns();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

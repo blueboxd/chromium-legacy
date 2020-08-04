@@ -60,6 +60,7 @@ class SubSurface : public SurfaceDelegate, public SurfaceObserver {
   void OnSetApplicationId(const char* application_id) override {}
   void SetUseImmersiveForFullscreen(bool value) override {}
   void OnActivationRequested() override {}
+  void OnNewOutputAdded() override {}
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

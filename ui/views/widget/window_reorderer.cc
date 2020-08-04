@@ -14,6 +14,7 @@
 #include "base/containers/adapters.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/views/view.h"
 #include "ui/views/view_constants_aura.h"
 
@@ -159,6 +160,8 @@ void WindowReorderer::ReorderChildWindows() {
                             &view_with_layer_order);
 
   std::vector<ui::Layer*> children_layer_order;
+
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion_tracking;
 
   // For the sake of simplicity, reorder both the layers owned by views and the
   // layers of windows associated with a view. Iterate through

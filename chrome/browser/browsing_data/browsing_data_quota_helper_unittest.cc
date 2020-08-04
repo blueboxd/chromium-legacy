@@ -24,24 +24,24 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::StorageType;
-using storage::MockOriginData;
-using storage::MockQuotaClient;
 
 class BrowsingDataQuotaHelperTest : public testing::Test {
  public:
   typedef BrowsingDataQuotaHelper::QuotaInfo QuotaInfo;
   typedef BrowsingDataQuotaHelper::QuotaInfoArray QuotaInfoArray;
 
-  BrowsingDataQuotaHelperTest() {}
+  BrowsingDataQuotaHelperTest() = default;
 
-  ~BrowsingDataQuotaHelperTest() override {}
+  ~BrowsingDataQuotaHelperTest() override = default;
 
   void SetUp() override {
-    EXPECT_TRUE(dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<storage::QuotaManager>(
-        false, dir_.GetPath(), content::GetIOThreadTaskRunner({}).get(),
-        nullptr, storage::GetQuotaSettingsFunc());
-    helper_ = new BrowsingDataQuotaHelperImpl(quota_manager_.get());
+        /*is_incognito=*/false, temp_dir_.GetPath(),
+        content::GetIOThreadTaskRunner({}).get(),
+        /*special_storage_policy=*/nullptr, storage::GetQuotaSettingsFunc());
+    helper_ = base::WrapRefCounted(
+        new BrowsingDataQuotaHelperImpl(quota_manager_.get()));
   }
 
   void TearDown() override {
@@ -67,10 +67,10 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
                        weak_factory_.GetWeakPtr()));
   }
 
-  void RegisterClient(base::span<const MockOriginData> origin_data) {
-    MockQuotaClient* client =
-        new MockQuotaClient(quota_manager_->proxy(), origin_data,
-                            storage::QuotaClientType::kFileSystem);
+  void RegisterClient(base::span<const storage::MockOriginData> origin_data) {
+    auto client = base::MakeRefCounted<storage::MockQuotaClient>(
+        quota_manager_->proxy(), origin_data,
+        storage::QuotaClientType::kFileSystem);
     quota_manager_->proxy()->RegisterClient(
         client, storage::QuotaClientType::kFileSystem,
         {blink::mojom::StorageType::kTemporary,
@@ -113,10 +113,11 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     fetching_completed_ = true;
   }
 
+  base::ScopedTempDir temp_dir_;
+
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
 
-  base::ScopedTempDir dir_;
   scoped_refptr<BrowsingDataQuotaHelper> helper_;
 
   bool fetching_completed_ = true;
@@ -135,7 +136,7 @@ TEST_F(BrowsingDataQuotaHelperTest, Empty) {
 }
 
 TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
-  const MockOriginData kOrigins[] = {
+  static const storage::MockOriginData kOrigins[] = {
       {"http://example.com/", StorageType::kTemporary, 1},
       {"https://example.com/", StorageType::kTemporary, 10},
       {"http://example.com/", StorageType::kPersistent, 100},
@@ -156,7 +157,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
 }
 
 TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
-  const MockOriginData kOrigins[] = {
+  static const storage::MockOriginData kOrigins[] = {
       {"http://example.com/", StorageType::kTemporary, 1},
       {"https://example.com/", StorageType::kTemporary, 10},
       {"http://example.com/", StorageType::kPersistent, 100},

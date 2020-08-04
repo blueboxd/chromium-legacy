@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -71,7 +72,8 @@ void CalculateWaitingAngles(const base::TimeDelta& elapsed_time,
   constexpr auto kRevolutionTime = base::TimeDelta::FromMilliseconds(1320);
   int64_t twelve_oclock = 90;
   int64_t finish_angle_cc =
-      twelve_oclock + (360 * elapsed_time).IntDiv(kRevolutionTime);
+      twelve_oclock +
+      base::ClampRound<int64_t>(elapsed_time.FltDiv(kRevolutionTime) * 360);
   int64_t start_angle_cc = std::max(finish_angle_cc - 180, twelve_oclock);
 
   // Negate the angles to convert to the clockwise numbers Skia expects.
@@ -127,7 +129,8 @@ void PaintThrobberSpinning(Canvas* canvas,
                            SkColor color,
                            const base::TimeDelta& elapsed_time,
                            base::Optional<SkScalar> stroke_width) {
-  const int64_t start_angle = 270 + (360 * elapsed_time).IntDiv(kRotationTime);
+  const int64_t start_angle =
+      270 + base::ClampRound<int64_t>(elapsed_time.FltDiv(kRotationTime) * 360);
   PaintThrobberSpinningWithStartAngle(canvas, bounds, color, elapsed_time,
                                       start_angle, stroke_width);
 }
@@ -179,7 +182,8 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
       color_utils::AlphaBlend(color, waiting_state->color, color_progress);
 
   const int64_t start_angle =
-      waiting_start_angle + (360 * elapsed_time).IntDiv(kRotationTime);
+      waiting_start_angle +
+      base::ClampRound<int64_t>(elapsed_time.FltDiv(kRotationTime) * 360);
   const base::TimeDelta effective_elapsed_time =
       elapsed_time + waiting_state->arc_time_offset;
 

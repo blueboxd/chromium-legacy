@@ -22,8 +22,8 @@
 #include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/cdm_factory_daemon.mojom.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"         // nogncheck
+#include "ui/ozone/public/surface_factory_ozone.h"  // nogncheck
 #endif
 
 ChromeContentGpuClient::ChromeContentGpuClient()

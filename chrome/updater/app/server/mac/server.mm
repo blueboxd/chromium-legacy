@@ -65,8 +65,7 @@ void AppServerMac::ActiveDuty() {
                      appServer:scoped_refptr<AppServerMac>(this)]);
 
     control_service_listener_.reset([[NSXPCListener alloc]
-        initWithMachServiceName:base::mac::CFToNSCast(
-                                    CopyControlLaunchdName().get())]);
+        initWithMachServiceName:GetVersionedServiceMachName().get()]);
     control_service_listener_.get().delegate = control_service_delegate_.get();
 
     [control_service_listener_ resume];

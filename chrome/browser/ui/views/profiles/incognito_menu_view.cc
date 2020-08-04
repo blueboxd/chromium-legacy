@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/style/typography.h"
@@ -46,13 +47,13 @@ void IncognitoMenuView::BuildMenu() {
 
   SetProfileIdentityInfo(
       /*profile_name=*/base::string16(), /*edit_button=*/base::nullopt,
-      gfx::ImageSkia(),
+      ui::ImageModel::FromVectorIcon(
+          kIncognitoProfileIcon, ui::NativeTheme::kColorId_BubbleForeground),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
       incognito_window_count > 1
           ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
                                              incognito_window_count)
-          : base::string16(),
-      kIncognitoProfileIcon, ui::NativeTheme::kColorId_BubbleForeground);
+          : base::string16());
 
   AddFeatureButton(
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),

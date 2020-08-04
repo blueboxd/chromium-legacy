@@ -29,7 +29,7 @@ ClipboardFormatType& ClipboardFormatType::operator=(
   return *this;
 }
 
-bool ClipboardFormatType::Equals(const ClipboardFormatType& other) const {
+bool ClipboardFormatType::operator==(const ClipboardFormatType& other) const {
   return [data_ isEqualToString:other.data_];
 }
 

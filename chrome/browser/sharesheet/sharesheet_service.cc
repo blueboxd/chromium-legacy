@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -14,9 +15,15 @@
 #include "chrome/browser/sharesheet/share_action.h"
 #include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/views/view.h"
+
+namespace {
+// In px.
+constexpr int kIconSize = 40;
+}  // namespace
 
 namespace sharesheet {
 
@@ -48,17 +55,11 @@ void SharesheetService::ShowBubble(views::View* bubble_anchor_view,
 
   std::vector<apps::AppIdAndActivityName> app_id_and_activities =
       app_service_proxy_->GetAppsForIntent(intent);
-  for (const auto& app_id_and_activity : app_id_and_activities) {
-    // TODO(1097623) : Load Real Icons.
-    targets.emplace(targets.begin(), TargetType::kApp, gfx::Image(),
-                    base::UTF8ToUTF16(app_id_and_activity.app_id),
-                    base::UTF8ToUTF16(app_id_and_activity.activity_name));
-  }
-
-  sharesheet_service_delegate->ShowBubble(std::move(targets),
-                                          std::move(intent));
-
-  active_delegates_.push_back(std::move(sharesheet_service_delegate));
+  LoadAppIcons(std::move(app_id_and_activities), std::move(targets), 0,
+               base::BindOnce(&SharesheetService::OnAppIconsLoaded,
+                              weak_factory_.GetWeakPtr(),
+                              std::move(sharesheet_service_delegate),
+                              std::move(intent)));
 }
 
 // Cleanup delegate when bubble closes.
@@ -126,6 +127,56 @@ bool SharesheetService::HasShareTargets(apps::mojom::IntentPtr intent) {
       app_service_proxy_->GetAppsForIntent(intent);
 
   return !actions.empty() || !app_id_and_activities.empty();
+}
+
+void SharesheetService::LoadAppIcons(
+    std::vector<apps::AppIdAndActivityName> app_id_and_activities,
+    std::vector<TargetInfo> targets,
+    size_t index,
+    base::OnceCallback<void(std::vector<TargetInfo> targets)> callback) {
+  if (index >= app_id_and_activities.size()) {
+    std::move(callback).Run(std::move(targets));
+    return;
+  }
+
+  // Making a copy because we move |app_id_and_activities| out below.
+  auto app_id = app_id_and_activities[index].app_id;
+  auto app_type = app_service_proxy_->AppRegistryCache().GetAppType(app_id);
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  constexpr bool allow_placeholder_icon = false;
+  app_service_proxy_->LoadIcon(
+      app_type, app_id, icon_type, kIconSize, allow_placeholder_icon,
+      base::BindOnce(&SharesheetService::OnIconLoaded,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(app_id_and_activities), std::move(targets),
+                     index, std::move(callback)));
+}
+
+void SharesheetService::OnIconLoaded(
+    std::vector<apps::AppIdAndActivityName> app_id_and_activities,
+    std::vector<TargetInfo> targets,
+    size_t index,
+    base::OnceCallback<void(std::vector<TargetInfo> targets)> callback,
+    apps::mojom::IconValuePtr icon_value) {
+  const auto& app_id_and_activity = app_id_and_activities[index];
+  targets.emplace(targets.begin(), TargetType::kApp, icon_value->uncompressed,
+                  base::UTF8ToUTF16(app_id_and_activity.app_id),
+                  base::UTF8ToUTF16(app_id_and_activity.activity_name));
+
+  LoadAppIcons(std::move(app_id_and_activities), std::move(targets), index + 1,
+               std::move(callback));
+}
+
+void SharesheetService::OnAppIconsLoaded(
+    std::unique_ptr<SharesheetServiceDelegate> delegate,
+    apps::mojom::IntentPtr intent,
+    std::vector<TargetInfo> targets) {
+  delegate->ShowBubble(std::move(targets), std::move(intent));
+
+  active_delegates_.push_back(std::move(delegate));
 }
 
 }  // namespace sharesheet

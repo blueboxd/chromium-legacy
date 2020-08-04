@@ -4,6 +4,8 @@
 
 #include "chrome/services/sharing/nearby/nearby_connections_conversions.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
@@ -72,6 +74,11 @@ ResultCallback ResultCallbackFromMojom(StatusCallback callback) {
           base::BindOnce(std::move(*callback), StatusToMojom(status.value)));
     }
   }};
+}
+
+std::vector<uint8_t> ByteArrayToMojom(const ByteArray& byte_array) {
+  return std::vector<uint8_t>(byte_array.data(),
+                              byte_array.data() + byte_array.size());
 }
 
 }  // namespace connections

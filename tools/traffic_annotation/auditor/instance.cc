@@ -13,6 +13,7 @@
 #include "third_party/protobuf/src/google/protobuf/io/tokenizer.h"
 #include "third_party/protobuf/src/google/protobuf/text_format.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
+#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 
 namespace {
 
@@ -383,6 +384,19 @@ AuditorResult AnnotationInstance::IsConsistent() const {
         proto.source().file(), proto.source().line());
   }
 
+  return AuditorResult(AuditorResult::Type::RESULT_OK);
+}
+
+AuditorResult AnnotationInstance::InGroupingXML(
+    const std::set<std::string>& grouping_annotation_unique_ids) const {
+  const std::string& unique_id = proto.unique_id();
+
+  if (grouping_annotation_unique_ids.find(unique_id) ==
+      grouping_annotation_unique_ids.end()) {
+    return AuditorResult(AuditorResult::Type::ERROR_MISSING_GROUPING,
+                         unique_id.c_str(), proto.source().file(),
+                         proto.source().line());
+  }
   return AuditorResult(AuditorResult::Type::RESULT_OK);
 }
 

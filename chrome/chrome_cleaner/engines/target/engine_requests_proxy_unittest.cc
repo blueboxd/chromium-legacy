@@ -79,16 +79,16 @@ class TestChildProcess : public SandboxChildProcess {
 
   base::FilePath windows_directory() const { return windows_directory_; }
 
-  base::string16 temp_key_path() const { return temp_key_path_; }
+  std::wstring temp_key_path() const { return temp_key_path_; }
 
-  base::string16 temp_key_full_path() const { return temp_key_full_path_; }
+  std::wstring temp_key_full_path() const { return temp_key_full_path_; }
 
  private:
   ~TestChildProcess() override = default;
 
   base::FilePath windows_directory_;
-  base::string16 temp_key_path_;
-  base::string16 temp_key_full_path_;
+  std::wstring temp_key_path_;
+  std::wstring temp_key_full_path_;
 };
 
 scoped_refptr<TestChildProcess> SetupSandboxedChildProcess() {
@@ -376,7 +376,7 @@ MULTIPROCESS_TEST_MAIN(GetLoadedModules) {
 
   EXPECT_FALSE(proxy->GetLoadedModules(::GetCurrentProcessId(), nullptr));
 
-  std::vector<base::string16> module_names;
+  std::vector<std::wstring> module_names;
   if (!proxy->GetLoadedModules(::GetCurrentProcessId(), &module_names)) {
     LOG(ERROR) << "Failed to get loaded modules for current process";
     return 1;
@@ -418,7 +418,7 @@ MULTIPROCESS_TEST_MAIN(GetProcessCommandLine) {
 
   EXPECT_FALSE(proxy->GetProcessCommandLine(::GetCurrentProcessId(), nullptr));
 
-  base::string16 retrieved_cmd;
+  std::wstring retrieved_cmd;
   if (!proxy->GetProcessCommandLine(::GetCurrentProcessId(), &retrieved_cmd)) {
     LOG(ERROR) << "Failed to get command line for the current process";
     return 1;
@@ -441,7 +441,7 @@ MULTIPROCESS_TEST_MAIN(GetProcessCommandLineNoHangs) {
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
-  base::string16 cmd;
+  std::wstring cmd;
   EXPECT_FALSE(proxy->GetProcessCommandLine(::GetCurrentProcessId(), &cmd));
 
   return ::testing::Test::HasNonfatalFailure();
@@ -503,7 +503,7 @@ MULTIPROCESS_TEST_MAIN(OpenReadOnlyRegistry) {
 
   // TODO(joenotcharles): Test with all predefined keys and combinations of
   // WOW64 flags.
-  const base::string16 fake_key_name = L"fake/key/I/just/made";
+  const std::wstring fake_key_name = L"fake/key/I/just/made";
   HANDLE reg_handle;
   uint32_t result = proxy->OpenReadOnlyRegistry(
       HKEY_LOCAL_MACHINE, fake_key_name, KEY_READ, &reg_handle);
@@ -519,7 +519,7 @@ MULTIPROCESS_TEST_MAIN(OpenReadOnlyRegistry) {
     return 1;
   }
 
-  result = proxy->OpenReadOnlyRegistry(HKEY_LOCAL_MACHINE, base::string16(),
+  result = proxy->OpenReadOnlyRegistry(HKEY_LOCAL_MACHINE, std::wstring(),
                                        KEY_READ, &reg_handle);
   if (reg_handle == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << std::hex
@@ -554,13 +554,13 @@ MULTIPROCESS_TEST_MAIN(OpenReadOnlyRegistryNoHangs) {
   HANDLE reg_handle;
   EXPECT_EQ(
       SandboxErrorCode::NULL_ROOT_KEY,
-      proxy->OpenReadOnlyRegistry(nullptr, base::string16(), 0, &reg_handle));
+      proxy->OpenReadOnlyRegistry(nullptr, std::wstring(), 0, &reg_handle));
 
   child_process->UnbindRequestsRemotes();
 
   EXPECT_EQ(
       SandboxErrorCode::INTERNAL_ERROR,
-      proxy->OpenReadOnlyRegistry(nullptr, base::string16(), 0, &reg_handle));
+      proxy->OpenReadOnlyRegistry(nullptr, std::wstring(), 0, &reg_handle));
 
   return ::testing::Test::HasNonfatalFailure();
 }
@@ -651,7 +651,7 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistry) {
   }
 
   // Test with absolute path.
-  base::string16 temp_key_full_path = child_process->temp_key_full_path();
+  std::wstring temp_key_full_path = child_process->temp_key_full_path();
   std::vector<wchar_t> full_path(temp_key_full_path.begin(),
                                  temp_key_full_path.end());
   full_path.push_back(L'\\');
@@ -678,7 +678,7 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistryNoHangs) {
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
 
-  base::string16 too_long(std::numeric_limits<int16_t>::max() + 1, '0');
+  std::wstring too_long(std::numeric_limits<int16_t>::max() + 1, '0');
   HANDLE reg_handle;
   EXPECT_EQ(SandboxErrorCode::INVALID_SUBKEY_STRING,
             proxy->NtOpenReadOnlyRegistry(

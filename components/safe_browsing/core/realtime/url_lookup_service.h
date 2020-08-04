@@ -79,7 +79,7 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   void GetAccessToken(const GURL& url,
                       RTLookupRequestCallback request_callback,
                       RTLookupResponseCallback response_callback) override;
-  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) override;
+  std::string GetDMTokenString() const override;
   std::string GetMetricSuffix() const override;
 
   // Called when the access token is obtained from |token_fetcher_|.
@@ -90,8 +90,6 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
       base::TimeTicks get_token_start_time,
       base::Optional<signin::AccessTokenInfo> access_token_info);
 
-  bool IsHistorySyncEnabled();
-
   // Unowned object used for getting access token when real time url check with
   // token is enabled.
   signin::IdentityManager* identity_manager_;
@@ -101,12 +99,6 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
 
   // Unowned object used for getting preference settings.
   PrefService* pref_service_;
-
-  const ChromeUserPopulation::ProfileManagementStatus
-      profile_management_status_;
-
-  // Whether the profile is enrolled in  advanced protection.
-  bool is_under_advanced_protection_;
 
   // The token fetcher used for getting access token.
   std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher_;

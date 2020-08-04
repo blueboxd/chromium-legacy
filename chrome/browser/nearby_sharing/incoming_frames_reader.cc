@@ -36,6 +36,9 @@ IncomingFramesReader::IncomingFramesReader(
   DCHECK(connection_);
 
   nearby_process_observer_.Add(process_manager);
+  connection->RegisterForDisconnection(
+      base::BindOnce(&IncomingFramesReader::OnConnectionClosed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 IncomingFramesReader::~IncomingFramesReader() = default;
@@ -48,6 +51,10 @@ void IncomingFramesReader::ReadFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_);
   DCHECK(!is_process_stopped_);
+  if (!connection_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
 
   callback_ = std::move(callback);
   frame_type_ = frame_type;
@@ -153,4 +160,8 @@ void IncomingFramesReader::Done(
   if (callback_) {
     std::move(callback_).Run(std::move(frame));
   }
+}
+
+void IncomingFramesReader::OnConnectionClosed() {
+  connection_ = nullptr;
 }

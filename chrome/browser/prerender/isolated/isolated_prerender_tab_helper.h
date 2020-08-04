@@ -69,6 +69,9 @@ class IsolatedPrerenderTabHelper
 
     // Called when a NoStatePrefetch finishes loading.
     virtual void OnNoStatePrefetchFinished() {}
+
+    // Called when a url's eligiblity checks are done and fully processed.
+    virtual void OnNewEligiblePrefetchStarted() {}
   };
 
   // The various states that a prefetch can go through or terminate with. Used
@@ -399,8 +402,11 @@ class IsolatedPrerenderTabHelper
   // active.
   bool PrefetchingActive() const;
 
-  // Prefetches the front of |urls_to_prefetch_|.
+  // Starts prefetching the next eligible links.
   void Prefetch();
+
+  // Helper method for |Prefetch| which starts a single prefetch.
+  void StartSinglePrefetch();
 
   // Called when |loader| encounters a redirect.
   void OnPrefetchRedirect(network::SimpleURLLoader* loader,

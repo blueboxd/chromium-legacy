@@ -16,6 +16,8 @@
 
 namespace views {
 
+namespace internal {
+
 // A Label subclass that can be disabled. This is only used internally for
 // views::LabelButton.
 class VIEWS_EXPORT LabelButtonLabel : public Label {
@@ -47,6 +49,8 @@ class VIEWS_EXPORT LabelButtonLabel : public Label {
 
   DISALLOW_COPY_AND_ASSIGN(LabelButtonLabel);
 };
+
+}  // namespace internal
 
 }  // namespace views
 

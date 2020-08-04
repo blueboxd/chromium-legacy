@@ -6,13 +6,13 @@
 #define CHROME_CHROME_CLEANER_ENGINES_BROKER_SANDBOX_SETUP_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"

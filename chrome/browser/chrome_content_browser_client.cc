@@ -552,6 +552,7 @@
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -1441,8 +1442,8 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // The partition ID for extensions with isolated storage is treated similarly
   // to the above.
-  else if (site.SchemeIs(extensions::kExtensionScheme) &&
-           extensions::util::SiteHasIsolatedStorage(site, browser_context))
+  else if (extensions::util::IsExtensionSiteWithIsolatedStorage(
+               site, browser_context))
     partition_id = site.spec();
 #endif
 
@@ -1475,14 +1476,11 @@ ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     return storage_partition_config;
   }
 
-  if (site.SchemeIs(extensions::kExtensionScheme) &&
-      extensions::util::SiteHasIsolatedStorage(site, browser_context)) {
+  if (site.SchemeIs(extensions::kExtensionScheme)) {
+    // The host in an extension site URL is the extension_id.
     CHECK(site.has_host());
-    // For extensions with isolated storage, the the host of the |site| is
-    // the |partition_domain|. The |in_memory| and |partition_name| are only
-    // used in guest schemes so they are cleared here.
-    return content::StoragePartitionConfig::Create(
-        site.host(), "" /* partition_name */, false /*in_memory */);
+    return extensions::util::GetStoragePartitionConfigForExtensionId(
+        site.host(), browser_context);
   }
 #endif
 
@@ -5705,7 +5703,7 @@ void ChromeContentBrowserClient::IsClipboardPasteAllowed(
   // Safe browsing does not support images, so accept without checking.
   // TODO(crbug.com/1013584): check policy on what to do about unsupported
   // types when it is implemented.
-  if (data_type.Equals(ui::ClipboardFormatType::GetBitmapType())) {
+  if (data_type == ui::ClipboardFormatType::GetBitmapType()) {
     std::move(callback).Run(ClipboardPasteAllowed(true));
     return;
   }

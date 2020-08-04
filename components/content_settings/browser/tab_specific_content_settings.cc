@@ -878,6 +878,14 @@ void TabSpecificContentSettings::OnContentSettingChanged(
       status.blocked = setting == CONTENT_SETTING_BLOCK;
       break;
     }
+    case ContentSettingsType::GEOLOCATION: {
+      const GURL geolocation_origin = main_frame_->GetLastCommittedURL();
+      ContentSetting setting = map_->GetContentSetting(
+          geolocation_origin, geolocation_origin, content_type, std::string());
+      if (setting == CONTENT_SETTING_ALLOW)
+        geolocation_was_just_granted_on_site_level_ = true;
+      break;
+    }
     case ContentSettingsType::IMAGES:
     case ContentSettingsType::JAVASCRIPT:
     case ContentSettingsType::PLUGINS:

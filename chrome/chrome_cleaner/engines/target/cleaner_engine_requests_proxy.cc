@@ -106,7 +106,7 @@ bool CleanerEngineRequestsProxy::NtChangeRegistryValue(
   return result;
 }
 
-bool CleanerEngineRequestsProxy::DeleteService(const base::string16& name) {
+bool CleanerEngineRequestsProxy::DeleteService(const std::wstring& name) {
   bool result = false;
   MojoCallStatus call_status = SyncSandboxRequest(
       this,
@@ -119,7 +119,7 @@ bool CleanerEngineRequestsProxy::DeleteService(const base::string16& name) {
   return result;
 }
 
-bool CleanerEngineRequestsProxy::DeleteTask(const base::string16& name) {
+bool CleanerEngineRequestsProxy::DeleteTask(const std::wstring& name) {
   bool result = false;
   MojoCallStatus call_status = SyncSandboxRequest(
       this,
@@ -220,7 +220,7 @@ MojoCallStatus CleanerEngineRequestsProxy::SandboxNtChangeRegistryValue(
 }
 
 MojoCallStatus CleanerEngineRequestsProxy::SandboxDeleteService(
-    const base::string16& name,
+    const std::wstring& name,
     mojom::CleanerEngineRequests::SandboxDeleteServiceCallback
         result_callback) {
   if (!requests_.is_bound()) {
@@ -233,7 +233,7 @@ MojoCallStatus CleanerEngineRequestsProxy::SandboxDeleteService(
 }
 
 MojoCallStatus CleanerEngineRequestsProxy::SandboxDeleteTask(
-    const base::string16& name,
+    const std::wstring& name,
     mojom::CleanerEngineRequests::SandboxDeleteTaskCallback result_callback) {
   if (!requests_.is_bound()) {
     LOG(ERROR) << "SandboxDeleteTask called without bound remote";

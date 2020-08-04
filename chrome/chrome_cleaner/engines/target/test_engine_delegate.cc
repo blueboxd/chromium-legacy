@@ -144,7 +144,7 @@ uint32_t ScanForUwSWithId(
       continue;
 
     // Each subdirectory under Users is a user name.
-    base::string16 user_name(file_info.cFileName);
+    std::wstring user_name(file_info.cFileName);
     if (user_name == L"." || user_name == L"..")
       continue;
     base::FilePath folder = base_folder.Append(user_name)

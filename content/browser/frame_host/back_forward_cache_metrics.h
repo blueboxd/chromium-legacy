@@ -42,6 +42,11 @@ class BackForwardCacheMetrics
   // tools/metrics/histograms/enums.xml. These values should not be renumbered.
   enum class NotRestoredReason : uint8_t {
     kNotMainFrame = 0,
+    // BackForwardCache is disabled due to low memory device, base::Feature or
+    // command line. Note that the more specific NotRestoredReasons
+    // kBackForwardCacheDisabledByLowMemory and
+    // kBackForwardCacheDisabledByCommandLine will also be set as other reasons
+    // along with this when appropriate.
     kBackForwardCacheDisabled = 1,
     kRelatedActiveContentsExist = 2,
     kHTTPStatusNotOK = 3,
@@ -75,7 +80,12 @@ class BackForwardCacheMetrics
     kIgnoreEventAndEvict = 31,
     kHaveInnerContents = 32,
     kTimeoutPuttingInCache = 33,
-    kMaxValue = kTimeoutPuttingInCache,
+    // BackForwardCache is disabled due to low memory device.
+    kBackForwardCacheDisabledByLowMemory = 34,
+    // BackForwardCache is disabled due to command-line switch (may include
+    // cases where the embedder disabled it due to, e.g., enterprise policy).
+    kBackForwardCacheDisabledByCommandLine = 35,
+    kMaxValue = kBackForwardCacheDisabledByCommandLine,
   };
 
   using NotRestoredReasons =

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/net/net_error_page_support.mojom.h"
@@ -44,11 +43,11 @@ class NetErrorHelper
       public content::RenderFrameObserverTracker<NetErrorHelper>,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public security_interstitials::SecurityInterstitialPageController::
-          Delegate,
       public chrome::mojom::NetworkDiagnosticsClient {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_frame);
+  NetErrorHelper(const NetErrorHelper&) = delete;
+  NetErrorHelper& operator=(const NetErrorHelper&) = delete;
   ~NetErrorHelper() override;
 
   // NetErrorPageController::Delegate implementation
@@ -61,11 +60,6 @@ class NetErrorHelper
   void ListVisibilityChanged(bool is_visible) override;
   void UpdateEasterEggHighScore(int high_score) override;
   void ResetEasterEggHighScore() override;
-
-  // security_interstitials::SecurityInterstitialPageController::Delegate
-  // implementation
-  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-  GetInterface() override;
 
   // RenderFrameObserver implementation.
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
@@ -141,12 +135,6 @@ class NetErrorHelper
   // Controllers used for the previous commit that haven't yet been cleaned up.
   base::WeakPtrFactory<NetErrorPageController::Delegate>
       weak_controller_delegate_factory_{this};
-
-  base::WeakPtrFactory<
-      security_interstitials::SecurityInterstitialPageController::Delegate>
-      weak_security_interstitial_controller_delegate_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_H_

@@ -161,10 +161,17 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   // Callbacks for ServiceWorkerStorage methods.
   void DidFindRegistration(
       base::OnceCallback<void(
+          storage::mojom::ServiceWorkerDatabaseStatus status,
           storage::mojom::ServiceWorkerFindRegistrationResultPtr)> callback,
       storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
       storage::mojom::ServiceWorkerDatabaseStatus status);
+  void DidGetRegistrationsForOrigin(
+      GetRegistrationsForOriginCallback callback,
+      storage::mojom::ServiceWorkerDatabaseStatus status,
+      std::unique_ptr<ServiceWorkerStorage::RegistrationList>
+          registration_data_list,
+      std::unique_ptr<std::vector<ResourceList>> resources_list);
   void DidStoreRegistration(
       StoreRegistrationCallback callback,
       storage::mojom::ServiceWorkerDatabaseStatus status,
@@ -179,7 +186,7 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void DidGetNewVersionId(GetNewVersionIdCallback callback, int64_t version_id);
 
   mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
-  CreateLiveVersionReference(int64_t version_id);
+  CreateLiveVersionReferenceRemote(int64_t version_id);
 
   void MaybePurgeResources(int64_t version_id,
                            const std::vector<int64_t>& purgeable_resources);

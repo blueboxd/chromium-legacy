@@ -245,7 +245,7 @@ void MaybeResizeAndPadIconForMd(const gfx::Size& required_size_dip,
 
     if (required_size_px.width() != bitmap.width() ||
         required_size_px.height() != bitmap.height() ||
-        padding_px.width() != 0 || padding_px.width() != 0) {
+        padding_px.width() != 0 || padding_px.height() != 0) {
       transformation_required = true;
     }
   }

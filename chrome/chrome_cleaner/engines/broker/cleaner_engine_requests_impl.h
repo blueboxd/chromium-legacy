@@ -6,10 +6,10 @@
 #define CHROME_CHROME_CLEANER_ENGINES_BROKER_CLEANER_ENGINE_REQUESTS_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
@@ -56,9 +56,9 @@ class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {
       const WStringEmbeddedNulls& new_value,
       SandboxNtChangeRegistryValueCallback result_callback) override;
   void SandboxDeleteService(
-      const base::string16& name,
+      const std::wstring& name,
       SandboxDeleteServiceCallback result_callback) override;
-  void SandboxDeleteTask(const base::string16& name,
+  void SandboxDeleteTask(const std::wstring& name,
                          SandboxDeleteServiceCallback result_callback) override;
   void SandboxTerminateProcess(
       uint32_t process_id,
@@ -71,8 +71,8 @@ class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {
   bool NtChangeRegistryValue(const WStringEmbeddedNulls& key,
                              const WStringEmbeddedNulls& value_name,
                              const WStringEmbeddedNulls& new_value);
-  bool DeleteService(const base::string16& name);
-  bool DeleteTask(const base::string16& name);
+  bool DeleteService(const std::wstring& name);
+  bool DeleteTask(const std::wstring& name);
   bool TerminateProcess(uint32_t process_id);
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;

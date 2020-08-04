@@ -52,8 +52,6 @@ enum Status {
 
 // Information about a connection that is being initiated.
 struct ConnectionInfo {
-  // The name of the remote device we're connecting to.
-  string remote_endpoint_name;
   // A short human-readable authentication token that has been given to both
   // devices.
   string authentication_token;
@@ -62,11 +60,11 @@ struct ConnectionInfo {
   // typically on devices with no output capabilities, where the authentication
   // is purely programmatic and does not have the luxury of human intervention.
   array<uint8> raw_authentication_token;
+  // Information that represents the remote device.
+  array<uint8> endpoint_info;
   // True if the connection request was initiated from a remote device. False if
   // this device was the one to try and initiate the connection.
   bool is_incoming_connection;
-  // Information that represents the remote device.
-  array<uint8> endpoint_info;
 };
 
 // Information about an endpoint when it's discovered.

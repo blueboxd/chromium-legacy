@@ -429,8 +429,7 @@ class DeviceXCTestUnitTestsApp(GTestsApp):
             'TestHostPath': '%s' % self.test_app_path,
             'TestingEnvironmentVariables': {
                 'DYLD_INSERT_LIBRARIES':
-                    '__PLATFORMS__/iPhoneOS.platform/Developer/usr/lib/'
-                    'libXCTestBundleInject.dylib',
+                    '__TESTHOST__/Frameworks/libXCTestBundleInject.dylib',
                 'DYLD_LIBRARY_PATH':
                     '__PLATFORMS__/iPhoneOS.platform/Developer/Library',
                 'DYLD_FRAMEWORK_PATH':

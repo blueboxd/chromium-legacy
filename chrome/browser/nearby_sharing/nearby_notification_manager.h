@@ -70,6 +70,12 @@ class NearbyNotificationManager : public TransferUpdateCallback,
   // Cancels the currently in progress transfer.
   void CancelTransfer();
 
+  // Rejects the currently in progress transfer.
+  void RejectTransfer();
+
+  // Accepts the currently in progress transfer.
+  void AcceptTransfer();
+
  private:
   NotificationDisplayService* notification_display_service_;
   NearbySharingService* nearby_service_;

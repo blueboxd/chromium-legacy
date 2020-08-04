@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -198,6 +199,49 @@ class ProgressNotificationDelegate : public NearbyNotificationDelegate {
   NearbyNotificationManager* manager_;
 };
 
+class ConnectionRequestNotificationDelegate
+    : public NearbyNotificationDelegate {
+ public:
+  ConnectionRequestNotificationDelegate(NearbyNotificationManager* manager,
+                                        bool has_accept_button)
+      : manager_(manager), has_accept_button_(has_accept_button) {}
+  ~ConnectionRequestNotificationDelegate() override = default;
+
+  // NearbyNotificationDelegate:
+  void OnClick(const std::string& notification_id,
+               const base::Optional<int>& action_index) override {
+    // Clicking on the notification is a noop.
+    if (!action_index)
+      return;
+
+    if (!has_accept_button_) {
+      DCHECK_EQ(0, *action_index);
+      manager_->RejectTransfer();
+      return;
+    }
+
+    switch (*action_index) {
+      case 0:
+        manager_->AcceptTransfer();
+        break;
+      case 1:
+        manager_->RejectTransfer();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  void OnClose(const std::string& notification_id) override {
+    manager_->RejectTransfer();
+  }
+
+ private:
+  NearbyNotificationManager* manager_;
+  bool has_accept_button_;
+};
+
 }  // namespace
 
 NearbyNotificationManager::NearbyNotificationManager(
@@ -312,9 +356,12 @@ void NearbyNotificationManager::ShowConnectionRequest(
   notification.set_icon(GetImageFromShareTarget(share_target));
   notification.set_never_timeout(true);
 
+  bool show_accept_button =
+      transfer_metadata.status() ==
+      TransferMetadata::Status::kAwaitingLocalConfirmation;
+
   std::vector<message_center::ButtonInfo> notification_actions;
-  if (transfer_metadata.status() ==
-      TransferMetadata::Status::kAwaitingLocalConfirmation) {
+  if (show_accept_button) {
     notification_actions.emplace_back(
         l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
   }
@@ -322,8 +369,9 @@ void NearbyNotificationManager::ShowConnectionRequest(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
   notification.set_buttons(notification_actions);
 
-  // TODO(crbug.com/1102348): Handle ConnectionRequest actions.
-  delegate_map_.erase(kNearbyNotificationId);
+  delegate_map_[notification.id()] =
+      std::make_unique<ConnectionRequestNotificationDelegate>(
+          this, show_accept_button);
 
   notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
@@ -392,4 +440,14 @@ NearbyNotificationDelegate* NearbyNotificationManager::GetNotificationDelegate(
 void NearbyNotificationManager::CancelTransfer() {
   CloseTransfer();
   nearby_service_->Cancel(*share_target_, base::DoNothing());
+}
+
+void NearbyNotificationManager::RejectTransfer() {
+  CloseTransfer();
+  nearby_service_->Reject(*share_target_, base::DoNothing());
+}
+
+void NearbyNotificationManager::AcceptTransfer() {
+  // Do not close the notification as it will be replaced soon.
+  nearby_service_->Accept(*share_target_, base::DoNothing());
 }

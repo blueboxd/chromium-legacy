@@ -10,7 +10,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "weblayer/common/features.h"
 
@@ -40,12 +40,16 @@ ErrorPageHelper* ErrorPageHelper::GetForFrame(
 }
 
 void ErrorPageHelper::PrepareErrorPage(const error_page::Error& error) {
+  if (is_disabled_for_next_error_) {
+    is_disabled_for_next_error_ = false;
+    return;
+  }
   pending_error_page_info_ = std::make_unique<ErrorPageInfo>(error);
 }
 
 void ErrorPageHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
+  is_disabled_for_next_error_ = false;
   committed_error_page_info_ = std::move(pending_error_page_info_);
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ErrorPageHelper::DidFinishLoad() {
@@ -53,7 +57,7 @@ void ErrorPageHelper::DidFinishLoad() {
     return;
 
   security_interstitials::SecurityInterstitialPageController::Install(
-      render_frame(), weak_factory_.GetWeakPtr());
+      render_frame());
 
   committed_error_page_info_->is_finished_loading = true;
 }
@@ -62,73 +66,18 @@ void ErrorPageHelper::OnDestruct() {
   delete this;
 }
 
-void ErrorPageHelper::SendCommand(
-    security_interstitials::SecurityInterstitialCommand command) {
-  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-      interface = GetInterface();
-  switch (command) {
-    case security_interstitials::CMD_DONT_PROCEED:
-      interface->DontProceed();
-      break;
-    case security_interstitials::CMD_PROCEED:
-      interface->Proceed();
-      break;
-    case security_interstitials::CMD_SHOW_MORE_SECTION:
-      interface->ShowMoreSection();
-      break;
-    case security_interstitials::CMD_OPEN_HELP_CENTER:
-      interface->OpenHelpCenter();
-      break;
-    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
-      // Used by safebrowsing interstials.
-      interface->OpenDiagnostic();
-      break;
-    case security_interstitials::CMD_RELOAD:
-      interface->Reload();
-      break;
-    case security_interstitials::CMD_OPEN_LOGIN:
-      interface->OpenLogin();
-      break;
-    case security_interstitials::CMD_OPEN_DATE_SETTINGS:
-      interface->OpenDateSettings();
-      break;
-    case security_interstitials::CMD_REPORT_PHISHING_ERROR:
-      // Used by safebrowsing phishing interstitial.
-      interface->ReportPhishingError();
-      break;
-    case security_interstitials::CMD_DO_REPORT:
-      // Used when user opts in to extended safe browsing
-      interface->DoReport();
-      break;
-    case security_interstitials::CMD_DONT_REPORT:
-      interface->DontReport();
-      break;
-    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
-      interface->OpenReportingPrivacy();
-      break;
-    case security_interstitials::CMD_OPEN_WHITEPAPER:
-      interface->OpenWhitepaper();
-      break;
-    case security_interstitials::CMD_ERROR:
-    case security_interstitials::CMD_TEXT_FOUND:
-    case security_interstitials::CMD_TEXT_NOT_FOUND:
-      // Commands for testing.
-      NOTREACHED();
-      break;
-  }
-}
 
-mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-ErrorPageHelper::GetInterface() {
-  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-      interface;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
-  return interface;
+void ErrorPageHelper::DisableErrorPageHelperForNextError() {
+  is_disabled_for_next_error_ = true;
 }
 
 ErrorPageHelper::ErrorPageHelper(content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      RenderFrameObserverTracker<ErrorPageHelper>(render_frame) {}
+      RenderFrameObserverTracker<ErrorPageHelper>(render_frame) {
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&ErrorPageHelper::BindErrorPageHelper,
+                          weak_factory_.GetWeakPtr()));
+}
 
 ErrorPageHelper::~ErrorPageHelper() = default;
 
@@ -136,6 +85,13 @@ void ErrorPageHelper::Reload() {
   if (!committed_error_page_info_)
     return;
   render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
+}
+
+void ErrorPageHelper::BindErrorPageHelper(
+    mojo::PendingAssociatedReceiver<mojom::ErrorPageHelper> receiver) {
+  // There is only a need for a single receiver to be bound at a time.
+  error_page_helper_receiver_.reset();
+  error_page_helper_receiver_.Bind(std::move(receiver));
 }
 
 }  // namespace weblayer

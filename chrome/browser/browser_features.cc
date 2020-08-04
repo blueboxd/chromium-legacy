@@ -11,6 +11,10 @@ namespace features {
 const base::Feature kClosedTabCache{"ClosedTabCache",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables executing the browser commands sent by the NTP promos.
+const base::Feature kEnablePromoBrowserCommands{
+    "EnablePromoBrowserCommands", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables being able to zoom a web page by double tapping in Chrome OS tablet
 // mode.

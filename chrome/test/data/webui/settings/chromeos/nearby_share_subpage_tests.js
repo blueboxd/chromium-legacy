@@ -26,6 +26,9 @@ suite('NearbyShare', function() {
         'enabled': {
           value: true,
         },
+        'data_usage': {
+          value: 3,
+        },
         'device_name': {
           value: '',
         }
@@ -80,5 +83,18 @@ suite('NearbyShare', function() {
     dialog.$$('.action-button').click();
 
     assertEquals(newName, subpage.prefs.nearby_sharing.device_name.value);
+  });
+
+  test('update data usage preference', function() {
+    assertEquals(3, subpage.prefs.nearby_sharing.data_usage.value);
+
+    subpage.$$('#editDataUsageButton').click();
+    Polymer.dom.flush();
+
+    const dialog = subpage.$$('nearby-share-data-usage-dialog');
+    dialog.$$('#dataUsageDataButton').click();
+    dialog.$$('.action-button').click();
+
+    assertEquals(2, subpage.prefs.nearby_sharing.data_usage.value);
   });
 });

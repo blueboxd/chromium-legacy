@@ -12,12 +12,6 @@ import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// This struct represents a serialized service worker registration.
-struct SerializedServiceWorkerRegistration {
-  ServiceWorkerRegistrationData registration_data;
-  array<ServiceWorkerResourceRecord> resources;
-};
-
 // An interface that is used to keep track of which service worker versions are
 // being used by clients of the storage service. This is an empty interface that
 // is mapped internally by the storage service to a single version.
@@ -30,20 +24,15 @@ struct SerializedServiceWorkerRegistration {
 // owned by the C++ ServiceWorkerVersion instance.
 interface ServiceWorkerLiveVersionRef {};
 
-// Conveys a result of finding a registration. If a registration is found,
-// |status| will be kOk. |version_reference|, |registration| and |resources| are
-// null or empty if there is no matching registration.
-//
+// Conveys a result of finding a registration.
 // The Storage Service (components/services/storage) supplies this
 // information and the //content consumes the information.
 struct ServiceWorkerFindRegistrationResult {
-  // The result of a find operation.
-  ServiceWorkerDatabaseStatus status;
   // A reference to a service worker version associated with
   // |registration->version_id|.
-  pending_remote<ServiceWorkerLiveVersionRef>? version_reference;
+  pending_remote<ServiceWorkerLiveVersionRef> version_reference;
   // Stored registration.
-  ServiceWorkerRegistrationData? registration;
+  ServiceWorkerRegistrationData registration;
   // Resources associated with |registration|.
   array<ServiceWorkerResourceRecord> resources;
 };
@@ -122,19 +111,22 @@ interface ServiceWorkerStorageControl {
 
   // Reads a stored registration for |client_id|.
   FindRegistrationForClientUrl(url.mojom.Url client_url) =>
-      (ServiceWorkerFindRegistrationResult result);
+      (ServiceWorkerDatabaseStatus status,
+       ServiceWorkerFindRegistrationResult? result);
   // Reads a stored registration for |scope|.
   FindRegistrationForScope(url.mojom.Url scope) =>
-      (ServiceWorkerFindRegistrationResult result);
+      (ServiceWorkerDatabaseStatus status,
+       ServiceWorkerFindRegistrationResult? result);
   // Reads a stored registration for |registration_id|. |origin| is to
   // be used as a hint to look up the registration faster.
   FindRegistrationForId(int64 registration_id, url.mojom.Url? origin) =>
-      (ServiceWorkerFindRegistrationResult result);
+      (ServiceWorkerDatabaseStatus status,
+       ServiceWorkerFindRegistrationResult? result);
 
   // Returns all stored registrations for a given origin.
   GetRegistrationsForOrigin(url.mojom.Origin origin) =>
       (ServiceWorkerDatabaseStatus status,
-       array<SerializedServiceWorkerRegistration> registrations);
+       array<ServiceWorkerFindRegistrationResult> registrations);
 
   // Returns the total resource size for a given origin.
   GetUsageForOrigin(url.mojom.Origin origin) =>

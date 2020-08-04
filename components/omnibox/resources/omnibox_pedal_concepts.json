@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "20200724T004514",
+  "time_generated": "2020-08-03T15:51:43.368226490+00:00",
   "primary_language_code": "en",
   "locales": [
     {
@@ -11,26 +11,26 @@
         "required": false,
         "single": false,
         "synonyms": [
-          "wie",
-          "wo",
+          "meinem",
+          "seinem",
+          "seinen",
+          "meinen",
+          "meine",
+          "seine",
           "kann",
+          "mein",
+          "sein",
+          "wie",
           "ich",
           "man",
           "die",
-          "meine",
-          "meinem",
-          "seine",
-          "seinem",
-          "in",
           "aus",
-          "im",
           "mit",
           "den",
           "ein",
-          "seinen",
-          "meinen",
-          "mein",
-          "sein"
+          "wo",
+          "in",
+          "im"
         ]
       },
       "pedals": [
@@ -50,8 +50,8 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "löschen",
                 "entfernen",
+                "löschen",
                 "leeren"
               ]
             },
@@ -59,11 +59,11 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "cache",
-                "verlauf",
                 "browserverlauf",
-                "suchverlauf",
                 "browserdaten",
+                "suchverlauf",
+                "verlauf",
+                "cache",
                 "daten"
               ]
             }
@@ -86,9 +86,9 @@
               "single": true,
               "synonyms": [
                 "verwalten",
-                "ändern",
+                "anschauen",
                 "anzeigen",
-                "anschauen"
+                "ändern"
               ]
             },
             {
@@ -117,18 +117,18 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "ändern",
                 "aktualisieren",
-                "bearbeiten"
+                "bearbeiten",
+                "ändern"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "kreditkarte",
                 "kreditkartendaten",
                 "kredit karte",
+                "kreditkarte",
                 "kartendaten"
               ]
             }
@@ -150,24 +150,24 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "starten",
-                "surfen",
                 "arbeiten",
-                "öffnen"
+                "starten",
+                "öffnen",
+                "surfen"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "inkognitofenster",
                 "inkognito fenster",
-                "inkognitomodus",
+                "inkognitofenster",
                 "inkognito modus",
-                "privatmodus",
+                "inkognitomodus",
                 "privat modus",
-                "privat",
-                "inkognito"
+                "privatmodus",
+                "inkognito",
+                "privat"
               ]
             }
           ]
@@ -188,20 +188,20 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "übersetzen",
-                "sprache ändern"
+                "sprache ändern",
+                "übersetzen"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "webseite",
-                "website",
-                "seite",
                 "diese webseite",
                 "diese website",
-                "diese seite"
+                "diese seite",
+                "webseite",
+                "website",
+                "seite"
               ]
             },
             {
@@ -230,10 +230,10 @@
               "single": true,
               "synonyms": [
                 "aktualisieren",
+                "installieren",
                 "upgraden",
                 "upgrade",
-                "update",
-                "installieren"
+                "update"
               ]
             }
           ]
@@ -271,8 +271,8 @@
               "single": true,
               "synonyms": [
                 "google chrome",
-                "browser",
                 "browsing",
+                "browser",
                 "chrome"
               ]
             },
@@ -291,10 +291,11 @@
               "required": true,
               "single": true,
               "synonyms": [
+                "information",
                 "history",
+                "cookies",
                 "cache",
                 "data",
-                "information",
                 "info"
               ]
             }
@@ -316,18 +317,23 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "edit",
                 "manager",
                 "manage",
                 "update",
-                "change"
+                "change",
+                "edit",
+                "save",
+                "view",
+                "show"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "passwords"
+                "credentials",
+                "passwords",
+                "password"
               ]
             }
           ]
@@ -350,22 +356,25 @@
               "synonyms": [
                 "manage",
                 "update",
+                "change",
                 "edit",
-                "change"
+                "save"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
+                "credit card information",
                 "credit card info",
+                "card information",
+                "payment methods",
                 "credit cards",
                 "credit card",
                 "card info",
-                "cards",
-                "payment",
                 "payments",
-                "payment methods"
+                "payment",
+                "cards"
               ]
             }
           ]
@@ -387,10 +396,10 @@
               "single": true,
               "synonyms": [
                 "launch",
+                "create",
                 "start",
                 "enter",
-                "open",
-                "create"
+                "open"
               ]
             },
             {
@@ -456,7 +465,8 @@
               "single": true,
               "synonyms": [
                 "upgrade",
-                "install"
+                "install",
+                "update"
               ]
             }
           ]
@@ -470,14 +480,11 @@
         "required": false,
         "single": false,
         "synonyms": [
-          "une",
-          "un",
-          "de",
-          "des",
           "dans",
-          "le",
-          "la",
-          "les"
+          "une",
+          "des",
+          "un",
+          "de"
         ]
       },
       "pedals": [
@@ -491,33 +498,6 @@
                 "google chrome",
                 "navigateur",
                 "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "supprimer",
-                "effacer",
-                "vider",
-                "enlever",
-                "supprime",
-                "efface",
-                "vide",
-                "enlève"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "historique",
-                "cache",
-                "données",
-                "navigation",
-                "informations",
-                "infos",
-                "traces"
               ]
             }
           ]
@@ -533,33 +513,6 @@
                 "navigateur",
                 "chrome"
               ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "gestionnaire",
-                "gérer",
-                "mettre à jour",
-                "changer",
-                "modifier",
-                "actualiser",
-                "gère",
-                "met à jour",
-                "change",
-                "modifie",
-                "actualise",
-                "met à jour",
-                "mets à jour"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "mot de passe",
-                "mots de passe"
-              ]
             }
           ]
         },
@@ -573,38 +526,6 @@
                 "google chrome",
                 "navigateur",
                 "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "mettre à jour",
-                "modifier",
-                "actualiser",
-                "changer",
-                "met à jour",
-                "mets à jour",
-                "modifie",
-                "actualise",
-                "change"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "cartes de crédit",
-                "infos carte de crédit",
-                "cartes",
-                "cartes de paiement",
-                "carte bancaire",
-                "mode de paiement",
-                "infos bancaires",
-                "cartes bancaires",
-                "carte de paiement",
-                "informations bancaires",
-                "informations de carte"
               ]
             }
           ]
@@ -620,45 +541,6 @@
                 "navigateur",
                 "chrome"
               ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "lancer",
-                "démarrer",
-                "passer",
-                "ouvrir",
-                "choisir",
-                "sélectionner",
-                "naviguer",
-                "lance",
-                "démarre",
-                "passe",
-                "ouvre",
-                "choisis",
-                "choisit",
-                "sélectionne"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "navigation privée",
-                "fenêtre confidentielle",
-                "mode privé",
-                "mode incognito",
-                "onglet privé",
-                "incognito",
-                "fenetre privée",
-                "mode confidentialité",
-                "fenêtre privée",
-                "confidentialité",
-                "navigation confidentielle",
-                "onglet incognito",
-                "sans traces"
-              ]
             }
           ]
         },
@@ -672,28 +554,6 @@
                 "google chrome",
                 "navigateur",
                 "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "traduire",
-                "sélectionner la langue",
-                "changer langue",
-                "traduis",
-                "traduit",
-                "sélectionne la langue",
-                "change langue"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "cette page",
-                "page",
-                "cette page"
               ]
             }
           ]
@@ -709,29 +569,6 @@
                 "navigateur",
                 "chrome"
               ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "mettre à jour",
-                "installer",
-                "mettre à niveau",
-                "actualiser",
-                "met à jour",
-                "mets à jour",
-                "installe",
-                "mets à niveau",
-                "met à niveau",
-                "actualise"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "dernière version"
-              ]
             }
           ]
         }
@@ -744,14 +581,14 @@
         "required": false,
         "single": false,
         "synonyms": [
-          " ",
+          "やり方",
           "する",
+          "方法",
+          "仕方",
           "の",
           "で",
           "を",
-          "方法",
-          "やり方",
-          "仕方"
+          " "
         ]
       },
       "pedals": [
@@ -762,33 +599,37 @@
               "required": false,
               "single": true,
               "synonyms": [
-                "google chrome",
                 "グーグルクローム",
-                "ブラウザ",
-                "ブラウザー",
                 "ブラウジング",
-                "chrome",
-                "クローム"
+                "ブラウザー",
+                "google chrome",
+                "ブラウザ",
+                "クローム",
+                "chrome"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
+                "クリア",
                 "消す",
                 "削除",
                 "消去",
-                "クリア"
+                "抹消",
+                "除去"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "履歴",
                 "キャッシュ",
+                "ヒストリー",
+                "閲覧履歴",
                 "データ",
-                "閲覧履歴"
+                "履歴",
+                "閲歴"
               ]
             }
           ]
@@ -800,31 +641,35 @@
               "required": false,
               "single": true,
               "synonyms": [
-                "google chrome",
                 "グーグルクローム",
-                "ブラウザ",
                 "ブラウザー",
-                "chrome",
-                "クローム"
+                "google chrome",
+                "ブラウザ",
+                "クローム",
+                "chrome"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "管理",
                 "アップデート",
-                "更新",
+                "リニューアル",
                 "再設定",
+                "変える",
+                "管理",
+                "更新",
                 "変更",
-                "変える"
+                "一新"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "パスワード"
+                "パスワード",
+                "暗証コード",
+                "暗証番号"
               ]
             }
           ]
@@ -836,23 +681,26 @@
               "required": false,
               "single": true,
               "synonyms": [
-                "google chrome",
                 "グーグルクローム",
-                "ブラウザ",
                 "ブラウザー",
-                "chrome",
-                "クローム"
+                "google chrome",
+                "ブラウザ",
+                "クローム",
+                "chrome"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "更新",
                 "アップデート",
+                "チェンジ",
+                "スイッチ",
+                "変える",
+                "更新",
                 "編集",
                 "変更",
-                "変える"
+                "一新"
               ]
             },
             {
@@ -861,12 +709,14 @@
               "synonyms": [
                 "クレジットカード情報",
                 "クレジットカード",
-                "お支払い",
                 "お支払い情報",
                 "カード情報",
+                "支払い情報",
+                "お支払い",
+                "口座情報",
                 "カード",
                 "支払い",
-                "支払い情報"
+                "クレカ"
               ]
             }
           ]
@@ -878,22 +728,22 @@
               "required": false,
               "single": true,
               "synonyms": [
-                "google chrome",
                 "グーグルクローム",
-                "ブラウザ",
                 "ブラウザー",
-                "chrome",
-                "クローム"
+                "google chrome",
+                "ブラウザ",
+                "クローム",
+                "chrome"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
+                "使い方",
                 "起動",
                 "開始",
                 "開く",
-                "使い方",
                 "オン",
                 "有効",
                 "使う"
@@ -903,11 +753,12 @@
               "required": true,
               "single": true,
               "synonyms": [
+                "プライベートブラウジング",
                 "シークレットウィンドウ",
                 "シークレットモード",
-                "プライベートブラウジング",
-                "シークレットタブ",
                 "プライベートモード",
+                "プライバシーモード",
+                "シークレットタブ",
                 "プライベートタブ",
                 "シークレット"
               ]
@@ -921,22 +772,25 @@
               "required": false,
               "single": true,
               "synonyms": [
-                "google chrome",
                 "グーグルクローム",
-                "ブラウザ",
                 "ブラウザー",
-                "chrome",
-                "クローム"
+                "google chrome",
+                "ブラウザ",
+                "クローム",
+                "chrome"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
+                "トランスレーション",
                 "言語設定",
                 "言語切替",
                 "言語変更",
-                "翻訳"
+                "別言語",
+                "翻訳",
+                "訳"
               ]
             },
             {
@@ -958,12 +812,12 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "google chrome",
                 "グーグルクローム",
-                "ブラウザ",
                 "ブラウザー",
-                "chrome",
-                "クローム"
+                "google chrome",
+                "ブラウザ",
+                "クローム",
+                "chrome"
               ]
             },
             {
@@ -973,8 +827,9 @@
                 "アップグレード",
                 "インストール",
                 "アップデート",
-                "更新",
-                "ダウンロード"
+                "ダウンロード",
+                "最新版",
+                "更新"
               ]
             }
           ]
@@ -1021,15 +876,16 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "数据",
-                "历史",
-                "记录",
-                "缓存",
                 "浏览数据",
                 "浏览历史",
                 "浏览记录",
                 "访问记录",
-                "访问历史"
+                "访问历史",
+                "数据",
+                "历史",
+                "记录",
+                "缓存",
+                "cookie"
               ]
             }
           ]
@@ -1055,14 +911,19 @@
                 "更新",
                 "更换",
                 "更改",
-                "设置"
+                "设置",
+                "保存",
+                "查看",
+                "显示"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
-                "密码"
+                "密码",
+                "凭据",
+                "凭证"
               ]
             }
           ]
@@ -1087,16 +948,19 @@
                 "更改",
                 "更换",
                 "修改",
-                "设置"
+                "设置",
+                "保存"
               ]
             },
             {
               "required": true,
               "single": true,
               "synonyms": [
+                "信用卡信息",
                 "信用卡",
                 "银行卡",
-                "支付卡"
+                "支付卡",
+                "卡信息"
               ]
             }
           ]
@@ -1155,8 +1019,8 @@
               "required": true,
               "single": true,
               "synonyms": [
-                "翻译",
                 "切换语言",
+                "翻译",
                 "转换",
                 "切换",
                 "转化"

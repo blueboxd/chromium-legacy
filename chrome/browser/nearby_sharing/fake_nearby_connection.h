@@ -15,11 +15,12 @@ class FakeNearbyConnection : public NearbyConnection {
   FakeNearbyConnection();
   ~FakeNearbyConnection() override;
 
+  // NearbyConnection:
   void Read(ReadCallback callback) override;
-  void Write(std::vector<uint8_t> bytes, WriteCallback callback) override;
+  void Write(std::vector<uint8_t> bytes) override;
   void Close() override;
-  bool IsClosed() const override;
-  void RegisterForDisconnection(base::OnceClosure callback) override;
+  void RegisterForDisconnection(base::OnceClosure listener) override;
+
   void AppendReadableData(std::vector<uint8_t> bytes);
 
  private:
@@ -28,6 +29,7 @@ class FakeNearbyConnection : public NearbyConnection {
   bool closed_ = false;
   ReadCallback callback_;
   std::queue<std::vector<uint8_t>> data_;
+  std::vector<base::OnceClosure> disconnect_listeners_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTION_H_

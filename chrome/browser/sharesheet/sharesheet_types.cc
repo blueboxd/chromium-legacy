@@ -7,7 +7,7 @@
 namespace sharesheet {
 
 TargetInfo::TargetInfo(TargetType type,
-                       const gfx::Image& icon,
+                       const gfx::ImageSkia& icon,
                        const base::string16& launch_name,
                        const base::string16& display_name)
     : type(type),

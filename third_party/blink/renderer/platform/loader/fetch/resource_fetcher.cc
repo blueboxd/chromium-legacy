@@ -2256,7 +2256,6 @@ FrameOrWorkerScheduler* ResourceFetcher::GetFrameOrWorkerScheduler() {
 
 void ResourceFetcher::AddSubresourceWebBundle(
     SubresourceWebBundle& subresource_web_bundle) {
-  DCHECK(RuntimeEnabledFeatures::SubresourceWebBundlesEnabled());
   subresource_web_bundles_.insert(&subresource_web_bundle);
 }
 

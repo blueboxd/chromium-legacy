@@ -81,6 +81,10 @@ class AnnotationInstance : public InstanceBase {
   // Checks if annotation fields are consistent.
   AuditorResult IsConsistent() const;
 
+  // Checks if annotation appears in summary/grouping.xml
+  AuditorResult InGroupingXML(
+      const std::set<std::string>& grouping_annotation_unique_ids) const;
+
   // Checks to see if this annotation can be completed with the |other|
   // annotation, based on their unique ids, types, and extra ids. |*this| should
   // be of partial type and the |other| either COMPLETING or BRANCHED_COMPLETING

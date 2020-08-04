@@ -9,3 +9,10 @@ TestingBrowserProcessPlatformPart::TestingBrowserProcessPlatformPart() {
 
 TestingBrowserProcessPlatformPart::~TestingBrowserProcessPlatformPart() {
 }
+#if defined(OS_MAC)
+void TestingBrowserProcessPlatformPart::SetLocationPermissionManager(
+    std::unique_ptr<GeolocationSystemPermissionManager>
+        location_permission_manager) {
+  location_permission_manager_ = std::move(location_permission_manager);
+}
+#endif

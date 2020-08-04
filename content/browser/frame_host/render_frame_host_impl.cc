@@ -4868,6 +4868,14 @@ void RenderFrameHostImpl::CreateNewWindow(
       blink_widget_host_receiver =
           blink_widget_host.InitWithNewEndpointAndPassReceiver();
 
+  // With this path, RenderViewHostImpl::CreateRenderView is never called
+  // because RenderView is already created on the renderer side. Thus we need to
+  // establish the connection here.
+  mojo::PendingAssociatedRemote<blink::mojom::PageBroadcast> page_broadcast;
+  mojo::PendingAssociatedReceiver<blink::mojom::PageBroadcast>
+      page_broadcast_receiver =
+          page_broadcast.InitWithNewEndpointAndPassReceiver();
+
   // TODO(danakj): The main frame's RenderWidgetHost has no RenderWidgetHostView
   // yet here. It seems like it should though? In the meantime we send some
   // nonsense with a semi-valid but incorrect ScreenInfo (it needs a
@@ -4881,6 +4889,7 @@ void RenderFrameHostImpl::CreateNewWindow(
       std::move(blink_frame_widget));
   main_frame->GetLocalRenderWidgetHost()->BindWidgetInterfaces(
       std::move(blink_widget_host_receiver), std::move(blink_widget));
+  main_frame->render_view_host()->BindPageBroadcast(std::move(page_broadcast));
 
   bool wait_for_debugger =
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
@@ -4890,7 +4899,7 @@ void RenderFrameHostImpl::CreateNewWindow(
       main_frame->GetLocalRenderWidgetHost()->GetRoutingID(), visual_properties,
       std::move(blink_frame_widget_host),
       std::move(blink_frame_widget_receiver), std::move(blink_widget_host),
-      std::move(blink_widget_receiver),
+      std::move(blink_widget_receiver), std::move(page_broadcast_receiver),
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(browser_interface_broker)),

@@ -28,7 +28,7 @@ const wchar_t kRestorePointClientLibrary[] = L"srclient.dll";
 namespace chrome_cleaner {
 
 SystemRestorePointComponent::SystemRestorePointComponent(
-    const base::string16& product_fullname)
+    const std::wstring& product_fullname)
     : set_restore_point_info_fn_(nullptr),
       remove_restore_point_info_fn_(nullptr),
       sequence_number_(kInvalidSequenceNumber),

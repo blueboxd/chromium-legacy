@@ -128,7 +128,7 @@ bool SandboxNtDeleteRegistryValue(
   if (status != STATUS_SUCCESS) {
     LOG_IF(ERROR, status != STATUS_OBJECT_NAME_NOT_FOUND)
         << "SandboxNtDeleteRegistryValue: Failed to delete registry value: "
-        << base::string16(value_name_buffer.begin(), value_name_buffer.end())
+        << std::wstring(value_name_buffer.begin(), value_name_buffer.end())
         << " under key: " << FormatNtRegistryMemberForLogging(key)
         << " error: " << status;
   }
@@ -258,7 +258,7 @@ bool SandboxNtChangeRegistryValue(
   return status == STATUS_SUCCESS;
 }
 
-bool SandboxDeleteService(const base::string16& name) {
+bool SandboxDeleteService(const std::wstring& name) {
   if (name.empty()) {
     LOG(ERROR) << "Sandbox called DeleteService with empty name.";
     return false;
@@ -287,7 +287,7 @@ bool SandboxDeleteService(const base::string16& name) {
   return true;
 }
 
-bool SandboxDeleteTask(const base::string16& name) {
+bool SandboxDeleteTask(const std::wstring& name) {
   // TODO(joenotcharles): Add some sanity checks.
   std::unique_ptr<chrome_cleaner::TaskScheduler> task_scheduler(
       chrome_cleaner::TaskScheduler::CreateInstance());
@@ -308,8 +308,8 @@ TerminateProcessResult SandboxTerminateProcess(uint32_t process_id) {
     return TerminateProcessResult::kFailed;
   }
 
-  base::string16 exec_path;
-  base::string16 sanitized_exec_path(L"<unknown>");
+  std::wstring exec_path;
+  std::wstring sanitized_exec_path(L"<unknown>");
   if (chrome_cleaner::GetProcessExecutablePath(handle_to_kill.Get(),
                                                &exec_path)) {
     sanitized_exec_path =

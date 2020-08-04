@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/layers/deadline_policy.h"
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -54,8 +55,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   static constexpr base::TimeDelta FirstFrameTimeout() {
     return base::TimeDelta::FromSeconds(5);
   }
-  static constexpr int64_t FirstFrameTimeoutFrames() {
-    return FirstFrameTimeout().IntDiv(viz::BeginFrameArgs::DefaultInterval());
+  static int64_t FirstFrameTimeoutFrames() {
+    return base::ClampRound<int64_t>(
+        FirstFrameTimeout().FltDiv(viz::BeginFrameArgs::DefaultInterval()));
   }
 
   // Wait up to 1 second for a frame of the correct size to be produced. Android
@@ -64,8 +66,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   static constexpr base::TimeDelta ResizeTimeout() {
     return base::TimeDelta::FromSeconds(1);
   }
-  static constexpr int64_t ResizeTimeoutFrames() {
-    return ResizeTimeout().IntDiv(viz::BeginFrameArgs::DefaultInterval());
+  static int64_t ResizeTimeoutFrames() {
+    return base::ClampRound<int64_t>(
+        ResizeTimeout().FltDiv(viz::BeginFrameArgs::DefaultInterval()));
   }
 
   // Advances the fallback surface to the first surface after navigation. This

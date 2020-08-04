@@ -106,9 +106,11 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
                           ->SharedMainThreadContextProvider();
   DCHECK(context_provider_);
   context_provider_->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 SurfaceTreeHost::~SurfaceTreeHost() {
+  display::Screen::GetScreen()->RemoveObserver(this);
   context_provider_->RemoveObserver(this);
 
   SetRootSurface(nullptr);
@@ -207,6 +209,19 @@ bool SurfaceTreeHost::IsInputEnabled(Surface*) const {
   return true;
 }
 
+void SurfaceTreeHost::OnNewOutputAdded() {
+  UpdateDisplayOnTree();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// display::DisplayObserver:
+void SurfaceTreeHost::OnDisplayMetricsChanged(const display::Display& display,
+                                              uint32_t changed_metrics) {
+  // The output of the surface may change when the primary display changes.
+  if (changed_metrics & DisplayObserver::DISPLAY_METRIC_PRIMARY)
+    UpdateDisplayOnTree();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // viz::ContextLostObserver overrides:
 
@@ -220,6 +235,17 @@ void SurfaceTreeHost::OnContextLost() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceTreeHost, protected:
+
+void SurfaceTreeHost::UpdateDisplayOnTree() {
+  auto display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(host_window());
+  if (display_id_ != display.id()) {
+    if (root_surface_) {
+      root_surface_->UpdateDisplay(display_id_, display.id());
+      display_id_ = display.id();
+    }
+  }
+}
 
 void SurfaceTreeHost::SubmitCompositorFrame() {
   viz::CompositorFrame frame = PrepareToSubmitCompositorFrame();

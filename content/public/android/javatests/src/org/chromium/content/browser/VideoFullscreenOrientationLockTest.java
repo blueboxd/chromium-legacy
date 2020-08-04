@@ -7,7 +7,6 @@ package org.chromium.content.browser;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
@@ -27,7 +26,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
 import org.chromium.ui.test.util.UiRestriction;
@@ -143,12 +141,14 @@ public class VideoFullscreenOrientationLockTest {
         // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
         waitUntilLockedToLandscape();
 
-        // Because of the fullscreen animation, the click on the exit fullscreen button will fail
-        // roughly 10% of the time. Settling down the UI reduces the flake to 0%.
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-
         // Leave fullscreen by clicking back on the button.
-        Assert.assertTrue(clickFullscreenButton());
+        // Use a loop to retry due to fullscreen re-layout.
+        int i = 0;
+        while (i < 10 && !clickFullscreenButton()) {
+            Thread.sleep(100);
+            ++i;
+        }
+        Assert.assertTrue(i < 10);
         waitForContentsFullscreenState(false);
         waitUntilUnlocked();
     }

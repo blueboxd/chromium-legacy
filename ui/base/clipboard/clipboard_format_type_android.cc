@@ -34,7 +34,7 @@ bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
   return data_ < other.data_;
 }
 
-bool ClipboardFormatType::Equals(const ClipboardFormatType& other) const {
+bool ClipboardFormatType::operator==(const ClipboardFormatType& other) const {
   return data_ == other.data_;
 }
 

@@ -5775,6 +5775,15 @@ Unknown properties are collapsed to zero. -->
   <int value="30" label="ServiceWorker claim"/>
   <int value="31"
       label="IsInactiveAndDisallowReactivation() was called when in bfcache"/>
+  <int value="32" label="RenderFrameHost has inner WebContents attached"/>
+  <int value="33"
+      label="Timed out while waiting for page to acknowledge freezing"/>
+  <int value="34"
+      label="BackForwardCache is disabled due to low memory of the device"/>
+  <int value="35"
+      label="BackForwardCache is disabled through command line (may include
+             cases where the embedder disabled it due to, e.g., enterprise
+             policy)"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -28615,6 +28624,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3359" label="MainFrameCSPViaHTTP"/>
   <int value="3360" label="MainFrameCSPViaMeta"/>
   <int value="3361" label="MainFrameCSPViaOriginPolicy"/>
+  <int value="3362" label="HtmlClipboardApiRead"/>
+  <int value="3363" label="HtmlClipboardApiWrite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47295,6 +47306,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Unavailable, insufficient security"/>
   <int value="7" label="Unavailable, suite disabled"/>
   <int value="8" label="Further setup required"/>
+  <int value="9" label="Unavailable, top-level feature disabled"/>
 </enum>
 
 <enum name="MultiDevice_PostOOBESetupFlow_Page">

@@ -46,11 +46,21 @@ API_AVAILABLE(ios(13.0))
 - (UIAction*)actionToOpenInNewTabWithURL:(const GURL)URL
                               completion:(ProceduralBlock)completion;
 
+// Creates a UIAction instance whose title and icon are configured for opening a
+// URL in a new tab. When triggered, the action will invoke the |block| which
+// needs to open a URL in a new tab.
+- (UIAction*)actionToOpenInNewTabWithBlock:(ProceduralBlock)block;
+
 // Creates a UIAction instance configured for opening the |URL| in a new
 // incognito tab and which will invoke the given |completion| block after
 // execution.
 - (UIAction*)actionToOpenInNewIncognitoTabWithURL:(const GURL)URL
                                        completion:(ProceduralBlock)completion;
+
+// Creates a UIAction instance whose title and icon are configured for opening a
+// URL in a new incognito tab. When triggered, the action will invoke the
+// |block| which needs to open a URL in a new incognito tab.
+- (UIAction*)actionToOpenInNewIncognitoTabWithBlock:(ProceduralBlock)block;
 
 // Creates a UIAction instance configured for opening the |URL| in a new window
 // from |activityOrigin|, and which will invoke the given |completion| block

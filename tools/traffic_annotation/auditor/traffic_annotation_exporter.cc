@@ -34,6 +34,12 @@ const base::FilePath kAnnotationsXmlPath =
         .Append(FILE_PATH_LITERAL("summary"))
         .Append(FILE_PATH_LITERAL("annotations.xml"));
 
+const base::FilePath kGroupingXmlPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("summary"))
+        .Append(FILE_PATH_LITERAL("grouping.xml"));
+
 // Extracts annotation id from a line of XML. Expects to have the line in the
 // following format: <... id="..." .../>
 // TODO(rhalavati): Use real XML parsing.

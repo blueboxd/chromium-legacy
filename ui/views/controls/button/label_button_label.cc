@@ -6,6 +6,8 @@
 
 namespace views {
 
+namespace internal {
+
 LabelButtonLabel::LabelButtonLabel(const base::string16& text, int text_context)
     : Label(text, text_context, style::STYLE_PRIMARY) {}
 
@@ -41,5 +43,7 @@ void LabelButtonLabel::SetColorForEnableState() {
     Label::SetEnabledColor(style::GetColor(*this, GetTextContext(), style));
   }
 }
+
+}  // namespace internal
 
 }  // namespace views

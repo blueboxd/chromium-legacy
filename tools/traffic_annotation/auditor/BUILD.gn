@@ -113,6 +113,7 @@ test("traffic_annotation_auditor_unittests") {
     "tests/irrelevant_file_name.txt",
     "tests/relevant_file_name_and_content.cc",
     "tests/relevant_file_name_and_content.mm",
+    "tests/test_grouping.xml",
   ]
   deps = [
     ":auditor_sources",

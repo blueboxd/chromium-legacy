@@ -67,6 +67,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Sets the text colors shown for the non-disabled states to |color|.
   virtual void SetEnabledTextColors(base::Optional<SkColor> color);
 
+  // Gets the current state text color.
+  SkColor GetCurrentTextColor() const;
+
   // Sets drop shadows underneath the text.
   void SetTextShadows(const gfx::ShadowValues& shadows);
 
@@ -204,7 +207,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // The image and label shown in the button.
   ImageView* image_;
-  LabelButtonLabel* label_;
+  internal::LabelButtonLabel* label_;
 
   // A separate view is necessary to hold the ink drop layer so that it can
   // be stacked below |image_| and on top of |label_|, without resorting to

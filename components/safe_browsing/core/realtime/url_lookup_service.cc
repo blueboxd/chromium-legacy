@@ -42,12 +42,16 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
     bool is_under_advanced_protection,
     bool is_off_the_record,
     variations::VariationsService* variations_service)
-    : RealTimeUrlLookupServiceBase(url_loader_factory, cache_manager),
+    : RealTimeUrlLookupServiceBase(url_loader_factory,
+                                   cache_manager,
+                                   sync_service,
+                                   pref_service,
+                                   profile_management_status,
+                                   is_under_advanced_protection,
+                                   is_off_the_record),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
       pref_service_(pref_service),
-      profile_management_status_(profile_management_status),
-      is_under_advanced_protection_(is_under_advanced_protection),
       is_off_the_record_(is_off_the_record),
       variations_(variations_service) {
   token_fetcher_ =
@@ -84,15 +88,6 @@ void RealTimeUrlLookupService::OnGetAccessToken(
 
 RealTimeUrlLookupService::~RealTimeUrlLookupService() {}
 
-// TODO(bdea): Refactor this method into a util class as multiple SB classes
-// have this method.
-bool RealTimeUrlLookupService::IsHistorySyncEnabled() {
-  return sync_service_ && sync_service_->IsSyncFeatureActive() &&
-         !sync_service_->IsLocalSyncEnabled() &&
-         sync_service_->GetActiveDataTypes().Has(
-             syncer::HISTORY_DELETE_DIRECTIVES);
-}
-
 bool RealTimeUrlLookupService::CanPerformFullURLLookup() const {
   return RealTimePolicyEngine::CanPerformFullURLLookup(
       pref_service_, is_off_the_record_, variations_);
@@ -112,30 +107,6 @@ bool RealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
   // Always return true, because consumer real time URL check only works when
   // safe browsing is enabled.
   return true;
-}
-
-std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
-    const GURL& url) {
-  auto request = std::make_unique<RTLookupRequest>();
-  request->set_url(SanitizeURL(url).spec());
-  request->set_lookup_type(RTLookupRequest::NAVIGATION);
-
-  ChromeUserPopulation* user_population = request->mutable_population();
-  user_population->set_user_population(
-      IsEnhancedProtectionEnabled(*pref_service_)
-          ? ChromeUserPopulation::ENHANCED_PROTECTION
-          : IsExtendedReportingEnabled(*pref_service_)
-                ? ChromeUserPopulation::EXTENDED_REPORTING
-                : ChromeUserPopulation::SAFE_BROWSING);
-
-  user_population->set_profile_management_status(profile_management_status_);
-  user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  user_population->set_is_under_advanced_protection(
-      is_under_advanced_protection_);
-#endif
-  user_population->set_is_incognito(is_off_the_record_);
-  return request;
 }
 
 net::NetworkTrafficAnnotationTag
@@ -172,6 +143,11 @@ RealTimeUrlLookupService::GetTrafficAnnotationTag() const {
             }
           }
         })");
+}
+
+std::string RealTimeUrlLookupService::GetDMTokenString() const {
+  // DM token should only be set for enterprise requests.
+  return "";
 }
 
 std::string RealTimeUrlLookupService::GetMetricSuffix() const {

@@ -55,10 +55,8 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
     }
 
     // Constants for Assistant Voice Search.
-    // TODO(crbug.com/1041576): Update this placeholder to a the real min version once the code has
-    //                          landed.
     @VisibleForTesting
-    public static final String DEFAULT_ASSISTANT_AGSA_MIN_VERSION = "10.98";
+    public static final String DEFAULT_ASSISTANT_AGSA_MIN_VERSION = "11.7";
     @VisibleForTesting
     public static final int DEFAULT_ASSISTANT_MIN_ANDROID_SDK_VERSION =
             Build.VERSION_CODES.LOLLIPOP;

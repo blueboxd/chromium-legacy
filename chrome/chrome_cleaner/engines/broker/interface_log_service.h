@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
@@ -52,7 +51,7 @@ class InterfaceLogService : public InterfaceMetadataObserver {
   // test. Decide whether it's worth keeping.
   CallHistory call_record_;
 
-  const base::string16 log_file_name_;
+  const std::wstring log_file_name_;
   // Stream to output CSV records to.
   std::ofstream csv_stream_;
 

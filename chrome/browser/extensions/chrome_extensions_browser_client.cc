@@ -584,6 +584,12 @@ ChromeExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
              : &media_router_access_logger_;
 }
 
+bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
+    const std::string& extension_id,
+    content::BrowserContext* context) {
+  return extensions::util::HasIsolatedStorage(extension_id, context);
+}
+
 // static
 void ChromeExtensionsBrowserClient::SetMediaRouterAccessLoggerForTesting(
     MediaRouterExtensionAccessLogger* media_router_access_logger) {

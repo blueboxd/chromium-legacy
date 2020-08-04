@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/sharesheet/sharesheet_controller.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
 namespace sharesheet {
@@ -20,7 +20,7 @@ class ShareAction {
 
   virtual const base::string16 GetActionName() = 0;
 
-  virtual const gfx::Image GetActionIcon() = 0;
+  virtual const gfx::ImageSkia GetActionIcon() = 0;
 
   // LaunchAction should synchronously create all UI needed and fill
   // the |root_view|. Methods on |controller| can be used to inform

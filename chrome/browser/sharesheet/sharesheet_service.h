@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharesheet/sharesheet_action_cache.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
@@ -17,6 +19,7 @@
 class Profile;
 
 namespace apps {
+struct AppIdAndActivityName;
 class AppServiceProxy;
 }
 
@@ -50,6 +53,26 @@ class SharesheetService : public KeyedService {
   bool HasShareTargets(apps::mojom::IntentPtr intent);
 
  private:
+  using SharesheetServiceIconLoaderCallback =
+      base::OnceCallback<void(std::vector<TargetInfo> targets)>;
+
+  void LoadAppIcons(
+      std::vector<apps::AppIdAndActivityName> app_id_and_activities,
+      std::vector<TargetInfo> targets,
+      size_t index,
+      SharesheetServiceIconLoaderCallback callback);
+
+  void OnIconLoaded(
+      std::vector<apps::AppIdAndActivityName> app_id_and_activities,
+      std::vector<TargetInfo> targets,
+      size_t index,
+      SharesheetServiceIconLoaderCallback callback,
+      apps::mojom::IconValuePtr icon_value);
+
+  void OnAppIconsLoaded(std::unique_ptr<SharesheetServiceDelegate> delegate,
+                        apps::mojom::IntentPtr intent,
+                        std::vector<TargetInfo> targets);
+
   uint32_t delegate_counter_ = 0;
   std::unique_ptr<SharesheetActionCache> sharesheet_action_cache_;
   apps::AppServiceProxy* app_service_proxy_;
@@ -57,6 +80,8 @@ class SharesheetService : public KeyedService {
   // Record of all active SharesheetServiceDelegates. These can be retrieved
   // by ShareActions and used as SharesheetControllers to make bubble changes.
   std::vector<std::unique_ptr<SharesheetServiceDelegate>> active_delegates_;
+
+  base::WeakPtrFactory<SharesheetService> weak_factory_{this};
 };
 
 }  // namespace sharesheet

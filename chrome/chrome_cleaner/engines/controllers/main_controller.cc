@@ -16,7 +16,6 @@
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -562,15 +561,14 @@ void MainController::OnClose() {
   LoggingServiceAPI* logging_service = LoggingServiceAPI::GetInstance();
   logging_service->SetExitCode(result_code_);
 
-  UploadLogs(base::string16(), true);
+  UploadLogs(std::wstring(), true);
 
   // This must be called after we uploaded logs to make sure none is added
   // after the user had a chance to opt-out.
   component_manager_.CloseAllComponents(result_code_);
 }
 
-void MainController::UploadLogs(const base::string16& tag,
-                                bool quit_when_done) {
+void MainController::UploadLogs(const std::wstring& tag, bool quit_when_done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LoggingServiceAPI* logging_service = LoggingServiceAPI::GetInstance();
 
@@ -629,18 +627,17 @@ int MainController::WatchdogTimeoutCallback(TimedOutStage timed_out_stage) {
   return exit_code;
 }
 
-void MainController::LogsUploadComplete(const base::string16& tag,
-                                        bool success) {
+void MainController::LogsUploadComplete(const std::wstring& tag, bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   registry_logger_->AppendLogUploadResult(success);
 
-  std::map<base::string16, bool>::iterator it = logs_upload_complete_.find(tag);
+  std::map<std::wstring, bool>::iterator it = logs_upload_complete_.find(tag);
   DCHECK(it != logs_upload_complete_.end());
   it->second = true;
 
   if (quit_when_logs_upload_complete_) {
-    for (const std::pair<const base::string16, bool>& entry :
+    for (const std::pair<const std::wstring, bool>& entry :
          logs_upload_complete_) {
       if (!entry.second) {
         LOG(INFO) << "Waiting for the upload of logs with tag \"" << entry.first

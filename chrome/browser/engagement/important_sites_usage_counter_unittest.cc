@@ -35,7 +35,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   void TearDown() override {
@@ -47,15 +47,17 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   TestingProfile* profile() { return &profile_; }
 
   QuotaManager* CreateQuotaManager() {
-    quota_manager_ = new QuotaManager(false, temp_dir_.GetPath(),
-                                      content::GetIOThreadTaskRunner({}).get(),
-                                      nullptr, storage::GetQuotaSettingsFunc());
+    quota_manager_ = base::MakeRefCounted<QuotaManager>(
+        /*is_incognito=*/false, temp_dir_.GetPath(),
+        content::GetIOThreadTaskRunner({}).get(),
+        /*special_storage_policy=*/nullptr, storage::GetQuotaSettingsFunc());
     return quota_manager_.get();
   }
 
-  void RegisterClient(const std::vector<storage::MockOriginData>& data) {
-    auto* client = new storage::MockQuotaClient(
-        quota_manager_->proxy(), data, storage::QuotaClientType::kFileSystem);
+  void RegisterClient(base::span<const storage::MockOriginData> origin_data) {
+    auto client = base::MakeRefCounted<storage::MockQuotaClient>(
+        quota_manager_->proxy(), origin_data,
+        storage::QuotaClientType::kFileSystem);
     quota_manager_->proxy()->RegisterClient(
         client, storage::QuotaClientType::kFileSystem,
         {blink::mojom::StorageType::kTemporary,
@@ -87,15 +89,15 @@ class ImportantSitesUsageCounterTest : public testing::Test {
 
   void WaitForResult() {
     run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   const std::vector<ImportantDomainInfo>& domain_info() { return domain_info_; }
 
  private:
+  base::ScopedTempDir temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  base::ScopedTempDir temp_dir_;
   scoped_refptr<QuotaManager> quota_manager_;
   std::vector<ImportantDomainInfo> domain_info_;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -110,7 +112,7 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
   important_sites.push_back(std::move(i1));
   important_sites.push_back(std::move(i2));
 
-  const std::vector<storage::MockOriginData> origins = {
+  static const storage::MockOriginData kOrigins[] = {
       {"http://example.com/", blink::mojom::StorageType::kTemporary, 1},
       {"https://example.com/", blink::mojom::StorageType::kTemporary, 2},
       {"https://maps.example.com/", blink::mojom::StorageType::kTemporary, 4},
@@ -118,7 +120,7 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
   };
 
   QuotaManager* quota_manager = CreateQuotaManager();
-  RegisterClient(origins);
+  RegisterClient(kOrigins);
 
   base::Time now = base::Time::Now();
   CreateLocalStorage(now, 16,

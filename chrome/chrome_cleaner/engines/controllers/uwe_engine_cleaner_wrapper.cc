@@ -32,8 +32,8 @@
 namespace chrome_cleaner {
 
 using base::ImportantFileWriter;
-using ExtensionFilePath = base::string16;
-using ExtensionRegistryPath = base::string16;
+using ExtensionFilePath = std::wstring;
+using ExtensionRegistryPath = std::wstring;
 
 namespace {
 
@@ -51,7 +51,7 @@ const RegistryKey extension_forcelist_keys[] = {
 bool RemoveExtensionSettingsPoliciesExtensionForAccessMask(
     REGSAM access_mask,
     ContentType content_type,
-    const base::string16& serialized_json) {
+    const std::wstring& serialized_json) {
   for (size_t i = 0; i < base::size(extension_forcelist_keys); ++i) {
     base::win::RegKey key(extension_forcelist_keys[i].hkey,
                           extension_forcelist_keys[i].path, access_mask);
@@ -95,7 +95,7 @@ void UwEEngineCleanerWrapper::RemovePUPExtensions(
     extensions.insert(pup->matched_extensions.begin(),
                       pup->matched_extensions.end());
   }
-  std::vector<base::string16> master_preferences_extensions;
+  std::vector<std::wstring> master_preferences_extensions;
   for (const ForceInstalledExtension& extension : extensions) {
     switch (extension.install_method) {
       case DEFAULT_APPS_EXTENSION: {
@@ -197,15 +197,16 @@ void UwEEngineCleanerWrapper::RemovePUPExtensions(
       LOG(ERROR) << "Could not serialize json";
       return;
     }
-    base::string16 serialized_json16 = base::UTF8ToWide(serialized_json);
+    std::wstring wide_serialized_json = base::UTF8ToWide(serialized_json);
     if (!RemoveExtensionSettingsPoliciesExtensionForAccessMask(
-            KEY_WOW64_32KEY | KEY_WRITE, content_type, serialized_json16)) {
+            KEY_WOW64_32KEY | KEY_WRITE, content_type, wide_serialized_json)) {
       LOG(ERROR) << "Could not remove extension settings from registry";
       return;
     }
     if (IsX64Architecture()) {
       if (!RemoveExtensionSettingsPoliciesExtensionForAccessMask(
-              KEY_WOW64_64KEY | KEY_WRITE, content_type, serialized_json16)) {
+              KEY_WOW64_64KEY | KEY_WRITE, content_type,
+              wide_serialized_json)) {
         LOG(ERROR) << "Could not remove extension settings from registry";
         return;
       }
@@ -230,7 +231,7 @@ void UwEEngineCleanerWrapper::RemovePUPExtensions(
   if (master_preferences_extensions.size() > 0) {
     done_closure.ReplaceClosure(base::DoNothing());
     std::move(disable_extensions_callback_)
-        .Run(const_cast<std::vector<base::string16>&>(
+        .Run(const_cast<std::vector<std::wstring>&>(
                  master_preferences_extensions),
              base::BindOnce(&UwEEngineCleanerWrapper::DisableExtensionDone,
                             base::Unretained(this)));

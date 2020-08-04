@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -318,7 +319,8 @@ void ExpireHistoryBackend::ExpireVisitsInternal(
   if (!expire_visits_time.is_zero()) {
     UMA_HISTOGRAM_PERCENTAGE(
         "History.ExpireVisits.GetRedirectsDurationPercentage",
-        (get_redirects_time * 100).IntDiv(expire_visits_time));
+        base::ClampRound<base::Histogram::Sample>(
+            get_redirects_time.FltDiv(expire_visits_time) * 100));
   }
 }
 

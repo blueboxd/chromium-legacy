@@ -81,6 +81,8 @@ class DownloadShelfView : public DownloadShelf,
   views::View* GetDefaultFocusableChild() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DownloadShelfViewTest, ShowAllViewColors);
+
   // The animation for adding new items to the shelf.
   gfx::SlideAnimation new_item_animation_;
 

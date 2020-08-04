@@ -92,6 +92,16 @@
       'Linux FYI Release (AMD R7 240)',
     ],
   },
+  'app_shell_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
+  },
+  'aura_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
+  },
   'blink_platform_unittests': {
     'modifications': {
       # TODO(crbug.com/1108121): Remove this filter
@@ -433,8 +443,10 @@
       'ToTLinuxTSan',  # https://crbug.com/368525
       'Mac10.10 Tests',  # https://crbug.com/828031
       'Mac10.13 Tests',  # https://crbug.com/1042757
+      'Mac10.13 Tests Code Coverage',
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'CrWinAsan': {
@@ -793,6 +805,7 @@
   'components_browsertests': {
     'remove_from': [
       'android-code-coverage-native', # crbug/1018434
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
   },
   'components_unittests': {
@@ -804,6 +817,7 @@
       'fuchsia-fyi-arm64-rel',  # https://crbug.com/961457
       'fuchsia-fyi-x64-dbg',  # https://crbug.com/961457
       'fuchsia-fyi-x64-rel',  # https://crbug.com/961457
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -832,6 +846,11 @@
       },
     },
   },
+  'compositor_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
+  },
   'content_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
@@ -841,6 +860,7 @@
       # http://crbug.com/1060245#c30: due to low utility and capacity.
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-rel', # crbug.com/1098111
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Cast Audio Linux': {
@@ -1089,6 +1109,11 @@
       'Linux FYI Release (AMD R7 240)', # https://crbug.com/915430
     ],
   },
+  'dbus_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
+  },
   'depth_capture_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -1114,12 +1139,18 @@
   'extensions_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100, # https://crbug.com/876615
       },
     },
+  },
+  'extensions_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
   },
   'gin_unittests': {
     'remove_from': [
@@ -1349,6 +1380,7 @@
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-lacros-tester-fyi-rel', # https://crbug.com/1106980
+      'linux-lacros-tester-rel', # https://crbug.com/1106980
     ],
     'modifications': {
       'Linux - Future (dbg)': {  # client.v8.chromium
@@ -1508,6 +1540,11 @@
         ],
       },
     },
+  },
+  'message_center_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
   },
   'mojo_unittests': {
     'modifications': {
@@ -1726,6 +1763,7 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
+      'Mac10.13 Tests Code Coverage',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -1773,6 +1811,7 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
+      'Mac10.13 Tests Code Coverage',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -1790,6 +1829,7 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
+      'Mac10.13 Tests Code Coverage',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -1806,6 +1846,7 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
+      'Mac10.13 Tests Code Coverage',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -1827,6 +1868,7 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
+      'Mac10.13 Tests Code Coverage',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -2252,7 +2294,15 @@
       },
     },
   },
+  'snapshot_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
+  },
   'storage_service_unsandboxed_content_browsertests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
     'modifications': {
       'Linux Tests (dbg)(1)': {
         'swarming': {
@@ -2265,6 +2315,11 @@
         },
       },
     },
+  },
+  'storage_service_unsandboxed_extensions_browsertests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
   },
   'storage_service_unsandboxed_interactive_ui_tests': {
     'remove_from': [
@@ -2291,6 +2346,7 @@
   'sync_integration_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -2421,6 +2477,7 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
+      'Mac10.13 Tests Code Coverage',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
@@ -2459,6 +2516,7 @@
       # There's no need to run unit_tests on both lollipop and marshmallow
       # on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -2526,6 +2584,7 @@
     'remove_from': [
       # crbug.com/1054240
       'Fuchsia ARM64',
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
   },
   'video_decode_accelerator_gl_unittest': {
@@ -2536,6 +2595,11 @@
       'Win10 FYI x64 Release (Intel HD 630)',
       'Win10 FYI x64 Release (Intel UHD 630)',
       'Win10 FYI x64 Exp Release (Intel HD 630)',
+    ],
+  },
+  'views_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
   },
   'views_unittests_wayland': {
@@ -2759,6 +2823,11 @@
         ],
       },
     },
+  },
+  'wm_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
   },
   'xr_browser_tests': {
     'remove_from': [

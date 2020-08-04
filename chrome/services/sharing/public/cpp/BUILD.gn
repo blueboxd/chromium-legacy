@@ -23,6 +23,8 @@ source_set("unit_tests") {
 
   deps = [
     "//base/test:test_support",
+    "//chrome/services/sharing/public/cpp",
+    "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
   ]

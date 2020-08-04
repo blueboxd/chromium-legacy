@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SHARESHEET_SHARESHEET_TYPES_H_
 
 #include "base/strings/string16.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace sharesheet {
 
@@ -19,7 +19,7 @@ enum class TargetType {
 
 struct TargetInfo {
   TargetInfo(TargetType type,
-             const gfx::Image& icon,
+             const gfx::ImageSkia& icon,
              const base::string16& launch_name,
              const base::string16& display_name);
   // Allow move.
@@ -34,7 +34,7 @@ struct TargetInfo {
   TargetType type;
 
   // The icon to be displayed for this target in the sharesheet bubble.
-  gfx::Image icon;
+  gfx::ImageSkia icon;
 
   // The string used to launch this target. Represents an Android package name
   // when the app type is kArc.

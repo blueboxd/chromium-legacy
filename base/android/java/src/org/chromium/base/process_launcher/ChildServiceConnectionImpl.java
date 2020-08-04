@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
 
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -72,7 +73,17 @@ import java.util.concurrent.Executor;
     public void updateGroupImportance(int group, int importanceInGroup) {
         assert isBound();
         if (BindService.supportVariableConnections()) {
-            ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
+            try {
+                ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
+            } catch (IllegalArgumentException e) {
+                if (!(e.getCause() instanceof RemoteException)) {
+                    throw e;
+                }
+                // Ignore RemoteException. There is a race in ActivityManager that the
+                // binding might be removed for example due to a crash, which causes
+                // a remote exception thrown from ActiveServices.updateServiceGroupLocked.
+                // Just ignore that in this case.
+            }
             BindService.doBindService(
                     mContext, mBindIntent, this, mBindFlags, mHandler, mExecutor, mInstanceName);
         }

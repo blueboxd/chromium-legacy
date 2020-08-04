@@ -36,7 +36,7 @@ class TestNativeTheme : public ui::NativeThemeBase {
 
 // LabelButtonLabel subclass that reports its text color whenever a paint is
 // scheduled.
-class TestLabel : public LabelButtonLabel {
+class TestLabel : public internal::LabelButtonLabel {
  public:
   explicit TestLabel(SkColor* last_color)
       : LabelButtonLabel(base::string16(), views::style::CONTEXT_BUTTON),

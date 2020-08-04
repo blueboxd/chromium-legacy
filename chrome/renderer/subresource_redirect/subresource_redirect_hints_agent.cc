@@ -92,6 +92,10 @@ void SubresourceRedirectHintsAgent::RecordMetricsOnLoadFinished(
   RecordMetrics(content_length, redirect_result);
 }
 
+void SubresourceRedirectHintsAgent::ClearImageHints() {
+  public_image_urls_.clear();
+}
+
 void SubresourceRedirectHintsAgent::RecordMetrics(
     int64_t content_length,
     RedirectResult redirect_result) const {

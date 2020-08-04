@@ -25,7 +25,7 @@
             },
             {
                 "domain": "CSS",
-                "async": ["enable"]
+                "async": ["enable", "takeComputedStyleUpdates"]
             },
             {
                 "domain": "Database",

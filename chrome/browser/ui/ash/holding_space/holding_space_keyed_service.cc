@@ -7,11 +7,16 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/guid.h"
+#include "components/account_id/account_id.h"
 
 namespace ash {
 
 HoldingSpaceKeyedService::HoldingSpaceKeyedService(
-    content::BrowserContext* context) {}
+    content::BrowserContext* context,
+    const AccountId& account_id) {
+  HoldingSpaceController::Get()->RegisterModelForUser(account_id,
+                                                      &holding_space_model_);
+}
 
 HoldingSpaceKeyedService::~HoldingSpaceKeyedService() = default;
 
@@ -19,10 +24,6 @@ void HoldingSpaceKeyedService::AddTextItem(const base::string16& text) {
   auto item = std::make_unique<HoldingSpaceItem>(base::GenerateGUID());
   item->set_text(text);
   holding_space_model_.AddItem(std::move(item));
-}
-
-void HoldingSpaceKeyedService::ActivateModel() {
-  HoldingSpaceController::Get()->SetModel(&holding_space_model_);
 }
 
 }  // namespace ash

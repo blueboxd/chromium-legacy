@@ -21,6 +21,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
 #include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
+#include "chrome/browser/prerender/chrome_prerender_processor_impl_delegate.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_processor_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -295,6 +296,14 @@ void BindPrerenderCanceler(
   prerender_contents->AddPrerenderCancelerReceiver(std::move(receiver));
 }
 
+void BindPrerenderProcessor(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<blink::mojom::PrerenderProcessor> receiver) {
+  prerender::PrerenderProcessorImpl::Create(
+      frame_host, std::move(receiver),
+      std::make_unique<prerender::ChromePrerenderProcessorImplDelegate>());
+}
+
 #if defined(OS_ANDROID)
 template <typename Interface>
 void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
@@ -397,7 +406,7 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&BindPrerenderCanceler));
 
   map->Add<blink::mojom::PrerenderProcessor>(
-      base::BindRepeating(&prerender::PrerenderProcessorImpl::Create));
+      base::BindRepeating(&BindPrerenderProcessor));
 
   if (performance_manager::PerformanceManager::IsAvailable()) {
     map->Add<performance_manager::mojom::DocumentCoordinationUnit>(

@@ -12,6 +12,17 @@ source_set("android") {
   deps = [ "//components/password_manager/core/browser" ]
 }
 
+java_cpp_enum("password_check_enums_srcjar") {
+  sources = [ "password_check_ui_status.h" ]
+}
+
+# Wrap the java_cpp_enum in android_library so it can be used by both
+# chrome_java and modules.
+android_library("password_check_java_enums") {
+  deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+  srcjar_deps = [ ":password_check_enums_srcjar" ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [ "bulk_leak_check_controller_android_unittest.cc" ]
@@ -25,6 +36,7 @@ source_set("unit_tests") {
 android_library("public_java") {
   deps = [
     ":java_resources",
+    ":password_check_java_enums",
     ":public_ui_java",
     "internal:public_ui_factory_java",
     "//base:base_java",
@@ -63,6 +75,7 @@ junit_binary("password_check_junit_tests") {
     "internal:public_ui_factory_java",
     "//base:base_java",
     "//base:base_junit_test_support",
+    "//chrome/browser/password_check/android:password_check_java_enums",
     "//chrome/browser/password_check/android:public_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
@@ -89,6 +102,7 @@ android_library("test_java") {
     "//chrome/android:chrome_test_java",
     "//chrome/android:chrome_test_util_java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/password_check/android:password_check_java_enums",
     "//chrome/browser/password_check/android/internal:public_factory_java",
     "//chrome/browser/settings:test_support_java",
     "//chrome/test/android:chrome_java_test_support",

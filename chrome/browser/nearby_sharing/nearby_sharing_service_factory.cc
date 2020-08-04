@@ -39,7 +39,7 @@ NearbySharingServiceFactory* NearbySharingServiceFactory::GetInstance() {
 // static
 NearbySharingService* NearbySharingServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<NearbySharingServiceImpl*>(
+  return static_cast<NearbySharingService*>(
       GetInstance()->GetServiceForBrowserContext(context, true /* create */));
 }
 

@@ -66,10 +66,6 @@ static void JNI_SafeBrowsingBridge_SetSafeBrowsingState(JNIEnv* env,
       GetPrefService(), static_cast<SafeBrowsingState>(state));
 }
 
-static jboolean JNI_SafeBrowsingBridge_IsSafeBrowsingManaged(JNIEnv* env) {
-  return safe_browsing::IsSafeBrowsingPolicyManaged(*GetPrefService());
-}
-
 static jboolean JNI_SafeBrowsingBridge_HasAccountForLeakCheckRequest(
     JNIEnv* env) {
   signin::IdentityManager* identity_manager =

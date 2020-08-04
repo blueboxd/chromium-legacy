@@ -273,6 +273,8 @@ bool ShouldShowProfilePicker() {
                                   ->GetProfileAttributesStorage()
                                   .GetNumberOfProfiles();
   return !signin_util::IsForceSigninEnabled() && number_of_profiles != 1 &&
+         g_browser_process->local_state()->GetBoolean(
+             prefs::kBrowserShowProfilePickerOnStartup) &&
          base::FeatureList::IsEnabled(features::kNewProfilePicker);
 }
 #endif  // !defined(OS_CHROMEOS)

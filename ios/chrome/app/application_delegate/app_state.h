@@ -69,6 +69,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // is shown. When there is no blocking UI shown in any scene, this is nil.
 @property(nonatomic, weak, readonly) SceneState* sceneShowingBlockingUI;
 
+// Indicates that this app launch is one after a crash.
+@property(nonatomic, assign) BOOL postCrashLaunch;
+
+// Indicates that session restoration might be required for connecting scenes.
+@property(nonatomic, assign) BOOL sessionRestorationRequired;
+
 // The last window which received a tap.
 @property(nonatomic, weak) UIWindow* lastTappedWindow;
 

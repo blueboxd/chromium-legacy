@@ -109,15 +109,7 @@ void DedicatedWorkerObjectProxy::DidFailToFetchModuleScript() {
                           messaging_proxy_weak_ptr_));
 }
 
-void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
-  PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
-      FROM_HERE,
-      CrossThreadBindOnce(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
-                          messaging_proxy_weak_ptr_, success));
-}
-
-void DedicatedWorkerObjectProxy::DidEvaluateModuleScript(bool success) {
+void DedicatedWorkerObjectProxy::DidEvaluateTopLevelScript(bool success) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,

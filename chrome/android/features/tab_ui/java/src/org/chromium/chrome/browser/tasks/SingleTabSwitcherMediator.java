@@ -51,6 +51,7 @@ public class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     private boolean mSelectedTabDidNotChangedAfterShown;
     private boolean mAddNormalTabModelObserverPending;
     private Long mTabTitleAvailableTime;
+    private boolean mFaviconInitialized;
 
     SingleTabSwitcherMediator(PropertyModel propertyModel, TabModelSelector tabModelSelector,
             TabListFaviconProvider tabListFaviconProvider) {
@@ -103,11 +104,35 @@ public class SingleTabSwitcherMediator implements TabSwitcher.Controller {
                     if (mTabTitleAvailableTime == null) {
                         mTabTitleAvailableTime = SystemClock.elapsedRealtime();
                     }
-                    mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
-                            (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+                    // Favicon should be updated here unless mTabListFaviconProvider hasn't been
+                    // initialized yet.
+                    assert !mFaviconInitialized;
+                    if (mTabListFaviconProvider.isInitialized()) {
+                        mFaviconInitialized = true;
+                        updateFavicon(tab);
+                    }
                 }
             }
         };
+    }
+
+    void initWithNative() {
+        if (mFaviconInitialized || !mTabModelSelector.isTabStateInitialized()) return;
+
+        TabModel normalTabModel = mTabModelSelector.getModel(false);
+        int selectedTabIndex = normalTabModel.index();
+        if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
+            assert normalTabModel.getCount() > 0;
+            Tab tab = normalTabModel.getTabAt(selectedTabIndex);
+            updateFavicon(tab);
+            mFaviconInitialized = true;
+        }
+    }
+
+    private void updateFavicon(Tab tab) {
+        assert mTabListFaviconProvider.isInitialized();
+        mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
+                (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
     }
 
     void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {

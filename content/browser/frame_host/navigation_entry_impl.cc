@@ -830,7 +830,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */, frame_policy,
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolation_restricted */,
+          false /* origin_isolated */,
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */);

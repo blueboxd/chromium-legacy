@@ -22,34 +22,21 @@ export const ShowPasswordBehavior = {
      */
     entry: Object,
 
-    /** The password that is being displayed. */
-    password: {
-      type: String,
-      value: '',
-    },
-
     // <if expr="chromeos">
     /** @type BlockingRequestManager */
     tokenRequestManager: Object
     // </if>
   },
 
-  observers: [
-    'resetPlaintextPasswordOnEntryChanged_(entry)',
-  ],
-
-  /** @private */
-  resetPlaintextPasswordOnEntryChanged_() {
-    this.password = '';
-  },
-
   /**
    * Gets the password input's type. Should be 'text' when password is visible
    * or when there's federated text otherwise 'password'.
+   * @return {string}
    * @private
    */
   getPasswordInputType_() {
-    return this.password || this.entry.federationText ? 'text' : 'password';
+    return this.entry.password || this.entry.federationText ? 'text' :
+                                                              'password';
   },
 
   /**
@@ -69,22 +56,19 @@ export const ShowPasswordBehavior = {
    * @private
    */
   getIconClass_() {
-    return this.password ? 'icon-visibility-off' : 'icon-visibility';
+    return this.entry.password ? 'icon-visibility-off' : 'icon-visibility';
   },
 
   /**
    * Gets the text of the password. Will use the value of |password| unless it
    * cannot be shown, in which case it will be a fixed number of spaces. It can
    * also be the federated text.
+   * @return {string}
    * @private
    */
   getPassword_() {
-    if (!this.entry) {
-      return '';
-    }
-
     const NUM_PLACEHOLDERS = 10;
-    return this.entry.federationText || this.password ||
+    return this.entry.federationText || this.entry.password ||
         ' '.repeat(NUM_PLACEHOLDERS);
   },
 
@@ -93,8 +77,8 @@ export const ShowPasswordBehavior = {
    * @private
    */
   onShowPasswordButtonTap_() {
-    if (this.password) {
-      this.password = '';
+    if (this.entry.password) {
+      this.hide();
       return;
     }
     PasswordManagerImpl.getInstance()
@@ -102,7 +86,7 @@ export const ShowPasswordBehavior = {
             this.entry.getAnyId(), chrome.passwordsPrivate.PlaintextReason.VIEW)
         .then(
             password => {
-              this.password = password;
+              this.set('entry.password', password);
             },
             error => {
               // <if expr="chromeos">
@@ -112,4 +96,11 @@ export const ShowPasswordBehavior = {
               // </if>
             });
   },
+
+  /**
+   * Hides the password.
+   */
+  hide() {
+    this.set('entry.password', '');
+  }
 };

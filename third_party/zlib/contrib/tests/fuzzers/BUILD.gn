@@ -18,6 +18,12 @@ fuzzer_test("zlib_inflate_fuzzer") {
   deps = [ "../../../:zlib" ]
 }
 
+fuzzer_test("zlib_streaming_inflate_fuzzer") {
+  sources = [ "streaming_inflate_fuzzer.cc" ]
+  deps = [ "../../../:zlib" ]
+  libfuzzer_options = [ "max_len=256000" ]
+}
+
 fuzzer_test("zlib_deflate_set_dictionary_fuzzer") {
   sources = [ "deflate_set_dictionary_fuzzer.cc" ]
   deps = [ "../../../:zlib" ]

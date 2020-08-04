@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_DRAG_EVENT_SOURCE_INFO_H_
 
 #include "content/common/content_export.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace content {
@@ -14,7 +14,7 @@ namespace content {
 // Information about the event that started a drag session.
 struct CONTENT_EXPORT DragEventSourceInfo {
   gfx::Point event_location;
-  ui::DragDropTypes::DragEventSource event_source;
+  ui::mojom::DragEventSource event_source;
 };
 
 }  // namespace content

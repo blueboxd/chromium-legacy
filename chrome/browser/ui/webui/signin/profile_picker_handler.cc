@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/profile_picker.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/search/generated_colors_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -40,6 +41,10 @@ void ProfilePickerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "launchSelectedProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchSelectedProfile,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "askOnStartupChanged",
+      base::BindRepeating(&ProfilePickerHandler::HandleAskOnStartupChanged,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getNewProfileSuggestedThemeInfo",
@@ -95,6 +100,16 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
       *profile_path, /*always_create=*/false,
       base::Bind(&ProfilePickerHandler::OnSwitchToProfileComplete,
                  weak_factory_.GetWeakPtr()));
+}
+
+void ProfilePickerHandler::HandleAskOnStartupChanged(
+    const base::ListValue* args) {
+  bool show_on_startup;
+  if (!args->GetBoolean(0, &show_on_startup))
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kBrowserShowProfilePickerOnStartup, show_on_startup);
 }
 
 void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(

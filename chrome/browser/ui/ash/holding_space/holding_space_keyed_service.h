@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "base/strings/string16.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -20,15 +21,12 @@ namespace ash {
 // *   Serves as an entry point to add holding space items from Chrome.
 class HoldingSpaceKeyedService : public KeyedService {
  public:
-  explicit HoldingSpaceKeyedService(content::BrowserContext* context);
+  HoldingSpaceKeyedService(content::BrowserContext* context,
+                           const AccountId& account_id);
   HoldingSpaceKeyedService(const HoldingSpaceKeyedService& other) = delete;
   HoldingSpaceKeyedService& operator=(const HoldingSpaceKeyedService& other) =
       delete;
   ~HoldingSpaceKeyedService() override;
-
-  // Sets the holding space model managed by this service as the active
-  // model.
-  void ActivateModel();
 
   // Adds a text item to the service's holding space model.
   // |text|: The item's text value.

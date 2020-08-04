@@ -18,7 +18,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
 
-class GrContext;
+class GrDirectContext;
 class SkColorSpace;
 class SkImage;
 class SkPixmap;
@@ -113,7 +113,7 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   // - The colorspace of the resulting RGB image is sRGB.
   //
   // Returns true if the entry can be built, false otherwise.
-  bool BuildFromHardwareDecodedImage(GrContext* context,
+  bool BuildFromHardwareDecodedImage(GrDirectContext* context,
                                      std::vector<sk_sp<SkImage>> plane_images,
                                      YUVDecodeFormat plane_images_format,
                                      SkYUVColorSpace yuv_color_space,
@@ -122,7 +122,8 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
 
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
-  bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
+  bool Deserialize(GrDirectContext* context,
+                   base::span<const uint8_t> data) final;
 
   bool fits_on_gpu() const { return fits_on_gpu_; }
   const std::vector<sk_sp<SkImage>>& plane_images() const {
@@ -148,7 +149,7 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
                              uint32_t height,
                              sk_sp<SkColorSpace> target_color_space);
 
-  GrContext* context_ = nullptr;
+  GrDirectContext* context_ = nullptr;
   std::vector<sk_sp<SkImage>> plane_images_;
   YUVDecodeFormat plane_images_format_ = YUVDecodeFormat::kUnknown;
   std::vector<size_t> plane_sizes_;

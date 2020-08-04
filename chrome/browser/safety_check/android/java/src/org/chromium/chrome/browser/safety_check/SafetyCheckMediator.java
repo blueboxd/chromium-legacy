@@ -19,6 +19,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safe_browsing.settings.SecuritySettingsFragment;
@@ -129,11 +131,8 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
         mModel.set(SafetyCheckProperties.PASSWORDS_CLICK_LISTENER,
                 (Preference.OnPreferenceClickListener) (p) -> {
                     // Open the Passwords settings.
-                    // TODO(crbug.com/1070620): replace the hardcoded class name with an import and
-                    // ".class.getName()" once PasswordSettings is moved out of //chrome/android.
-                    p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
-                            p.getContext(),
-                            "org.chromium.chrome.browser.password_manager.settings.PasswordSettings"));
+                    PasswordManagerHelper.showPasswordSettings(p.getContext(),
+                            ManagePasswordsReferrer.CHROME_SETTINGS, settingsLauncher);
                     return true;
                 });
         // Set the listener for clicking the Check button.

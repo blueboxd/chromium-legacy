@@ -13,6 +13,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -79,18 +80,17 @@ base::WeakPtr<DragDropOperation> DragDropOperation::Create(
     Surface* origin,
     Surface* icon,
     const gfx::Point& drag_start_point,
-    ui::DragDropTypes::DragEventSource event_source) {
+    ui::mojom::DragEventSource event_source) {
   auto* dnd_op = new DragDropOperation(source, origin, icon, drag_start_point,
                                        event_source);
   return dnd_op->weak_ptr_factory_.GetWeakPtr();
 }
 
-DragDropOperation::DragDropOperation(
-    DataSource* source,
-    Surface* origin,
-    Surface* icon,
-    const gfx::Point& drag_start_point,
-    ui::DragDropTypes::DragEventSource event_source)
+DragDropOperation::DragDropOperation(DataSource* source,
+                                     Surface* origin,
+                                     Surface* icon,
+                                     const gfx::Point& drag_start_point,
+                                     ui::mojom::DragEventSource event_source)
     : SurfaceTreeHost("ExoDragDropOperation"),
       source_(std::make_unique<ScopedDataSource>(source, this)),
       origin_(std::make_unique<ScopedSurface>(origin, this)),

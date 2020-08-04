@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -31,7 +33,7 @@ const wchar_t kDoubleNullEntry[] = L"\0\0";
 // is a pointer to an empty vector of pending moves. On success, this vector
 // contains all of the strings extracted from |buffer|.
 // Returns false if buffer does not meet the above specification.
-bool MultiSZToStringArray(const base::string16& buffer,
+bool MultiSZToStringArray(const std::wstring& buffer,
                           std::vector<PendingMove>* value) {
   DCHECK(value);
   DCHECK(value->empty());
@@ -42,13 +44,13 @@ bool MultiSZToStringArray(const base::string16& buffer,
   // Put null-terminated strings into the sequence.
   while (data < data_end) {
     // Parse the source path.
-    base::string16 str_from(data);
+    std::wstring str_from(data);
     data += str_from.length() + 1;
 
     // Parse the destination path. If the offset is at the end of the string,
     // we assume the destination is empty. This may happen with corrupt registry
     // values where there are missing trailing null characters.
-    base::string16 str_to;
+    std::wstring str_to;
     if (data > data_end)
       return false;
     if (data < data_end)
@@ -66,7 +68,7 @@ bool MultiSZToStringArray(const base::string16& buffer,
 // kPendingFileRenameOps registry value. It concatenates the strings and
 // appends an additional terminating null character.
 void StringArrayToMultiSZ(const std::vector<PendingMove>& pending_moves,
-                          base::string16* buffer) {
+                          std::wstring* buffer) {
   DCHECK(buffer);
   buffer->clear();
 
@@ -116,7 +118,7 @@ void StringArrayToMultiSZ(const std::vector<PendingMove>& pending_moves,
 // then GetShortPathName will return |path| unchanged, unlike the win32
 // GetShortPathName which will return an error.
 base::FilePath GetShortPathName(const base::FilePath& path) {
-  base::string16 short_path;
+  std::wstring short_path;
   DWORD length = ::GetShortPathName(
       path.value().c_str(), base::WriteInto(&short_path, MAX_PATH), MAX_PATH);
   DPLOG_IF(WARNING, length == 0 && ::GetLastError() != ERROR_PATH_NOT_FOUND)
@@ -134,10 +136,10 @@ base::FilePath GetShortPathName(const base::FilePath& path) {
 
 base::FilePath GetShortPathNameWithoutPrefix(const base::FilePath& reg_path) {
   // Stores the path stored in each entry.
-  base::string16 match_path(reg_path.value());
+  std::wstring match_path(reg_path.value());
 
   // First chomp the prefix since that will mess up GetShortPathName.
-  base::string16 prefix(L"\\??\\");
+  std::wstring prefix(L"\\??\\");
   if (base::StartsWith(match_path, prefix,
                        base::CompareCase::INSENSITIVE_ASCII))
     match_path = match_path.substr(4);
@@ -231,7 +233,7 @@ bool GetPendingMoves(PendingMoveVector* pending_moves) {
   }
 
   // Read the content of the registry value to retrieve the pending moves.
-  base::string16 pending_moves_value;
+  std::wstring pending_moves_value;
   uint32_t pending_moves_value_type;
   if (!ReadRegistryValue(session_manager_key, kPendingFileRenameOps,
                          &pending_moves_value, &pending_moves_value_type,
@@ -281,14 +283,14 @@ bool SetPendingMoves(const PendingMoveVector& pending_moves) {
   }
 
   // Serialize pending moves as a sequence of bytes.
-  base::string16 buffer;
+  std::wstring buffer;
   StringArrayToMultiSZ(pending_moves, &buffer);
   if (buffer.empty())
     return false;
 
   // The pending moves format needs a null entry at the end which consists of
   // two MULTISZ empty string.
-  base::string16 last_entry(kDoubleNullEntry, base::size(kDoubleNullEntry) - 1);
+  std::wstring last_entry(kDoubleNullEntry, base::size(kDoubleNullEntry) - 1);
   buffer = buffer + last_entry;
 
   // Write back the serialized values into the registry key.

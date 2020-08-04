@@ -491,7 +491,7 @@ class CONTENT_EXPORT RenderFrameImpl
                         const int32_t flags) override;
 
   // These are called for dedicated workers only when
-  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true.
+  // PlzDedicatedWorker is enabled.
   // blink::mojom::ResourceLoadInfoNotifier implementation:
   void NotifyResourceRedirectReceived(
       const net::RedirectInfo& redirect_info,

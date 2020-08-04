@@ -32,6 +32,7 @@ source_set("safety_check") {
   ]
   deps = [
     ":safety_check_ui",
+    "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/prefs",
     "//components/safe_browsing/core:features",
@@ -41,6 +42,7 @@ source_set("safety_check") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",

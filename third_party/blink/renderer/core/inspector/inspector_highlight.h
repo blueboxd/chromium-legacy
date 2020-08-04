@@ -35,7 +35,8 @@ struct CORE_EXPORT InspectorGridHighlightConfig {
   InspectorGridHighlightConfig();
 
   Color grid_color;
-  Color cell_color;
+  Color row_line_color;
+  Color column_line_color;
   Color row_gap_color;
   Color column_gap_color;
   Color row_hatch_color;
@@ -44,7 +45,8 @@ struct CORE_EXPORT InspectorGridHighlightConfig {
 
   bool show_grid_extension_lines;
   bool grid_border_dash;
-  bool cell_border_dash;
+  bool row_line_dash;
+  bool column_line_dash;
   bool show_positive_line_numbers;
   bool show_negative_line_numbers;
   bool show_area_names;

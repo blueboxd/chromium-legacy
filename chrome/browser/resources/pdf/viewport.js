@@ -387,14 +387,6 @@ export class Viewport {
       return {horizontal: false, vertical: false};
     }
 
-    // If scrollbars are required for one direction, expand the document in the
-    // other direction to take the width of the scrollbars into account when
-    // deciding whether the other direction needs scrollbars.
-    if (zoomedDimensions.width > this.window_.offsetWidth) {
-      zoomedDimensions.height += this.scrollbarWidth_;
-    } else if (zoomedDimensions.height > this.window_.offsetHeight) {
-      zoomedDimensions.width += this.scrollbarWidth_;
-    }
     return {
       horizontal: zoomedDimensions.width > this.window_.offsetWidth,
       vertical: zoomedDimensions.height + this.topToolbarHeight_ >
@@ -491,13 +483,9 @@ export class Viewport {
 
   /** @return {!Size} the size of the viewport excluding scrollbars. */
   get size() {
-    const needsScrollbars = this.documentNeedsScrollbars(this.getZoom());
-    const scrollbarWidth = needsScrollbars.vertical ? this.scrollbarWidth_ : 0;
-    const scrollbarHeight =
-        needsScrollbars.horizontal ? this.scrollbarWidth_ : 0;
     return {
-      width: this.window_.offsetWidth - scrollbarWidth,
-      height: this.window_.offsetHeight - scrollbarHeight
+      width: this.window_.offsetWidth,
+      height: this.window_.offsetHeight,
     };
   }
 

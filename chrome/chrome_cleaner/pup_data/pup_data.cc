@@ -5,6 +5,7 @@
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/check.h"
@@ -50,8 +51,8 @@ PUPData::RegistryFootprint::RegistryFootprint()
 
 PUPData::RegistryFootprint::RegistryFootprint(
     const RegKeyPath& key_path,
-    const base::string16& value_name,
-    const base::string16& value_substring,
+    const std::wstring& value_name,
+    const std::wstring& value_substring,
     RegistryMatchRule rule)
     : key_path(key_path),
       value_name(value_name),

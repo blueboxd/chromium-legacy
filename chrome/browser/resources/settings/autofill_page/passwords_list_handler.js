@@ -171,14 +171,40 @@ Polymer({
   },
 
   /**
-   * @param {!Event} e
+   * Requests the plaintext password for the current active password.
+   * @param {!chrome.passwordsPrivate.PlaintextReason} reason The reason why the
+   *     plaintext password is requested.
+   * @param {function(string): void} callback The callback that gets invoked
+   *     with the retrieved password.
    * @private
    */
-  onMenuEditPasswordTap_(e) {
-    // TODO(crbug.com/377410): Add authentication if isEditDialog_ is true.
-    e.preventDefault();
+  requestActivePlaintextPassword_(reason, callback) {
+    PasswordManagerImpl.getInstance()
+        .requestPlaintextPassword(this.activePassword.entry.getAnyId(), reason)
+        .then(callback, error => {
+          // <if expr="chromeos">
+          // If no password was found, refresh auth token and retry.
+          this.tokenRequestManager.request(() => {
+            this.requestActivePlaintextPassword_(reason, callback);
+          });
+          // </if>
+        });
+  },
+
+  /** @private */
+  onMenuEditPasswordTap_() {
+    if (this.isEditDialog_) {
+      // TODO(crbug.com/377410): Set plaintext password after we stop using
+      // ShowPasswordBehavior in password_list_item and password_edit_dialog.
+      this.requestActivePlaintextPassword_(
+          chrome.passwordsPrivate.PlaintextReason.EDIT, _ => {
+            this.showPasswordEditDialog_ = true;
+          });
+    } else {
+      this.showPasswordEditDialog_ = true;
+    }
     this.$.menu.close();
-    this.showPasswordEditDialog_ = true;
+    this.activePassword.hide();
   },
 
   /**
@@ -195,6 +221,7 @@ Polymer({
     this.showPasswordEditDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
+    this.activePassword.hide();
     this.activePassword = null;
   },
 
@@ -213,20 +240,11 @@ Polymer({
   onMenuCopyPasswordButtonTap_() {
     // Copy to clipboard occurs inside C++ and we don't expect getting
     // result back to javascript.
-    PasswordManagerImpl.getInstance()
-        .requestPlaintextPassword(
-            this.activePassword.entry.getAnyId(),
-            chrome.passwordsPrivate.PlaintextReason.COPY)
-        .then(_ => {
+    this.requestActivePlaintextPassword_(
+        chrome.passwordsPrivate.PlaintextReason.COPY, _ => {
           this.activePassword = null;
-        })
-        .catch(error => {
-          // <if expr="chromeos">
-          // If no password was found, refresh auth token and retry.
-          this.tokenRequestManager.request(
-              this.onMenuCopyPasswordButtonTap_.bind(this));
-          // </if>});
         });
+
     this.$.menu.close();
   },
 
@@ -297,11 +315,9 @@ Polymer({
 
   /**
    * Should only be called when |activePassword| has a device copy.
-   * @param {!Event} event
    * @private
    */
-  onMenuMovePasswordToAccountTap_(event) {
-    event.preventDefault();
+  onMenuMovePasswordToAccountTap_() {
     this.$.menu.close();
     this.showPasswordMoveToAccountDialog_ = true;
   },

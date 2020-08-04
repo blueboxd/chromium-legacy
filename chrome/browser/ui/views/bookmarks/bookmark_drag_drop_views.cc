@@ -19,6 +19,7 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -262,7 +263,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   int64_t drag_node_id_ = -1;
   int count_;
   gfx::NativeView native_view_;
-  ui::DragDropTypes::DragEventSource source_;
+  ui::mojom::DragEventSource source_;
   const gfx::Point start_point_;
   int operation_;
 
@@ -280,7 +281,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
 
 void DoDragImpl(std::unique_ptr<ui::OSExchangeData> drag_data,
                 gfx::NativeView native_view,
-                ui::DragDropTypes::DragEventSource source,
+                ui::mojom::DragEventSource source,
                 gfx::Point point,
                 int operation) {
   // Allow nested run loop so we get DnD events as we drag this around.

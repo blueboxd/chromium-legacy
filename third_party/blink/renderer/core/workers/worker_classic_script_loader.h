@@ -82,12 +82,12 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   // TODO(crbug.com/1064920): Remove |reject_coep_unsafe_none| and
   // |blob_url_loader_factory| when PlzDedicatedWorker ships.
   //
-  // |worker_main_script_load_params| is valid only when
-  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  // |worker_main_script_load_params| is valid for dedicated workers (when
+  // PlzDedicatedWorker is enabled) and shared workers.
   //
   // |resource_load_info_notifier| is valid and used to notify of the loading
   // status of the top-level script for DedicatedWorker only when
-  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true
+  // PlzDedicatedWorker is enabled
   void LoadTopLevelScriptAsynchronously(
       ExecutionContext&,
       ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -147,8 +147,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void DidFailRedirectCheck() override;
 
   // WorkerMainScriptLoaderClient
-  // These will be called only when
-  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  // These will be called for dedicated workers (when PlzDedicatedWorker is
+  // enabled) and shared workers.
   void DidReceiveData(base::span<const char> span) override;
   void OnFinishedLoadingWorkerMainScript() override;
   void OnFailedLoadingWorkerMainScript() override;
@@ -167,8 +167,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
 
   Member<ThreadableLoader> threadable_loader_;
 
-  // These are used only when
-  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  // These are used for dedicated workers (when PlzDedicatedWorker is enabled)
+  // and shared workers.
   Member<WorkerMainScriptLoader> worker_main_script_loader_;
   String response_encoding_;
   std::unique_ptr<TextResourceDecoder> decoder_;

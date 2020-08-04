@@ -10,7 +10,7 @@
 #include "base/containers/span.h"
 #include "cc/paint/paint_export.h"
 
-class GrContext;
+class GrDirectContext;
 
 namespace cc {
 
@@ -85,7 +85,7 @@ class CC_PAINT_EXPORT ServiceTransferCacheEntry {
 
   // Deserialize the cache entry from the given span of memory with the given
   // context.
-  virtual bool Deserialize(GrContext* context,
+  virtual bool Deserialize(GrDirectContext* context,
                            base::span<const uint8_t> data) = 0;
 };
 

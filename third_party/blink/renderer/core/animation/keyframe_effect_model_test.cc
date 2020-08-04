@@ -64,8 +64,9 @@ class AnimationKeyframeEffectModel : public PageTestBase {
 
   void ExpectLengthValue(double expected_value,
                          Interpolation* interpolation_value) {
-    ActiveInterpolations interpolations;
-    interpolations.push_back(interpolation_value);
+    ActiveInterpolations* interpolations =
+        MakeGarbageCollected<ActiveInterpolations>();
+    interpolations->push_back(interpolation_value);
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
     const auto* typed_value =
@@ -85,8 +86,9 @@ class AnimationKeyframeEffectModel : public PageTestBase {
 
   void ExpectNonInterpolableValue(const String& expected_value,
                                   Interpolation* interpolation_value) {
-    ActiveInterpolations interpolations;
-    interpolations.push_back(interpolation_value);
+    ActiveInterpolations* interpolations =
+        MakeGarbageCollected<ActiveInterpolations>();
+    interpolations->push_back(interpolation_value);
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
     const auto* typed_value =

@@ -33,8 +33,8 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  // Implements WorkerMainScriptLoaderClient, and these will be called only when
-  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  // Implements WorkerMainScriptLoaderClient, and these will be called for
+  // dedicated workers (when PlzDedicatedWorker is enabled) and shared workers.
   void DidReceiveData(base::span<const char> span) override;
   void OnStartLoadingBody(const ResourceResponse& resource_response) override;
   void OnFinishedLoadingWorkerMainScript() override;
@@ -56,8 +56,8 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
 
   const Member<WorkerGlobalScope> global_scope_;
 
-  // These are used only when
-  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  // These are used for dedicated workers (when PlzDedicatedWorker is enabled)
+  // and shared workers.
   Member<WorkerMainScriptLoader> worker_main_script_loader_;
   std::unique_ptr<TextResourceDecoder> decoder_;
   StringBuilder source_text_;

@@ -114,17 +114,8 @@ bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
   // Background hosts will be loaded later via OnProfileAdded.
   // http://crbug.com/222473
   // Unit tests may not have a profile manager.
-  if (g_browser_process->profile_manager() &&
-      !g_browser_process->profile_manager()->IsValidProfile(profile)) {
-    return true;
-  }
-
-  // There are no browser windows open and the browser process was
-  // started to show the app launcher. Background hosts will be loaded later
-  // via OnBrowserAdded(). http://crbug.com/178260
-  return chrome::GetBrowserCount(profile) == 0 &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             ::switches::kShowAppList);
+  return (g_browser_process->profile_manager() &&
+          !g_browser_process->profile_manager()->IsValidProfile(profile));
 }
 
 void ChromeProcessManagerDelegate::OnBrowserAdded(Browser* browser) {

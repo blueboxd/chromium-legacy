@@ -49,8 +49,6 @@ void WorkerModuleScriptFetcher::Fetch(
       worker_main_script_load_params =
           global_scope_->TakeWorkerMainScriptLoadingParametersForModules();
   if (worker_main_script_load_params) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kLoadMainScriptForPlzDedicatedWorkerByParams));
     DCHECK_EQ(level_, ModuleGraphLevel::kTopLevelModuleFetch);
 
     fetch_params.MutableResourceRequest().SetInspectorId(
@@ -204,8 +202,6 @@ void WorkerModuleScriptFetcher::NotifyClient(
 }
 
 void WorkerModuleScriptFetcher::DidReceiveData(base::span<const char> span) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   if (!decoder_) {
     decoder_ = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
@@ -218,8 +214,6 @@ void WorkerModuleScriptFetcher::DidReceiveData(base::span<const char> span) {
 
 void WorkerModuleScriptFetcher::OnStartLoadingBody(
     const ResourceResponse& resource_response) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
           resource_response.HttpContentType())) {
     HeapVector<Member<ConsoleMessage>> error_messages;
@@ -241,8 +235,6 @@ void WorkerModuleScriptFetcher::OnStartLoadingBody(
 }
 
 void WorkerModuleScriptFetcher::OnFinishedLoadingWorkerMainScript() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   const ResourceResponse& response = worker_main_script_loader_->GetResponse();
   if (decoder_)
     source_text_.Append(decoder_->Flush());
@@ -254,8 +246,6 @@ void WorkerModuleScriptFetcher::OnFinishedLoadingWorkerMainScript() {
 }
 
 void WorkerModuleScriptFetcher::OnFailedLoadingWorkerMainScript() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   client_->NotifyFetchFinished(base::nullopt,
                                HeapVector<Member<ConsoleMessage>>());
 }

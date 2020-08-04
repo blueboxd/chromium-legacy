@@ -110,7 +110,10 @@ static void JNI_CookiesFetcher_RestoreCookies(
           static_cast<net::CookiePriority>(priority));
 
   // These cookies were in the cookie store already so they should be valid.
-  DCHECK(cookie);
+  // TODO(dylancutler) This early return should be removed when the condition is
+  // no longer met.
+  if (!cookie)
+    return;
 
   // Assume HTTPS - since the cookies are being restored from another store,
   // they have already gone through the strict secure check.

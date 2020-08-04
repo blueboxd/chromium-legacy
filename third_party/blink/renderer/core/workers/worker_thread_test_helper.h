@@ -182,7 +182,7 @@ class MockWorkerReportingProxy final : public WorkerReportingProxy {
   MOCK_METHOD1(DidCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
   MOCK_METHOD2(WillEvaluateClassicScriptMock,
                void(size_t scriptSize, size_t cachedMetadataSize));
-  MOCK_METHOD1(DidEvaluateClassicScript, void(bool success));
+  MOCK_METHOD1(DidEvaluateTopLevelScript, void(bool success));
   MOCK_METHOD0(DidCloseWorkerGlobalScope, void());
   MOCK_METHOD0(WillDestroyWorkerGlobalScope, void());
   MOCK_METHOD0(DidTerminateWorkerThread, void());

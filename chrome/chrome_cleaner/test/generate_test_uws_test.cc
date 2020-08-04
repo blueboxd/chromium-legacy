@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/base_paths_win.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -10,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/chrome_cleaner/pup_data/test_uws.h"
 #include "testing/gtest/include/gtest/gtest.h"

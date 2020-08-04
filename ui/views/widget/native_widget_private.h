@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/native_widget.h"
@@ -206,7 +207,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
                             std::unique_ptr<ui::OSExchangeData> data,
                             const gfx::Point& location,
                             int operation,
-                            ui::DragDropTypes::DragEventSource source) = 0;
+                            ui::mojom::DragEventSource source) = 0;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void ScheduleLayout() = 0;
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;

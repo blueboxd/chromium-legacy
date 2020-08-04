@@ -7,17 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/app/application_delegate/tab_opening.h"
-#import "ios/chrome/browser/procedural_block_types.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
-
 @protocol SceneControllerGuts
 
 #pragma mark - iOS 12 compat
 
-- (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
-                 needRestoration:(BOOL)needsRestoration;
+- (void)startUpChromeUI;
 
 @end
 

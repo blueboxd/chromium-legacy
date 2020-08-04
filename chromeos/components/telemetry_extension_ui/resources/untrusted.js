@@ -2,27 +2,86 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** A pipe through which we can send messages to the parent frame. */
-const parentMessagePipe =
-    new MessagePipe('chrome://telemetry-extension', window.parent);
+/**
+ * @fileoverview
+ *
+ * Diagnostic Processor Support Library (DPSL) is a collection of telemetry and
+ * diagnostics interfaces exposed to third-parties:
+ *
+ *   - chromeos.diagnostics
+ *     | Diagnostics interface for running device diagnostics routines (tests).
+ *
+ *   - chromeos.telemetry
+ *     | Telemetry (a.k.a. Probe) interface for getting device telemetry
+ *     | information.
+ */
+
+chromeos.diagnostics = null;
+
+chromeos.telemetry = null;
 
 /**
- * Requests probe telemetry info.
- * @return {!Promise<ProbeTelemetryInfoResponse>}
+ * This is only for testing purposes. Please don't use it in the production,
+ * because we may silently change or remove it.
  */
-async function requestTelemetryInfo() {
-  const response = /** @type {!ProbeTelemetryInfoResponse} */ (
-      await parentMessagePipe.sendMessage(Message.PROBE_TELEMETRY_INFO));
-  return response;
-}
+chromeos.test_support = {};
 
-/**
- * Requests a list of available routines.
- * @return {!Promise<DiagnosticsGetAvailableRoutinesResponse>}
- */
-async function getAvailableRoutines() {
-  const response = /** @type {!DiagnosticsGetAvailableRoutinesResponse} */ (
-      await parentMessagePipe.sendMessage(
-        Message.DIAGNOSTICS_AVAILABLE_ROUTINES));
-  return response;
-}
+(() => {
+  const messagePipe =
+      new MessagePipe('chrome://telemetry-extension', window.parent);
+
+  /**
+   * DPSL Diagnostics Requester.
+   */
+  class DiagnosticsRequester {
+    constructor() {}
+
+    /**
+     * Requests a list of available routines.
+     * @return {!Promise<!Array<!chromeos.health.mojom.DiagnosticRoutineEnum>>}
+     * @public
+     */
+    async getAvailableRoutines() {
+      const response =
+          /** @type {dpsl_internal.DiagnosticsGetAvailableRoutinesResponse} */ (
+              await messagePipe.sendMessage(
+                  dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES));
+      return response.availableRoutines;
+    }
+  };
+
+  /**
+   * DPSL Telemetry Requester.
+   */
+  class TelemetryRequester {
+    constructor() {}
+
+    /**
+     * Requests telemetry info.
+     * @param { !Array<!string> } categories
+     * @return { !Promise<!chromeos.health.mojom.TelemetryInfo> }
+     * @public
+     */
+    async probeTelemetryInfo(categories) {
+      const response =
+          /** @type {dpsl_internal.ProbeTelemetryInfoResponse} */ (
+              await messagePipe.sendMessage(
+                  dpsl_internal.Message.PROBE_TELEMETRY_INFO, categories));
+      if (response.error !== undefined) {
+        throw response.error;
+      }
+      return /** @type {!chromeos.health.mojom.TelemetryInfo} */ (
+          response.telemetryInfo);
+    }
+  };
+
+  globalThis.chromeos.diagnostics = new DiagnosticsRequester();
+  globalThis.chromeos.telemetry = new TelemetryRequester();
+
+  globalThis.chromeos.test_support.messagePipe = function() {
+    console.warn(
+        'messagePipe() is a method for testing purposes only. Please',
+        'do not use it, otherwise your app may be broken in the future.');
+    return messagePipe;
+  }
+})();

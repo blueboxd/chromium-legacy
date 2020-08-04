@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 
 namespace autofill {
 namespace structured_address {
@@ -161,7 +162,7 @@ class TestCompoundNameCustomFormatAddressComponent : public AddressComponent {
 
   // Introduces a custom format with a leading last name.
   base::string16 GetBestFormatString() const override {
-    return base::ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST}");
+    return ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST}");
   }
 
  private:
@@ -185,7 +186,7 @@ class TestCompoundNameCustomFormatWithUnsupportedTokenAddressComponent
 
   // Introduce a custom format with a leading last name.
   base::string16 GetBestFormatString() const override {
-    return base::ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST} ${NOT_SUPPORTED}");
+    return ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST} ${NOT_SUPPORTED}");
   }
 
  private:
@@ -280,20 +281,19 @@ TEST(AutofillStructuredAddressAddressComponent, TestGetSupportedFieldType) {
 TEST(AutofillStructuredAddressAddressComponent, TestSetFieldTypeValue) {
   TestCompoundNameAddressComponent compound_name;
   EXPECT_TRUE(compound_name.SetValueForTypeIfPossible(
-      NAME_MIDDLE_INITIAL, base::UTF8ToUTF16("M"),
-      VerificationStatus::kObserved));
+      NAME_MIDDLE_INITIAL, UTF8ToUTF16("M"), VerificationStatus::kObserved));
 
-  EXPECT_EQ(compound_name.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("M"));
+  EXPECT_EQ(compound_name.GetValueForType(NAME_MIDDLE), UTF8ToUTF16("M"));
 }
 
 // Tests retrieving an additional field type.
 TEST(AutofillStructuredAddressAddressComponent, TestGetFieldTypeValue) {
   TestCompoundNameAddressComponent compound_name;
   EXPECT_TRUE(compound_name.SetValueForTypeIfPossible(
-      NAME_MIDDLE, base::UTF8ToUTF16("Middle"), VerificationStatus::kObserved));
+      NAME_MIDDLE, UTF8ToUTF16("Middle"), VerificationStatus::kObserved));
 
   EXPECT_EQ(compound_name.GetValueForType(NAME_MIDDLE_INITIAL),
-            base::UTF8ToUTF16("M"));
+            UTF8ToUTF16("M"));
   EXPECT_EQ(compound_name.GetVerificationStatusForType(NAME_MIDDLE_INITIAL),
             VerificationStatus::kObserved);
 }
@@ -329,8 +329,8 @@ TEST(AutofillStructuredAddressAddressComponent, TestComparisonOperator_Atom) {
   AddressComponent left(NAME_FIRST);
   AddressComponent right(NAME_FIRST);
 
-  left.SetValue(base::UTF8ToUTF16("some value"), VerificationStatus::kParsed);
-  right.SetValue(base::UTF8ToUTF16("some other value"),
+  left.SetValue(UTF8ToUTF16("some value"), VerificationStatus::kParsed);
+  right.SetValue(UTF8ToUTF16("some other value"),
                  VerificationStatus::kFormatted);
   EXPECT_NE(left.GetValue(), right.GetValue());
   EXPECT_NE(left.GetVerificationStatus(), right.GetVerificationStatus());
@@ -338,7 +338,7 @@ TEST(AutofillStructuredAddressAddressComponent, TestComparisonOperator_Atom) {
   EXPECT_FALSE(left == right);
   EXPECT_TRUE(left != right);
 
-  right.SetValue(base::UTF8ToUTF16("some value"), VerificationStatus::kParsed);
+  right.SetValue(UTF8ToUTF16("some value"), VerificationStatus::kParsed);
 
   EXPECT_TRUE(left == right);
   EXPECT_FALSE(left != right);
@@ -370,15 +370,13 @@ TEST(AutofillStructuredAddressAddressComponent,
   TestCompoundNameAddressComponent right;
 
   // Set left to a value and verify its state.
-  left.SetValueForTypeIfPossible(NAME_FULL,
-                                 base::UTF8ToUTF16("First Middle Last"),
+  left.SetValueForTypeIfPossible(NAME_FULL, UTF8ToUTF16("First Middle Last"),
                                  VerificationStatus::kObserved);
   EXPECT_TRUE(left.CompleteFullTree());
-  EXPECT_EQ(left.GetValueForType(NAME_FULL),
-            base::UTF8ToUTF16("First Middle Last"));
-  EXPECT_EQ(left.GetValueForType(NAME_FIRST), base::UTF8ToUTF16("First"));
-  EXPECT_EQ(left.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("Middle"));
-  EXPECT_EQ(left.GetValueForType(NAME_LAST), base::UTF8ToUTF16("Last"));
+  EXPECT_EQ(left.GetValueForType(NAME_FULL), UTF8ToUTF16("First Middle Last"));
+  EXPECT_EQ(left.GetValueForType(NAME_FIRST), UTF8ToUTF16("First"));
+  EXPECT_EQ(left.GetValueForType(NAME_MIDDLE), UTF8ToUTF16("Middle"));
+  EXPECT_EQ(left.GetValueForType(NAME_LAST), UTF8ToUTF16("Last"));
   EXPECT_EQ(left.GetVerificationStatusForType(NAME_FULL),
             VerificationStatus::kObserved);
   EXPECT_EQ(left.GetVerificationStatusForType(NAME_FIRST),
@@ -389,15 +387,13 @@ TEST(AutofillStructuredAddressAddressComponent,
             VerificationStatus::kParsed);
 
   // Set right to another value and verify its state.
-  right.SetValueForTypeIfPossible(NAME_FULL,
-                                  base::UTF8ToUTF16("The Dark Knight"),
+  right.SetValueForTypeIfPossible(NAME_FULL, UTF8ToUTF16("The Dark Knight"),
                                   VerificationStatus::kUserVerified);
   EXPECT_TRUE(right.CompleteFullTree());
-  EXPECT_EQ(right.GetValueForType(NAME_FULL),
-            base::UTF8ToUTF16("The Dark Knight"));
-  EXPECT_EQ(right.GetValueForType(NAME_FIRST), base::UTF8ToUTF16("The"));
-  EXPECT_EQ(right.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("Dark"));
-  EXPECT_EQ(right.GetValueForType(NAME_LAST), base::UTF8ToUTF16("Knight"));
+  EXPECT_EQ(right.GetValueForType(NAME_FULL), UTF8ToUTF16("The Dark Knight"));
+  EXPECT_EQ(right.GetValueForType(NAME_FIRST), UTF8ToUTF16("The"));
+  EXPECT_EQ(right.GetValueForType(NAME_MIDDLE), UTF8ToUTF16("Dark"));
+  EXPECT_EQ(right.GetValueForType(NAME_LAST), UTF8ToUTF16("Knight"));
   EXPECT_EQ(right.GetVerificationStatusForType(NAME_FULL),
             VerificationStatus::kUserVerified);
   EXPECT_EQ(right.GetVerificationStatusForType(NAME_FIRST),
@@ -413,7 +409,7 @@ TEST(AutofillStructuredAddressAddressComponent,
   // Set left to the same values as right and verify that it is now equal.
   TestCompoundNameAddressComponent same_right;
   same_right.SetValueForTypeIfPossible(NAME_FULL,
-                                       base::UTF8ToUTF16("The Dark Knight"),
+                                       UTF8ToUTF16("The Dark Knight"),
                                        VerificationStatus::kUserVerified);
   EXPECT_TRUE(same_right.CompleteFullTree());
 
@@ -421,7 +417,7 @@ TEST(AutofillStructuredAddressAddressComponent,
   EXPECT_FALSE(right != same_right);
 
   // Change one subcomponent and verify that it is not equal anymore.
-  same_right.SetValueForTypeIfPossible(NAME_LAST, base::UTF8ToUTF16("Joker"),
+  same_right.SetValueForTypeIfPossible(NAME_LAST, UTF8ToUTF16("Joker"),
                                        VerificationStatus::kParsed);
   EXPECT_TRUE(right != same_right);
   EXPECT_FALSE(right == same_right);
@@ -432,12 +428,12 @@ TEST(AutofillStructuredAddressAddressComponent, TestAssignmentOperator_Atom) {
   AddressComponent left(NAME_FIRST);
   AddressComponent right(NAME_FIRST);
 
-  left.SetValue(base::UTF8ToUTF16("some value"), VerificationStatus::kParsed);
-  right.SetValue(base::UTF8ToUTF16("some other value"),
+  left.SetValue(UTF8ToUTF16("some value"), VerificationStatus::kParsed);
+  right.SetValue(UTF8ToUTF16("some other value"),
                  VerificationStatus::kFormatted);
   EXPECT_FALSE(left == right);
 
-  left.SetValue(base::UTF8ToUTF16("some other value"),
+  left.SetValue(UTF8ToUTF16("some other value"),
                 VerificationStatus::kFormatted);
   EXPECT_TRUE(left == right);
 }
@@ -448,13 +444,11 @@ TEST(AutofillStructuredAddressAddressComponent,
   TestCompoundNameAddressComponent left;
   TestCompoundNameAddressComponent right;
 
-  left.SetValueForTypeIfPossible(NAME_FULL,
-                                 base::UTF8ToUTF16("First Middle Last"),
+  left.SetValueForTypeIfPossible(NAME_FULL, UTF8ToUTF16("First Middle Last"),
                                  VerificationStatus::kObserved);
   left.RecursivelyCompleteTree();
 
-  right.SetValueForTypeIfPossible(NAME_FULL,
-                                  base::UTF8ToUTF16("The Dark Knight"),
+  right.SetValueForTypeIfPossible(NAME_FULL, UTF8ToUTF16("The Dark Knight"),
                                   VerificationStatus::kParsed);
   right.RecursivelyCompleteTree();
 
@@ -468,13 +462,11 @@ TEST(AutofillStructuredAddressAddressComponent,
 TEST(AutofillStructuredAddressAddressComponent, SelfAssignment) {
   TestCompoundNameAddressComponent left;
 
-  left.SetValueForTypeIfPossible(NAME_FULL,
-                                 base::UTF8ToUTF16("First Middle Last"),
+  left.SetValueForTypeIfPossible(NAME_FULL, UTF8ToUTF16("First Middle Last"),
                                  VerificationStatus::kObserved);
   left = *(&left);
 
-  EXPECT_EQ(left.GetValueForType(NAME_FULL),
-            base::UTF8ToUTF16("First Middle Last"));
+  EXPECT_EQ(left.GetValueForType(NAME_FULL), UTF8ToUTF16("First Middle Last"));
 }
 
 // Tests that the correct storage types are returned.
@@ -508,7 +500,7 @@ TEST(AutofillStructuredAddressAddressComponent, GetAtomicity) {
 
 // Tests directly setting and retrieving values.
 TEST(AutofillStructuredAddressAddressComponent, DirectlyGetSetAndUnsetValue) {
-  base::string16 test_value = base::ASCIIToUTF16("test_value");
+  base::string16 test_value = ASCIIToUTF16("test_value");
 
   // Create an atomic structured component and verify its initial unset state
   TestAtomicFirstNameAddressComponent first_name_component;
@@ -535,7 +527,7 @@ TEST(AutofillStructuredAddressAddressComponent, DirectlyGetSetAndUnsetValue) {
 // Tests recursively setting and retrieving values.
 TEST(AutofillStructuredAddressAddressComponent,
      RecursivelySettingAndGettingValues) {
-  base::string16 test_value = base::ASCIIToUTF16("test_value");
+  base::string16 test_value = ASCIIToUTF16("test_value");
 
   // Create a compound component that has a child of type NAME_FIRST.
   TestCompoundNameAddressComponent compound_component;
@@ -583,7 +575,7 @@ TEST(AutofillStructuredAddressAddressComponent, GetSubcomponentTypes) {
 TEST(AutofillStructuredAddressAddressComponent, GetBestFormatString_ForAtom) {
   TestAtomicFirstNameAddressComponent first_name_component;
   EXPECT_EQ(first_name_component.GetBestFormatStringForTesting(),
-            base::UTF8ToUTF16("${NAME_FIRST}"));
+            UTF8ToUTF16("${NAME_FIRST}"));
 }
 
 // Tests getting the best format string using the fallback mechanism.
@@ -780,12 +772,12 @@ TEST(AutofillStructuredAddressAddressComponent,
 TEST(AutofillStructuredAddressAddressComponent,
      TestParseValueAndAssignSubcomponentsByFallbackMethod_Atom) {
   TestAtomicFirstNameAddressComponent atomic_component;
-  atomic_component.SetValue(base::UTF8ToUTF16("Dangerzone"),
+  atomic_component.SetValue(UTF8ToUTF16("Dangerzone"),
                             VerificationStatus::kObserved);
   atomic_component.ParseValueAndAssignSubcomponents();
 
   // The parsing should not crash the browser and keep the initial value intact.
-  EXPECT_EQ(base::UTF8ToUTF16("Dangerzone"), atomic_component.GetValue());
+  EXPECT_EQ(UTF8ToUTF16("Dangerzone"), atomic_component.GetValue());
 }
 
 // Tests the fallback method to parse a value into its components if there are
@@ -1012,8 +1004,8 @@ TEST(AutofillStructuredAddressAddressComponent,
 
   // Change the value of FULL_NAME and invalidate all child and ancestor nodes.
   compound_component.SetValueForTypeIfPossible(
-      NAME_FULL, base::UTF8ToUTF16("Oh' Brian"), VerificationStatus::kObserved,
-      true, true);
+      NAME_FULL, UTF8ToUTF16("Oh' Brian"), VerificationStatus::kObserved, true,
+      true);
   EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
             base::string16());
   EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
@@ -1081,7 +1073,7 @@ TEST(AutofillStructuredAddressAddressComponent,
   // Set a value somewhere in the tree, complete and verify that another node is
   // assigned.
   compound_component.SetValueForTypeIfPossible(
-      NAME_FULL, base::UTF8ToUTF16("Winston Brian Smith"),
+      NAME_FULL, UTF8ToUTF16("Winston Brian Smith"),
       VerificationStatus::kObserved);
   EXPECT_EQ(VerificationStatus::kObserved,
             compound_component.GetVerificationStatusForType(NAME_FULL));
@@ -1101,6 +1093,187 @@ TEST(AutofillStructuredAddressAddressComponent,
   EXPECT_EQ(
       VerificationStatus::kNoStatus,
       compound_component.GetVerificationStatusForType(CREDIT_CARD_NAME_FULL));
+}
+
+TEST(AutofillStructuredAddressAddressComponent,
+     MergeAtomicComponentsWithDifferentValues) {
+  TestAtomicFirstNameAddressComponent one;
+  one.SetValue(ASCIIToUTF16("Peter"), VerificationStatus::kFormatted);
+
+  TestAtomicFirstNameAddressComponent two;
+  two.SetValue(ASCIIToUTF16("Hook"), VerificationStatus::kUserVerified);
+
+  // |one| and |two| are note mergeable because they contain completely
+  // different values.
+  EXPECT_FALSE(one.MergeWithComponent(two));
+  // Since |one| and |two| are not mergeable, it is expected that the value of
+  // |one| is preserved.
+  EXPECT_EQ(one.GetValue(), ASCIIToUTF16("Peter"));
+  EXPECT_EQ(one.GetVerificationStatus(), VerificationStatus::kFormatted);
+}
+
+TEST(AutofillStructuredAddressAddressComponent,
+     MergeAtomicComponentsWithSameValue) {
+  TestAtomicFirstNameAddressComponent one;
+  one.SetValue(ASCIIToUTF16("Peter"), VerificationStatus::kFormatted);
+
+  TestAtomicFirstNameAddressComponent two;
+  two.SetValue(ASCIIToUTF16("Peter"), VerificationStatus::kUserVerified);
+
+  EXPECT_TRUE(one.MergeWithComponent(two));
+  EXPECT_EQ(one.GetValue(), ASCIIToUTF16("Peter"));
+
+  // The actual action is that the higher verification status is picked.
+  EXPECT_EQ(one.GetVerificationStatus(), VerificationStatus::kUserVerified);
+}
+
+TEST(AutofillStructuredAddressAddressComponent,
+     MergeAtomicComponentsSimilarValueThatContainsSameNormalizedValue) {
+  TestAtomicFirstNameAddressComponent one;
+  one.SetValue(UTF8ToUTF16("müller"), VerificationStatus::kFormatted);
+
+  TestAtomicFirstNameAddressComponent two;
+  two.SetValue(UTF8ToUTF16("Muller"), VerificationStatus::kUserVerified);
+
+  // Should be mergeable because the values are the same after normalization.
+  EXPECT_TRUE(one.MergeWithComponent(two));
+  // The value should be Muller bebause of its higher validation status.
+  EXPECT_EQ(one.GetValue(), ASCIIToUTF16("Muller"));
+
+  // The actual action is that the higher verification status is picked.
+  EXPECT_EQ(one.GetVerificationStatus(), VerificationStatus::kUserVerified);
+}
+
+TEST(AutofillStructuredAddressAddressComponent,
+     MergeAtomicComponentsWithPermutatedValue) {
+  TestAtomicFirstNameAddressComponent one;
+  one.SetValue(ASCIIToUTF16("Peter Pan"), VerificationStatus::kFormatted);
+
+  TestAtomicFirstNameAddressComponent two;
+  two.SetValue(ASCIIToUTF16("Pan Peter"), VerificationStatus::kUserVerified);
+
+  EXPECT_TRUE(one.MergeWithComponent(two));
+  EXPECT_EQ(one.GetValue(), ASCIIToUTF16("Pan Peter"));
+  EXPECT_EQ(one.GetVerificationStatus(), VerificationStatus::kUserVerified);
+
+  // If the merging is applied the other way round, the value of two is not
+  // altered because |two| has the higher validation status.
+  one.SetValue(ASCIIToUTF16("Peter Pan"), VerificationStatus::kFormatted);
+  EXPECT_TRUE(two.MergeWithComponent(one));
+  EXPECT_EQ(two.GetValue(), ASCIIToUTF16("Pan Peter"));
+  EXPECT_EQ(two.GetVerificationStatus(), VerificationStatus::kUserVerified);
+}
+
+// This test verifies that if two value-equal components are merged, the higher
+// verification statuses are picked.
+TEST(AutofillStructuredAddressAddressComponent,
+     MergeTriviallyMergeableCompoundComponents) {
+  TestCompoundNameAddressComponent one;
+  TestCompoundNameAddressComponent two;
+
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(
+      NAME_FULL, ASCIIToUTF16("First LastFirst LastSecond"),
+      VerificationStatus::kUserVerified));
+  one.CompleteFullTree();
+
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), ASCIIToUTF16("First"));
+  EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), ASCIIToUTF16("LastFirst"));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST), ASCIIToUTF16("LastSecond"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kParsed);
+
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(NAME_FIRST, ASCIIToUTF16("First"),
+                                            VerificationStatus::kObserved));
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(
+      NAME_LAST, ASCIIToUTF16("LastFirst LastSecond"),
+      VerificationStatus::kObserved));
+  two.CompleteFullTree();
+  EXPECT_EQ(two.GetValueForType(NAME_FULL),
+            ASCIIToUTF16("First LastFirst LastSecond"));
+  EXPECT_EQ(two.GetValueForType(NAME_MIDDLE), ASCIIToUTF16(""));
+
+  EXPECT_TRUE(one.MergeWithComponent(two));
+  EXPECT_EQ(one.GetValueForType(NAME_FULL),
+            ASCIIToUTF16("First LastFirst LastSecond"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), ASCIIToUTF16("First"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), ASCIIToUTF16(""));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST),
+            ASCIIToUTF16("LastFirst LastSecond"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
+}
+
+// This test verifies that the formatted value is successfully replaced by the
+// user-verified value while the substructure is corrected by the observation.
+TEST(AutofillStructuredAddressAddressComponent, MergePermutatedComponent) {
+  TestCompoundNameAddressComponent one;
+  TestCompoundNameAddressComponent two;
+
+  // The first component has the unstructured representation as the user
+  // verified it, but a wrong componentization.
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(NAME_FULL,
+                                            ASCIIToUTF16("Last First Middle"),
+                                            VerificationStatus::kUserVerified));
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(NAME_FIRST, ASCIIToUTF16("Last"),
+                                            VerificationStatus::kParsed));
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(NAME_MIDDLE, ASCIIToUTF16("First"),
+                                            VerificationStatus::kParsed));
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(NAME_LAST, ASCIIToUTF16("Middle"),
+                                            VerificationStatus::kParsed));
+
+  // The second component has a correct componentization but not the
+  // unstructured representation the user prefers.
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(NAME_FULL,
+                                            ASCIIToUTF16("First Last Middle"),
+                                            VerificationStatus::kFormatted));
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(NAME_FIRST, ASCIIToUTF16("First"),
+                                            VerificationStatus::kObserved));
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(NAME_MIDDLE, ASCIIToUTF16("Middle"),
+                                            VerificationStatus::kObserved));
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(NAME_LAST, ASCIIToUTF16("Last"),
+                                            VerificationStatus::kObserved));
+
+  TestCompoundNameAddressComponent copy_of_one;
+  copy_of_one = one;
+  EXPECT_TRUE(one.MergeWithComponent(two));
+
+  // As a result of the merging, the unstructured representation should be
+  // maintained, but the substructure should be corrected
+  EXPECT_EQ(one.GetValueForType(NAME_FULL), ASCIIToUTF16("Last First Middle"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), ASCIIToUTF16("First"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), ASCIIToUTF16("Middle"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetValueForType(NAME_LAST), ASCIIToUTF16("Last"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
+
+  // The merging should work in both directions the same way.
+  EXPECT_TRUE(two.MergeWithComponent(copy_of_one));
+  EXPECT_EQ(two.GetValueForType(NAME_FULL), ASCIIToUTF16("Last First Middle"));
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(two.GetValueForType(NAME_FIRST), ASCIIToUTF16("First"));
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetValueForType(NAME_MIDDLE), ASCIIToUTF16("Middle"));
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetValueForType(NAME_LAST), ASCIIToUTF16("Last"));
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
 }
 
 }  // namespace structured_address

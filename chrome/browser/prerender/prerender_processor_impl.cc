@@ -5,8 +5,6 @@
 #include "chrome/browser/prerender/prerender_processor_impl.h"
 
 #include "chrome/browser/prerender/prerender_link_manager.h"
-#include "chrome/browser/prerender/prerender_link_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -16,20 +14,25 @@
 
 namespace prerender {
 
-PrerenderProcessorImpl::PrerenderProcessorImpl(int render_process_id,
-                                               int render_frame_id)
+PrerenderProcessorImpl::PrerenderProcessorImpl(
+    int render_process_id,
+    int render_frame_id,
+    std::unique_ptr<PrerenderProcessorImplDelegate> delegate)
     : render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id) {}
+      render_frame_id_(render_frame_id),
+      delegate_(std::move(delegate)) {}
 
 PrerenderProcessorImpl::~PrerenderProcessorImpl() = default;
 
 // static
 void PrerenderProcessorImpl::Create(
     content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<blink::mojom::PrerenderProcessor> receiver) {
+    mojo::PendingReceiver<blink::mojom::PrerenderProcessor> receiver,
+    std::unique_ptr<PrerenderProcessorImplDelegate> delegate) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<PrerenderProcessorImpl>(
-          frame_host->GetProcess()->GetID(), frame_host->GetRoutingID()),
+          frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
+          std::move(delegate)),
       std::move(receiver));
 }
 
@@ -50,9 +53,8 @@ void PrerenderProcessorImpl::AddPrerender(
   if (!render_frame_host)
     return;
 
-  PrerenderLinkManager* link_manager =
-      PrerenderLinkManagerFactory::GetForBrowserContext(
-          render_frame_host->GetProcess()->GetBrowserContext());
+  PrerenderLinkManager* link_manager = delegate_->GetPrerenderLinkManager(
+      render_frame_host->GetProcess()->GetBrowserContext());
   if (!link_manager)
     return;
 

@@ -37,10 +37,8 @@ class WorkerMainScriptLoaderTest : public testing::Test {
   WorkerMainScriptLoaderTest()
       : fake_loader_(pending_remote_loader_.InitWithNewPipeAndPassReceiver()),
         client_(MakeGarbageCollected<TestClient>()) {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kLoadMainScriptForPlzDedicatedWorkerByParams,
-         blink::features::kPlzDedicatedWorker},
-        {});
+    scoped_feature_list_.InitWithFeatureState(
+        blink::features::kPlzDedicatedWorker, true);
   }
 
  protected:

@@ -380,7 +380,7 @@ class CORE_EXPORT InspectorDOMAgent final
   HashMap<int, int> cached_child_count_;
   int last_node_id_;
   Member<Document> document_;
-  typedef HeapHashMap<String, HeapVector<Member<Node>>> SearchResults;
+  typedef HeapHashMap<String, Member<HeapVector<Member<Node>>>> SearchResults;
   SearchResults search_results_;
   Member<InspectorRevalidateDOMTask> revalidate_task_;
   Member<InspectorHistory> history_;

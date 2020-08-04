@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/chrome_cleaner/os/scoped_service_handle.h"
@@ -61,7 +61,7 @@ AssertionResult TestScopedServiceHandle::InstallService() {
   DCHECK(service_name_.empty());
 
   // Find an unused name for this service.
-  base::string16 service_name = RandomUnusedServiceNameForTesting();
+  std::wstring service_name = RandomUnusedServiceNameForTesting();
 
   // Get a handle to the service manager.
   service_manager_.Set(
@@ -71,7 +71,7 @@ AssertionResult TestScopedServiceHandle::InstallService() {
            << "Cannot open service manager:" << LastErrorString();
   }
 
-  const base::string16 service_desc =
+  const std::wstring service_desc =
       base::StrCat({service_name, L" - Chrome Cleanup Tool (test)"});
 
   service_.Set(::CreateServiceW(
@@ -110,7 +110,7 @@ AssertionResult TestScopedServiceHandle::StartService() {
 
 AssertionResult TestScopedServiceHandle::StopAndDelete() {
   Close();
-  base::string16 service_name;
+  std::wstring service_name;
   std::swap(service_name, service_name_);
   if (service_name.empty()) {
     return AssertionFailure() << "Attempt to stop service with no name";
@@ -134,8 +134,8 @@ void TestScopedServiceHandle::Close() {
   service_manager_.Close();
 }
 
-base::string16 RandomUnusedServiceNameForTesting() {
-  base::string16 service_name;
+std::wstring RandomUnusedServiceNameForTesting() {
+  std::wstring service_name;
   do {
     service_name =
         base::UTF8ToWide(base::UnguessableToken::Create().ToString());
@@ -167,9 +167,9 @@ AssertionResult EnsureNoTestServicesRunning() {
                          SERVICE_STATE_ALL, &services)) {
     return AssertionFailure() << "Failed to enumerate services";
   }
-  std::vector<base::string16> stopped_service_names;
+  std::vector<std::wstring> stopped_service_names;
   for (const ServiceStatus& service : services) {
-    base::string16 service_name = service.service_name;
+    std::wstring service_name = service.service_name;
     base::ProcessId pid = service.service_status_process.dwProcessId;
     if (base::Contains(process_ids, pid)) {
       if (!StopService(service_name.c_str()))
@@ -186,11 +186,11 @@ AssertionResult EnsureNoTestServicesRunning() {
   }
   // Issue an async DeleteService request for each service in parallel, then
   // wait for all of them to finish deleting.
-  for (const base::string16& service_name : stopped_service_names) {
+  for (const std::wstring& service_name : stopped_service_names) {
     if (!DeleteService(service_name.c_str()))
       return AssertionFailure() << "Could not delete service " << service_name;
   }
-  for (const base::string16& service_name : stopped_service_names) {
+  for (const std::wstring& service_name : stopped_service_names) {
     if (!WaitForServiceDeleted(service_name.c_str())) {
       return AssertionFailure()
              << "Did not finish deleting service " << service_name;

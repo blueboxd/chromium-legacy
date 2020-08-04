@@ -211,6 +211,7 @@ void OutgoingStream::OnPeerClosed(MojoResult result,
 void OutgoingStream::HandlePipeClosed() {
   DVLOG(1) << "OutgoingStream::HandlePipeClosed() this=" << this;
 
+  ScriptState::Scope scope(script_state_);
   ErrorStreamAbortAndReset(IsLocalAbort(false));
 }
 

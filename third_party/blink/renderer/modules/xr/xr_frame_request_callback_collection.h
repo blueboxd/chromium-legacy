@@ -30,7 +30,10 @@ class XRFrameRequestCallbackCollection final
   void CancelCallback(CallbackId);
   void ExecuteCallbacks(XRSession*, double timestamp, XRFrame*);
 
-  bool IsEmpty() const { return !callbacks_.size(); }
+  bool IsEmpty() const {
+    DCHECK_EQ(callback_frame_requests_.size(), callback_async_tasks_.size());
+    return !callback_frame_requests_.size();
+  }
 
   void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
@@ -44,15 +47,18 @@ class XRFrameRequestCallbackCollection final
            !WTF::IsHashTraitsEmptyValue<Traits, CallbackId>(id);
   }
 
-  using CallbackAndAsyncTask = std::pair<Member<V8XRFrameRequestCallback>,
-                                         std::unique_ptr<probe::AsyncTaskId>>;
-  using CallbackMap = HeapHashMap<CallbackId, CallbackAndAsyncTask>;
+  using CallbackFrameRequestMap =
+      HeapHashMap<CallbackId, Member<V8XRFrameRequestCallback>>;
+  using CallbackAsyncTaskMap =
+      HashMap<CallbackId, std::unique_ptr<probe::AsyncTaskId>>;
 
-  CallbackMap callbacks_;
+  CallbackFrameRequestMap callback_frame_requests_;
+  CallbackAsyncTaskMap callback_async_tasks_;
   Vector<CallbackId> pending_callbacks_;
 
   // Only non-empty while inside executeCallbacks.
-  CallbackMap current_callbacks_;
+  CallbackFrameRequestMap current_callback_frame_requests_;
+  CallbackAsyncTaskMap current_callback_async_tasks_;
 
   CallbackId next_callback_id_ = 0;
 

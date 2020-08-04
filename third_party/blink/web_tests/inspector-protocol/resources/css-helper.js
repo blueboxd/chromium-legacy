@@ -172,4 +172,9 @@
     var response = await this._dp.DOM.querySelector({nodeId, selector});
     return response.result.nodeId;
   }
+
+  async requestAllNodeIds(nodeId, selector) {
+    var response = await this._dp.DOM.querySelectorAll({nodeId, selector});
+    return response.result.nodeIds;
+  }
 });

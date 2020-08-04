@@ -129,7 +129,7 @@ class GPU_GLES2_EXPORT SharedContextState
     return dawn_context_provider_;
   }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
-  GrContext* gr_context() { return gr_context_; }
+  GrDirectContext* gr_context() { return gr_context_; }
   GrContextType gr_context_type() const { return gr_context_type_; }
   // Handles Skia-reported shader compilation errors.
   void compileError(const char* shader, const char* errors) override;
@@ -267,7 +267,7 @@ class GPU_GLES2_EXPORT SharedContextState
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;
   viz::DawnContextProvider* const dawn_context_provider_;
-  GrContext* gr_context_ = nullptr;
+  GrDirectContext* gr_context_ = nullptr;
 
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLContext> context_;

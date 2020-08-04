@@ -1,4 +1,10 @@
-<style include="cr-icons profile-picker-shared">
+<style include="action-link-style cr-icons profile-picker-shared">
+  #actionContainer {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+
   #backButton {
     --cr-icon-button-icon-size: 14px;
     --cr-icon-button-margin-start: 4px;
@@ -28,15 +34,34 @@
     width: 100%;
   }
 
+  #notNowButton {
+    background: none;
+    border: none;
+    color: var(--cr-link-color);
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 20px;
+    margin-top: 18px;
+    outline: none;
+  }
+
+  #signInButton {
+    font-size: 1em;
+    font-weight: normal;
+    width: 208px;
+  }
+
   .title-container {
     margin: 104px auto;
+    margin-bottom: 48px;
     text-align: center;
   }
 </style>
 
 <div id="bannerContainer"
     style$="background-color:[[profileThemeInfo.themeColor]];">
-    <cr-icon-button class="icon-arrow-back" id="backButton"
+    <cr-icon-button id="backButton" class="icon-arrow-back"
         on-click="onTapBack_" aria-label="$i18n{backButtonLabel}">
     </cr-icon-button>
     <div id="banner"></div>
@@ -44,4 +69,14 @@
 <div class="title-container">
   <h2>$i18n{profileTypeChoiceTitle}</h2>
   <h3>$i18n{profileTypeChoiceSubtitle}</h3>
+</div>
+<div id="actionContainer">
+  <cr-button id="signInButton" class="action-button fade-in"
+      on-click="onSignInClick_">
+    $i18n{signInButtonLabel}
+  </cr-button>
+  <button id="notNowButton" class="action-link fade-in"
+      on-click="onNotNowClick_">
+    $i18n{notNowButtonLabel}
+  </button>
 </div>

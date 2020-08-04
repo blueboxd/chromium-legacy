@@ -128,7 +128,7 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
     aura::Window* source_window,
     const gfx::Point& root_location,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   if (!drag_handler_)
     return ui::DragDropTypes::DragOperation::DRAG_NONE;
 

@@ -39,7 +39,7 @@ class IDBObserverChanges final : public ScriptWrappable {
   Member<IDBDatabase> database_;
   Member<IDBTransaction> transaction_;
   // Map object_store_id to IDBObservation list.
-  HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> records_;
+  HeapHashMap<int64_t, Member<HeapVector<Member<IDBObservation>>>> records_;
 };
 
 }  // namespace blink

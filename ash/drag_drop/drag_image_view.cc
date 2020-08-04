@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "skia/ext/image_operations.h"
 #include "ui/aura/window.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -19,7 +20,7 @@
 
 namespace ash {
 
-DragImageView::DragImageView(ui::DragDropTypes::DragEventSource event_source)
+DragImageView::DragImageView(ui::mojom::DragEventSource event_source)
     : drag_event_source_(event_source) {}
 
 DragImageView::~DragImageView() = default;
@@ -27,7 +28,7 @@ DragImageView::~DragImageView() = default;
 // static
 views::UniqueWidgetPtr DragImageView::Create(
     aura::Window* root_window,
-    ui::DragDropTypes::DragEventSource event_source) {
+    ui::mojom::DragEventSource event_source) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_TOOLTIP;
   params.name = "DragWidget";
@@ -72,7 +73,7 @@ void DragImageView::SetWidgetVisible(bool visible) {
 
 void DragImageView::SetTouchDragOperationHintOff() {
   // Simply set the drag type to non-touch so that no hint is drawn.
-  drag_event_source_ = ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  drag_event_source_ = ui::mojom::DragEventSource::kMouse;
 
   // This disables the drag hint image. This should reduce the widget size if
   // the drag image is smaller than the drag hint image, so we set new bounds.
@@ -167,7 +168,7 @@ gfx::Image* DragImageView::DragHint() const {
 }
 
 bool DragImageView::ShouldDrawDragHint() const {
-  return drag_event_source_ == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  return drag_event_source_ == ui::mojom::DragEventSource::kTouch;
 }
 
 gfx::Size DragImageView::GetMinimumSize() const {

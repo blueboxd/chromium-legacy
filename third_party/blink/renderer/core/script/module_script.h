@@ -68,7 +68,9 @@ class CORE_EXPORT ModuleScript : public Script {
     return mojom::ScriptType::kModule;
   }
   void RunScript(LocalFrame*) override;
-  void RunScriptOnWorker(WorkerGlobalScope&) override;
+  bool RunScriptOnWorker(WorkerGlobalScope&) override;
+
+  std::pair<size_t, size_t> GetClassicScriptSizes() const override;
 
   friend class ModuleTreeLinkerTestModulator;
 

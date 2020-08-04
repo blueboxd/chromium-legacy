@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
@@ -212,7 +213,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
     return client_->StartDragAndDrop(
         std::move(data), widget_->GetNativeWindow()->GetRootWindow(),
         widget_->GetNativeWindow(), gfx::Point(), operation,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+        ui::mojom::DragEventSource::kMouse);
   }
 
   // ViewsTestBase:

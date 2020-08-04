@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -32,7 +32,7 @@ namespace chrome {
 using DoBookmarkDragCallback =
     base::OnceCallback<void(std::unique_ptr<ui::OSExchangeData> drag_data,
                             gfx::NativeView native_view,
-                            ui::DragDropTypes::DragEventSource source,
+                            ui::mojom::DragEventSource source,
                             gfx::Point start_point,
                             int operation)>;
 
@@ -40,7 +40,7 @@ struct BookmarkDragParams {
   BookmarkDragParams(std::vector<const bookmarks::BookmarkNode*> nodes,
                      int drag_node_index,
                      gfx::NativeView view,
-                     ui::DragDropTypes::DragEventSource source,
+                     ui::mojom::DragEventSource source,
                      gfx::Point start_point);
   ~BookmarkDragParams();
 
@@ -54,7 +54,7 @@ struct BookmarkDragParams {
   gfx::NativeView view;
 
   // The source of the drag.
-  ui::DragDropTypes::DragEventSource source;
+  ui::mojom::DragEventSource source;
 
   // The point the drag started.
   gfx::Point start_point;

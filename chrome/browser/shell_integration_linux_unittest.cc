@@ -463,27 +463,6 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
   }
 }
 
-TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
-  const base::FilePath kChromeExePath("/opt/google/chrome/google-chrome");
-  base::CommandLine command_line(kChromeExePath);
-  command_line.AppendSwitch("--show-app-list");
-  EXPECT_EQ(
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=Chrome App Launcher\n"
-      "Exec=/opt/google/chrome/google-chrome --show-app-list\n"
-      "Icon=chrome_app_list\n"
-      "Categories=Network;WebBrowser;\n"
-      "StartupWMClass=chrome-app-list\n",
-      GetDesktopFileContentsForCommand(
-          command_line, "chrome-app-list", GURL(),
-          base::ASCIIToUTF16("Chrome App Launcher"), "chrome_app_list",
-          "Network;WebBrowser;", "", false));
-}
-
 TEST(ShellIntegrationTest, GetDirectoryFileContents) {
   const struct {
     const char* const title;

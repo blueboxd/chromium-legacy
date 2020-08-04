@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
 #include "chrome/services/sharing/public/proto/wire_format.pb.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class FastInitiationManager;
@@ -50,7 +49,6 @@ class Profile;
 // All methods should be called from the same sequence that created the service.
 class NearbySharingServiceImpl
     : public NearbySharingService,
-      public KeyedService,
       public nearby_share::mojom::NearbyShareSettingsObserver,
       public NearbyProcessManager::Observer,
       public device::BluetoothAdapter::Observer,
@@ -150,6 +148,12 @@ class NearbySharingServiceImpl
       base::Optional<std::string> token,
       std::unique_ptr<IncomingFramesReader> frames_reader,
       base::Optional<sharing::mojom::V1FramePtr> frame);
+  void OnFrameRead(std::unique_ptr<IncomingFramesReader> frames_reader,
+                   ShareTarget share_target,
+                   base::Optional<sharing::mojom::V1FramePtr> frame);
+  void HandleCertificateInfoFrame(
+      const sharing::mojom::CertificateInfoFramePtr& certificate_frame);
+
   void OnIncomingConnectionDisconnected(const ShareTarget& share_target);
   void UnregisterShareTarget(const ShareTarget& share_target);
   bool IsOutOfStorage(const ShareTarget& share_target);

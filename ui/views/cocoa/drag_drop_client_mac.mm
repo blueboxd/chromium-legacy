@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #import "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/views/drag_utils.h"
@@ -29,7 +30,7 @@ void DragDropClientMac::StartDragAndDrop(
     View* view,
     std::unique_ptr<ui::OSExchangeData> data,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   exchange_data_ = std::move(data);
   source_operation_ = operation;
   is_drag_source_ = true;

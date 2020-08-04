@@ -6,9 +6,7 @@
   }
 
   .banner {
-    bottom: 0;
     height: var(--banner-img-height);
-    margin: auto;
     overflow: hidden;
     position: absolute;
     top: 0;
@@ -93,6 +91,27 @@
 
   @media (prefers-color-scheme: dark) {
     /* TODO(msalama): Dark mode mocks not ready yet.*/
+    cr-checkbox {
+      --cr-checkbox-label-color: var(--google-grey-refresh-500);
+      background-color: rgba(var(--md-background-color), .8);
+    }
+  }
+
+  .footer {
+    bottom: 0;
+    display: flex;
+    margin-bottom: 40px;
+    position: absolute;
+    width: 100%;
+  }
+
+  cr-checkbox {
+    --cr-checkbox-label-color:  var(--google-grey-refresh-700);
+    --cr-checkbox-label-padding-start: 8px;
+    background-color: rgba(255, 255, 255, .8);
+    justify-content: flex-end;
+    margin-inline-end: 40px;
+    margin-inline-start: auto;
   }
 </style>
 
@@ -118,3 +137,10 @@
   </div>
 </div>
 <div id="rightBanner" class="banner"></div>
+
+<div class="footer">
+  <cr-checkbox checked="{{askOnStartup_}}"
+      on-change="onAskOnStartupChangedByUser_">
+    $i18n{askOnStartupCheckboxText}
+  </cr-checkbox>
+</div>

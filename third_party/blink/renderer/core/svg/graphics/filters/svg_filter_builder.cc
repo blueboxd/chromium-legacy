@@ -66,7 +66,7 @@ class FilterInputKeywords {
 SVGFilterGraphNodeMap::SVGFilterGraphNodeMap() = default;
 
 void SVGFilterGraphNodeMap::AddBuiltinEffect(FilterEffect* effect) {
-  effect_references_.insert(effect, FilterEffectSet());
+  effect_references_.insert(effect, MakeGarbageCollected<FilterEffectSet>());
 }
 
 void SVGFilterGraphNodeMap::AddPrimitive(
@@ -75,7 +75,7 @@ void SVGFilterGraphNodeMap::AddPrimitive(
   // The effect must be a newly created filter effect.
   DCHECK(!effect_references_.Contains(effect));
   DCHECK(!effect_element_.Contains(&primitive));
-  effect_references_.insert(effect, FilterEffectSet());
+  effect_references_.insert(effect, MakeGarbageCollected<FilterEffectSet>());
 
   // Add references from the inputs of this effect to the effect itself, to
   // allow determining what effects needs to be invalidated when a certain

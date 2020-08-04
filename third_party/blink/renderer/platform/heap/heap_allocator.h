@@ -415,6 +415,13 @@ class HeapHashMap : public HashMap<KeyArg,
                       !WTF::IsTraceable<KeyArg>::value,
                   "HeapHashMap supports only Member, WeakMember and "
                   "non-traceable types as keys.");
+    static_assert(internal::IsMemberOrWeakMemberType<MappedArg> ||
+                      !WTF::IsTraceable<MappedArg>::value ||
+                      WTF::IsSubclassOfTemplate<MappedArg,
+                                                TraceWrapperV8Reference>::value,
+                  "HeapHashMap supports only Member, WeakMember, "
+                  "TraceWrapperV8Reference and "
+                  "non-traceable types as values.");
   }
 
  public:

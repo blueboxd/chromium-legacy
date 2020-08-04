@@ -12,8 +12,14 @@
 #include "base/check.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/i18n/case_conversion.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_regex_provider.h"
+#include "components/autofill/core/browser/data_model/borrowed_transliterator.h"
 
 namespace autofill {
 namespace structured_address {
@@ -190,6 +196,38 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
 std::string CaptureTypeWithPattern(const ServerFieldType& type,
                                    const std::string& pattern) {
   return CaptureTypeWithPattern(type, pattern, CaptureOptions());
+}
+
+base::string16 NormalizeValue(const base::string16& value) {
+  return RemoveDiacriticsAndConvertToLowerCase(
+      base::CollapseWhitespace(value, /*trim_sequence_with_line_breaks=*/true));
+}
+
+bool AreSortedTokensEqual(const std::vector<base::string16>& first,
+                          const std::vector<base::string16>& second) {
+  // It is assumed that the vectors are sorted.
+  DCHECK(std::is_sorted(first.begin(), first.end()) &&
+         std::is_sorted(second.begin(), second.end()));
+  // If there is a different number of tokens, it can't be a permutation.
+  if (first.size() != second.size())
+    return false;
+  // Return true if both vectors are component-wise equal.
+  return std::equal(first.begin(), first.end(), second.begin());
+}
+
+std::vector<base::string16> TokenizeValue(const base::string16 value) {
+  // Canonicalize the value.
+  base::string16 cannonicalized_value = NormalizeValue(value);
+
+  // Split it by white spaces and commas into non-empty values.
+  std::vector<base::string16> tokens =
+      base::SplitString(cannonicalized_value, base::ASCIIToUTF16(", "),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // Sort the tokens lexicographically.
+  std::sort(tokens.begin(), tokens.end());
+
+  return tokens;
 }
 
 }  // namespace structured_address

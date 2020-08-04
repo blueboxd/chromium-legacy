@@ -738,7 +738,7 @@ interface Database {
 ```
 
 As noted in the
-[Mojom IDL documentation](/mojo/public/tools/bindings/README.md#Primitive-Types), // need to update this page too!
+[Mojom IDL documentation](/mojo/public/tools/bindings/README.md#Primitive-Types),
 the `pending_receiver<Table>` syntax corresponds
 precisely to the `PendingReceiver<T>` type discussed in the sections above, and
 in fact the generated code for these interfaces is approximately:
@@ -1002,31 +1002,30 @@ Associated interfaces are interfaces which:
 
 ### Mojom
 
-A new keyword `associated` is introduced for remote/receiver
-fields. For example:
+New types `pending_associated_remote` and `pending_associated_receiver` are
+introduced for remote/receiver fields. For example:
 
 ``` cpp
 interface Bar {};
 
 struct Qux {
-  pending_associated_remote<Bar> bar3;
+  pending_associated_remote<Bar> bar;
 };
 
 interface Foo {
   // Uses associated remote.
-  SetBar(pending_associated_remote<Bar> bar1);
+  PassBarRemote(pending_associated_remote<Bar> bar);
   // Uses associated receiver.
-  GetBar(pending_associated_receiver<Bar> bar2);
+  PassBarReceiver(pending_associated_receiver<Bar> bar);
   // Passes a struct with associated interface pointer.
   PassQux(Qux qux);
   // Uses associated interface pointer in callback.
-  AsyncGetBar() => (pending_associated_remote<Bar> bar4);
+  AsyncGetBar() => (pending_associated_remote<Bar> bar);
 };
 ```
 
-It means the interface impl/client will communicate using the same
-message pipe over which the associated remote/receiver is
-passed.
+In each case the interface impl/client will communicate using the same message
+pipe over which the associated remote/receiver is passed.
 
 ### Using associated interfaces in C++
 
@@ -1038,29 +1037,29 @@ mapped to `mojo::PendingAssociatedRemote<Bar>`; pending_associated_receiver to
 // In mojom:
 interface Foo {
   ...
-  SetBar(pending_associated_remote<Bar> bar1);
-  GetBar(pending_associated_receiver<Bar> bar2);
+  PassBarRemote(pending_associated_remote<Bar> bar);
+  PassBarReceiver(pending_associated_receiver<Bar> bar);
   ...
 };
 
 // In C++:
 class Foo {
   ...
-  virtual void SetBar(mojo::PendingAssociatedRemote<Bar> bar1) = 0;
-  virtual void GetBar(mojo::PendingAssociatedReceiver<Bar> bar2) = 0;
+  virtual void PassBarRemote(mojo::PendingAssociatedRemote<Bar> bar) = 0;
+  virtual void PassBarReceiver(mojo::PendingAssociatedReceiver<Bar> bar) = 0;
   ...
 };
 ```
 
 #### Passing pending associated receivers
 
-Assume you have already got an `Remote<Foo> foo`, and you would like
-to call `GetBar()` on it. You can do:
+Assume you already have a `Remote<Foo> foo`, and you would like to call
+`PassBarReceiver()` on it. You can do:
 
 ``` cpp
 mojo::PendingAssociatedRemote<Bar> pending_bar;
 mojo::PendingAssociatedReceiver<Bar> bar_receiver = pending_bar.InitWithNewEndpointAndPassReceiver();
-foo->GetBar(std::move(bar_receiver));
+foo->PassBarReceiver(std::move(bar_receiver));
 
 mojo::AssociatedRemote<Bar> bar;
 bar.Bind(std::move(pending_bar));
@@ -1087,7 +1086,7 @@ to make the code a little shorter. The following code achieves the same purpose:
 
 ``` cpp
 mojo::AssociatedRemote<Bar> bar;
-foo->GetBar(bar.BindNewEndpointAndPassReceiver());
+foo->PassBarReceiver(bar.BindNewEndpointAndPassReceiver());
 bar->DoSomething();
 ```
 
@@ -1096,8 +1095,8 @@ The implementation of `Foo` looks like this:
 ``` cpp
 class FooImpl : public Foo {
   ...
-  void GetBar(mojo::AssociatedReceiver<Bar> bar2) override {
-    bar_receiver_.Bind(std::move(bar2));
+  void PassBarReceiver(mojo::AssociatedReceiver<Bar> bar) override {
+    bar_receiver_.Bind(std::move(bar));
     ...
   }
   ...
@@ -1118,13 +1117,13 @@ When the underlying message pipe is disconnected (e.g., `foo` or
 #### Passing associated remotes
 
 Similarly, assume you have already got an `Remote<Foo> foo`, and you
-would like to call `SetBar()` on it. You can do:
+would like to call `PassBarRemote()` on it. You can do:
 
 ``` cpp
 mojo::AssociatedReceiver<Bar> bar_receiver(some_bar_impl);
 mojo::PendingAssociatedRemote<Bar> bar;
 mojo::PendingAssociatedReceiver<Bar> bar_pending_receiver = bar.InitWithNewEndpointAndPassReceiver();
-foo->SetBar(std::move(bar));
+foo->PassBarRemote(std::move(bar));
 bar_receiver.Bind(std::move(bar_pending_receiver));
 ```
 
@@ -1134,7 +1133,7 @@ The following code achieves the same purpose:
 mojo::AssociatedReceiver<Bar> bar_receiver(some_bar_impl);
 mojo::PendingAssociatedRemote<Bar> bar;
 bar_receiver.Bind(bar.InitWithNewPipeAndPassReceiver());
-foo->SetBar(std::move(bar));
+foo->PassBarRemote(std::move(bar));
 ```
 
 ### Performance considerations

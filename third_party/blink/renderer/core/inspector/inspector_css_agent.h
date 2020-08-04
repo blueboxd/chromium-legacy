@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 #include "third_party/blink/renderer/core/inspector/protocol/CSS.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -44,6 +45,10 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+namespace probe {
+class RecalculateStyle;
+}  // namespace probe
 
 class CSSRule;
 class CSSStyleRule;
@@ -207,6 +212,11 @@ class CORE_EXPORT InspectorCSSAgent final
   protocol::Response stopRuleUsageTracking(
       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
       override;
+  protocol::Response trackComputedStyleUpdates(
+      std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>
+          properties_to_track) override;
+  void takeComputedStyleUpdates(
+      std::unique_ptr<TakeComputedStyleUpdatesCallback>) override;
 
   protocol::Response setLocalFontsEnabled(bool enabled) override;
 
@@ -228,6 +238,13 @@ class CORE_EXPORT InspectorCSSAgent final
 
   HeapVector<Member<CSSStyleDeclaration>> MatchingStyles(Element*);
   String StyleSheetId(CSSStyleSheet*);
+
+  void DidUpdateComputedStyle(Element*,
+                              const ComputedStyle*,
+                              const ComputedStyle*);
+
+  void Will(const probe::RecalculateStyle&);
+  void Did(const probe::RecalculateStyle&);
 
  private:
   class StyleSheetAction;
@@ -296,6 +313,8 @@ class CORE_EXPORT InspectorCSSAgent final
   BuildArrayForMatchedRuleList(RuleIndexList*, PseudoId);
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForAttributesStyle(
       Element*);
+  std::unique_ptr<protocol::Array<int>>
+  BuildArrayForComputedStyleUpdatedNodes();
 
   // InspectorDOMAgent::DOMListener implementation
   void DidAddDocument(Document*) override;
@@ -341,6 +360,14 @@ class CORE_EXPORT InspectorCSSAgent final
   bool enable_completed_;
   InspectorAgentState::Boolean coverage_enabled_;
   InspectorAgentState::Boolean local_fonts_enabled_;
+
+  // Maps style property names to the set of tracked values for that property.
+  // Notifications are sent when the property changes to or from one of the
+  // tracked values.
+  HashMap<String, HashSet<String>> tracked_computed_styles_;
+  std::unique_ptr<TakeComputedStyleUpdatesCallback>
+      computed_style_updated_callback_;
+  HashSet<int> computed_style_updated_node_ids_;
 
   friend class InspectorResourceContentLoaderCallback;
   friend class StyleSheetBinder;

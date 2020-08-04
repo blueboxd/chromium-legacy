@@ -52,6 +52,7 @@ namespace {
 
 constexpr char kAndroidFilesMountPointName[] = "android_files";
 constexpr char kCrostiniMapGoogleDrive[] = "GoogleDrive";
+constexpr char kCrostiniMapLinuxFiles[] = "LinuxFiles";
 constexpr char kCrostiniMapMyDrive[] = "MyDrive";
 constexpr char kCrostiniMapPlayFiles[] = "PlayFiles";
 constexpr char kCrostiniMapTeamDrives[] = "SharedDrives";
@@ -308,10 +309,12 @@ std::vector<std::string> GetCrostiniMountOptions(
   return options;
 }
 
-bool ConvertFileSystemURLToPathInsideCrostini(
+bool ConvertFileSystemURLToPathInsideVM(
     Profile* profile,
     const storage::FileSystemURL& file_system_url,
-    base::FilePath* inside) {
+    const base::FilePath& vm_mount,
+    base::FilePath* inside,
+    bool map_crostini_home) {
   const std::string& id(file_system_url.mount_filesystem_id());
   // File system root requires strip trailing separator.
   base::FilePath path =
@@ -327,29 +330,19 @@ bool ConvertFileSystemURLToPathInsideCrostini(
 
   // Reformat virtual_path() from:
   //   <mount_label>/path/to/file
-  // To either:
-  //   /<home-directory>/path/to/file   (path is already in crostini volume)
-  //   /mnt/chromeos/<mapping>/path/to/file (path is shared with crostini)
+  // To:
+  //   <vm_mount>/<mapping>/path/to/file
+  // If |map_crostini_home| is set, paths in crostini mount map to:
+  //   /<home-directory>/path/to/file
   base::FilePath base_to_exclude(id);
-  if (id == GetCrostiniMountPointName(profile)) {
-    // Crostini.
-    base::Optional<crostini::ContainerInfo> container_info =
-        crostini::CrostiniManager::GetForProfile(profile)->GetContainerInfo(
-            crostini::ContainerId::GetDefault());
-    if (!container_info) {
-      return false;
-    }
-    *inside = container_info->homedir;
-  } else if (id == GetDownloadsMountPointName(profile)) {
+  if (id == GetDownloadsMountPointName(profile)) {
     // MyFiles.
-    *inside =
-        crostini::ContainerChromeOSBaseDirectory().Append(kFolderNameMyFiles);
+    *inside = vm_mount.Append(kFolderNameMyFiles);
   } else if (!mount_point_name_drive.empty() && id == mount_point_name_drive) {
     // DriveFS has some more complicated mappings.
     std::vector<base::FilePath::StringType> components;
     path.GetComponents(&components);
-    *inside = crostini::ContainerChromeOSBaseDirectory().Append(
-        kCrostiniMapGoogleDrive);
+    *inside = vm_mount.Append(kCrostiniMapGoogleDrive);
     if (components.size() >= 2 && components[1] == kDriveFsDirRoot) {
       // root -> MyDrive.
       base_to_exclude = base_to_exclude.Append(kDriveFsDirRoot);
@@ -362,20 +355,39 @@ bool ConvertFileSystemURLToPathInsideCrostini(
     }
   } else if (id == chromeos::kSystemMountNameRemovable) {
     // Removable.
-    *inside = crostini::ContainerChromeOSBaseDirectory().Append(
-        chromeos::kSystemMountNameRemovable);
+    *inside = vm_mount.Append(chromeos::kSystemMountNameRemovable);
   } else if (id == GetAndroidFilesMountPointName()) {
-    *inside = crostini::ContainerChromeOSBaseDirectory().Append(
-        kCrostiniMapPlayFiles);
+    *inside = vm_mount.Append(kCrostiniMapPlayFiles);
   } else if (id == chromeos::kSystemMountNameArchive) {
     // Archive.
-    *inside = crostini::ContainerChromeOSBaseDirectory().Append(
-        chromeos::kSystemMountNameArchive);
+    *inside = vm_mount.Append(chromeos::kSystemMountNameArchive);
+  } else if (id == GetCrostiniMountPointName(profile)) {
+    // Crostini.
+    if (map_crostini_home) {
+      base::Optional<crostini::ContainerInfo> container_info =
+          crostini::CrostiniManager::GetForProfile(profile)->GetContainerInfo(
+              crostini::ContainerId::GetDefault());
+      if (!container_info) {
+        return false;
+      }
+      *inside = container_info->homedir;
+    } else {
+      *inside = vm_mount.Append(kCrostiniMapLinuxFiles);
+    }
   } else {
     return false;
   }
   return base_to_exclude == path ||
          base_to_exclude.AppendRelativePath(path, inside);
+}
+
+bool ConvertFileSystemURLToPathInsideCrostini(
+    Profile* profile,
+    const storage::FileSystemURL& file_system_url,
+    base::FilePath* inside) {
+  return ConvertFileSystemURLToPathInsideVM(
+      profile, file_system_url, crostini::ContainerChromeOSBaseDirectory(),
+      inside, /*map_crostini_home=*/true);
 }
 
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {

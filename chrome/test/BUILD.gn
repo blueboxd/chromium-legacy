@@ -745,6 +745,7 @@ if (!is_android) {
       "//ui/accessibility:test_support",
       "//ui/base:test_support",
       "//ui/base/clipboard:clipboard_test_support",
+      "//ui/base/dragdrop/mojom:mojom_shared",
       "//ui/compositor:test_support",
       "//ui/native_theme:test_support",
       "//ui/resources",

@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/remote_cocoa/app_shim/drag_drop_client.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/drop_helper.h"
@@ -46,7 +46,7 @@ class VIEWS_EXPORT DragDropClientMac : public remote_cocoa::DragDropClient {
   void StartDragAndDrop(View* view,
                         std::unique_ptr<ui::OSExchangeData> data,
                         int operation,
-                        ui::DragDropTypes::DragEventSource source);
+                        ui::mojom::DragEventSource source);
 
   DropHelper* drop_helper() { return &drop_helper_; }
 

@@ -53,6 +53,12 @@ void ExpectIntroductionFrame(
   EXPECT_TRUE((*frame)->is_introduction());
 }
 
+void ExpectCancelFrame(
+    const base::Optional<sharing::mojom::V1FramePtr>& frame) {
+  ASSERT_TRUE(frame);
+  EXPECT_TRUE((*frame)->is_cancel_frame());
+}
+
 }  // namespace
 
 class IncomingFramesReaderTest : public testing::Test {
@@ -99,6 +105,34 @@ TEST_F(IncomingFramesReaderTest, ReadTimedOut) {
             run_loop.Quit();
           }),
       kTimeout);
+  run_loop.Run();
+}
+
+TEST_F(IncomingFramesReaderTest, ReadAnyFrameSuccessful) {
+  std::vector<uint8_t> introduction_frame = GetIntroductionFrame();
+  connection().AppendReadableData(introduction_frame);
+
+  EXPECT_CALL(decoder(),
+              DecodeFrame(testing::Eq(introduction_frame), testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            sharing::mojom::V1FramePtr mojo_v1frame =
+                sharing::mojom::V1Frame::New();
+            mojo_v1frame->set_introduction(
+                sharing::mojom::IntroductionFrame::New());
+
+            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+            mojo_frame->set_v1(std::move(mojo_v1frame));
+            std::move(callback).Run(std::move(mojo_frame));
+          }));
+
+  base::RunLoop run_loop;
+  frames_reader().ReadFrame(base::BindLambdaForTesting(
+      [&](base::Optional<sharing::mojom::V1FramePtr> frame) {
+        ExpectIntroductionFrame(frame);
+        run_loop.Quit();
+      }));
   run_loop.Run();
 }
 
@@ -177,6 +211,61 @@ TEST_F(IncomingFramesReaderTest, ReadSuccessful_JumbledFramesOrdering) {
           }),
       kTimeout);
   run_loop_introduction.Run();
+}
+
+TEST_F(IncomingFramesReaderTest, JumbledFramesOrdering_ReadFromCache) {
+  std::vector<uint8_t> cancel_frame = GetCancelFrame();
+  connection().AppendReadableData(cancel_frame);
+
+  std::vector<uint8_t> introduction_frame = GetIntroductionFrame();
+  connection().AppendReadableData(introduction_frame);
+
+  EXPECT_CALL(decoder(), DecodeFrame(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            EXPECT_EQ(cancel_frame, data);
+            sharing::mojom::V1FramePtr mojo_v1frame =
+                sharing::mojom::V1Frame::New();
+            mojo_v1frame->set_cancel_frame(sharing::mojom::CancelFrame::New());
+
+            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+            mojo_frame->set_v1(std::move(mojo_v1frame));
+            std::move(callback).Run(std::move(mojo_frame));
+          }))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            EXPECT_EQ(introduction_frame, data);
+            sharing::mojom::V1FramePtr mojo_v1frame =
+                sharing::mojom::V1Frame::New();
+            mojo_v1frame->set_introduction(
+                sharing::mojom::IntroductionFrame::New());
+
+            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+            mojo_frame->set_v1(std::move(mojo_v1frame));
+            std::move(callback).Run(std::move(mojo_frame));
+          }));
+
+  base::RunLoop run_loop_introduction;
+  frames_reader().ReadFrame(
+      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      base::BindLambdaForTesting(
+          [&](base::Optional<sharing::mojom::V1FramePtr> frame) {
+            ExpectIntroductionFrame(frame);
+            run_loop_introduction.Quit();
+          }),
+      kTimeout);
+  run_loop_introduction.Run();
+
+  // Reading any frame should return CancelFrame.
+  base::RunLoop run_loop_cancel;
+  frames_reader().ReadFrame(base::BindLambdaForTesting(
+      [&](base::Optional<sharing::mojom::V1FramePtr> frame) {
+        ExpectCancelFrame(frame);
+        run_loop_cancel.Quit();
+      }));
+  run_loop_cancel.Run();
 }
 
 TEST_F(IncomingFramesReaderTest, ReadAfterConnectionClosed) {

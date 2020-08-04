@@ -2874,9 +2874,7 @@ TEST_F(HeapTest, CrossThreadPersistentSet) {
   }
 }
 
-class NonTrivialObject final {
-  DISALLOW_NEW();
-
+class NonTrivialObject final : public GarbageCollected<NonTrivialObject> {
  public:
   NonTrivialObject() = default;
   explicit NonTrivialObject(int num) {
@@ -2894,9 +2892,9 @@ class NonTrivialObject final {
 };
 
 TEST_F(HeapTest, HeapHashMapWithInlinedObject) {
-  HeapHashMap<int, NonTrivialObject> map;
+  HeapHashMap<int, Member<NonTrivialObject>> map;
   for (int num = 1; num < 1000; num++) {
-    NonTrivialObject object(num);
+    NonTrivialObject* object = MakeGarbageCollected<NonTrivialObject>(num);
     map.insert(num, object);
   }
 }
@@ -3866,42 +3864,42 @@ TEST_F(HeapTest, CollectionNesting) {
   IntWrapper::destructor_calls_ = 0;
   typedef HeapVector<Member<IntWrapper>> IntVector;
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
-  HeapHashMap<void*, IntVector>* map =
-      MakeGarbageCollected<HeapHashMap<void*, IntVector>>();
-  HeapHashMap<void*, IntDeque>* map2 =
-      MakeGarbageCollected<HeapHashMap<void*, IntDeque>>();
+  HeapHashMap<void*, Member<IntVector>>* map =
+      MakeGarbageCollected<HeapHashMap<void*, Member<IntVector>>>();
+  HeapHashMap<void*, Member<IntDeque>>* map2 =
+      MakeGarbageCollected<HeapHashMap<void*, Member<IntDeque>>>();
   static_assert(WTF::IsTraceable<IntVector>::value,
                 "Failed to recognize HeapVector as traceable");
   static_assert(WTF::IsTraceable<IntDeque>::value,
                 "Failed to recognize HeapDeque as traceable");
 
-  map->insert(key, IntVector());
-  map2->insert(key, IntDeque());
+  map->insert(key, MakeGarbageCollected<IntVector>());
+  map2->insert(key, MakeGarbageCollected<IntDeque>());
 
-  HeapHashMap<void*, IntVector>::iterator it = map->find(key);
-  EXPECT_EQ(0u, map->at(key).size());
+  HeapHashMap<void*, Member<IntVector>>::iterator it = map->find(key);
+  EXPECT_EQ(0u, map->at(key)->size());
 
-  HeapHashMap<void*, IntDeque>::iterator it2 = map2->find(key);
-  EXPECT_EQ(0u, map2->at(key).size());
+  HeapHashMap<void*, Member<IntDeque>>::iterator it2 = map2->find(key);
+  EXPECT_EQ(0u, map2->at(key)->size());
 
-  it->value.push_back(MakeGarbageCollected<IntWrapper>(42));
-  EXPECT_EQ(1u, map->at(key).size());
+  it->value->push_back(MakeGarbageCollected<IntWrapper>(42));
+  EXPECT_EQ(1u, map->at(key)->size());
 
-  it2->value.push_back(MakeGarbageCollected<IntWrapper>(42));
-  EXPECT_EQ(1u, map2->at(key).size());
+  it2->value->push_back(MakeGarbageCollected<IntWrapper>(42));
+  EXPECT_EQ(1u, map2->at(key)->size());
 
-  Persistent<HeapHashMap<void*, IntVector>> keep_alive(map);
-  Persistent<HeapHashMap<void*, IntDeque>> keep_alive2(map2);
+  Persistent<HeapHashMap<void*, Member<IntVector>>> keep_alive(map);
+  Persistent<HeapHashMap<void*, Member<IntDeque>>> keep_alive2(map2);
 
   for (int i = 0; i < 100; i++) {
-    map->insert(key + 1 + i, IntVector());
-    map2->insert(key + 1 + i, IntDeque());
+    map->insert(key + 1 + i, MakeGarbageCollected<IntVector>());
+    map2->insert(key + 1 + i, MakeGarbageCollected<IntDeque>());
   }
 
   PreciselyCollectGarbage();
 
-  EXPECT_EQ(1u, map->at(key).size());
-  EXPECT_EQ(1u, map2->at(key).size());
+  EXPECT_EQ(1u, map->at(key)->size());
+  EXPECT_EQ(1u, map2->at(key)->size());
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
 
   keep_alive = nullptr;
@@ -3954,20 +3952,20 @@ TEST_F(HeapTest, CollectionNesting2) {
   void* key = &IntWrapper::destructor_calls_;
   IntWrapper::destructor_calls_ = 0;
   typedef HeapHashSet<Member<IntWrapper>> IntSet;
-  HeapHashMap<void*, IntSet>* map =
-      MakeGarbageCollected<HeapHashMap<void*, IntSet>>();
+  HeapHashMap<void*, Member<IntSet>>* map =
+      MakeGarbageCollected<HeapHashMap<void*, Member<IntSet>>>();
 
-  map->insert(key, IntSet());
+  map->insert(key, MakeGarbageCollected<IntSet>());
 
-  HeapHashMap<void*, IntSet>::iterator it = map->find(key);
-  EXPECT_EQ(0u, map->at(key).size());
+  HeapHashMap<void*, Member<IntSet>>::iterator it = map->find(key);
+  EXPECT_EQ(0u, map->at(key)->size());
 
-  it->value.insert(MakeGarbageCollected<IntWrapper>(42));
-  EXPECT_EQ(1u, map->at(key).size());
+  it->value->insert(MakeGarbageCollected<IntWrapper>(42));
+  EXPECT_EQ(1u, map->at(key)->size());
 
-  Persistent<HeapHashMap<void*, IntSet>> keep_alive(map);
+  Persistent<HeapHashMap<void*, Member<IntSet>>> keep_alive(map);
   PreciselyCollectGarbage();
-  EXPECT_EQ(1u, map->at(key).size());
+  EXPECT_EQ(1u, map->at(key)->size());
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
 }
 
@@ -4498,29 +4496,29 @@ typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
 
 TEST_F(HeapTest, EphemeronsInEphemerons) {
   typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> InnerMap;
-  typedef HeapHashMap<WeakMember<IntWrapper>, InnerMap> OuterMap;
+  typedef HeapHashMap<WeakMember<IntWrapper>, Member<InnerMap>> OuterMap;
 
   for (int keep_outer_alive = 0; keep_outer_alive <= 1; keep_outer_alive++) {
     for (int keep_inner_alive = 0; keep_inner_alive <= 1; keep_inner_alive++) {
       Persistent<OuterMap> outer = MakeGarbageCollected<OuterMap>();
       Persistent<IntWrapper> one = MakeGarbageCollected<IntWrapper>(1);
       Persistent<IntWrapper> two = MakeGarbageCollected<IntWrapper>(2);
-      outer->insert(one, InnerMap());
-      outer->begin()->value.insert(two, MakeGarbageCollected<IntWrapper>(3));
-      EXPECT_EQ(1u, outer->at(one).size());
+      outer->insert(one, MakeGarbageCollected<InnerMap>());
+      outer->begin()->value->insert(two, MakeGarbageCollected<IntWrapper>(3));
+      EXPECT_EQ(1u, outer->at(one)->size());
       if (!keep_outer_alive)
         one.Clear();
       if (!keep_inner_alive)
         two.Clear();
       PreciselyCollectGarbage();
       if (keep_outer_alive) {
-        const InnerMap& inner = outer->at(one);
+        const InnerMap* inner = outer->at(one);
         if (keep_inner_alive) {
-          EXPECT_EQ(1u, inner.size());
-          IntWrapper* three = inner.at(two);
+          EXPECT_EQ(1u, inner->size());
+          IntWrapper* three = inner->at(two);
           EXPECT_EQ(3, three->Value());
         } else {
-          EXPECT_EQ(0u, inner.size());
+          EXPECT_EQ(0u, inner->size());
         }
       } else {
         EXPECT_EQ(0u, outer->size());
@@ -4534,9 +4532,10 @@ TEST_F(HeapTest, EphemeronsInEphemerons) {
       for (int i = 0; i < 10000; i++) {
         auto* value = MakeGarbageCollected<IntWrapper>(i);
         keep_alive->push_back(value);
-        OuterMap::AddResult new_entry = outer->insert(value, InnerMap());
-        new_entry.stored_value->value.insert(deep, home);
-        new_entry.stored_value->value.insert(composite, home);
+        OuterMap::AddResult new_entry =
+            outer->insert(value, MakeGarbageCollected<InnerMap>());
+        new_entry.stored_value->value->insert(deep, home);
+        new_entry.stored_value->value->insert(composite, home);
       }
       composite.Clear();
       PreciselyCollectGarbage();
@@ -4545,7 +4544,7 @@ TEST_F(HeapTest, EphemeronsInEphemerons) {
         IntWrapper* value = keep_alive->at(i);
         EXPECT_EQ(1u,
                   outer->at(value)
-                      .size());  // Other one was deleted by weak handling.
+                      ->size());  // Other one was deleted by weak handling.
         if (i & 1)
           keep_alive->at(i) = nullptr;
       }

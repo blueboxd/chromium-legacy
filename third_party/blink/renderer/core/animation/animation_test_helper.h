@@ -38,9 +38,7 @@ KeyframeEffect* CreateSimpleKeyframeEffectForTest(Element*,
 //
 // All members of the ActiveInterpolations must be instances of
 // InvalidatableInterpolation.
-void EnsureInterpolatedValueCached(const ActiveInterpolations&,
-                                   Document&,
-                                   Element*);
+void EnsureInterpolatedValueCached(ActiveInterpolations*, Document&, Element*);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TEST_HELPER_H_

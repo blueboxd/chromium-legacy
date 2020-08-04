@@ -9,6 +9,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/win/event_creation_utils.h"
 #include "ui/display/win/screen_win.h"
@@ -39,10 +40,10 @@ int DesktopDragDropClientWin::StartDragAndDrop(
     aura::Window* source_window,
     const gfx::Point& screen_location,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   drag_drop_in_progress_ = true;
   drag_operation_ = operation;
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+  if (source == ui::mojom::DragEventSource::kTouch) {
     gfx::Point screen_point = display::win::ScreenWin::DIPToScreenPoint(
         {screen_location.x(), screen_location.y()});
     // Send a mouse down and mouse move before do drag drop runs its own event
@@ -66,7 +67,7 @@ int DesktopDragDropClientWin::StartDragAndDrop(
       ui::OSExchangeDataProviderWin::GetIDataObject(*data.get()),
       drag_source_.Get(),
       ui::DragDropTypes::DragOperationToDropEffect(operation), &effect);
-  if (alive && source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+  if (alive && source == ui::mojom::DragEventSource::kTouch) {
     desktop_host_->SetInTouchDrag(false);
     // Gesture state gets left in a state where you can't start
     // another drag, unless it's cleaned up.

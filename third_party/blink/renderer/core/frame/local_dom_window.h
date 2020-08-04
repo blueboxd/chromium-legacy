@@ -294,6 +294,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void SetOriginPolicyIds(const Vector<String>&);
 
   // https://github.com/whatwg/html/pull/5545
+  // TODO(https://crbug.com/1103866): rename to originIsolated
   bool originIsolationRestricted() const;
 
   // Idle callback extensions

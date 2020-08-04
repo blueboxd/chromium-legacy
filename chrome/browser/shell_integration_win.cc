@@ -99,13 +99,6 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   return profile_id;
 }
 
-base::string16 GetAppListAppName() {
-  static const base::char16 kAppListAppNameSuffix[] = L"AppList";
-  base::string16 app_name(install_static::GetBaseAppId());
-  app_name.append(kAppListAppNameSuffix);
-  return app_name;
-}
-
 // Gets expected app id for given Chrome (based on |command_line| and
 // |is_per_user_install|).
 base::string16 GetExpectedAppId(const base::CommandLine& command_line,
@@ -137,8 +130,6 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   } else if (command_line.HasSwitch(switches::kAppId)) {
     app_name = base::UTF8ToUTF16(web_app::GenerateApplicationNameFromAppId(
         command_line.GetSwitchValueASCII(switches::kAppId)));
-  } else if (command_line.HasSwitch(switches::kShowAppList)) {
-    app_name = GetAppListAppName();
   } else {
     app_name = ShellUtil::GetBrowserModelId(is_per_user_install);
   }

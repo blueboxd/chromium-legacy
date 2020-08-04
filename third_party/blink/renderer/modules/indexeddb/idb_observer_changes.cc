@@ -22,7 +22,7 @@ ScriptValue IDBObserverChanges::records(ScriptState* script_state) {
   for (const auto& it : records_) {
     v8::Local<v8::String> key =
         V8String(isolate, database_->GetObjectStoreName(it.key));
-    v8::Local<v8::Value> value = ToV8(it.value, context->Global(), isolate);
+    v8::Local<v8::Value> value = ToV8(*it.value, context->Global(), isolate);
     map->Set(context, key, value).ToLocalChecked();
   }
   return ScriptValue::From(script_state, map);
@@ -44,8 +44,8 @@ void IDBObserverChanges::ExtractChanges(
   for (const auto& idx : observation_indices) {
     records_
         .insert(observations[idx]->object_store_id(),
-                HeapVector<Member<IDBObservation>>())
-        .stored_value->value.emplace_back(observations[idx]);
+                MakeGarbageCollected<HeapVector<Member<IDBObservation>>>())
+        .stored_value->value->emplace_back(observations[idx]);
   }
 }
 

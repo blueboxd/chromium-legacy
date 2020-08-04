@@ -37,8 +37,13 @@ class HoldingSpaceKeyedServiceTest : public BrowserWithTestWindowTest {
   TestingProfile* CreateProfile() override {
     const std::string kPrimaryProfileName = "primary_profile";
     const AccountId account_id(AccountId::FromUserEmail(kPrimaryProfileName));
+
     fake_user_manager_->AddUser(account_id);
     fake_user_manager_->LoginUser(account_id);
+
+    GetSessionControllerClient()->AddUserSession(kPrimaryProfileName);
+    GetSessionControllerClient()->SwitchActiveUser(account_id);
+
     return profile_manager()->CreateTestingProfile(kPrimaryProfileName);
   }
 
@@ -53,6 +58,17 @@ class HoldingSpaceKeyedServiceTest : public BrowserWithTestWindowTest {
         base::ASCIIToUTF16("Test profile"), 1 /*avatar_id*/,
         std::string() /*supervised_user_id*/,
         TestingProfile::TestingFactories());
+  }
+
+  void ActivateSecondaryProfile() {
+    const std::string kSecondaryProfileName = "secondary_profile";
+    const AccountId account_id(AccountId::FromUserEmail(kSecondaryProfileName));
+    GetSessionControllerClient()->AddUserSession(kSecondaryProfileName);
+    GetSessionControllerClient()->SwitchActiveUser(account_id);
+  }
+
+  TestSessionControllerClient* GetSessionControllerClient() {
+    return ash_test_helper()->test_session_controller_client();
   }
 
  private:
@@ -92,12 +108,19 @@ TEST_F(HoldingSpaceKeyedServiceTest, SecondaryUserProfile) {
       HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(GetProfile());
 
   TestingProfile* const second_profile = CreateSecondaryProfile();
-  EXPECT_FALSE(HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
-      second_profile));
+  HoldingSpaceKeyedService* const secondary_holding_space_service =
+      HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
+          second_profile);
 
   // Just creating a secondary profile should not change the active model.
   EXPECT_EQ(HoldingSpaceController::Get()->model(),
             primary_holding_space_service->model_for_testing());
+
+  // Switching the active user should change the active model (multi user
+  // support)
+  ActivateSecondaryProfile();
+  EXPECT_EQ(HoldingSpaceController::Get()->model(),
+            secondary_holding_space_service->model_for_testing());
 }
 
 }  // namespace ash

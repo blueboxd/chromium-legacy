@@ -241,6 +241,29 @@ class AddressComponent {
   // Unassigns all nodes with parsed or formatted values.
   void RecursivelyUnsetParsedAndFormattedValues();
 
+  // Merge |newer_component| into this AddressComponent.
+  // Returns false if the merging is not possible.
+  // The state of the component is not altered by a failed merging attempt.
+  virtual bool MergeWithComponent(const AddressComponent& newer_component);
+
+  // Merge |newer_component| into this AddressComponent.
+  // The merging is possible iff the value of both root nodes is token
+  // equivalent, meaning they contain the same tokens in an arbitrary order.
+  // Returns false if the merging is not possible.
+  // The state of the component is not altered by a failed merging attempt.
+  bool MergeTokenEquivalentComponent(const AddressComponent& newer_component);
+
+  // Returns a constant vector of pointers to the child nodes of the component.
+  const std::vector<AddressComponent*>& Subcomponents() const {
+    return subcomponents_;
+  }
+
+  // Returns a constant reference to the sorted canonicalized tokens of the
+  // value of the component.
+  const std::vector<base::string16>& GetSortedTokens() const {
+    return sorted_normalized_tokens_;
+  }
+
 #ifdef UNIT_TEST
   // Initiates the formatting of the values from the subcomponents.
   void FormatValueFromSubcomponentsForTesting() {
@@ -276,6 +299,10 @@ class AddressComponent {
 #endif
 
  protected:
+  // Returns the verification score of this component and its substructure.
+  // Each observed node contributes to the validation score by 1.
+  virtual int GetStructureVerificationScore() const;
+
   // Returns a vector containing the |storage_types_| of all direct
   // subcomponents.
   std::vector<ServerFieldType> GetSubcomponentTypes() const;
@@ -370,6 +397,12 @@ class AddressComponent {
   // A pointer to the parent node. It is set to nullptr if the node is the root
   // node of the AddressComponent tree.
   AddressComponent* const parent_;
+
+  // A vector that contains the tokens of |value_| after normalization,
+  // meaning that it was converted to lower case and diacritics have been
+  // removed. |value_| is tokenized by splitting the string by white spaces and
+  // commas. It is calculated when |value_| is set.
+  std::vector<base::string16> sorted_normalized_tokens_;
 };
 
 }  // namespace structured_address

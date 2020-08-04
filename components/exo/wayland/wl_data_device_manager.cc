@@ -20,6 +20,7 @@
 #include "components/exo/display.h"
 #include "components/exo/wayland/serial_tracker.h"
 #include "components/exo/wayland/server_util.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 
 namespace exo {
 namespace wayland {
@@ -310,14 +311,12 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
     }
     if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON_DOWN &&
         serial_tracker_->GetPointerDownSerial() == serial) {
-      data_device->StartDrag(
-          source, origin, icon,
-          ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+      data_device->StartDrag(source, origin, icon,
+                             ui::mojom::DragEventSource::kMouse);
     } else if (event_type == wayland::SerialTracker::EventType::TOUCH_DOWN &&
                serial_tracker_->GetTouchDownSerial() == serial) {
-      data_device->StartDrag(
-          source, origin, icon,
-          ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);
+      data_device->StartDrag(source, origin, icon,
+                             ui::mojom::DragEventSource::kTouch);
     } else {
       LOG(ERROR) << "The serial passed to StartDrag does not match its "
                     "expected types.";

@@ -19,17 +19,15 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_manager_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prerender/browser/prerender_config.h"
 #include "components/prerender/browser/prerender_histograms.h"
+#include "components/prerender/browser/prerender_manager_delegate.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -43,6 +41,7 @@ enum class NetworkPredictionStatus;
 
 namespace content {
 class WebContents;
+class BrowserContext;
 }
 
 namespace gfx {
@@ -92,8 +91,8 @@ class PrerenderManager : public content::RenderProcessHostObserver,
     CLEAR_MAX = 0x1 << 2
   };
 
-  // Owned by a Profile object for the lifetime of the profile.
-  PrerenderManager(Profile* profile,
+  // Owned by a BrowserContext object for the lifetime of the browser_context.
+  PrerenderManager(content::BrowserContext* browser_context,
                    std::unique_ptr<PrerenderManagerDelegate> delegate);
   ~PrerenderManager() override;
 
@@ -244,8 +243,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // provided URL.
   void RecordNavigation(const GURL& url);
 
-  Profile* profile() const { return profile_; }
-
   // Return current time and ticks with ability to mock the clock out for
   // testing.
   base::Time GetCurrentTime() const;
@@ -265,10 +262,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // Notification that a prerender has completed and its bytes should be
   // recorded.
   void RecordNetworkBytesConsumed(Origin origin, int64_t prerender_bytes);
-
-  // Add to the running tally of bytes transferred over the network for this
-  // profile if prerendering is currently enabled.
-  void AddProfileNetworkBytesIfEnabled(int64_t bytes);
 
   // Registers a new ProcessHost performing a prerender. Called by
   // PrerenderContents.
@@ -388,15 +381,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // Time window for which we record old navigations, in milliseconds.
   static const int kNavigationRecordWindowMs = 5000;
 
-  // Returns whether prerendering is currently enabled or the reason why it is
-  // disabled.
-  chrome_browser_net::NetworkPredictionStatus GetPredictionStatus() const;
-
-  // Returns whether prerendering is currently enabled or the reason why it is
-  // disabled after taking into account the origin of the request.
-  chrome_browser_net::NetworkPredictionStatus GetPredictionStatusForOrigin(
-      Origin origin) const;
-
   // Adds a prerender for |url| from |referrer|. The |origin| specifies how the
   // prerender was added. If |bounds| is empty, then
   // PrerenderContents::StartPrerendering will instead use a default from
@@ -512,8 +496,8 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // The configuration.
   Config config_;
 
-  // The profile that owns this PrerenderManager.
-  Profile* profile_;
+  // The browser_context that owns this PrerenderManager.
+  content::BrowserContext* browser_context_;
 
   // The delegate that allows content embedder to override the logic in this
   // class.
@@ -525,7 +509,7 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // Prerenders awaiting deletion.
   PrerenderDataVector to_delete_prerenders_;
 
-  // List of recent navigations in this profile, sorted by ascending
+  // List of recent navigations in this browser_context, sorted by ascending
   // |navigate_time_|.
   std::vector<NavigationRecord> navigations_;
 
@@ -552,12 +536,12 @@ class PrerenderManager : public content::RenderProcessHostObserver,
 
   const std::unique_ptr<PrerenderHistograms> histograms_;
 
-  // The number of bytes transferred over the network for the profile this
-  // PrerenderManager is attached to.
-  int64_t profile_network_bytes_ = 0;
+  // The number of bytes transferred over the network for the browser_context
+  // this PrerenderManager is attached to.
+  int64_t browser_context_network_bytes_ = 0;
 
-  // The value of profile_network_bytes_ that was last recorded.
-  int64_t last_recorded_profile_network_bytes_ = 0;
+  // The value of browser_context_network_bytes_ that was last recorded.
+  int64_t last_recorded_browser_context_network_bytes_ = 0;
 
   // Set of process hosts being prerendered.
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;

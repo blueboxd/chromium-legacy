@@ -443,9 +443,22 @@ void WorkerGlobalScope::RunWorkerScript() {
   if (debugger && stack_id_)
     debugger->ExternalAsyncTaskStarted(*stack_id_);
 
+  switch (worker_script_->GetScriptType()) {
+    case mojom::blink::ScriptType::kClassic: {
+      auto sizes = worker_script_->GetClassicScriptSizes();
+      ReportingProxy().WillEvaluateClassicScript(sizes.first, sizes.second);
+      break;
+    }
+    case mojom::blink::ScriptType::kModule:
+      ReportingProxy().WillEvaluateModuleScript();
+      break;
+  }
+
   // Step 24. If script is a classic script, then run the classic script script.
   // Otherwise, it is a module script; run the module script script. [spec text]
-  std::move(worker_script_)->RunScriptOnWorker(*this);
+  bool is_success = std::move(worker_script_)->RunScriptOnWorker(*this);
+
+  ReportingProxy().DidEvaluateTopLevelScript(is_success);
 
   if (debugger && stack_id_)
     debugger->ExternalAsyncTaskFinished(*stack_id_);

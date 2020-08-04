@@ -67,7 +67,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/skia_util.h"
@@ -131,7 +131,7 @@ class ScopedTextureBinder {
   ScopedTextureBinder(gles2::ContextState* state,
                       GLenum target,
                       GLuint texture,
-                      GrContext* gr_context)
+                      GrDirectContext* gr_context)
       : state_(state), target_(target) {
     auto* api = state->api();
     api->glActiveTextureFn(GL_TEXTURE0);
@@ -155,7 +155,7 @@ class ScopedTextureBinder {
 class ScopedPixelUnpackState {
  public:
   explicit ScopedPixelUnpackState(gles2::ContextState* state,
-                                  GrContext* gr_context,
+                                  GrDirectContext* gr_context,
                                   const gles2::FeatureInfo* feature_info) {
     DCHECK(state);
     auto* api = state->api();
@@ -181,8 +181,8 @@ class ScopedPixelUnpackState {
 };
 
 // Commands that are explicitly listed as OK to occur between
-// BeginRasterCHROMIUM and EndRasterCHROMIUM. They do not invalidate GrContext
-// state tracking.
+// BeginRasterCHROMIUM and EndRasterCHROMIUM. They do not invalidate
+// GrDirectContext state tracking.
 bool AllowedBetweenBeginEndRaster(CommandId command) {
   switch (command) {
     case kCreateTransferCacheEntryINTERNAL:
@@ -298,8 +298,8 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
 }  // namespace
 
 // RasterDecoderImpl uses two separate state trackers (gpu::gles2::ContextState
-// and GrContext) that cache the current GL driver state. Each class sees a
-// fraction of the GL calls issued and can easily become inconsistent with GL
+// and GrDirectContext) that cache the current GL driver state. Each class sees
+// a fraction of the GL calls issued and can easily become inconsistent with GL
 // state. We guard against that by resetting. But resetting is expensive, so we
 // avoid it as much as possible.
 class RasterDecoderImpl final : public RasterDecoder,
@@ -474,7 +474,9 @@ class RasterDecoderImpl final : public RasterDecoder,
     return shared_context_state_->context_state();
   }
   gl::GLApi* api() const { return api_; }
-  GrContext* gr_context() const { return shared_context_state_->gr_context(); }
+  GrDirectContext* gr_context() const {
+    return shared_context_state_->gr_context();
+  }
   ServiceTransferCache* transfer_cache() {
     return shared_context_state_->transfer_cache();
   }
@@ -3156,7 +3158,7 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
 
   // If the entry is going to use skia during deserialization, make sure we
   // mark the context state dirty.
-  GrContext* context_for_entry =
+  GrDirectContext* context_for_entry =
       cc::ServiceTransferCacheEntry::UsesGrContext(entry_type) ? gr_context()
                                                                : nullptr;
   if (context_for_entry)

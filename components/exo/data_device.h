@@ -13,7 +13,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -52,7 +52,7 @@ class DataDevice : public WMHelper::DragDropObserver,
   void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
-                 ui::DragDropTypes::DragEventSource event_source);
+                 ui::mojom::DragEventSource event_source);
 
   // Sets selection data to the clipboard.
   // |source| represents data comes from the client.

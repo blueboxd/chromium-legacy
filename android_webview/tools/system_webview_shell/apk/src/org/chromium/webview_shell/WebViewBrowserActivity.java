@@ -39,12 +39,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
-import android.webkit.TracingConfig;
-import android.webkit.TracingController;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -52,6 +49,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.webkit.TracingConfig;
+import androidx.webkit.TracingController;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewClientCompat;
+import androidx.webkit.WebViewFeature;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -360,7 +362,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(getResources().getString(R.string.title_activity_browser));
         getSupportActionBar().setSubtitle(mWebViewVersion);
 
-        webview.setWebViewClient(new WebViewClient() {
+        webview.setWebViewClient(new WebViewClientCompat() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 setUrlFail(false);
@@ -537,10 +539,10 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.TRACING_CONTROLLER_BASIC_USAGE)) {
             menu.findItem(R.id.menu_enable_tracing).setEnabled(false);
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
             menu.findItem(R.id.menu_force_dark_off).setEnabled(false);
             menu.findItem(R.id.menu_force_dark_auto).setEnabled(false);
             menu.findItem(R.id.menu_force_dark_on).setEnabled(false);
@@ -550,19 +552,19 @@ public class WebViewBrowserActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.TRACING_CONTROLLER_BASIC_USAGE)) {
             menu.findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            int fdState = mWebView.getSettings().getForceDark();
-            switch (fdState) {
-                case WebSettings.FORCE_DARK_OFF:
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            int forceDarkState = WebSettingsCompat.getForceDark(mWebView.getSettings());
+            switch (forceDarkState) {
+                case WebSettingsCompat.FORCE_DARK_OFF:
                     menu.findItem(R.id.menu_force_dark_off).setChecked(true);
                     break;
-                case WebSettings.FORCE_DARK_AUTO:
+                case WebSettingsCompat.FORCE_DARK_AUTO:
                     menu.findItem(R.id.menu_force_dark_auto).setChecked(true);
                     break;
-                case WebSettings.FORCE_DARK_ON:
+                case WebSettingsCompat.FORCE_DARK_ON:
                     menu.findItem(R.id.menu_force_dark_on).setChecked(true);
                     break;
             }
@@ -571,7 +573,6 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     }
 
     @Override
-    @SuppressLint("NewApi") // TracingController related methods require API level 28.
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_reset_webview:
@@ -592,7 +593,6 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                 mEnableTracing = !mEnableTracing;
                 item.setChecked(mEnableTracing);
 
-                // TODO(laisminchillo): replace this with AndroidX's TracingController
                 TracingController tracingController = TracingController.getInstance();
                 if (mEnableTracing) {
                     tracingController.start(
@@ -613,15 +613,18 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                 }
                 return true;
             case R.id.menu_force_dark_off:
-                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_OFF);
+                WebSettingsCompat.setForceDark(
+                        mWebView.getSettings(), WebSettingsCompat.FORCE_DARK_OFF);
                 item.setChecked(true);
                 return true;
             case R.id.menu_force_dark_auto:
-                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_AUTO);
+                WebSettingsCompat.setForceDark(
+                        mWebView.getSettings(), WebSettingsCompat.FORCE_DARK_AUTO);
                 item.setChecked(true);
                 return true;
             case R.id.menu_force_dark_on:
-                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_ON);
+                WebSettingsCompat.setForceDark(
+                        mWebView.getSettings(), WebSettingsCompat.FORCE_DARK_ON);
                 item.setChecked(true);
                 return true;
             case R.id.start_animation_activity:

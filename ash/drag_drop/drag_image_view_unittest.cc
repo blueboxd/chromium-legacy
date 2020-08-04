@@ -6,7 +6,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/window.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 
@@ -16,9 +16,8 @@ using DragDropImageTest = AshTestBase;
 
 TEST_F(DragDropImageTest, SetBoundsConsidersDragHintForTouch) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
-  views::UniqueWidgetPtr drag_image_widget = DragImageView::Create(
-      window.get(),
-      ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);
+  views::UniqueWidgetPtr drag_image_widget =
+      DragImageView::Create(window.get(), ui::mojom::DragEventSource::kTouch);
   DragImageView* drag_image_view =
       static_cast<DragImageView*>(drag_image_widget->GetContentsView());
 
@@ -50,9 +49,8 @@ TEST_F(DragDropImageTest, SetBoundsConsidersDragHintForTouch) {
 
 TEST_F(DragDropImageTest, SetBoundsIgnoresDragHintForMouse) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
-  views::UniqueWidgetPtr drag_image_widget = DragImageView::Create(
-      window.get(),
-      ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+  views::UniqueWidgetPtr drag_image_widget =
+      DragImageView::Create(window.get(), ui::mojom::DragEventSource::kMouse);
   DragImageView* drag_image_view =
       static_cast<DragImageView*>(drag_image_widget->GetContentsView());
 

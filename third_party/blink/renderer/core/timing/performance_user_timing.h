@@ -36,7 +36,8 @@ namespace blink {
 class ExceptionState;
 class Performance;
 
-using PerformanceEntryMap = HeapHashMap<AtomicString, PerformanceEntryVector>;
+using PerformanceEntryMap =
+    HeapHashMap<AtomicString, Member<PerformanceEntryVector>>;
 
 class UserTiming final : public GarbageCollected<UserTiming> {
  public:

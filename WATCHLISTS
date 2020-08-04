@@ -378,9 +378,6 @@
     'blink_dom': {
       'filepath': 'third_party/blink/renderer/core/dom/'
     },
-    'blink_dom_events': {
-      'filepath': 'third_party/blink/renderer/core/dom/events/'
-    },
     'blink_dom_storage': {
       'filepath': 'third_party/blink/common/dom_storage/|' \
                   'third_party/blink/public/mojom/dom_storage/|' \
@@ -566,12 +563,6 @@
     'blink_service_worker_tests' : {
       'filepath': 'third_party/blink/web_tests/http/tests/serviceworker' \
                   '|third_party/blink/web_tests/external/wpt/service-workers'
-    },
-    'blink_shadow_dom': {
-      'filepath': 'third_party/blink/renderer/core/dom/.*shadow' \
-                  '|third_party/blink/renderer/core/dom/.*slot' \
-                  '|third_party/blink/renderer/core/dom/.*insertion_point' \
-                  '|third_party/blink/renderer/core/dom/.*flat_tree'
     },
     'blink_spellcheck' : {
       'filepath': 'third_party/blink/renderer/core/editing/spellcheck'
@@ -2215,7 +2206,6 @@
     'blink_devtools': ['devtools-reviews+blink@chromium.org'],
     'blink_dom': ['blink-reviews-dom@chromium.org',
                   'eae+blinkwatch@chromium.org'],
-    'blink_dom_events': ['hayato+watch@chromium.org'],
     'blink_dom_storage': ['dmurph+watching-domstorage@chromium.org'],
     'blink_events': ['blink-reviews-events@chromium.org',
                      'dtapuska+blinkwatch@chromium.org',
@@ -2290,7 +2280,6 @@
                              'serviceworker-reviews@chromium.org',
                              'shimazu+serviceworker@chromium.org'],
     'blink_service_worker_tests': ['kenjibaheux+watch@chromium.org'],
-    'blink_shadow_dom': ['hayato+watch@chromium.org'],
     'blink_spellcheck' : ['timvolodine@chromium.org',
                           'xiaochengh+watch@chromium.org'],
     'blink_streams': ['ricea+watch@chromium.org'],

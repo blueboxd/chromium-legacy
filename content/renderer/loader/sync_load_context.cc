@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/url_request/redirect_info.h"
@@ -111,8 +110,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
       traffic_annotation, loader_options, base::WrapUnique(context),
-      context->url_loader_factory_, std::move(throttles),
-      nullptr /* navigation_response_override_params */);
+      context->url_loader_factory_, std::move(throttles));
 }
 
 SyncLoadContext::SyncLoadContext(

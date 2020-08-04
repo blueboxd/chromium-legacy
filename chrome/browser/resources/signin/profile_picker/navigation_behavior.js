@@ -108,6 +108,14 @@ export function navigateToPreviousRoute() {
   }
 }
 
+/**
+ * @param {!Routes} route
+ * @param {string} step
+ */
+export function navigateToStep(route, step) {
+  // TODO(crbug.com/1063856): Add implementation.
+}
+
 /** @polymerBehavior */
 export const NavigationBehavior = {
   /** @override */

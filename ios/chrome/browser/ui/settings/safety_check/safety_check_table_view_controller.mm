@@ -78,6 +78,15 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   }
 }
 
+#pragma mark - UIViewController
+
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.presentationDelegate safetyCheckTableViewControllerDidRemove:self];
+  }
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView

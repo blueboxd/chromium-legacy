@@ -55,14 +55,14 @@ void CSSAnimationUpdate::StartTransition(
     scoped_refptr<const ComputedStyle> reversing_adjusted_start_value,
     double reversing_shortening_factor,
     const InertEffect& effect) {
-  NewTransition new_transition;
-  new_transition.property = property;
-  new_transition.from = std::move(from);
-  new_transition.to = std::move(to);
-  new_transition.reversing_adjusted_start_value =
+  NewTransition* new_transition = MakeGarbageCollected<NewTransition>();
+  new_transition->property = property;
+  new_transition->from = std::move(from);
+  new_transition->to = std::move(to);
+  new_transition->reversing_adjusted_start_value =
       std::move(reversing_adjusted_start_value);
-  new_transition.reversing_shortening_factor = reversing_shortening_factor;
-  new_transition.effect = &effect;
+  new_transition->reversing_shortening_factor = reversing_shortening_factor;
+  new_transition->effect = &effect;
   new_transitions_.Set(property, new_transition);
 }
 

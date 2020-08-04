@@ -13,7 +13,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/dom/dom_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
@@ -70,7 +70,7 @@ class Seat : public aura::client::FocusChangeObserver,
   void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
-                 ui::DragDropTypes::DragEventSource event_source);
+                 ui::mojom::DragEventSource event_source);
 
   // Sets the last location in screen coordinates, irrespective of mouse or
   // touch.

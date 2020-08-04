@@ -171,9 +171,6 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   // Use WorkerMainScriptLoader to load the main script for dedicated workers
   // (PlzDedicatedWorker) and shared workers.
   if (worker_main_script_load_params) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kLoadMainScriptForPlzDedicatedWorkerByParams));
-
     request.SetInspectorId(CreateUniqueIdentifier());
     request.SetReferrerString(Referrer::NoReferrer());
     request.SetPriority(ResourceLoadPriority::kHigh);
@@ -302,8 +299,6 @@ void WorkerClassicScriptLoader::DidFailRedirectCheck() {
 }
 
 void WorkerClassicScriptLoader::DidReceiveData(base::span<const char> span) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   if (!decoder_) {
     decoder_ = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
@@ -315,8 +310,6 @@ void WorkerClassicScriptLoader::DidReceiveData(base::span<const char> span) {
 }
 
 void WorkerClassicScriptLoader::OnFinishedLoadingWorkerMainScript() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   DidReceiveResponse(0 /*identifier*/,
                      worker_main_script_loader_->GetResponse());
   if (decoder_)
@@ -325,8 +318,6 @@ void WorkerClassicScriptLoader::OnFinishedLoadingWorkerMainScript() {
 }
 
 void WorkerClassicScriptLoader::OnFailedLoadingWorkerMainScript() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   failed_ = true;
   NotifyFinished();
 }

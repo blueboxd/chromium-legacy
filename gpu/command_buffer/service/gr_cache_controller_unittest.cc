@@ -56,7 +56,7 @@ class GrCacheControllerTest : public testing::Test {
     gl::init::ShutdownGL(false);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
   scoped_refptr<SharedContextState> context_state_;

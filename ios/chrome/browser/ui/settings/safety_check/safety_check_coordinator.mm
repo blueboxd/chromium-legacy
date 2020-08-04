@@ -7,6 +7,8 @@
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_table_view_controller.h"
@@ -52,10 +54,13 @@
   self.viewController = viewController;
 
   self.mediator = [[SafetyCheckMediator alloc]
-      initWithUserPrefService:self.browser->GetBrowserState()->GetPrefs()];
+      initWithUserPrefService:self.browser->GetBrowserState()->GetPrefs()
+         passwordCheckManager:IOSChromePasswordCheckManagerFactory::
+                                  GetForBrowserState(
+                                      self.browser->GetBrowserState())];
   self.mediator.consumer = self.viewController;
-  [self.mediator updateConsumerCheckState];
-  viewController.serviceDelegate = self.mediator.delegate;
+  self.viewController.serviceDelegate = self.mediator;
+  self.viewController.presentationDelegate = self;
 
   DCHECK(self.baseNavigationController);
   [self.baseNavigationController pushViewController:self.viewController

@@ -81,7 +81,7 @@ Surface* Seat::GetFocusedSurface() {
 void Seat::StartDrag(DataSource* source,
                      Surface* origin,
                      Surface* icon,
-                     ui::DragDropTypes::DragEventSource event_source) {
+                     ui::mojom::DragEventSource event_source) {
   // DragDropOperation manages its own lifetime.
   drag_drop_operation_ = DragDropOperation::Create(
       source, origin, icon, last_location_, event_source);

@@ -95,7 +95,7 @@ void ReportingContext::RegisterObserver(blink::ReportingObserver* observer) {
 
   observer->ClearBuffered();
   for (auto type : report_buffer_) {
-    for (Report* report : type.value) {
+    for (Report* report : *type.value) {
       observer->QueueReport(report);
     }
   }
@@ -152,14 +152,17 @@ ReportingContext::GetReportingService() const {
 
 void ReportingContext::NotifyInternal(Report* report) {
   // Buffer the report.
-  if (!report_buffer_.Contains(report->type()))
-    report_buffer_.insert(report->type(), HeapListHashSet<Member<Report>>());
-  report_buffer_.find(report->type())->value.insert(report);
+  if (!report_buffer_.Contains(report->type())) {
+    report_buffer_.insert(
+        report->type(),
+        MakeGarbageCollected<HeapListHashSet<Member<Report>>>());
+  }
+  report_buffer_.find(report->type())->value->insert(report);
 
   // Only the most recent 100 reports will remain buffered, per report type.
   // https://w3c.github.io/reporting/#notify-observers
-  if (report_buffer_.at(report->type()).size() > 100)
-    report_buffer_.find(report->type())->value.RemoveFirst();
+  if (report_buffer_.at(report->type())->size() > 100)
+    report_buffer_.find(report->type())->value->RemoveFirst();
 
   // Queue the report in all registered observers.
   for (auto observer : observers_)

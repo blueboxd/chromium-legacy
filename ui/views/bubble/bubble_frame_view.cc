@@ -532,9 +532,13 @@ void BubbleFrameView::SetFootnoteView(std::unique_ptr<View> view) {
   delete footnote_container_;
   footnote_container_ = nullptr;
   if (view) {
+    // Insert the footnote container before |close_| so that the footnote is
+    // inserted before caption buttons in the focus cycle.
     int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
-    footnote_container_ = AddChildView(std::make_unique<FootnoteContainerView>(
-        footnote_margins_, std::move(view), radius));
+    footnote_container_ =
+        AddChildViewAt(std::make_unique<FootnoteContainerView>(
+                           footnote_margins_, std::move(view), radius),
+                       GetIndexOf(close_));
   }
   InvalidateLayout();
 }

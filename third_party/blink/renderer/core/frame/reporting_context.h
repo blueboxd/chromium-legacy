@@ -62,7 +62,7 @@ class CORE_EXPORT ReportingContext final
   void SendToReportingAPI(Report* report, const String& endpoint) const;
 
   HeapListHashSet<Member<blink::ReportingObserver>> observers_;
-  HeapHashMap<String, HeapListHashSet<Member<Report>>> report_buffer_;
+  HeapHashMap<String, Member<HeapListHashSet<Member<Report>>>> report_buffer_;
   Member<ExecutionContext> execution_context_;
 
   // This is declared mutable so that the service endpoint can be cached by

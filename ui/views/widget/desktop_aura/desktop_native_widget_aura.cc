@@ -25,6 +25,7 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
@@ -924,7 +925,7 @@ void DesktopNativeWidgetAura::RunShellDrag(
     std::unique_ptr<ui::OSExchangeData> data,
     const gfx::Point& location,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   views::RunShellDrag(content_window_, std::move(data), location, operation,
                       source);
 }

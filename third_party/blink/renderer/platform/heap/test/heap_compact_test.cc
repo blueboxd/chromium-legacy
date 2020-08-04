@@ -175,23 +175,23 @@ TEST_F(HeapCompactTest, CompactVectorPartHashMap) {
 TEST_F(HeapCompactTest, CompactHashPartVector) {
   ClearOutOldGarbage();
 
-  using IntVectorMap = HeapHashMap<int, IntVector>;
+  using IntVectorMap = HeapHashMap<int, Member<IntVector>>;
 
   Persistent<IntVectorMap> int_vector_map =
       MakeGarbageCollected<IntVectorMap>();
   for (wtf_size_t i = 0; i < 10; ++i) {
-    IntVector vector;
+    IntVector* vector = MakeGarbageCollected<IntVector>();
     for (wtf_size_t j = 0; j < 10; ++j) {
-      vector.push_back(IntWrapper::Create(j, HashTablesAreCompacted));
+      vector->push_back(IntWrapper::Create(j, HashTablesAreCompacted));
     }
     int_vector_map->insert(1 + i, vector);
   }
 
   EXPECT_EQ(10u, int_vector_map->size());
-  for (const IntVector& int_vector : int_vector_map->Values()) {
-    EXPECT_EQ(10u, int_vector.size());
-    for (wtf_size_t i = 0; i < int_vector.size(); ++i) {
-      EXPECT_EQ(static_cast<int>(i), int_vector[i]->Value());
+  for (const IntVector* int_vector : int_vector_map->Values()) {
+    EXPECT_EQ(10u, int_vector->size());
+    for (wtf_size_t i = 0; i < int_vector->size(); ++i) {
+      EXPECT_EQ(static_cast<int>(i), (*int_vector)[i]->Value());
     }
   }
 
@@ -199,10 +199,10 @@ TEST_F(HeapCompactTest, CompactHashPartVector) {
   EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   EXPECT_EQ(10u, int_vector_map->size());
-  for (const IntVector& int_vector : int_vector_map->Values()) {
-    EXPECT_EQ(10u, int_vector.size());
-    for (wtf_size_t i = 0; i < int_vector.size(); ++i) {
-      EXPECT_EQ(static_cast<int>(i), int_vector[i]->Value());
+  for (const IntVector* int_vector : int_vector_map->Values()) {
+    EXPECT_EQ(10u, int_vector->size());
+    for (wtf_size_t i = 0; i < int_vector->size(); ++i) {
+      EXPECT_EQ(static_cast<int>(i), (*int_vector)[i]->Value());
     }
   }
 }
@@ -479,18 +479,19 @@ TEST_F(HeapCompactTest, CompactInlinedBackingStore) {
   // The internal forwarding pointer to the inlined storage needs to be handled
   // by compaction.
   using Value = HeapVector<Member<IntWrapper>, 64>;
-  using MapWithInlinedBacking = HeapHashMap<Key, Value>;
+  using MapWithInlinedBacking = HeapHashMap<Key, Member<Value>>;
 
   Persistent<MapWithInlinedBacking> map =
       MakeGarbageCollected<MapWithInlinedBacking>();
   {
     // Create a map that is reclaimed during compaction.
     (MakeGarbageCollected<MapWithInlinedBacking>())
-        ->insert(IntWrapper::Create(1, HashTablesAreCompacted), Value());
+        ->insert(IntWrapper::Create(1, HashTablesAreCompacted),
+                 MakeGarbageCollected<Value>());
 
     IntWrapper* wrapper = IntWrapper::Create(1, HashTablesAreCompacted);
-    Value storage;
-    storage.push_front(wrapper);
+    Value* storage = MakeGarbageCollected<Value>();
+    storage->push_front(wrapper);
     map->insert(wrapper, std::move(storage));
   }
   PerformHeapCompaction();

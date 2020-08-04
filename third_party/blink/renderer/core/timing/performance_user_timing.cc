@@ -41,10 +41,11 @@ static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
                                    PerformanceEntry& entry) {
   PerformanceEntryMap::iterator it = performance_entry_map.find(entry.name());
   if (it != performance_entry_map.end()) {
-    it->value.push_back(&entry);
+    it->value->push_back(&entry);
   } else {
-    PerformanceEntryVector vector(1);
-    vector[0] = Member<PerformanceEntry>(entry);
+    PerformanceEntryVector* vector =
+        MakeGarbageCollected<PerformanceEntryVector>(1);
+    (*vector)[0] = Member<PerformanceEntry>(entry);
     performance_entry_map.Set(entry.name(), vector);
   }
 }
@@ -80,7 +81,7 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   PerformanceEntryMap::const_iterator existing_marks =
       marks_map_.find(mark_name);
   if (existing_marks != marks_map_.end()) {
-    return existing_marks->value.back()->startTime();
+    return existing_marks->value->back()->startTime();
   }
 
   PerformanceTiming::PerformanceTimingGetter timing_function =
@@ -203,7 +204,7 @@ static PerformanceEntryVector ConvertToEntrySequence(
   PerformanceEntryVector entries;
 
   for (const auto& entry : performance_entry_map)
-    entries.AppendVector(entry.value);
+    entries.AppendVector(*entry.value);
 
   return entries;
 }
@@ -215,7 +216,7 @@ static PerformanceEntryVector GetEntrySequenceByName(
 
   PerformanceEntryMap::const_iterator it = performance_entry_map.find(name);
   if (it != performance_entry_map.end())
-    entries.AppendVector(it->value);
+    entries.AppendVector(*it->value);
 
   return entries;
 }

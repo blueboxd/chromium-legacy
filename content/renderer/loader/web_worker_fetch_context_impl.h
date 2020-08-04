@@ -49,7 +49,6 @@ class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
-struct NavigationResponseOverrideParameters;
 
 // This class is used for fetching resource requests from workers (dedicated
 // worker and shared worker). This class is created on the main thread and
@@ -170,11 +169,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
 
   void set_client_id(const std::string& client_id);
-
-  // PlzWorker with off-the-main-thread worker script fetch:
-  // Sets the response for the worker main script loaded by the browser process.
-  void SetResponseOverrideForMainScript(
-      std::unique_ptr<NavigationResponseOverrideParameters> response_override);
 
   using RewriteURLFunction = blink::WebURL (*)(base::StringPiece, bool);
   static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
@@ -374,14 +368,11 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   std::vector<std::string> cors_exempt_header_list_;
 
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
-
   mojo::PendingRemote<blink::mojom::ResourceLoadInfoNotifier>
       pending_resource_load_info_notifier_;
 
   // Used to send the ResourceLoadInfo of the main script for dedicated
-  // workers only when
-  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true.
+  // workers only when PlzDedicatedWorker is enabled.
   mojo::Remote<blink::mojom::ResourceLoadInfoNotifier>
       resource_load_info_notifier_;
 

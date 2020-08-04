@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -143,6 +144,7 @@ public class DigitalGoodsTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1111906")
     public void jsToTwaConnected() throws TimeoutException {
         DigitalGoodsFactory.setDigitalGoodsForTesting(createFixedDigitalGoods());
 

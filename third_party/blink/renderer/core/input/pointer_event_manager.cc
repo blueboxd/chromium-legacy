@@ -252,19 +252,21 @@ void PointerEventManager::SendBoundaryEvents(EventTarget* exited_target,
 void PointerEventManager::SetElementUnderPointer(PointerEvent* pointer_event,
                                                  Element* target) {
   if (element_under_pointer_.Contains(pointer_event->pointerId())) {
-    EventTargetAttributes node =
+    EventTargetAttributes* node =
         element_under_pointer_.at(pointer_event->pointerId());
     if (!target) {
       element_under_pointer_.erase(pointer_event->pointerId());
     } else if (target !=
-               element_under_pointer_.at(pointer_event->pointerId()).target) {
-      element_under_pointer_.Set(pointer_event->pointerId(),
-                                 EventTargetAttributes(target));
+               element_under_pointer_.at(pointer_event->pointerId())->target) {
+      element_under_pointer_.Set(
+          pointer_event->pointerId(),
+          MakeGarbageCollected<EventTargetAttributes>(target));
     }
-    SendBoundaryEvents(node.target, target, pointer_event);
+    SendBoundaryEvents(node->target, target, pointer_event);
   } else if (target) {
-    element_under_pointer_.insert(pointer_event->pointerId(),
-                                  EventTargetAttributes(target));
+    element_under_pointer_.insert(
+        pointer_event->pointerId(),
+        MakeGarbageCollected<EventTargetAttributes>(target));
     SendBoundaryEvents(nullptr, target, pointer_event);
   }
 }
@@ -305,7 +307,7 @@ void PointerEventManager::HandlePointerInterruption(
     // target before.
     DCHECK(element_under_pointer_.Contains(pointer_event->pointerId()));
     Element* target =
-        element_under_pointer_.at(pointer_event->pointerId()).target;
+        element_under_pointer_.at(pointer_event->pointerId())->target;
 
     DispatchPointerEvent(
         GetEffectiveTargetForPointerEvent(target, pointer_event->pointerId()),
@@ -1054,7 +1056,7 @@ bool PointerEventManager::IsPointerIdActiveOnFrame(PointerId pointer_id,
                                                    LocalFrame* frame) const {
   Element* last_element_receiving_event =
       element_under_pointer_.Contains(pointer_id)
-          ? element_under_pointer_.at(pointer_id).target
+          ? element_under_pointer_.at(pointer_id)->target
           : nullptr;
   return last_element_receiving_event &&
          last_element_receiving_event->GetDocument().GetFrame() == frame;
@@ -1086,7 +1088,7 @@ void PointerEventManager::SetLastPointerPositionForFrameBoundary(
   PointerId pointer_id =
       pointer_event_factory_.GetPointerEventId(web_pointer_event);
   Element* last_target = element_under_pointer_.Contains(pointer_id)
-                             ? element_under_pointer_.at(pointer_id).target
+                             ? element_under_pointer_.at(pointer_id)->target
                              : nullptr;
   if (!new_target) {
     pointer_event_factory_.RemoveLastPosition(pointer_id);

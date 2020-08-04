@@ -26,7 +26,6 @@ namespace content {
 class ChildURLLoaderFactoryBundle;
 class ServiceWorkerProviderContext;
 class WebWorkerFetchContextImpl;
-struct NavigationResponseOverrideParameters;
 
 // DedicatedWorkerHostFactoryClient intermediates between
 // blink::(Web)DedicatedWorker and content::DedicatedWorkerHostFactory. This
@@ -89,8 +88,6 @@ class DedicatedWorkerHostFactoryClient final
       pending_subresource_loader_updater_;
 
   scoped_refptr<ServiceWorkerProviderContext> service_worker_provider_context_;
-  std::unique_ptr<NavigationResponseOverrideParameters>
-      response_override_for_main_script_;
 
   mojo::Remote<blink::mojom::DedicatedWorkerHostFactory> factory_;
   mojo::Receiver<blink::mojom::DedicatedWorkerHostFactoryClient> receiver_{

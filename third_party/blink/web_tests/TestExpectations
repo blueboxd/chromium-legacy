@@ -1307,8 +1307,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 
 # Fieldset in NG
 #
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-flexbox.html [ Pass ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-auto-margins.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-margin-inline.html [ Failure ]
@@ -2717,6 +2715,12 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/layout-algorithm/flex-and-intrinsic-sizes-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/layout-algorithm/flex-and-intrinsic-sizes-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/layout-algorithm/flex-and-intrinsic-sizes-002.html [ Failure ]
@@ -3263,7 +3267,6 @@ crbug.com/626703 external/wpt/x-frame-options/multiple.sub.html [ Timeout ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-005.svg [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-002.svg [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-003.svg [ Failure ]
-crbug.com/875235 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-flexbox.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
@@ -6867,3 +6870,9 @@ crbug.com/1112111 fast/forms/month/month-picker-appearance-step.html [ Pass Fail
 crbug.com/1108423 external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1106429 virtual/percent-based-scrolling/max-percent-delta-page-zoom.html [ Pass Failure ]
 crbug.com/1112304 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Pass Timeout ]
+
+# Sheriff 2020-08-04: New wpt tests are failing
+crbug.com/1112771 external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.tentative.html [ Failure ]
+crbug.com/1112771 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-001.html [ Failure ]
+crbug.com/1112771 external/wpt/webhid/idlharness.https.window.html [ Failure ]
+crbug.com/1112771 external/wpt/css/css-grid/grid-definition/grid-inline-template-columns-rows-resolved-values-001.tentative.html [ Failure ]

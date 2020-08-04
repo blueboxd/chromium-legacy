@@ -6,10 +6,12 @@ static_library("browser") {
   sources = [
     "prerender_config.cc",
     "prerender_config.h",
+    "prerender_contents_delegate.h",
     "prerender_histograms.cc",
     "prerender_histograms.h",
     "prerender_history.cc",
     "prerender_history.h",
+    "prerender_manager_delegate.h",
     "prerender_util.cc",
     "prerender_util.h",
   ]
@@ -18,6 +20,7 @@ static_library("browser") {
     "//components/google/core/common",
     "//components/prerender/common",
     "//components/prerender/common:mojo_bindings",
+    "//content/public/browser",
     "//net",
     "//ui/gfx/geometry",
     "//ui/gfx/image/mojom:mojom_traits",

@@ -900,6 +900,7 @@ static_library("extensions") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/clipboard",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//ui/base/ime",
     "//ui/display/manager",
     "//ui/gfx",

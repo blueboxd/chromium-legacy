@@ -28,7 +28,7 @@ void AudioWorkletObjectProxy::DidCreateWorkerGlobalScope(
   global_scope_->SetSampleRate(context_sample_rate_);
 }
 
-void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
+void AudioWorkletObjectProxy::DidEvaluateTopLevelScript(bool success) {
   DCHECK(global_scope_);
 
   if (!success || global_scope_->NumberOfRegisteredDefinitions() == 0)

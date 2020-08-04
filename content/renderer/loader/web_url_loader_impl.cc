@@ -617,13 +617,6 @@ void WebURLLoaderImpl::Context::Start(
   url_ = request->url;
   report_raw_headers_ = request->report_raw_headers;
 
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override;
-  if (passed_extra_data) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(passed_extra_data.get());
-    response_override = extra_data->TakeNavigationResponseOverrideOwnership();
-  }
-
   // TODO(horo): Check credentials flag is unset when credentials mode is omit.
   //             Check credentials flag is set when credentials mode is include.
 
@@ -643,13 +636,6 @@ void WebURLLoaderImpl::Context::Start(
     // would be considered vulnerable in and of itself.
     request->do_not_prompt_for_login = true;
     request->load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
-  }
-
-  // The network request has already been made by the browser. The renderer
-  // should bind the URLLoaderClientEndpoints stored in |response_override| to
-  // an implementation of a URLLoaderClient to get the response body.
-  if (response_override) {
-    DCHECK(!sync_load_response);
   }
 
   scoped_refptr<RequestExtraData> empty_extra_data;
@@ -721,7 +707,7 @@ void WebURLLoaderImpl::Context::Start(
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(request), requestor_id, task_runner_,
       GetTrafficAnnotationTag(resource_type), loader_options, std::move(peer),
-      url_loader_factory_, std::move(throttles), std::move(response_override));
+      url_loader_factory_, std::move(throttles));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);

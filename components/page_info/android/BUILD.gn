@@ -8,8 +8,8 @@ static_library("android") {
   sources = [
     "certificate_chain_helper.cc",
     "certificate_viewer_android.cc",
-    "connection_info_popup_android.cc",
-    "connection_info_popup_android.h",
+    "connection_info_view_android.cc",
+    "connection_info_view_android.h",
     "features.cc",
     "features.h",
     "page_info_client.cc",
@@ -75,7 +75,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/components/page_info/CertificateChainHelper.java",
     "java/src/org/chromium/components/page_info/CertificateViewer.java",
-    "java/src/org/chromium/components/page_info/ConnectionInfoPopup.java",
+    "java/src/org/chromium/components/page_info/ConnectionInfoView.java",
     "java/src/org/chromium/components/page_info/CookieControlsView.java",
     "java/src/org/chromium/components/page_info/PageInfoConnectionController.java",
     "java/src/org/chromium/components/page_info/PageInfoController.java",
@@ -133,7 +133,7 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/page_info/CertificateChainHelper.java",
     "java/src/org/chromium/components/page_info/CertificateViewer.java",
-    "java/src/org/chromium/components/page_info/ConnectionInfoPopup.java",
+    "java/src/org/chromium/components/page_info/ConnectionInfoView.java",
     "java/src/org/chromium/components/page_info/PageInfoController.java",
     "java/src/org/chromium/components/page_info/PageInfoFeatureList.java",
   ]

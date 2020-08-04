@@ -38,9 +38,9 @@ class AnimationUtilsTest : public RenderingTest {
   void AddInterpolation(ActiveInterpolationsMap& interpolations_map,
                         const StringKeyframeVector& keyframes,
                         PropertyHandle property_handle) {
-    ActiveInterpolationsMap::AddResult entry =
-        interpolations_map.insert(property_handle, ActiveInterpolations());
-    ActiveInterpolations& active_interpolations = entry.stored_value->value;
+    ActiveInterpolationsMap::AddResult entry = interpolations_map.insert(
+        property_handle, MakeGarbageCollected<ActiveInterpolations>());
+    ActiveInterpolations* active_interpolations = entry.stored_value->value;
 
     PropertySpecificKeyframe* from_keyframe =
         CreatePropertySpecificKeyframe(keyframes[0], property_handle, 0);
@@ -51,7 +51,7 @@ class AnimationUtilsTest : public RenderingTest {
         MakeGarbageCollected<InvalidatableInterpolation>(
             property_handle, from_keyframe, to_keyframe);
     interpolation->Interpolate(/*iteration=*/0, /*progress=*/1);
-    active_interpolations.push_back(interpolation);
+    active_interpolations->push_back(interpolation);
   }
 
   PropertySpecificKeyframe* CreatePropertySpecificKeyframe(

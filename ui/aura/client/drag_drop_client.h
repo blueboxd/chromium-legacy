@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ui/aura/aura_export.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -39,7 +39,7 @@ class AURA_EXPORT DragDropClient {
                                aura::Window* source_window,
                                const gfx::Point& screen_location,
                                int operation,
-                               ui::DragDropTypes::DragEventSource source) = 0;
+                               ui::mojom::DragEventSource source) = 0;
 
   // Called when a drag and drop session is cancelled.
   virtual void DragCancel() = 0;

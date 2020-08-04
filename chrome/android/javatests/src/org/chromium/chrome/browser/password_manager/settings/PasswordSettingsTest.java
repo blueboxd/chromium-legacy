@@ -102,7 +102,7 @@ import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckPreference;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
-import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -553,7 +553,7 @@ public class PasswordSettingsTest {
 
     private SettingsActivity startPasswordSettingsFromMainSettings() {
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putInt(PasswordManagerLauncher.MANAGE_PASSWORDS_REFERRER,
+        fragmentArgs.putInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER,
                 ManagePasswordsReferrer.CHROME_SETTINGS);
         return mSettingsActivityTestRule.startSettingsActivity(fragmentArgs);
     }
@@ -562,7 +562,7 @@ public class PasswordSettingsTest {
         Bundle fragmentArgs = new Bundle();
         // The passwords accessory sheet is one of the places that can launch password settings
         // directly (without passing through main settings).
-        fragmentArgs.putInt(PasswordManagerLauncher.MANAGE_PASSWORDS_REFERRER,
+        fragmentArgs.putInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER,
                 ManagePasswordsReferrer.PASSWORDS_ACCESSORY_SHEET);
         return mSettingsActivityTestRule.startSettingsActivity(fragmentArgs);
     }

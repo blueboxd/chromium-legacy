@@ -1097,8 +1097,9 @@ Response InspectorDOMAgent::performSearch(
 
   *search_id = IdentifiersFactory::CreateIdentifier();
   HeapVector<Member<Node>>* results_it =
-      &search_results_.insert(*search_id, HeapVector<Member<Node>>())
-           .stored_value->value;
+      search_results_
+          .insert(*search_id, MakeGarbageCollected<HeapVector<Member<Node>>>())
+          .stored_value->value;
 
   for (auto& result : result_collector)
     results_it->push_back(result);
@@ -1116,13 +1117,13 @@ Response InspectorDOMAgent::getSearchResults(
   if (it == search_results_.end())
     return Response::ServerError("No search session with given id found");
 
-  int size = it->value.size();
+  int size = it->value->size();
   if (from_index < 0 || to_index > size || from_index >= to_index)
     return Response::ServerError("Invalid search result range");
 
   *node_ids = std::make_unique<protocol::Array<int>>();
   for (int i = from_index; i < to_index; ++i)
-    (*node_ids)->emplace_back(PushNodePathToFrontend((it->value)[i].Get()));
+    (*node_ids)->emplace_back(PushNodePathToFrontend((*it->value)[i].Get()));
   return Response::Success();
 }
 

@@ -318,7 +318,7 @@ TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
       result);
 }
 
-TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
+TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideVM) {
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   // Setup for DriveFS.
@@ -363,14 +363,31 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       storage::FileSystemMountOption(), base::FilePath(kArchiveMountPath));
 
   base::FilePath inside;
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  base::FilePath vm_mount("/mnt/chromeos");
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "Downloads-testing_profile-hash",
           base::FilePath("path/in/myfiles")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/MyFiles/path/in/myfiles", inside.value());
 
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
+      profile_.get(),
+      mount_points->CreateExternalFileSystemURL(
+          url::Origin(), "crostini_0123456789abcdef_termina_penguin",
+          base::FilePath("path/in/crostini")),
+      vm_mount, &inside));
+  EXPECT_EQ("/mnt/chromeos/LinuxFiles/path/in/crostini", inside.value());
+
+  // Special case for Crostini $HOME.
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
+      profile_.get(),
+      mount_points->CreateExternalFileSystemURL(
+          url::Origin(), "crostini_0123456789abcdef_termina_penguin",
+          base::FilePath("path/in/crostini")),
+      vm_mount, &inside, /*map_crostini_home=*/true));
+  EXPECT_EQ("/home/testuser/path/in/crostini", inside.value());
   EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
@@ -379,59 +396,59 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       &inside));
   EXPECT_EQ("/home/testuser/path/in/crostini", inside.value());
 
-  EXPECT_FALSE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_FALSE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "unknown", base::FilePath("path/in/unknown")),
-      &inside));
+      vm_mount, &inside));
 
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "android_files", base::FilePath("path/in/android")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/PlayFiles/path/in/android", inside.value());
 
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "drivefs-84675c855b63e12f384d45f033826980",
           base::FilePath("root/path/in/mydrive")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/GoogleDrive/MyDrive/path/in/mydrive",
             inside.value());
 
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "drivefs-84675c855b63e12f384d45f033826980",
           base::FilePath("team_drives/path/in/teamdrives")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/GoogleDrive/SharedDrives/path/in/teamdrives",
             inside.value());
 
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "drivefs-84675c855b63e12f384d45f033826980",
           base::FilePath("Computers/path/in/computers")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/GoogleDrive/Computers/path/in/computers",
             inside.value());
 
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "removable",
           base::FilePath("MyUSB/path/in/removable")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/removable/MyUSB/path/in/removable", inside.value());
 
-  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideVM(
       profile_.get(),
       mount_points->CreateExternalFileSystemURL(
           url::Origin(), "archive", base::FilePath("file.rar/path/in/archive")),
-      &inside));
+      vm_mount, &inside));
   EXPECT_EQ("/mnt/chromeos/archive/file.rar/path/in/archive", inside.value());
 }
 

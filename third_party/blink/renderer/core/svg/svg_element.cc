@@ -196,7 +196,7 @@ void SVGElement::ApplyActiveWebAnimations() {
     SVGInterpolationTypesMap map;
     SVGInterpolationEnvironment environment(
         map, *this, PropertyFromAttribute(attribute)->BaseValueBase());
-    InvalidatableInterpolation::ApplyStack(entry.value, environment);
+    InvalidatableInterpolation::ApplyStack(*entry.value, environment);
   }
   if (!HasSVGRareData())
     return;

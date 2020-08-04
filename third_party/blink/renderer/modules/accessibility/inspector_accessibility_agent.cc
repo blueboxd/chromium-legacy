@@ -440,21 +440,21 @@ class SparseAttributeAXPropertyAdapter
 
   void AddObjectVectorAttribute(
       AXObjectVectorAttribute attribute,
-      HeapVector<Member<AXObject>>& objects) override {
+      HeapVector<Member<AXObject>>* objects) override {
     switch (attribute) {
       case AXObjectVectorAttribute::kAriaControls:
         properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Controls, objects,
+            AXPropertyNameEnum::Controls, *objects,
             html_names::kAriaControlsAttr, *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaDetails:
         properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Details, objects, html_names::kAriaDetailsAttr,
+            AXPropertyNameEnum::Details, *objects, html_names::kAriaDetailsAttr,
             *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaFlowTo:
         properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Flowto, objects, html_names::kAriaFlowtoAttr,
+            AXPropertyNameEnum::Flowto, *objects, html_names::kAriaFlowtoAttr,
             *ax_object_));
         break;
     }
@@ -497,7 +497,7 @@ std::unique_ptr<AXValue> CreateRoleNameValue(ax::mojom::Role role) {
 
 using EnabledAgentsMultimap =
     HeapHashMap<WeakMember<LocalFrame>,
-                HeapHashSet<Member<InspectorAccessibilityAgent>>>;
+                Member<HeapHashSet<Member<InspectorAccessibilityAgent>>>>;
 
 EnabledAgentsMultimap& EnabledAgents() {
   DEFINE_STATIC_LOCAL(Persistent<EnabledAgentsMultimap>, enabled_agents,
@@ -843,10 +843,11 @@ void InspectorAccessibilityAgent::EnableAndReset() {
   enabled_.Set(true);
   LocalFrame* frame = inspected_frames_->Root();
   if (!EnabledAgents().Contains(frame)) {
-    EnabledAgents().Set(frame,
-                        HeapHashSet<Member<InspectorAccessibilityAgent>>());
+    EnabledAgents().Set(
+        frame, MakeGarbageCollected<
+                   HeapHashSet<Member<InspectorAccessibilityAgent>>>());
   }
-  EnabledAgents().find(frame)->value.insert(this);
+  EnabledAgents().find(frame)->value->insert(this);
   CreateAXContext();
 }
 
@@ -864,8 +865,8 @@ protocol::Response InspectorAccessibilityAgent::disable() {
   LocalFrame* frame = inspected_frames_->Root();
   DCHECK(EnabledAgents().Contains(frame));
   auto it = EnabledAgents().find(frame);
-  it->value.erase(this);
-  if (it->value.IsEmpty())
+  it->value->erase(this);
+  if (it->value->IsEmpty())
     EnabledAgents().erase(frame);
   return Response::Success();
 }
@@ -878,7 +879,7 @@ void InspectorAccessibilityAgent::Restore() {
 void InspectorAccessibilityAgent::ProvideTo(LocalFrame* frame) {
   if (!EnabledAgents().Contains(frame))
     return;
-  for (InspectorAccessibilityAgent* agent : EnabledAgents().find(frame)->value)
+  for (InspectorAccessibilityAgent* agent : *EnabledAgents().find(frame)->value)
     agent->CreateAXContext();
 }
 

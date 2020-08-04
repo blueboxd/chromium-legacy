@@ -108,9 +108,7 @@ class CORE_EXPORT PointerEventManager final
   WebInputEventResult FlushEvents();
 
  private:
-  class EventTargetAttributes {
-    DISALLOW_NEW();
-
+  class EventTargetAttributes : public GarbageCollected<EventTargetAttributes> {
    public:
     void Trace(Visitor* visitor) const { visitor->Trace(target); }
     Member<Element> target;
@@ -126,7 +124,7 @@ class CORE_EXPORT PointerEventManager final
                   WTF::IntHash<int64_t>,
                   WTF::UnsignedWithZeroKeyHashTraits<int64_t>>;
   using PointerCapturingMap = PointerIdKeyMap<Member<Element>>;
-  using ElementUnderPointerMap = PointerIdKeyMap<EventTargetAttributes>;
+  using ElementUnderPointerMap = PointerIdKeyMap<Member<EventTargetAttributes>>;
 
   class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
    public:

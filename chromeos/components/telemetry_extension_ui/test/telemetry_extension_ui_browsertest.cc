@@ -65,5 +65,34 @@ void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
         ->SetAvailableRoutinesForTesting(input);
   }
 
+  {
+    auto battery_info = chromeos::cros_healthd::mojom::BatteryInfo::New();
+    battery_info->cycle_count = 100000000000000;
+    battery_info->voltage_now = 1234567890.123456;
+    battery_info->vendor = "Google";
+    battery_info->serial_number = "abcdef";
+    battery_info->charge_full_design = 3000000000000000;
+    battery_info->charge_full = 9000000000000000;
+    battery_info->voltage_min_design = 1000000000.1001;
+    battery_info->model_name = "Google Battery";
+    battery_info->charge_now = 7777777777.777;
+    battery_info->current_now = 0.9999999999999;
+    battery_info->technology = "Li-ion";
+    battery_info->status = "Charging";
+    battery_info->manufacture_date = "2020-07-30";
+    battery_info->temperature =
+        chromeos::cros_healthd::mojom::UInt64Value::New(7777777777777777);
+
+    auto info = chromeos::cros_healthd::mojom::TelemetryInfo::New();
+    info->battery_result =
+        chromeos::cros_healthd::mojom::BatteryResult::NewBatteryInfo(
+            std::move(battery_info));
+
+    DCHECK(chromeos::cros_healthd::FakeCrosHealthdClient::Get());
+
+    chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+        ->SetProbeTelemetryInfoResponseForTesting(info);
+  }
+
   SandboxedWebUiAppTestBase::SetUpOnMainThread();
 }

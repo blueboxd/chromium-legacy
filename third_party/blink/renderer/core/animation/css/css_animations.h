@@ -151,10 +151,10 @@ class CORE_EXPORT CSSAnimations final {
     Vector<EAnimPlayState> play_state_list;
   };
 
-  struct RunningTransition {
-    DISALLOW_NEW();
-
+  struct RunningTransition : public GarbageCollected<RunningTransition> {
    public:
+    virtual ~RunningTransition() = default;
+
     void Trace(Visitor* visitor) const { visitor->Trace(animation); }
 
     Member<Animation> animation;
@@ -166,7 +166,7 @@ class CORE_EXPORT CSSAnimations final {
 
   HeapVector<Member<RunningAnimation>> running_animations_;
 
-  using TransitionMap = HeapHashMap<PropertyHandle, RunningTransition>;
+  using TransitionMap = HeapHashMap<PropertyHandle, Member<RunningTransition>>;
   TransitionMap transitions_;
 
   CSSAnimationUpdate pending_update_;

@@ -13,6 +13,7 @@
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_update_callback.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class NearbyNotificationDelegate;
 class NearbyShareContactManager;
@@ -23,7 +24,7 @@ class NearbyShareLocalDeviceDataManager;
 // This service implements Nearby Sharing on top of the Nearby Connections mojo.
 // Currently only single profile will be allowed to be bound at a time and only
 // after the user has enabled Nearby Sharing in prefs.
-class NearbySharingService {
+class NearbySharingService : public KeyedService {
  public:
   enum class StatusCodes {
     // The operation was successful.
@@ -53,7 +54,7 @@ class NearbySharingService {
   using StatusCodesCallback =
       base::OnceCallback<void(StatusCodes status_codes)>;
 
-  virtual ~NearbySharingService() = default;
+  ~NearbySharingService() override = default;
 
   // Registers a send surface for handling payload transfer status and device
   // discovery.

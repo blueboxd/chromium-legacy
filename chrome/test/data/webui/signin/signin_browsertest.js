@@ -97,6 +97,6 @@ var ProfileCreationFlowTest = class extends SigninBrowserTest {
   }
 };
 
-TEST_F('ProfileCreationFlowTest', 'BackButton', function() {
+TEST_F('ProfileCreationFlowTest', 'Buttons', function() {
   mocha.run();
 });

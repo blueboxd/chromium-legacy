@@ -101,6 +101,7 @@ source_set("wayland") {
     "//third_party/wayland-protocols:xdg_shell_protocol",
     "//ui/aura",
     "//ui/base",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",

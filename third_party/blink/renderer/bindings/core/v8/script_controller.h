@@ -86,7 +86,8 @@ class CORE_EXPORT ScriptController final
       const ScriptSourceCode&,
       const KURL& base_url,
       SanitizeScriptErrors,
-      const ScriptFetchOptions& = ScriptFetchOptions());
+      const ScriptFetchOptions& = ScriptFetchOptions(),
+      ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
   v8::Local<v8::Value> ExecuteScriptInMainWorldAndReturnValue(
       const ScriptSourceCode&,
       const KURL& base_url,

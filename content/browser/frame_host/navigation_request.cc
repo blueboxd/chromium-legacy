@@ -939,7 +939,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolation_restricted */,
+          false /* origin_isolated */,
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */);
@@ -1030,7 +1030,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolation_restricted */,
+          false /* origin_isolated */,
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints
                                                      */
@@ -2060,7 +2060,7 @@ void NavigationRequest::DetermineOriginIsolationEndResult(
       break;
   }
 
-  commit_params_->origin_isolation_restricted =
+  commit_params_->origin_isolated =
       origin_isolation_end_result_ ==
           OptInOriginIsolationEndResult::kRequestedViaOriginPolicyAndIsolated ||
       origin_isolation_end_result_ ==

@@ -276,7 +276,7 @@ class SparseAttributeAdapter : public AXSparseAttributeClient {
   HashMap<AXUIntAttribute, uint32_t> uint_attributes;
   HashMap<AXStringAttribute, String> string_attributes;
   HeapHashMap<AXObjectAttribute, Member<AXObject>> object_attributes;
-  HeapHashMap<AXObjectVectorAttribute, VectorOf<AXObject>>
+  HeapHashMap<AXObjectVectorAttribute, Member<HeapVector<Member<AXObject>>>>
       object_vector_attributes;
 
  private:
@@ -308,7 +308,7 @@ class SparseAttributeAdapter : public AXSparseAttributeClient {
   }
 
   void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
-                                VectorOf<AXObject>& value) override {
+                                HeapVector<Member<AXObject>>* value) override {
     ASSERT_TRUE(object_vector_attributes.find(attribute) ==
                 object_vector_attributes.end());
     object_vector_attributes.insert(attribute, value);
@@ -350,8 +350,8 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kContentInfo,
-            sparse_attributes.object_vector_attributes
-                .at(AXObjectVectorAttribute::kAriaDetails)[0]
+            (*sparse_attributes.object_vector_attributes.at(
+                AXObjectVectorAttribute::kAriaDetails))[0]
                 ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes.object_attributes
@@ -382,8 +382,8 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kContentInfo,
-            sparse_attributes2.object_vector_attributes
-                .at(AXObjectVectorAttribute::kAriaDetails)[0]
+            (*sparse_attributes2.object_vector_attributes.at(
+                AXObjectVectorAttribute::kAriaDetails))[0]
                 ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes2.object_attributes

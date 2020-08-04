@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 
 /**
@@ -37,12 +38,18 @@ class PasswordCheckBridge {
          * @param count The total number of saved passwords.
          */
         void onSavedPasswordsFetched(int count);
+
+        /**
+         * Called when the password check status changes, e.g. from idle to running.
+         * @param status The current status of the password check.
+         */
+        void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status);
     }
 
     PasswordCheckBridge(PasswordCheckObserver passwordCheckObserver) {
         // Initialized its native counterpart. This will also start fetching the compromised
         // credentials stored in the database by the last check.
-        mNativePasswordCheckBridge = PasswordCheckBridgeJni.get().create();
+        mNativePasswordCheckBridge = PasswordCheckBridgeJni.get().create(this);
         mPasswordCheckObserver = passwordCheckObserver;
     }
 
@@ -59,6 +66,11 @@ class PasswordCheckBridge {
     // TODO(crbug.com/1102025): Add call from native.
     void onSavedPasswordsFetched(int count) {
         mPasswordCheckObserver.onSavedPasswordsFetched(count);
+    }
+
+    @CalledByNative
+    void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int state) {
+        mPasswordCheckObserver.onPasswordCheckStatusChanged(state);
     }
 
     private static void insertCredential(CompromisedCredential[] credentials, int index,
@@ -123,7 +135,7 @@ class PasswordCheckBridge {
      */
     @NativeMethods
     interface Natives {
-        long create();
+        long create(PasswordCheckBridge passwordCheckBridge);
         void startCheck(long nativePasswordCheckBridge);
         void stopCheck(long nativePasswordCheckBridge);
         int getCompromisedCredentialsCount(long nativePasswordCheckBridge);

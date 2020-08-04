@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
 import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
@@ -155,10 +154,10 @@ class PasswordCheckViewBinder {
     private static void bindHeaderView(PropertyModel model, View view, PropertyKey key) {
         if (key == CHECK_STATUS) {
             // TODO(crbug.com/1101256): Set text and illustration based on status.
-            @CheckStatus
+            @PasswordCheckUIStatus
             int status = model.get(CHECK_STATUS);
             ImageButton restartButton = view.findViewById(R.id.check_status_restart_button);
-            if (status != CheckStatus.RUNNING) {
+            if (status != PasswordCheckUIStatus.RUNNING) {
                 restartButton.setVisibility(View.VISIBLE);
                 restartButton.setClickable(true);
                 restartButton.setOnClickListener(unusedView

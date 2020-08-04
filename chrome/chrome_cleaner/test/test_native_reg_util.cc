@@ -4,9 +4,10 @@
 
 #include "chrome/chrome_cleaner/test/test_native_reg_util.h"
 
+#include <string>
+
 #include "base/guid.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
@@ -44,11 +45,11 @@ HANDLE ScopedTempRegistryKey::Get() {
   return reg_key_.Handle();
 }
 
-const base::string16& ScopedTempRegistryKey::Path() const {
+const std::wstring& ScopedTempRegistryKey::Path() const {
   return key_path_;
 }
 
-const base::string16& ScopedTempRegistryKey::FullyQualifiedPath() const {
+const std::wstring& ScopedTempRegistryKey::FullyQualifiedPath() const {
   return fully_qualified_key_path_;
 }
 

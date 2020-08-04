@@ -51,7 +51,9 @@
 #include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -336,6 +338,8 @@ void CollectPlatformFontsFromRunFontDataList(
 }  // namespace
 
 typedef blink::protocol::CSS::Backend::EnableCallback EnableCallback;
+typedef blink::protocol::CSS::Backend::TakeComputedStyleUpdatesCallback
+    TakeComputedStyleUpdatesCallback;
 
 enum ForcePseudoClassFlags {
   kPseudoNone = 0,
@@ -2226,6 +2230,7 @@ void InspectorCSSAgent::WillRemoveDOMNode(Node* node) {
   int node_id = dom_agent_->BoundNodeId(node);
   DCHECK(node_id);
   node_id_to_forced_pseudo_state_.erase(node_id);
+  computed_style_updated_node_ids_.erase(node_id);
 
   NodeToInspectorStyleSheet::iterator it =
       node_to_inspector_style_sheet_.find(node);
@@ -2593,7 +2598,7 @@ Response InspectorCSSAgent::takeCoverageDelta(
       CSSStyleRule* css_style_rule = AsCSSStyleRule(css_rule);
       rule_to_css_rule.Set(css_style_rule->GetStyleRule(), css_style_rule);
     }
-    for (auto used_rule : entry.value) {
+    for (auto used_rule : *entry.value) {
       CSSStyleRule* css_style_rule = rule_to_css_rule.at(used_rule);
       if (std::unique_ptr<protocol::CSS::RuleUsage> rule_usage_object =
               style_sheet->BuildObjectForRuleUsage(css_style_rule, true)) {
@@ -2603,6 +2608,128 @@ Response InspectorCSSAgent::takeCoverageDelta(
   }
 
   return Response::Success();
+}
+
+Response InspectorCSSAgent::trackComputedStyleUpdates(
+    std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>
+        properties_to_track) {
+  tracked_computed_styles_.clear();
+  if (properties_to_track->size() == 0) {
+    if (computed_style_updated_callback_) {
+      computed_style_updated_callback_->sendSuccess(
+          BuildArrayForComputedStyleUpdatedNodes());
+    }
+    computed_style_updated_node_ids_.clear();
+    return Response::Success();
+  }
+
+  for (const auto& property : *properties_to_track) {
+    String property_name = property->getName();
+    HashMap<String, HashSet<String>>::iterator it =
+        tracked_computed_styles_.find(property_name);
+    if (it != tracked_computed_styles_.end()) {
+      it->value.insert(property->getValue());
+    } else {
+      HashSet<String> tracked_values;
+      tracked_values.insert(property->getValue());
+      tracked_computed_styles_.Set(property_name, tracked_values);
+    }
+  }
+
+  return Response::Success();
+}
+
+void InspectorCSSAgent::takeComputedStyleUpdates(
+    std::unique_ptr<TakeComputedStyleUpdatesCallback> callback) {
+  if (tracked_computed_styles_.IsEmpty()) {
+    callback->sendFailure(Response::ServerError(
+        "No computed styles are being tracked right now."));
+    return;
+  }
+
+  if (computed_style_updated_callback_) {
+    callback->sendFailure(
+        Response::ServerError("A previous request has not been resolved yet."));
+    return;
+  }
+
+  if (computed_style_updated_node_ids_.size()) {
+    callback->sendSuccess(BuildArrayForComputedStyleUpdatedNodes());
+    computed_style_updated_node_ids_.clear();
+    return;
+  }
+
+  computed_style_updated_callback_ = std::move(callback);
+}
+
+void InspectorCSSAgent::DidUpdateComputedStyle(Element* element,
+                                               const ComputedStyle* old_style,
+                                               const ComputedStyle* new_style) {
+  if (tracked_computed_styles_.IsEmpty())
+    return;
+
+  if (!old_style && !new_style)
+    return;
+
+  int id = dom_agent_->BoundNodeId(element);
+  // If node is not mapped yet -> ignore the event.
+  if (!id)
+    return;
+
+  if (computed_style_updated_node_ids_.Contains(id))
+    return;
+
+  // Compares with the currently tracked styles to see if this node should be
+  // included
+  for (const auto& tracked_computed_style : tracked_computed_styles_) {
+    const HashSet<String>& tracked_values = tracked_computed_style.value;
+    CSSPropertyRef ref(tracked_computed_style.key, element->GetDocument());
+    if (!ref.IsValid())
+      continue;
+    const CSSProperty& tracked_property = ref.GetProperty();
+    // TODO(crbug/1108356): consider using the Prepared Value once it's ready
+    const CSSValue* old_value = old_style
+                                    ? ComputedStyleUtils::ComputedPropertyValue(
+                                          tracked_property, *old_style)
+                                    : nullptr;
+    const CSSValue* new_value = new_style
+                                    ? ComputedStyleUtils::ComputedPropertyValue(
+                                          tracked_property, *new_style)
+                                    : nullptr;
+    if (old_value == new_value)
+      continue;
+    String old_value_text = old_value ? old_value->CssText() : "";
+    String new_value_text = new_value ? new_value->CssText() : "";
+    if (old_value_text == new_value_text)
+      continue;
+    if (tracked_values.Contains(old_value_text) ||
+        tracked_values.Contains(new_value_text)) {
+      computed_style_updated_node_ids_.insert(id);
+      return;
+    }
+  }
+}
+
+void InspectorCSSAgent::Will(const probe::RecalculateStyle&) {}
+
+void InspectorCSSAgent::Did(const probe::RecalculateStyle&) {
+  if (computed_style_updated_callback_ &&
+      computed_style_updated_node_ids_.size()) {
+    computed_style_updated_callback_->sendSuccess(
+        BuildArrayForComputedStyleUpdatedNodes());
+    computed_style_updated_node_ids_.clear();
+    computed_style_updated_callback_ = nullptr;
+  }
+}
+
+std::unique_ptr<protocol::Array<int>>
+InspectorCSSAgent::BuildArrayForComputedStyleUpdatedNodes() {
+  std::unique_ptr<protocol::Array<int>> nodes =
+      std::make_unique<protocol::Array<int>>();
+  for (int node_id : computed_style_updated_node_ids_) {
+    nodes->push_back(node_id);
+  }
+  return nodes;
 }
 
 void InspectorCSSAgent::Trace(Visitor* visitor) const {

@@ -54,7 +54,7 @@ const wchar_t kProtoExtension[] = L"pb";
 // Case 2: A registry value contains paths which would ideally be sanitized,
 //   but the exact value should be reported to prevent ambiguity. Currently this
 //   generally means we just ignore the registry fields in the proto.
-const std::vector<base::string16> kAllowedLogStringsForSanitizationCheck = {
+const std::vector<std::wstring> kAllowedLogStringsForSanitizationCheck = {
     // TryToExpandPath() in disk_util.cc fits Case 1.
     L"] unable to retrieve file information on non-existing file: \'",
 
@@ -82,19 +82,19 @@ bool ParseSerializedReport(const wchar_t* const executable_name,
          report->ParseFromString(dumped_proto_string);
 }
 
-base::string16 StringToWLower(const base::string16& source) {
+std::wstring StringToWLower(const std::wstring& source) {
   // TODO(joenotcharles): Investigate moving this into string_util.cc and using
   // it instead of ToLowerASCII() through the whole code base. Case insensitive
   // compares will also need to be changed.
-  base::string16 copy = source;
+  std::wstring copy = source;
   for (wchar_t& character : copy) {
     character = towlower(character);
   }
   return copy;
 }
 
-std::vector<base::string16> GetUnsanitizedPaths() {
-  std::vector<base::string16> unsanitized_path_strings;
+std::vector<std::wstring> GetUnsanitizedPaths() {
+  std::vector<std::wstring> unsanitized_path_strings;
   bool success = true;
   for (const auto& entry : chrome_cleaner::PathKeyToSanitizeString()) {
     int id = entry.first;
@@ -104,7 +104,7 @@ std::vector<base::string16> GetUnsanitizedPaths() {
       success = false;
       continue;
     }
-    base::string16 unsanitized_path_string =
+    std::wstring unsanitized_path_string =
         StringToWLower(unsanitized_path.value());
     unsanitized_path_strings.push_back(unsanitized_path_string);
   }
@@ -112,11 +112,11 @@ std::vector<base::string16> GetUnsanitizedPaths() {
   return unsanitized_path_strings;
 }
 
-bool ContainsAnyOf(const base::string16& main_string,
-                   const std::vector<base::string16>& substrings) {
+bool ContainsAnyOf(const std::wstring& main_string,
+                   const std::vector<std::wstring>& substrings) {
   return std::any_of(substrings.begin(), substrings.end(),
-                     [&main_string](const base::string16& path) -> bool {
-                       return main_string.find(path) != base::string16::npos;
+                     [&main_string](const std::wstring& path) -> bool {
+                       return main_string.find(path) != std::wstring::npos;
                      });
 }
 
@@ -124,7 +124,7 @@ template <typename RepeatedTypeWithFileInformation>
 void CheckFieldForUnsanitizedPaths(
     const RepeatedTypeWithFileInformation& field,
     const std::string& field_name,
-    const std::vector<base::string16>& unsanitized_path_strings) {
+    const std::vector<std::wstring>& unsanitized_path_strings) {
   for (const auto& sub_field : field) {
     std::string utf8_path = sub_field.file_information().path();
     EXPECT_FALSE(ContainsAnyOf(StringToWLower(base::UTF8ToWide(utf8_path)),
@@ -136,7 +136,7 @@ void CheckFieldForUnsanitizedPaths(
 bool CheckCleanerReportForUnsanitizedPaths(
     const chrome_cleaner::ChromeCleanerReport& report) {
   EXPECT_GT(report.raw_log_line_size(), 0);
-  std::vector<base::string16> unsanitized_path_strings = GetUnsanitizedPaths();
+  std::vector<std::wstring> unsanitized_path_strings = GetUnsanitizedPaths();
   size_t line_number = 0;
   for (const auto& utf8_line : report.raw_log_line()) {
     ++line_number;
@@ -293,7 +293,7 @@ class CleanerTest
     ASSERT_TRUE(
         chrome_cleaner::ComputeSHA256DigestOfString(uws_content, &uws_hash));
 
-    const base::string16 zip_filename =
+    const std::wstring zip_filename =
         chrome_cleaner::internal::ConstructZipArchiveFileName(
             chrome_cleaner::kTestUwsBFilename, uws_hash,
             /*max_filename_length=*/255);

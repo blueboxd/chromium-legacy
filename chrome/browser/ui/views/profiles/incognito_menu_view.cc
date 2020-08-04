@@ -71,6 +71,7 @@ base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
 
 void IncognitoMenuView::OnExitButtonClicked() {
   RecordClick(ActionableItem::kExitProfileButton);
+  base::RecordAction(base::UserMetricsAction("IncognitoMenu_ExitClicked"));
   // Skipping before-unload trigger to give incognito mode users a chance to
   // quickly close all incognito windows without needing to confirm closing the
   // open forms.

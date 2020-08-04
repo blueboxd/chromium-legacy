@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/platform/web_frame_request_blocker.h"
@@ -42,18 +41,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     custom_user_agent_ = custom_user_agent;
   }
 
-  // |navigation_response_override| is used to override certain parameters of
-  // navigation requests.
-  std::unique_ptr<NavigationResponseOverrideParameters>
-  TakeNavigationResponseOverrideOwnership() {
-    return std::move(navigation_response_override_);
-  }
-
-  void set_navigation_response_override(
-      std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
-    navigation_response_override_ = std::move(response_override);
-  }
-
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   TakeURLLoaderThrottles() {
     return std::move(url_loader_throttles_);
@@ -82,8 +69,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   ~RequestExtraData() override;
 
   blink::WebString custom_user_agent_;
-  std::unique_ptr<NavigationResponseOverrideParameters>
-      navigation_response_override_;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> url_loader_throttles_;
   scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker_;
   bool allow_cross_origin_auth_prompt_ = false;

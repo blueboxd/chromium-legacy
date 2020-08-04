@@ -4,6 +4,8 @@
 
 #include "cc/paint/skottie_transfer_cache_entry.h"
 
+#include <utility>
+
 #include "cc/paint/skottie_wrapper.h"
 
 namespace cc {
@@ -37,7 +39,7 @@ size_t ServiceSkottieTransferCacheEntry::CachedSize() const {
 }
 
 bool ServiceSkottieTransferCacheEntry::Deserialize(
-    GrContext* context,
+    GrDirectContext* context,
     base::span<const uint8_t> data) {
   skottie_ = SkottieWrapper::CreateNonSerializable(data);
   cached_size_ = data.size();

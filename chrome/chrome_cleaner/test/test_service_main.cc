@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/chrome_cleaner/test/test_strings.h"

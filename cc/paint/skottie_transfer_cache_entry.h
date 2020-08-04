@@ -40,7 +40,8 @@ class CC_PAINT_EXPORT ServiceSkottieTransferCacheEntry
 
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
-  bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
+  bool Deserialize(GrDirectContext* context,
+                   base::span<const uint8_t> data) final;
 
   const scoped_refptr<SkottieWrapper>& skottie() const { return skottie_; }
 

@@ -27,7 +27,6 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "ui/accessibility/ax_param_traits.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -338,8 +337,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(blink::WebDragOperation)  // Bitmask.
-IPC_ENUM_TRAITS_MAX_VALUE(ui::DragDropTypes::DragEventSource,
-                          ui::DragDropTypes::DRAG_EVENT_SOURCE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::DropData::Kind,
                           content::DropData::Kind::LAST)
 

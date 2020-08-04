@@ -10,48 +10,45 @@
 #include <set>
 #include <string>
 
-#include "base/strings/string16.h"
-
 namespace chrome_cleaner {
 
 struct String16InsensitiveLess {
-  bool operator()(const base::string16& str1,
-                  const base::string16& str2) const {
+  bool operator()(const std::wstring& str1, const std::wstring& str2) const {
     return _wcsicmp(str1.c_str(), str2.c_str()) < 0;
   }
 };
 
-typedef std::set<base::string16, String16InsensitiveLess>
+typedef std::set<std::wstring, String16InsensitiveLess>
     String16CaseInsensitiveSet;
 
 // A function that returns true if |pattern| matches |value|, for some
 // definition of "matches".
-typedef bool (*String16Matcher)(const base::string16& value,
-                                const base::string16& pattern);
+typedef bool (*String16Matcher)(const std::wstring& value,
+                                const std::wstring& pattern);
 
 // Returns true when both strings are equal, ignoring the string case.
-bool String16EqualsCaseInsensitive(const base::string16& str1,
-                                   const base::string16& str2);
+bool String16EqualsCaseInsensitive(const std::wstring& str1,
+                                   const std::wstring& str2);
 
 // Returns true when |value| contains an occurrence of |substring|, ignoring
 // the string case.
-bool String16ContainsCaseInsensitive(const base::string16& value,
-                                     const base::string16& substring);
+bool String16ContainsCaseInsensitive(const std::wstring& value,
+                                     const std::wstring& substring);
 
 // Splits |value| into a set of strings separated by any characters in
 // |delimiters|, and returns true if any entry of the set is matched by
 // |matcher|.
-bool String16SetMatchEntry(const base::string16& value,
-                           const base::string16& delimiters,
-                           const base::string16& substring,
+bool String16SetMatchEntry(const std::wstring& value,
+                           const std::wstring& delimiters,
+                           const std::wstring& substring,
                            String16Matcher matcher);
 
 // Returns true if |text| matches |pattern|. |pattern| can contain can
 // wild-cards like * and ?. |escape_char| is an escape character for * and ?.
 // The ? wild-card matches exactly 1 character, while the * wild-card matches 0
 // or more characters.
-bool String16WildcardMatchInsensitive(const base::string16& text,
-                                      const base::string16& pattern,
+bool String16WildcardMatchInsensitive(const std::wstring& text,
+                                      const std::wstring& pattern,
                                       const wchar_t escape_char);
 
 // Returns a copy of |input| without any invalid UTF8 characters.

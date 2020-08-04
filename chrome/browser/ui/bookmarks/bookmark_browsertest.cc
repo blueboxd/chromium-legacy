@@ -36,6 +36,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -231,9 +232,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
       [&run_loop, page_title, page_url, expected_point](
           std::unique_ptr<ui::OSExchangeData> drag_data,
-          gfx::NativeView native_view,
-          ui::DragDropTypes::DragEventSource source, gfx::Point point,
-          int operation) {
+          gfx::NativeView native_view, ui::mojom::DragEventSource source,
+          gfx::Point point, int operation) {
         GURL url;
         base::string16 title;
         EXPECT_TRUE(drag_data->provider().GetURLAndTitle(
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
       {{node},
        kDragNodeIndex,
        platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()),
-       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE,
+       ui::mojom::DragEventSource::kMouse,
        expected_point},
       std::move(cb));
 
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
       [&run_loop, expected_point](std::unique_ptr<ui::OSExchangeData> drag_data,
                                   gfx::NativeView native_view,
-                                  ui::DragDropTypes::DragEventSource source,
+                                  ui::mojom::DragEventSource source,
                                   gfx::Point point, int operation) {
 #if !defined(OS_MAC)
         GURL url;
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
                                    kDragNodeIndex,
                                    platform_util::GetViewForWindow(
                                        browser()->window()->GetNativeWindow()),
-                                   ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE,
+                                   ui::mojom::DragEventSource::kMouse,
                                    expected_point,
                                },
                                std::move(cb));

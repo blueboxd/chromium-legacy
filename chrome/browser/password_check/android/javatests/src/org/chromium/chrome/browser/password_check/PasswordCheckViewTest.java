@@ -43,7 +43,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties;
 import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -101,7 +100,7 @@ public class PasswordCheckViewTest {
     @MediumTest
     public void testDisplaysHeaderAndCredential() {
         runOnUiThreadBlocking(() -> {
-            mModel.get(ITEMS).add(buildHeader(CheckStatus.SUCCESS));
+            mModel.get(ITEMS).add(buildHeader(PasswordCheckUIStatus.IDLE));
             mModel.get(ITEMS).add(buildCredentialItem(ANA));
         });
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(2)));
@@ -121,7 +120,8 @@ public class PasswordCheckViewTest {
     @Test
     @MediumTest
     public void testStatusDisplaysRestartAction() {
-        runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(CheckStatus.SUCCESS)); });
+        runOnUiThreadBlocking(
+                () -> { mModel.get(ITEMS).add(buildHeader(PasswordCheckUIStatus.IDLE)); });
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
         assertThat(getActionButton().getVisibility(), is(View.VISIBLE));
     }
@@ -129,7 +129,8 @@ public class PasswordCheckViewTest {
     @Test
     @MediumTest
     public void testStatusNotDisplaysRestartAction() {
-        runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(CheckStatus.RUNNING)); });
+        runOnUiThreadBlocking(
+                () -> { mModel.get(ITEMS).add(buildHeader(PasswordCheckUIStatus.RUNNING)); });
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
         assertThat(getActionButton().getVisibility(), is(View.GONE));
     }
@@ -225,7 +226,7 @@ public class PasswordCheckViewTest {
         verify(mMockHandler).onRemove(eq(ANA));
     }
 
-    private MVCListAdapter.ListItem buildHeader(@CheckStatus int status) {
+    private MVCListAdapter.ListItem buildHeader(@PasswordCheckUIStatus int status) {
         return new MVCListAdapter.ListItem(PasswordCheckProperties.ItemType.HEADER,
                 new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                         .with(CHECK_STATUS, status)

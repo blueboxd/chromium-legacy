@@ -22,6 +22,7 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_move_loop.h"
@@ -121,7 +122,7 @@ class SimpleTestDragDropClient : public aura::client::DragDropClient,
                        aura::Window* source_window,
                        const gfx::Point& screen_location,
                        int operation,
-                       ui::DragDropTypes::DragEventSource source) override;
+                       ui::mojom::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
@@ -312,7 +313,7 @@ int SimpleTestDragDropClient::StartDragAndDrop(
     aura::Window* source_window,
     const gfx::Point& screen_location,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   InitDrag(operation, data.get());
 
   auto loop = CreateMoveLoop(this);
@@ -478,7 +479,7 @@ class X11DragDropClientTest : public ViewsTestBase {
     return client_->StartDragAndDrop(
         std::move(data), widget_->GetNativeWindow()->GetRootWindow(),
         widget_->GetNativeWindow(), gfx::Point(), ui::DragDropTypes::DRAG_COPY,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+        ui::mojom::DragEventSource::kMouse);
   }
 
   // ViewsTestBase:

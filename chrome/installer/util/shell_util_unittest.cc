@@ -652,8 +652,10 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
   ShellUtil::ShortcutProperties expected_properties3(test_properties_);
 
   // Shortcut 4: targets "chrome.exe"; has both unknown and known arguments.
+  const base::string16 kKnownArg = L"--app-id";
+  const base::string16 kExpectedArgs = L"foo.com " + kKnownArg;
   test_properties_.set_shortcut_name(L"Chrome 4");
-  test_properties_.set_arguments(L"foo.com --show-app-list");
+  test_properties_.set_arguments(kExpectedArgs);
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
       ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
       ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
@@ -675,7 +677,7 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
   EXPECT_EQ(shortcut3_path, shortcut3.first);
   EXPECT_EQ(L"foo.com", shortcut3.second);
   EXPECT_EQ(shortcut4_path, shortcut4.first);
-  EXPECT_EQ(L"foo.com --show-app-list", shortcut4.second);
+  EXPECT_EQ(kExpectedArgs, shortcut4.second);
 
   // Clear shortcuts.
   shortcuts.clear();
@@ -690,7 +692,7 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
   EXPECT_EQ(shortcut3_path, shortcut3.first);
   EXPECT_EQ(L"foo.com", shortcut3.second);
   EXPECT_EQ(shortcut4_path, shortcut4.first);
-  EXPECT_EQ(L"foo.com --show-app-list", shortcut4.second);
+  EXPECT_EQ(kExpectedArgs, shortcut4.second);
 
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                          expected_properties1);
@@ -699,7 +701,7 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
   expected_properties3.set_arguments(base::string16());
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                          expected_properties3);
-  expected_properties4.set_arguments(L"--show-app-list");
+  expected_properties4.set_arguments(kKnownArg);
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                          expected_properties4);
 }

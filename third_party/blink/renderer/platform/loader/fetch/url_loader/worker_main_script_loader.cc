@@ -33,8 +33,6 @@ void WorkerMainScriptLoader::Start(
     CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
         resource_load_info_notifier,
     WorkerMainScriptLoaderClient* client) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
   DCHECK(resource_loade_observer);
   DCHECK(client);
   initial_request_.CopyFrom(fetch_params.GetResourceRequest());

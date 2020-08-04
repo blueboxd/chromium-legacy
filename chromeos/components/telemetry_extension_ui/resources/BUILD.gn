@@ -52,5 +52,4 @@ js_library("message_types") {
 }
 
 js_library("untrusted_worker") {
-  sources = [ "untrusted_worker.js" ]
 }

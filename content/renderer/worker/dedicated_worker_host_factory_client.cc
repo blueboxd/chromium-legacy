@@ -6,7 +6,6 @@
 
 #include <utility>
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -14,7 +13,6 @@
 #include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/loader/feature_utils.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/tokens/tokens_mojom_traits.h"
@@ -83,8 +81,6 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
                     ->CloneWithoutAppCacheFactory(),
                 std::move(pending_subresource_loader_updater_),
                 std::move(task_runner));
-    worker_fetch_context->SetResponseOverrideForMainScript(
-        std::move(response_override_for_main_script_));
   } else {
     worker_fetch_context =
         static_cast<WebWorkerFetchContextImpl*>(web_worker_fetch_context)
@@ -113,8 +109,6 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
               ->resource_dispatcher()
               ->cors_exempt_header_list(),
           std::move(pending_resource_load_info_notifier));
-  worker_fetch_context->SetResponseOverrideForMainScript(
-      std::move(response_override_for_main_script_));
   return worker_fetch_context;
 }
 
@@ -159,37 +153,19 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
 
   // Initialize the loading parameters for the main worker script loaded by
   // the browser process.
-  if (blink::IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled()) {
-    auto worker_main_script_load_params =
-        std::make_unique<blink::WorkerMainScriptLoadParameters>();
-    worker_main_script_load_params->response_head =
-        std::move(main_script_load_params->response_head);
-    worker_main_script_load_params->response_body =
-        std::move(main_script_load_params->response_body);
-    worker_main_script_load_params->redirect_responses =
-        std::move(main_script_load_params->redirect_response_heads);
-    worker_main_script_load_params->redirect_infos =
-        main_script_load_params->redirect_infos;
-    worker_main_script_load_params->url_loader_client_endpoints =
-        std::move(main_script_load_params->url_loader_client_endpoints);
-    worker_->OnScriptLoadStarted(std::move(worker_main_script_load_params));
-  } else {
-    DCHECK(!response_override_for_main_script_);
-    response_override_for_main_script_ =
-        std::make_unique<NavigationResponseOverrideParameters>();
-    response_override_for_main_script_->url_loader_client_endpoints =
-        std::move(main_script_load_params->url_loader_client_endpoints);
-    response_override_for_main_script_->response_head =
-        std::move(main_script_load_params->response_head);
-    response_override_for_main_script_->response_body =
-        std::move(main_script_load_params->response_body);
-    response_override_for_main_script_->redirect_responses =
-        std::move(main_script_load_params->redirect_response_heads);
-    response_override_for_main_script_->redirect_infos =
-        main_script_load_params->redirect_infos;
-
-    worker_->OnScriptLoadStarted(/*worker_main_script_load_params=*/nullptr);
-  }
+  auto worker_main_script_load_params =
+      std::make_unique<blink::WorkerMainScriptLoadParameters>();
+  worker_main_script_load_params->response_head =
+      std::move(main_script_load_params->response_head);
+  worker_main_script_load_params->response_body =
+      std::move(main_script_load_params->response_body);
+  worker_main_script_load_params->redirect_responses =
+      std::move(main_script_load_params->redirect_response_heads);
+  worker_main_script_load_params->redirect_infos =
+      main_script_load_params->redirect_infos;
+  worker_main_script_load_params->url_loader_client_endpoints =
+      std::move(main_script_load_params->url_loader_client_endpoints);
+  worker_->OnScriptLoadStarted(std::move(worker_main_script_load_params));
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStartFailed() {

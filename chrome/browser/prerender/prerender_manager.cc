@@ -31,18 +31,13 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
-#include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/predictors/loading_predictor.h"
-#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
-#include "chrome/browser/prerender/prerender_manager_delegate.h"
-#include "chrome/browser/prerender/prerender_tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prerender/browser/prerender_histograms.h"
 #include "components/prerender/browser/prerender_history.h"
+#include "components/prerender/browser/prerender_manager_delegate.h"
 #include "components/prerender/browser/prerender_util.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_types.mojom.h"
@@ -62,7 +57,6 @@
 #include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "ui/gfx/geometry/rect.h"
 
-using chrome_browser_net::NetworkPredictionStatus;
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::SessionStorageNamespace;
@@ -139,9 +133,9 @@ struct PrerenderManager::NavigationRecord {
 };
 
 PrerenderManager::PrerenderManager(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     std::unique_ptr<PrerenderManagerDelegate> delegate)
-    : profile_(profile),
+    : browser_context_(browser_context),
       delegate_(std::move(delegate)),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       prerender_history_(std::make_unique<PrerenderHistory>(kHistoryLength)),
@@ -168,7 +162,7 @@ PrerenderManager::~PrerenderManager() {
 void PrerenderManager::Shutdown() {
   DestroyAllContents(FINAL_STATUS_PROFILE_DESTROYED);
   on_close_web_contents_deleters_.clear();
-  profile_ = nullptr;
+  browser_context_ = nullptr;
 
   DCHECK(active_prerenders_.empty());
 }
@@ -410,14 +404,9 @@ std::unique_ptr<base::DictionaryValue> PrerenderManager::CopyAsValue() const {
   auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->Set("history", prerender_history_->CopyEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
-  dict_value->SetBoolean(
-      "enabled", GetPredictionStatus() == NetworkPredictionStatus::ENABLED);
-  std::string disabled_note;
-  if (GetPredictionStatus() == NetworkPredictionStatus::DISABLED_ALWAYS)
-    disabled_note = "Disabled by user setting";
-  if (GetPredictionStatus() == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK)
-    disabled_note = "Disabled on cellular connection by default";
-  dict_value->SetString("disabled_note", disabled_note);
+  dict_value->SetBoolean("enabled", delegate_->IsPredictionEnabled());
+  dict_value->SetString("disabled_note",
+                        delegate_->GetReasonForDisablingPrediction());
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
   dict_value->SetString("enabled_note", enabled_note);
@@ -554,11 +543,9 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
     return nullptr;
   }
 
-  NetworkPredictionStatus prerendering_status =
-      GetPredictionStatusForOrigin(origin);
-  if (prerendering_status != NetworkPredictionStatus::ENABLED) {
+  if (!delegate_->IsPredictionEnabled(origin)) {
     FinalStatus final_status =
-        prerendering_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK
+        delegate_->IsPredictionDisabledDueToNetwork(origin)
             ? FINAL_STATUS_CELLULAR_NETWORK
             : FINAL_STATUS_PRERENDERING_DISABLED;
     SkipPrerenderContentsAndMaybePreconnect(url, origin, final_status);
@@ -596,8 +583,8 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
   // TODO(ppi): Check whether there are usually enough render processes
   // available on Android. If not, kill an existing renderers so that we can
   // create a new one.
-  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(profile_,
-                                                                    url) &&
+  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
+          browser_context_, url) &&
       !content::RenderProcessHost::run_renderer_in_process()) {
     SkipPrerenderContentsAndMaybePreconnect(url, origin,
                                             FINAL_STATUS_TOO_MANY_PROCESSES);
@@ -794,8 +781,8 @@ std::unique_ptr<PrerenderContents> PrerenderManager::CreatePrerenderContents(
     Origin origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return base::WrapUnique(prerender_contents_factory_->CreatePrerenderContents(
-      delegate_->GetPrerenderContentsDelegate(), this, profile_, url, referrer,
-      initiator_origin, origin));
+      delegate_->GetPrerenderContentsDelegate(), this, browser_context_, url,
+      referrer, initiator_origin, origin));
 }
 
 void PrerenderManager::SortActivePrerenders() {
@@ -987,49 +974,13 @@ void PrerenderManager::RecordNetworkBytesConsumed(Origin origin,
                                                   int64_t prerender_bytes) {
   if (!IsNoStatePrefetchEnabled())
     return;
-  int64_t recent_profile_bytes =
-      profile_network_bytes_ - last_recorded_profile_network_bytes_;
-  last_recorded_profile_network_bytes_ = profile_network_bytes_;
-  DCHECK_GE(recent_profile_bytes, 0);
+  int64_t recent_browser_context_bytes =
+      browser_context_network_bytes_ -
+      last_recorded_browser_context_network_bytes_;
+  last_recorded_browser_context_network_bytes_ = browser_context_network_bytes_;
+  DCHECK_GE(recent_browser_context_bytes, 0);
   histograms_->RecordNetworkBytesConsumed(origin, prerender_bytes,
-                                          recent_profile_bytes);
-}
-
-NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
-}
-
-NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
-    Origin origin) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // <link rel=prerender> origins ignore the network state and the privacy
-  // settings. Web developers should be able prefetch with all possible privacy
-  // settings and with all possible network types. This would avoid web devs
-  // coming up with creative ways to prefetch in cases they are not allowed to
-  // do so.
-  if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN ||
-      origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) {
-    return NetworkPredictionStatus::ENABLED;
-  }
-
-  // Prerendering forced for cellular networks still prevents navigation with
-  // the DISABLED_ALWAYS selected via privacy settings.
-  NetworkPredictionStatus prediction_status =
-      chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
-  if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER &&
-      prediction_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK) {
-    return NetworkPredictionStatus::ENABLED;
-  }
-  return prediction_status;
-}
-
-void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64_t bytes) {
-  DCHECK_GE(bytes, 0);
-  if (GetPredictionStatus() == NetworkPredictionStatus::ENABLED &&
-      IsNoStatePrefetchEnabled())
-    profile_network_bytes_ += bytes;
+                                          recent_browser_context_bytes);
 }
 
 void PrerenderManager::AddPrerenderProcessHost(

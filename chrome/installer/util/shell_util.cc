@@ -1388,7 +1388,6 @@ bool ShortcutOpListOrRemoveUnknownArgs(
   const char* const kept_switches[] = {
       switches::kApp,
       switches::kAppId,
-      switches::kShowAppList,
       switches::kProfileDirectory,
   };
   base::CommandLine desired_args(base::CommandLine::NO_PROGRAM);

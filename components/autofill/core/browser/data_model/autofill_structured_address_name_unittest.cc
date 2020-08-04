@@ -362,5 +362,164 @@ TEST(AutofillStructuredName, TestSettingMiddleNameInitial) {
   EXPECT_EQ(full_name.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("M"));
 }
 
+TEST(AutofillStructuredName, MergePermutatedNames) {
+  NameFull one;
+  NameFull two;
+
+  // The first component has an observed substructure of the full name.
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(
+      NAME_FIRST, base::ASCIIToUTF16("First"), VerificationStatus::kObserved));
+  EXPECT_TRUE(one.SetValueForTypeIfPossible(
+      NAME_LAST, base::ASCIIToUTF16("Last"), VerificationStatus::kObserved));
+  one.CompleteFullTree();
+
+  // The formatted full name has the canonical representation "FIRST LAST".
+  EXPECT_EQ(one.GetValueForType(NAME_FULL), base::ASCIIToUTF16("First Last"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kFormatted);
+
+  // In contrast, the second component has a verified name in an alternative
+  // representation "LAST, FIRST"
+  EXPECT_TRUE(two.SetValueForTypeIfPossible(NAME_FULL,
+                                            base::ASCIIToUTF16("Last, First"),
+                                            VerificationStatus::kUserVerified));
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_TRUE(two.CompleteFullTree());
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+
+  EXPECT_EQ(two.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("First"));
+  EXPECT_EQ(two.GetValueForType(NAME_LAST), base::ASCIIToUTF16("Last"));
+
+  EXPECT_TRUE(one.MergeWithComponent(two));
+
+  // It is expected that the alternative representation of the second component
+  // is merged into the first one, while maintaining the observed substructure.
+  EXPECT_EQ(one.GetValueForType(NAME_FULL), base::ASCIIToUTF16("Last, First"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("First"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetValueForType(NAME_LAST), base::ASCIIToUTF16("Last"));
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
+}
+
+TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
+  NameFull one;
+  NameFull two;
+
+  // The first name has an incorrect componentization of the last name, but a
+  // correctly observed structure of title, first, middle, last.
+  one.SetValueForTypeIfPossible(
+      NAME_FULL, base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"),
+      VerificationStatus::kUserVerified);
+  one.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX, base::ASCIIToUTF16("Mr"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Pablo Diego"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16(""),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_LAST, base::ASCIIToUTF16("Ruiz y Picasso"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_LAST_SECOND,
+                                base::ASCIIToUTF16("Ruiz y Picasso"),
+                                VerificationStatus::kParsed);
+
+  // The second name has a correct componentization of the last name, but an
+  // incorrectly parsed structure of title,first,middle,last.
+  two.SetValueForTypeIfPossible(
+      NAME_FULL, base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"),
+      VerificationStatus::kUserVerified);
+  two.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX, base::ASCIIToUTF16(""),
+                                VerificationStatus::kParsed);
+  two.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Mr Pablo"),
+                                VerificationStatus::kParsed);
+  two.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16("Diege"),
+                                VerificationStatus::kParsed);
+  two.SetValueForTypeIfPossible(NAME_LAST, base::ASCIIToUTF16("Ruiz y Picasso"),
+                                VerificationStatus::kParsed);
+  two.SetValueForTypeIfPossible(NAME_LAST_FIRST, base::ASCIIToUTF16("Ruiz"),
+                                VerificationStatus::kObserved);
+  two.SetValueForTypeIfPossible(NAME_LAST_CONJUNCTION, base::ASCIIToUTF16("y"),
+                                VerificationStatus::kObserved);
+  two.SetValueForTypeIfPossible(NAME_LAST_SECOND, base::ASCIIToUTF16("Picasso"),
+                                VerificationStatus::kObserved);
+
+  // By merging both, it is expected that the title, first, middle, last
+  // structure of |one| is maintained, while the substructure of the last name
+  // is taken from two.
+  NameFull copy_of_one;
+  copy_of_one = one;
+  EXPECT_TRUE(one.MergeWithComponent(two));
+
+  EXPECT_EQ(one.GetValueForType(NAME_FULL),
+            base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"));
+  EXPECT_EQ(one.GetValueForType(NAME_HONORIFIC_PREFIX),
+            base::ASCIIToUTF16("Mr"));
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Pablo Diego"));
+  EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16(""));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST),
+            base::ASCIIToUTF16("Ruiz y Picasso"));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST_FIRST), base::ASCIIToUTF16("Ruiz"));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST_CONJUNCTION),
+            base::ASCIIToUTF16("y"));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST_SECOND),
+            base::ASCIIToUTF16("Picasso"));
+
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_HONORIFIC_PREFIX),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST_CONJUNCTION),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST_SECOND),
+            VerificationStatus::kObserved);
+
+  // The merging should work in both directions equally.
+  EXPECT_TRUE(two.MergeWithComponent(copy_of_one));
+
+  EXPECT_EQ(two.GetValueForType(NAME_FULL),
+            base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"));
+  EXPECT_EQ(two.GetValueForType(NAME_HONORIFIC_PREFIX),
+            base::ASCIIToUTF16("Mr"));
+  EXPECT_EQ(two.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Pablo Diego"));
+  EXPECT_EQ(two.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16(""));
+  EXPECT_EQ(two.GetValueForType(NAME_LAST),
+            base::ASCIIToUTF16("Ruiz y Picasso"));
+  EXPECT_EQ(two.GetValueForType(NAME_LAST_FIRST), base::ASCIIToUTF16("Ruiz"));
+  EXPECT_EQ(two.GetValueForType(NAME_LAST_CONJUNCTION),
+            base::ASCIIToUTF16("y"));
+  EXPECT_EQ(two.GetValueForType(NAME_LAST_SECOND),
+            base::ASCIIToUTF16("Picasso"));
+
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_HONORIFIC_PREFIX),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_LAST_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_LAST_CONJUNCTION),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(two.GetVerificationStatusForType(NAME_LAST_SECOND),
+            VerificationStatus::kObserved);
+}
+
 }  // namespace structured_address
 }  // namespace autofill

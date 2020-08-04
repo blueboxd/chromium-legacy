@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "content/public/common/network_service_util.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -64,36 +63,18 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 
   // Initialize the loading parameters for the main worker script loaded by
   // the browser process.
-  std::unique_ptr<blink::WorkerMainScriptLoadParameters>
-      worker_main_script_load_params;
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override;
-  if (base::FeatureList::IsEnabled(
-          blink::features::kLoadMainScriptForPlzDedicatedWorkerByParams)) {
-    worker_main_script_load_params =
-        std::make_unique<blink::WorkerMainScriptLoadParameters>();
-    worker_main_script_load_params->response_head =
-        std::move(main_script_load_params->response_head);
-    worker_main_script_load_params->response_body =
-        std::move(main_script_load_params->response_body);
-    worker_main_script_load_params->redirect_responses =
-        std::move(main_script_load_params->redirect_response_heads);
-    worker_main_script_load_params->redirect_infos =
-        main_script_load_params->redirect_infos;
-    worker_main_script_load_params->url_loader_client_endpoints =
-        std::move(main_script_load_params->url_loader_client_endpoints);
-  } else {
-    response_override =
-        std::make_unique<NavigationResponseOverrideParameters>();
-    response_override->url_loader_client_endpoints =
-        std::move(main_script_load_params->url_loader_client_endpoints);
-    response_override->response_head =
-        std::move(main_script_load_params->response_head);
-    response_override->response_body =
-        std::move(main_script_load_params->response_body);
-    response_override->redirect_responses =
-        std::move(main_script_load_params->redirect_response_heads);
-    response_override->redirect_infos = main_script_load_params->redirect_infos;
-  }
+  auto worker_main_script_load_params =
+      std::make_unique<blink::WorkerMainScriptLoadParameters>();
+  worker_main_script_load_params->response_head =
+      std::move(main_script_load_params->response_head);
+  worker_main_script_load_params->response_body =
+      std::move(main_script_load_params->response_body);
+  worker_main_script_load_params->redirect_responses =
+      std::move(main_script_load_params->redirect_response_heads);
+  worker_main_script_load_params->redirect_infos =
+      main_script_load_params->redirect_infos;
+  worker_main_script_load_params->url_loader_client_endpoints =
+      std::move(main_script_load_params->url_loader_client_endpoints);
 
   // If the network service crashes, then self-destruct so clients don't get
   // stuck with a worker with a broken loader. Self-destruction is effectively
@@ -128,8 +109,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   scoped_refptr<blink::WebWorkerFetchContext> worker_fetch_context =
       CreateWorkerFetchContext(info->url, std::move(renderer_preferences),
                                std::move(preference_watcher_receiver),
-                               cors_exempt_header_list,
-                               std::move(response_override));
+                               cors_exempt_header_list);
 
   impl_ = blink::WebSharedWorker::CreateAndStart(
       token, info->url, info->options->type, info->options->credentials,
@@ -165,8 +145,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     const blink::mojom::RendererPreferences& renderer_preferences,
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
-    const std::vector<std::string>& cors_exempt_header_list,
-    std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
+    const std::vector<std::string>& cors_exempt_header_list) {
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
   std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory =
@@ -190,13 +169,6 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // (crbug.com/723553)
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
   worker_fetch_context->set_site_for_cookies(net::SiteForCookies::FromUrl(url));
-
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kLoadMainScriptForPlzDedicatedWorkerByParams)) {
-    DCHECK(response_override);
-    worker_fetch_context->SetResponseOverrideForMainScript(
-        std::move(response_override));
-  }
 
   return worker_fetch_context;
 }

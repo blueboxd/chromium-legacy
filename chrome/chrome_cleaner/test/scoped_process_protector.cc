@@ -6,10 +6,11 @@
 
 #include <aclapi.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 
 namespace chrome_cleaner {
 
@@ -90,7 +91,7 @@ void ScopedProcessProtector::DenyAccess(ACCESS_MASK access_to_deny) {
   static constexpr wchar_t kEveryoneGroup[] = L"EVERYONE";
 
   // The Trustee parameter requires a non-const string.
-  base::string16 trustee_name(kEveryoneGroup);
+  std::wstring trustee_name(kEveryoneGroup);
 
   EXPLICIT_ACCESS access = {};
   access.grfAccessPermissions = access_to_deny;

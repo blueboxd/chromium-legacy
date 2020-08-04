@@ -16,6 +16,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 
 namespace exo {
 namespace {
@@ -103,7 +104,7 @@ TEST_F(DragDropOperationTest, DeleteDuringDragging) {
 
   auto operation = DragDropOperation::Create(
       data_source.get(), origin_surface.get(), icon_surface.get(), gfx::Point(),
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+      ui::mojom::DragEventSource::kMouse);
   icon_surface->Commit();
 
   base::RunLoop run_loop;

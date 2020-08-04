@@ -836,7 +836,7 @@ void CSSAnimations::SnapshotCompositorKeyframes(
     snapshot(updated_animation.effect.Get());
 
   for (const auto& new_transition : update.NewTransitions())
-    snapshot(new_transition.value.effect.Get());
+    snapshot(new_transition.value->effect.Get());
 }
 
 void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
@@ -926,7 +926,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
        pending_update_.CancelledTransitions()) {
     DCHECK(transitions_.Contains(property));
 
-    Animation* animation = transitions_.Take(property).animation;
+    Animation* animation = transitions_.Take(property)->animation;
     auto* effect = To<KeyframeEffect>(animation->effect());
     if (effect && effect->HasActiveAnimationsOnCompositor(property) &&
         pending_update_.NewTransitions().find(property) !=
@@ -947,7 +947,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   for (const PropertyHandle& property : pending_update_.FinishedTransitions()) {
     // This transition can also be cancelled and finished at the same time
     if (transitions_.Contains(property)) {
-      Animation* animation = transitions_.Take(property).animation;
+      Animation* animation = transitions_.Take(property)->animation;
       // Transition must be downgraded
       if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect()))
         effect->DowngradeToNormal();
@@ -961,18 +961,19 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   }
 
   for (const auto& entry : pending_update_.NewTransitions()) {
-    const CSSAnimationUpdate::NewTransition& new_transition = entry.value;
+    const CSSAnimationUpdate::NewTransition* new_transition = entry.value;
 
-    RunningTransition running_transition;
-    running_transition.from = new_transition.from;
-    running_transition.to = new_transition.to;
-    running_transition.reversing_adjusted_start_value =
-        new_transition.reversing_adjusted_start_value;
-    running_transition.reversing_shortening_factor =
-        new_transition.reversing_shortening_factor;
+    RunningTransition* running_transition =
+        MakeGarbageCollected<RunningTransition>();
+    running_transition->from = new_transition->from;
+    running_transition->to = new_transition->to;
+    running_transition->reversing_adjusted_start_value =
+        new_transition->reversing_adjusted_start_value;
+    running_transition->reversing_shortening_factor =
+        new_transition->reversing_shortening_factor;
 
-    const PropertyHandle& property = new_transition.property;
-    const InertEffect* inert_animation = new_transition.effect.Get();
+    const PropertyHandle& property = new_transition->property;
+    const InertEffect* inert_animation = new_transition->effect.Get();
     TransitionEventDelegate* event_delegate =
         MakeGarbageCollected<TransitionEventDelegate>(element, property);
 
@@ -994,7 +995,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       animation->setStartTime(element->GetDocument().Timeline().currentTime());
     }
     animation->Update(kTimingUpdateOnDemand);
-    running_transition.animation = animation;
+    running_transition->animation = animation;
     transitions_.Set(property, running_transition);
     DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
     element->GetDocument().CountAnimatedProperty(
@@ -1038,7 +1039,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
         state.active_transitions->find(property);
     if (active_transition_iter != state.active_transitions->end()) {
       const RunningTransition* running_transition =
-          &active_transition_iter->value;
+          active_transition_iter->value;
       if (CSSPropertyEquality::PropertiesEqual(property, state.style,
                                                *running_transition->to)) {
         return;
@@ -1325,7 +1326,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
           UseCounter::Count(animating_element->GetDocument(),
                             WebFeature::kCSSTransitionCancelledByRemovingStyle);
         }
-      } else if (entry.value.animation->FinishedInternal()) {
+      } else if (entry.value->animation->FinishedInternal()) {
         update.FinishTransition(property);
       }
     }
@@ -1350,8 +1351,8 @@ scoped_refptr<const ComputedStyle> CSSAnimations::CalculateBeforeChangeStyle(
     // all declarative animations. Currently, only including transitions.
     HeapVector<Member<Animation>> animations;
     for (const auto& entry : transition_map) {
-      RunningTransition transition = entry.value;
-      Animation* animation = transition.animation;
+      RunningTransition* transition = entry.value;
+      Animation* animation = transition->animation;
       animations.push_back(animation);
     }
     std::sort(animations.begin(), animations.end(),
@@ -1379,10 +1380,10 @@ scoped_refptr<const ComputedStyle> CSSAnimations::CalculateBeforeChangeStyle(
 
       for (const auto& interpolation : sample) {
         PropertyHandle handle = interpolation->GetProperty();
-        auto interpolation_map_entry =
-            interpolations_map.insert(handle, ActiveInterpolations());
+        auto interpolation_map_entry = interpolations_map.insert(
+            handle, MakeGarbageCollected<ActiveInterpolations>());
         auto& active_interpolations =
-            interpolation_map_entry.stored_value->value;
+            *interpolation_map_entry.stored_value->value;
         if (!interpolation->DependsOnUnderlyingValue())
           active_interpolations.clear();
         active_interpolations.push_back(interpolation);
@@ -1402,8 +1403,8 @@ void CSSAnimations::Cancel() {
   }
 
   for (const auto& entry : transitions_) {
-    entry.value.animation->cancel();
-    entry.value.animation->Update(kTimingUpdateOnDemand);
+    entry.value->animation->cancel();
+    entry.value->animation->Update(kTimingUpdateOnDemand);
   }
 
   running_animations_.clear();
@@ -1513,7 +1514,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
   } else {
     HeapVector<Member<const InertEffect>> new_transitions;
     for (const auto& entry : update.NewTransitions())
-      new_transitions.push_back(entry.value.effect.Get());
+      new_transitions.push_back(entry.value->effect.Get());
 
     HeapHashSet<Member<const Animation>> cancelled_animations;
     if (!update.CancelledTransitions().IsEmpty()) {
@@ -1523,7 +1524,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
       for (const PropertyHandle& property : update.CancelledTransitions()) {
         DCHECK(transition_map.Contains(property));
         cancelled_animations.insert(
-            transition_map.at(property).animation.Get());
+            transition_map.at(property)->animation.Get());
       }
     }
 

@@ -378,22 +378,23 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
   }
 
   // Convert path to a virtual path relative to one of the external mounts,
-  // then get it as a FilesSystemURL to convert to a path inside crostini,
-  // then remove /mnt/chromeos/ base dir prefix to get the path to unshare.
+  // then get it as a FilesSystemURL to convert to a path inside the VM,
+  // then remove mount base dir prefix to get the path to unshare.
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   base::FilePath virtual_path;
+  base::FilePath dummy_vm_mount("/");
   base::FilePath inside;
   bool result = mount_points->GetVirtualPath(path, &virtual_path);
   if (result) {
     storage::FileSystemURL url = mount_points->CreateCrackedFileSystemURL(
         url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
-    result = file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
-        profile_, url, &inside);
+    result = file_manager::util::ConvertFileSystemURLToPathInsideVM(
+        profile_, url, dummy_vm_mount, &inside,
+        /*map_crostini_home=*/vm_name == crostini::kCrostiniDefaultVmName);
   }
   base::FilePath unshare_path;
-  if (!result || !crostini::ContainerChromeOSBaseDirectory().AppendRelativePath(
-                     inside, &unshare_path)) {
+  if (!result || !dummy_vm_mount.AppendRelativePath(inside, &unshare_path)) {
     std::move(callback).Run(false, "Invalid path to unshare");
     return;
   }

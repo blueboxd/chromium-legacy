@@ -148,7 +148,6 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  DCHECK(!request_info->navigation_response_override);
   request_info->local_response_start = base::TimeTicks::Now();
   request_info->remote_request_start = response_head->load_timing.request_start;
   // Now that response_start has been set, we can properly set the TimeTicks in
@@ -416,17 +415,13 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     network::mojom::RequestDestination request_destination,
     int render_frame_id,
-    const GURL& request_url,
-    std::unique_ptr<NavigationResponseOverrideParameters>
-        navigation_response_override_params)
+    const GURL& request_url)
     : peer(std::move(peer)),
       request_destination(request_destination),
       render_frame_id(render_frame_id),
       url(request_url),
       response_url(request_url),
-      local_request_start(base::TimeTicks::Now()),
-      navigation_response_override(
-          std::move(navigation_response_override_params)) {}
+      local_request_start(base::TimeTicks::Now()) {}
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
 }
@@ -507,9 +502,7 @@ int ResourceDispatcher::StartAsync(
     uint32_t loader_options,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
-    std::unique_ptr<NavigationResponseOverrideParameters>
-        response_override_params) {
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles) {
   CheckSchemeForReferrerPolicy(*request);
 
 #if defined(OS_ANDROID)
@@ -521,15 +514,11 @@ int ResourceDispatcher::StartAsync(
   }
 #endif
 
-  bool override_url_loader =
-      !!response_override_params &&
-      !!response_override_params->url_loader_client_endpoints;
-
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
       std::move(peer), request->destination, request->render_frame_id,
-      request->url, std::move(response_override_params));
+      request->url);
   PendingRequestInfo* pending_request = pending_requests_[request_id].get();
 
   pending_request->resource_load_info = NotifyResourceLoadInitiated(
@@ -538,25 +527,6 @@ int ResourceDispatcher::StartAsync(
       request->priority);
 
   pending_request->previews_state = request->previews_state;
-
-  if (override_url_loader) {
-    DCHECK(request->destination ==
-               network::mojom::RequestDestination::kWorker ||
-           request->destination ==
-               network::mojom::RequestDestination::kSharedWorker)
-        << request->destination;
-
-    // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
-    // pass true for |bypass_redirect_checks|.
-    pending_request->url_loader_client = std::make_unique<URLLoaderClientImpl>(
-        request_id, this, loading_task_runner,
-        true /* bypass_redirect_checks */, request->url);
-
-    loading_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
-                                  weak_factory_.GetWeakPtr(), request_id));
-    return request_id;
-  }
 
   std::unique_ptr<URLLoaderClientImpl> client(new URLLoaderClientImpl(
       request_id, this, loading_task_runner,
@@ -612,54 +582,6 @@ void ResourceDispatcher::ToLocalURLResponseHead(
   RemoteToLocalTimeTicks(converter, &load_timing->service_worker_fetch_start);
   RemoteToLocalTimeTicks(converter,
                          &load_timing->service_worker_respond_with_settled);
-}
-
-// TODO(dgozman): this is not used for navigation anymore, only for worker
-// main script. Rename all related entities accordingly.
-void ResourceDispatcher::ContinueForNavigation(int request_id) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
-    return;
-
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override =
-      std::move(request_info->navigation_response_override);
-  DCHECK(response_override);
-
-  // Mark the request so we do not attempt to follow the redirects, they already
-  // happened.
-  request_info->should_follow_redirect = false;
-
-  URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
-  // During navigations, the Response has already been received on the
-  // browser side, and has been passed down to the renderer. Replay the
-  // redirects that happened during navigation.
-  DCHECK_EQ(response_override->redirect_responses.size(),
-            response_override->redirect_infos.size());
-  for (size_t i = 0; i < response_override->redirect_responses.size(); ++i) {
-    client_ptr->OnReceiveRedirect(
-        response_override->redirect_infos[i],
-        std::move(response_override->redirect_responses[i]));
-    // The request might have been cancelled while processing the redirect.
-    if (!GetPendingRequestInfo(request_id))
-      return;
-  }
-
-  client_ptr->OnReceiveResponse(std::move(response_override->response_head));
-
-  // Abort if the request is cancelled.
-  if (!GetPendingRequestInfo(request_id))
-    return;
-
-  DCHECK(response_override->response_body.is_valid());
-  client_ptr->OnStartLoadingResponseBody(
-      std::move(response_override->response_body));
-
-  // Abort if the request is cancelled.
-  if (!GetPendingRequestInfo(request_id))
-    return;
-
-  DCHECK(response_override->url_loader_client_endpoints);
-  client_ptr->Bind(std::move(response_override->url_loader_client_endpoints));
 }
 
 }  // namespace content

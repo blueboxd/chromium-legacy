@@ -368,7 +368,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
   std::unique_ptr<protocol::DictionaryValue> grid_config_info =
       protocol::DictionaryValue::create();
   grid_config_info->setBoolean("gridBorderDash", grid_config.grid_border_dash);
-  grid_config_info->setBoolean("cellBorderDash", grid_config.cell_border_dash);
+  grid_config_info->setBoolean("rowLineDash", grid_config.row_line_dash);
+  grid_config_info->setBoolean("columnLineDash", grid_config.column_line_dash);
   grid_config_info->setBoolean("showGridExtensionLines",
                                grid_config.show_grid_extension_lines);
   grid_config_info->setBoolean("showPositiveLineNumbers",
@@ -382,9 +383,13 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
     grid_config_info->setString("gridBorderColor",
                                 grid_config.grid_color.Serialized());
   }
-  if (grid_config.cell_color != Color::kTransparent) {
-    grid_config_info->setString("cellBorderColor",
-                                grid_config.cell_color.Serialized());
+  if (grid_config.row_line_color != Color::kTransparent) {
+    grid_config_info->setString("rowLineColor",
+                                grid_config.row_line_color.Serialized());
+  }
+  if (grid_config.column_line_color != Color::kTransparent) {
+    grid_config_info->setString("columnLineColor",
+                                grid_config.column_line_color.Serialized());
   }
   if (grid_config.row_gap_color != Color::kTransparent) {
     grid_config_info->setString("rowGapColor",
@@ -971,8 +976,10 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   if (highlight_config.css_grid != Color::kTransparent) {
     std::unique_ptr<InspectorGridHighlightConfig> grid_config =
         std::make_unique<InspectorGridHighlightConfig>();
-    grid_config->cell_color = highlight_config.css_grid;
-    grid_config->cell_border_dash = true;
+    grid_config->row_line_color = highlight_config.css_grid;
+    grid_config->column_line_color = highlight_config.css_grid;
+    grid_config->row_line_dash = true;
+    grid_config->column_line_dash = true;
     return BuildGridInfo(node, *grid_config, scale, isPrimary);
   }
 
@@ -1061,7 +1068,8 @@ InspectorSourceOrderConfig::InspectorSourceOrderConfig() = default;
 InspectorGridHighlightConfig::InspectorGridHighlightConfig()
     : show_grid_extension_lines(false),
       grid_border_dash(false),
-      cell_border_dash(false),
+      row_line_dash(false),
+      column_line_dash(false),
       show_positive_line_numbers(false),
       show_negative_line_numbers(false),
       show_area_names(false),
@@ -1639,7 +1647,8 @@ InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
 InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
   InspectorGridHighlightConfig config;
   config.grid_color = Color(255, 0, 0, 0);
-  config.cell_color = Color(128, 0, 0, 0);
+  config.row_line_color = Color(128, 0, 0, 0);
+  config.column_line_color = Color(128, 0, 0, 0);
   config.row_gap_color = Color(0, 255, 0, 0);
   config.column_gap_color = Color(0, 0, 255, 0);
   config.row_hatch_color = Color(255, 255, 255, 0);
@@ -1651,7 +1660,8 @@ InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
   config.show_area_names = true;
   config.show_line_names = true;
   config.grid_border_dash = false;
-  config.cell_border_dash = true;
+  config.row_line_dash = true;
+  config.column_line_dash = true;
   config.show_track_sizes = true;
   return config;
 }

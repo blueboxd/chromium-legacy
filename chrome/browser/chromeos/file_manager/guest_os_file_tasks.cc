@@ -155,10 +155,12 @@ void FindGuestOsApps(
   // Ensure all files can be shared with VMs.
   storage::FileSystemContext* file_system_context =
       util::GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
+  base::FilePath dummy_vm_mount("/");
   base::FilePath not_used;
   for (const GURL& file_url : file_urls) {
-    if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
-            profile, file_system_context->CrackURL(file_url), &not_used)) {
+    if (!file_manager::util::ConvertFileSystemURLToPathInsideVM(
+            profile, file_system_context->CrackURL(file_url), dummy_vm_mount,
+            &not_used)) {
       return;
     }
   }

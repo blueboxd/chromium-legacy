@@ -68,6 +68,8 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnforced, false);
   registry->RegisterBooleanPref(prefs::kBrowserAddPersonEnabled, true);
   registry->RegisterBooleanPref(prefs::kForceBrowserSignin, false);
+  registry->RegisterBooleanPref(prefs::kBrowserShowProfilePickerOnStartup,
+                                true);
 }
 
 void SetLastUsedProfile(const std::string& profile_dir) {

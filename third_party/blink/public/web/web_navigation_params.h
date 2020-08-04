@@ -391,8 +391,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // A list of origin trial names to enable for the document being loaded.
   WebVector<WebString> force_enabled_origin_trials;
 
-  // Whether origin isolation is restricting certain cross-origin web APIs.
-  bool origin_isolation_restricted = false;
+  // Whether the page is origin isolated.
+  // https://github.com/WICG/origin-isolation
+  bool origin_isolated = false;
 
   // List of client hints enabled for top-level frame. These still need to be
   // checked against feature policy before use.

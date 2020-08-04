@@ -467,15 +467,6 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     extra_data->set_url_loader_throttles(
         throttle_provider_->CreateThrottles(ancestor_frame_id_, request));
   }
-  if (response_override_) {
-    using RequestContextType = blink::mojom::RequestContextType;
-    DCHECK(
-        (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
-         request.GetRequestContext() == RequestContextType::WORKER) ||
-        request.GetRequestContext() == RequestContextType::SHARED_WORKER)
-        << request.GetRequestContext();
-    extra_data->set_navigation_response_override(std::move(response_override_));
-  }
   request.SetExtraData(std::move(extra_data));
 
   if (g_rewrite_url)
@@ -577,12 +568,6 @@ void WebWorkerFetchContextImpl::set_top_frame_origin(
 
 void WebWorkerFetchContextImpl::set_client_id(const std::string& client_id) {
   client_id_ = client_id;
-}
-
-void WebWorkerFetchContextImpl::SetResponseOverrideForMainScript(
-    std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
-  DCHECK(!response_override_);
-  response_override_ = std::move(response_override);
 }
 
 void WebWorkerFetchContextImpl::OnControllerChanged(

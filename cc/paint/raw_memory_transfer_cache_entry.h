@@ -5,11 +5,10 @@
 #ifndef CC_PAINT_RAW_MEMORY_TRANSFER_CACHE_ENTRY_H_
 #define CC_PAINT_RAW_MEMORY_TRANSFER_CACHE_ENTRY_H_
 
-#include "cc/paint/transfer_cache_entry.h"
-
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
+#include "cc/paint/transfer_cache_entry.h"
 
 namespace cc {
 
@@ -37,7 +36,8 @@ class CC_PAINT_EXPORT ServiceRawMemoryTransferCacheEntry
   ServiceRawMemoryTransferCacheEntry();
   ~ServiceRawMemoryTransferCacheEntry() final;
   size_t CachedSize() const final;
-  bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
+  bool Deserialize(GrDirectContext* context,
+                   base::span<const uint8_t> data) final;
   const std::vector<uint8_t>& data() { return data_; }
 
  private:

@@ -484,7 +484,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (IsSceneStartupSupported()) {
     // TODO(crbug.com/1012697): This should probably be the only code path for
     // UIScene and non-UIScene cases.
-    [self startUpChromeUIPostCrash:NO needRestoration:NO];
+    [self startUpChromeUI];
   }
 
   self.hasInitializedUI = YES;
@@ -493,8 +493,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 #pragma mark - private
 
 // Starts up a single chrome window and its UI.
-- (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
-                 needRestoration:(BOOL)needsRestoration {
+- (void)startUpChromeUI {
   DCHECK(!self.browserViewWrangler);
   DCHECK(self.sceneURLLoadingService);
   DCHECK(self.mainController);
@@ -511,7 +510,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // Only create the restoration helper if the browser state was backed up
   // successfully.
-  if (needsRestoration) {
+  if (self.sceneState.appState.sessionRestorationRequired) {
     self.mainController.restoreHelper =
         [[CrashRestoreHelper alloc] initWithBrowser:self.mainInterface.browser];
   }
@@ -523,7 +522,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   BOOL switchFromIncognito =
       startInIncognito && ![self.mainController canLaunchInIncognito];
 
-  if (isPostCrashLaunch || switchFromIncognito) {
+  if (self.sceneState.appState.postCrashLaunch || switchFromIncognito) {
     [self clearIOSSpecificIncognitoData];
     if (switchFromIncognito)
       [self.browserViewWrangler

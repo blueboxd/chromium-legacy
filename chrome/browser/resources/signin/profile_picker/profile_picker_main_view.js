@@ -4,12 +4,15 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import './icons.js';
 import './profile_card.js';
 import './profile_picker_shared_css.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import './strings.js';
 
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 import {navigateTo, NavigationBehavior, Routes} from './navigation_behavior.js';
@@ -29,6 +32,14 @@ Polymer({
      */
     profilesList_: {
       type: Object,
+    },
+
+    /** @private */
+    askOnStartup_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('askOnStartup');
+      }
     },
   },
 
@@ -67,6 +78,14 @@ Polymer({
    */
   handleProfilesListChanged_(profilesList) {
     this.profilesList_ = profilesList;
+  },
+
+  /**
+   * Called when the user modifies 'Ask on startup' preference.
+   * @private
+   */
+  onAskOnStartupChangedByUser_() {
+    this.manageProfilesBrowserProxy_.askOnStartupChanged(this.askOnStartup_);
   },
 
   /** @private */

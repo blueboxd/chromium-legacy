@@ -46,7 +46,6 @@ class PendingURLLoaderFactoryBundle;
 namespace content {
 
 class ChildURLLoaderFactoryBundle;
-struct NavigationResponseOverrideParameters;
 
 // A stub class to receive IPC from browser process and talk to
 // blink::WebSharedWorker. Implements blink::WebSharedWorkerClient.
@@ -100,8 +99,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       const blink::mojom::RendererPreferences& renderer_preferences,
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           preference_watcher_receiver,
-      const std::vector<std::string>& cors_exempt_header_list,
-      std::unique_ptr<NavigationResponseOverrideParameters> response_override);
+      const std::vector<std::string>& cors_exempt_header_list);
 
   mojo::Receiver<blink::mojom::SharedWorker> receiver_;
   std::unique_ptr<blink::WebSharedWorker> impl_;

@@ -890,7 +890,49 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
       &NearbySharingServiceImpl::OnIncomingConnectionDisconnected,
       weak_ptr_factory_.GetWeakPtr(), share_target));
 
-  // TODO(himanshujaju) - start reader thread.
+  frames_reader->ReadFrame(base::BindOnce(
+      &NearbySharingServiceImpl::OnFrameRead, weak_ptr_factory_.GetWeakPtr(),
+      std::move(frames_reader), std::move(share_target)));
+}
+
+void NearbySharingServiceImpl::OnFrameRead(
+    std::unique_ptr<IncomingFramesReader> frames_reader,
+    ShareTarget share_target,
+    base::Optional<sharing::mojom::V1FramePtr> frame) {
+  if (!frame) {
+    // This is the case when the connection has been closed since we wait
+    // indefinitely for incoming frames.
+    return;
+  }
+
+  sharing::mojom::V1FramePtr v1_frame = std::move(*frame);
+  switch (v1_frame->which()) {
+    case sharing::mojom::V1Frame::Tag::CANCEL_FRAME:
+      NS_LOG(VERBOSE) << __func__
+                      << ": Read the cancel frame, closing connection";
+      Cancel(share_target, base::DoNothing());
+      break;
+
+    case sharing::mojom::V1Frame::Tag::CERTIFICATE_INFO:
+      HandleCertificateInfoFrame(v1_frame->get_certificate_info());
+      break;
+
+    default:
+      NS_LOG(VERBOSE) << __func__ << ": Discarding unknown frame of type";
+      break;
+  }
+
+  frames_reader->ReadFrame(base::BindOnce(
+      &NearbySharingServiceImpl::OnFrameRead, weak_ptr_factory_.GetWeakPtr(),
+      std::move(frames_reader), std::move(share_target)));
+}
+
+void NearbySharingServiceImpl::HandleCertificateInfoFrame(
+    const sharing::mojom::CertificateInfoFramePtr& certificate_frame) {
+  DCHECK(certificate_frame);
+
+  // TODO(himanshujaju) - Convert all certificates to PublicShare proto and add
+  // to certificate manager
 }
 
 void NearbySharingServiceImpl::OnIncomingConnectionDisconnected(

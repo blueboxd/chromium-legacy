@@ -77,7 +77,7 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
                        aura::Window* source_window,
                        const gfx::Point& root_location,
                        int operation,
-                       ui::DragDropTypes::DragEventSource source) override;
+                       ui::mojom::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
   void AddObserver(aura::client::DragDropClientObserver* observer) override;

@@ -73,21 +73,12 @@ void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {
                           CrossThreadUnretained(worker_)));
 }
 
-void SharedWorkerReportingProxy::DidEvaluateClassicScript(bool success) {
+void SharedWorkerReportingProxy::DidEvaluateTopLevelScript(bool success) {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateClassicScript,
-                          CrossThreadUnretained(worker_), success));
-}
-
-void SharedWorkerReportingProxy::DidEvaluateModuleScript(bool success) {
-  DCHECK(!IsMainThread());
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
-      FROM_HERE,
-      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateModuleScript,
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateTopLevelScript,
                           CrossThreadUnretained(worker_), success));
 }
 

@@ -70,8 +70,7 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
                        int exception_id) override;
   void DidFailToFetchClassicScript() final;
   void DidFailToFetchModuleScript() final;
-  void DidEvaluateClassicScript(bool success) override;
-  void DidEvaluateModuleScript(bool success) override;
+  void DidEvaluateTopLevelScript(bool success) override;
 
   const DedicatedWorkerToken& token() const { return token_; }
 

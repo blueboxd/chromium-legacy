@@ -28,12 +28,22 @@ class IncomingFramesReader : public NearbyProcessManager::Observer {
                        NearbyConnection* connection);
   ~IncomingFramesReader() override;
 
+  // Reads an incoming frame from |connection|. |callback| is called
+  // with the frame read from connection or nullopt if connection socket is
+  // closed.
+  //
+  // Note: Callers are expected wait for |callback| to be run before scheduling
+  // subsequent calls to ReadFrame(..).
+  void ReadFrame(
+      base::OnceCallback<void(base::Optional<sharing::mojom::V1FramePtr>)>
+          callback);
+
   // Reads a frame of type |frame_type| from |connection|. |callback| is called
   // with the frame read from connection or nullopt if connection socket is
   // closed or |timeout| units of time has passed.
   //
   // Note: Callers are expected wait for |callback| to be run before scheduling
-  // subsequent calls.
+  // subsequent calls to ReadFrame(..).
   void ReadFrame(
       sharing::mojom::V1Frame::Tag frame_type,
       base::OnceCallback<void(base::Optional<sharing::mojom::V1FramePtr>)>
@@ -52,11 +62,13 @@ class IncomingFramesReader : public NearbyProcessManager::Observer {
   void OnTimeout();
   void Done(base::Optional<sharing::mojom::V1FramePtr> frame);
   void OnConnectionClosed();
+  base::Optional<sharing::mojom::V1FramePtr> GetCachedFrame(
+      base::Optional<sharing::mojom::V1Frame::Tag> frame_type);
 
   NearbyProcessManager* process_manager_;
   Profile* profile_;
   NearbyConnection* connection_;
-  sharing::mojom::V1Frame::Tag frame_type_;
+  base::Optional<sharing::mojom::V1Frame::Tag> frame_type_;
   base::OnceCallback<void(base::Optional<sharing::mojom::V1FramePtr>)>
       callback_;
   base::CancelableOnceClosure timeout_callback_;

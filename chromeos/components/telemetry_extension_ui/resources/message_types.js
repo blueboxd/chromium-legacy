@@ -9,21 +9,25 @@
  */
 
 /**
+ * @const
+ */
+const dpsl_internal = {};
+
+/**
  * Enum for message types.
  * @enum {string}
  */
-const Message = {
+dpsl_internal.Message = {
   DIAGNOSTICS_AVAILABLE_ROUTINES: 'DiagnosticsService.GetAvailableRoutines',
   PROBE_TELEMETRY_INFO: 'ProbeService.ProbeTelemetryInfo',
 };
-
 
 /**
  * Request message sent by the unprivileged context to request the privileged
  * context to diagnostics to get available routines.
  * @typedef {null}
  */
-let DiagnosticsGetAvailableRoutinesRequest;
+dpsl_internal.DiagnosticsGetAvailableRoutinesRequest;
 
 /**
  * Response message sent by the privileged context containing diagnostic
@@ -31,18 +35,21 @@ let DiagnosticsGetAvailableRoutinesRequest;
  * @typedef {{availableRoutines:
  *    !Array<!chromeos.health.mojom.DiagnosticRoutineEnum>}}
  */
-let DiagnosticsGetAvailableRoutinesResponse;
+dpsl_internal.DiagnosticsGetAvailableRoutinesResponse;
 
 /**
  * Request message sent by the unprivileged context to request the privileged
  * context to probe telemetry information
- * @typedef {null}
+ * @typedef { !Array<!string> }
  */
-let ProbeTelemetryInfoRequest;
+dpsl_internal.ProbeTelemetryInfoRequest;
 
 /**
  * Response message sent by the privileged context sending telemetry
  * information.
- * @typedef {{telemetryInfo: chromeos.health.mojom.TelemetryInfo}}
+ * @typedef {{
+ *   telemetryInfo: (!chromeos.health.mojom.TelemetryInfo|undefined),
+ *   error: (!Error|undefined)
+ * }}
  */
-let ProbeTelemetryInfoResponse;
+dpsl_internal.ProbeTelemetryInfoResponse;

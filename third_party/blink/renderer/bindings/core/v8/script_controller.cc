@@ -355,11 +355,11 @@ void ScriptController::ExecuteScriptInMainWorld(
     const ScriptSourceCode& source_code,
     const KURL& base_url,
     SanitizeScriptErrors sanitize_script_errors,
-    const ScriptFetchOptions& fetch_options) {
+    const ScriptFetchOptions& fetch_options,
+    ExecuteScriptPolicy policy) {
   v8::HandleScope handle_scope(GetIsolate());
   EvaluateScriptInMainWorld(source_code, base_url, sanitize_script_errors,
-                            fetch_options,
-                            kDoNotExecuteScriptWhenScriptsDisabled);
+                            fetch_options, policy);
 }
 
 v8::Local<v8::Value> ScriptController::ExecuteScriptInMainWorldAndReturnValue(

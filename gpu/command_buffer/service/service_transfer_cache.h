@@ -22,7 +22,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class GrContext;
+class GrDirectContext;
 class SkImage;
 
 namespace gpu {
@@ -53,7 +53,7 @@ class GPU_GLES2_EXPORT ServiceTransferCache
 
   bool CreateLockedEntry(const EntryKey& key,
                          ServiceDiscardableHandle handle,
-                         GrContext* context,
+                         GrDirectContext* context,
                          base::span<uint8_t> data);
   void CreateLocalEntry(const EntryKey& key,
                         std::unique_ptr<cc::ServiceTransferCacheEntry> entry);
@@ -72,7 +72,7 @@ class GPU_GLES2_EXPORT ServiceTransferCache
       int decoder_id,
       uint32_t entry_id,
       ServiceDiscardableHandle handle,
-      GrContext* context,
+      GrDirectContext* context,
       std::vector<sk_sp<SkImage>> plane_images,
       cc::YUVDecodeFormat plane_images_format,
       SkYUVColorSpace yuv_color_space,

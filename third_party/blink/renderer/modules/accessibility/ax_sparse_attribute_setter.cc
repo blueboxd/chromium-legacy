@@ -139,7 +139,8 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
         element->GetElementArrayAttribute(GetAttributeQualifiedName());
     if (!attr_associated_elements)
       return;
-    HeapVector<Member<AXObject>> objects;
+    HeapVector<Member<AXObject>>* objects =
+        MakeGarbageCollected<HeapVector<Member<AXObject>>>();
     for (const auto& associated_element : attr_associated_elements.value()) {
       AXObject* ax_element =
           obj.AXObjectCache().GetOrCreate(associated_element);
@@ -148,7 +149,7 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
       if (AXObject* parent = ax_element->ParentObject())
         parent->UpdateChildrenIfNecessary();
       if (!ax_element->AccessibilityIsIgnored())
-        objects.push_back(ax_element);
+        objects->push_back(ax_element);
     }
     attribute_map.AddObjectVectorAttribute(attribute_, objects);
   }
@@ -290,14 +291,15 @@ void AXSparseAttributeAOMPropertyClient::AddRelationListProperty(
       return;
   }
 
-  HeapVector<Member<AXObject>> objects;
+  HeapVector<Member<AXObject>>* objects =
+      MakeGarbageCollected<HeapVector<Member<AXObject>>>();
   for (unsigned i = 0; i < relations.length(); ++i) {
     AccessibleNode* accessible_node = relations.item(i);
     if (accessible_node) {
       Element* element = accessible_node->element();
       AXObject* ax_element = ax_object_cache_->GetOrCreate(element);
       if (ax_element && !ax_element->AccessibilityIsIgnored())
-        objects.push_back(ax_element);
+        objects->push_back(ax_element);
     }
   }
 

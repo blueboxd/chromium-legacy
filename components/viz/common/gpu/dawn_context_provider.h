@@ -13,8 +13,6 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/dawn/GrDawnTypes.h"
 
-class GrContext;
-
 namespace viz {
 
 class VIZ_DAWN_CONTEXT_PROVIDER_EXPORT DawnContextProvider {
@@ -24,7 +22,7 @@ class VIZ_DAWN_CONTEXT_PROVIDER_EXPORT DawnContextProvider {
 
   wgpu::Device GetDevice() { return device_; }
   wgpu::Instance GetInstance() { return instance_.Get(); }
-  GrContext* GetGrContext() { return gr_context_.get(); }
+  GrDirectContext* GetGrContext() { return gr_context_.get(); }
   bool IsValid() { return !!gr_context_; }
 
  private:

@@ -18,7 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/prerender/prerender_contents_delegate.h"
+#include "components/prerender/browser/prerender_contents_delegate.h"
 #include "components/prerender/common/prerender_canceler.mojom.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"

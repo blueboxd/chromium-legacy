@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/image_view.h"
@@ -37,9 +38,8 @@ class ASH_EXPORT DragImageView : public views::ImageView {
   // |source| is the event source that started this drag drop operation (touch
   // or mouse). It is used to determine attributes of the drag image such as
   // whether to show drag operation hint on top of the image.
-  static views::UniqueWidgetPtr Create(
-      aura::Window* root_window,
-      ui::DragDropTypes::DragEventSource source);
+  static views::UniqueWidgetPtr Create(aura::Window* root_window,
+                                       ui::mojom::DragEventSource source);
 
   // Sets the bounds of the native widget in screen
   // coordinates.
@@ -72,7 +72,7 @@ class ASH_EXPORT DragImageView : public views::ImageView {
   gfx::Size GetMinimumSize() const override;
 
  private:
-  DragImageView(ui::DragDropTypes::DragEventSource source);
+  DragImageView(ui::mojom::DragEventSource source);
 
   gfx::Image* DragHint() const;
   // Drag hint images are only drawn when the input source is touch.
@@ -90,7 +90,7 @@ class ASH_EXPORT DragImageView : public views::ImageView {
   // we need to know the originally requested size to render the drag image.
   gfx::Size drag_image_size_;
 
-  ui::DragDropTypes::DragEventSource drag_event_source_;
+  ui::mojom::DragEventSource drag_event_source_;
 
   // Bitmask of ui::DragDropTypes::DragOperation values.
   int touch_drag_operation_ = ui::DragDropTypes::DRAG_NONE;

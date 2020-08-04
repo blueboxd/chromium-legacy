@@ -10,11 +10,11 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus.SUCCESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
+import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.IDLE;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,11 +60,11 @@ public class PasswordCheckControllerTest {
 
     @Test
     public void testCreatesHeaderAndEntryForCredentials() {
-        mMediator.onPasswordCheckStatusChanged(SUCCESS);
+        mMediator.onPasswordCheckStatusChanged(IDLE);
         mMediator.onCompromisedCredentialsAvailable(Collections.singletonList(ANA));
         ListModel<MVCListAdapter.ListItem> itemList = mModel.get(ITEMS);
         assertThat(itemList.get(0).type, is(ItemType.HEADER));
-        assertThat(itemList.get(0).model.get(CHECK_STATUS), is(SUCCESS));
+        assertThat(itemList.get(0).model.get(CHECK_STATUS), is(IDLE));
         assertThat(itemList.get(1).type, is(ItemType.COMPROMISED_CREDENTIAL));
         assertThat(itemList.get(1).model.get(COMPROMISED_CREDENTIAL), is(ANA));
         assertThat(itemList.get(1).model.get(CREDENTIAL_HANDLER), is(mMediator));

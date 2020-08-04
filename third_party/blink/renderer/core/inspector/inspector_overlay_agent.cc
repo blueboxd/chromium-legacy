@@ -1426,12 +1426,37 @@ InspectorOverlayAgent::ToGridHighlightConfig(
   highlight_config->show_grid_extension_lines =
       config->getShowGridExtensionLines(false);
   highlight_config->grid_border_dash = config->getGridBorderDash(false);
-  highlight_config->cell_border_dash = config->getCellBorderDash(false);
+
+  // cellBorderDash is deprecated. We only use it if defined and none of the new
+  // properties are.
+  bool hasLegacyBorderDash = !config->hasRowLineDash() &&
+                             !config->hasColumnLineDash() &&
+                             config->hasCellBorderDash();
+  highlight_config->row_line_dash = hasLegacyBorderDash
+                                        ? config->getCellBorderDash(false)
+                                        : config->getRowLineDash(false);
+  highlight_config->column_line_dash = hasLegacyBorderDash
+                                           ? config->getCellBorderDash(false)
+                                           : config->getColumnLineDash(false);
+
   highlight_config->show_track_sizes = config->getShowTrackSizes(false);
   highlight_config->grid_color =
       InspectorDOMAgent::ParseColor(config->getGridBorderColor(nullptr));
-  highlight_config->cell_color =
-      InspectorDOMAgent::ParseColor(config->getCellBorderColor(nullptr));
+
+  // cellBorderColor is deprecated. We only use it if defined and none of the
+  // new properties are.
+  bool hasLegacyBorderColors = !config->hasRowLineColor() &&
+                               !config->hasColumnLineColor() &&
+                               config->hasCellBorderColor();
+  highlight_config->row_line_color =
+      hasLegacyBorderColors
+          ? InspectorDOMAgent::ParseColor(config->getCellBorderColor(nullptr))
+          : InspectorDOMAgent::ParseColor(config->getRowLineColor(nullptr));
+  highlight_config->column_line_color =
+      hasLegacyBorderColors
+          ? InspectorDOMAgent::ParseColor(config->getCellBorderColor(nullptr))
+          : InspectorDOMAgent::ParseColor(config->getColumnLineColor(nullptr));
+
   highlight_config->row_gap_color =
       InspectorDOMAgent::ParseColor(config->getRowGapColor(nullptr));
   highlight_config->column_gap_color =

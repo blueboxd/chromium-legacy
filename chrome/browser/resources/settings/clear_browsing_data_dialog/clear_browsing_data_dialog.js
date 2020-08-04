@@ -33,15 +33,28 @@ import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 import {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp} from './clear_browsing_data_browser_proxy.js';
 
 /**
- * @param {!Object} oldDialog the dialog to close
- * @param {!Object} newDialog the dialog to open
+ * @param {!CrDialogElement} dialog the dialog to close
+ * @param {boolean} isLast whether this is the last CBD-related dialog
+ * @private
+ */
+function closeDialog(dialog, isLast) {
+  // If this is not the last dialog, then stop the 'close' event from
+  // propagating so that other (following) dialogs don't get closed as well.
+  if (!isLast) {
+    dialog.addEventListener('close', e => {
+      e.stopPropagation();
+    }, {once: true});
+  }
+  dialog.close();
+}
+
+/**
+ * @param {!CrDialogElement} oldDialog the dialog to close
+ * @param {!CrDialogElement} newDialog the dialog to open
  * @private
  */
 function replaceDialog(oldDialog, newDialog) {
-  oldDialog.addEventListener('close', e => {
-    e.stopPropagation();
-  }, {once: true});
-  oldDialog.close();
+  closeDialog(oldDialog, false);
   if (!newDialog.open) {
     newDialog.showModal();
   }
@@ -462,21 +475,18 @@ Polymer({
     chrome.metricsPrivate.recordMediumTime(
         'History.ClearBrowsingData.TimeSpentInDialog',
         Date.now() - this.dialogOpenedTime_);
-    if (!showPasswordsNotice && !showHistoryNotice) {
-      this.closeDialogs_();
-    }
-  },
 
-  /**
-   * Closes clear browsing data or installed app dialog if they are open.
-   * @private
-   */
-  closeDialogs_() {
+    // Close the clear browsing data or installed apps dialog if they are open.
+    const isLastDialog = !showHistoryNotice && !showPasswordsNotice;
     if (this.$.clearBrowsingDataDialog.open) {
-      this.$.clearBrowsingDataDialog.close();
+      closeDialog(
+          /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog),
+          isLastDialog);
     }
     if (this.$.installedAppsDialog.open) {
-      this.$.installedAppsDialog.close();
+      closeDialog(
+          /** @type {!CrDialogElement} */ (this.$.installedAppsDialog),
+          isLastDialog);
     }
   },
 
@@ -491,15 +501,13 @@ Polymer({
    * @private
    */
   onHistoryDeletionDialogClose_(e) {
-    // Stop the close event from propagating further and also automatically
-    // closing the main CBD dialog. There's closeDialogs_() for that.
-    e.stopPropagation();
     this.showHistoryDeletionDialog_ = false;
     if (this.showPasswordsDeletionDialogLater_) {
+      // Stop the close event from propagating further and also automatically
+      // closing other dialogs.
+      e.stopPropagation();
       this.showPasswordsDeletionDialogLater_ = false;
       this.showPasswordsDeletionDialog_ = true;
-    } else {
-      this.closeDialogs_();
     }
   },
 
@@ -509,11 +517,7 @@ Polymer({
    * @private
    */
   onPasswordsDeletionDialogClose_(e) {
-    // Stop the close event from propagating further and also automatically
-    // closing the main CBD dialog. There's closeDialogs_() for that.
-    e.stopPropagation();
     this.showPasswordsDeletionDialog_ = false;
-    this.closeDialogs_();
   },
 
   /**
@@ -605,7 +609,9 @@ Polymer({
   onClearBrowsingDataClick_: async function() {
     await this.getInstalledApps_();
     if (this.shouldShowInstalledApps_()) {
-      replaceDialog(this.$.clearBrowsingDataDialog, this.$.installedAppsDialog);
+      replaceDialog(
+          /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog),
+          /** @type {!CrDialogElement} */ (this.$.installedAppsDialog));
     } else {
       await this.clearBrowsingData_();
     }
@@ -613,7 +619,9 @@ Polymer({
 
   /** @private */
   hideInstalledApps_() {
-    replaceDialog(this.$.installedAppsDialog, this.$.clearBrowsingDataDialog);
+    replaceDialog(
+        /** @type {!CrDialogElement} */ (this.$.installedAppsDialog),
+        /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog));
   },
 
   /**

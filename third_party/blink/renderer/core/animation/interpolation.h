@@ -83,7 +83,7 @@ class CORE_EXPORT Interpolation : public GarbageCollected<Interpolation> {
 
 using ActiveInterpolations = HeapVector<Member<Interpolation>, 1>;
 using ActiveInterpolationsMap =
-    HeapHashMap<PropertyHandle, ActiveInterpolations>;
+    HeapHashMap<PropertyHandle, Member<ActiveInterpolations>>;
 
 }  // namespace blink
 

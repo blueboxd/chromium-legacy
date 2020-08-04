@@ -47,27 +47,13 @@
 
 namespace {
 
-// List of switches that it's safe to rendezvous early with. Fast start should
-// not be done if a command line contains a switch not in this set.
-// Note this is currently stored as a list of two because it's probably faster
-// to iterate over this small array than building a map for constant time
-// lookups.
-const char* const kFastStartSwitches[] = {
-  switches::kProfileDirectory,
-  switches::kShowAppList,
-};
-
 bool IsFastStartSwitch(const std::string& command_line_switch) {
-  for (size_t i = 0; i < base::size(kFastStartSwitches); ++i) {
-    if (command_line_switch == kFastStartSwitches[i])
-      return true;
-  }
-  return false;
+  return command_line_switch == switches::kProfileDirectory;
 }
 
 bool ContainsNonFastStartFlag(const base::CommandLine& command_line) {
   const base::CommandLine::SwitchMap& switches = command_line.GetSwitches();
-  if (switches.size() > base::size(kFastStartSwitches))
+  if (switches.size() > 1)
     return true;
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {

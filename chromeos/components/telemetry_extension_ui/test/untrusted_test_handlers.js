@@ -32,10 +32,11 @@ function UNTRUSTED_TEST(testName, testCase) {
 }
 
 function registerTestHandlers() {
-  parentMessagePipe.registerHandler('run-test-case', (message) => {
-    const {testName} = /** @type {{testName: !string}} */ (message);
-    return runTestCase(testName);
-  });
+  chromeos.test_support.messagePipe().registerHandler(
+      'run-test-case', (message) => {
+        const {testName} = /** @type {{testName: !string}} */ (message);
+        return runTestCase(testName);
+      });
 }
 
 registerTestHandlers();

@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
-
 namespace base {
 class FilePath;
 }  // namespace base

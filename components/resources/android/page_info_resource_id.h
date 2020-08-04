@@ -22,7 +22,7 @@
 #error "DECLARE_RESOURCE_ID should be defined before including this file"
 #endif
 
-// PageInfoUI images, used in ConnectionInfoPopup
+// PageInfoUI images, used in ConnectionInfoView
 // Good:
 DECLARE_RESOURCE_ID(IDR_PAGEINFO_GOOD, R.drawable.pageinfo_good)
 // Warnings:

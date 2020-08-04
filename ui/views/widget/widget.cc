@@ -798,7 +798,7 @@ void Widget::RunShellDrag(View* view,
                           std::unique_ptr<ui::OSExchangeData> data,
                           const gfx::Point& location,
                           int operation,
-                          ui::DragDropTypes::DragEventSource source) {
+                          ui::mojom::DragEventSource source) {
   dragged_view_ = view;
   OnDragWillStart();
 

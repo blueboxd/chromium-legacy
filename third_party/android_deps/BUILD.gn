@@ -787,6 +787,17 @@ android_aar_prebuilt("androidx_viewpager_viewpager_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_webkit_webkit_java") {
+  aar_path = "libs/androidx_webkit_webkit/webkit-1.3.0-rc01.aar"
+  info_path = "libs/androidx_webkit_webkit/androidx_webkit_webkit.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_core_core_java",
+  ]
+  visibility = [ "//android_webview/tools/system_webview_shell:*" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_appcompat_v7_java") {
   aar_path = "libs/com_android_support_appcompat_v7/appcompat-v7-28.0.0.aar"
   info_path = "libs/com_android_support_appcompat_v7/com_android_support_appcompat_v7.info"

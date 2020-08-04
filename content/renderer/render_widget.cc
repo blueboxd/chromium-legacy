@@ -102,6 +102,7 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
@@ -918,8 +919,7 @@ void RenderWidget::UpdateTextInputState() {
 }
 
 bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
-  possible_drag_event_info_.event_source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  possible_drag_event_info_.event_source = ui::mojom::DragEventSource::kTouch;
   possible_drag_event_info_.event_location =
       gfx::ToFlooredPoint(event.PositionInScreen());
 
@@ -930,8 +930,7 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   for (auto& observer : render_frames_)
     observer.RenderWidgetWillHandleMouseEvent();
 
-  possible_drag_event_info_.event_source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  possible_drag_event_info_.event_source = ui::mojom::DragEventSource::kMouse;
   possible_drag_event_info_.event_location =
       gfx::Point(event.PositionInScreen().x(), event.PositionInScreen().y());
 

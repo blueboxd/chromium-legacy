@@ -124,9 +124,9 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
   }
 
   void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
-                                HeapVector<Member<AXObject>>& value) override {
-    WebVector<WebAXObject> result(value.size());
-    std::copy(value.begin(), value.end(), result.begin());
+                                HeapVector<Member<AXObject>>* value) override {
+    WebVector<WebAXObject> result(value->size());
+    std::copy(value->begin(), value->end(), result.begin());
     attribute_map_.AddObjectVectorAttribute(
         static_cast<WebAXObjectVectorAttribute>(attribute), result);
   }

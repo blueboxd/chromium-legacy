@@ -27,7 +27,8 @@ namespace blink {
 
 namespace {
 using ScrollTimelineSet =
-    HeapHashMap<WeakMember<Node>, HeapHashSet<WeakMember<ScrollTimeline>>>;
+    HeapHashMap<WeakMember<Node>,
+                Member<HeapHashSet<WeakMember<ScrollTimeline>>>>;
 ScrollTimelineSet& GetScrollTimelineSet() {
   DEFINE_STATIC_LOCAL(Persistent<ScrollTimelineSet>, set,
                       (MakeGarbageCollected<ScrollTimelineSet>()));
@@ -198,11 +199,12 @@ ScrollTimeline::ScrollTimeline(
   if (resolved_scroll_source_) {
     ScrollTimelineSet& set = GetScrollTimelineSet();
     if (!set.Contains(resolved_scroll_source_)) {
-      set.insert(resolved_scroll_source_,
-                 HeapHashSet<WeakMember<ScrollTimeline>>());
+      set.insert(
+          resolved_scroll_source_,
+          MakeGarbageCollected<HeapHashSet<WeakMember<ScrollTimeline>>>());
     }
     auto it = set.find(resolved_scroll_source_);
-    it->value.insert(this);
+    it->value->insert(this);
   }
   SnapshotState();
 }
@@ -518,7 +520,7 @@ bool ScrollTimeline::HasActiveScrollTimeline(Node* node) {
   if (it == set.end())
     return false;
 
-  for (auto& timeline : it->value) {
+  for (auto& timeline : *it->value) {
     if (timeline->HasAnimations())
       return true;
   }
@@ -532,7 +534,7 @@ void ScrollTimeline::Invalidate(Node* node) {
   if (it == set.end())
     return;
 
-  for (auto& timeline : it->value) {
+  for (auto& timeline : *it->value) {
     timeline->Invalidate();
   }
 }

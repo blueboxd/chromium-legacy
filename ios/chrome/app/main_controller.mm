@@ -571,10 +571,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)startUpBrowserForegroundInitialization {
-  BOOL postCrashLaunch = [self mustShowRestoreInfobar];
-  BOOL needRestore =
+  self.appState.postCrashLaunch = [self mustShowRestoreInfobar];
+  self.appState.sessionRestorationRequired =
       [self startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
-                postCrashLaunch];
+                self.appState.postCrashLaunch];
 
   if (@available(iOS 13, *)) {
     if (IsSceneStartupSupported()) {
@@ -585,8 +585,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   SceneState* sceneState = self.appState.connectedScenes.firstObject;
-  [sceneState.controller startUpChromeUIPostCrash:postCrashLaunch
-                                  needRestoration:needRestore];
+  [sceneState.controller startUpChromeUI];
   [self startUpAfterFirstWindowCreated];
 }
 

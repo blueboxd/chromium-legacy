@@ -31,7 +31,6 @@ constexpr const char* kSwitchesToRemoveOnAutorestart[] = {
     switches::kMakeDefaultBrowser,
     switches::kNoStartupWindow,
     switches::kRestoreLastSession,
-    switches::kShowAppList,
     switches::kWinJumplistAction};
 
 }  // namespace

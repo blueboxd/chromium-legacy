@@ -50,8 +50,8 @@ void CopyToActiveInterpolationsMap(
       continue;
 
     ActiveInterpolationsMap::AddResult entry =
-        target.insert(property, ActiveInterpolations());
-    ActiveInterpolations& active_interpolations = entry.stored_value->value;
+        target.insert(property, MakeGarbageCollected<ActiveInterpolations>());
+    ActiveInterpolations* active_interpolations = entry.stored_value->value;
 
     // Assuming stacked effects are enabled, interpolations that depend on
     // underlying values (e.g. have a non-replace composite mode) should be
@@ -66,8 +66,8 @@ void CopyToActiveInterpolationsMap(
         To<InvalidatableInterpolation>(*interpolation.Get())
             .DependsOnUnderlyingValue();
     if (!allow_stacked_effects || !effect_depends_on_underlying_value)
-      active_interpolations.clear();
-    active_interpolations.push_back(interpolation);
+      active_interpolations->clear();
+    active_interpolations->push_back(interpolation);
   }
 }
 

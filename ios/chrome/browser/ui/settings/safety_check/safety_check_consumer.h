@@ -7,10 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 // Consumer protocol for safety check.
-@protocol SafetyCheckConsumer <NSObject>
+@protocol SafetyCheckConsumer <ChromeTableViewConsumer>
 
 // Initializes the check types section with |items|.
 - (void)setCheckItems:(NSArray<TableViewItem*>*)items;

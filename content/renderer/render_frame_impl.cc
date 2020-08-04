@@ -1018,8 +1018,7 @@ void FillMiscNavigationParams(
         blink::mojom::FetchCacheMode::kDefault;
   }
 
-  navigation_params->origin_isolation_restricted =
-      commit_params.origin_isolation_restricted;
+  navigation_params->origin_isolated = commit_params.origin_isolated;
 
   navigation_params->enabled_client_hints.reserve(
       commit_params.enabled_client_hints.size());
@@ -4628,7 +4627,6 @@ void RenderFrameImpl::WillSendRequestInternal(
   // agent. This needs to be done here, after WebKit is through with setting the
   // user agent on its own.
   WebString custom_user_agent;
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
     RequestExtraData* old_extra_data =
         static_cast<RequestExtraData*>(request.GetExtraData().get());
@@ -4640,8 +4638,6 @@ void RenderFrameImpl::WillSendRequestInternal(
       else
         request.SetHttpHeaderField("User-Agent", custom_user_agent);
     }
-    response_override =
-        old_extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
   WebDocument frame_document = frame_->GetDocument();
@@ -4653,7 +4649,6 @@ void RenderFrameImpl::WillSendRequestInternal(
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(IsMainFrame());
   extra_data->set_transition_type(transition_type);
-  extra_data->set_navigation_response_override(std::move(response_override));
   bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this, request);
   extra_data->set_is_for_no_state_prefetch(is_for_no_state_prefetch);

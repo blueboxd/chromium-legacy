@@ -300,8 +300,8 @@ class CORE_EXPORT WorkerGlobalScope
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   // |worker_main_script_load_params_for_modules_| is used to load a root module
-  // script only for dedicated worker (when PlzDedicatedWorker is enabled) and
-  // shared worker when kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  // script for dedicated workers (when PlzDedicatedWorker is enabled) and
+  // shared workers.
   std::unique_ptr<WorkerMainScriptLoadParameters>
       worker_main_script_load_params_for_modules_;
 

@@ -65,7 +65,7 @@ DataDevice::~DataDevice() {
 void DataDevice::StartDrag(DataSource* source,
                            Surface* origin,
                            Surface* icon,
-                           ui::DragDropTypes::DragEventSource event_source) {
+                           ui::mojom::DragEventSource event_source) {
   seat_->StartDrag(source, origin, icon, event_source);
 }
 

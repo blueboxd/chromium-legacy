@@ -52,6 +52,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
@@ -863,8 +864,8 @@ void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
   drag_replaced_view_ = replaced_view;
   aura::Window* root_window =
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-  drag_image_widget_ = DragImageView::Create(
-      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  drag_image_widget_ =
+      DragImageView::Create(root_window, ui::mojom::DragEventSource::kMouse);
   DragImageView* drag_image = GetDragImage();
   if (blur_radius > 0)
     SetDragImageBlur(icon.size(), blur_radius);
@@ -1447,8 +1448,8 @@ void ShelfView::CreateDragIconProxy(
   drag_replaced_view_ = replaced_view;
   aura::Window* root_window =
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-  drag_image_widget_ = DragImageView::Create(
-      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  drag_image_widget_ =
+      DragImageView::Create(root_window, ui::mojom::DragEventSource::kMouse);
   DragImageView* drag_image = GetDragImage();
   drag_image->SetImage(icon);
   gfx::Size size = drag_image->GetPreferredSize();

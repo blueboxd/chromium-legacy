@@ -12,6 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
@@ -142,6 +144,7 @@ namespace {
 class NearbySharingServiceImplTest : public testing::Test {
  public:
   NearbySharingServiceImplTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kNearbySharing);
     RegisterNearbySharingPrefs(prefs_.registry());
   }
 
@@ -216,6 +219,7 @@ class NearbySharingServiceImplTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   ui::ScopedSetIdleState idle_state_{ui::IDLE_STATE_IDLE};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
@@ -766,6 +770,9 @@ TEST_F(NearbySharingServiceImplTest,
 
   service_->OnIncomingConnection("endpoint_id", {}, &connection);
   run_loop.Run();
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
 }
 
 TEST_F(NearbySharingServiceImplTest,
@@ -823,4 +830,7 @@ TEST_F(NearbySharingServiceImplTest,
 
   service_->OnIncomingConnection("endpoint_id", {}, &connection);
   run_loop.Run();
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
 }

@@ -34,11 +34,12 @@ void StyleRuleUsageTracker::Track(const CSSStyleSheet* parent_sheet,
     return;
   auto it = used_rules_delta_.find(parent_sheet);
   if (it != used_rules_delta_.end()) {
-    it->value.push_back(rule);
+    it->value->push_back(rule);
   } else {
     used_rules_delta_
-        .insert(parent_sheet, HeapVector<Member<const StyleRule>>())
-        .stored_value->value.push_back(rule);
+        .insert(parent_sheet,
+                MakeGarbageCollected<HeapVector<Member<const StyleRule>>>())
+        .stored_value->value->push_back(rule);
   }
 }
 

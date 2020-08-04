@@ -98,6 +98,14 @@ std::vector<std::string> GetCrostiniMountOptions(
     const std::string& host_private_key,
     const std::string& container_public_key);
 
+// Convert a cracked url to a path inside a VM mounted at |vm_mount|.
+bool ConvertFileSystemURLToPathInsideVM(
+    Profile* profile,
+    const storage::FileSystemURL& file_system_url,
+    const base::FilePath& vm_mount,
+    base::FilePath* inside,
+    bool map_crostini_home = false);
+
 // Convert a cracked url to a path inside the Crostini VM.
 bool ConvertFileSystemURLToPathInsideCrostini(
     Profile* profile,

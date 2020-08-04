@@ -150,20 +150,20 @@ int DragDropController::StartDragAndDrop(
     aura::Window* source_window,
     const gfx::Point& screen_location,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   if (!enabled_ || IsDragDropInProgress())
     return 0;
 
   const ui::OSExchangeDataProvider* provider = &data->provider();
   // We do not support touch drag/drop without a drag image.
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH &&
+  if (source == ui::mojom::DragEventSource::kTouch &&
       provider->GetDragImage().size().IsEmpty())
     return 0;
 
   current_drag_event_source_ = source;
   DragDropTracker* tracker =
       new DragDropTracker(root_window, drag_drop_window_delegate_.get());
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+  if (source == ui::mojom::DragEventSource::kTouch) {
     // We need to transfer the current gesture sequence and the GR's touch event
     // queue to the |drag_drop_tracker_|'s capture window so that when it takes
     // capture, it still gets a valid gesture state.
@@ -233,7 +233,7 @@ void DragDropController::SetDragImage(const gfx::ImageSkia& image,
 
   float drag_image_scale = 1;
   int drag_image_vertical_offset = 0;
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+  if (source == ui::mojom::DragEventSource::kTouch) {
     drag_image_scale = kTouchDragImageScale;
     drag_image_vertical_offset = kTouchDragImageVerticalOffset;
   }
@@ -256,7 +256,7 @@ void DragDropController::SetDragImage(const gfx::ImageSkia& image,
       &drag_image_offset_);
   drag_image->SetBoundsInScreen(drag_image_bounds);
   drag_image->SetWidgetVisible(true);
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+  if (source == ui::mojom::DragEventSource::kTouch) {
     drag_image->SetTouchDragOperationHintPosition(
         gfx::Point(drag_image_offset_.x(),
                    drag_image_offset_.y() + drag_image_vertical_offset));
@@ -295,8 +295,7 @@ void DragDropController::OnMouseEvent(ui::MouseEvent* event) {
 
   // If current drag session was not started by mouse, dont process this mouse
   // event, but consume it so it does not interfere with current drag session.
-  if (current_drag_event_source_ !=
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE) {
+  if (current_drag_event_source_ != ui::mojom::DragEventSource::kMouse) {
     event->StopPropagation();
     return;
   }
@@ -331,7 +330,7 @@ void DragDropController::OnTouchEvent(ui::TouchEvent* event) {
 
   // If current drag session was not started by touch, dont process this touch
   // event, but consume it so it does not interfere with current drag session.
-  if (current_drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
+  if (current_drag_event_source_ != ui::mojom::DragEventSource::kTouch)
     event->StopPropagation();
 
   if (event->handled())
@@ -354,7 +353,7 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   event->StopPropagation();
 
   // If current drag session was not started by touch, dont process this event.
-  if (current_drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
+  if (current_drag_event_source_ != ui::mojom::DragEventSource::kTouch)
     return;
 
   // Apply kTouchDragImageVerticalOffset to the location.

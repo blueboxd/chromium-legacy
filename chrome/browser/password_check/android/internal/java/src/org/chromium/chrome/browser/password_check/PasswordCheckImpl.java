@@ -26,7 +26,7 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
         mCompromisedCredentialsFetched = false;
         mSavedPasswordsFetched = false;
         mPasswordCheckBridge = new PasswordCheckBridge(this);
-        mObserverList = new ObserverList<Observer>();
+        mObserverList = new ObserverList<>();
     }
 
     @Override
@@ -61,6 +61,13 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
         mSavedPasswordsFetched = true;
         for (Observer obs : mObserverList) {
             obs.onSavedPasswordsFetchCompleted();
+        }
+    }
+
+    @Override
+    public void onPasswordCheckStatusChanged(int status) {
+        for (Observer obs : mObserverList) {
+            obs.onPasswordCheckStatusChanged(status);
         }
     }
 

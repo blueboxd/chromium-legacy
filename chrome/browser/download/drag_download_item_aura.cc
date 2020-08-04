@@ -15,6 +15,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -53,10 +54,10 @@ void DragDownloadItem(const download::DownloadItem* download,
   data->SetFilenames(file_infos);
 
   gfx::Point location = display::Screen::GetScreen()->GetCursorScreenPoint();
-  // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
+  // TODO(varunjain): Properly determine and send DragEventSource below.
   aura::client::GetDragDropClient(root_window)
       ->StartDragAndDrop(
           std::move(data), root_window, view, location,
           ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK,
-          ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+          ui::mojom::DragEventSource::kMouse);
 }

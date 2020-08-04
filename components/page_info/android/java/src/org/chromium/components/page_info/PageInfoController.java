@@ -267,8 +267,8 @@ public class PageInfoController
             mSubpage = new PageInfoSubpage(mContext);
             mSubpage.setBackButtonOnClickListener(view -> exitSubpage());
             PageInfoViewV2 view2 = (PageInfoViewV2) mView;
-            mConnectionController =
-                    new PageInfoConnectionController(this, view2.getConnectionRowView());
+            mConnectionController = new PageInfoConnectionController(
+                    this, view2.getConnectionRowView(), mWebContents, mDelegate.getVrHandler());
             mPermissionsController = new PageInfoPermissionsController(
                     this, view2.getPermissionsRowView(), mDelegate, mDisplayUrlBuilder.toString());
             mCookiesController = new PageInfoCookiesController(
@@ -426,7 +426,7 @@ public class PageInfoController
                 runAfterDismiss(() -> {
                     if (!mWebContents.isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-                        ConnectionInfoPopup.show(mContext, mWebContents,
+                        ConnectionInfoView.show(mContext, mWebContents,
                                 mDelegate.getModalDialogManager(), mDelegate.getVrHandler());
                     }
                 });
@@ -569,7 +569,7 @@ public class PageInfoController
     }
 
     /**
-     * Launches a subpage with the specified params.
+     * Launches a subpage for the specified controller.
      */
     @Override
     public void launchSubpage(PageInfoSubpageController controller) {
@@ -581,39 +581,26 @@ public class PageInfoController
         mSubpage.updateSubpage(subpageParams);
         View subview = mSubpageController.createViewForSubpage(mSubpage);
 
-        if (subview != null) {
-            ((FrameLayout) mSubpage.findViewById(R.id.placeholder)).addView(subview);
-        }
+        ((FrameLayout) mSubpage.findViewById(R.id.placeholder)).addView(subview);
         replaceView(mView, mSubpage);
         controller.onSubPageAttached();
-    }
-
-    private ViewGroup getParent(View view) {
-        return (ViewGroup) view.getParent();
-    }
-
-    private void removeView(View view) {
-        ViewGroup parent = getParent(view);
-        if (parent != null) {
-            parent.removeView(view);
-        }
-    }
-
-    private void replaceView(View currentView, View newView) {
-        ViewGroup parent = getParent(currentView);
-        if (parent == null) {
-            return;
-        }
-        final int index = parent.indexOfChild(currentView);
-        removeView(currentView);
-        removeView(newView);
-        parent.addView(newView, index);
     }
 
     @Override
     public void exitSubpage() {
         replaceView(mSubpage, mView);
+        ((FrameLayout) mSubpage.findViewById(R.id.placeholder)).removeAllViews();
         mSubpageController.onSubpageRemoved();
         mSubpageController = null;
+    }
+
+    private void replaceView(View currentView, View newView) {
+        assert currentView.getParent() != null;
+        assert newView.getParent() == null;
+
+        ViewGroup parent = (ViewGroup) currentView.getParent();
+        final int index = parent.indexOfChild(currentView);
+        parent.removeView(currentView);
+        parent.addView(newView, index);
     }
 }

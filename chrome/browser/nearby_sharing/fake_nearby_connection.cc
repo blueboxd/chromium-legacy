@@ -5,7 +5,10 @@
 #include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
 
 FakeNearbyConnection::FakeNearbyConnection() = default;
-FakeNearbyConnection::~FakeNearbyConnection() = default;
+FakeNearbyConnection::~FakeNearbyConnection() {
+  if (!closed_)
+    Close();
+}
 
 void FakeNearbyConnection::Read(ReadCallback callback) {
   DCHECK(!closed_);

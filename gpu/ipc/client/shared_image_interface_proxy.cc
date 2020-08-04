@@ -48,6 +48,26 @@ void* GetDataAddress(const base::MappedReadOnlyRegion& region,
   return region.mapping.GetMemoryAs<uint8_t>() + offset;
 }
 
+std::vector<SyncToken> GenerateDependenciesFromSyncToken(
+    SyncToken sync_token,
+    GpuChannelHost* const host) {
+  DCHECK(host);
+  std::vector<SyncToken> dependencies;
+  if (sync_token.HasData()) {
+    dependencies.push_back(sync_token);
+    SyncToken& new_token = dependencies.back();
+    if (!new_token.verified_flush()) {
+      // Only allow unverified sync tokens for the same channel.
+      DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
+      int sync_token_channel_id =
+          ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
+      DCHECK_EQ(sync_token_channel_id, host->channel_id());
+      new_token.SetVerifyFlush();
+    }
+  }
+  return dependencies;
+}
+
 }  // namespace
 
 SharedImageInterfaceProxy::SharedImageInterfaceProxy(GpuChannelHost* host,
@@ -193,21 +213,11 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
     const SyncToken& sync_token,
     std::unique_ptr<gfx::GpuFence> acquire_fence,
     const Mailbox& mailbox) {
-  std::vector<SyncToken> dependencies;
-  if (sync_token.HasData()) {
+  // If there is a valid SyncToken, there should not be any GpuFence.
+  if (sync_token.HasData())
     DCHECK(!acquire_fence);
-
-    dependencies.push_back(sync_token);
-    SyncToken& new_token = dependencies.back();
-    if (!new_token.verified_flush()) {
-      // Only allow unverified sync tokens for the same channel.
-      DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
-      int sync_token_channel_id =
-          ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
-      DCHECK_EQ(sync_token_channel_id, host_->channel_id());
-      new_token.SetVerifyFlush();
-    }
-  }
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
   {
     base::AutoLock lock(lock_);
     gfx::GpuFenceHandle acquire_fence_handle;
@@ -231,19 +241,8 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
 
 void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
                                                    const Mailbox& mailbox) {
-  std::vector<SyncToken> dependencies;
-  if (sync_token.HasData()) {
-    dependencies.push_back(sync_token);
-    SyncToken& new_token = dependencies.back();
-    if (!new_token.verified_flush()) {
-      // Only allow unverified sync tokens for the same channel.
-      DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
-      int sync_token_channel_id =
-          ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
-      DCHECK_EQ(sync_token_channel_id, host_->channel_id());
-      new_token.SetVerifyFlush();
-    }
-  }
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
   {
     base::AutoLock lock(lock_);
 
@@ -276,17 +275,8 @@ void SharedImageInterfaceProxy::WaitSyncToken(const SyncToken& sync_token) {
   if (!sync_token.HasData())
     return;
 
-  std::vector<SyncToken> dependencies;
-  dependencies.push_back(sync_token);
-  SyncToken& new_token = dependencies.back();
-  if (!new_token.verified_flush()) {
-    // Only allow unverified sync tokens for the same channel.
-    DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
-    int sync_token_channel_id =
-        ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
-    DCHECK_EQ(sync_token_channel_id, host_->channel_id());
-    new_token.SetVerifyFlush();
-  }
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
   {
     base::AutoLock lock(lock_);
     last_flush_id_ = host_->EnqueueDeferredMessage(GpuChannelMsg_Nop(),
@@ -399,19 +389,8 @@ SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
 void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
                                                  const Mailbox& mailbox) {
 #if defined(OS_WIN)
-  std::vector<SyncToken> dependencies;
-  if (sync_token.HasData()) {
-    dependencies.push_back(sync_token);
-    SyncToken& new_token = dependencies.back();
-    if (!new_token.verified_flush()) {
-      // Only allow unverified sync tokens for the same channel.
-      DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
-      int sync_token_channel_id =
-          ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
-      DCHECK_EQ(sync_token_channel_id, host_->channel_id());
-      new_token.SetVerifyFlush();
-    }
-  }
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
   {
     base::AutoLock lock(lock_);
     uint32_t release_id = ++next_release_id_;

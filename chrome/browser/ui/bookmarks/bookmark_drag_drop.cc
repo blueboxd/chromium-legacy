@@ -29,7 +29,7 @@ BookmarkDragParams::BookmarkDragParams(
     std::vector<const bookmarks::BookmarkNode*> nodes,
     int drag_node_index,
     gfx::NativeView view,
-    ui::DragDropTypes::DragEventSource source,
+    ui::mojom::DragEventSource source,
     gfx::Point start_point)
     : nodes(std::move(nodes)),
       drag_node_index(drag_node_index),

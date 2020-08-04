@@ -21,7 +21,7 @@ class AudioWorkletObjectProxy final
 
   // Implements WorkerReportingProxy.
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
-  void DidEvaluateModuleScript(bool success) override;
+  void DidEvaluateTopLevelScript(bool success) override;
   void WillDestroyWorkerGlobalScope() override;
 
  private:

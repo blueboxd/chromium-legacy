@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -1476,10 +1477,9 @@ void MenuController::StartDrag(SubmenuView* source,
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
   did_initiate_drag_ = true;
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
-  // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
+  // TODO(varunjain): Properly determine and send DragEventSource below.
   item->GetWidget()->RunShellDrag(nullptr, std::move(data), widget_loc,
-                                  drag_ops,
-                                  ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+                                  drag_ops, ui::mojom::DragEventSource::kMouse);
   // MenuController may have been deleted so check before accessing member
   // variables.
   if (this_ref)

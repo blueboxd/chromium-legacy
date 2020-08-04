@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -58,7 +59,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                        aura::Window* source_window,
                        const gfx::Point& screen_location,
                        int operation,
-                       ui::DragDropTypes::DragEventSource source) override;
+                       ui::mojom::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
@@ -146,8 +147,8 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   std::unique_ptr<DragDropTracker> drag_drop_tracker_;
   std::unique_ptr<DragDropTrackerDelegate> drag_drop_window_delegate_;
 
-  ui::DragDropTypes::DragEventSource current_drag_event_source_ =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  ui::mojom::DragEventSource current_drag_event_source_ =
+      ui::mojom::DragEventSource::kMouse;
 
   // Holds a synthetic long tap event to be sent to the |drag_source_window_|.
   // See comment in OnGestureEvent() on why we need this.

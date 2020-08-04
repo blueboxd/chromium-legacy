@@ -124,6 +124,7 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
             SnackbarManager.SnackbarManageable snackbarManageable,
             ModalDialogManager modalDialogManager) {
         mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
+        mMediator.initWithNative();
     }
 
     @Override

@@ -30,6 +30,9 @@ export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
     /** @type {!MultiStorePasswordUiEntry.Contents} */
     this.contents_ = MultiStorePasswordUiEntry.getContents_(entry1);
 
+    /** @type {string} */
+    this.password_ = '';
+
     this.setId(entry1.id, entry1.fromAccountStore);
 
     if (entry2) {
@@ -53,12 +56,23 @@ export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
     this.setId(otherEntry.id, otherEntry.fromAccountStore);
   }
 
+  /** @return {!PasswordManagerProxy.UrlCollection} */
   get urls() {
     return this.contents_.urls;
   }
+  /** @return {string} */
   get username() {
     return this.contents_.username;
   }
+  /** @return {string} */
+  get password() {
+    return this.password_;
+  }
+  /** @param {string} password */
+  set password(password) {
+    this.password_ = password;
+  }
+  /** @return {(string|undefined)} */
   get federationText() {
     return this.contents_.federationText;
   }

@@ -62,8 +62,10 @@ class InteractiveUITestSuite : public ChromeTestSuite {
     } else
 #endif
     {
+#if defined(USE_X11)
       ui_controls::InstallUIControlsAura(
           views::test::CreateUIControlsDesktopAura());
+#endif
     }
 #else
     ui_controls::EnableUIControls();

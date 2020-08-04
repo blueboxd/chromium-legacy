@@ -26,6 +26,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
@@ -2779,7 +2780,7 @@ void View::ProcessMouseDragged(ui::MouseEvent* event) {
        drag_controller_->CanStartDragForView(this, GetDragInfo()->start_pt,
                                              event->location()))) {
     if (DoDrag(*event, GetDragInfo()->start_pt,
-               ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE)) {
+               ui::mojom::DragEventSource::kMouse)) {
       event->StopPropagation();
       return;
     }
@@ -2965,7 +2966,7 @@ void View::UpdateTooltip() {
 
 bool View::DoDrag(const ui::LocatedEvent& event,
                   const gfx::Point& press_pt,
-                  ui::DragDropTypes::DragEventSource source) {
+                  ui::mojom::DragEventSource source) {
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
     return false;

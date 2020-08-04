@@ -61,7 +61,7 @@ KeyframeEffect* CreateSimpleKeyframeEffectForTest(Element* target,
   return MakeGarbageCollected<KeyframeEffect>(target, model, timing);
 }
 
-void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
+void EnsureInterpolatedValueCached(ActiveInterpolations* interpolations,
                                    Document& document,
                                    Element* element) {
   // TODO(smcgruer): We should be able to use a saner API approach like

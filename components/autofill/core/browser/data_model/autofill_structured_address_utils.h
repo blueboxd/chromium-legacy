@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_constants.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -145,6 +146,19 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
 // options.
 std::string CaptureTypeWithPattern(const ServerFieldType& type,
                                    const std::string& pattern);
+
+// Collapses white spaces and line breaks, converts the string to lower case and
+// removes diacritics.
+base::string16 NormalizeValue(const base::string16& value);
+
+// Returns true of both vectors contain the same tokens in the same order.
+bool AreSortedTokensEqual(const std::vector<base::string16>& first,
+                          const std::vector<base::string16>& second);
+
+// Returns a sorted vector containing the tokens of |value| after |value| was
+// canonicalized. |value| is tokenized by splitting it by white spaces and
+// commas.
+std::vector<base::string16> TokenizeValue(const base::string16 value);
 
 }  // namespace structured_address
 

@@ -245,7 +245,7 @@ DocumentLoader::DocumentLoader(
           CopyInitiatorOriginTrials(params_->initiator_origin_trial_features)),
       force_enabled_origin_trials_(
           CopyForceEnabledOriginTrials(params_->force_enabled_origin_trials)),
-      origin_isolation_restricted_(params_->origin_isolation_restricted),
+      origin_isolated_(params_->origin_isolated),
       is_cross_browsing_context_group_navigation_(
           params_->is_cross_browsing_context_group_navigation) {
   DCHECK(frame_);
@@ -1706,7 +1706,7 @@ void DocumentLoader::CommitNavigation() {
     // multiple times *with different values*, but ideally we would use a better
     // architecture.
     if (!Document::ShouldInheritSecurityOriginFromOwner(Url())) {
-      agent->SetIsOriginIsolated(origin_isolation_restricted_);
+      agent->SetIsOriginIsolated(origin_isolated_);
     }
   } else {
     if (frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame() &&

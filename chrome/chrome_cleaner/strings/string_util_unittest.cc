@@ -4,6 +4,8 @@
 
 #include "chrome/chrome_cleaner/strings/string_util.h"
 
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,8 +29,8 @@ const char kOnlyInvalidUTF8Chars[] = "\x80 \x80 ";
 const char kNoCharsLeftOnlySpaces[] = "  ";
 const char kSingleInvalidUTF8Char[] = "\xf1";
 
-bool WildcardMatchInsensitive(const base::string16& text,
-                              const base::string16& pattern) {
+bool WildcardMatchInsensitive(const std::wstring& text,
+                              const std::wstring& pattern) {
   return String16WildcardMatchInsensitive(text, pattern, L'\\');
 }
 

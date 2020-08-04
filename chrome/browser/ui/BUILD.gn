@@ -1537,6 +1537,7 @@ static_library("ui") {
       "//third_party/libaddressinput:strings",
       "//ui/events",
     ]
+    public_deps += [ "//ui/base/dragdrop/mojom:mojom_headers" ]
 
     if (use_ozone && !is_chromeos) {
       deps += [
@@ -3958,6 +3959,7 @@ static_library("ui") {
       "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",
       "//services/media_session/public/mojom",
+      "//ui/base/dragdrop/mojom:mojom_shared",
       "//ui/views:buildflags",
     ]
 

@@ -125,14 +125,7 @@ void WebSharedWorkerImpl::DidFailToFetchModuleScript() {
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
-void WebSharedWorkerImpl::DidEvaluateClassicScript(bool success) {
-  DCHECK(IsMainThread());
-  DCHECK(!running_);
-  running_ = true;
-  DispatchPendingConnections();
-}
-
-void WebSharedWorkerImpl::DidEvaluateModuleScript(bool success) {
+void WebSharedWorkerImpl::DidEvaluateTopLevelScript(bool success) {
   DCHECK(IsMainThread());
   DCHECK(!running_);
   running_ = true;

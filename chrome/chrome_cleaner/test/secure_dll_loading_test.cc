@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -18,7 +19,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -34,7 +34,7 @@
 #include "components/chrome_cleaner/test/test_name_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
+class SecureDLLLoadingTest : public testing::TestWithParam<std::wstring> {
  protected:
   void SetUp() override {
     ASSERT_TRUE(child_process_logger_.Initialize());
@@ -104,7 +104,7 @@ class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
   }
 
   bool EmptyDLLLoaded(const base::Process& process) {
-    std::set<base::string16> module_paths;
+    std::set<std::wstring> module_paths;
     chrome_cleaner::GetLoadedModuleFileNames(process.Handle(), &module_paths);
 
     for (const auto& module_path : module_paths) {

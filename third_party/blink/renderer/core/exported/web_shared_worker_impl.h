@@ -81,8 +81,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   void CountFeature(WebFeature);
   void DidFailToFetchClassicScript();
   void DidFailToFetchModuleScript();
-  void DidEvaluateClassicScript(bool success);
-  void DidEvaluateModuleScript(bool success);
+  void DidEvaluateTopLevelScript(bool success);
   void DidCloseWorkerGlobalScope();
   // This synchronously destroys |this|.
   void DidTerminateWorkerThread();

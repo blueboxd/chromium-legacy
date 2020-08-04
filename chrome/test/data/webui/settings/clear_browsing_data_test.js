@@ -302,7 +302,8 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           assertFalse(cancelButton.disabled);
           assertFalse(actionButton.disabled);
           assertFalse(spinner.active);
-          assertFalse(!!element.$$('#notice'));
+          assertFalse(!!element.$$('#historyNotice'));
+          assertFalse(!!element.$$('#passwordsNotice'));
 
           // Check that the dialog didn't switch to installed apps.
           assertFalse(element.$$('#installedAppsDialog').open);
@@ -364,13 +365,13 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           const noticeActionButton = notice.$$('.action-button');
           assertTrue(!!noticeActionButton);
 
-          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          // The notice should have replaced the main dialog.
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
           assertTrue(notice.$$('#dialog').open);
 
           const whenNoticeClosed = eventToPromise('close', notice);
 
-          // Tapping the action button will close the notice. The parent dialog
-          // should subsequently close as well.
+          // Tapping the action button will close the notice.
           noticeActionButton.click();
 
           return whenNoticeClosed;
@@ -415,13 +416,13 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           const noticeActionButton = notice.$$('.action-button');
           assertTrue(!!noticeActionButton);
 
-          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          // The notice should have replaced the main dialog.
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
           assertTrue(notice.$$('#dialog').open);
 
           const whenNoticeClosed = eventToPromise('close', notice);
 
-          // Tapping the action button will close the notice. The parent dialog
-          // should subsequently close as well.
+          // Tapping the action button will close the notice.
           noticeActionButton.click();
 
           return whenNoticeClosed;
@@ -469,7 +470,8 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           const noticeActionButton = notice.$$('.action-button');
           assertTrue(!!noticeActionButton);
 
-          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          // The notice should have replaced the main dialog.
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
           assertTrue(notice.$$('#dialog').open);
 
           const whenNoticeClosed = eventToPromise('close', notice);
@@ -481,6 +483,7 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           return whenNoticeClosed;
         })
         .then(function() {
+          // The passwords notice should have replaced the history notice.
           const historyNotice = element.$$('#historyNotice');
           assertFalse(!!historyNotice);
           const passwordsNotice = element.$$('#passwordsNotice');
@@ -493,13 +496,12 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           const noticeActionButton = notice.$$('.action-button');
           assertTrue(!!noticeActionButton);
 
-          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
           assertTrue(notice.$$('#dialog').open);
 
           const whenNoticeClosed = eventToPromise('close', notice);
 
-          // Tapping the action button will close the notice.  The parent dialog
-          // should subsequently close as well.
+          // Tapping the action button will close the notice.
           noticeActionButton.click();
 
           return whenNoticeClosed;

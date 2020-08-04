@@ -6,38 +6,12 @@ package org.chromium.chrome.browser.password_check;
 
 import android.content.Context;
 
-import androidx.annotation.IntDef;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * This component allows to check for compromised passwords. It provides a settings page which shows
  * the compromised passwords and exposes actions that will help the users to make safer their
  * credentials.
  */
 public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
-    @IntDef({CheckStatus.SUCCESS, CheckStatus.RUNNING, CheckStatus.ERROR_OFFLINE,
-            CheckStatus.ERROR_NO_PASSWORDS, CheckStatus.ERROR_SIGNED_OUT,
-            CheckStatus.ERROR_QUOTA_LIMIT, CheckStatus.ERROR_UNKNOWN})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface CheckStatus {
-        /** The check was completed without errors. */
-        int SUCCESS = 1;
-        /** The check is still running. */
-        int RUNNING = 2;
-        /** The check cannot run because the user is offline. */
-        int ERROR_OFFLINE = 3;
-        /** The check cannot run because the user has no passwords on this device. */
-        int ERROR_NO_PASSWORDS = 4;
-        /** The check is cannot run because the user is signed-out. */
-        int ERROR_SIGNED_OUT = 5;
-        /** The check is cannot run because the user has exceeded their quota. */
-        int ERROR_QUOTA_LIMIT = 6;
-        /** The check is cannot run for unknown reasons. */
-        int ERROR_UNKNOWN = 6;
-    }
-
     /** Observes events and state changes of the password check. */
     interface Observer {
         /**
@@ -56,7 +30,7 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
          * Gets invoked once the password check stops running.
          * @param status A {@link CheckStatus} enum value.
          */
-        void onPasswordCheckStateChanged(@CheckStatus int status);
+        void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status);
     }
 
     /**

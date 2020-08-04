@@ -920,8 +920,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (first_run::IsChromeFirstRun()) {
     if (!parsed_command_line().HasSwitch(switches::kApp) &&
-        !parsed_command_line().HasSwitch(switches::kAppId) &&
-        !parsed_command_line().HasSwitch(switches::kShowAppList)) {
+        !parsed_command_line().HasSwitch(switches::kAppId)) {
       AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
     }
 

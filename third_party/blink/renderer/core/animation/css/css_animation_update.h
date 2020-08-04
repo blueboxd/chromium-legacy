@@ -183,12 +183,10 @@ class CORE_EXPORT CSSAnimationUpdate final {
     return updated_compositor_keyframes_;
   }
 
-  struct NewTransition {
-    DISALLOW_NEW();
-
+  struct NewTransition : public GarbageCollected<NewTransition> {
    public:
     NewTransition();
-    ~NewTransition();
+    virtual ~NewTransition();
     void Trace(Visitor* visitor) const { visitor->Trace(effect); }
 
     PropertyHandle property = HashTraits<blink::PropertyHandle>::EmptyValue();
@@ -198,7 +196,7 @@ class CORE_EXPORT CSSAnimationUpdate final {
     double reversing_shortening_factor;
     Member<const InertEffect> effect;
   };
-  using NewTransitionMap = HeapHashMap<PropertyHandle, NewTransition>;
+  using NewTransitionMap = HeapHashMap<PropertyHandle, Member<NewTransition>>;
   const NewTransitionMap& NewTransitions() const { return new_transitions_; }
   const HashSet<PropertyHandle>& CancelledTransitions() const {
     return cancelled_transitions_;

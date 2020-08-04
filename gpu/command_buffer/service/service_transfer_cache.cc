@@ -151,7 +151,7 @@ ServiceTransferCache::~ServiceTransferCache() {
 
 bool ServiceTransferCache::CreateLockedEntry(const EntryKey& key,
                                              ServiceDiscardableHandle handle,
-                                             GrContext* context,
+                                             GrDirectContext* context,
                                              base::span<uint8_t> data) {
   auto found = entries_.Peek(key);
   if (found != entries_.end())
@@ -278,7 +278,7 @@ bool ServiceTransferCache::CreateLockedHardwareDecodedImageEntry(
     int decoder_id,
     uint32_t entry_id,
     ServiceDiscardableHandle handle,
-    GrContext* context,
+    GrDirectContext* context,
     std::vector<sk_sp<SkImage>> plane_images,
     cc::YUVDecodeFormat plane_images_format,
     SkYUVColorSpace yuv_color_space,

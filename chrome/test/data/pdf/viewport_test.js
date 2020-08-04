@@ -9,7 +9,7 @@ import {getZoomableViewport, MockDocumentDimensions, MockElement, MockSizer, Moc
 
 const tests = [
   function testDocumentNeedsScrollbars() {
-    let viewport = getZoomableViewport(
+    const viewport = getZoomableViewport(
         new MockElement(100, 100), new MockSizer(), 10, 1, 0);
     let scrollbars;
 
@@ -43,30 +43,26 @@ const tests = [
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
-    viewport.setDocumentDimensions(new MockDocumentDimensions(91, 101));
-    scrollbars = viewport.documentNeedsScrollbars(1);
-    chrome.test.assertTrue(scrollbars.vertical);
-    chrome.test.assertTrue(scrollbars.horizontal);
-
-    viewport.setDocumentDimensions(new MockDocumentDimensions(101, 91));
-    scrollbars = viewport.documentNeedsScrollbars(1);
-    chrome.test.assertTrue(scrollbars.vertical);
-    chrome.test.assertTrue(scrollbars.horizontal);
-
     viewport.setDocumentDimensions(new MockDocumentDimensions(40, 51));
     scrollbars = viewport.documentNeedsScrollbars(2);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(51, 40));
+    scrollbars = viewport.documentNeedsScrollbars(2);
+    chrome.test.assertFalse(scrollbars.vertical);
+    chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(101, 202));
     scrollbars = viewport.documentNeedsScrollbars(0.5);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
     chrome.test.succeed();
-
+  },
+  function testDocumentNeedsScrollbarsWithTopToolbar() {
     // Test the case when there is a toolbar at the top.
     const toolbarHeight = 10;
-    viewport = getZoomableViewport(
+    const viewport = getZoomableViewport(
         new MockElement(100, 100), new MockSizer(), 10, 1, toolbarHeight);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
@@ -98,6 +94,7 @@ const tests = [
     scrollbars = viewport.documentNeedsScrollbars(2);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
+    chrome.test.succeed();
   },
 
   function testSetZoom() {

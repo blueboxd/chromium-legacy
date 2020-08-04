@@ -5,6 +5,7 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 
 #include "ash/public/cpp/holding_space/holding_space_controller_observer.h"
+#include "ash/public/cpp/session/session_controller.h"
 #include "base/check.h"
 
 namespace ash {
@@ -18,6 +19,8 @@ HoldingSpaceController* g_instance = nullptr;
 HoldingSpaceController::HoldingSpaceController() {
   CHECK(!g_instance);
   g_instance = this;
+
+  SessionController::Get()->AddObserver(this);
 }
 
 HoldingSpaceController::~HoldingSpaceController() {
@@ -25,6 +28,8 @@ HoldingSpaceController::~HoldingSpaceController() {
 
   SetModel(nullptr);
   g_instance = nullptr;
+
+  SessionController::Get()->RemoveObserver(this);
 }
 
 // static
@@ -42,6 +47,13 @@ void HoldingSpaceController::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void HoldingSpaceController::RegisterModelForUser(const AccountId& account_id,
+                                                  HoldingSpaceModel* model) {
+  models_by_account_id_[account_id] = model;
+  if (account_id == active_user_account_id_)
+    SetModel(model);
+}
+
 void HoldingSpaceController::SetModel(HoldingSpaceModel* model) {
   if (model_) {
     for (auto& observer : observers_)
@@ -54,6 +66,18 @@ void HoldingSpaceController::SetModel(HoldingSpaceModel* model) {
     for (auto& observer : observers_)
       observer.OnHoldingSpaceModelAttached(model_);
   }
+}
+
+void HoldingSpaceController::OnActiveUserSessionChanged(
+    const AccountId& account_id) {
+  active_user_account_id_ = account_id;
+
+  auto model_it = models_by_account_id_.find(account_id);
+  if (model_it == models_by_account_id_.end()) {
+    SetModel(nullptr);
+    return;
+  }
+  SetModel(model_it->second);
 }
 
 }  // namespace ash

@@ -385,7 +385,7 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
     }
     *p = priority;
 
-    ApplyInterpolation(property, priority, entry.value, resolver);
+    ApplyInterpolation(property, priority, *entry.value, resolver);
   }
 }
 
@@ -496,7 +496,7 @@ void StyleCascade::LookupAndApplyInterpolation(const CSSProperty& property,
   PropertyHandle handle = ToPropertyHandle(property, priority);
   const auto& entry = map.find(handle);
   DCHECK_NE(entry, map.end());
-  ApplyInterpolation(property, priority, entry->value, resolver);
+  ApplyInterpolation(property, priority, *entry->value, resolver);
 }
 
 bool StyleCascade::IsRootElement() const {

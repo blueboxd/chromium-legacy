@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
+
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -205,6 +207,34 @@ TEST(AutofillStructuredAddressUtils, CaptureTypeWithPattern) {
             CaptureTypeWithPattern(NAME_FULL, "abs\\w"));
   EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:_))",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w", {.separator = "_"}));
+}
+
+TEST(AutofillStructuredAddressUtils, TokenizeValue) {
+  std::vector<base::string16> expected_tokens = {
+      base::ASCIIToUTF16("and"), base::ASCIIToUTF16("anotherone"),
+      base::ASCIIToUTF16("value")};
+
+  EXPECT_EQ(TokenizeValue(base::ASCIIToUTF16("  valUe AnD    anotherOne")),
+            expected_tokens);
+}
+
+TEST(AutofillStructuredAddressUtils, NormalizeValue) {
+  EXPECT_EQ(NormalizeValue(base::UTF8ToUTF16(" MÜLLeR   Örber")),
+            base::UTF8ToUTF16("muller orber"));
+}
+
+TEST(AutofillStructuredAddressUtils, AreSortedTokensEqual) {
+  EXPECT_FALSE(AreSortedTokensEqual(
+      {base::ASCIIToUTF16("aaaa"), base::ASCIIToUTF16("bbb")},
+      {base::ASCIIToUTF16("aaa"), base::ASCIIToUTF16("bbb")}));
+
+  EXPECT_TRUE(AreSortedTokensEqual(
+      {base::ASCIIToUTF16("aaa"), base::ASCIIToUTF16("bbb")},
+      {base::ASCIIToUTF16("aaa"), base::ASCIIToUTF16("bbb")}));
+
+  EXPECT_FALSE(AreSortedTokensEqual(
+      {base::ASCIIToUTF16("aaa")},
+      {base::ASCIIToUTF16("aaa"), base::ASCIIToUTF16("bbb")}));
 }
 
 }  // namespace structured_address

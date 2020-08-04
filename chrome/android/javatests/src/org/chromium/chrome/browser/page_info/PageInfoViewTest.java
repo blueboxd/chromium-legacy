@@ -260,7 +260,22 @@ public class PageInfoViewTest {
     }
 
     /**
-     * Tests the new PageInfo UI on a secure website.
+     * Tests the connection info page of the new PageInfo UI.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testShowConnectionInfoSubpage() throws IOException {
+        setThirdPartyCookieBlocking(true);
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
+        View dialog = (View) getPageInfoView().getParent();
+        onView(withId(R.id.page_info_connection_row)).perform(click());
+        mRenderTestRule.render(dialog, "PageInfo_ConnectionInfoSubpage");
+    }
+
+    /**
+     * Tests the cookies page of the new PageInfo UI.
      */
     @Test
     @MediumTest

@@ -25,6 +25,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
@@ -152,7 +153,7 @@ class TestDragDropController : public DragDropController {
                        aura::Window* source_window,
                        const gfx::Point& location,
                        int operation,
-                       ui::DragDropTypes::DragEventSource source) override {
+                       ui::mojom::DragEventSource source) override {
     drag_start_received_ = true;
     data->GetString(&drag_string_);
     return DragDropController::StartDragAndDrop(std::move(data), root_window,
@@ -1033,8 +1034,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
-        ui::DragDropTypes::DRAG_MOVE,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+        ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kMouse);
 
     DragImageWindowObserver observer;
     ASSERT_TRUE(GetDragImageWindow());
@@ -1068,8 +1068,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         std::move(data), window->GetRootWindow(), window, gfx::Point(405, 405),
-        ui::DragDropTypes::DRAG_MOVE,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+        ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kMouse);
     DragImageWindowObserver observer;
     ASSERT_TRUE(GetDragImageWindow());
     GetDragImageWindow()->AddObserver(&observer);
@@ -1113,7 +1112,7 @@ TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
   aura::Window* window = widget->GetNativeWindow();
   drag_drop_controller_->StartDragAndDrop(
       std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
-      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+      ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kMouse);
 
   // Start dragging.
   ui::MouseEvent e1(ui::ET_MOUSE_DRAGGED, gfx::Point(200, 0),
@@ -1198,8 +1197,7 @@ TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
-        ui::DragDropTypes::DRAG_MOVE,
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+        ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kMouse);
 
     EXPECT_EQ(TestObserver::State::kDragStartedInvoked, observer.state());
 
@@ -1228,7 +1226,7 @@ TEST_F(DragDropControllerTest, SetEnabled) {
   drag_drop_controller_->set_enabled(false);
   drag_drop_controller_->StartDragAndDrop(
       std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
-      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+      ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kMouse);
   EXPECT_EQ(TestObserver::State::kNotInvoked, observer.state());
 
   drag_drop_controller_->RemoveObserver(&observer);
@@ -1262,7 +1260,7 @@ TEST_F(DragDropControllerTest, EventTarget) {
   data->SetString(base::UTF8ToUTF16("I am being dragged"));
   drag_drop_controller_->StartDragAndDrop(
       std::move(data), window->GetRootWindow(), window.get(), gfx::Point(5, 5),
-      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+      ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kMouse);
 
   EXPECT_EQ(EventTargetTestDelegate::State::kPerformDropInvoked,
             delegate.state());

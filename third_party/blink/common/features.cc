@@ -112,13 +112,6 @@ const base::Feature kParentNodeReplaceChildren {
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable to load top-level script pre-requested by the browser process for
-// dedicated worker (PlzDedicatedWorker) and shared worker using
-// WorkerMainScriptLoadParameters.
-const base::Feature kLoadMainScriptForPlzDedicatedWorkerByParams{
-    "LoadMainScriptForPlzDedicatedWorkerByParams",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable Portals. https://crbug.com/865123.
 // For the current origin trial (https://crbug.com/1040212), this is enabled on
 // Android only.

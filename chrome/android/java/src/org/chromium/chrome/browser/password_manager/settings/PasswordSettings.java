@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckPreference;
 import org.chromium.chrome.browser.password_check.PasswordCheckReferrer;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -148,10 +149,10 @@ public class PasswordSettings
         setHasOptionsMenu(true); // Password Export might be optional but Search is always present.
 
         Bundle extras = getArguments();
-        assert extras.containsKey(PasswordManagerLauncher.MANAGE_PASSWORDS_REFERRER)
+        assert extras.containsKey(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER)
             : "PasswordSettings must be launched with a manage-passwords-referrer fragment"
                 + "argument, but none was provided.";
-        mManagePasswordsReferrer = extras.getInt(PasswordManagerLauncher.MANAGE_PASSWORDS_REFERRER);
+        mManagePasswordsReferrer = extras.getInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER);
 
         if (savedInstanceState == null) return;
 

@@ -3042,6 +3042,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
   } else {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_changed, 1);
+    probe::DidUpdateComputedStyle(this, old_style.get(), new_style.get());
     if (this == GetDocument().documentElement()) {
       if (GetDocument().GetStyleEngine().UpdateRemUnits(old_style.get(),
                                                         new_style.get())) {

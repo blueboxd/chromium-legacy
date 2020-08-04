@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_constants.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 
@@ -52,8 +54,13 @@ AddressComponent& AddressComponent::operator=(const AddressComponent& right) {
   if (this == &right)
     return *this;
 
-  value_ = right.value_;
-  value_verification_status_ = right.value_verification_status_;
+  if (right.IsValueAssigned()) {
+    value_ = right.value_;
+    value_verification_status_ = right.value_verification_status_;
+    sorted_normalized_tokens_ = right.sorted_normalized_tokens_;
+  } else {
+    UnsetValue();
+  }
 
   DCHECK(right.subcomponents_.size() == subcomponents_.size());
 
@@ -107,10 +114,12 @@ void AddressComponent::SetValue(base::string16 value,
                                 VerificationStatus status) {
   value_ = std::move(value);
   value_verification_status_ = status;
+  sorted_normalized_tokens_ = TokenizeValue(value_.value());
 }
 
 void AddressComponent::UnsetValue() {
   value_.reset();
+  sorted_normalized_tokens_.clear();
   value_verification_status_ = VerificationStatus::kNoStatus;
 }
 
@@ -342,6 +351,9 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
       for (const auto& result_entry : result_map) {
         std::string field_type = result_entry.first;
         base::string16 field_value = base::UTF8ToUTF16(result_entry.second);
+        // Do not reassign the value of this node.
+        if (field_type == GetStorageTypeName())
+          continue;
         bool success = SetValueForTypeIfPossible(field_type, field_value,
                                                  VerificationStatus::kParsed);
         // Setting the value should always work unless the regular expression is
@@ -557,6 +569,127 @@ void AddressComponent::RecursivelyUnsetParsedAndFormattedValues() {
 
 void AddressComponent::UnsetParsedAndFormattedValuesInEntireTree() {
   GetRootNode().RecursivelyUnsetParsedAndFormattedValues();
+}
+
+bool AddressComponent::MergeWithComponent(
+    const AddressComponent& newer_component) {
+  // If both components are the same, there is nothing to do.
+  if (*this == newer_component)
+    return true;
+
+  // Applies the merging strategy for two token-equivalent components.
+  if (AreSortedTokensEqual(GetSortedTokens(),
+                           newer_component.GetSortedTokens())) {
+    return MergeTokenEquivalentComponent(newer_component);
+  }
+  return false;
+}
+
+bool AddressComponent::MergeTokenEquivalentComponent(
+    const AddressComponent& newer_component) {
+  // Assumption:
+  // The values of both components are a permutation of the same tokens.
+  // The componentization of the components can be different in terms of
+  // how the tokens are divided between the subomponents. The valdiation
+  // status of the component and its subcomponent can be different.
+  //
+  // Merge Strategy:
+  // * Adopt the exact value (and validation status) of the node with the higher
+  // validation status.
+  //
+  // * For all subcomponents that have the same value, make a recursive call and
+  // use the result.
+  //
+  // * For the set of all non-matching subcomponents. Either use the ones from
+  // this component or the other depending on which substructure is better in
+  // terms of the number of validated tokens.
+
+  if (newer_component.GetVerificationStatus() > GetVerificationStatus())
+    SetValue(newer_component.GetValue(),
+             newer_component.GetVerificationStatus());
+
+  // Now, the substructure of the node must be merged. There are three cases:
+  //
+  // * All nodes of the substructure are pairwise mergeable. In this case it
+  // is sufficient to apply a recursive merging strategy.
+  //
+  // * None of the nodes of the substructure are pairwise mergeable. In this
+  // case, either the complete substructure of |this| or |newer_component|
+  // must be used. Which one to use can be decided by the higher validation
+  // score.
+  //
+  // * In a mixed scenario, there is at least one pair of mergeable nodes
+  // in the substructure and at least on pair of non-mergeable nodes. Here,
+  // the mergeable nodes are merged while all other nodes are taken either
+  // from |this| or the |newer_component| decided by the higher validation
+  // score of the unmerged nodes.
+  //
+  // The following algorithm combines the three cases by first trying to merge
+  // all components pair-wise. For all components that couldn't be merged, the
+  // verification score is summed for this and the other component. If the other
+  // component has an equal or larger score, finalize the merge by using its
+  // components. It is assumed that the other component is the newer of the two
+  // components. By favoring the other component in a tie, the most recently
+  // used structure wins.
+
+  const std::vector<AddressComponent*> other_subcomponents =
+      newer_component.Subcomponents();
+
+  DCHECK(subcomponents_.size() == newer_component.Subcomponents().size());
+
+  int this_component_verification_score = 0;
+  int newer_component_verification_score = 0;
+
+  std::vector<int> unmerged_indices;
+  unmerged_indices.reserve(subcomponents_.size());
+
+  for (size_t i = 0; i < subcomponents_.size(); i++) {
+    DCHECK(subcomponents_[i]->GetStorageType() ==
+           other_subcomponents.at(i)->GetStorageType());
+
+    // If the components can't be merged directly, store the ungermed index and
+    // sum the verification scores to decide which component's substructure to
+    // use.
+    if (!subcomponents_[i]->MergeWithComponent(*other_subcomponents.at(i))) {
+      this_component_verification_score +=
+          subcomponents_[i]->GetStructureVerificationScore();
+      newer_component_verification_score +=
+          other_subcomponents.at(i)->GetStructureVerificationScore();
+      unmerged_indices.emplace_back(i);
+    }
+  }
+
+  // If the total verification score of all unmerged components of the other
+  // component is equal or larger than the score of this component, use its
+  // subcomponents including their substructure for all unmerged components.
+  if (newer_component_verification_score >= this_component_verification_score) {
+    for (size_t i : unmerged_indices)
+      *subcomponents_[i] = *other_subcomponents[i];
+  }
+
+  return true;
+}
+
+int AddressComponent::GetStructureVerificationScore() const {
+  int result = 0;
+  switch (GetVerificationStatus()) {
+    case VerificationStatus::kNoStatus:
+    case VerificationStatus::kParsed:
+    case VerificationStatus::kFormatted:
+      break;
+    case VerificationStatus::kObserved:
+      result += 1;
+      break;
+    case VerificationStatus::kUserVerified:
+      // In the current implementation, only the root not can be verified by
+      // the user.
+      NOTREACHED();
+      break;
+  }
+  for (const AddressComponent* component : subcomponents_)
+    result += component->GetStructureVerificationScore();
+
+  return result;
 }
 
 }  // namespace structured_address

@@ -93,14 +93,6 @@ net::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
 }
 
 // static
-// TODO(minggang): Let the callers of this static method call
-// blink::NetToMojoReferrerPolicy() directly.
-network::mojom::ReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-    net::ReferrerPolicy net_policy) {
-  return blink::NetToMojoReferrerPolicy(net_policy);
-}
-
-// static
 net::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
   // The ReducedReferrerGranularity feature sets the default referrer
   // policy to strict-origin-when-cross-origin unless forbidden

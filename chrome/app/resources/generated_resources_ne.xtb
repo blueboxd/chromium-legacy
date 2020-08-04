@@ -245,7 +245,6 @@
 <translation id="1293556467332435079">फाइलहरू</translation>
 <translation id="1296911687402551044">चयन गरिएको ट्याब पिन गर्नुहोस्</translation>
 <translation id="1297175357211070620">गन्तव्य</translation>
-<translation id="1297646507722131691">अपग्रेड गर्ने कार्य पूरा हुन नसकेका खण्डमा डेटा नगुमोस् भन्नाका खातिर यो अपग्रेड गर्नुअघि फाइलहरू ब्याकअप गर्नुहोस्। अपग्रेड सुरु गर्दा Linux (बिटा) बन्द हुने छ। कृपया सुरु गर्नुअघि खोलिएका फाइलहरू सुरक्षित गर्नुहोस्।</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> ले सुरक्षित सामग्रीको उन्नत प्लेब्याकसम्बन्धी योग्यता निर्धारण गर्ने प्रयोजनका लागि Google मार्फत तपाईंको यन्त्रको पहिचान पुष्टि गर्न चाहन्छ।</translation>
 <translation id="1300806585489372370">यो सेटिङ बदल्न सर्वप्रथम <ph name="BEGIN_LINK" />पहिचानकर्ताहरू सक्रिय गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> ले निम्न फाइलहरू सम्पादन गर्न सक्छ</translation>
@@ -1117,6 +1116,7 @@
 <translation id="2352662711729498748">&lt; 1 एमबी</translation>
 <translation id="2352810082280059586">लक स्क्रिनका टिपोटहरू <ph name="LOCK_SCREEN_APP_NAME" /> मा स्वत: सुरक्षित हुन्छन्। तपाईंको सबैभन्दा पछिल्लो टिपोट लक स्क्रिनमा रहनेछ।</translation>
 <translation id="2353297238722298836">क्यामेरा तथा माइक्रोफोन प्रयोग गर्ने अनुमति छ</translation>
+<translation id="2355314311311231464">तपाईंको खातासम्बन्धी विवरणहरू भेट्टाउन नसकिएकाले सेटअप गर्न सकिएन। कृपया फेरि प्रयास गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="2355604387869345912">तात्कालिक टेदरिङ अन गर्नुहोस्</translation>
 <translation id="2356070529366658676">सोध्नुहोस्</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> हटाउनुहोस्</translation>
@@ -1211,6 +1211,7 @@
 <translation id="2473195200299095979">यो पृष्ठलाई अनुवाद गर्नुहोस्</translation>
 <translation id="2475982808118771221">त्रुटि भयो</translation>
 <translation id="2476578072172137802">साइट सेटिङ</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" /> अनइन्स्टल गर्न Windows बन्द गर्नुहोस्।</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" को लागि मिडिया</translation>
 <translation id="247949520305900375">अडियो सेयर गर्नुहोस्</translation>
 <translation id="248003956660572823">पासवर्डहरू सुरक्षित गर्न सकिएन</translation>
@@ -1301,6 +1302,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> मा पढ्ने-मात्र अनुमति प्रदान गरिएको छ।</translation>
 <translation id="2575247648642144396">जब एक्स्टेन्सनले हालको पृष्ठमा कार्य गर्न सक्छ तब यो प्रतिमालाई देख्न सकिनेछ। प्रतिमामा क्लिक गरेर वा <ph name="EXTENSION_SHORTCUT" /> लाई थिचेर यो एक्स्टेन्सन प्रयोग गर्नुहोस्।</translation>
 <translation id="257779572837908839">बैठकहरूका लागि क्रोमबक्सको रूपमा सेटअप गर्नुहोस्‌</translation>
+<translation id="2579232805407578790">सर्भरमा कनेक्ट गर्न सकिएन। कृपया आफ्नो इन्टरनेट कनेक्सन जाँच गरी फेरि प्रयास गर्नुहोस्। यो समस्या कायम रहेमा आफ्नो Chromebook रिस्टार्ट गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> लाई धेरै फाइलहरू डाउनलोड गर्ने अनुमति सँधै दिनुहोस्</translation>
 <translation id="258095186877893873">लामो</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (मञ्च <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1520,6 +1522,7 @@
 <translation id="2836635946302913370">यो प्रयोगकर्ता नामद्वारा साइन इन तपाईंको प्रशासकद्वारा असक्षम गरिएको छ।</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> सञ्जाल प्रयोग गर्नको लागि, पहिले तल इन्टरनेटमा तपाइँको जडान पूर्ण गर्नुहोस्।</translation>
 <translation id="2838379631617906747">स्थापना गर्दै...</translation>
+<translation id="2838835911926931318">तपाईंका सबै यन्त्रहरूमा आफ्ना बुकमार्क, पासवर्ड, इतिहास र अन्य कुरा सिंक गर्न साइन इन गर्नुहोस्</translation>
 <translation id="2839032553903800133">सूचनाहरूलाई रोक लगाइयो</translation>
 <translation id="2841013758207633010">समय</translation>
 <translation id="2841837950101800123">प्रदायक</translation>
@@ -1580,6 +1583,7 @@
     सर्भर सन्देश: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">डाइरेक्टरी अनुसार मिडिया ग्यालरी थप्नुहोस</translation>
 <translation id="2910318910161511225">नेटवर्कमा जडान गरेर फेरि प्रयास गर्नुहोस्</translation>
+<translation id="2910718431259223434">केही चिज गडबड भयो। कृपया फेरि प्रयास गर्नुहोस् वा आफ्नो यन्त्रका मालिक वा एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="2913331724188855103">साइटहरूलाई कुकी डेटा सुरक्षित गर्ने र पढ्ने अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
 <translation id="2915102088417824677">क्रियाकलापसम्बन्धी लग हेर्नुहोस्</translation>
 <translation id="2915873080513663243">स्वतः स्क्यान</translation>
@@ -1973,7 +1977,6 @@
 <translation id="3435738964857648380">सुरक्षा</translation>
 <translation id="343578350365773421">पाना सकियो</translation>
 <translation id="3435896845095436175">सक्षम बनाउनुहोस्</translation>
-<translation id="3436642683618870087">लाइभ क्याप्सन सुविधाले Chrome मा प्ले भइरहेका सबै मिडियामा बोलिएको कुरा पहिचान गरी स्वतः क्याप्सनहरू सिर्जना गर्छ।</translation>
 <translation id="3438633801274389918">निन्जा</translation>
 <translation id="3439153939049640737"><ph name="HOST" /> लाई जहिले पनि तपाइँको माइक्रोफोन पहुँच गर्ने अनुमति दिनुहोस्</translation>
 <translation id="3439970425423980614">पीडीएफलाई पूर्वावलोकनमा खोल्दै</translation>
@@ -2319,6 +2322,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{एउटा एक्स्टेन्सन स्वीकार गरिएको छ}other{# वटा एक्स्टेन्सन स्वीकार गरिएको छ}}</translation>
 <translation id="3822559385185038546">यो प्रोक्सी तपाईंका प्रशासकद्वारा लागू गरिएको हो</translation>
 <translation id="3823310065043511710">Linux प्रयोग गर्न कम्तीमा पनि <ph name="INSTALL_SIZE" /> ठाउँ खाली राख्न सिफारिस गरिन्छ।</translation>
+<translation id="3824621460022590830">यन्त्र दर्ता गर्न प्रयोग गरिने टोकन अवैध छ। कृपया आफ्नो यन्त्रका मालिक वा एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="3826440694796503677">तपाईंका व्यवस्थापकले योभन्दा बढी Google खाताहरू थप्ने सुविधा असक्षम पार्नुभएको छ</translation>
 <translation id="3827306204503227641">स्यान्डबक्स हटाइएका प्लगइनहरूलाई अनुमति जारी राख्नुहोस्</translation>
 <translation id="3827774300009121996">&amp;पूर्ण स्क्रिन</translation>
@@ -3271,6 +3275,7 @@
 <translation id="5079950360618752063">सिफारिस गरिएको पासवर्ड प्रयोग गर्नहोस्</translation>
 <translation id="508059534790499809">Kerberos को टिक पुन: ताजा गर्नुहोस्</translation>
 <translation id="5084230410268011727">साइटहरूलाई चाल र प्रकाशसम्बन्धी सेन्सरहरू प्रयोग गर्ने अनुमति दिनुहोस्</translation>
+<translation id="5084328598860513926">सेटअप गर्ने क्रममा केही समस्या आयो। कृपया फेरि प्रयास गर्नुहोस् वा आफ्नो यन्त्रका मालिक वा एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="5085162214018721575">अद्यावधिकहरू खोज्दै</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">पूर्वनिर्धारित गृहपृष्ठलाई पुनर्स्थापना गर्ने हो?</translation>
@@ -3613,7 +3618,6 @@
 <translation id="5511379779384092781">ज्यादै सानो</translation>
 <translation id="5511823366942919280">के तपाईं यो यन्त्रलाई एउटा "Shark" को रूपमा सेटअप गर्न चाहनुहुन्छ?</translation>
 <translation id="5512653252560939721">प्रयोगकर्ता प्रमाणपत्र हार्डवेयर-समर्थित गरिएको हुनु पर्छ।</translation>
-<translation id="5515923816438946203">तपाईं स्क्रिनमा जुन कुरा देख्नुहुन्छ त्यो कुरा चयन गर्नुहोस्</translation>
 <translation id="5517304475148761050">यो एपलाई Play स्टोरमाथिको पहुँच चाहिन्छ</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">प्रिन्टरलाई तपाईंको खातामा थप्दै - यसको लागि केही समय लाग्न सक्छ...</translation>
@@ -3669,6 +3673,7 @@
 <translation id="557722062034137776">तपाइँको यन्त्र रिसेट गर्नाले तपाइँको Google खाताहरू वा यस खाताहरूमा समक्रमण गरिएका कुनै पनि लगतलाई असर गर्नेछैन। तर पनि, तपाइँको यन्त्रमा स्थायी रूपमा बचत गरेका सबै फाइलहरू हटाइने छ।</translation>
 <translation id="5578059481725149024">स्वतः साइन-इन गर्ने</translation>
 <translation id="558170650521898289">Microsoft Windows हार्डवेयर ड्राइभर प्रमाणीकरण</translation>
+<translation id="5581972110672966454">यो यन्त्रलाई उक्त डोमेनसँग जोड्न सकिएन। कृपया फेरि प्रयास गर्नुहोस् वा आफ्नो यन्त्रका मालिक वा एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="5582839680698949063">मुख्य मेनु</translation>
 <translation id="5583640892426849032">ब्याकस्पेस</translation>
 <translation id="5584088138253955452">प्रयोगकर्ताको नाम सुरक्षित गर्ने हो?</translation>
@@ -3727,6 +3732,7 @@
 <translation id="5642508497713047">CRL हस्ताक्षरकर्ता</translation>
 <translation id="5643321261065707929">सीमा तोकिएको नेटवर्क</translation>
 <translation id="5643620609347735571">खाली गरी जारी राख्नुहोस्</translation>
+<translation id="5646376287012673985">स्थान</translation>
 <translation id="5646558797914161501">व्यापारी</translation>
 <translation id="5648166631817621825">पछिल्ला ७ दिन</translation>
 <translation id="5649053991847567735">स्वचालित डाउनलोडहरू</translation>
@@ -3741,6 +3747,7 @@
 <translation id="5667546120811588575">Google Play सेटअप गरिँदै छ…</translation>
 <translation id="5669267381087807207">सक्रिय गर्दै</translation>
 <translation id="5669691691057771421">नयाँ PIN प्रविष्टि गर्नुहोस्</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">छविहरूमाथि रोक लगाइएको छ</translation>
 <translation id="5671658447180261823">सुझाव <ph name="SUGGESTION_NAME" /> हटाउनुहोस्</translation>
 <translation id="567587836466137939">यो यन्त्रले <ph name="MONTH_AND_YEAR" /> सम्म मात्र सफ्टवेयर तथा सुरक्षासम्बन्धी अद्यावधिकहरू स्वतः प्राप्त गर्ने छ। <ph name="LINK_BEGIN" />थप जान्नुहोस्<ph name="LINK_END" /></translation>
@@ -4474,6 +4481,7 @@
 <translation id="6602956230557165253">नेभिगेट गर्न बायाँ र दायाँ बाण कुञ्जीहरू प्रयोग गर्नुहोस्।</translation>
 <translation id="6605847144724004692">अझै पनि कुनै पनि प्रयोगकर्ताले मूल्याङ्कन गर्नुभएको छैन।</translation>
 <translation id="6607831829715835317">थप उपक&amp;रणहरू</translation>
+<translation id="6608012008902909398">यन्त्रको सफ्टवेयर जाँचका विवरणहरू देखाउनुहोस्</translation>
 <translation id="6611972847767394631">आफ्ना ट्याबहरू यहाँ फेला पार्नुहोस्</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="6615455863669487791">मलाई देखाउनुहोस्</translation>
@@ -5385,6 +5393,7 @@
 <translation id="7764225426217299476">ठेगाना थप्नुहोस्</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> देखि <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">सार्नुहोस्</translation>
+<translation id="7766082757934713382">यसले स्वचालित एप तथा सिस्टम अपडेट अस्थायी रूपमा बन्द गरेर डेटाको खपत कम गर्न मद्दत गर्छ</translation>
 <translation id="7766807826975222231">भ्रमण गर्नुहोस्</translation>
 <translation id="7766838926148951335">अनुमतिहरू स्वीकार गर्नुहोस्</translation>
 <translation id="7768770796815395237">परिवर्तन गर्नुहोस्</translation>
@@ -6296,6 +6305,7 @@
 <translation id="885701979325669005">भण्डारण</translation>
 <translation id="8859057652521303089">तपाइँको भाषा चयन गर्नुहोस्:</translation>
 <translation id="8859174528519900719">सबफ्रेम: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">सेवाका सर्तहरू लोड गर्न सकिएन</translation>
 <translation id="8859662783913000679">अभिभावकको खाता</translation>
 <translation id="8862003515646449717">कुनै द्रुत ब्राउजरमा स्विच गर्नुहोस्</translation>
 <translation id="8863753581171631212">लिंकलाई नयाँ <ph name="APP" /> मा खोल्नुहोस्</translation>
@@ -6374,7 +6384,6 @@
 <translation id="8952831374766033534">कन्फिगुरेसनको यो विकल्प प्रयोग गर्न मिल्दैन: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">चार्ज भइरहेका बेला</translation>
 <translation id="895347679606913382">सुरु हुँदैछ...</translation>
-<translation id="8957762313041272117">लाइभ क्याप्सन</translation>
 <translation id="895944840846194039">जाभास्क्रिप्ट स्मृति</translation>
 <translation id="8962083179518285172">विवरणहरू लुकाउनुहोस्</translation>
 <translation id="8962918469425892674">यो साइटले चाल वा प्रकाशसम्बन्धी सेन्सरहरू प्रयोग गर्दै छ।</translation>
@@ -6564,6 +6573,7 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> खोज्नुहोस्</translation>
 <translation id="9201023452444595544">सबै अफलाइन डेटा हटाइने छ</translation>
 <translation id="9201220332032049474">स्क्रिन लकका विकल्पहरू</translation>
+<translation id="9201842707396338580">केही चिज गडबड भयो। कृपया आफ्नो यन्त्रका मालिक वा एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="9203398526606335860">&amp;प्रोफाइलिङ सक्षम भयो</translation>
 <translation id="9203904171912129171">कुनै यन्त्र चयन गर्नुहोस्</translation>
 <translation id="9203962528777363226">यस यन्त्रको प्रशासकले नयाँ प्रयोगकर्ताहरूलाई थप्नबाट असक्षम गरेको छ</translation>
@@ -6635,6 +6645,7 @@
 <translation id="983511809958454316">यो सुविधा VR मा समर्थित छैन</translation>
 <translation id="984275831282074731">भुक्तानी विधिहरू</translation>
 <translation id="98515147261107953">ल्यान्डस्केप</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">सामान्य</translation>
 <translation id="987897973846887088">कुनै पनि छवि उपलब्ध छैन</translation>
 <translation id="988978206646512040">खाली पासफ्रेजलाई अनुमति छैन</translation>

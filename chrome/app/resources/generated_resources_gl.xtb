@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Ficheiros</translation>
 <translation id="1296911687402551044">Fixar pestana seleccionada</translation>
 <translation id="1297175357211070620">Destino</translation>
-<translation id="1297646507722131691">É recomendable facer unha copia de seguranza dos ficheiros antes de iniciar a actualización para evitar a perda de datos en caso de que non se poida completar o proceso. Cando comece a actualización, pecharase Linux (Beta). Antes de continuar, garda os ficheiros que teñas abertos.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> quere que Google verifique a identidade do teu dispositivo para determinar se se pode utilizar a reprodución mellorada con contido protexido.</translation>
 <translation id="1300806585489372370">Para cambiar esta opción de configuración, en primeiro lugar <ph name="BEGIN_LINK" />activa os identificadores<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> pode editar os seguintes ficheiros</translation>
@@ -1980,7 +1979,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3435738964857648380">Seguranza</translation>
 <translation id="343578350365773421">Non hai papel</translation>
 <translation id="3435896845095436175">Activar</translation>
-<translation id="3436642683618870087">A función Subtítulos instantáneos detecta o que se fala en calquera contido multimedia que se reproduza en Chrome e xera subtítulos automaticamente.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Permitir sempre a <ph name="HOST" /> acceder ao teu micrófono</translation>
 <translation id="3439970425423980614">Abrindo PDF en vista previa</translation>
@@ -3623,7 +3621,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5511379779384092781">Moi pequeno</translation>
 <translation id="5511823366942919280">Seguro que queres configurar este dispositivo como "Shark"?</translation>
 <translation id="5512653252560939721">O certificado do usuario debe estar almacenado en hardware.</translation>
-<translation id="5515923816438946203">Escoller o que se mostra na pantalla</translation>
 <translation id="5517304475148761050">Esta aplicación require acceso a Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Engadindo a impresora á túa conta (é posible que esta acción tarde uns minutos)...</translation>
@@ -3738,6 +3735,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5642508497713047">Asinante de CRL</translation>
 <translation id="5643321261065707929">Rede de pago por consumo</translation>
 <translation id="5643620609347735571">Borrar e continuar</translation>
+<translation id="5646376287012673985">Localización</translation>
 <translation id="5646558797914161501">Home de negocios</translation>
 <translation id="5648166631817621825">Últimos 7 días</translation>
 <translation id="5649053991847567735">Descargas automáticas</translation>
@@ -6390,7 +6388,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8952831374766033534">Non se admite a opción de configuración: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Durante a carga</translation>
 <translation id="895347679606913382">Iniciando...</translation>
-<translation id="8957762313041272117">Subtítulos instantáneos</translation>
 <translation id="895944840846194039">Memoria JavaScript</translation>
 <translation id="8962083179518285172">Ocultar detalles</translation>
 <translation id="8962918469425892674">Este sitio usa sensores de movemento ou de luz.</translation>

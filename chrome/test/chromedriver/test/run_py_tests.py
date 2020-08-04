@@ -28,6 +28,8 @@ import unittest
 import urllib
 import urllib2
 import uuid
+import imghdr
+import struct
 
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -222,6 +224,10 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testSettingPermissionDoesNotAffectOthers',
         # Android does not allow changing window size
         'JavaScriptTests.*',
+        # These tests are failing on Android
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3560
+        'ChromeDriverTest.testTakeLargeElementViewportScreenshot',
+        'ChromeDriverTest.testTakeLargeElementFullPageScreenshot'
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -2284,6 +2290,88 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     redElement = self._driver.FindElement('css selector', '#A')
     analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
+
+  @staticmethod
+  def png_dimensions(png_data_in_base64):
+    image = base64.b64decode(png_data_in_base64)
+    width, height = struct.unpack('>LL', image[16:24])
+    return int(width), int(height)
+
+
+  def testTakeLargeElementViewportScreenshot(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/large_element.html'))
+    self._driver.SetWindowRect(640, 400, 0, 0)
+    # Wait for page to stabilize. See https://crbug.com/chromedriver/2986
+    time.sleep(1)
+    viewportScreenshotPNGBase64  = self._driver.TakeScreenshot()
+    self.assertIsNotNone(viewportScreenshotPNGBase64)
+    mime_type = imghdr.what('', base64.b64decode(viewportScreenshotPNGBase64))
+    self.assertEqual('png', mime_type)
+    image_width, image_height = self.png_dimensions(viewportScreenshotPNGBase64)
+    viewport_width, viewport_height = self._driver.ExecuteScript(
+        '''
+        const {devicePixelRatio, innerHeight, innerWidth} = window;
+
+        return [
+          Math.floor(innerWidth * devicePixelRatio),
+          Math.floor(innerHeight * devicePixelRatio)
+        ];
+        ''')
+    self.assertEquals(image_width, viewport_width)
+    self.assertEquals(image_height, viewport_height)
+
+  def testTakeLargeElementFullPageScreenshot(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/large_element.html'))
+    width = 640
+    height = 400
+    self._driver.SetWindowRect(width, height, 0, 0)
+    # Wait for page to stabilize. See https://crbug.com/chromedriver/2986
+    time.sleep(1)
+    fullpageScreenshotPNGBase64  = self._driver.TakeFullPageScreenshot()
+    self.assertIsNotNone(fullpageScreenshotPNGBase64)
+    mime_type = imghdr.what('', base64.b64decode(fullpageScreenshotPNGBase64))
+    self.assertEqual('png', mime_type)
+    image_width, image_height = self.png_dimensions(fullpageScreenshotPNGBase64)
+    # According to https://javascript.info/size-and-scroll-window,
+    # width/height of the whole document, with the scrolled out part
+    page_width, page_height = self._driver.ExecuteScript(
+        '''
+        const body = document.body;
+        const doc = document.documentElement;
+        const width = Math.max(body.scrollWidth, body.offsetWidth,\
+                               body.clientWidth, doc.scrollWidth,\
+                               doc.offsetWidth, doc.clientWidth);
+        const height = Math.max(body.scrollHeight, body.offsetHeight,\
+                                body.clientHeight, doc.scrollHeight,\
+                                doc.offsetHeight, doc.clientHeight);
+
+        return [
+          width,
+          height
+        ];
+        ''')
+    self.assertEquals(image_width, page_width)
+    self.assertEquals(image_height, page_height)
+
+    # Assert Window Rect size stay the same after taking fullpage screenshot
+    size = self._driver.GetWindowRect()
+    self.assertEquals(size[0], width)
+    self.assertEquals(size[1], height)
+
+    # Verify scroll bars presence after test
+    horizontal_scroll_bar, vertical_scroll_bar = self._driver.ExecuteScript(
+        '''
+        const doc = document.documentElement;
+
+        return [
+          doc.scrollWidth > doc.clientWidth,
+          doc.scrollHeight > doc.clientHeight
+        ];
+        ''')
+    self.assertEquals(horizontal_scroll_bar, True)
+    self.assertEquals(vertical_scroll_bar, True)
 
   def testPrint(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

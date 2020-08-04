@@ -93,8 +93,8 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.trusted_params->disable_secure_dns = true;
 
   original.trust_token_params = network::mojom::TrustTokenParams();
-  original.trust_token_params->issuer =
-      url::Origin::Create(GURL("https://issuer.com"));
+  original.trust_token_params->issuers.push_back(
+      url::Origin::Create(GURL("https://issuer.com")));
   original.trust_token_params->type =
       mojom::TrustTokenOperationType::kRedemption;
   original.trust_token_params->include_timestamp_header = true;

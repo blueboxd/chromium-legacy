@@ -172,9 +172,9 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
   ChildDocument().View()->UpdateLifecyclePhasesForPrinting();
 
   // The following checks that the detached frame has been walked for PrePaint.
-  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
             GetDocument().Lifecycle().GetState());
-  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
             ChildDocument().Lifecycle().GetState());
   auto* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());

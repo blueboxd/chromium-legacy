@@ -121,14 +121,14 @@ TrustTokenTestParameters::TrustTokenTestParameters(
     base::Optional<network::mojom::TrustTokenRefreshPolicy> refresh_policy,
     base::Optional<network::mojom::TrustTokenSignRequestData> sign_request_data,
     base::Optional<bool> include_timestamp_header,
-    base::Optional<std::string> issuer_spec,
+    base::Optional<std::vector<std::string>> issuer_specs,
     base::Optional<std::vector<std::string>> additional_signed_headers,
     base::Optional<std::string> possibly_unsafe_additional_signing_data)
     : type(type),
       refresh_policy(refresh_policy),
       sign_request_data(sign_request_data),
       include_timestamp_header(include_timestamp_header),
-      issuer_spec(issuer_spec),
+      issuer_specs(issuer_specs),
       additional_signed_headers(additional_signed_headers),
       possibly_unsafe_additional_signing_data(
           possibly_unsafe_additional_signing_data) {}
@@ -161,9 +161,14 @@ SerializeTrustTokenParametersAndConstructExpectation(
         *input.include_timestamp_header;
   }
 
-  if (input.issuer_spec.has_value()) {
-    parameters.SetStringKey("issuer", *input.issuer_spec);
-    trust_token_params->issuer = url::Origin::Create(GURL(*input.issuer_spec));
+  if (input.issuer_specs.has_value()) {
+    base::Value issuers(base::Value::Type::LIST);
+    for (const std::string& issuer_spec : *input.issuer_specs) {
+      issuers.Append(issuer_spec);
+      trust_token_params->issuers.push_back(
+          url::Origin::Create(GURL(issuer_spec)));
+    }
+    parameters.SetKey("issuers", std::move(issuers));
   }
 
   if (input.additional_signed_headers.has_value()) {

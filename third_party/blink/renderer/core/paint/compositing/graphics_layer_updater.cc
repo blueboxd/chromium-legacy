@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -138,6 +139,10 @@ void GraphicsLayerUpdater::UpdateRecursive(
         scrollable_area->PositionOverflowControls();
       update_type = mapping->UpdateTypeForChildren(update_type);
       mapping->ClearNeedsGraphicsLayerUpdate();
+
+      // TODO(crbug.com/1058792): Allow multiple fragments for composited
+      // elements (passing |iterator| here is probably part of the solution).
+      CompositingLayerPropertyUpdater::Update(layer.GetLayoutObject());
     }
   }
 

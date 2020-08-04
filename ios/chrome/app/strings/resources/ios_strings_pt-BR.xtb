@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">Impossível salvar imagem</translation>
 <translation id="1180526666083833456">Sincronize seus dispositivos e mantenha suas personalizações em todos eles.</translation>
 <translation id="1181037720776840403">Remover</translation>
+<translation id="1185569544548277362">Novidade: é possível tornar o Chrome seu navegador padrão. <ph name="BEGIN_LINK" />Abrir "Ajustes"<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nova pesquisa</translation>
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
 <translation id="1219674500290482172">Não foi possível se conectar à Internet.</translation>
@@ -499,7 +500,7 @@ No entanto, eles não podem usar cookies para ver sua atividade de navegação e
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6831043979455480757">Traduzir</translation>
-<translation id="6841409746189899007">Gerar um link para o texto</translation>
+<translation id="6841409746189899007">Link p/ texto</translation>
 <translation id="6851516051005285358">Solicitar site para computador</translation>
 <translation id="6856384753476268833">Gerenciado pela sua organização.</translation>
 <translation id="6858855187367714033">Lido</translation>
@@ -570,7 +571,7 @@ No entanto, eles não podem usar cookies para ver sua atividade de navegação e
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="766891008101699113">Para navegar na Web com privacidade, adicione uma nova guia.</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
-<translation id="7701040980221191251">Nenhum</translation>
+<translation id="7701040980221191251">Nenhuma</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7771470029643830783">Se você sair, seus favoritos, seu histórico, suas senhas e outros dados do Chrome não serão mais sincronizados com sua Conta do Google.
 
@@ -639,6 +640,7 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Guias <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novo</translation>
 <translation id="8532105204136943229">Ano de vencimento</translation>
+<translation id="8533166274275423134">Aberto em outro lugar</translation>
 <translation id="8534481786647257214">A postagem no Google+ foi concluída.</translation>
 <translation id="8548878600947630424">Encontrar na página...</translation>
 <translation id="8574235780160508979">Os Termos de Serviço do Chrome serão atualizados em 31 de março. <ph name="BEGIN_LINK" />Leia aqui<ph name="END_LINK" /></translation>

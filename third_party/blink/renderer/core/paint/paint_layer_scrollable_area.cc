@@ -2402,6 +2402,10 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
+  // ScrollsOverflow() is an input into UpdateNeedsCompositedScrolling, which
+  // is computed during the compositing inputs update.
+  layer_->SetNeedsCompositingInputsUpdate(false);
+
   // Scroll hit test data depend on whether the box scrolls overflow.
   // They are painted in the background phase
   // (see: BoxPainter::PaintBoxDecorationBackground).
@@ -2521,7 +2525,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     DCHECK(GetDocument()->Lifecycle().GetState() ==
                DocumentLifecycle::kInCompositingInputsUpdate ||
            GetDocument()->Lifecycle().GetState() ==
-               DocumentLifecycle::kInCompositingUpdate);
+               DocumentLifecycle::kInCompositingAssignmentsUpdate)
+        << " " << GetDocument()->Lifecycle().ToString();
   }
 #endif
 

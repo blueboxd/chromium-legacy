@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -611,8 +612,8 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
   base::TimeTicks last_present_time = frame_timestamps.front();
   for (Timestamps::const_iterator i = frame_timestamps.begin() + 1;
        i != frame_timestamps.end(); ++i) {
-    const size_t num_vsync_intervals = static_cast<size_t>(
-        (*i - last_present_time).IntDiv(GetParam().vsync_interval));
+    const size_t num_vsync_intervals = base::ClampFloor<size_t>(
+        (*i - last_present_time) / GetParam().vsync_interval);
     ASSERT_LT(0u, num_vsync_intervals);
     ASSERT_GT(display_counts.size(), num_vsync_intervals);  // Quit early.
     ++display_counts[num_vsync_intervals];

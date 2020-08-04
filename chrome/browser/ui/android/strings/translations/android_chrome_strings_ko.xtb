@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" />에서 페어링하려고 함</translation>
 <translation id="2000419248597011803">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
 <translation id="2002537628803770967">Google Pay에 저장된 신용카드 및 주소</translation>
-<translation id="2012973609889389923">빠른 사이트</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{파일 #개}other{파일 #개}}</translation>
 <translation id="2017836877785168846">검색주소창의 검색 기록 및 자동 완성 항목을 삭제합니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
@@ -220,6 +219,7 @@
 <translation id="2744248271121720757">단어를 탭하여 즉시 검색하거나 관련 작업을 확인하세요</translation>
 <translation id="2760989362628427051">기기의 어두운 테마 또는 절전 모드가 켜지면 어두운 테마를 사용 설정합니다.</translation>
 <translation id="2762000892062317888">방금 전</translation>
+<translation id="2771869497727323769">텍스트 링크를 생성할 수 없습니다. 앱에서 페이지 링크를 공유하세요.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="2779651927720337254">실패</translation>
 <translation id="2781151931089541271">1초 남음</translation>
@@ -460,6 +460,7 @@
 <translation id="4732120983431207637">스택 언와인더</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4738836084190194332">마지막 동기화 시간: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA 오류: <ph name="VIOLATED_URL" />의 <ph name="ERROR_CODE" /> 오류</translation>
 <translation id="4749960740855309258">새 탭 열기</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{다운로드 1개 완료}other{다운로드 #개 완료}}</translation>
@@ -509,6 +510,7 @@
 <translation id="5040262127954254034">개인정보 보호</translation>
 <translation id="5087580092889165836">카드 추가</translation>
 <translation id="509429900233858213">오류가 발생했습니다.</translation>
+<translation id="5100748015044654621">앱에서 강조표시된 텍스트 링크를 공유하세요.</translation>
 <translation id="510275257476243843">1시간 남음</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>
@@ -535,6 +537,7 @@
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="5317780077021120954">저장</translation>
+<translation id="5319359161174645648">Google에서 추천하는 Chrome</translation>
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5327248766486351172">이름</translation>
 <translation id="5342314432463739672">권한 요청</translation>
@@ -637,7 +640,7 @@
 <translation id="6036057147555329831">추가 ICU</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="604124094241169006">자동</translation>
-<translation id="6042308850641462728">더보기</translation>
+<translation id="6042308850641462728">자세히</translation>
 <translation id="604996488070107836">알 수 없는 오류로 인해 <ph name="FILE_NAME" /> 다운로드에 실패했습니다.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">여기에서 스토리 및 활동을 관리하세요.</translation>
@@ -975,6 +978,7 @@
 <translation id="8562452229998620586">저장한 비밀번호가 여기에 표시됩니다.</translation>
 <translation id="8569404424186215731"><ph name="DATE" />부터</translation>
 <translation id="8571213806525832805">지난 4주</translation>
+<translation id="8572344201470131220">이미지 복사됨</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
 <translation id="860043288473659153">카드 명의자 이름</translation>
 <translation id="8616006591992756292">Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
@@ -1017,6 +1021,7 @@
 <translation id="8988028529677883095">휴대전화를 보안 키로 사용</translation>
 <translation id="8990209962746788689">QR 코드를 만들 수 없음</translation>
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
+<translation id="8996847606757455498">다른 제공업체 선택</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9028914725102941583">동기화를 사용 설정하여 기기간 공유하기</translation>
 <translation id="9040142327097499898">알림이 허용되었습니다. 이 기기에서 위치가 사용 중지되었습니다.</translation>

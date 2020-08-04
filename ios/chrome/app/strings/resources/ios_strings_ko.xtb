@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">이미지를 저장할 수 없음</translation>
 <translation id="1180526666083833456">모든 기기를 동기화 및 맞춤설정하세요.</translation>
 <translation id="1181037720776840403">삭제</translation>
+<translation id="1185569544548277362">새 기능: Chrome을 기본 브라우저로 설정할 수 있습니다. <ph name="BEGIN_LINK" />설정 열기<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">새 검색</translation>
 <translation id="1209206284964581585">지금 숨기기</translation>
 <translation id="1219674500290482172">인터넷에 연결할 수 없습니다.</translation>
@@ -353,7 +354,7 @@
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="5197255632782567636">인터넷</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
-<translation id="5234764350956374838">숨기기</translation>
+<translation id="5234764350956374838">닫기</translation>
 <translation id="5245322853195994030">동기화 취소</translation>
 <translation id="5271549068863921519">비밀번호 저장</translation>
 <translation id="5295239312320826323"><ph name="USER_EMAIL" /> 계정을 삭제하시겠습니까?</translation>
@@ -421,7 +422,7 @@
 <translation id="6021332621416007159">다음에서 열기</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">닫기</translation>
-<translation id="6042308850641462728">더보기</translation>
+<translation id="6042308850641462728">자세히</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">취소하려면 탭하세요.</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884">전체 <ph name="NUMBER_OF_OPEN_TABS" />개 탭 중 <ph name="FIRST_VISIBLE_TAB" />~<ph name="LAST_VISIBLE_TAB" />번째 탭이 <ph name="INCOGNITO" /> 탭입니다.</translation>
 <translation id="8529767659511976195">신규</translation>
 <translation id="8532105204136943229">만료 연도</translation>
+<translation id="8533166274275423134">다른 창에서 열림</translation>
 <translation id="8534481786647257214">Google+ 게시가 완료되었습니다.</translation>
 <translation id="8548878600947630424">페이지에서 찾기...</translation>
 <translation id="8574235780160508979">Chrome의 서비스 약관이 3월 31일에 변경됩니다. <ph name="BEGIN_LINK" />검토하기<ph name="END_LINK" /></translation>

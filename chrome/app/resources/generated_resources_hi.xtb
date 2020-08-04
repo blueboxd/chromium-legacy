@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">फ़ाइल</translation>
 <translation id="1296911687402551044">चुने गए टैब को पिन करें</translation>
 <translation id="1297175357211070620">गंतव्य</translation>
-<translation id="1297646507722131691">इस अपग्रेड के हिस्से के तौर पर, फ़ाइलों का बैकअप लेने का सुझाव दिया जाता है. ऐसा करने पर, अपग्रेड पूरा न हो पाने की स्थिति में डेटा खोने से बचा जा सकता है. अपग्रेड चालू करने से Linux (बीटा) बंद हो जाएगा. प्रोसेस शुरू करने से पहले, कृपया खुली हुई फ़ाइलें सेव कर लें.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> चाहता है कि Google के ज़रिए आपके डिवाइस की पहचान की पुष्टि हो. ऐसा करने से वह, यह पता लगा पाएगा कि सुरक्षित सामग्री को चलाने का बेहतर बनाया गया तरीका उस डिवाइस पर काम करेगा या नहीं.</translation>
 <translation id="1300806585489372370">यह सेटिंग बदलने के लिए, सबसे पहले <ph name="BEGIN_LINK" />पहचानकर्ताओं को चालू करें<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> नीचे दी गई फ़ाइलों में बदलाव कर सकती है</translation>
@@ -1981,7 +1980,6 @@
 <translation id="3435738964857648380">सुरक्षा</translation>
 <translation id="343578350365773421">काग़ज़ खत्म हो गया है</translation>
 <translation id="3435896845095436175">चालू करें</translation>
-<translation id="3436642683618870087">लाइव कैप्शन की सुविधा, Chrome में चल रहे किसी भी मीडिया के ऑडियो या वीडियो में हो रही बातचीत को पहचान कर अपने-आप कैप्शन बना देती है.</translation>
 <translation id="3438633801274389918">निंजा</translation>
 <translation id="3439153939049640737"><ph name="HOST" /> को कभी भी अपना माइक्रोफ़ोन एक्सेस करने दें</translation>
 <translation id="3439970425423980614">PDF को 'झलक' में खोल रहे हैं</translation>
@@ -2351,7 +2349,7 @@
 <translation id="3843464315703645664">डिफ़ॉल्ट के तौर पर चालू है</translation>
 <translation id="3846116211488856547">वेबसाइटें, Android ऐप्लिकेशन वगैरह बनाने के टूल पाएं. Linux इंस्टॉल करने पर <ph name="DOWNLOAD_SIZE" /> डेटा डाउनलोड होगा.</translation>
 <translation id="3847319713229060696">वेब को सभी के लिए ज़्यादा सुरक्षित बनाने में मदद करें</translation>
-<translation id="385051799172605136">वापस</translation>
+<translation id="385051799172605136">वापस जाएं</translation>
 <translation id="3850914401008572843"><ph name="ORIGIN" /> इस फ़ोल्डर को नहीं खोल सकती, क्योंकि इसमें सिस्टम फ़ाइलें मौजूद हैं</translation>
 <translation id="3851428669031642514">असुरक्षित स्‍क्रिप्‍ट लोड करें</translation>
 <translation id="3854599674806204102">कोई विकल्प चुनें</translation>
@@ -3623,7 +3621,6 @@
 <translation id="5511379779384092781">बहुत कम</translation>
 <translation id="5511823366942919280">क्या आप वाकई इस डिवाइस को "Shark" के रूप में सेट करना चाहते हैं?</translation>
 <translation id="5512653252560939721">उपयोगकर्ता का प्रमाणपत्र हार्डवेयर के समर्थन वाला होना चाहिए.</translation>
-<translation id="5515923816438946203">आप स्क्रीन पर जो भी देखते हैं उसे चुनें</translation>
 <translation id="5517304475148761050">इस ऐप्लिकेशन काे 'Play स्टोर' के ऐक्सेस की ज़रूरत है</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">अपने खाते में प्रिंटर जोड़ना - इसमें कुछ समय लग सकता है...</translation>
@@ -3738,6 +3735,7 @@
 <translation id="5642508497713047">CRL हस्ताक्षरकर्ता</translation>
 <translation id="5643321261065707929">सीमित डेटा वाला नेटवर्क</translation>
 <translation id="5643620609347735571">साफ़ करें और जारी रखें</translation>
+<translation id="5646376287012673985">स्थान</translation>
 <translation id="5646558797914161501">व्यवसायी</translation>
 <translation id="5648166631817621825">पिछले 7 दिन</translation>
 <translation id="5649053991847567735">अपने आप होने वाले डाउनलोड</translation>
@@ -5350,7 +5348,7 @@
 <translation id="7696063401938172191">आपके '<ph name="PHONE_NAME" />' पर:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{बुकमार्क सूची में 1 आइटम है}one{बुकमार्क सूची में # आइटम हैं}other{बुकमार्क सूची में # आइटम हैं}}</translation>
 <translation id="7699968112832915395">खाता नहीं जोड़ा जा सकता</translation>
-<translation id="7701040980221191251">कुछ नहीं</translation>
+<translation id="7701040980221191251">कुछ भी नहीं</translation>
 <translation id="770157826141786566">इस डिवाइस को वापस करने की समयसीमा खत्म हो चुकी है.</translation>
 <translation id="7701869757853594372">उपयोगकर्ता हैंडल</translation>
 <translation id="7701928712056789451">ये आइटम खतरनाक हो सकते हैं</translation>
@@ -6390,7 +6388,6 @@
 <translation id="8952831374766033534">कॉन्फ़िगर करने का विकल्प काम नहीं करता: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">चार्ज करते समय</translation>
 <translation id="895347679606913382">प्रारंभ कर रहा है...</translation>
-<translation id="8957762313041272117">लाइव कैप्शन</translation>
 <translation id="895944840846194039">JavaScript मेमोरी</translation>
 <translation id="8962083179518285172">विवरण छुपाएं</translation>
 <translation id="8962918469425892674">यह साइट गति या रोशनी के सेंसर का इस्तेमाल कर रही है.</translation>
@@ -6619,7 +6616,7 @@
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
 <translation id="941070664607309480">आपका डिवाइस दिख जाए, इसके लिए क्लिक करें. ऐसा करने से आपके साथ डेटा शेयर किया जा सकेगा</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> एक Chrome टैब और ऑडियो शेयर कर रहा है.</translation>
-<translation id="945522503751344254">सुझाव भेजें</translation>
+<translation id="945522503751344254">फ़ीडबैक भेजें</translation>
 <translation id="947329552760389097">&amp;एलिमेंट जाँचें</translation>
 <translation id="951991426597076286">अस्वीकार करें</translation>
 <translation id="952992212772159698">सक्रिय नहीं किया गया</translation>

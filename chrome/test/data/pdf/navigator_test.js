@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PdfNavigator} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/navigator.js';
+import {NavigatorDelegate, PdfNavigator} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/navigator.js';
 import {OpenPdfParamsParser} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/open_pdf_params_parser.js';
 import {PDFScriptingAPI} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_scripting_api.js';
 
 import {getZoomableViewport, MockDocumentDimensions, MockElement, MockSizer, MockViewportChangedCallback} from './test_util.js';
 
+/** @implements {NavigatorDelegate} */
 class MockNavigatorDelegate {
   constructor() {
     this.navigateInCurrentTabCalled = false;
@@ -16,18 +17,19 @@ class MockNavigatorDelegate {
     this.url = undefined;
   }
 
-  /** @param {?string} url */
+  /** @override */
   navigateInCurrentTab(url) {
     this.navigateInCurrentTabCalled = true;
     this.url = url || '<called, but no url set>';
   }
 
-  /** @param {?string} url */
+  /** @override */
   navigateInNewTab(url) {
     this.navigateInNewTabCalled = true;
     this.url = url || '<called, but no url set>';
   }
 
+  /** @override */
   navigateInNewWindow(url) {
     this.navigateInNewWindowCalled = true;
     this.url = url || '<called, but no url set>';
@@ -46,6 +48,12 @@ class MockNavigatorDelegate {
  * a new window depending on the value of |disposition|. Use
  * |viewportChangedCallback| and |navigatorDelegate| to check the callbacks,
  * and that the navigation to |expectedResultUrl| happened.
+ * @param {!PdfNavigator} navigator
+ * @param {string} url
+ * @param {!PdfNavigator.WindowOpenDisposition} disposition
+ * @param {(string|undefined)} expectedResultUrl
+ * @param {!MockViewportChangedCallback} viewportChangedCallback
+ * @param {!MockNavigatorDelegate} navigatorDelegate
  */
 function doNavigationUrlTest(
     navigator, url, disposition, expectedResultUrl, viewportChangedCallback,
@@ -76,9 +84,12 @@ function doNavigationUrlTest(
 /**
  * Helper function to run doNavigationUrlTest() for the current tab, a new
  * tab, and a new window.
+ * @param {string} originalUrl
+ * @param {string} url
+ * @param {(string|undefined)} expectedResultUrl
  */
 function doNavigationUrlTests(originalUrl, url, expectedResultUrl) {
-  const mockWindow = new MockElement(100, 100);
+  const mockWindow = new MockElement(100, 100, null);
   const mockSizer = new MockSizer();
   const mockViewportChangedCallback = new MockViewportChangedCallback();
   const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -109,7 +120,7 @@ const tests = [
    * opening a url in a new tab.
    */
   function testNavigate() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);

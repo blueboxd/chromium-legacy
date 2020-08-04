@@ -124,7 +124,11 @@ Polymer({
   onSafetyCheckParentChanged_: function(event) {
     this.parentStatus_ = event.newState;
     this.parentDisplayString_ = event.displayString;
-    if (this.parentStatus_ === SafetyCheckParentStatus.AFTER) {
+    if (this.parentStatus_ === SafetyCheckParentStatus.CHECKING) {
+      // Ensure the re-run button is visible and focus it.
+      flush();
+      this.focusIconButton_();
+    } else if (this.parentStatus_ === SafetyCheckParentStatus.AFTER) {
       // Start periodic safety check parent ran string updates.
       const update = async () => {
         this.parentDisplayString_ =
@@ -162,16 +166,10 @@ Polymer({
     HatsBrowserProxyImpl.getInstance().tryShowSurvey();
 
     this.runSafetyCheck_();
-
-    // Update parent element so that re-run button is visible and can be
-    // focused.
-    this.parentStatus_ = SafetyCheckParentStatus.CHECKING;
-    flush();
-    this.focusParent_();
   },
 
   /** @private */
-  focusParent_() {
+  focusIconButton_() {
     const element =
         /** @type {!Element} */ (this.$$('#safetyCheckParentIconButton'));
     element.focus();

@@ -690,9 +690,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         interceptor_(
             base::BindRepeating(&AppCacheUpdateJobTest::InterceptRequest,
                                 base::Unretained(this))),
-        process_id_(123),
-        weak_partition_factory_(static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetDefaultStoragePartition(&browser_context_))) {
+        process_id_(123) {
     appcache_require_origin_trial_feature_.InitAndDisableFeature(
         blink::features::kAppCacheRequireOriginTrial);
   }
@@ -747,13 +745,23 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void SetUp() override {
+    browser_context_ = std::make_unique<content::TestBrowserContext>();
+    weak_partition_factory_ =
+        std::make_unique<base::WeakPtrFactory<StoragePartitionImpl>>(
+            static_cast<StoragePartitionImpl*>(
+                BrowserContext::GetDefaultStoragePartition(
+                    browser_context_.get())));
+
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(process_id_,
-                                                       &browser_context_);
+                                                       browser_context_.get());
     blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
         []() -> blink::OriginTrialPolicy* { return &g_origin_trial_policy; }));
   }
 
   void TearDown() override {
+    weak_partition_factory_.reset();
+    browser_context_.reset();
+
     ChildProcessSecurityPolicyImpl::GetInstance()->Remove(process_id_);
   }
   // Use a separate IO thread to run a test. Thread will be destroyed
@@ -3818,14 +3826,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void RequestResponseTimesAreModifiedTest() {
-    base::test::ScopedFeatureList f;
-    f.InitAndEnableFeature(kAppCacheUpdateResourceOn304Feature);
     RequestResponseTimesModified(/*feature_enabled=*/true);
   }
 
   void RequestResponseTimesAreNotModifiedTest() {
-    base::test::ScopedFeatureList f;
-    f.InitAndDisableFeature(kAppCacheUpdateResourceOn304Feature);
     RequestResponseTimesModified(/*feature_enabled=*/false);
   }
 
@@ -4242,7 +4246,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   void MakeService() {
     service_ = std::make_unique<MockAppCacheService>(
-        weak_partition_factory_.GetWeakPtr());
+        weak_partition_factory_->GetWeakPtr());
   }
 
   AppCache* MakeCacheForGroup(int64_t cache_id, int64_t manifest_response_id) {
@@ -5094,7 +5098,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   AppCache::EntryMap expect_extra_entries_;
   std::map<GURL, int64_t> expect_response_ids_;
 
-  content::TestBrowserContext browser_context_;
   URLLoaderInterceptor interceptor_;
   const int process_id_;
   std::map<GURL, std::unique_ptr<HttpHeadersRequestTestJob>>
@@ -5102,7 +5105,44 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
 
-  base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
+  // Lazily create these to avoid data races in the FeatureList between
+  // service workers (reading) and appcache tests (writing).
+  std::unique_ptr<content::TestBrowserContext> browser_context_;
+  std::unique_ptr<base::WeakPtrFactory<StoragePartitionImpl>>
+      weak_partition_factory_;
+};
+
+class AppCacheUpdateJobOriginTrialTest : public AppCacheUpdateJobTest {
+ public:
+  AppCacheUpdateJobOriginTrialTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kAppCacheRequireOriginTrial);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class AppCacheUpdateJobUpdateOn304Test : public AppCacheUpdateJobTest {
+ public:
+  AppCacheUpdateJobUpdateOn304Test() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kAppCacheUpdateResourceOn304Feature);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class AppCacheUpdateJobNoUpdateOn304Test : public AppCacheUpdateJobTest {
+ public:
+  AppCacheUpdateJobNoUpdateOn304Test() {
+    scoped_feature_list_.InitAndDisableFeature(
+        kAppCacheUpdateResourceOn304Feature);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
@@ -5194,21 +5234,15 @@ TEST_F(AppCacheUpdateJobTest, ManifestMissingMimeTypeTest) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestMissingMimeTypeTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, ManifestNotFound) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+TEST_F(AppCacheUpdateJobOriginTrialTest, ManifestNotFound) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestNotFoundTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, ManifestGoneFetch) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+TEST_F(AppCacheUpdateJobOriginTrialTest, ManifestGoneFetch) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestGoneFetchTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, ManifestGoneUpgrade) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+TEST_F(AppCacheUpdateJobOriginTrialTest, ManifestGoneUpgrade) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestGoneUpgradeTest);
 }
 
@@ -5414,9 +5448,7 @@ TEST_F(AppCacheUpdateJobTest, UpgradeFailStoreNewestCache) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeFailStoreNewestCacheTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, UpgradeFailMakeGroupObsolete) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+TEST_F(AppCacheUpdateJobOriginTrialTest, UpgradeFailMakeGroupObsolete) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeFailMakeGroupObsoleteTest);
 }
 
@@ -5508,12 +5540,12 @@ TEST_F(AppCacheUpdateJobTest, RequestResponseTimesAreSet) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::RequestResponseTimesAreSetTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, RequestResponseTimesAreModified) {
+TEST_F(AppCacheUpdateJobUpdateOn304Test, RequestResponseTimesAreModified) {
   RunTestOnUIThread(
       &AppCacheUpdateJobTest::RequestResponseTimesAreModifiedTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, RequestResponseTimesAreNotModified) {
+TEST_F(AppCacheUpdateJobNoUpdateOn304Test, RequestResponseTimesAreNotModified) {
   RunTestOnUIThread(
       &AppCacheUpdateJobTest::RequestResponseTimesAreNotModifiedTest);
 }
@@ -5534,23 +5566,18 @@ TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::CrossOriginHttpsDeniedTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, OriginTrialUpdateWithFeature) {
+TEST_F(AppCacheUpdateJobOriginTrialTest, OriginTrialUpdateWithFeature) {
   // Updating a manifest with a valid token should work
   // with or without the kAppCacheRequireOriginTrial feature.
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
   RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialUpdateTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, OriginTrialUpdateWithoutFeature) {
-  base::test::ScopedFeatureList f;
-  f.InitAndDisableFeature(blink::features::kAppCacheRequireOriginTrial);
+  // The default AppCacheUpdateJobTest disables the origin trial.
   RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialUpdateTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, OriginTrialRequiredNoToken) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+TEST_F(AppCacheUpdateJobOriginTrialTest, OriginTrialRequiredNoToken) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialRequiredNoTokenTest);
 }
 

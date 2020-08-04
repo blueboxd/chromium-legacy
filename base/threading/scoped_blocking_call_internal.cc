@@ -198,12 +198,12 @@ void IOJankMonitoringWindow::OnBlockingCallCompleted(TimeTicks call_start,
   // Begin attributing jank to the first interval in which it appeared, no
   // matter how far into the interval the jank began.
   const int jank_start_index =
-      (call_start - start_time_).IntDiv(kIOJankInterval);
+      ClampFloor((call_start - start_time_) / kIOJankInterval);
 
   // Round the jank duration so the total number of intervals marked janky is as
   // close as possible to the actual jank duration.
   const int num_janky_intervals =
-      ClampRound((call_end - call_start).FltDiv(kIOJankInterval));
+      ClampRound((call_end - call_start) / kIOJankInterval);
 
   AddJank(jank_start_index, num_janky_intervals);
 }

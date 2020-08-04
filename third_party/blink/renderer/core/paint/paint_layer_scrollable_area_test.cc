@@ -559,16 +559,16 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollLayerOnPointerEvents) {
   Element* scroller = GetDocument().getElementById("scroller");
   EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 
+  // pointer-events: none causes the scoller to be invisible for hit testing,
+  // so ScrollsOverflow becomes false on the PaintLayerScrollableArea, and hence
+  // composited scrolling is not present.
   scroller->setAttribute(html_names::kStyleAttr, "pointer-events: none");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 
   scroller->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
-  else
-    EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
+  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 }
 
 // Test that <input> elements don't use composited scrolling even with

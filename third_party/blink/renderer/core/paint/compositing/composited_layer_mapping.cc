@@ -370,7 +370,7 @@ void CompositedLayerMapping::UpdateRasterizationPolicy() {
 
 void CompositedLayerMapping::UpdateCompositedBounds() {
   DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
-            DocumentLifecycle::kInCompositingUpdate);
+            DocumentLifecycle::kInCompositingAssignmentsUpdate);
   // FIXME: if this is really needed for performance, it would be better to
   // store it on Layer.
   composited_bounds_ = owning_layer_.BoundingBoxForCompositing();
@@ -387,7 +387,7 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
 bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     const PaintLayer* compositing_container) {
   DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
-            DocumentLifecycle::kInCompositingUpdate);
+            DocumentLifecycle::kInCompositingAssignmentsUpdate);
 
   // Note carefully: here we assume that the compositing state of all
   // descendants have been updated already, so it is legitimate to compute and
@@ -464,9 +464,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     // Changes to either the internal hierarchy or the mask layer have an impact
     // on painting phases, so we need to update when either are updated.
     UpdatePaintingPhases();
-    // Need to update paint LayerState of the changed GraphicsLayers.
-    // The pre-paint tree walk does this.
-    layout_object.SetNeedsPaintPropertyUpdate();
   }
 
   UpdateElementId();
@@ -701,8 +698,8 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   if (new_offset != non_scrolling_squashing_layer_offset_from_layout_object_) {
     non_scrolling_squashing_layer_offset_from_layout_object_ = new_offset;
     // Need to update squashing LayerState according to the new offset.
-    // The pre-paint tree walk does this.
-    GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    // GraphicsLayerUpdater does this.
+    layers_needing_paint_invalidation.push_back(&owning_layer_);
   }
 
   for (auto& layer : layers)
@@ -713,7 +710,7 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     const PaintLayer* compositing_container,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
-            DocumentLifecycle::kInCompositingUpdate);
+            DocumentLifecycle::kInCompositingAssignmentsUpdate);
 
   IntRect local_compositing_bounds;
   IntPoint snapped_offset_from_composited_ancestor;

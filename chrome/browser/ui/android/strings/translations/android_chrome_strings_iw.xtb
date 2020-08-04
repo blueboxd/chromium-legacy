@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> רוצה לבצע התאמה עם</translation>
 <translation id="2000419248597011803">‏שליחה של חלק מקובצי ה-Cookie והחיפושים משורת כתובת האתר ומתיבת החיפוש אל מנוע החיפוש שהוגדר כברירת מחדל</translation>
 <translation id="2002537628803770967">‏כרטיסי אשראי וכתובות דרך Google Pay</translation>
-<translation id="2012973609889389923">אתר מהיר</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{קובץ אחד (#)}two{# קבצים}many{# קבצים}other{# קבצים}}</translation>
 <translation id="2017836877785168846">ניקוי של ההיסטוריה וההשלמות האוטומטיות בשורת כתובת האתר</translation>
 <translation id="2021896219286479412">פקדי אתר במסך מלא</translation>
@@ -220,6 +219,7 @@
 <translation id="2744248271121720757">כדי לחפש באופן מיידי או לראות פעולות קשורות, צריך להקיש על מילה</translation>
 <translation id="2760989362628427051">עיצוב כהה מופעל כשבמכשיר פועלת האפשרות 'עיצוב כהה' או 'חיסכון בסוללה'</translation>
 <translation id="2762000892062317888">ברגע זה</translation>
+<translation id="2771869497727323769">לא ניתן ליצור קישור לטקסט. יש לשתף קישור לדף באפליקציה.</translation>
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2779651927720337254">נכשל</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
@@ -460,6 +460,7 @@
 <translation id="4732120983431207637">מודול התרת מחסניות</translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="4738836084190194332">סונכרן לאחרונה: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">‏שגיאת TWA: <ph name="ERROR_CODE" /> ב-<ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">פתח כרטיסייה חדשה</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{הורדה אחת הושלמה.}two{# הורדות הושלמו.}many{# הורדות הושלמו.}other{# הורדות הושלמו.}}</translation>
@@ -509,6 +510,7 @@
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
+<translation id="5100748015044654621">יש לשתף את הקישור לטקסט המודגש באפליקציה</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5123685120097942451">כרטיסיית גלישה בסתר</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
@@ -535,6 +537,7 @@
 <translation id="5304593522240415983">שדה זה לא יכול להיות ריק</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5317780077021120954">שמור</translation>
+<translation id="5319359161174645648">‏Google ממליצה על Chrome</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5342314432463739672">בקשות הרשאה</translation>
@@ -975,6 +978,7 @@
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
 <translation id="8569404424186215731">מאז <ph name="DATE" /></translation>
 <translation id="8571213806525832805">מארבעת השבועות האחרונים</translation>
+<translation id="8572344201470131220">התמונה הועתקה</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
 <translation id="860043288473659153">שם בעל הכרטיס</translation>
 <translation id="8616006591992756292">‏ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1017,6 +1021,7 @@
 <translation id="8988028529677883095">שימוש בטלפון כמפתח אבטחה</translation>
 <translation id="8990209962746788689">‏לא ניתן ליצור קוד QR</translation>
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
+<translation id="8996847606757455498">בחירת ספק אחר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
 <translation id="9028914725102941583">כדי לבצע שיתוף בין מכשירים יש להפעיל את הסנכרון</translation>
 <translation id="9040142327097499898">יש הרשאה להצגת הודעות. המיקום כבוי בשביל המכשיר הזה.</translation>

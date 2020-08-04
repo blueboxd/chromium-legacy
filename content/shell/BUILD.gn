@@ -53,6 +53,7 @@ if (support_web_tests) {
   mojom("web_test_common_mojom") {
     sources = [
       "common/web_test/fake_bluetooth_chooser.mojom",
+      "common/web_test/mojo_echo.mojom",
       "common/web_test/web_test.mojom",
       "common/web_test/web_test_bluetooth_fake_adapter_setter.mojom",
     ]
@@ -112,6 +113,8 @@ if (support_web_tests) {
       "browser/web_test/fake_bluetooth_delegate.h",
       "browser/web_test/leak_detector.cc",
       "browser/web_test/leak_detector.h",
+      "browser/web_test/mojo_echo.cc",
+      "browser/web_test/mojo_echo.h",
       "browser/web_test/mojo_web_test_helper.cc",
       "browser/web_test/mojo_web_test_helper.h",
       "browser/web_test/test_info_extractor.cc",

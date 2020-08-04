@@ -184,7 +184,12 @@ Status StubWebView::IsPendingNavigation(const Timeout* timeout,
 }
 
 JavaScriptDialogManager* StubWebView::GetJavaScriptDialogManager() {
-  return NULL;
+  return nullptr;
+}
+
+MobileEmulationOverrideManager* StubWebView::GetMobileEmulationOverrideManager()
+    const {
+  return nullptr;
 }
 
 Status StubWebView::OverrideGeolocation(const Geoposition& geoposition) {

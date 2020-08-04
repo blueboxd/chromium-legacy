@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
@@ -60,6 +61,12 @@
 #error "This file requires ARC support."
 #endif
 
+// Exposes private safe mode start/stop methods.
+@interface AppState (Private)
+- (void)startSafeMode;
+- (void)stopSafeMode;
+@end
+
 #pragma mark - Class definition.
 
 namespace {
@@ -74,6 +81,8 @@ typedef void (^HandleStartupParam)(
     id<ConnectionInformation> connectionInformation,
     id<StartupInformation> startupInformation,
     ChromeBrowserState* browserState);
+// A block ths returns values of AppState connectedScenes.
+typedef NSArray<SceneState*>* (^ScenesBlock)(id self);
 
 class FakeAppDistributionProvider : public AppDistributionProvider {
  public:
@@ -207,6 +216,15 @@ class AppStateTest : public BlockCleanupTest {
     metrics_mediator_called_ = NO;
   }
 
+  void swizzleConnectedScenes(NSArray<SceneState*>* connectedScenes) {
+    connected_scenes_swizzle_block_ = ^NSArray<SceneState*>*(id self) {
+      return connectedScenes;
+    };
+    connected_scenes_swizzler_.reset(
+        new ScopedBlockSwizzler([AppState class], @selector(connectedScenes),
+                                connected_scenes_swizzle_block_));
+  }
+
   void swizzleSafeModeShouldStart(BOOL shouldStart) {
     safe_mode_swizzle_block_ = ^BOOL(id self) {
       return shouldStart;
@@ -278,9 +296,7 @@ class AppStateTest : public BlockCleanupTest {
                              metricsMediator:metricsMediator
                                 memoryHelper:memoryHelper
                                    tabOpener:tabOpener];
-    // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
-    app_state_.mainSceneState =
-        [[FakeSceneState alloc] initWithAppState:app_state_];
+
     initializeIncognitoBlocker(window);
 
     return appState;
@@ -288,26 +304,41 @@ class AppStateTest : public BlockCleanupTest {
 
   AppState* getAppStateWithMock() {
     if (!app_state_) {
+      // The swizzle block needs the scene state before app_state is create, but
+      // the scene state needs the app state. So this alloc before swizzling
+      // and initiate after app state is created.
+      main_scene_state_ = [FakeSceneState alloc];
+      swizzleConnectedScenes(@[ main_scene_state_ ]);
+
       app_state_ =
           [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
-      // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
-      app_state_.mainSceneState =
-          [[FakeSceneState alloc] initWithAppState:app_state_];
+      app_state_.mainSceneState = main_scene_state_;
+
+      main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
+      main_scene_state_.window = getWindowMock();
     }
     return app_state_;
   }
 
   AppState* getAppStateWithRealWindow(UIWindow* window) {
     if (!app_state_) {
+      // The swizzle block needs the scene state before app_state is create, but
+      // the scene state needs the app state. So this alloc before swizzling
+      // and initiate after app state is created.
+      main_scene_state_ = [FakeSceneState alloc];
+      swizzleConnectedScenes(@[ main_scene_state_ ]);
+
       app_state_ =
           [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
-      // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
-      app_state_.mainSceneState =
-          [[FakeSceneState alloc] initWithAppState:app_state_];
+      app_state_.mainSceneState = main_scene_state_;
+
+      main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
+      main_scene_state_.window = window;
+
       [window makeKeyAndVisible];
     }
     return app_state_;
@@ -334,16 +365,19 @@ class AppStateTest : public BlockCleanupTest {
  private:
   web::WebTaskEnvironment task_environment_;
   AppState* app_state_;
+  FakeSceneState* main_scene_state_;
   id browser_launcher_mock_;
   id connection_information_mock_;
   id startup_information_mock_;
   id main_application_delegate_;
   id window_;
   StubBrowserInterfaceProvider* interface_provider_;
+  ScenesBlock connected_scenes_swizzle_block_;
   DecisionBlock safe_mode_swizzle_block_;
   HandleStartupParam handle_startup_swizzle_block_;
   ProceduralBlock metrics_mediator_swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> safe_mode_swizzler_;
+  std::unique_ptr<ScopedBlockSwizzler> connected_scenes_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> handle_startup_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> metrics_mediator_swizzler_;
   __block BOOL metrics_mediator_called_;
@@ -414,17 +448,24 @@ TEST_F(AppStateTest, requiresHandlingAfterLaunchWithOptionsForegroundSafeMode) {
 
   appState.mainSceneState.activationLevel =
       SceneActivationLevelForegroundActive;
-  appState.mainSceneState.window = getWindowMock();
 
   // Action.
   BOOL result = [appState requiresHandlingAfterLaunchWithOptions:launchOptions
                                                  stateBackground:NO];
+
+  if (IsMultiwindowSupported()) {
+    [appState startSafeMode];
+  }
 
   // Test.
   EXPECT_TRUE(result);
   EXPECT_TRUE([appState isInSafeMode]);
   EXPECT_OCMOCK_VERIFY(browserLauncherMock);
   EXPECT_OCMOCK_VERIFY(windowMock);
+
+  if (IsMultiwindowSupported()) {
+    [appState stopSafeMode];
+  }
 }
 
 // Tests that if the application is active
@@ -545,6 +586,10 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
 // Test that -resumeSessionWithTabOpener removes incognito blocker,
 // restart metrics and launchs from StartupParameters if they exist.
 TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
+  if (IsSceneStartupSupported()) {
+    // TODO(crbug.com/1045579): Session restoration not available yet in MW.
+    return;
+  }
   // Setup.
 
   // BrowserLauncher.
@@ -596,6 +641,11 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
 // restart metrics and creates a new tab from tab switcher if shouldOpenNTP is
 // YES.
 TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
+  if (IsSceneStartupSupported()) {
+    // TODO(crbug.com/1045579): Session restoration not available yet in MW.
+    return;
+  }
+
   // Setup.
   // BrowserLauncher.
   StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
@@ -642,6 +692,10 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
 // Test that -resumeSessionWithTabOpener removes incognito blocker,
 // restart metrics and creates a new tab if shouldOpenNTP is YES.
 TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
+  if (IsSceneStartupSupported()) {
+    // TODO(crbug.com/1045579): Session restoration not available yet in MW.
+    return;
+  }
   // Setup.
   // BrowserLauncher.
   StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
@@ -790,6 +844,10 @@ TEST_F(AppStateTest, applicationWillEnterForegroundFromBackground) {
 // application is in background.
 TEST_F(AppStateTest,
        applicationWillEnterForegroundFromBackgroundShouldStartSafeMode) {
+  if (IsMultiwindowSupported()) {
+    // In Multi Window, this is not the case. Skip this test.
+    return;
+  }
   // Setup.
   id application = [OCMockObject mockForClass:[UIApplication class]];
   id metricsMediator = [OCMockObject mockForClass:[MetricsMediator class]];

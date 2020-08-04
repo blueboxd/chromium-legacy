@@ -625,10 +625,6 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
     std::unique_ptr<ResponseCallback> response_callback,
     blink::ServiceWorkerStatusCode status) {
-  // Fetch dispatcher can be completed at this point due to a failure of
-  // starting up a worker. In that case, let's simply ignore it.
-  if (IsCompleted())
-    return;
   DidFail(status);
 }
 
@@ -639,9 +635,9 @@ void ServiceWorkerFetchDispatcher::DidFail(
       "ServiceWorker", "ServiceWorkerFetchDispatcher::DidFail",
       TRACE_ID_LOCAL(this),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status", status);
-  Complete(status, FetchEventResult::kShouldFallback,
-           blink::mojom::FetchAPIResponse::New(), nullptr /* body_as_stream */,
-           nullptr /* timing */);
+  RunCallback(status, FetchEventResult::kShouldFallback,
+              blink::mojom::FetchAPIResponse::New(),
+              nullptr /* body_as_stream */, nullptr /* timing */);
 }
 
 void ServiceWorkerFetchDispatcher::DidFinish(
@@ -654,17 +650,21 @@ void ServiceWorkerFetchDispatcher::DidFinish(
                          "ServiceWorkerFetchDispatcher::DidFinish",
                          TRACE_ID_LOCAL(this),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
-           std::move(response), std::move(body_as_stream), std::move(timing));
+  RunCallback(blink::ServiceWorkerStatusCode::kOk, fetch_result,
+              std::move(response), std::move(body_as_stream),
+              std::move(timing));
 }
 
-void ServiceWorkerFetchDispatcher::Complete(
+void ServiceWorkerFetchDispatcher::RunCallback(
     blink::ServiceWorkerStatusCode status,
     FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  DCHECK(fetch_callback_);
+  // Fetch dispatcher can be completed at this point due to a failure of
+  // starting up a worker. In that case, let's simply ignore it.
+  if (!fetch_callback_)
+    return;
 
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
@@ -774,10 +774,6 @@ ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()
 
 bool ServiceWorkerFetchDispatcher::IsEventDispatched() const {
   return request_.is_null();
-}
-
-bool ServiceWorkerFetchDispatcher::IsCompleted() const {
-  return fetch_callback_.is_null();
 }
 
 // static

@@ -326,6 +326,11 @@ class CORE_EXPORT LocalFrameView final
   // LocalFrame.
   void WillBeRemovedFromFrame();
 
+  bool IsUpdatingLifecycle() {
+    return current_update_lifecycle_phases_target_state_ !=
+           DocumentLifecycle::kUninitialized;
+  }
+
   // Run all needed lifecycle stages. After calling this method, all frames will
   // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
   // (see DocumentLifecycle::AllowThrottlingScope), some frames may skip the
@@ -771,7 +776,9 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   bool RunAccessibilityLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
-  bool RunCompositingLifecyclePhase(
+  bool RunCompositingInputsLifecyclePhase(
+      DocumentLifecycle::LifecycleState target_state);
+  bool RunCompositingAssignmentsLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
   bool RunPrePaintLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);

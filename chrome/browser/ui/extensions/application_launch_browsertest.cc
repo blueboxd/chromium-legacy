@@ -74,7 +74,11 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
       GetWebContentsForTab(browser(), 1));
   EXPECT_TRUE(app_browser->is_type_app());
   EXPECT_NE(app_browser, browser());
-  EXPECT_EQ(url, GetWebContentsForTab(app_browser, 0)->GetURL());
+  content::WebContents* web_contents = GetWebContentsForTab(app_browser, 0);
+  // Note: Since we're not using the EmbeddedTestServer, we don't expect this
+  // navigation to succeed.
+  content::WaitForLoadStopWithoutSuccessCheck(web_contents);
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_TRUE(app_browser->is_focus_mode());
 }

@@ -54,8 +54,8 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
   TrustTokenRequestHelperFactoryTest() {
     suitable_request_ = CreateSuitableRequest();
     suitable_params_ = mojom::TrustTokenParams::New();
-    suitable_params_->issuer =
-        url::Origin::Create(GURL("https://issuer.example"));
+    suitable_params_->issuers.push_back(
+        url::Origin::Create(GURL("https://issuer.example")));
   }
 
  protected:
@@ -151,16 +151,17 @@ TEST_F(TrustTokenRequestHelperFactoryTest,
 
   auto params = suitable_params().Clone();
   params->type = mojom::TrustTokenOperationType::kSigning;
-  params->issuer.reset();
+  params->issuers.clear();
 
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
 
-  params->issuer = UnsuitableUntrustworthyOrigin();
+  params->issuers.push_back(UnsuitableUntrustworthyOrigin());
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
 
-  params->issuer = UnsuitableNonHttpNonHttpsOrigin();
+  params->issuers.clear();
+  params->issuers.push_back(UnsuitableNonHttpNonHttpsOrigin());
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
 }

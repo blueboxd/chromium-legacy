@@ -54,6 +54,11 @@
 #include "ui/display/display.h"
 #include "url/origin.h"
 
+#if defined(OS_MAC)
+#include "base/mac/mac_util.h"
+#include "ui/base/cocoa/permissions_utils.h"
+#endif
+
 namespace media_router {
 
 namespace {
@@ -101,6 +106,13 @@ void RunRouteResponseCallbacks(
   for (auto& callback : route_result_callbacks)
     std::move(callback).Run(result);
 }
+
+#if defined(OS_MAC)
+bool RequiresScreenCapturePermission(MediaCastMode cast_mode) {
+  return base::mac::IsAtLeastOS10_15() &&
+         cast_mode == MediaCastMode::DESKTOP_MIRROR;
+}
+#endif
 
 // Observes a WebContents following a call to MediaRouterViewsUI::CreateRoute()
 // and calls MediaRoute::CreateRoute() only after naviation is complete.
@@ -350,6 +362,19 @@ void MediaRouterViewsUI::InitWithStartPresentationContext(
 
 bool MediaRouterViewsUI::CreateRoute(const MediaSink::Id& sink_id,
                                      MediaCastMode cast_mode) {
+#if defined(OS_MAC)
+  if (RequiresScreenCapturePermission(cast_mode)) {
+    const bool screen_capture_allowed =
+        screen_capture_allowed_for_testing_.has_value()
+            ? *screen_capture_allowed_for_testing_
+            : ui::IsScreenCaptureAllowed();
+    if (!screen_capture_allowed) {
+      SendIssueForScreenPermission(sink_id);
+      return false;
+    }
+  }
+#endif
+
   // Default the tab casting the content to the initiator, and change if
   // necessary.
   content::WebContents* tab_contents = initiator_;
@@ -744,6 +769,18 @@ void MediaRouterViewsUI::SendIssueForRouteTimeout(
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
+
+#if defined(OS_MAC)
+void MediaRouterViewsUI::SendIssueForScreenPermission(
+    const MediaSink::Id& sink_id) {
+  std::string issue_title = l10n_util::GetStringUTF8(
+      IDS_MEDIA_ROUTER_ISSUE_MAC_SCREEN_CAPTURE_PERMISSION_ERROR);
+  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
+                       IssueInfo::Severity::WARNING);
+  issue_info.sink_id = sink_id;
+  AddIssue(issue_info);
+}
+#endif
 
 void MediaRouterViewsUI::SendIssueForUnableToCast(
     MediaCastMode cast_mode,

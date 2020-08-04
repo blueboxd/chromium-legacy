@@ -509,6 +509,29 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestEmoji) {
 }
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
+                       DismissEmojiSuggestionWhenUsersContinueTyping) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("InputMethod.Assistive.TimeToDismiss.Emoji",
+                                    0);
+  engine_.Enable(kEngineIdUs);
+  chromeos::TextInputTestHelper helper(GetBrowserInputMethod());
+  SetUpTextInput(helper);
+  const base::string16 prefix_text = base::UTF8ToUTF16("happy ");
+  const base::string16 expected_result_text = base::UTF8ToUTF16("happy a");
+
+  helper.GetTextInputClient()->InsertText(prefix_text);
+  helper.WaitForSurroundingTextChanged(prefix_text);
+  // Types something random to dismiss emoji
+  helper.GetTextInputClient()->InsertText(base::UTF8ToUTF16("a"));
+  helper.WaitForSurroundingTextChanged(expected_result_text);
+
+  histogram_tester.ExpectTotalCount("InputMethod.Assistive.TimeToDismiss.Emoji",
+                                    1);
+
+  SetFocus(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
                        EmojiSuggestionDisabledReasonkEnterpriseSettingsOff) {
   base::HistogramTester histogram_tester;
   prefs_->SetBoolean(chromeos::prefs::kEmojiSuggestionEnterpriseAllowed, false);

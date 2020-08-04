@@ -997,7 +997,10 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   NGExclusionSpace exclusion_space;
   const NGInlineBreakToken* break_token = BreakToken();
 
-  NGLogicalLineItems* line_box = context_->LogicalLineItems();
+  NGFragmentItemsBuilder* items_builder = context_->ItemsBuilder();
+  NGLogicalLineItems* line_box = items_builder
+                                     ? items_builder->AcquireLogicalLineItems()
+                                     : context_->LogicalLineItems();
 
   bool is_line_created = false;
   LayoutUnit line_block_size;
@@ -1143,14 +1146,13 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   CHECK(is_line_created);
   container_builder_.SetExclusionSpace(std::move(exclusion_space));
 
-  if (NGFragmentItemsBuilder* items_builder = context_->ItemsBuilder()) {
+  if (items_builder) {
     DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
     container_builder_.PropagateChildrenData(*line_box);
     scoped_refptr<const NGLayoutResult> layout_result =
         container_builder_.ToLineBoxFragment();
-    items_builder->SetCurrentLine(
-        To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment()),
-        line_box);
+    items_builder->AssociateLogicalLineItems(line_box,
+                                             layout_result->PhysicalFragment());
     return layout_result;
   }
 

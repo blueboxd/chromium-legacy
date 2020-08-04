@@ -25,8 +25,6 @@ const char kUseCDD[] = "use_cdd";
 
 const char kContentTypeJSON[] = "application/json";
 const char kContentTypePDF[] = "application/pdf";
-const char kContentTypeXML[] = "application/xml";
-const char kContentTypeXPS[] = "application/vnd.ms-xpsdocument";
 
 const char kPrintSystemFailedMessageId[] = "printsystemfail";
 const char kGetPrinterCapsFailedMessageId[] = "getprncapsfail";

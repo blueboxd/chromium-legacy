@@ -666,12 +666,20 @@ LocalDOMWindow* CurrentDOMWindow(v8::Isolate* isolate) {
 }
 
 ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
-  DCHECK(!context.IsEmpty());
+  // TODO(jgruber,crbug.com/v8/10460): Change this back to a DCHECK once the
+  // crash has been flushed out.
+  CHECK(!context.IsEmpty());
 
   RUNTIME_CALL_TIMER_SCOPE(context->GetIsolate(),
                            RuntimeCallStats::CounterId::kToExecutionContext);
 
   v8::Local<v8::Object> global_proxy = context->Global();
+
+  // TODO(jgruber,crbug.com/v8/10460): Change these back to a DCHECK once the
+  // crash has been flushed out.
+  CHECK(!global_proxy.IsEmpty());
+  CHECK(global_proxy->IsObject());
+
   // There are several contexts other than Window, WorkerGlobalScope or
   // WorkletGlobalScope but entering into ToExecutionContext, namely GC context,
   // DevTools' context (debug context), and maybe more.  They all don't have

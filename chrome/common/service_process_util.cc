@@ -134,9 +134,6 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
     switches::kCloudPrintSetupProxy,
     switches::kCloudPrintURL,
     switches::kCloudPrintXmppEndpoint,
-#if defined(OS_WIN)
-    switches::kEnableCloudPrintXps,
-#endif
     switches::kEnableLogging,
     switches::kLang,
     switches::kLoggingLevel,

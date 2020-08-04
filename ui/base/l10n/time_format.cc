@@ -130,13 +130,13 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
     }
   } else if (delta < kYear) {
     DCHECK(with_month_and_year);
-    const int month = delta.IntDiv(kMonth);
+    const int month = base::ClampFloor(delta / kMonth);
     DCHECK_GE(month, 1);
     DCHECK_LE(month, 12);
     formatter->Format(Formatter::UNIT_MONTH, month, &time_string);
   } else {
     DCHECK(with_month_and_year);
-    const int year = delta.IntDiv(kYear);
+    const int year = base::ClampFloor(delta / kYear);
     formatter->Format(Formatter::UNIT_YEAR, year, &time_string);
   }
 

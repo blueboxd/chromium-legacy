@@ -36,6 +36,9 @@ mojo.internal.kArrayHeaderSize = 8;
 mojo.internal.kStructHeaderSize = 8;
 
 /** @const {number} */
+mojo.internal.kUnionHeaderSize = 8;
+
+/** @const {number} */
 mojo.internal.kUnionDataSize = 16;
 
 /** @const {number} */
@@ -540,18 +543,21 @@ mojo.internal.Encoder = class {
   /**
    * @param {!mojo.internal.UnionSpec} unionSpec
    * @param {number} offset
-   * @param {boolean} nullable
    * @param {!Object} value
    */
-  encodeUnion(unionSpec, offset, nullable, value) {
-    let unionEncoder = this;
-    if (nullable) {
-      const unionData = this.message_.allocate(mojo.internal.kUnionDataSize);
-      this.encodeOffset(offset, unionData.byteOffset);
-      offset = 0;
-      unionEncoder = new mojo.internal.Encoder(this.message_, unionData);
-    }
+  encodeUnionAsPointer(unionSpec, offset, value) {
+    const unionData = this.message_.allocate(mojo.internal.kUnionDataSize);
+    const unionEncoder = new mojo.internal.Encoder(this.message_, unionData);
+    this.encodeOffset(offset, unionData.byteOffset);
+    unionEncoder.encodeUnion(unionSpec, /*offset=*/0, value);
+  }
 
+  /**
+   * @param {!mojo.internal.UnionSpec} unionSpec
+   * @param {number} offset
+   * @param {!Object} value
+   */
+  encodeUnion(unionSpec, offset, value) {
     const keys = Object.keys(value);
     if (keys.length !== 1) {
       throw new Error(
@@ -562,10 +568,18 @@ mojo.internal.Encoder = class {
 
     const tag = keys[0];
     const field = unionSpec.fields[tag];
-    unionEncoder.encodeUint32(offset, mojo.internal.kUnionDataSize);
-    unionEncoder.encodeUint32(offset + 4, field['ordinal']);
+    this.encodeUint32(offset, mojo.internal.kUnionDataSize);
+    this.encodeUint32(offset + 4, field['ordinal']);
+    const fieldByteOffset = offset + mojo.internal.kUnionHeaderSize;
+    if (typeof field['type'].$.unionSpec !== 'undefined') {
+      // Unions are encoded as pointers when inside unions.
+      this.encodeUnionAsPointer(field['type'].$.unionSpec,
+                                fieldByteOffset,
+                                value[tag]);
+      return;
+    }
     field['type'].$.encode(
-        value[tag], unionEncoder, offset + 8, 0, field['nullable']);
+        value[tag], this, fieldByteOffset, 0, field['nullable']);
   }
 
   /**
@@ -786,25 +800,42 @@ mojo.internal.Decoder = class {
   /**
    * @param {!mojo.internal.UnionSpec} unionSpec
    * @param {number} offset
-   * @param {boolean} nullable
    */
-  decodeUnion(unionSpec, offset, nullable) {
-    let unionDecoder = this;
-    if (nullable) {
-      const unionOffset = this.decodeOffset(offset);
-      if (!unionOffset)
-        return null;
-      unionDecoder = new mojo.internal.Decoder(
-          new DataView(this.data_.buffer, unionOffset), this.handles_);
-      offset = 0;
-    }
+  decodeUnionFromPointer(unionSpec, offset) {
+    const unionOffset = this.decodeOffset(offset);
+    if (!unionOffset)
+      return null;
 
-    const ordinal = unionDecoder.decodeUint32(offset + 4);
+    const decoder = new mojo.internal.Decoder(
+      new DataView(this.data_.buffer, unionOffset), this.handles_);
+    return decoder.decodeUnion(unionSpec, 0);
+  }
+
+  /**
+   * @param {!mojo.internal.UnionSpec} unionSpec
+   * @param {number} offset
+   */
+  decodeUnion(unionSpec, offset) {
+    const size = this.decodeUint32(offset);
+    if (size === 0)
+      return null;
+
+    const ordinal = this.decodeUint32(offset + 4);
     for (const fieldName in unionSpec.fields) {
       const field = unionSpec.fields[fieldName];
       if (field['ordinal'] === ordinal) {
-        const fieldValue = field['type'].$.decode(
-            unionDecoder, offset + 8, 0, field['nullable']);
+        const fieldValue = (() => {
+          const fieldByteOffset = offset + mojo.internal.kUnionHeaderSize;
+          // Unions are encoded as pointers when inside other
+          // unions.
+          if (typeof field['type'].$.unionSpec !== 'undefined') {
+            return this.decodeUnionFromPointer(
+              field['type'].$.unionSpec, fieldByteOffset);
+          }
+          return field['type'].$.decode(
+            this, fieldByteOffset, 0, field['nullable'])
+        })();
+
         if (fieldValue === null && !field['nullable']) {
           throw new Error(
               `Received ${unionSpec.name} with invalid null ` +
@@ -1372,11 +1403,11 @@ mojo.internal.Union = function(objectToBlessAsUnion, name, fields) {
   objectToBlessAsUnion.$ = {
     unionSpec: unionSpec,
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
-      encoder.encodeUnion(unionSpec, byteOffset, nullable, value);
+      encoder.encodeUnion(unionSpec, byteOffset, value);
     },
     encodeNull: function(encoder, byteOffset) {},
     decode: function(decoder, byteOffset, bitOffset, nullable) {
-      return decoder.decodeUnion(unionSpec, byteOffset, nullable);
+      return decoder.decodeUnion(unionSpec, byteOffset);
     },
     computePayloadSize: function(value, nullable) {
       return mojo.internal.computeTotalUnionSize(unionSpec, nullable, value);

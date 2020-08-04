@@ -20,13 +20,17 @@ namespace base {
 class ListValue;
 }  // namespace base
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 // WebUIMessageHandler for Contact Messages to pass messages to the
 // chrome://nearby-internals Contact tab.
 class NearbyInternalsContactHandler
     : public content::WebUIMessageHandler,
       public NearbyShareContactManager::Observer {
  public:
-  NearbyInternalsContactHandler();
+  explicit NearbyInternalsContactHandler(content::BrowserContext* context);
   NearbyInternalsContactHandler(const NearbyInternalsContactHandler&) = delete;
   NearbyInternalsContactHandler& operator=(
       const NearbyInternalsContactHandler&) = delete;
@@ -38,6 +42,9 @@ class NearbyInternalsContactHandler
   void OnJavascriptDisallowed() override;
 
  private:
+  // Message handler callback that initializes JavaScript.
+  void InitializeContents(const base::ListValue* args);
+
   // NearbyShareContactManager::Observer:
   void OnContactsUpdated(
       bool contacts_list_changed,
@@ -51,9 +58,7 @@ class NearbyInternalsContactHandler
   // manager.
   void HandleDownloadContacts(const base::ListValue* args);
 
-  // TODO(julietlevesque): Add observer functionality for
-  // NearbyShareContactManager observer in order to pass Contact messages to
-  // front-end.
+  content::BrowserContext* context_;
   ScopedObserver<NearbyShareContactManager, NearbyShareContactManager::Observer>
       observer_{this};
   base::WeakPtrFactory<NearbyInternalsContactHandler> weak_ptr_factory_{this};

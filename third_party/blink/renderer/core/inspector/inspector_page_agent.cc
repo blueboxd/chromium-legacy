@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -1068,6 +1069,10 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setId(IdentifiersFactory::FrameId(frame))
           .setLoaderId(IdentifiersFactory::LoaderId(loader))
           .setUrl(UrlWithoutFragment(loader->Url()).GetString())
+          .setDomainAndRegistry(blink::network_utils::GetDomainAndRegistry(
+              loader->Url().Host(),
+              blink::network_utils::PrivateRegistryFilter::
+                  kIncludePrivateRegistries))
           .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
           .setSecurityOrigin(
               SecurityOrigin::Create(loader->Url())->ToRawString())

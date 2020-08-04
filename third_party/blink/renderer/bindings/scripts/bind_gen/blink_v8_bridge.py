@@ -107,7 +107,6 @@ def blink_type_info(idl_type):
             "String",
             ref_fmt="{}&",
             const_ref_fmt="const {}&",
-            value_fmt="bindings::NativeValueTraitsStringAdapter",
             has_null_value=True)
 
     if real_type.is_array_buffer:

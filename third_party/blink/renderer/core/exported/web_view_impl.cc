@@ -296,7 +296,7 @@ void WebViewImpl::CloseWindowSoon() {
     // until the JS is complete, and then the Close request can be sent.
     if (auto* main_thread_scheduler =
             scheduler::WebThreadScheduler::MainThreadScheduler()) {
-      main_thread_scheduler->CleanupTaskRunner()->PostTask(
+      main_thread_scheduler->DeprecatedDefaultTaskRunner()->PostTask(
           FROM_HERE, WTF::Bind(&WebViewImpl::DoDeferredCloseWindowSoon,
                                weak_ptr_factory_.GetWeakPtr()));
     }

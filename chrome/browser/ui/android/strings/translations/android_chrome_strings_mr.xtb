@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> जोडू इच्छिते</translation>
 <translation id="2000419248597011803">ॲड्रेस बार आणि सर्च बॉक्समधून तुमच्या डीफॉल्ट शोध इंजिनला काही कुकीज आणि शोध पाठवते</translation>
 <translation id="2002537628803770967">Google Pay वापरून क्रेडिट कार्ड आणि पत्ते</translation>
-<translation id="2012973609889389923">जलद साइट</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फाइल}}</translation>
 <translation id="2017836877785168846">ॲड्रेस बारमधील इतिहास आणि आपोआप पूर्ण केलेले साफ करते.</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
@@ -538,6 +537,7 @@
 <translation id="5304593522240415983">हे फील्ड रिक्त ठेवता येणार नाही</translation>
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
+<translation id="5319359161174645648">Google Chrome ची शिफारस करते</translation>
 <translation id="5324858694974489420">पालक सेटिंग्ज</translation>
 <translation id="5327248766486351172">नाव</translation>
 <translation id="5342314432463739672">परवानगीच्या विनंत्या</translation>
@@ -582,7 +582,7 @@
 <translation id="5639724618331995626">सर्व साइटना अनुमती द्या</translation>
 <translation id="5648166631817621825">अखेरच्या 7 दिवसांमधील</translation>
 <translation id="5655963694829536461">तुमचे डाउनलोड शोधा</translation>
-<translation id="5659593005791499971">ईमेल</translation>
+<translation id="5659593005791499971">ई-मेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> मध्ये इव्हेंट तयार करा</translation>
 <translation id="5668404140385795438">झूम वाढविणे निर्बंधित करण्याची वेबसाइटची विनंती ओव्हरराइड करा</translation>
 <translation id="568275469169136466">तात्पुरते साइन इन करण्यासाठी</translation>

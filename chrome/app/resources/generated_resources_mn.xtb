@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Файлууд</translation>
 <translation id="1296911687402551044">Сонгосон табыг бэхлэх</translation>
 <translation id="1297175357211070620">Хэвлэгч машин сонгох</translation>
-<translation id="1297646507722131691">Сайжруулалтыг дуусгах боломжгүй тохиолдолд өгөгдөл алдагдахаас сэргийлэхийн тулд энэхүү сайжруулалтын хэсэг болгож файлуудыг хуулбарлахыг зөвлөдөг. Сайжруулалтыг эхлүүлснээр Linux (Бэта)-г унтраахад хүргэнэ. Үргэлжлүүлэхээсээ өмнө нээлттэй файлуудыг хадгална уу.</translation>
 <translation id="1300415640239881824">Хамгаалалттай агуулгын сайжруулсан дахин тоглуулалтыг боломжтой эсэхийг тодорхойлохын тулд <ph name="DOMAIN" /> таны төхөөрөмжийг Google-р баталгаажуулах хүсэлтэй байна.</translation>
 <translation id="1300806585489372370">Энэ тохиргоог өөрчлөхийн тулд эхлээд <ph name="BEGIN_LINK" />таниулбарыг асаана уу<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> дараах файлыг засах боломжтой</translation>
@@ -1971,7 +1970,6 @@
 <translation id="3435738964857648380">Нууцлал</translation>
 <translation id="343578350365773421">Цаас дууссан</translation>
 <translation id="3435896845095436175">Идэвхжүүл</translation>
-<translation id="3436642683618870087">Шууд тайлбар нь медианы яриаг илрүүлж, Chrome дээр тоглуулж буй бүх медиад автоматаар хадмал үүсгэдэг.</translation>
 <translation id="3438633801274389918">Нинжа</translation>
 <translation id="3439153939049640737"><ph name="HOST" />-д таны микрофон руу нэвтрэхийг үргэлж зөвшөөрөх</translation>
 <translation id="3439970425423980614">PDF-ийг урьдчилан харах горимд нээж байна</translation>
@@ -3611,7 +3609,6 @@
 <translation id="5511379779384092781">Маш жижиг</translation>
 <translation id="5511823366942919280">Та энэ төхөөрөмжийг "Shark" хэлбэрээр тохируулахыг хүсч байгаа гэдэгтээ итгэлтэй байна уу?</translation>
 <translation id="5512653252560939721">Хэрэглэгчийн гэрчилгээ нь апп хангамж дээр үндэслэн хадгалсан байх шаардлагатай.</translation>
-<translation id="5515923816438946203">Дэлгэц дээрээ харж байгаа зүйлээ сонгоно уу</translation>
 <translation id="5517304475148761050">Энэ аппад Play Store-д хандах хандалт шаардлагатай</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Таны дансанд хэвлэгч машиныг нэмж байна. Та түр хүлээнэ үү...</translation>
@@ -3726,6 +3723,7 @@
 <translation id="5642508497713047">CRL гарын үсэг зурагч</translation>
 <translation id="5643321261065707929">Хязгаартай сүлжээ</translation>
 <translation id="5643620609347735571">Устгаад үргэлжлүүлэх</translation>
+<translation id="5646376287012673985">Байршил</translation>
 <translation id="5646558797914161501">Ажил хэрэгч хүн</translation>
 <translation id="5648166631817621825">Сүүлийн 7 хоног</translation>
 <translation id="5649053991847567735">Автоматаар татаж  авах файл</translation>
@@ -4473,6 +4471,7 @@
 <translation id="6602956230557165253">Навигаци хийхийн тулд зүүн, баруун сумтай түлхүүрүүдийг ашиглах.</translation>
 <translation id="6605847144724004692">Одоогоор ямар ч хэрэглэгч үнэлээгүй байна.</translation>
 <translation id="6607831829715835317">Илүү их хэрэгслүүд</translation>
+<translation id="6608012008902909398">Төхөөрөмжийн программ хангамжийн шалгалтын дэлгэрэнгүйг харуулах</translation>
 <translation id="6611972847767394631">Эндээс табуудаа олоорой</translation>
 <translation id="6612358246767739896">Хамгаалагдсан агуулга</translation>
 <translation id="6615455863669487791">Надад үзүүлнэ үү</translation>
@@ -6368,7 +6367,6 @@
 <translation id="8952831374766033534">Тохируулгын сонголт дэмжигдээгүй байна: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Цэнэглэх үед</translation>
 <translation id="895347679606913382">Үйлдлийг эхэлж байна ...</translation>
-<translation id="8957762313041272117">Шууд тайлбар</translation>
 <translation id="895944840846194039">JavaScript санах ой</translation>
 <translation id="8962083179518285172">Дэлгэрэнгүй мэдээллийг нуух</translation>
 <translation id="8962918469425892674">Энэ сайт хөдөлгөөн болон гэрлийн мэдрэгч ашиглаж байна.</translation>

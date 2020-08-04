@@ -18,6 +18,7 @@
 #include "content/shell/renderer/web_test/test_runner.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "content/shell/renderer/web_test/web_widget_test_proxy.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_testing_support.h"
@@ -445,9 +446,8 @@ void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request) {
 
   if (test_runner()->ClearReferrer()) {
     request.SetReferrerString(blink::WebString());
-    request.SetReferrerPolicy(
-        content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-            content::Referrer::GetDefaultReferrerPolicy()));
+    request.SetReferrerPolicy(blink::NetToMojoReferrerPolicy(
+        content::Referrer::GetDefaultReferrerPolicy()));
   }
 
   std::string host = url.host();

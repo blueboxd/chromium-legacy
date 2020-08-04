@@ -372,22 +372,25 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
 #if defined(OS_ANDROID)
     BrowserContextImpl* browser_context_impl =
         static_cast<BrowserContextImpl*>(browser_context);
-    bool is_real_time_lookup_enabled =
-        !GetSafeBrowsingService()->GetSafeBrowsingDisabled() &&
-        safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-            browser_context_impl->pref_service(),
-            browser_context_impl->IsOffTheRecord(),
-            FeatureListCreator::GetInstance()->variations_service());
+    bool is_safe_browsing_enabled = safe_browsing::IsSafeBrowsingEnabled(
+        *browser_context_impl->pref_service());
 
-    // |url_lookup_service| is used when real time url check is enabled.
-    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service =
-        is_real_time_lookup_enabled
-            ? RealTimeUrlLookupServiceFactory::GetForBrowserContext(
-                  browser_context)
-            : nullptr;
+    if (is_safe_browsing_enabled) {
+      bool is_real_time_lookup_enabled =
+          safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+              browser_context_impl->pref_service(),
+              browser_context_impl->IsOffTheRecord(),
+              FeatureListCreator::GetInstance()->variations_service());
 
-    result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
-        wc_getter, frame_tree_node_id, url_lookup_service));
+      // |url_lookup_service| is used when real time url check is enabled.
+      safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service =
+          is_real_time_lookup_enabled
+              ? RealTimeUrlLookupServiceFactory::GetForBrowserContext(
+                    browser_context)
+              : nullptr;
+      result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
+          wc_getter, frame_tree_node_id, url_lookup_service));
+    }
 #endif
   }
 

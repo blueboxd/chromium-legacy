@@ -169,6 +169,9 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                                        double y1,
                                        double r1,
                                        ExceptionState&);
+  CanvasGradient* createConicGradient(double startAngle,
+                                      double centerX,
+                                      double centerY);
   CanvasPattern* createPattern(ScriptState*,
                                const CanvasImageSourceUnion&,
                                const String& repetition_type,

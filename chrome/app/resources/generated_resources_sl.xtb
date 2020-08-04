@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Datoteke</translation>
 <translation id="1296911687402551044">Pripni izbrani zavihek</translation>
 <translation id="1297175357211070620">Cilj</translation>
-<translation id="1297646507722131691">V okviru te nagradnje priporočamo varnostno kopiranje datotek zaradi preprečevanja izgube podatkov, če nadgradnje ne bi bilo mogoče dokončati. Če začnete nadgradnjo, se bo Linux (beta) zaustavil. Pred nadaljevanjem shranite odprte datoteke.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> zahteva, da Google preveri identiteto naprave in tako določi, ali je ustrezna za izboljšano predvajanje zaščitene vsebine.</translation>
 <translation id="1300806585489372370">Če želite spremeniti to nastavitev, najprej <ph name="BEGIN_LINK" />vklopite identifikatorje<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080">Spletno mesto <ph name="ORIGIN" /> lahko ureja naslednje datoteke</translation>
@@ -1981,7 +1980,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3435738964857648380">Varnost</translation>
 <translation id="343578350365773421">Ni več papirja</translation>
 <translation id="3435896845095436175">Omogoči</translation>
-<translation id="3436642683618870087">Samodejni podnapisi zaznavajo govor v predstavnostni vsebini in samodejno ustvarijo podnapise za vso predstavnost, ki se predvaja v Chromu.</translation>
 <translation id="3438633801274389918">Nindža</translation>
 <translation id="3439153939049640737">Vedno dovoli gostitelju <ph name="HOST" /> dostop do mikrofona</translation>
 <translation id="3439970425423980614">Odpiranje PDF-ja v predogledu</translation>
@@ -3624,7 +3622,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5511379779384092781">Zelo majhno</translation>
 <translation id="5511823366942919280">Ali ste prepričani, da želite to napravo nastaviti kot »Morski pes«?</translation>
 <translation id="5512653252560939721">Uporabniško potrdilo mora biti podprto s strojno opremo.</translation>
-<translation id="5515923816438946203">Izberite, kaj bo prikazano na zaslonu</translation>
 <translation id="5517304475148761050">Ta aplikacija zahteva dostop do Trgovine Play</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Dodajanje tiskalnika računu – to lahko traja nekaj časa ...</translation>
@@ -3741,6 +3738,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5642508497713047">Podpisnik seznama ukinjenih potrdil</translation>
 <translation id="5643321261065707929">Omrežje z omejenim prenosom podatkov</translation>
 <translation id="5643620609347735571">Počisti in nadaljuj</translation>
+<translation id="5646376287012673985">Lokacija</translation>
 <translation id="5646558797914161501">Poslovnež</translation>
 <translation id="5648166631817621825">Zadnjih 7 dni</translation>
 <translation id="5649053991847567735">Samodejni prenosi</translation>
@@ -4926,7 +4924,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7140928199327930795">Ni drugih razpoložljivih naprav.</translation>
 <translation id="7141105143012495934">Prijava ni uspela, ker ni bilo mogoče pridobiti podrobnosti o računu. Obrnite se na skrbnika in poskusite znova.</translation>
 <translation id="7143207342074048698">Povezovanje</translation>
-<translation id="7144878232160441200">Poskusi znova</translation>
+<translation id="7144878232160441200">Poskusi ponovno</translation>
 <translation id="714876143603641390">Povezava z omrežjem LAN</translation>
 <translation id="7149893636342594995">Zadnjih 24 ur</translation>
 <translation id="715118844758971915">Navadni tiskalniki</translation>
@@ -5353,7 +5351,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7696063401938172191">V telefonu »<ph name="PHONE_NAME" />«:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 element na seznamu zaznamkov}one{# element na seznamu zaznamkov}two{# elementa na seznamu zaznamkov}few{# elementi na seznamu zaznamkov}other{# elementov na seznamu zaznamkov}}</translation>
 <translation id="7699968112832915395">Računa ni mogoče dodati</translation>
-<translation id="7701040980221191251">Brez</translation>
+<translation id="7701040980221191251">Nič</translation>
 <translation id="770157826141786566">Rok za vrnitev te naprave je potekel.</translation>
 <translation id="7701869757853594372">Kode za dostop USER</translation>
 <translation id="7701928712056789451">Ti elementi so morda nevarni</translation>
@@ -6394,7 +6392,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8952831374766033534">Možnost konfiguracije ni podprta: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Med polnjenjem</translation>
 <translation id="895347679606913382">Začetek ...</translation>
-<translation id="8957762313041272117">Samodejni podnapisi</translation>
 <translation id="895944840846194039">Pomnilnik za JavaScript</translation>
 <translation id="8962083179518285172">Skrij podrobnosti</translation>
 <translation id="8962918469425892674">To spletno mesto uporablja tipala gibanja ali svetlobe.</translation>
@@ -6623,7 +6620,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="941070664607309480">Kliknite, če želite, da vaša naprava postane vidna in bo podatke mogoče deliti z vami</translation>
 <translation id="942532530371314860">Aplikacija <ph name="APP_NAME" /> je v skupno rabo dala zavihek v Chromu in zvok.</translation>
-<translation id="945522503751344254">Pošlji povratne informacije</translation>
+<translation id="945522503751344254">Pošiljanje povratnih informacij</translation>
 <translation id="947329552760389097">&amp;Pregled elementov</translation>
 <translation id="951991426597076286">Zavrni</translation>
 <translation id="952992212772159698">Ni aktivirano</translation>

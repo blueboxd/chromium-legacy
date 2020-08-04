@@ -470,6 +470,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       CanvasResourceProvider::RasterRecord(std::move(last_recording));
       return;
     }
+    WillDrawInternal(true);
     gpu::raster::RasterInterface* ri = RasterInterface();
     SkColor background_color = ColorParams().GetOpacityMode() == kOpaque
                                    ? SK_ColorBLACK
@@ -529,7 +530,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       // Another context may have a read reference to this resource. Flush the
       // deferred queue in that context so that we don't need to copy.
       GetFlushForImageListener()->NotifyFlushForImage(content_id);
-      surface_->flushAndSubmit();
+
+      if (!use_oop_rasterization_)
+        surface_->flushAndSubmit();
     }
 
     return !resource_->HasOneRef();

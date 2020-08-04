@@ -1323,7 +1323,7 @@ scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetCleanupTaskRunner() {
   return current_blink_platform_impl()
       ->main_thread_scheduler()
-      ->CleanupTaskRunner();
+      ->DefaultTaskRunner();
 }
 
 gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {

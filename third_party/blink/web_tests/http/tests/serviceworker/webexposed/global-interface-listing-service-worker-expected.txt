@@ -1035,6 +1035,7 @@ interface OffscreenCanvasRenderingContext2D
     method closePath
     method commit
     method constructor
+    method createConicGradient
     method createImageData
     method createLinearGradient
     method createPattern

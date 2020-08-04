@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">画像を保存できません</translation>
 <translation id="1180526666083833456">デバイス間の同期とカスタマイズを行います。</translation>
 <translation id="1181037720776840403">削除</translation>
+<translation id="1185569544548277362">新情報: Chrome を既定に設定できます。<ph name="BEGIN_LINK" />設定を開く<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">新しく検索</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1219674500290482172">インターネットに接続できません。</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="INCOGNITO" />タブ: <ph name="FIRST_VISIBLE_TAB" />～<ph name="LAST_VISIBLE_TAB" />/<ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">新規</translation>
 <translation id="8532105204136943229">有効期限（年）</translation>
+<translation id="8533166274275423134">別の場所で開かれています</translation>
 <translation id="8534481786647257214">Google+への投稿が完了しました。</translation>
 <translation id="8548878600947630424">ページ内を検索...</translation>
 <translation id="8574235780160508979">Chrome の利用規約が 3 月 31 日に更新されます。<ph name="BEGIN_LINK" />お読みください<ph name="END_LINK" /></translation>

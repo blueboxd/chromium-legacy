@@ -28,6 +28,7 @@
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
+#include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/network_conditions.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
@@ -1962,6 +1963,90 @@ Status ExecuteScreenshot(Session* session,
 
   value->reset(new base::Value(screenshot));
   return Status(kOk);
+}
+
+Status ExecuteFullPageScreenshot(Session* session,
+                                 WebView* web_view,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value,
+                                 Timeout* timeout) {
+  Status status = session->chrome->ActivateWebView(web_view->GetId());
+  if (status.IsError())
+    return status;
+
+  std::unique_ptr<base::Value> layoutMetrics;
+  status = web_view->SendCommandAndGetResult(
+      "Page.getLayoutMetrics", base::DictionaryValue(), &layoutMetrics);
+  if (status.IsError())
+    return status;
+
+  const auto width = layoutMetrics->FindDoublePath("contentSize.width");
+  if (!width.has_value())
+    return Status(kUnknownError, "invalid width type");
+  int w = ceil(width.value());
+  if (w == 0)
+    return Status(kUnknownError, "invalid width 0");
+
+  const auto height = layoutMetrics->FindDoublePath("contentSize.height");
+  if (!height.has_value())
+    return Status(kUnknownError, "invalid height type");
+  int h = ceil(height.value());
+  if (h == 0)
+    return Status(kUnknownError, "invalid height 0");
+
+  auto* meom = web_view->GetMobileEmulationOverrideManager();
+  bool hasOverrideMetrics = meom->HasOverrideMetrics();
+
+  base::DictionaryValue deviceMetrics;
+  deviceMetrics.SetInteger("width", w);
+  deviceMetrics.SetInteger("height", h);
+  if (hasOverrideMetrics) {
+    const auto* dm = meom->GetDeviceMetrics();
+    deviceMetrics.SetInteger("deviceScaleFactor", dm->device_scale_factor);
+    deviceMetrics.SetBoolean("mobile", dm->mobile);
+  } else {
+    deviceMetrics.SetInteger("deviceScaleFactor", 1);
+    deviceMetrics.SetBoolean("mobile", false);
+  }
+  std::unique_ptr<base::Value> ignore;
+  status = web_view->SendCommandAndGetResult(
+      "Emulation.setDeviceMetricsOverride", deviceMetrics, &ignore);
+  if (status.IsError())
+    return status;
+
+  std::string screenshot;
+  // No need to supply clip as it would be default to the device metrics
+  // parameters
+  status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
+  if (status.IsError()) {
+    if (status.code() == kUnexpectedAlertOpen) {
+      LOG(WARNING) << status.message() << ", cancelling screenshot";
+      // we can't take screenshot in this state
+      // but we must return kUnexpectedAlertOpen_Keep instead
+      // see https://crbug.com/chromedriver/2117
+      return Status(kUnexpectedAlertOpen_Keep);
+    }
+    LOG(WARNING) << "screenshot failed, retrying " << status.message();
+    status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
+  }
+  if (status.IsError())
+    return status;
+
+  *value = std::make_unique<base::Value>(screenshot);
+
+  // Check if there is already deviceMetricsOverride in use,
+  // if so, restore to that instead
+  if (hasOverrideMetrics) {
+    status = meom->RestoreOverrideMetrics();
+  } else {
+    // The scroll bar disappear after setting device metrics to fullpage
+    // width and height, this is to clear device metrics and restore
+    // scroll bars
+    status = web_view->SendCommandAndGetResult(
+        "Emulation.clearDeviceMetricsOverride", base::DictionaryValue(),
+        &ignore);
+  }
+  return status;
 }
 
 Status ExecutePrint(Session* session,

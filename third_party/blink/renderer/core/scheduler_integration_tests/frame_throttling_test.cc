@@ -1411,7 +1411,7 @@ TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
     EXPECT_TRUE(
         frame_element->contentDocument()->View()->ShouldThrottleRendering());
   }
-  EXPECT_EQ(DocumentLifecycle::kCompositingClean,
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
             frame_element->contentDocument()->Lifecycle().GetState());
 }
 

@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Files</translation>
 <translation id="1296911687402551044">Pin Selected Tab</translation>
 <translation id="1297175357211070620">Destination</translation>
-<translation id="1297646507722131691">Backing up files is recommended as part of this upgrade to prevent data loss in case the upgrade cannot be completed. Starting the upgrade will cause Linux (beta) to shut down. Please save open files before proceeding.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> wants your device's identity to be verified, by Google, to determine eligibility for enhanced playback of protected content.</translation>
 <translation id="1300806585489372370">To change this setting, first <ph name="BEGIN_LINK" />turn on identifiers<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> can edit the following files</translation>
@@ -1981,7 +1980,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3435738964857648380">Security</translation>
 <translation id="343578350365773421">Out of paper</translation>
 <translation id="3435896845095436175">Enable</translation>
-<translation id="3436642683618870087">Live caption detects speech in media and automatically generates captions for all media playing in Chrome.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Always allow <ph name="HOST" /> to access your microphone</translation>
 <translation id="3439970425423980614">Opening PDF in Preview</translation>
@@ -3624,7 +3622,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5511379779384092781">Extra small</translation>
 <translation id="5511823366942919280">Are you sure that you want to set up this device as a "Shark"?</translation>
 <translation id="5512653252560939721">User certificate must be hardware-backed.</translation>
-<translation id="5515923816438946203">Choose what you see on your screen</translation>
 <translation id="5517304475148761050">This app requires access to the Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Adding the printer to your account - this may take a moment...</translation>
@@ -3739,6 +3736,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5642508497713047">CRL Signer</translation>
 <translation id="5643321261065707929">Metered network</translation>
 <translation id="5643620609347735571">Clear and continue</translation>
+<translation id="5646376287012673985">Location</translation>
 <translation id="5646558797914161501">Businessman</translation>
 <translation id="5648166631817621825">Last 7 days</translation>
 <translation id="5649053991847567735">Automatic downloads</translation>
@@ -6392,7 +6390,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8952831374766033534">Configuration option not supported: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">While charging</translation>
 <translation id="895347679606913382">Starting...</translation>
-<translation id="8957762313041272117">Live Caption</translation>
 <translation id="895944840846194039">JavaScript Memory</translation>
 <translation id="8962083179518285172">Hide Details</translation>
 <translation id="8962918469425892674">This site is using motion or light sensors.</translation>
@@ -6598,7 +6595,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9219103736887031265">Images</translation>
 <translation id="9220525904950070496">Remove account</translation>
 <translation id="9220820413868316583">Lift then try again.</translation>
-<translation id="923467487918828349">Show All</translation>
+<translation id="923467487918828349">Show all</translation>
 <translation id="929117907539171075">Offline data in installed app will also be cleared</translation>
 <translation id="930268624053534560">Detailed Timestamps</translation>
 <translation id="932327136139879170">Home</translation>

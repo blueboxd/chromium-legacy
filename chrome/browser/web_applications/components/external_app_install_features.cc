@@ -12,7 +12,17 @@ namespace {
 
 // A hard coded list of features available for externally installed apps to gate
 // their installation on via their config file settings.
-constexpr base::Feature kExternalAppInstallFeatures[] = {};
+constexpr base::Feature kExternalAppInstallFeatures[] = {
+    // Enables migration of default installed GSuite apps over to their
+    // replacement web apps.
+    {"MigrateDefaultChromeAppToWebAppsGSuite",
+     base::FEATURE_DISABLED_BY_DEFAULT},
+
+    // Enables migration of default installed non-GSuite apps over to their
+    // replacement web apps.
+    {"MigrateDefaultChromeAppToWebAppsNonGSuite",
+     base::FEATURE_DISABLED_BY_DEFAULT},
+};
 
 bool g_always_enabled_for_testing = false;
 

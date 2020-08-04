@@ -127,10 +127,12 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
     }
 
     case mojom::TrustTokenOperationType::kSigning: {
+      // TODO(davidvc): When adding logic to send the new Trust Tokens signing
+      // headers handling lists of issuers, update this to use the entire list.
       base::Optional<SuitableTrustTokenOrigin> maybe_issuer;
-      if (params->issuer) {
-        maybe_issuer =
-            SuitableTrustTokenOrigin::Create(std::move(*params->issuer));
+      if (!params->issuers.empty()) {
+        maybe_issuer = SuitableTrustTokenOrigin::Create(
+            std::move(params->issuers.front()));
       }
 
       if (!maybe_issuer) {

@@ -260,7 +260,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   scoped_refptr<ServiceWorkerRegistration> GetOrCreateRegistration(
       const storage::mojom::ServiceWorkerRegistrationData& data,
-      const ResourceList& resources);
+      const ResourceList& resources,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+          version_reference);
 
   // Looks up live registrations and returns an optional value which may contain
   // a "findable" registration. See the implementation of this method for
@@ -272,20 +274,17 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const GURL& client_url,
       int64_t trace_event_id,
       FindRegistrationCallback callback,
-      storage::mojom::ServiceWorkerRegistrationDataPtr data,
-      std::unique_ptr<ResourceList> resources,
-      storage::mojom::ServiceWorkerDatabaseStatus database_status);
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
+      storage::mojom::ServiceWorkerFindRegistrationResultPtr result);
   void DidFindRegistrationForScope(
       FindRegistrationCallback callback,
-      storage::mojom::ServiceWorkerRegistrationDataPtr data,
-      std::unique_ptr<ResourceList> resources,
-      storage::mojom::ServiceWorkerDatabaseStatus database_status);
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
+      storage::mojom::ServiceWorkerFindRegistrationResultPtr result);
   void DidFindRegistrationForId(
       int64_t registration_id,
       FindRegistrationCallback callback,
-      storage::mojom::ServiceWorkerRegistrationDataPtr data,
-      std::unique_ptr<ResourceList> resources,
-      storage::mojom::ServiceWorkerDatabaseStatus database_status);
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
+      storage::mojom::ServiceWorkerFindRegistrationResultPtr result);
 
   void DidGetRegistrationsForOrigin(
       GetRegistrationsCallback callback,

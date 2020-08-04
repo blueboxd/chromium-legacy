@@ -73,13 +73,14 @@ class CORE_EXPORT DocumentLifecycle {
 
     kInCompositingInputsUpdate,
     kCompositingInputsClean,
-    kInCompositingUpdate,
-    kCompositingClean,
 
     // In InPrePaint step, any data needed by painting are prepared.
     // Paint property trees are built and paint invalidations are issued.
     kInPrePaint,
     kPrePaintClean,
+
+    kInCompositingAssignmentsUpdate,
+    kCompositingAssignmentsClean,
 
     // In InPaint step, paint artifacts are generated and raster invalidations
     // are issued.
@@ -271,7 +272,7 @@ inline bool DocumentLifecycle::StateAllowsTreeMutations() const {
   // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout
   // either, but we need to fix MediaList listeners and plugins first.
   return state_ != kInStyleRecalc && state_ != kInPerformLayout &&
-         state_ != kInCompositingUpdate &&
+         state_ != kInCompositingAssignmentsUpdate &&
          state_ != kInCompositingInputsUpdate && state_ != kInPrePaint &&
          state_ != kInPaint;
 }
@@ -289,9 +290,9 @@ inline bool DocumentLifecycle::StateAllowsDetach() const {
   return state_ == kVisualUpdatePending || state_ == kInStyleRecalc ||
          state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
          state_ == kInPreLayout || state_ == kLayoutClean ||
-         state_ == kCompositingInputsClean || state_ == kCompositingClean ||
-         state_ == kPrePaintClean || state_ == kPaintClean ||
-         state_ == kStopping || state_ == kInactive;
+         state_ == kCompositingInputsClean ||
+         state_ == kCompositingAssignmentsClean || state_ == kPrePaintClean ||
+         state_ == kPaintClean || state_ == kStopping || state_ == kInactive;
 }
 
 }  // namespace blink

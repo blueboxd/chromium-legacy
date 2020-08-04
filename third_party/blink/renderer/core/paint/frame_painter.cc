@@ -61,7 +61,7 @@ void FramePainter::PaintContents(GraphicsContext& context,
   // TODO(wangxianzhu): The following check should be stricter, but currently
   // this is blocked by the svg root issue (crbug.com/442939).
   DCHECK(document->Lifecycle().GetState() >=
-         DocumentLifecycle::kCompositingClean);
+         DocumentLifecycle::kCompositingAssignmentsClean);
 
   FramePaintTiming frame_paint_timing(context, &GetFrameView().GetFrame());
   TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",

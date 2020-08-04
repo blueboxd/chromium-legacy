@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Lêers</translation>
 <translation id="1296911687402551044">Speld geselekteerde oortjie vas</translation>
 <translation id="1297175357211070620">Bestemming</translation>
-<translation id="1297646507722131691">Dit word aanbeveel dat lêers as deel van hierdie opgradering gerugsteun word om dataverlies te voorkom ingeval die opgradering nie voltooi kan word nie. As die opgradering begin word, sal dit veroorsaak dat Linux (beta) afgeskakel word. Stoor asseblief oop lêers voordat jy voortgaan.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> wil hê dat jou toestel se identiteit deur Google geverifieer word om geskiktheid vir die verbeterde terugspeel van beskermde inhoud te bepaal.</translation>
 <translation id="1300806585489372370">Om hierdie instelling te verander, <ph name="BEGIN_LINK" />skakel identifiseerders eers aan<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> kan die volgende lêers wysig</translation>
@@ -1981,7 +1980,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3435738964857648380">Sekuriteit</translation>
 <translation id="343578350365773421">Papier is op</translation>
 <translation id="3435896845095436175">Aktiveer</translation>
-<translation id="3436642683618870087">Intydse Onderskrifte bespeur spraak in media en genereer outomaties onderskrifte vir alle media wat in Chrome speel.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Laat <ph name="HOST" /> altyd toe om by jou mikrofoon in te gaan</translation>
 <translation id="3439970425423980614">Maak 'n PDF as voorskou oop</translation>
@@ -3624,7 +3622,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5511379779384092781">Ekstra klein</translation>
 <translation id="5511823366942919280">Is jy seker jy wil hierdie toestel as 'n "Haai" opstel?</translation>
 <translation id="5512653252560939721">Gebruikersertifikaat moet deur hardeware gesteun word.</translation>
-<translation id="5515923816438946203">Kies wat jy op jou skerm sien</translation>
 <translation id="5517304475148761050">Hierdie program moet toegang tot die Play Winkel hê</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Voeg tans 'n drukker by jou rekening – dit kan 'n oomblik neem …</translation>
@@ -3740,6 +3737,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5642508497713047">CRL-ondertekenaar</translation>
 <translation id="5643321261065707929">Beperkte netwerk</translation>
 <translation id="5643620609347735571">Vee uit en gaan voort</translation>
+<translation id="5646376287012673985">Ligging</translation>
 <translation id="5646558797914161501">Sakeman</translation>
 <translation id="5648166631817621825">Afgelope 7 dae</translation>
 <translation id="5649053991847567735">Outomatiese aflaaie</translation>
@@ -6392,7 +6390,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8952831374766033534">Opstellingopsie word nie gesteun nie: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Terwyl dit laai</translation>
 <translation id="895347679606913382">Begin tans …</translation>
-<translation id="8957762313041272117">Intydse Onderskrif</translation>
 <translation id="895944840846194039">JavaScript-geheue</translation>
 <translation id="8962083179518285172">Versteek besonderhede</translation>
 <translation id="8962918469425892674">Hierdie werf gebruik beweging- of ligsensors.</translation>

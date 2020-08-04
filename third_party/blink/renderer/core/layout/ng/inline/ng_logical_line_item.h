@@ -223,8 +223,6 @@ struct NGLogicalLineItem {
 // Unlike the fragment builder, chlidren are mutable.
 // Callers can add to the fragment builder in a batch once finalized.
 class NGLogicalLineItems {
-  STACK_ALLOCATED();
-
  public:
   NGLogicalLineItems() = default;
   void operator=(NGLogicalLineItems&& other) {

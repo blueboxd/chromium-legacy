@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> dëshiron të çiftohet</translation>
 <translation id="2000419248597011803">Dërgon disa kuki dhe kërkime nga shiriti i adresës dhe kutia e kërkimit te motori yt i parazgjedhur i kërkimit</translation>
 <translation id="2002537628803770967">Kartat e kreditit dhe adresat që përdorin Google Pay</translation>
-<translation id="2012973609889389923">Sajt i shpejtë</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# skedar}other{# skedarë}}</translation>
 <translation id="2017836877785168846">Pastron historikun dhe plotësimet automatike në shiritin e adresës.</translation>
 <translation id="2021896219286479412">Kontrollet e sajtit në ekranin e plotë</translation>
@@ -538,6 +537,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5304593522240415983">Kjo fushë nuk mund të jetë bosh</translation>
 <translation id="5308380583665731573">Lidh</translation>
 <translation id="5317780077021120954">Ruaj</translation>
+<translation id="5319359161174645648">Google rekomandon Chrome</translation>
 <translation id="5324858694974489420">Cilësimet prindërore</translation>
 <translation id="5327248766486351172">Emri</translation>
 <translation id="5342314432463739672">Kërkesat për autorizim</translation>

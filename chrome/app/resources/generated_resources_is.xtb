@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Skrár</translation>
 <translation id="1296911687402551044">Festa valinn flipa</translation>
 <translation id="1297175357211070620">Áfangastaður</translation>
-<translation id="1297646507722131691">Mælt er með því að taka öryggisafrit af skrám í þessari uppfærslu til að koma í veg fyrir að gögn glatist ef ekki tekst að klára uppfærsluna. Þegar uppfærslan er ræst slekkur Linux (tilraunaútgáfa) á sér. Vistaðu opnar skrár áður en þú heldur áfram.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> vill að Google staðfesti auðkenni tækisins til að athuga hvort bæta megi spilun á vörðu efni.</translation>
 <translation id="1300806585489372370">Til að breyta þessari stillingu skaltu fyrst <ph name="BEGIN_LINK" />kveikja á auðkennum<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> getur breytt eftirfarandi skrám</translation>
@@ -1981,7 +1980,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3435738964857648380">Öryggi</translation>
 <translation id="343578350365773421">Enginn pappír</translation>
 <translation id="3435896845095436175">Kveikja</translation>
-<translation id="3436642683618870087">Skjátextar í rauntíma bera kennsl á tal í efni og búa sjálfkrafa til skjátexta fyrir allt efni sem er spilað í Chrome.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Veita <ph name="HOST" /> alltaf aðgang að hljóðnemanum</translation>
 <translation id="3439970425423980614">Opnar PDF-skjal í Preview</translation>
@@ -3624,7 +3622,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5511379779384092781">Mjög lág</translation>
 <translation id="5511823366942919280">Ertu viss um að þú viljir setja upp þetta tæki sem „Shark“?</translation>
 <translation id="5512653252560939721">Notandavottorð verður að vera stutt af vélbúnaði.</translation>
-<translation id="5515923816438946203">Veldu hvað þú sérð á skjánum</translation>
 <translation id="5517304475148761050">Þetta forrit krefst aðgangs að Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Bætir prentara við reikninginn þinn – þetta gæti tekið smástund...</translation>
@@ -3739,6 +3736,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5642508497713047">CRL-undirritun</translation>
 <translation id="5643321261065707929">Net með mældri notkun</translation>
 <translation id="5643620609347735571">Hreinsa og halda áfram</translation>
+<translation id="5646376287012673985">Staðsetning</translation>
 <translation id="5646558797914161501">Viðskiptamaður</translation>
 <translation id="5648166631817621825">Síðastliðna sjö daga</translation>
 <translation id="5649053991847567735">Sjálfvirkt niðurhal</translation>
@@ -6391,7 +6389,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8952831374766033534">Stillingarvalkostur ekki studdur: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Í hleðslu</translation>
 <translation id="895347679606913382">Ræsir...</translation>
-<translation id="8957762313041272117">Skjátextar í rauntíma</translation>
 <translation id="895944840846194039">JavaScript-minni</translation>
 <translation id="8962083179518285172">Fela upplýsingar</translation>
 <translation id="8962918469425892674">Þessi síða notar hreyfi- eða birtuskynjara.</translation>

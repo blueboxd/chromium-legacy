@@ -1387,6 +1387,22 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(
   return gradient;
 }
 
+CanvasGradient* BaseRenderingContext2D::createConicGradient(double startAngle,
+                                                            double centerX,
+                                                            double centerY) {
+  if (!std::isfinite(startAngle) || !std::isfinite(centerX) ||
+      !std::isfinite(centerY))
+    return nullptr;
+
+  // clamp to float to avoid float cast overflow
+  float a = clampTo<float>(startAngle);
+  float x = clampTo<float>(centerX);
+  float y = clampTo<float>(centerY);
+
+  auto* gradient = MakeGarbageCollected<CanvasGradient>(a, FloatPoint(x, y));
+  return gradient;
+}
+
 CanvasPattern* BaseRenderingContext2D::createPattern(
     ScriptState* script_state,
     const CanvasImageSourceUnion& image_source,

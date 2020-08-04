@@ -55,11 +55,9 @@ void BrowserWithTestWindowTest::SetUp() {
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 #endif
 
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
   profile_manager_ = std::make_unique<TestingProfileManager>(
       TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(profile_manager_->SetUp(temp_dir_.GetPath()));
+  ASSERT_TRUE(profile_manager_->SetUp());
 
   // Subclasses can provide their own Profile.
   profile_ = CreateProfile();

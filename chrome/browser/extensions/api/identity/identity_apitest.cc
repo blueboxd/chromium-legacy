@@ -285,7 +285,7 @@ class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
       : WindowedNotificationObserver(
             content::NOTIFICATION_LOAD_STOP,
             content::NotificationService::AllSources()),
-        url_(url),
+        url_(std::move(url)),
         embedder_web_contents_(nullptr) {}
 
   // NotificationObserver:
@@ -297,7 +297,7 @@ class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
     content::WebContents* web_contents =
         web_auth_flow_controller->GetWebContents();
 
-    if (web_contents->GetURL() == url_) {
+    if (web_contents->GetLastCommittedURL() == url_) {
       // It is safe to keep the pointer here, because we know in a test, that
       // the WebContents won't go away before CloseEmbedderWebContents is
       // called. Don't copy this code to production.

@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromium không thể kiểm tra mật khẩu của bạn. Hãy thử kiểm tra kết nối Internet.</translation>
 <translation id="3639997914391704523">Chromium có thể kiểm tra mật khẩu khi bạn đăng nhập bằng Tài khoản Google của mình.</translation>
 <translation id="3805899903892079518">Chromium không có quyền truy cập ảnh hoặc video của bạn. Hãy cho phép truy cập Cài đặt iOS &gt; Bảo mật &gt; Ảnh.</translation>
+<translation id="4166206055865952171">Đặt Chromium làm trình duyệt mặc định</translation>
 <translation id="4555020257205549924">Khi tính năng này được bật, Chromium sẽ đề xuất sử dụng Google Dịch để dịch các trang viết bằng ngôn ngữ khác. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Bật trình quét của Chromium</translation>
 <translation id="4787850887676698916">Các thẻ bạn đã mở trong Chromium trên thiết bị khác sẽ xuất hiện tại đây.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Có được trải nghiệm tốt hơn trong Chromium dựa trên vị trí của bạn.</translation>
 <translation id="6820823224820483452">Chromium không thể kiểm tra một số mật khẩu. Hãy thử lại vào ngày mai.</translation>
 <translation id="7099326575020694068">Chromium không thể sử dụng máy ảnh của bạn ở Chế độ xem phân tách</translation>
+<translation id="7118091470949186573">Giờ đây, bạn có thể dùng Chromium bất cứ khi nào nhấn vào các đường liên kết trong thư/tin nhắn, tài liệu và các ứng dụng khác.</translation>
 <translation id="7173114856073700355">Mở phần Cài đặt</translation>
 <translation id="7208566199746267865">Chromium giúp bạn tiết kiệm thời gian bằng cách đưa tài khoản của bạn lên web. Bạn có thể thêm hoặc xóa tài khoản trong Cài đặt.</translation>
 <translation id="7269362888766543920">Một số tiện ích bổ sung khiến Chromium trục trặc. Hãy thử gỡ cài đặt chúng.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Cách đặt Chromium làm trình duyệt mặc định:
+        1. Mở phần Cài đặt. 
+        2. Nhấn vào Ứng dụng trình duyệt mặc định.
+        3. Chọn Chromium.</translation>
 <translation id="7357211569052832586">Dữ liệu được chọn đã bị xóa khỏi Chromium và các thiết bị được đồng bộ hóa. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại history.google.com.</translation>
 <translation id="7400689562045506105">Sử dụng Chromium mọi nơi</translation>
 <translation id="766897673682622022">Mật khẩu của bạn đã bị lộ trong một vụ rò rỉ dữ liệu. Chromium khuyên bạn nên đổi ngay mật khẩu.</translation>

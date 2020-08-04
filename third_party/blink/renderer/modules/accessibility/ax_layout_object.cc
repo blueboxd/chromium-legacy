@@ -1440,7 +1440,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
 
   // Must be called with lifecycle >= compositing clean.
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
-            DocumentLifecycle::kCompositingClean);
+            DocumentLifecycle::kCompositingAssignmentsClean);
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 

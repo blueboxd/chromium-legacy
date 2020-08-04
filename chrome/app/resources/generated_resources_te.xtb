@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Files</translation>
 <translation id="1296911687402551044">ఎంపిక చేసిన ట్యాబ్‌ను పిన్ చేయండి</translation>
 <translation id="1297175357211070620">గమ్యం</translation>
-<translation id="1297646507722131691">అప్‌గ్రేడ్ పూర్తి కాని సందర్భంలో, డేటా కోల్పోవడాన్ని నివారించడానికి ఈ అప్‌గ్రేడ్‌లో భాగంగా ఫైల్‌లను బ్యాకప్ చేయమని సిఫార్సు చేయబడింది. అప్‌గ్రేడ్ ప్రారంభించడం వలన Linux (బీటా) షట్ డౌన్ అవుతుంది. కొనసాగడానికి ముందు దయచేసి తెరిచి ఉన్న ఫైల్‌లను సేవ్ చేయండి.</translation>
 <translation id="1300415640239881824">ఈ పరికరంలో రక్షిత కంటెంట్‌కు మెరుగుపరిచిన ప్లేబ్యాక్ అర్హత ఉందో లేదో నిర్ధారించడానికి, <ph name="DOMAIN" /> మీ పరికర గుర్తింపును Google ద్వారా ధృవీకరించాలనుకుంటోంది.</translation>
 <translation id="1300806585489372370">ఈ సెట్టింగ్‌ని మార్చాలంటే, ముందుగా <ph name="BEGIN_LINK" />ఐడెంటిఫైయర్‌లను ఆన్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> కింది ఫైల్‌లను సవరించగలదు</translation>
@@ -1121,6 +1120,7 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">లాక్ స్క్రీన్ గమనికలు స్వయంచాలకంగా <ph name="LOCK_SCREEN_APP_NAME" />కి సేవ్ చేయబడ్డాయి. మీ అత్యంత తాజా గమనిక లాక్ స్క్రీన్‌పై అలాగే ఉంటుంది.</translation>
 <translation id="2353297238722298836">కెమెరా మరియు మైక్రోఫోన్ అనుమతించబడ్డాయి</translation>
+<translation id="2355314311311231464">మీ ఖాతా వివరాలను తిరిగి పొందడం సాధ్యపడలేదు కనుక, కేటాయింపు విధానం విఫలమైయ్యింది. దయచేసి మళ్లీ ట్రై చేయండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">తక్షణ టెథెరింగ్‌ను ఆన్ చేయడం</translation>
 <translation id="2356070529366658676">అడుగు</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" />ను తీసివేయి</translation>
@@ -1215,6 +1215,7 @@
 <translation id="2473195200299095979">ఈ పేజీని అనువదించండి</translation>
 <translation id="2475982808118771221">ఒక ఎర్రర్ ఏర్పడింది</translation>
 <translation id="2476578072172137802">సైట్ సెట్టింగ్‌లు</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" />ను అన్‌ఇన్‌స్టాల్ చేయడానికి Windowsను షట్ డౌన్ చేయండి.</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" కోసం మీడియా-ఫైల్ అనుమతులు</translation>
 <translation id="247949520305900375">ఆడియోను భాగస్వామ్యం చేయి</translation>
 <translation id="248003956660572823">పాస్‌వర్డ్‌లు సేవ్ చేయబడలేదు</translation>
@@ -1305,6 +1306,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />కి చదవడానికి మాత్రమే యాక్సెస్ మంజూరు చేయబడింది.</translation>
 <translation id="2575247648642144396">ప్రస్తుత పేజీలో ఎక్స్‌టెన్ష‌న్‌ను అమలు చేయగలిగినప్పుడు ఈ చిహ్నం కనిపిస్తుంది. చిహ్నంపై క్లిక్ చేయడం ద్వారా లేదా <ph name="EXTENSION_SHORTCUT" />ను నొక్కడం ద్వారా ఈ ఎక్స్‌టెన్ష‌న్‌ను ఉపయోగించండి.</translation>
 <translation id="257779572837908839">సమావేశాల కోసం Chromebox వలె సెటప్ చేయండి</translation>
+<translation id="2579232805407578790">సర్వర్‌తో కనెక్ట్ చేయడం సాధ్యపడలేదు. దయచేసి మీ నెట్‌వర్క్ కనెక్షన్‌ను చెక్ చేసి, మళ్లీ ట్రై చేయండి. సమస్య కొనసాగినట్లయితే, మీ Chromebookను రీస్టార్ట్ చేయండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">బహుళ ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి <ph name="HOST" />ను ఎల్లప్పుడూ అనుమతించు</translation>
 <translation id="258095186877893873">ఎక్కువ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (ప్లాట్‌ఫారమ్ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1524,6 +1526,7 @@
 <translation id="2836635946302913370">ఈ వినియోగదారు పేరుతో సైన్ ఇన్ చేయడం, మీ నిర్వాహకుడి ద్వారా నిలిపివేయబడింది.</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> నెట్‌వర్క్‌ను ఉపయోగించడానికి, మొదట దిగువ ఇంటర్నెట్‌కు మీ కనెక్షన్‌ను పూర్తి చేయండి.</translation>
 <translation id="2838379631617906747">ఇన్‌స్టాల్ చేస్తోంది</translation>
+<translation id="2838835911926931318">మీ బుక్‌మార్క్‌లు, పాస్‌వర్డ్‌లు హిస్టరీ, మరెన్నింటినో మీ అన్ని పరికరాల్లో సింక్ చేయడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="2839032553903800133">నోటిఫికేషన్‌లు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="2841013758207633010">సమయం</translation>
 <translation id="2841837950101800123">ప్రదాత</translation>
@@ -1583,6 +1586,7 @@
     సర్వర్ సందేశం: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">డైరెక్టరీ ద్వారా మీడియా గ్యాలరీని జోడించండి</translation>
 <translation id="2910318910161511225">నెట్‌వర్క్‌కి కనెక్ట్ చేసి మళ్లీ ప్రయత్నించండి</translation>
+<translation id="2910718431259223434">ఏదో తప్పు జరిగింది. దయచేసి మళ్లీ ట్రై చేయండి లేదా మీ పరికర ఓనర్‌ను లేదా అడ్మినిస్ట్రేట‌ర్‌ను సంప్రదించండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">కుక్కీ డేటాను సేవ్ చేయడానికి, చదవడానికి సైట్‌లను అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="2915102088417824677">కార్యకలాపం లాగ్‌ని చూడండి</translation>
 <translation id="2915873080513663243">ఆటోమేటిక్ స్కాన్</translation>
@@ -1976,7 +1980,6 @@
 <translation id="3435738964857648380">భద్రత</translation>
 <translation id="343578350365773421">కాగితం లేదు</translation>
 <translation id="3435896845095436175">ప్రారంభించండి</translation>
-<translation id="3436642683618870087">లైవ్ క్యాప్షన్ అనేది, మీడియా కంటెంట్‌లో ఎవరైనా మాట్లాడిన పదాలను గుర్తించి వాటి నుండి ఆటోమేటిక్‌గా శీర్షికలను రూపొందిస్తుంది. Chromeలో ప్లే అయ్యే అన్ని రకాల మీడియా కంటెంట్‌లో ఇలా చేస్తుంది.</translation>
 <translation id="3438633801274389918">నింజా</translation>
 <translation id="3439153939049640737">మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి <ph name="HOST" />ని ఎల్లప్పుడూ అనుమతించండి</translation>
 <translation id="3439970425423980614">PDFను ప్రివ్యూలో తెరుస్తోంది</translation>
@@ -2322,6 +2325,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{ఒక ఎక్స్‌టెన్షన్ ఆమోదించబడింది}other{# ఎక్స్‌టెన్షన్‌లు ఆమోదించబడ్డాయి}}</translation>
 <translation id="3822559385185038546">ఈ ప్రాక్సీని మీ నిర్వాహకులు అమలు చేసారు</translation>
 <translation id="3823310065043511710">Linux కోసం కనీసం <ph name="INSTALL_SIZE" />  స్పేస్ కావాలి.</translation>
+<translation id="3824621460022590830">పరికర ఎన్‌రోల్‌మెంట్ టోకెన్ చెల్లదు. మీ పరికర ఓనర్‌ను లేదా అడ్మినిస్ట్రేట‌ర్‌ను దయచేసి సంప్రదించండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">మరిన్ని Google ఖాతాలను చేర్చడాన్ని మీ నిర్వాహకుడు నిలిపివేశారు</translation>
 <translation id="3827306204503227641">శాండ్‌బాక్స్ చేయని ప్లగిన్‌లను అనుమతించడం కొనసాగించు</translation>
 <translation id="3827774300009121996">&amp;పూర్తి స్క్రీన్</translation>
@@ -3275,6 +3279,7 @@
 <translation id="5079950360618752063">సూచించిన పాస్‌వర్డ్‌ని ఉపయోగించండి</translation>
 <translation id="508059534790499809">Kerberos టిక్కెట్‌ను రిఫ్రెష్ చేయండి</translation>
 <translation id="5084230410268011727">చలనం మరియు కాంతి సర్దుబాటు సెన్సార్‌లను ఉపయోగించడానికి సైట్‌లను అనుమతించు</translation>
+<translation id="5084328598860513926">కేటాయింపు విధానానికి అంతరాయం ఏర్పడింది. దయచేసి మళ్లీ ట్రై చేయండి లేదా మీ పరికర ఓనర్‌ను లేదా అడ్మినిస్ట్రేట‌ర్‌ను సంప్రదించండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">నవీకరణల కోసం తనిఖీ చేయడం</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">డిఫాల్ట్ హోమ్ పేజీని పునరుద్ధరించాలా?</translation>
@@ -3617,7 +3622,6 @@
 <translation id="5511379779384092781">అతి చిన్నది</translation>
 <translation id="5511823366942919280">మీరు ఖచ్చితంగా ఈ పరికరాన్ని "షార్క్"గా సెటప్ చేయాలని అనుకుంటున్నారా?</translation>
 <translation id="5512653252560939721">వినియోగదారు సర్టిఫికెట్ ఖచ్చితంగా హార్డ్‌వేర్-బ్యాకెడ్ అయి ఉండాలి.</translation>
-<translation id="5515923816438946203">మీ స్క్రీన్‌లో మీరు చూసే దాన్ని ఎంచుకోండి</translation>
 <translation id="5517304475148761050">Play స్టోర్‌ను యాక్సెస్ చేయగలిగేలా ఈ యాప్‌ను అనుమతించాలి</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">మీ ఖాతాకు ప్రింటర్‌ను జోడిస్తోంది - దీనికి కొంత సమయం పట్టవచ్చు...</translation>
@@ -3673,6 +3677,7 @@
 <translation id="557722062034137776">మీ పరికరాన్ని రీసెట్ చేయడం వలన మీ Google ఖాతాలపై లేదా ఈ ఖాతాలకు సింక్ చేయ‌బ‌డిన‌ ఏదైనా డేటాపై ఎటువంటి ప్రభావం ఉండదు. అయితే, మీ పరికరంలో స్థానికంగా సేవ్ చేయబడిన అన్ని ఫైల్‌లు తొలగించబడతాయి.</translation>
 <translation id="5578059481725149024">ఆటోమేటిక్ సైన్-ఇన్</translation>
 <translation id="558170650521898289">Microsoft Windows హార్డ్‌వేర్ డ్రైవర్ ధృవీకరణ</translation>
+<translation id="5581972110672966454">పరికరాన్ని డొమైన్‌కు చేర్చడం సాధ్యపడదు. దయచేసి మళ్లీ ట్రై చేయండి లేదా మీ పరికర ఓనర్‌ను లేదా అడ్మినిస్ట్రేట‌ర్‌ను సంప్రదించండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">ప్రధాన మెను</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">వినియోగదారు పేరుని సేవ్ చేయాలా?</translation>
@@ -3731,6 +3736,7 @@
 <translation id="5642508497713047">CRL సైన్ చేసినవారు</translation>
 <translation id="5643321261065707929">డేటా నియంత్రిత నెట్‌వర్క్</translation>
 <translation id="5643620609347735571">క్లియర్ చేసి కొనసాగించు</translation>
+<translation id="5646376287012673985">స్థానం</translation>
 <translation id="5646558797914161501">వ్యాపారవేత్త</translation>
 <translation id="5648166631817621825">గత 7 రోజులు</translation>
 <translation id="5649053991847567735">ఆటోమేటిక్ డౌన్‌లోడ్‌లు</translation>
@@ -3745,6 +3751,7 @@
 <translation id="5667546120811588575">Google Play సెటప్ చేస్తోంది...</translation>
 <translation id="5669267381087807207">సక్రియమవుతోంది</translation>
 <translation id="5669691691057771421">కొత్త PINని నమోదు చేయండి</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">చిత్రాలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> సూచనను తీసివేయండి</translation>
 <translation id="567587836466137939">ఈ పరికరం <ph name="MONTH_AND_YEAR" /> వరకు ఆటోమేటిక్ సాఫ్ట్‌వేర్, భద్రతాపరమైన అప్‌డేట్‌లను పొందుతుంది. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
@@ -4037,7 +4044,7 @@
     <ph name="BEGIN_PARAGRAPH2" />మీరు మీ పరికరంలో ప్రధాన స్థాన సెట్టింగ్‌ని ఆఫ్ చేయడం ద్వారా స్థానాన్ని ఆఫ్ చేయవచ్చు. మీరు స్థాన సెట్టింగ్‌లలో స్థానం కోసం Wi‑Fi, మొబైల్ నెట్‌వర్క్‌లు మరియు సెన్సార్‌ల వినియోగాన్ని కూడా ఆఫ్ చేయవచ్చు.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="604124094241169006">స్వయంచాలకంగా</translation>
-<translation id="6042308850641462728">మరింత</translation>
+<translation id="6042308850641462728">మరింత చూపించు</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> ఒక Chrome ట్యాబ్‌ను <ph name="TAB_NAME" />తో భాగస్వామ్యం చేస్తోంది.</translation>
 <translation id="604388835206766544">కాన్ఫిగరేషన్ అన్వయింపు విఫలమైంది</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> ఒక Chrome ట్యాబ్‌ను, ఆడియోను <ph name="TAB_NAME" />తో భాగస్వామ్యం చేస్తోంది.</translation>
@@ -4915,7 +4922,7 @@
 <translation id="7140928199327930795">అందుబాటులో ఉన్న ఇతర పరికరాలు ఏవీ లేవు.</translation>
 <translation id="7141105143012495934">మీ ఖాతా వివరాలను తిరిగి పొందలేనందున సైన్-ఇన్ విఫలమైంది. దయచేసి మీ నిర్వాహకుడిని సంప్రదించండి లేదా మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7143207342074048698">కనెక్ట్ అవుతో.</translation>
-<translation id="7144878232160441200">మళ్లీ ప్రయత్నించండి</translation>
+<translation id="7144878232160441200">మళ్ళీ ప్రయత్నించు</translation>
 <translation id="714876143603641390">LAN కనెక్టివిటీ</translation>
 <translation id="7149893636342594995">గత 72 గంటలు</translation>
 <translation id="715118844758971915">క్లాసిక్ ప్రింటర్‌లు</translation>
@@ -5342,7 +5349,7 @@
 <translation id="7696063401938172191">మీ '<ph name="PHONE_NAME" />'లో:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{బుక్‌మార్క్ జాబితాలోని 1 అంశం}other{బుక్‌మార్క్ జాబితాలోని # అంశాలు}}</translation>
 <translation id="7699968112832915395">ఖాతాను యాడ్ చేయడం సాధ్యం కాదు</translation>
-<translation id="7701040980221191251">ఏదీ కాదు</translation>
+<translation id="7701040980221191251">ఏదీ లేదు</translation>
 <translation id="770157826141786566">ఈ పరికరాన్ని ఉపయోగించే గడువు ముగిసింది.</translation>
 <translation id="7701869757853594372">వినియోగదారు నిర్వహించేవి</translation>
 <translation id="7701928712056789451">ఈ అంశాలు ప్రమాదకరం కావచ్చు</translation>
@@ -5391,6 +5398,7 @@
 <translation id="7764225426217299476">చిరునామాను జోడించు</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> నుండి <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">తరలించు</translation>
+<translation id="7766082757934713382">ఆటోమేటిక్ యాప్, సిస్టమ్ అప్‌డేట్‌లను పాజ్ చేయడం ద్వారా నెట్‌వర్క్ డేటా వినియోగాన్ని తగ్గించడంలో సహాయపడుతుంది</translation>
 <translation id="7766807826975222231">పర్యటనలో పాల్గొనండి</translation>
 <translation id="7766838926148951335">అనుమతులను ఆమోదించు</translation>
 <translation id="7768770796815395237">మార్చు</translation>
@@ -6299,6 +6307,7 @@
 <translation id="885701979325669005">నిల్వ</translation>
 <translation id="8859057652521303089">మీ భాషను ఎంచుకోండి:</translation>
 <translation id="8859174528519900719">సబ్‌ఫ్రేమ్: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">సర్వీస్ నియమాలను లోడ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="8859662783913000679">తల్లి/తండ్రి ఖాతా</translation>
 <translation id="8862003515646449717">వేగవంతమైన బ్రౌజర్‌కు మారండి</translation>
 <translation id="8863753581171631212">కొత్త <ph name="APP" />లో లింక్‌ను తెరువు</translation>
@@ -6377,7 +6386,6 @@
 <translation id="8952831374766033534">కాన్ఫిగరేషన్ ఎంపికకు మద్దతు లేదు: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">ఛార్జింగ్‌లో ఉన్నప్పుడు</translation>
 <translation id="895347679606913382">ప్రారంభిస్తోంది...</translation>
-<translation id="8957762313041272117">లైవ్ క్యాప్షన్</translation>
 <translation id="895944840846194039">JavaScript మెమరీ</translation>
 <translation id="8962083179518285172">వివరాలను దాచిపెట్టు</translation>
 <translation id="8962918469425892674">ఈ సైట్ మోషన్ లేదా లైట్ సెన్సార్‌లను ఉపయోగిస్తోంది.</translation>
@@ -6567,6 +6575,7 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />ని వెతుకు</translation>
 <translation id="9201023452444595544">ఏదైనా ఆఫ్‌లైన్ డేటా ఉంటే తీసివేయబడుతుంది</translation>
 <translation id="9201220332032049474">స్క్రీన్ లాక్ ఎంపికలు</translation>
+<translation id="9201842707396338580">ఏదో తప్పు జరిగింది. మీ పరికర ఓనర్‌ను లేదా అడ్మినిస్ట్రేట‌ర్‌ను దయచేసి సంప్రదించండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;ప్రొఫైలింగ్ అనుమతించబడింది</translation>
 <translation id="9203904171912129171">ఒక పరికరాన్ని ఎంచుకోండి</translation>
 <translation id="9203962528777363226">ఈ పరికరం యొక్క నిర్వాహకుడు కొత్త‌ వినియోగదారులను జోడించడం నిలిపివేశారు</translation>
@@ -6582,7 +6591,7 @@
 <translation id="9219103736887031265">చిత్రాలు</translation>
 <translation id="9220525904950070496">ఖాతాను తీసివేయండి</translation>
 <translation id="9220820413868316583">వేలిని తీసివేసి, మళ్లీ పెట్టండి.</translation>
-<translation id="923467487918828349">అన్నీ చూపించు</translation>
+<translation id="923467487918828349">అన్నీ చూపు</translation>
 <translation id="929117907539171075">ఇన్‌స్టాల్ చేసిన యాప్‌లో ఆఫ్‌లైన్ డేటా కూడా తీసివేయబడుతుంది</translation>
 <translation id="930268624053534560">వివరణాత్మక సమయముద్రలు</translation>
 <translation id="932327136139879170">హోమ్</translation>
@@ -6638,6 +6647,7 @@
 <translation id="983511809958454316">VRలో ఈ ఫీచర్‌కు మద్దతు లేదు</translation>
 <translation id="984275831282074731">చెల్లింపు పద్ధతులు</translation>
 <translation id="98515147261107953">సమతలదిశ</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">సాధారణం</translation>
 <translation id="987897973846887088">చిత్రాలు ఏమీ అందుబాటులో లేవు</translation>
 <translation id="988978206646512040">రహస్య పదబంధం ఖాళీగా ఉంటే అనుమతించబడదు</translation>

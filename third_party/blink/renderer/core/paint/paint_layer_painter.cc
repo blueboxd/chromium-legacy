@@ -132,7 +132,7 @@ static bool ShouldCreateSubsequence(
   // PaintLayer::previousXXX() when paintLayer is composited scrolling and is
   // painted twice for GraphicsLayers of container and scrolling contents.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      paint_layer.GetCompositingState() == kPaintsIntoOwnBacking)
+      (paint_layer.GetCompositingState() == kPaintsIntoOwnBacking))
     return false;
 
   return true;

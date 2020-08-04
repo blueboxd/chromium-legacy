@@ -245,7 +245,7 @@ Kun olet incognito-tilassa, sivustot eivät näe selaustoimintaasi eri sivustoil
 <translation id="3783017676699494206">Tallenna kuva</translation>
 <translation id="3789841737615482174">Asenna</translation>
 <translation id="3803696231112616155">Tarjoa tämän sivuston kääntämistä</translation>
-<translation id="385051799172605136">Edellinen</translation>
+<translation id="385051799172605136">Takaisin</translation>
 <translation id="3892144330757387737">Näet historiasi täällä</translation>
 <translation id="3897092660631435901">Valikko</translation>
 <translation id="3915450441834151894">Tietoja sivustosta</translation>
@@ -354,7 +354,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
-<translation id="5234764350956374838">Piilota</translation>
+<translation id="5234764350956374838">Hylkää</translation>
 <translation id="5245322853195994030">Peruuta synkronointi</translation>
 <translation id="5271549068863921519">Tallenna salasana</translation>
 <translation id="5295239312320826323">Poistetaanko tili <ph name="USER_EMAIL" />?</translation>

@@ -86,7 +86,7 @@
 <translation id="3600792891314830896">Nonaktifkan suara situs yang memutar suara</translation>
 <translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
 <translation id="3822502789641063741">Kosongkan penyimpanan situs?</translation>
-<translation id="385051799172605136">Mundur</translation>
+<translation id="385051799172605136">Kembali</translation>
 <translation id="3859306556332390985">Cari maju</translation>
 <translation id="3955193568934677022">Izinkan situs memutar konten yang dilindungi (direkomendasikan)</translation>
 <translation id="3987993985790029246">Salin link</translation>
@@ -111,7 +111,7 @@
 <translation id="4645575059429386691">Dikelola oleh orang tua Anda</translation>
 <translation id="4670064810192446073">Virtual reality</translation>
 <translation id="4751476147751820511">Sensor gerakan atau cahaya</translation>
-<translation id="4883854917563148705">Setelan yang dikelola tidak dapat disetel ulang</translation>
+<translation id="4883854917563148705">Setelan yang dikelola tidak dapat direset</translation>
 <translation id="4887024562049524730">Tanyakan sebelum mengizinkan situs untuk menggunakan perangkat dan data virtual reality Anda (direkomendasikan)</translation>
 <translation id="4962975101802056554">Cabut semua izin untuk perangkat</translation>
 <translation id="497421865427891073">Maju</translation>
@@ -147,11 +147,11 @@
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5922853908706496913">Membagikan layar Anda</translation>
-<translation id="5939518447894949180">Setel ulang</translation>
+<translation id="5939518447894949180">Reset</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="6064125863973209585">Download yang selesai</translation>
-<translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6165508094623778733">Pelajari selengkapnya</translation>
 <translation id="6177111841848151710">Diblokir untuk mesin telusur yang sedang digunakan</translation>
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
@@ -161,7 +161,7 @@
 <translation id="6270391203985052864">Situs dapat meminta izin mengirimkan notifikasi</translation>
 <translation id="6295158916970320988">Semua situs</translation>
 <translation id="6320088164292336938">Getar</translation>
-<translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
+<translation id="6388207532828177975">Hapus &amp; reset</translation>
 <translation id="6423924377271166037">Hapus cookie</translation>
 <translation id="6439114592976064011">Blokir situs agar tidak menggunakan perangkat dan data virtual reality Anda</translation>
 <translation id="6447842834002726250">Cookie</translation>

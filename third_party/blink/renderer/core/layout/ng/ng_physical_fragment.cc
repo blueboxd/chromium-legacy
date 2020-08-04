@@ -446,7 +446,7 @@ void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
     return;
   const DocumentLifecycle& lifecycle = GetDocument().Lifecycle();
   DCHECK(lifecycle.GetState() >= DocumentLifecycle::kLayoutClean &&
-         lifecycle.GetState() < DocumentLifecycle::kCompositingClean)
+         lifecycle.GetState() < DocumentLifecycle::kCompositingAssignmentsClean)
       << lifecycle.GetState();
 }
 #endif

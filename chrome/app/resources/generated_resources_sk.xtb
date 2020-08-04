@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Súbory</translation>
 <translation id="1296911687402551044">Pripnúť vybranú kartu</translation>
 <translation id="1297175357211070620">Cieľ</translation>
-<translation id="1297646507722131691">V rámci tejto inovácie sa odporúča zálohovať súbory, aby v prípade nemožnosti jej dokončenia nedošlo k strate dát. Keď spustíte inováciu, Linux (Beta) sa vypne. Než budete pokračovať, uložte otvorené súbory.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> chce, aby Google overil identitu vášho zariadenia a tým určil, či má nárok na rozšírené prehrávanie chráneného obsahu.</translation>
 <translation id="1300806585489372370">Ak chcete zmeniť toto nastavenie, najprv <ph name="BEGIN_LINK" />zapnite identifikátory<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080">Web <ph name="ORIGIN" /> môže upravovať nasledujúce súbory</translation>
@@ -1980,7 +1979,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3435738964857648380">Bezpečnosť</translation>
 <translation id="343578350365773421">Minul sa papier</translation>
 <translation id="3435896845095436175">Aktivovať</translation>
-<translation id="3436642683618870087">Živý prepis rozpoznáva reč v médiách a automaticky generuje titulky pre všetky médiá prehrávané v Chrome.</translation>
 <translation id="3438633801274389918">Nindža</translation>
 <translation id="3439153939049640737">Vždy povoliť stránkam <ph name="HOST" /> prístup k mikrofónu</translation>
 <translation id="3439970425423980614">Prebieha otváranie súboru PDF v aplikácii Preview</translation>
@@ -2350,7 +2348,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3843464315703645664">Povolené interne</translation>
 <translation id="3846116211488856547">Získajte nástroje na vývoj webov, aplikácií pre Android atď. Inštaláciou systému Linux stiahnete <ph name="DOWNLOAD_SIZE" /> dát.</translation>
 <translation id="3847319713229060696">Pomôžte zlepšiť zabezpečenie na internete pre všetkých</translation>
-<translation id="385051799172605136">Naspäť</translation>
+<translation id="385051799172605136">Späť</translation>
 <translation id="3850914401008572843">Web <ph name="ORIGIN" /> nemôže otvoriť tento priečinok, pretože obsahuje súbory systému</translation>
 <translation id="3851428669031642514">Načítať nebezpečné skripty</translation>
 <translation id="3854599674806204102">Vyberte požadovanú možnosť</translation>
@@ -3395,7 +3393,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5233231016133573565">Identifikátor procesu</translation>
 <translation id="5233638681132016545">Nová karta</translation>
 <translation id="5233736638227740678">&amp;Prilepiť</translation>
-<translation id="5234764350956374838">Zatvoriť</translation>
+<translation id="5234764350956374838">Ignorovať</translation>
 <translation id="5235050375939235066">Odinštalovať aplikáciu?</translation>
 <translation id="523505283826916779">Nastavenia zjednodušenia prístupu</translation>
 <translation id="5235750401727657667">Nahradiť stránku, ktorá sa zobrazí pri otvorení novej karty</translation>
@@ -3623,7 +3621,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5511379779384092781">Veľmi malý</translation>
 <translation id="5511823366942919280">Naozaj chcete toto zariadenie nastaviť ako zariadenie Shark?</translation>
 <translation id="5512653252560939721">Certifikát používateľa musí byť hardvérový.</translation>
-<translation id="5515923816438946203">Vyberte, čo sa vám zobrazuje na obrazovke</translation>
 <translation id="5517304475148761050">Táto aplikácia vyžaduje prístup k Obchodu Play</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Tlačiareň sa pridáva do vášho účtu. Môže to chvíľu trvať...</translation>
@@ -3738,6 +3735,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5642508497713047">Podpisovateľ CRL</translation>
 <translation id="5643321261065707929">Meraná sieť</translation>
 <translation id="5643620609347735571">Vymazať a pokračovať</translation>
+<translation id="5646376287012673985">Poloha</translation>
 <translation id="5646558797914161501">Obchodník</translation>
 <translation id="5648166631817621825">Posledných 7 dní</translation>
 <translation id="5649053991847567735">Automatické sťahovanie</translation>
@@ -4359,7 +4357,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6429384232893414837">Chyba aktualizácie</translation>
 <translation id="6430814529589430811">ASCII s kódovaním Base64, jeden certifikát</translation>
 <translation id="6431347207794742960">Prehliadač <ph name="PRODUCT_NAME" /> nastaví automatické aktualizácie pre všetkých používateľov tohto počítača.</translation>
-<translation id="6434309073475700221">Odstrániť</translation>
+<translation id="6434309073475700221">Zahodiť</translation>
 <translation id="6434325376267409267">Ak chcete používať <ph name="APP_NAME" />, musíte aktualizovať svoje zariadenie.</translation>
 <translation id="6436164536244065364">Zobraziť v Internetovom obchode</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – Prehráva sa zvuk</translation>
@@ -6390,7 +6388,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8952831374766033534">Konfiguračná možnosť nie je k podporovaná: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Počas nabíjania</translation>
 <translation id="895347679606913382">Spúšťa sa...</translation>
-<translation id="8957762313041272117">Živý prepis</translation>
 <translation id="895944840846194039">Pamäť JavaScript</translation>
 <translation id="8962083179518285172">Skryť podrobnosti</translation>
 <translation id="8962918469425892674">Tento web používa senzory pohybu alebo svetla.</translation>
@@ -6596,7 +6593,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="9220525904950070496">Odstrániť účet</translation>
 <translation id="9220820413868316583">Zodvihnite a zopakujte.</translation>
-<translation id="923467487918828349">Zobraziť všetko</translation>
+<translation id="923467487918828349">Zobraziť všetky</translation>
 <translation id="929117907539171075">Budú vymazané aj offline údaje v nainštalovanej aplikácii</translation>
 <translation id="930268624053534560">Podrobné časové pečiatky</translation>
 <translation id="932327136139879170">Domov</translation>
@@ -6619,7 +6616,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="941070664607309480">Kliknutím zapnite viditeľnosť, aby s vami mohlo zdieľať</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> zdieľa kartu a zvuk Chromu.</translation>
-<translation id="945522503751344254">Poslať spätnú väzbu</translation>
+<translation id="945522503751344254">Odoslať spätnú väzbu</translation>
 <translation id="947329552760389097">&amp;Skontrolovať prvky</translation>
 <translation id="951991426597076286">Odmietnuť</translation>
 <translation id="952992212772159698">Neaktivované</translation>

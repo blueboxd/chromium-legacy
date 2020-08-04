@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">無法儲存圖片</translation>
 <translation id="1180526666083833456">在所有裝置上保持同步，並享有個人化的體驗。</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1185569544548277362">新消息：你可以將 Chrome 設為預設瀏覽器。<ph name="BEGIN_LINK" />開啟設定<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">新搜尋</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="1219674500290482172">無法連線至網際網路。</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884">第 <ph name="FIRST_VISIBLE_TAB" /> 至 <ph name="LAST_VISIBLE_TAB" /> 個<ph name="INCOGNITO" />分頁，共 <ph name="NUMBER_OF_OPEN_TABS" /> 個</translation>
 <translation id="8529767659511976195">新功能</translation>
 <translation id="8532105204136943229">到期年份</translation>
+<translation id="8533166274275423134">已在其他地方開啟</translation>
 <translation id="8534481786647257214">已順利發布到 Google+。</translation>
 <translation id="8548878600947630424">在網頁中尋找...</translation>
 <translation id="8574235780160508979">Chrome 的服務條款將於 3 月 31 日變更。<ph name="BEGIN_LINK" />請查看新版條款<ph name="END_LINK" /></translation>

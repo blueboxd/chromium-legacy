@@ -4,6 +4,7 @@
 
 #include "remoting/test/cyclic_frame_generator.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "remoting/test/frame_generator_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -49,9 +50,10 @@ std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   base::TimeTicks now = clock_->NowTicks();
 
-  int frame_id = (now - started_time_).IntDiv(cursor_blink_period_);
-  int reference_frame = (now - started_time_).IntDiv(frame_cycle_period_) %
-                        reference_frames_.size();
+  int frame_id = base::ClampFloor((now - started_time_) / cursor_blink_period_);
+  int reference_frame =
+      base::ClampFloor((now - started_time_) / frame_cycle_period_) %
+      reference_frames_.size();
   bool cursor_state = frame_id % 2;
 
   auto frame = std::make_unique<webrtc::BasicDesktopFrame>(screen_size_);
@@ -88,11 +90,13 @@ std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
 
 CyclicFrameGenerator::ChangeInfoList CyclicFrameGenerator::GetChangeList(
     base::TimeTicks timestamp) {
-  int frame_id = (timestamp - started_time_).IntDiv(cursor_blink_period_);
+  int frame_id =
+      base::ClampFloor((timestamp - started_time_) / cursor_blink_period_);
   CHECK_GE(frame_id, last_identifier_frame_);
 
   ChangeInfoList result;
-  const int frames_in_cycle = frame_cycle_period_.IntDiv(cursor_blink_period_);
+  const int frames_in_cycle =
+      base::ClampFloor(frame_cycle_period_ / cursor_blink_period_);
   for (int i = last_identifier_frame_ + 1; i <= frame_id; ++i) {
     ChangeType type =
         (i % frames_in_cycle == 0) ? ChangeType::FULL : ChangeType::CURSOR;

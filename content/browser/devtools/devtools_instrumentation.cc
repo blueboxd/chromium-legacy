@@ -899,9 +899,11 @@ namespace {
 void AddIssueToIssueStorage(
     RenderFrameHost* frame,
     std::unique_ptr<protocol::Audits::InspectorIssue> issue) {
-  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+  // We only utilize a central storage on the main frame. Each issue is
+  // still associated with the originating |RenderFrameHost| though.
   DevToolsIssueStorage* issue_storage =
-      DevToolsIssueStorage::GetOrCreateForWebContents(web_contents);
+      DevToolsIssueStorage::GetOrCreateForCurrentDocument(
+          frame->GetMainFrame());
 
   issue_storage->AddInspectorIssue(frame->GetFrameTreeNodeId(),
                                    std::move(issue));

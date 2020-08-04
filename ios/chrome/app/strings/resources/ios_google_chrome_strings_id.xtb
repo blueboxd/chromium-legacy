@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="2199719347983604670">Data dari sinkronisasi Chrome</translation>
 <translation id="2347208864470321755">Saat fitur ini diaktifkan, Chrome akan menawarkan untuk menerjemahkan halaman yang ditulis dalam bahasa lain menggunakan Google Terjemahan. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Jadikan Chrome sebagai Browser Default</translation>
 <translation id="2574249610672786438">Untuk melihat tab Chrome Anda dari perangkat lain, login ke semua perangkat Anda</translation>
 <translation id="2576431527583832481">Chrome jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="257708665678654955">Ingin Google Chrome menawarkan untuk menerjemahkan halaman berbahasa <ph name="LANGUAGE_NAME" /> dari situs ini saat Anda mengunjunginya lagi?</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Login ke Chrome</translation>
 <translation id="3345341804167540816">Gunakan Chrome di Mana Saja</translation>
 <translation id="3522659714780527202">Untuk melihat tab Chrome Anda dari perangkat lain, aktifkan sinkronisasi</translation>
+<translation id="3706101708757577809">Anda sekarang dapat menggunakan Chrome kapan saja Anda mengetuk link di pesan, dokumen, dan aplikasi lainnya.</translation>
 <translation id="384394811301901750">Google Chrome saat ini tidak dapat menggunakan kamera</translation>
 <translation id="3980220367029651214">Anda berganti akun sinkronisasi dari <ph name="USER_EMAIL1" /> ke <ph name="USER_EMAIL2" />. Data Chrome yang sudah ada dikelola oleh <ph name="DOMAIN" />. Tindakan ini akan menghapus data Anda dari perangkat berikut, namun data Anda akan tetap tersedia di <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome tidak memiliki akses ke foto atau video Anda. Izinkan akses di iOS Settings &gt; Privacy &gt; Photos.</translation>
@@ -44,6 +46,10 @@
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6648150602980899529">Anda login dengan akun terkelola oleh <ph name="DOMAIN" /> dan memberikan kontrol kepada administratornya atas data Chrome Anda. Data Anda akan terikat dengan akun ini secara permanen. Dengan logout dari Chrome, Anda akan menghapus data dari perangkat ini, tetapi data akan tetap tersimpan di Akun Google.</translation>
 <translation id="6676840375528380067">Hapus data Chrome Anda dari perangkat ini?</translation>
+<translation id="6724102885918156196">Untuk menjadikan Chrome sebagai default:
+        1. Buka Settings. 
+        2. Ketuk Default Browser App.
+        3. Pilih Chrome.</translation>
 <translation id="7165736900384873061">Mulai menggunakan pemindai QR Google Chrome</translation>
 <translation id="7172660552945675509">Kiat: <ph name="BEGIN_LINK" />Pindahkan Chrome ke dok<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Buka Setelan</translation>

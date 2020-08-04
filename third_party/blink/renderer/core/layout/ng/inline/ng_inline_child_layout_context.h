@@ -29,7 +29,10 @@ class CORE_EXPORT NGInlineChildLayoutContext {
 
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
+    DCHECK(!items_builder_ || !builder);
     items_builder_ = builder;
+    if (builder)
+      builder->AddLogicalLineItemsPool(&logical_line_items_);
   }
 
   // Returns an instance of |NGLogicalLineItems|. This is reused when laying out

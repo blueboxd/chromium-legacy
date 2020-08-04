@@ -191,6 +191,7 @@ EXPORTS
     ??$?RAEAY0O@$$CBDPEAVCondVar@absl@@@?$AtomicHook@P6AXPEBDPEBX@Z@base_internal@absl@@QEBAXAEAY0O@$$CBD$$QEAPEAVCondVar@2@@Z
     ??$?RAEA_J@?$AtomicHook@P6AX_J@Z@base_internal@absl@@QEBAXAEA_J@Z
     ??$?RPEAVSpinLock@base_internal@absl@@AEB_K@?$AtomicHook@P6AXPEBX_J@Z@base_internal@absl@@QEBAX$$QEAPEAVSpinLock@12@AEB_K@Z
+    ??$?RW4LogSeverity@absl@@PEBDHAEAV?$basic_string@DU?$char_traits@D@__1@std@@V?$allocator@D@23@@__1@std@@@?$AtomicHook@P6AXW4LogSeverity@absl@@PEBDHAEBV?$basic_string@DU?$char_traits@D@__1@std@@V?$allocator@D@23@@__1@std@@@Z@base_internal@absl@@QEBAX$$QEAW4LogSeverity@2@$$QEAPEBD$$QEAHAEAV?$basic_string@DU?$char_traits@D@__1@std@@V?$allocator@D@23@@__1@std@@@Z
     ??$?XH@Duration@absl@@QEAAAEAV01@H@Z
     ??$Append@V?$basic_string@DU?$char_traits@D@__1@std@@V?$allocator@D@23@@__1@std@@$0A@@Cord@absl@@QEAAX$$QEAV?$basic_string@DU?$char_traits@D@__1@std@@V?$allocator@D@23@@__1@std@@@Z
     ??$AppendImpl@AEBVCord@absl@@@Cord@absl@@AEAAXAEBV01@@Z
@@ -1669,6 +1670,7 @@ EXPORTS
     ?GetAllocator@?$AllocationTransaction@V?$allocator@USubRange@absl@@@__1@std@@@inlined_vector_internal@absl@@QEAAAEAV?$allocator@USubRange@absl@@@__1@std@@XZ
     ?GetAppendRegion@InlineRep@Cord@absl@@QEAAXPEAPEADPEA_K@Z
     ?GetAppendRegion@InlineRep@Cord@absl@@QEAAXPEAPEADPEA_K_K@Z
+    ?GetCachedTID@base_internal@absl@@YAIXZ
     ?GetCapacity@?$AllocationTransaction@V?$allocator@H@__1@std@@@inlined_vector_internal@absl@@QEAAAEA_KXZ
     ?GetCapacity@?$AllocationTransaction@V?$allocator@PEAUCordRep@cord_internal@absl@@@__1@std@@@inlined_vector_internal@absl@@QEAAAEA_KXZ
     ?GetCapacity@?$AllocationTransaction@V?$allocator@PEBUCordRep@cord_internal@absl@@@__1@std@@@inlined_vector_internal@absl@@QEAAAEA_KXZ

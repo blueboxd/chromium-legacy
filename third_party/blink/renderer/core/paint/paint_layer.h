@@ -568,6 +568,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // which compositing state may legally be read.
   bool IsAllowedToQueryCompositingState() const;
 
+  bool IsAllowedToQueryCompositingInputs() const;
+
   // Don't null check this.
   // FIXME: Rename.
   CompositedLayerMapping* GetCompositedLayerMapping() const;
@@ -818,6 +820,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags = true);
+
+  // Mark this PaintLayer as needing raster invalidation checking after the
+  // next compositing update step.
+  void SetNeedsCheckRasterInvalidation();
+  bool NeedsCheckRasterInvalidation() const {
+    return needs_check_raster_invalidation_;
+  }
+  void ClearNeedsCheckRasterInvalidation() {
+    needs_check_raster_invalidation_ = false;
+  }
 
   // This methods marks everything from this layer up to the |ancestor| argument
   // (both included).
@@ -1123,7 +1135,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool NeedsPaintOffsetTranslationForCompositing() const {
     DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    DCHECK(IsAllowedToQueryCompositingState());
+    DCHECK(IsAllowedToQueryCompositingInputs());
     return needs_paint_offset_translation_for_compositing_;
   }
 
@@ -1381,6 +1393,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned static_block_edge_ : 2;
 
   unsigned needs_paint_offset_translation_for_compositing_ : 1;
+
+  unsigned needs_check_raster_invalidation_ : 1;
 
 #if DCHECK_IS_ON()
   mutable unsigned layer_list_mutation_allowed_ : 1;

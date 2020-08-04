@@ -245,7 +245,7 @@ I inkognitoläget får inte webbplatser se din webbaktivitet på olika webbplats
 <translation id="3783017676699494206">Spara bild</translation>
 <translation id="3789841737615482174">Installera</translation>
 <translation id="3803696231112616155">Erbjud översättning av webbplatsen</translation>
-<translation id="385051799172605136">Bakåt</translation>
+<translation id="385051799172605136">Föregående</translation>
 <translation id="3892144330757387737">Du hittar historiken här</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3915450441834151894">Webbplatsinformation</translation>
@@ -354,7 +354,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Aktivera synkronisering</translation>
-<translation id="5234764350956374838">Ta bort permanent</translation>
+<translation id="5234764350956374838">Stäng</translation>
 <translation id="5245322853195994030">Avbryt synkronisering</translation>
 <translation id="5271549068863921519">Spara lösenord</translation>
 <translation id="5295239312320826323">Vill du ta bort kontot <ph name="USER_EMAIL" />?</translation>
@@ -571,7 +571,7 @@ Webbplatser får inte se din webbaktivitet på olika webbplatser med hjälp av c
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="766891008101699113">Öppna en ny flik om du vill använda internet privat.</translation>
 <translation id="7671141431838911305">INSTALLERA</translation>
-<translation id="7701040980221191251">Inget</translation>
+<translation id="7701040980221191251">Inga</translation>
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7771470029643830783">När du loggar ut synkroniseras inte längre bokmärken, lösenord och annan data i Chrome till Google-kontot.
 

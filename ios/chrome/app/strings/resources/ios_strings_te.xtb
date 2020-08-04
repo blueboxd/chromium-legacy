@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">చిత్రాన్ని సేవ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1180526666083833456">అన్ని పరికరాలలో సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి.</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
+<translation id="1185569544548277362">కొత్తది: మీరు Chromeను మీ ఆటోమేటిక్ బ్రౌజర్‌గా చేయవచ్చు. <ph name="BEGIN_LINK" />సెట్టింగ్‌లను తెరవండి<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">కొత్త శోధన</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
 <translation id="1219674500290482172">ఇంటర్నెట్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
@@ -421,7 +422,7 @@
 <translation id="6021332621416007159">దీనిలో తెరువు...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
-<translation id="6042308850641462728">మరింత</translation>
+<translation id="6042308850641462728">మరింత చూపించు</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">రద్దు చేయడానికి నొక్కండి.</translation>
 <translation id="6108923351542677676">సెటప్ ప్రోగ్రెస్‌లో ఉంది...</translation>
@@ -570,7 +571,7 @@
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="766891008101699113">వెబ్‌ను ప్రైవేట్‌గా బ్రౌజ్ చేయడానికి, కొత్త ట్యాబ్‌ను జోడించండి.</translation>
 <translation id="7671141431838911305">ఇన్‌స్టాల్ చేయి</translation>
-<translation id="7701040980221191251">ఏదీ కాదు</translation>
+<translation id="7701040980221191251">ఏదీ లేదు</translation>
 <translation id="7765158879357617694">తరలించు</translation>
 <translation id="7771470029643830783">సైన్ అవుట్ చేయడం ద్వారా, మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు, ఇతర Chrome డేటా ఇకపై మీ Google ఖాతాలో సింక్ చేయబడదు.
 
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />లో <ph name="FIRST_VISIBLE_TAB" /> నుండి <ph name="LAST_VISIBLE_TAB" /> వరకు <ph name="INCOGNITO" /> ట్యాబ్‌లు</translation>
 <translation id="8529767659511976195">కొత్తది</translation>
 <translation id="8532105204136943229">గడువు ముగింపు సంవత్సరం</translation>
+<translation id="8533166274275423134">మరొక విండోలో తెరవబడి ఉంది</translation>
 <translation id="8534481786647257214">Google+ పోస్ట్ పూర్తయింది.</translation>
 <translation id="8548878600947630424">పేజీలో కనుగొను...</translation>
 <translation id="8574235780160508979">Chrome యొక్క సేవా నిబంధనలు మార్చి 31న మారుతున్నాయి. <ph name="BEGIN_LINK" />దయచేసి సమీక్షించండి<ph name="END_LINK" /></translation>

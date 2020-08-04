@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/test/base/testing_profile.h"
@@ -360,6 +361,29 @@ TEST_F(EmojiSuggesterTest, ShowSettingLinkCorrectly) {
   }
   emoji_suggester_->Suggest(base::UTF8ToUTF16("happy "));
   engine_->VerifyShowSettingLink(false);
+}
+
+TEST_F(EmojiSuggesterTest, RecordsTimeToAccept) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("InputMethod.Assistive.TimeToAccept.Emoji",
+                                    0);
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  // Press "Down" to choose and accept a candidate.
+  Press("Down");
+  Press("Enter");
+  histogram_tester.ExpectTotalCount("InputMethod.Assistive.TimeToAccept.Emoji",
+                                    1);
+}
+
+TEST_F(EmojiSuggesterTest, RecordsTimeToDismiss) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("InputMethod.Assistive.TimeToDismiss.Emoji",
+                                    0);
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  // Press "Esc" to dismiss.
+  Press("Esc");
+  histogram_tester.ExpectTotalCount("InputMethod.Assistive.TimeToDismiss.Emoji",
+                                    1);
 }
 
 }  // namespace chromeos

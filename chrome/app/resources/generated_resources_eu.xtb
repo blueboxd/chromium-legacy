@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Fitxategiak</translation>
 <translation id="1296911687402551044">Ainguratu hautatutako fitxa</translation>
 <translation id="1297175357211070620">Inprimagailua</translation>
-<translation id="1297646507722131691">Bertsio-berritzea gauzatzen den bitartean fitxategien babeskopia egitea gomendatzen dugu; horrela, datuak ez dira galduko bertsio-berritzea osatu ezin bada. Bertsio-berritzea hasten denean, itxi egingo da Linux (Beta). Gorde irekitako fitxategiak aurrera egin aurretik.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> domeinuak gailuaren identitatea Google bidez egiaztatzea eskatzen du babestutako multimedia-elementuak modu hobetuan erreproduzitzeko aukera gai daitekeen ala ez erabakitzeko.</translation>
 <translation id="1300806585489372370">Ezarpena aldatzeko, <ph name="BEGIN_LINK" />aktibatu identifikatzaileak<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> webguneak fitxategi hauek edita ditzake:</translation>
@@ -1976,7 +1975,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3435738964857648380">Segurtasuna</translation>
 <translation id="343578350365773421">Papera agortu da</translation>
 <translation id="3435896845095436175">Gaitu</translation>
-<translation id="3436642683618870087">"Istanteko azpitituluak" eginbideak multimedia-edukietako hizketaldiak antzematen, eta azpitituluak automatikoki sortzen ditu.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Eman beti mikrofonoa erabiltzeko baimena <ph name="HOST" /> webguneari</translation>
 <translation id="3439970425423980614">PDF dokumentua aurrebistan irekitzen</translation>
@@ -3617,7 +3615,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5511379779384092781">Oso-oso txikia</translation>
 <translation id="5511823366942919280">Ziur gailua "Shark" gailu gisa ezarri nahi duzula?</translation>
 <translation id="5512653252560939721">Erabiltzaile-ziurtagiria hardware bidez babestu behar da.</translation>
-<translation id="5515923816438946203">Aukeratu pantailan zer ikusi</translation>
 <translation id="5517304475148761050">Aplikazioak Play Store atzitzeko baimena behar du</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_DISPLAY_NAME" /> (<ph name="NETWORK_TYPE" />)</translation>
 <translation id="551752069230578406">Inprimagailua kontuan gehitzen, unetxo bat har dezake honek…</translation>
@@ -3731,6 +3728,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5642508497713047">CRL sinatzailea</translation>
 <translation id="5643321261065707929">Sare neurtua</translation>
 <translation id="5643620609347735571">Garbitu eta egin aurrera</translation>
+<translation id="5646376287012673985">Kokapena</translation>
 <translation id="5646558797914161501">Enpresaria</translation>
 <translation id="5648166631817621825">Azken zazpi egunetakoak</translation>
 <translation id="5649053991847567735">Deskarga automatikoak</translation>
@@ -6380,7 +6378,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8952831374766033534">Konfigurazio-aukera ez da onartzen: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Kargatzen ari denean</translation>
 <translation id="895347679606913382">Hasten…</translation>
-<translation id="8957762313041272117">Istanteko azpitituluak</translation>
 <translation id="895944840846194039">JavaScript memoria</translation>
 <translation id="8962083179518285172">Ezkutatu xehetasunak</translation>
 <translation id="8962918469425892674">Mugimenduaren edo argiaren sentsoreak erabiltzen ari da webgune hau.</translation>

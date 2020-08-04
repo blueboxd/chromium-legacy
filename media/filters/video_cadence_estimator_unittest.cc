@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -307,7 +308,7 @@ void VerifyCadenceSequence(VideoCadenceEstimator* estimator,
   const base::TimeDelta acceptable_drift =
       frame_interval < render_interval ? render_interval : frame_interval;
   const base::TimeDelta test_runtime = base::TimeDelta::FromSeconds(10 * 60);
-  const int test_frames = test_runtime.IntDiv(frame_interval);
+  const int test_frames = base::ClampFloor(test_runtime / frame_interval);
 
   estimator->Reset();
   EXPECT_TRUE(estimator->UpdateCadenceEstimate(

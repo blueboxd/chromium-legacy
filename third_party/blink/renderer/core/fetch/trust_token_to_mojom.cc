@@ -55,33 +55,37 @@ bool ConvertTrustTokenToMojom(const TrustToken& in,
   DCHECK(in.hasIncludeTimestampHeader());  // default is defined
   out->include_timestamp_header = in.includeTimestampHeader();
 
-  if (in.hasIssuer()) {
-    // Two conditions on the issuer:
-    // 1. HTTP or HTTPS (because much Trust Tokens protocol state is
-    // stored keyed by issuer origin, requiring HTTP or HTTPS is a way to ensure
-    // these origins serialize to unique values);
-    // 2. potentially trustworthy (a security requirement).
-    KURL parsed_url = KURL(in.issuer());
-    if (!parsed_url.ProtocolIsInHTTPFamily()) {
-      exception_state->ThrowTypeError(
-          "trustToken: operation type 'send-srr' requires that the 'issuer' "
-          "field parse to a HTTP(S) origin, but it did not: " +
-          in.issuer());
-      return false;
-    }
-    out->issuer = blink::SecurityOrigin::Create(parsed_url);
-    if (!out->issuer->IsPotentiallyTrustworthy()) {
-      exception_state->ThrowTypeError(
-          "trustToken: operation type 'send-srr' requires that the 'issuer' "
-          "field parse to a secure origin, but it did not: " +
-          in.issuer());
-      return false;
+  if (in.hasIssuers() && !in.issuers().IsEmpty()) {
+    for (const String& issuer : in.issuers()) {
+      // Two conditions on the issuers:
+      // 1. HTTP or HTTPS (because much Trust Tokens protocol state is
+      // stored keyed by issuer origin, requiring HTTP or HTTPS is a way to
+      // ensure these origins serialize to unique values);
+      // 2. potentially trustworthy (a security requirement).
+      KURL parsed_url = KURL(issuer);
+      if (!parsed_url.ProtocolIsInHTTPFamily()) {
+        exception_state->ThrowTypeError(
+            "trustToken: operation type 'send-srr' requires that the 'issuers' "
+            "fields' members parse to HTTP(S) origins, but one did not: " +
+            issuer);
+        return false;
+      }
+
+      out->issuers.push_back(blink::SecurityOrigin::Create(parsed_url));
+      DCHECK(out->issuers.back());  // SecurityOrigin::Create cannot fail.
+      if (!out->issuers.back()->IsPotentiallyTrustworthy()) {
+        exception_state->ThrowTypeError(
+            "trustToken: operation type 'send-srr' requires that the 'issuers' "
+            "fields' members parse to secure origins, but one did not: " +
+            issuer);
+        return false;
+      }
     }
   } else {
     exception_state->ThrowTypeError(
-        "trustToken: operation type 'send-srr' requires that the 'issuer' "
-        "field "
-        "be present and parse to a secure HTTP(S) URL, but it was missing.");
+        "trustToken: operation type 'send-srr' requires that the 'issuers' "
+        "field be present and contain at least one secure, HTTP(S) URL, but it "
+        "was missing or empty.");
     return false;
   }
 

@@ -7,7 +7,32 @@ import {Viewport} from './viewport.js';
 
 // NavigatorDelegate for calling browser-specific functions to do the actual
 // navigating.
+/** @interface */
 export class NavigatorDelegate {
+  /**
+   * Called when navigation should happen in the current tab.
+   * @param {string} url The url to be opened in the current tab.
+   */
+  navigateInCurrentTab(url) {}
+
+  /**
+   * Called when navigation should happen in the new tab.
+   * @param {string} url The url to be opened in the new tab.
+   * @param {boolean} active Indicates if the new tab should be the active tab.
+   */
+  navigateInNewTab(url, active) {}
+
+  /**
+   * Called when navigation should happen in the new window.
+   * @param {string} url The url to be opened in the new window.
+   */
+  navigateInNewWindow(url) {}
+}
+
+// NavigatorDelegate for calling browser-specific functions to do the actual
+// navigating.
+/** @implements {NavigatorDelegate} */
+export class NavigatorDelegateImpl {
   /**
    * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
    *     not displayed in a tab.
@@ -17,10 +42,7 @@ export class NavigatorDelegate {
     this.tabId_ = tabId;
   }
 
-  /**
-   * Called when navigation should happen in the current tab.
-   * @param {string} url The url to be opened in the current tab.
-   */
+  /** @override */
   navigateInCurrentTab(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
@@ -31,11 +53,7 @@ export class NavigatorDelegate {
     }
   }
 
-  /**
-   * Called when navigation should happen in the new tab.
-   * @param {string} url The url to be opened in the new tab.
-   * @param {boolean} active Indicates if the new tab should be the active tab.
-   */
+  /** @override */
   navigateInNewTab(url, active) {
     // Prefer the tabs API because it guarantees we can just open a new tab.
     // window.open doesn't have this guarantee.
@@ -46,10 +64,7 @@ export class NavigatorDelegate {
     }
   }
 
-  /**
-   * Called when navigation should happen in the new window.
-   * @param {string} url The url to be opened in the new window.
-   */
+  /** @override */
   navigateInNewWindow(url) {
     // Prefer the windows API because it guarantees we can just open a new
     // window. window.open with '_blank' argument doesn't have this guarantee.

@@ -182,7 +182,7 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker", "ServiceWorkerRegistry::FindRegistrationForClientUrl",
       trace_event_id, "URL", client_url.spec());
-  storage()->FindRegistrationForClientUrl(
+  GetRemoteStorageControl()->FindRegistrationForClientUrl(
       client_url,
       base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForClientUrl,
                      weak_factory_.GetWeakPtr(), client_url, trace_event_id,
@@ -210,7 +210,7 @@ void ServiceWorkerRegistry::FindRegistrationForScope(
     return;
   }
 
-  storage()->FindRegistrationForScope(
+  GetRemoteStorageControl()->FindRegistrationForScope(
       scope, base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForScope,
                             weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -239,7 +239,7 @@ void ServiceWorkerRegistry::FindRegistrationForId(
     return;
   }
 
-  storage()->FindRegistrationForId(
+  GetRemoteStorageControl()->FindRegistrationForId(
       registration_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForId,
                      weak_factory_.GetWeakPtr(), registration_id,
@@ -269,8 +269,8 @@ void ServiceWorkerRegistry::FindRegistrationForIdOnly(
     return;
   }
 
-  storage()->FindRegistrationForIdOnly(
-      registration_id,
+  GetRemoteStorageControl()->FindRegistrationForId(
+      registration_id, /*origin=*/base::nullopt,
       base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForId,
                      weak_factory_.GetWeakPtr(), registration_id,
                      std::move(callback)));
@@ -402,7 +402,7 @@ void ServiceWorkerRegistry::StoreRegistration(
   }
   data->resources_total_size_bytes = resources_total_size_bytes;
 
-  storage()->StoreRegistrationData(
+  GetRemoteStorageControl()->StoreRegistration(
       std::move(data), std::move(resources),
       base::BindOnce(&ServiceWorkerRegistry::DidStoreRegistration,
                      weak_factory_.GetWeakPtr(), registration->id(),
@@ -425,7 +425,7 @@ void ServiceWorkerRegistry::DeleteRegistration(
   DCHECK(!registration->is_deleted())
       << "attempt to delete a registration twice";
 
-  storage()->DeleteRegistration(
+  GetRemoteStorageControl()->DeleteRegistration(
       registration->id(), origin,
       base::BindOnce(&ServiceWorkerRegistry::DidDeleteRegistration,
                      weak_factory_.GetWeakPtr(), registration->id(), origin,
@@ -812,7 +812,9 @@ ServiceWorkerRegistry::FindInstallingRegistrationForId(
 scoped_refptr<ServiceWorkerRegistration>
 ServiceWorkerRegistry::GetOrCreateRegistration(
     const storage::mojom::ServiceWorkerRegistrationData& data,
-    const ResourceList& resources) {
+    const ResourceList& resources,
+    mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+        version_reference) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(data.registration_id);
@@ -831,11 +833,9 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
   if (!version) {
-    // TODO(crbug.com/1055677): Pass ServiceWorkerLiveVersionRef
     version = base::MakeRefCounted<ServiceWorkerVersion>(
         registration.get(), data.script, data.script_type, data.version_id,
-        mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
-        context_->AsWeakPtr());
+        std::move(version_reference), context_->AsWeakPtr());
     version->set_fetch_handler_existence(
         data.has_fetch_handler
             ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
@@ -892,9 +892,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     const GURL& client_url,
     int64_t trace_event_id,
     FindRegistrationCallback callback,
-    storage::mojom::ServiceWorkerRegistrationDataPtr data,
-    std::unique_ptr<ResourceList> resources,
-    storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
+    storage::mojom::ServiceWorkerFindRegistrationResultPtr result) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
@@ -929,9 +928,12 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
 
   scoped_refptr<ServiceWorkerRegistration> registration;
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    DCHECK(data);
-    DCHECK(resources);
-    registration = GetOrCreateRegistration(*data, *resources);
+    DCHECK(result);
+    DCHECK(result->registration);
+    DCHECK(result->version_reference);
+    registration =
+        GetOrCreateRegistration(*(result->registration), result->resources,
+                                std::move(result->version_reference));
   }
 
   TRACE_EVENT_ASYNC_END1(
@@ -942,9 +944,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
 
 void ServiceWorkerRegistry::DidFindRegistrationForScope(
     FindRegistrationCallback callback,
-    storage::mojom::ServiceWorkerRegistrationDataPtr data,
-    std::unique_ptr<ResourceList> resources,
-    storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
+    storage::mojom::ServiceWorkerFindRegistrationResultPtr result) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
@@ -957,9 +958,12 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
 
   scoped_refptr<ServiceWorkerRegistration> registration;
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    DCHECK(data);
-    DCHECK(resources);
-    registration = GetOrCreateRegistration(*data, *resources);
+    DCHECK(result);
+    DCHECK(result->registration);
+    DCHECK(result->version_reference);
+    registration =
+        GetOrCreateRegistration(*(result->registration), result->resources,
+                                std::move(result->version_reference));
   }
 
   CompleteFindNow(std::move(registration), status, std::move(callback));
@@ -968,9 +972,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
 void ServiceWorkerRegistry::DidFindRegistrationForId(
     int64_t registration_id,
     FindRegistrationCallback callback,
-    storage::mojom::ServiceWorkerRegistrationDataPtr data,
-    std::unique_ptr<ResourceList> resources,
-    storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
+    storage::mojom::ServiceWorkerFindRegistrationResultPtr result) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
@@ -994,9 +997,12 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
 
   scoped_refptr<ServiceWorkerRegistration> registration;
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    DCHECK(data);
-    DCHECK(resources);
-    registration = GetOrCreateRegistration(*data, *resources);
+    DCHECK(result);
+    DCHECK(result->registration);
+    DCHECK(result->version_reference);
+    registration =
+        GetOrCreateRegistration(*(result->registration), result->resources,
+                                std::move(result->version_reference));
   }
 
   CompleteFindNow(std::move(registration), status, std::move(callback));
@@ -1025,9 +1031,13 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
   std::set<int64_t> registration_ids;
   std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
   for (const auto& entry : entries) {
+    DCHECK(entry->registration);
+    DCHECK(entry->version_reference);
     registration_ids.insert(entry->registration->registration_id);
+    // TODO(crbug.com/1055677): Pass ServiceWorkerLiveVersionRef.
     registrations.push_back(
-        GetOrCreateRegistration(*entry->registration, entry->resources));
+        GetOrCreateRegistration(*entry->registration, entry->resources,
+                                std::move(entry->version_reference)));
   }
 
   // Add unstored registrations that are being installed.

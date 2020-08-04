@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace chromeos {
 namespace power {
@@ -83,7 +84,8 @@ int RecentEventsCounter::GetTotal(base::TimeDelta now) const {
 int RecentEventsCounter::GetBucketIndex(base::TimeDelta timestamp) const {
   DCHECK_GE(timestamp, base::TimeDelta());
 
-  const int index = (timestamp % duration_).IntDiv(bucket_duration_);
+  const int index =
+      base::ClampFloor((timestamp % duration_) / bucket_duration_);
   DCHECK_GE(index, 0);
   DCHECK_LT(index, num_buckets_);
   return index;

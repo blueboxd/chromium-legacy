@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chromiumএ সত্যাপন কৰিছে যে <ph name="ISSUER" />এ এই ৱেবছাইটৰ প্ৰমাণপত্ৰ প্ৰদান কৰিছে।</translation>
 <translation id="2199719347983604670">Chrome ছিংকৰ ডেটা</translation>
 <translation id="2347208864470321755">যেতিয়া এই সুবিধাটো অন কৰা থাকে তেতিয়া Chromeএ অন্য ভাষাত থকা পৃষ্ঠাবোৰ Google Translate ব্যৱহাৰ কৰি অনুবাদ কৰাৰ প্ৰস্তাব দিয়ে। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Chromeক আপোনাৰ ডিফ’ল্ট ব্ৰাউজাৰ কৰক</translation>
 <translation id="2574249610672786438">আপুনি Chrome ব্যৱহাৰ কৰা সকলো ডিভাইচৰ পৰা নিজৰ টেবসমূহ চাবলৈ আপোনাৰ সকলো ডিভাইচত ছাইন ইন কৰক</translation>
 <translation id="2576431527583832481">Chrome অধিক উৎকৃষ্ট হ'ল! এটা নতুন সংস্কৰণ আছে।</translation>
 <translation id="257708665678654955">ইয়াৰ পাছত আপুনি Google Chromeএ এই ছাইটটোৰ পৰা <ph name="LANGUAGE_NAME" /> পৃষ্ঠা অনুবাদ কৰাৰ সুবিধাটো প্ৰদান কৰাটো বিচাৰেনে?</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Chromeত ছাইন-ইন কৰক</translation>
 <translation id="3345341804167540816">সকলোতে Chrome ব্যৱহাৰ কৰক</translation>
 <translation id="3522659714780527202">আপুনি Chrome ব্যৱহাৰ কৰা সকলো ডিভাইচৰ পৰা নিজৰ টেবসমূহ চাবলৈ ছিংক অন কৰক</translation>
+<translation id="3706101708757577809">এতিয়া আপুনি বাৰ্তা, নথি আৰু অন্য এপ্‌সমূহত থকা কোনো লিংকত টিপিলে যিকোনো সময়তে Chrome ব্যৱহাৰ কৰিব পাৰে।</translation>
 <translation id="384394811301901750">Google Chromeএ বর্তমান আপোনাৰ কেমেৰা ব্যৱহাৰ কৰিব নোৱাৰে</translation>
 <translation id="3980220367029651214">আপুনি ছিংক কৰা একাউণ্ট <ph name="USER_EMAIL1" />ৰ পৰা <ph name="USER_EMAIL2" />লৈ সলনি কৰিছে। আপোনাৰ বৰ্তমানৰ Chromium ডেটা <ph name="DOMAIN" />এ পৰিচালনা কৰি আছে। এই কাৰ্যই আপোনাৰ ডেটা এই ডিভাইচটোৰপৰা মচি পেলাব কিন্তু আপোনাৰ ডেটাবোৰ <ph name="USER_EMAIL1" />ত থাকিব।</translation>
 <translation id="3988789688219830639">আপোনাৰ ফট’ বা ভিডিঅ’সমূহত Google Chromeৰ এক্সেছ নাই৷ iOS ছেটিং &gt; গোপনীয়তা &gt; ফট’-ত এক্সেছ সক্ষম কৰক।</translation>
@@ -43,6 +45,10 @@
 <translation id="6600954340915313787">Chromeলৈ প্ৰতিলিপি কৰা হ’ল</translation>
 <translation id="6648150602980899529">আপুনি <ph name="DOMAIN" />এ পৰিচালনা কৰা এটা একাউণ্টৰ জৰিয়তে ছাইন ইন কৰিছে আৰু সেইটোৰ প্ৰশাসকে আপোনাৰ Chrome ডেটা নিয়ন্ত্ৰণ কৰিবলৈ সুবিধা দিছে। আপোনাৰ ডেটা এই একাউণ্টটোৰ সৈতে স্থায়ীভাৱে সংযুক্ত হৈ থাকিব। Chromeৰ পৰা ছাইন আউট কৰিলে আপোনাৰ ডেটা মচা যাব কিন্ত সেইবোৰ আপোনাৰ Google একাউণ্টত জমা হৈয়ে থাকিব।</translation>
 <translation id="6676840375528380067">এই ডিভাইচটোৰ পৰা Chrome ডেটা মচিবনে?</translation>
+<translation id="6724102885918156196">Chromeক আপোনাৰ ডিফ’ল্ট ব্ৰাউজাৰ কৰিবলৈ:
+        ১) ছেটিংসমূহ খোলক। 
+        ২) ডিফ’ল্ট ব্ৰাউজাৰ এপত টিপক।
+        ৩) Chrome বাছনি কৰক।</translation>
 <translation id="7165736900384873061">Google Chrome QR স্কেনাৰ ব্যৱহাৰ কৰিবলৈ আৰম্ভ কৰক</translation>
 <translation id="7172660552945675509">দিহা: <ph name="BEGIN_LINK" />আপোনাৰ ড’কলৈ Chromeক আঁতৰাওক<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">ছেটিংসমূহ খোলক</translation>

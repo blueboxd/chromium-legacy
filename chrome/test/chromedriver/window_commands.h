@@ -291,6 +291,12 @@ Status ExecuteScreenshot(Session* session,
                          std::unique_ptr<base::Value>* value,
                          Timeout* timeout);
 
+Status ExecuteFullPageScreenshot(Session* session,
+                                 WebView* web_view,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value,
+                                 Timeout* timeout);
+
 Status ExecutePrint(Session* session,
                     WebView* web_view,
                     const base::DictionaryValue& params,

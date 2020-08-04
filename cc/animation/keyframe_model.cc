@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -317,7 +318,7 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
   else if (iteration_time == curve_->Duration())
     iteration = ceil(iteration_start_ + iterations_ - 1);
   else
-    iteration = static_cast<int>(scaled_active_time.IntDiv(curve_->Duration()));
+    iteration = base::ClampFloor(scaled_active_time / curve_->Duration());
 
   // Check if we are running the keyframe model in reverse direction for the
   // current iteration

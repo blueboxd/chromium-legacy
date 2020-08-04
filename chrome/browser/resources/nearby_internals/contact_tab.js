@@ -24,6 +24,7 @@ Polymer({
 
 
   properties: {
+
     /** @private {!Array<!ContactUpdate>} */
     contactList_: {
       type: Array,
@@ -47,6 +48,7 @@ Polymer({
   attached() {
     this.addWebUIListener(
         'contacts-updated', contact => this.onContactUpdateAdded_([contact]));
+    this.browserProxy_.initialize();
   },
 
   /**

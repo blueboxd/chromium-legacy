@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -185,5 +186,36 @@ IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
   browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 
+  VerifyEmbedRelationships();
+}
+
+// Tests that the embedded relationship is set on the main web contents when
+// the DevTools is opened.
+IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
+                       EmbeddedRelationshipWithDevTools) {
+  // Force the creation of the document's native object which sets up the
+  // relationship.
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents->GetRenderWidgetHostView()
+                         ->GetNativeViewAccessible());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  // Opens DevTools docked.
+  DevToolsWindow* devtools =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
+  VerifyEmbedRelationships();
+
+  // Closes the DevTools window.
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+  VerifyEmbedRelationships();
+
+  // Opens DevTools in a separate window.
+  devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
+  VerifyEmbedRelationships();
+
+  // Closes the DevTools window.
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
   VerifyEmbedRelationships();
 }

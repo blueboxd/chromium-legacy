@@ -859,6 +859,11 @@ JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
   return dialog_manager_.get();
 }
 
+MobileEmulationOverrideManager* WebViewImpl::GetMobileEmulationOverrideManager()
+    const {
+  return mobile_emulation_override_manager_.get();
+}
+
 Status WebViewImpl::OverrideGeolocation(const Geoposition& geoposition) {
   return geolocation_override_manager_->OverrideGeolocation(geoposition);
 }

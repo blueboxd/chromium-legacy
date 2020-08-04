@@ -593,6 +593,9 @@ class ChromeDriver(object):
   def TakeScreenshot(self):
     return self.ExecuteCommand(Command.SCREENSHOT)
 
+  def TakeFullPageScreenshot(self):
+    return self.ExecuteCommand(Command.FULL_PAGE_SCREENSHOT)
+
   def PrintPDF(self, params={}):
     return self.ExecuteCommand(Command.PRINT, params)
 

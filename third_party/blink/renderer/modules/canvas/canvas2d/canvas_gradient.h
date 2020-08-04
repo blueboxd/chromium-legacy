@@ -41,11 +41,15 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Linear Gradient
   CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
+  // Radial Gradient
   CanvasGradient(const FloatPoint& p0,
                  float r0,
                  const FloatPoint& p1,
                  float r1);
+  // Conic Gradient
+  CanvasGradient(float startAngle, const FloatPoint& center);
 
   Gradient* GetGradient() const { return gradient_.get(); }
 

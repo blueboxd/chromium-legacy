@@ -94,7 +94,11 @@ class CORE_EXPORT PaintLayerCompositor {
   void UpdateAcceleratedCompositingSettings();
 
   // Used to indicate that a compositing update will be needed for the next
-  // frame that gets drawn.
+  // frame that gets drawn. If called from before the compositing inputs
+  // step has run, and the type is > kCompositingUpdateNone, compositing
+  // inputs will be re-computed. If called during pre-paint (which is after
+  // compositing inputs and before the rest of compositing), it will cause
+  // the rest of compositing to run, but not compositing inputs.
   void SetNeedsCompositingUpdate(CompositingUpdateType);
 
   // Whether the given layer needs an extra 'contents' layer.

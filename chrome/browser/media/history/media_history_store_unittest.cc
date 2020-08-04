@@ -272,6 +272,8 @@ class MediaHistoryStoreUnitTest
   base::ScopedTempDir temp_dir_;
 
  protected:
+  // |features_| must outlive |task_environment_| to avoid TSAN issues.
+  base::test::ScopedFeatureList features_;
   content::BrowserTaskEnvironment task_environment_;
 
  private:
@@ -945,9 +947,6 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     run_loop.Run();
     return out;
   }
-
- private:
-  base::test::ScopedFeatureList features_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

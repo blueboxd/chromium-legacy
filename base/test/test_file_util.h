@@ -37,6 +37,11 @@ bool EvictFileFromSystemCacheWithRetry(const FilePath& file);
 // success.
 bool DieFileDie(const FilePath& file, bool recurse);
 
+// Creates a a new unique directory and returns the generated path. The
+// directory will be automatically deleted when the test completes. Failure
+// upon creation or deletion will cause a test failure.
+FilePath CreateUniqueTempDirectoryScopedToTest();
+
 // Synchronize all the dirty pages from the page cache to disk (on POSIX
 // systems). The Windows analogy for this operation is to 'Flush file buffers'.
 // Note: This is currently implemented as a no-op on Windows.

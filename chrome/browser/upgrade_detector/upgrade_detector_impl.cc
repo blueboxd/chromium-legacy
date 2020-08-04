@@ -174,7 +174,7 @@ void UpgradeDetectorImpl::DoInitializeThresholds() {
   // When testing, scale everything back so that a day passes in ten seconds.
   if (is_testing_) {
     constexpr int64_t scale_factor =
-        base::TimeDelta::FromDays(1).IntDiv(base::TimeDelta::FromSeconds(10));
+        base::TimeDelta::FromDays(1) / base::TimeDelta::FromSeconds(10);
     for (auto& stage : stages_)
       stage /= scale_factor;
   }

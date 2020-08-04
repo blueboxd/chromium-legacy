@@ -15,11 +15,9 @@ namespace weblayer {
 
 UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    bool disabled)
+    scoped_refptr<SafeBrowsingUIManager> ui_manager)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
-      safe_browsing_disabled_(disabled),
       threat_types_(safe_browsing::CreateSBThreatTypeSet(
           {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
            safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
@@ -70,17 +68,13 @@ bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
   return false;
 }
 
-void UrlCheckerDelegateImpl::SetSafeBrowsingDisabled(bool disabled) {
-  safe_browsing_disabled_ = disabled;
-}
-
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     const GURL& original_url,
     int frame_tree_node_id,
     int render_process_id,
     int render_frame_id,
     bool originated_from_service_worker) {
-  return safe_browsing_disabled_ ? true : false;
+  return false;
 }
 
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(

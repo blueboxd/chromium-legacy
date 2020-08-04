@@ -1,6 +1,10 @@
-"""Script to generate Chromium's Abseil .def file at roll time.
+#!/usr/bin/env python
 
-This script generates //third_party/abseil-app/absl/symbols_x64.def at Abseil
+# NOTE: This script requires python 3.
+
+"""Script to generate Chromium's Abseil .def files at roll time.
+
+This script generates //third_party/abseil-app/absl/symbols_*.def at Abseil
 roll time.
 
 Since Abseil doesn't export symbols, Chromium is forced to consider all
@@ -11,6 +15,9 @@ is needed.
 Unless you are on a Windows machine, you need to set up your Chromium
 checkout for cross-compilation by following the instructions at
 https://chromium.googlesource.com/chromium/src.git/+/master/docs/win_cross.md.
+If you are on Windows, you may need to tweak this script to run, e.g. by
+changing "gn" to "gn.bat", changing "llvm-nm-9" to the name of your copy of
+llvm-nm, etc.
 """
 
 import fnmatch

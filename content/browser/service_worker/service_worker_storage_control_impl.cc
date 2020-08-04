@@ -438,7 +438,8 @@ void ServiceWorkerStorageControlImpl::DidStoreRegistration(
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
   MaybePurgeResources(deleted_version_id, newly_purgeable_resources);
-  std::move(callback).Run(status);
+  std::move(callback).Run(status, deleted_version_id,
+                          newly_purgeable_resources);
 }
 
 void ServiceWorkerStorageControlImpl::DidDeleteRegistration(
@@ -448,7 +449,8 @@ void ServiceWorkerStorageControlImpl::DidDeleteRegistration(
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
   MaybePurgeResources(deleted_version_id, newly_purgeable_resources);
-  std::move(callback).Run(status, origin_state);
+  std::move(callback).Run(status, origin_state, deleted_version_id,
+                          newly_purgeable_resources);
 }
 
 void ServiceWorkerStorageControlImpl::DidGetNewVersionId(

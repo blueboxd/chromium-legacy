@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -455,7 +456,8 @@ bool ClickBasedCategoryRanker::DecayClicksIfNeeded() {
   }
   DCHECK_LE(last_decay, now);
 
-  int num_pending_decays = (now - last_decay).IntDiv(kTimeBetweenDecays);
+  int num_pending_decays =
+      base::ClampFloor((now - last_decay) / kTimeBetweenDecays);
   int executed_decays = 0;
   while (executed_decays < num_pending_decays && IsEnoughClicksToDecay()) {
     for (RankedCategory& ranked_category : ordered_categories_) {

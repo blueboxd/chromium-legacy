@@ -1041,7 +1041,7 @@ class DiceManageAccountBrowserTest : public DiceBrowserTest {
 #if defined(OS_WIN)
     // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
     // See crbug.com/1073451.
-    AppShortcutManager::SuppressDeleteAllShortcutsForTesting();
+    AppShortcutManager::SuppressShortcutsForTesting();
 #endif
     DiceBrowserTest::SetUp();
   }

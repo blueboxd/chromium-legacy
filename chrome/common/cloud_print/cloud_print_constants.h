@@ -31,8 +31,6 @@ extern const char kUseCDD[];
 
 extern const char kContentTypeJSON[];
 extern const char kContentTypePDF[];
-extern const char kContentTypeXML[];
-extern const char kContentTypeXPS[];
 
 // Value of "code" parameter in cloud print "/message" requests.
 extern const char kPrintSystemFailedMessageId[];

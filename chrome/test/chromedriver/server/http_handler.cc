@@ -382,6 +382,11 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(&ExecuteElementScreenshot))),
 
       CommandMapping(
+          kGet, "session/:sessionId/screenshot/full",
+          WrapToCommand("FullPageScreenshot",
+                        base::BindRepeating(&ExecuteFullPageScreenshot))),
+
+      CommandMapping(
           kPost, "session/:sessionId/print",
           WrapToCommand("Print", base::BindRepeating(&ExecutePrint))),
 

@@ -227,6 +227,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DoesNotExist) {
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 
+  base::RunLoop().RunUntilIdle();
+
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LookupRegistration.MainResource.Time.DoesNotExist", 1);
 
@@ -248,6 +250,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, Error) {
       blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
+
+  base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LookupRegistration.MainResource.Time.Error", 1);

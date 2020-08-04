@@ -54,7 +54,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -78,6 +77,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -360,7 +360,7 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     case network::mojom::ReferrerPolicy::kAlways:
       return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
     case network::mojom::ReferrerPolicy::kDefault:
-      return referrerPolicy(Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+      return referrerPolicy(blink::NetToMojoReferrerPolicy(
           content::Referrer::GetDefaultReferrerPolicy()));
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
@@ -382,8 +382,7 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
 }
 
 String referrerPolicy(net::ReferrerPolicy referrer_policy) {
-  return referrerPolicy(
-      Referrer::NetReferrerPolicyToBlinkReferrerPolicy(referrer_policy));
+  return referrerPolicy(blink::NetToMojoReferrerPolicy(referrer_policy));
 }
 
 String securityState(const GURL& url, const net::CertStatus& cert_status) {

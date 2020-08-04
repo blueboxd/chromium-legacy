@@ -160,9 +160,6 @@ void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
   chrome_cleaner_status_ = ChromeCleanerStatus::kChecking;
 
   // Update WebUi.
-  FireBasicSafetyCheckWebUiListener(kParentEvent,
-                                    static_cast<int>(parent_status_),
-                                    GetStringForParent(parent_status_));
   FireBasicSafetyCheckWebUiListener(kUpdatesEvent,
                                     static_cast<int>(update_status_),
                                     GetStringForUpdates(update_status_));
@@ -182,6 +179,10 @@ void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
       kChromeCleanerEvent, static_cast<int>(chrome_cleaner_status_),
       GetStringForChromeCleaner(chrome_cleaner_status_));
 #endif
+  // Parent update is last as it reveals the children elements.
+  FireBasicSafetyCheckWebUiListener(kParentEvent,
+                                    static_cast<int>(parent_status_),
+                                    GetStringForParent(parent_status_));
 }
 
 void SafetyCheckHandler::PerformSafetyCheck() {

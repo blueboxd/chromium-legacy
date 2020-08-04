@@ -51,7 +51,7 @@ class AppShortcutManager : public KeyedService,
   // ProfileAttributesStorage::Observer.
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
-  static void SuppressDeleteAllShortcutsForTesting();
+  static void SuppressShortcutsForTesting();
 
  private:
   void UpdateShortcutsForAllAppsNow();

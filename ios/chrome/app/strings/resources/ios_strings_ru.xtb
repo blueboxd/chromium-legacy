@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">Не удалось сохранить</translation>
 <translation id="1180526666083833456">Синхронизация данных и персонализация на всех устройствах.</translation>
 <translation id="1181037720776840403">Удалить</translation>
+<translation id="1185569544548277362">Новая функция: вы можете сделать Chrome браузером по умолчанию. <ph name="BEGIN_LINK" />Открыть настройки<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Новый поиск</translation>
 <translation id="1209206284964581585">Скрыть</translation>
 <translation id="1219674500290482172">Не удалось подключиться к Интернету.</translation>
@@ -384,7 +385,7 @@
 <translation id="5614553682702429503">Сохранение пароля</translation>
 <translation id="5626245204502895507">Не удалось скачать файлы.</translation>
 <translation id="5631164295104953411">Добавить способ оплаты</translation>
-<translation id="5659593005791499971">Электронная почта</translation>
+<translation id="5659593005791499971">Эл. почта</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версия <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5706552126692816153">Последние действия: 1 день назад</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="INCOGNITO" />, вкладки между <ph name="FIRST_VISIBLE_TAB" /> и <ph name="LAST_VISIBLE_TAB" />, всего <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Новинка</translation>
 <translation id="8532105204136943229">Год</translation>
+<translation id="8533166274275423134">Открыто в другом окне.</translation>
 <translation id="8534481786647257214">Опубликовано в Google+.</translation>
 <translation id="8548878600947630424">Найти на странице…</translation>
 <translation id="8574235780160508979">Условия использования Chrome будут обновлены 31 марта. Просим вас <ph name="BEGIN_LINK" />ознакомиться с изменениями<ph name="END_LINK" />.</translation>

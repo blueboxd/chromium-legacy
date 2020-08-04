@@ -177,8 +177,9 @@ void CameraAppUI::ConnectToCameraAppHelper(
   mojo::MakeSelfOwnedReceiver(std::move(helper), std::move(receiver));
 }
 
-CameraAppUI::CameraAppUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
+CameraAppUI::CameraAppUI(content::WebUI* web_ui,
+                         std::unique_ptr<CameraAppUIDelegate> delegate)
+    : ui::MojoWebUIController(web_ui), delegate_(std::move(delegate)) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
 

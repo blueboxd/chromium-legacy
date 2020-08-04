@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Skedarët</translation>
 <translation id="1296911687402551044">Gozhdo skedën e zgjedhur</translation>
 <translation id="1297175357211070620">Destinacioni</translation>
-<translation id="1297646507722131691">Rezervimi i skedarëve rekomandohet si pjesë e këtij përmirësimi për të parandaluar humbjen e të dhënave në rast se përmirësimi nuk mund të kryhet. Fillimi i përmirësimit do të shkaktojë fikjen e sistemit Linux (Beta). Ruaj skedarët e hapur përpara se të vazhdosh.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> dëshiron që të verifikohet identiteti i pajisjes tënde nga Google për të përcaktuar përshtatshmërinë për luajtjen e përmirësuar të përmbajtjes së mbrojtur.</translation>
 <translation id="1300806585489372370">Për të ndryshuar këtë cilësim, fillimisht <ph name="BEGIN_LINK" />aktivizo identifikuesit<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> mund të modifikojë skedarët e mëposhtëm</translation>
@@ -1978,7 +1977,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3435738964857648380">Siguria</translation>
 <translation id="343578350365773421">Nuk ka letër</translation>
 <translation id="3435896845095436175">Aktivizo</translation>
-<translation id="3436642683618870087">"Titrat në çast" zbulojnë të folurën në media dhe krijojnë automatikisht titrat për të gjithë mediat që luhen në Chrome.</translation>
 <translation id="3438633801274389918">Ninxha</translation>
 <translation id="3439153939049640737">Lejo gjithmonë që <ph name="HOST" /> të qaset te mikrofoni yt</translation>
 <translation id="3439970425423980614">Po hap PDF-në në "Pamje paraprake"</translation>
@@ -3621,7 +3619,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5511379779384092781">Tepër i vogël</translation>
 <translation id="5511823366942919280">Je i sigurt që dëshiron ta konfigurosh këtë pajisje si një "Peshkaqen"?</translation>
 <translation id="5512653252560939721">Certifikata e përdoruesit duhet të jetë e mbështetur nga hardueri.</translation>
-<translation id="5515923816438946203">Zgjidh se çfarë shikon ti në ekranin tënd</translation>
 <translation id="5517304475148761050">Ky aplikacion kërkon qasje te "Dyqani i Play"</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Printeri po shtohet te llogaria jote. Kjo mund të zgjasë pak...</translation>
@@ -3736,6 +3733,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5642508497713047">Nënshkrues CRL</translation>
 <translation id="5643321261065707929">Rrjet me matje</translation>
 <translation id="5643620609347735571">Pastro dhe vazhdo</translation>
+<translation id="5646376287012673985">Vendndodhja</translation>
 <translation id="5646558797914161501">Biznesmen</translation>
 <translation id="5648166631817621825">7 ditët e fundit</translation>
 <translation id="5649053991847567735">Shkarkimet automatike</translation>
@@ -6387,7 +6385,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8952831374766033534">Opsioni i konfigurimit nuk mbështetet: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Gjatë karikimit</translation>
 <translation id="895347679606913382">Po niset...</translation>
-<translation id="8957762313041272117">Titra në çast</translation>
 <translation id="895944840846194039">Memoria e JavaScript</translation>
 <translation id="8962083179518285172">Fshih detajet</translation>
 <translation id="8962918469425892674">Kjo faqe përdor sensorët e lëvizjes ose të dritës.</translation>

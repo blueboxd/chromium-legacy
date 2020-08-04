@@ -2,6 +2,7 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -271,7 +272,8 @@ class IntensiveWakeUpThrottlingTest : public ThrottlingTestBase {
     // Tasks are not throttled beyond the default background throttling behavior
     // nor do they get to run more often.
     Vector<String> expected_ouput(
-        kTimeUntilNextCheck.IntDiv(kDefaultThrottledWakeUpInterval),
+        base::ClampFloor<wtf_size_t>(kTimeUntilNextCheck /
+                                     kDefaultThrottledWakeUpInterval),
         "called onTimer");
     EXPECT_THAT(ConsoleMessages(), expected_ouput);
   }

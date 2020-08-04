@@ -46,10 +46,39 @@ struct CHROMEOS_EXPORT ParsedPrinter {
   base::Optional<PpdProvider::Restrictions> restrictions;
 };
 
+// A single leaf value parsed from a forward index.
+struct CHROMEOS_EXPORT ParsedIndexLeaf {
+  ParsedIndexLeaf();
+  ~ParsedIndexLeaf();
+  ParsedIndexLeaf(const ParsedIndexLeaf&);
+  ParsedIndexLeaf& operator=(const ParsedIndexLeaf&);
+
+  std::string ppd_basename;
+  base::Optional<PpdProvider::Restrictions> restrictions;
+};
+
+// A collection of values parsed from a forward index.
+// Corresponds to one effective-make-and-model string.
+struct CHROMEOS_EXPORT ParsedIndexValues {
+  ParsedIndexValues();
+  ~ParsedIndexValues();
+  ParsedIndexValues(const ParsedIndexValues&);
+  ParsedIndexValues& operator=(const ParsedIndexValues&);
+
+  std::vector<ParsedIndexLeaf> values;
+};
+
 // Maps manufacturer names to basenames of printers metadata.
 using ParsedManufacturers = base::flat_map<std::string, std::string>;
 
 using ParsedPrinters = std::vector<ParsedPrinter>;
+
+// *  Keys are effective-make-and-model strings.
+// *  Values collect information corresponding to each
+//    effective-make-and-model string - chiefly information about
+//    individual PPDs.
+// *  Googlers, see also: go/cros-printing:ppd-metadata#index
+using ParsedIndex = base::flat_map<std::string, ParsedIndexValues>;
 
 // Keyed on effective-make-and-model strings.
 using ParsedReverseIndex = base::flat_map<std::string, ReverseIndexLeaf>;
@@ -65,6 +94,10 @@ CHROMEOS_EXPORT base::Optional<ParsedManufacturers> ParseManufacturers(
 // Parses |printers_json| and returns the parsed map type.
 CHROMEOS_EXPORT base::Optional<ParsedPrinters> ParsePrinters(
     base::StringPiece printers_json);
+
+// Parses |forward_index_json| and returns the parsed map type.
+CHROMEOS_EXPORT base::Optional<ParsedIndex> ParseForwardIndex(
+    base::StringPiece forward_index_json);
 
 // Parses |reverse_index_json| and returns the parsed map type.
 CHROMEOS_EXPORT base::Optional<ParsedReverseIndex> ParseReverseIndex(

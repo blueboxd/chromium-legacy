@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> 希望与以下所选设备配对：</translation>
 <translation id="2000419248597011803">将一些 Cookie 以及地址栏和搜索框中的搜索字词发送给您的默认搜索引擎</translation>
 <translation id="2002537628803770967">Google Pay 中存储的信用卡和地址信息</translation>
-<translation id="2012973609889389923">网站加载速度很快</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 个文件}other{# 个文件}}</translation>
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
 <translation id="2021896219286479412">全屏网站控件</translation>
@@ -220,6 +219,7 @@
 <translation id="2744248271121720757">点按某个字词可立即开始搜索或查看相关操作</translation>
 <translation id="2760989362628427051">在设备开启深色主题背景或省电模式时启用深色主题背景</translation>
 <translation id="2762000892062317888">刚刚</translation>
+<translation id="2771869497727323769">无法为所选文本创建链接。请在应用中分享网页链接。</translation>
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失败</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
@@ -460,6 +460,7 @@
 <translation id="4732120983431207637">堆栈展开程序</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA 错误：<ph name="VIOLATED_URL" /> 上发生了 <ph name="ERROR_CODE" /> 错误</translation>
 <translation id="4749960740855309258">打开新标签页</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 项下载。}other{已完成 # 项下载。}}</translation>
@@ -509,6 +510,7 @@
 <translation id="5040262127954254034">隐私权</translation>
 <translation id="5087580092889165836">添加新卡</translation>
 <translation id="509429900233858213">出现错误。</translation>
+<translation id="5100748015044654621">请选择一款应用以从中分享指向突出显示的文本的链接</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5123685120097942451">无痕式标签页</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
@@ -535,6 +537,7 @@
 <translation id="5304593522240415983">此字段不能为空</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="5317780077021120954">保存</translation>
+<translation id="5319359161174645648">Google 推荐使用 Chrome</translation>
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5342314432463739672">权限请求</translation>
@@ -637,7 +640,7 @@
 <translation id="6036057147555329831">额外的 ICU</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="604124094241169006">自动</translation>
-<translation id="6042308850641462728">更多</translation>
+<translation id="6042308850641462728">展开</translation>
 <translation id="604996488070107836">出现未知错误，未能下载 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">在此处控制您的报道和活动</translation>
@@ -975,6 +978,7 @@
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="8569404424186215731">自 <ph name="DATE" />以来</translation>
 <translation id="8571213806525832805">近 4 周</translation>
+<translation id="8572344201470131220">图片已复制</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8616006591992756292">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
@@ -1017,6 +1021,7 @@
 <translation id="8988028529677883095">使用手机作为安全密钥</translation>
 <translation id="8990209962746788689">无法创建二维码</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
+<translation id="8996847606757455498">另选一个提供商</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="9028914725102941583">开启同步功能以跨设备分享内容</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>

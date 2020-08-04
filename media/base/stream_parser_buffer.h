@@ -62,9 +62,8 @@ class DecodeTimestamp {
     return DecodeTimestamp(ts_ - rhs);
   }
 
-  int64_t operator/(base::TimeDelta rhs) const = delete;
+  double operator/(base::TimeDelta rhs) const { return ts_ / rhs; }
   int64_t IntDiv(base::TimeDelta rhs) const { return ts_.IntDiv(rhs); }
-  double FltDiv(base::TimeDelta rhs) const { return ts_.FltDiv(rhs); }
 
   static DecodeTimestamp FromSecondsD(double seconds) {
     return DecodeTimestamp(base::TimeDelta::FromSecondsD(seconds));

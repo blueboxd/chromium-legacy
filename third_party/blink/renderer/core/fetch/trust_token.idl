@@ -21,14 +21,14 @@ dictionary TrustToken {
 
   // --- Parameters only for request signing
   // The following parameters are ignored unless |type| is "send-srr":
-  // 1. |issuer|
+  // 1. |issuers|
   // 2. |additionalSignedHeaders|
   // 3. |includeTimestampHeader|
   // 4. |signRequestData|
   // 5. |additionalSigningData|
   //
-  // Additionally, |issuer| is required when |type| is "send-srr".
-  USVString issuer;
+  // Additionally, |issuers| must be nonempty when |type| is "send-srr".
+  sequence<USVString> issuers;
   sequence<USVString> additionalSignedHeaders;
   boolean includeTimestampHeader = false;
   SignRequestData signRequestData = "omit";

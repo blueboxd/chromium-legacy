@@ -323,15 +323,15 @@ void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
     pulse_opacity_ =
         kPulseMinOpacity +
         (kPulseMaxOpacity - kPulseMinOpacity) *
-            (time - kPulseOpacityShowBeginTime)
-                .FltDiv(kPulseOpacityShowEndTime - kPulseOpacityShowBeginTime);
+            (time - kPulseOpacityShowBeginTime) /
+            (kPulseOpacityShowEndTime - kPulseOpacityShowBeginTime);
   } else if (time > kPulseOpacityHideBeginTime &&
              time <= kPulseOpacityHideEndTime) {
     pulse_opacity_ =
         kPulseMaxOpacity -
         (kPulseMaxOpacity - kPulseMinOpacity) *
-            (time - kPulseOpacityHideBeginTime)
-                .FltDiv(kPulseOpacityHideEndTime - kPulseOpacityHideBeginTime);
+            (time - kPulseOpacityHideBeginTime) /
+            (kPulseOpacityHideEndTime - kPulseOpacityHideBeginTime);
   }
 
   // Update pulse radius.

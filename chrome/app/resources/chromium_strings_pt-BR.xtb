@@ -209,6 +209,7 @@
 <translation id="7975919845073681630">Como esta é uma instalação secundária do Chromium, ele não pode se tornar seu navegador padrão.</translation>
 <translation id="7979877361127045932">Esconder no menu do Chromium</translation>
 <translation id="8013436988911883588">Assim que o Chromium tiver acesso, os sites poderão solicitar acesso.</translation>
+<translation id="8022442821873033760">Configure seu novo Chromium Space</translation>
 <translation id="81770708095080097">Esse arquivo é perigoso, por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="8248265253516264921">Se uma imagem não tiver uma descrição útil, o Chromium tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições. É possível desativar essa opção nas configurações a qualquer momento.</translation>
 <translation id="8266560134891435528">O Chromium não pode verificar suas senhas porque a conta não está conectada</translation>
@@ -243,7 +244,7 @@
 <translation id="91086099826398415">Abrir link em nova &amp;guia do Chromium</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="9158494823179993217">O administrador do seu sistema configurou o Chromium para abrir um navegador alternativo ao acessar <ph name="TARGET_URL_HOSTNAME" />.</translation>
-<translation id="9164845895615421500">O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: pouco tempo atrás.</translation>
+<translation id="9164845895615421500">O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: há alguns segundos.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9191317372410544836">Use os Chromium Spaces para organizar sua navegação neste dispositivo</translation>
 <translation id="93478295209880648">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com o Windows XP ou Windows Vista</translation>

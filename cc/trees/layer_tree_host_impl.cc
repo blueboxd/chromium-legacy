@@ -2117,15 +2117,21 @@ void LayerTreeHostImpl::ReclaimResources(
   if (resource_pool_) {
     if (resource_pool_->memory_usage_bytes()) {
       const size_t kMegabyte = 1024 * 1024;
-
       // This is a good time to log memory usage. A chunk of work has just
       // completed but none of the memory used for that work has likely been
       // freed.
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Renderer4.ResourcePoolMemoryUsage",
+      std::string client_suffix;
+      if (settings_.commit_to_active_tree) {
+        client_suffix = "Browser";
+      } else if (settings_.is_layer_tree_for_subframe) {
+        client_suffix = "OOPIF";
+      } else {
+        client_suffix = "Renderer";
+      }
+      base::UmaHistogramMemoryMB(
+          "Compositing.ResourcePoolMemoryUsage." + client_suffix,
           static_cast<int>(resource_pool_->memory_usage_bytes() / kMegabyte));
     }
-
     resource_pool_->ReduceResourceUsage();
   }
 

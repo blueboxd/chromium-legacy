@@ -109,7 +109,7 @@ struct TrustTokenParams {
   // client-provided data).
   TrustTokenSignRequestData sign_request_data = kOmit;
   bool include_timestamp_header = false;
-  url.mojom.Origin? issuer;
+  array<url.mojom.Origin> issuers;
   array<string> additional_signed_headers;
 
   // "possibly_unsafe_additional_signing_data", which stores the request's

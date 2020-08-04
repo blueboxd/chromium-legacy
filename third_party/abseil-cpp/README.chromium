@@ -20,21 +20,14 @@ How to update Abseil:
 
 2. Copy the content of the Abseil git repo to //third_party/abseil-cpp.
 
-3. From //third_party/abseil-cpp/ launch ./rename_annotations.sh.
-   This script will rewrite dynamic_annotations and thread_annotations
-   macros and function inside Abseil in order to avoid ODR violations
-   and macro clashing with Chromium
-   (see: https://github.com/abseil/abseil-cpp/issues/122).
+3. From your source root run third_party/abseil-cpp/generate_def_files.py to
+   regenerate Windows symbol definition files.
 
 Local Modifications:
 
 * absl/copts.bzl has been translated to //third_party/absl-cpp/BUILD.gn. Both
   files contain lists of compiler flags in order to reduce duplication.
 
-* All the BUILD.bazel files has been translated to BUILD.gn files.
-
-* Functions and macros in absl/base/dynamic_annotations.{h,cc} and
-  absl/base/thread_annotations.h have been renamed to avoid ODR
-  violations and macro clashes with Chromium (see step 3).
+* All the BUILD.bazel files have been translated to BUILD.gn files.
 
 * Patches from //third_party/abseil-cpp/patches have been applied.

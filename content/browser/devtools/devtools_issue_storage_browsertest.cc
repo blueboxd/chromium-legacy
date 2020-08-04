@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/protocol/audits.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
@@ -13,12 +15,14 @@
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -32,10 +36,12 @@ class DevToolsIssueStorageBrowserTest : public DevToolsProtocolTest {
   }
 
  protected:
+  WebContentsImpl* web_contents() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
   RenderFrameHostImpl* main_frame_host() {
-    WebContentsImpl* web_contents_impl =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-    return web_contents_impl->GetFrameTree()->GetMainFrame();
+    return web_contents()->GetFrameTree()->GetMainFrame();
   }
 };
 
@@ -143,6 +149,58 @@ IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageBrowserTest,
 
   // 5) Verify that we haven't received any notifications.
   ASSERT_TRUE(notifications_.empty());
+}
+
+class DevToolsIssueStorageWithBackForwardCacheBrowserTest
+    : public DevToolsIssueStorageBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
+        enabled_features;
+
+    // Enable BackForwardCache, omitting this feature results in a crash.
+    std::map<std::string, std::string> params = {
+        {"TimeToLiveInBackForwardCacheInSeconds", "3600"}};
+    enabled_features.emplace_back(features::kBackForwardCache, params);
+    feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageWithBackForwardCacheBrowserTest,
+                       BackForwardCacheGoBack) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = main_frame_host();
+  RenderFrameDeletedObserver rfh_a_deleted(rfh_a);
+
+  // 2) Report an empty SameSite cookie issue.
+  ReportDummyIssue(rfh_a);
+
+  // 3) Navigate to B.
+  //    The previous test verifies that the issue storage is cleared at
+  //    this point.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 4) Go back to A and expect that it is restored from the back-forward cache.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(rfh_a_deleted.deleted());
+  EXPECT_EQ(main_frame_host(), rfh_a);
+
+  // 5) Open DevTools and enable Audits domain.
+  Attach();
+  SendCommand("Audits.enable", std::make_unique<base::DictionaryValue>());
+
+  // 6) Verify we have received the SameSite issue on the main target.
+  WaitForNotification("Audits.issueAdded", true);
 }
 
 }  // namespace content

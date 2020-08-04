@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Filer</translation>
 <translation id="1296911687402551044">Fäst vald flik</translation>
 <translation id="1297175357211070620">Destination</translation>
-<translation id="1297646507722131691">Vi rekommenderar att du säkerhetskopierar filer vid uppgraderingen för att förebygga dataförlust om uppgraderingen inte går att slutföra. Linux (beta) avslutas när du startar uppgraderingen. Spara öppna filer innan du fortsätter.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> kräver att enhetens identitet verifieras av Google för att avgöra om enheten är kvalificerad för förbättrad uppspelning av skyddat innehåll.</translation>
 <translation id="1300806585489372370"><ph name="BEGIN_LINK" />Aktivera identifierare<ph name="END_LINK" /> om du vill ändra den här inställningen</translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> har redigeringsbehörighet till följande filer</translation>
@@ -1981,7 +1980,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3435738964857648380">Säkerhet</translation>
 <translation id="343578350365773421">Slut på papper</translation>
 <translation id="3435896845095436175">Aktivera</translation>
-<translation id="3436642683618870087">Med Live Caption textas tal som identifieras vid uppspelning i Chrome automatiskt.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Låt alltid <ph name="HOST" /> använda din mikrofon</translation>
 <translation id="3439970425423980614">Öppnar PDF i förhandsgranskning</translation>
@@ -2351,7 +2349,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3843464315703645664">Tillagd på den interna godkännandelistan</translation>
 <translation id="3846116211488856547">Skaffa verktyg för att utveckla webbplatser, Android-appar och mycket annat. <ph name="DOWNLOAD_SIZE" /> data laddas ned när Linux installeras.</translation>
 <translation id="3847319713229060696">Hjälp till att förbättra säkerheten på webben för alla</translation>
-<translation id="385051799172605136">Bakåt</translation>
+<translation id="385051799172605136">Föregående</translation>
 <translation id="3850914401008572843"><ph name="ORIGIN" /> kan inte öppna den här mappen eftersom den innehåller systemfiler</translation>
 <translation id="3851428669031642514">Läs in osäkra skript</translation>
 <translation id="3854599674806204102">Välj ett alternativ</translation>
@@ -3396,7 +3394,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5233231016133573565">Process-ID</translation>
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="5233736638227740678">K&amp;listra in</translation>
-<translation id="5234764350956374838">Ta bort permanent</translation>
+<translation id="5234764350956374838">Stäng</translation>
 <translation id="5235050375939235066">Vill du avinstallera appen?</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5235750401727657667">Ersätt den aktuella sidan när du öppnar en ny flik</translation>
@@ -3624,7 +3622,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5511379779384092781">Extra liten</translation>
 <translation id="5511823366942919280">Vill du ställa in enheten som en Shark?</translation>
 <translation id="5512653252560939721">Användarcertifikat måste vara maskinvarustödda.</translation>
-<translation id="5515923816438946203">Välj vad som ska visas på skärmen</translation>
 <translation id="5517304475148761050">Den här appen kräver åtkomst till Play Butik</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Skrivaren läggs till i kontot. Det kan ta en stund ...</translation>
@@ -3739,6 +3736,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5642508497713047">CRL-signerare</translation>
 <translation id="5643321261065707929">Nätverk med datapriser</translation>
 <translation id="5643620609347735571">Rensa och fortsätt</translation>
+<translation id="5646376287012673985">Plats</translation>
 <translation id="5646558797914161501">Affärsman</translation>
 <translation id="5648166631817621825">Senaste sju dagarna</translation>
 <translation id="5649053991847567735">Automatiska nedladdningar</translation>
@@ -4360,7 +4358,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6429384232893414837">Uppdateringsfel</translation>
 <translation id="6430814529589430811">Base64-kodad ASCII, enstaka certifikat</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> konfigurerar automatiska uppdateringar för alla användare på den här datorn.</translation>
-<translation id="6434309073475700221">Kasta</translation>
+<translation id="6434309073475700221">Släng</translation>
 <translation id="6434325376267409267">Enheten måste uppdateras innan du kan använda <ph name="APP_NAME" />.</translation>
 <translation id="6436164536244065364">Visa i Web Store</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – spelar upp ljud</translation>
@@ -5351,7 +5349,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7696063401938172191">Gör så här på din <ph name="PHONE_NAME" />:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 objekt i listan med bokmärken}other{# objekt i listan med bokmärken}}</translation>
 <translation id="7699968112832915395">Det gick inte att lägga till kontot</translation>
-<translation id="7701040980221191251">Inget</translation>
+<translation id="7701040980221191251">Inga</translation>
 <translation id="770157826141786566">Sista dagen för att returnera enheten har passerat.</translation>
 <translation id="7701869757853594372">USER-handtag</translation>
 <translation id="7701928712056789451">Dessa objekt kan vara skadliga</translation>
@@ -6392,7 +6390,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8952831374766033534">Konfigurationsalternativet stöds inte: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Vid laddning</translation>
 <translation id="895347679606913382">Startar...</translation>
-<translation id="8957762313041272117">Live Caption</translation>
 <translation id="895944840846194039">JavaScript-minne</translation>
 <translation id="8962083179518285172">Dölj detaljer</translation>
 <translation id="8962918469425892674">Den här webbplatsen använder enhetens rörelse- eller ljussensor.</translation>
@@ -6621,7 +6618,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="939736085109172342">Ny mapp</translation>
 <translation id="941070664607309480">Klicka här om du vill göra dig själv synlig så att den kan dela med dig</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> delar ljud och en flik från Chrome.</translation>
-<translation id="945522503751344254">Skicka synpunkter</translation>
+<translation id="945522503751344254">Skicka feedback</translation>
 <translation id="947329552760389097">&amp;Inspektera element</translation>
 <translation id="951991426597076286">Godkänn inte</translation>
 <translation id="952992212772159698">Inte aktiverat</translation>

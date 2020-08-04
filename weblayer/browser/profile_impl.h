@@ -158,8 +158,6 @@ class ProfileImpl : public Profile {
 
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
-  bool basic_safe_browsing_enabled_ = true;
-
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_profile_;
 #endif

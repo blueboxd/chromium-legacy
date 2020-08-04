@@ -131,4 +131,14 @@ void LayoutNGFieldset::InvalidatePaint(
   LayoutNGBlockFlow::InvalidatePaint(context);
 }
 
+bool LayoutNGFieldset::BackgroundIsKnownToBeOpaqueInRect(
+    const PhysicalRect& local_rect) const {
+  // If the field set has a legend, then it probably does not completely fill
+  // its background.
+  if (LayoutFieldset::FindInFlowLegend(*this))
+    return false;
+
+  return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
+}
+
 }  // namespace blink

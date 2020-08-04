@@ -399,6 +399,9 @@ include_rules = [
   "+storage/browser",
   "+storage/common",
 
+  # chrome/browser/ui/views/ is an implementation, not a public interface.
+  # Parent directories should not depend on it directly.
+  # TODO(crbug.com/1112591): Remove the exceptions below.
   "-chrome/browser/ui/views",
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",

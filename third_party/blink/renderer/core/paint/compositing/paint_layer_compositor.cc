@@ -107,8 +107,11 @@ void PaintLayerCompositor::UpdateInputsIfNeededRecursive(
 
 void PaintLayerCompositor::UpdateInputsIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state) {
-  if (layout_view_->GetFrameView()->ShouldThrottleRendering())
+  if (layout_view_->GetFrameView()->ShouldThrottleRendering()) {
     return;
+  }
+
+  Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingInputsUpdate);
 
   for (Frame* child =
            layout_view_->GetFrameView()->GetFrame().Tree().FirstChild();
@@ -144,8 +147,6 @@ void PaintLayerCompositor::UpdateInputsIfNeededRecursiveInternal(
 
   layout_view_->CommitPendingSelection();
 
-  Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingInputsUpdate);
-
   if (pending_update_type_ >= kCompositingUpdateAfterCompositingInputChange) {
     CompositingInputsUpdater updater(RootLayer(), GetCompositingInputsRoot());
     updater.Update();
@@ -175,6 +176,8 @@ void PaintLayerCompositor::UpdateInputsIfNeededRecursiveInternal(
 
 void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursive(
     DocumentLifecycle::LifecycleState target_state) {
+  DCHECK_GE(target_state, DocumentLifecycle::kCompositingAssignmentsClean);
+
   CompositingReasonsStats compositing_reasons_stats;
   UpdateAssignmentsIfNeededRecursiveInternal(target_state,
                                              compositing_reasons_stats);
@@ -198,11 +201,13 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursive(
 void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
+  if (target_state == DocumentLifecycle::kCompositingInputsClean)
+    return;
+
   if (layout_view_->GetFrameView()->ShouldThrottleRendering())
     return;
 
-  if (target_state == DocumentLifecycle::kCompositingInputsClean)
-    return;
+  Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingAssignmentsUpdate);
 
   LocalFrameView* view = layout_view_->GetFrameView();
   view->ResetNeedsForcedCompositingUpdate();
@@ -235,8 +240,11 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursiveInternal(
 
   UpdateAssignmentsIfNeeded(target_state, compositing_reasons_stats);
 
+  Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingAssignmentsClean);
+
 #if DCHECK_IS_ON()
-  DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
+  DCHECK_EQ(Lifecycle().GetState(),
+            DocumentLifecycle::kCompositingAssignmentsClean);
   AssertNoUnresolvedDirtyBits();
   for (Frame* child =
            layout_view_->GetFrameView()->GetFrame().Tree().FirstChild();
@@ -269,8 +277,6 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
 
   if (layout_view_->DocumentBeingDestroyed())
     return;
-
-  Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 
 #if DCHECK_IS_ON()
@@ -286,9 +292,7 @@ static void AssertWholeTreeNotComposited(const PaintLayer& paint_layer) {
 void PaintLayerCompositor::UpdateAssignmentsIfNeeded(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
-  DCHECK(target_state >= DocumentLifecycle::kCompositingClean);
-
-  Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingUpdate);
+  DCHECK(target_state >= DocumentLifecycle::kCompositingAssignmentsClean);
 
   CompositingUpdateType update_type = pending_update_type_;
   pending_update_type_ = kCompositingUpdateNone;
@@ -297,7 +301,6 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeeded(
            .GetSettings()
            ->GetAcceleratedCompositingEnabled() ||
       update_type == kCompositingUpdateNone) {
-    Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
     return;
   }
 
@@ -363,12 +366,8 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeeded(
   }
 
   for (auto* layer : layers_needing_paint_invalidation) {
-    // We need to repaint all containing paint subsequences, because parts of
-    // them may have changed composited layer backings.
     PaintInvalidationOnCompositingChange(layer);
   }
-
-  Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
 }
 
 static void RestartAnimationOnCompositor(const LayoutObject& layout_object) {
@@ -455,11 +454,6 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
     return;
 
   layer->SetNeedsRepaint();
-  // We need to cause CompositingLayerPropertyUpdater::Update to run on
-  // |layer|. This currently happens in the PrePaintTreeWalk, which is
-  // triggered by SetNeedsPaintPropertyUpdate(); that is the reason for
-  // calling SetNeedsPaintPropertyUpdate().
-  layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   // We need to check for raster invalidations due to content changing
   // composited layer backings.
   DisableCompositingQueryAsserts compositing_disabler;

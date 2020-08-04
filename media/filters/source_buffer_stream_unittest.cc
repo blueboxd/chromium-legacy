@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -305,8 +306,9 @@ class SourceBufferStreamTest : public testing::Test {
         }
       }
 
-      EXPECT_EQ(buffer->GetDecodeTimestamp().IntDiv(frame_duration_),
-                current_position);
+      EXPECT_EQ(
+          base::ClampFloor(buffer->GetDecodeTimestamp() / frame_duration_),
+          current_position);
     }
 
     EXPECT_EQ(ending_position + 1, current_position);

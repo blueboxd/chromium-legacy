@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">ໄຟລ໌</translation>
 <translation id="1296911687402551044">ປັກໝຸດແຖບທີ່ເລືອກ</translation>
 <translation id="1297175357211070620">​ປາຍ​ທາງ</translation>
-<translation id="1297646507722131691">ຂໍແນະນຳໃຫ້ສຳຮອງຂໍ້ມູນໄຟລ໌ໄວ້ເປັນສ່ວນໜຶ່ງຂອງການອັບເກຣດນີ້ເພື່ອປ້ອງກັນການສູນເສຍຂໍ້ມູນໃນກໍລະນີທີ່ການອັບເກຣດບໍ່ສຳເລັດ. ການເລີ່ມການອັບເກຣດຈະເຮັດໃຫ້ Linux (ເບຕ້າ) ປິດເຄື່ອງ. ກະລຸນາບັນທຶກໄຟລ໌ທີ່ເປີດກ່ອນທີ່ຈະດຳເນີນຕໍ່.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> ຕ້ອງການໃຫ້ມີການຢັ້ງຢືນຕົວຕົນອຸປະກອນຂອງທ່ານໂດຍ Google ເພື່ອກຳນົດການມີສິດສຳລັບການປັບປຸງການຫຼິ້ນເນື້ອຫາທີ່ມີການປົກປ້ອງ.</translation>
 <translation id="1300806585489372370">ເພື່ອປ່ຽນການຕັ້ງຄ່ານີ້, ກ່ອນອື່ນກະລຸນາ <ph name="BEGIN_LINK" />ເປີດຕົວລະບຸ<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> ສາມາດແກ້ໄຂໄຟລ໌ຕໍ່ໄປນີ້ໄດ້</translation>
@@ -1979,7 +1978,6 @@
 <translation id="3435738964857648380">ຄວາມ​ປອດ​ໄພ</translation>
 <translation id="343578350365773421">ເຈ້ຍໝົດ</translation>
 <translation id="3435896845095436175">ເປີດໃຊ້ງານ</translation>
-<translation id="3436642683618870087">ຄຳບັນຍາຍສົດກວດຫາຄຳເວົ້າໃນສື່ ແລ້ວສ້າງຄຳບັນຍາຍໂດຍອັດຕະໂນມັດສຳລັບການຫຼິ້ນສື່ທັງໝົດໃນ Chrome.</translation>
 <translation id="3438633801274389918">ນິນຈາ</translation>
 <translation id="3439153939049640737">​ອະ​ນຸ​ຍາດ​ໃຫ້ <ph name="HOST" /> ເຂົ້າຫາ​ໄມໂຄຣໂຟນ​ຂອງ​ທ່ານຢູ່ສະເໝີ</translation>
 <translation id="3439970425423980614">ການ​ເປີດ PDF ຢູ່ໃນເບິ່ງຕົວຢ່າງກ່ອນ</translation>
@@ -3622,7 +3620,6 @@
 <translation id="5511379779384092781">ນ້ອຍພິເສດ</translation>
 <translation id="5511823366942919280">ທ່ານແນ່ໃຈບໍ, ວ່າທ່ານຕ້ອງການຕັ້ງອຸປະກອນນີ້ເປັນ"Shark"?</translation>
 <translation id="5512653252560939721">ໃບຢັ້ງຢືນຜູ້ໃຊ້ຕ້ອງສໍາຮອງເປັນຮາດແວ.</translation>
-<translation id="5515923816438946203">ເລືອກສິ່ງທີ່ທ່ານເຫັນໃນໜ້າຈໍຂອງທ່ານ</translation>
 <translation id="5517304475148761050">ແອັບນີ້ຈໍາເປັນຕ້ອງເຂົ້າເຖິງ Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">ກໍາລັງເພີ່ມເຄື່ອງໃສ່ບັນ​ຊີ​ຂອງ​ທ່ານ - ອັນນີ້​ອາດ​ຈະ​ໃຊ້​ເວ​ລາຈັກໜ້ອຍ...</translation>
@@ -3737,6 +3734,7 @@
 <translation id="5642508497713047">ຜູ້ເຊັນ CRL</translation>
 <translation id="5643321261065707929">ເຄືອຂ່າຍມີການວັດແທກປະລິມານອິນເຕີເນັດ</translation>
 <translation id="5643620609347735571">ລຶບລ້າງ ແລະ ສືບຕໍ່</translation>
+<translation id="5646376287012673985">ສະ​ຖານ​ທີ່</translation>
 <translation id="5646558797914161501">ນັກທຸລະກິດ</translation>
 <translation id="5648166631817621825">7 ມື້ທີ່ຜ່ານມາ</translation>
 <translation id="5649053991847567735">ດາວ​ໂຫຼດ​ອັດ​ຕະ​ໂນ​ມັດ</translation>
@@ -6388,7 +6386,6 @@
 <translation id="8952831374766033534">ບໍ່ຮອງຮັບຕົວເລືອກການກຳນົດຄ່າ: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">ໃນຂະນະທີ່ສາກຢູ່</translation>
 <translation id="895347679606913382">ກໍາລັງເລີ່ມຕົ້ນ...</translation>
-<translation id="8957762313041272117">ຄຳບັນຍາຍສົດ</translation>
 <translation id="895944840846194039">ຄວາມ​ຈໍາ JavaScript</translation>
 <translation id="8962083179518285172">ເຊື່ອງ​ລາຍ​ລະ​ອຽດ</translation>
 <translation id="8962918469425892674">ເວັບໄຊນີ້ກຳລັງໃຊ້ເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ ຫຼື ແສງ.</translation>

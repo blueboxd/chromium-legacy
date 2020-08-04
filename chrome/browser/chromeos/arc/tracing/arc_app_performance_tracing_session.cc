@@ -133,7 +133,7 @@ void ArcAppPerformanceTracingSession::HandleCommit(
 
   if (detect_idles_) {
     const uint64_t display_frames_passed =
-        base::ClampRound<uint64_t>(frame_delta.FltDiv(kTargetFrameTime));
+        base::ClampRound<uint64_t>(frame_delta / kTargetFrameTime);
     if (display_frames_passed >= kIdleThresholdFrames) {
       // Idle is detected, try the next time.
       Stop();
@@ -175,7 +175,7 @@ void ArcAppPerformanceTracingSession::Analyze(base::TimeDelta tracing_period) {
     // fractional part of target frame interval |kTargetFrameTime| and is less
     // or equal half of it.
     const uint64_t display_frames_passed =
-        base::ClampRound<uint64_t>(frame_delta.FltDiv(kTargetFrameTime));
+        base::ClampRound<uint64_t>(frame_delta / kTargetFrameTime);
     // Calculate difference from the ideal commit time, that should happen with
     // equal delay for each display frame.
     const base::TimeDelta vsync_error =

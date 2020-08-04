@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/native_library.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
@@ -849,12 +850,14 @@ void GpuWatchdogThreadImplV2::WatchedThreadGetsExtraTimeoutHistogram(
 }
 
 bool GpuWatchdogThreadImplV2::WithinOneMinFromPowerResumed() {
-  size_t count = base::TimeDelta::FromMinutes(1).IntDiv(watchdog_timeout_);
+  size_t count = base::ClampFloor<size_t>(base::TimeDelta::FromMinutes(1) /
+                                          watchdog_timeout_);
   return power_resumed_event_ && num_of_timeout_after_power_resume_ <= count;
 }
 
 bool GpuWatchdogThreadImplV2::WithinOneMinFromForegrounded() {
-  size_t count = base::TimeDelta::FromMinutes(1).IntDiv(watchdog_timeout_);
+  size_t count = base::ClampFloor<size_t>(base::TimeDelta::FromMinutes(1) /
+                                          watchdog_timeout_);
   return foregrounded_event_ && num_of_timeout_after_foregrounded_ <= count;
 }
 

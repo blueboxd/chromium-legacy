@@ -197,14 +197,19 @@ void HttpssvcMetrics::RecordIntegrityCommonMetrics() {
                        non_integrity_resolve_times_.end());
   DCHECK(slowest_non_integrity_resolve != non_integrity_resolve_times_.end());
 
+  // It's possible to get here with a zero resolve time in tests.  Avoid
+  // divide-by-zero below by returning early; this data point is invalid anyway.
+  if (slowest_non_integrity_resolve->is_zero())
+    return;
+
   // Compute a percentage showing how much larger the INTEGRITY resolve time was
   // compared to the slowest A or AAAA query.
   //
   // Computation happens on TimeDelta objects, which use CheckedNumeric. This
   // will crash if the system clock leaps forward several hundred millennia
   // (numeric_limits<int64_t>::max() microseconds ~= 292,000 years).
-  const int64_t resolve_time_percent =
-      (100 * *integrity_resolve_time_).IntDiv(*slowest_non_integrity_resolve);
+  const int64_t resolve_time_percent = base::ClampFloor<int64_t>(
+      *integrity_resolve_time_ / *slowest_non_integrity_resolve * 100);
 
   // Scale the value of |resolve_time_percent| by dividing by |kPercentScale|.
   // Sample values are bounded between 1 and 20. A recorded sample of 10 means

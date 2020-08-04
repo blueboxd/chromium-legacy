@@ -186,6 +186,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       static_inline_edge_(InlineEdge::kInlineStart),
       static_block_edge_(BlockEdge::kBlockStart),
       needs_paint_offset_translation_for_compositing_(false),
+      needs_check_raster_invalidation_(false),
 #if DCHECK_IS_ON()
       layer_list_mutation_allowed_(true),
 #endif
@@ -1030,7 +1031,7 @@ PaintLayer::EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const {
 
 PaintLayer* PaintLayer::EnclosingDirectlyCompositableLayer(
     IncludeSelfOrNot include_self_or_not) const {
-  DCHECK(IsAllowedToQueryCompositingState());
+  DCHECK(IsAllowedToQueryCompositingInputs());
   if (include_self_or_not == kIncludeSelf && CanBeCompositedForDirectReasons())
     return const_cast<PaintLayer*>(this);
 
@@ -1052,6 +1053,16 @@ void PaintLayer::SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags) {
   /// removal of CompositingInputsUpdater.
   if (mark_ancestor_flags)
     MarkAncestorChainForFlagsUpdate(NeedsDescendantDependentUpdate);
+}
+
+void PaintLayer::SetNeedsCheckRasterInvalidation() {
+  DCHECK_EQ(GetLayoutObject().GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kInPrePaint);
+  needs_check_raster_invalidation_ = true;
+  // We need to mark |this| as needing layer assignment also, because
+  // CompositingLayerAssigner is where we transfer the raster invalidation
+  // checking bit from PaintLayer to GraphicsLayer.
+  SetNeedsCompositingLayerAssignment();
 }
 
 void PaintLayer::SetNeedsVisualOverflowRecalc() {
@@ -1903,7 +1914,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                      bool check_resizer_only) {
   const LayoutObject& layout_object = GetLayoutObject();
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
-            DocumentLifecycle::kCompositingClean);
+            DocumentLifecycle::kPrePaintClean);
 
   if (!IsSelfPaintingLayer() && !HasSelfPaintingLayerDescendant())
     return nullptr;
@@ -2457,7 +2468,10 @@ void PaintLayer::UpdateFilterReferenceBox() {
 }
 
 FloatRect PaintLayer::FilterReferenceBox() const {
-  DCHECK(IsAllowedToQueryCompositingState());
+#if DCHECK_IS_ON()
+  DCHECK(GetLayoutObject().GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kInPrePaint);
+#endif
   if (ResourceInfo())
     return ResourceInfo()->FilterReferenceBox();
   return FloatRect();
@@ -2757,7 +2771,10 @@ PhysicalRect PaintLayer::BoundingBoxForCompositingInternal(
 }
 
 CompositingState PaintLayer::GetCompositingState() const {
-  DCHECK(IsAllowedToQueryCompositingState());
+#if DCHECK_IS_ON()
+  DCHECK(IsAllowedToQueryCompositingState())
+      << " " << GetLayoutObject().GetDocument().Lifecycle().ToString();
+#endif
 
   // This is computed procedurally so there is no redundant state variable that
   // can get out of sync from the real actual compositing state.
@@ -2777,8 +2794,18 @@ bool PaintLayer::IsAllowedToQueryCompositingState() const {
   if (g_compositing_query_mode == kCompositingQueriesAreAllowed ||
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return true;
+  if (!GetLayoutObject().GetFrameView()->IsUpdatingLifecycle())
+    return true;
   return GetLayoutObject().GetDocument().Lifecycle().GetState() >=
-         DocumentLifecycle::kInCompositingUpdate;
+         DocumentLifecycle::kInCompositingAssignmentsUpdate;
+}
+
+bool PaintLayer::IsAllowedToQueryCompositingInputs() const {
+  if (g_compositing_query_mode == kCompositingQueriesAreAllowed ||
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return true;
+  return GetLayoutObject().GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kCompositingInputsClean;
 }
 
 CompositedLayerMapping* PaintLayer::GetCompositedLayerMapping() const {

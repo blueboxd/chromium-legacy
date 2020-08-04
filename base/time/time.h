@@ -297,15 +297,11 @@ class BASE_EXPORT TimeDelta {
     return *this = (*this / a);
   }
 
-  constexpr int64_t operator/(TimeDelta a) const = delete;
-  constexpr int64_t IntDiv(TimeDelta a) const {
-    if (!is_inf() && !a.is_zero())
-      return delta_ / a.delta_;
-    return ((delta_ < 0) == (a.delta_ < 0))
-               ? std::numeric_limits<int64_t>::max()
-               : std::numeric_limits<int64_t>::min();
-  }
-  constexpr double FltDiv(TimeDelta a) const {
+  // This does floating-point division. For an integer result, either call
+  // IntDiv(), or (possibly clearer) use this operator with
+  // base::Clamp{Ceil,Floor,Round}() or base::saturated_cast() (for truncation).
+  // Note that converting to double here drops precision to 53 bits.
+  constexpr double operator/(TimeDelta a) const {
     // 0/0 and inf/inf (any combination of positive and negative) are invalid
     // (they are almost certainly not intentional, and result in NaN, which
     // turns into 0 if clamped to an integer; this makes introducing subtle bugs
@@ -313,6 +309,17 @@ class BASE_EXPORT TimeDelta {
     CHECK((!is_zero() || !a.is_zero()) && (!is_inf() || !a.is_inf()));
 
     return ToDouble() / a.ToDouble();
+  }
+  constexpr int64_t IntDiv(TimeDelta a) const {
+    if (!is_inf() && !a.is_zero())
+      return delta_ / a.delta_;
+
+    // For consistency, use the same edge case CHECKs and behavior as the code
+    // above.
+    CHECK((!is_zero() || !a.is_zero()) && (!is_inf() || !a.is_inf()));
+    return ((delta_ < 0) == (a.delta_ < 0))
+               ? std::numeric_limits<int64_t>::max()
+               : std::numeric_limits<int64_t>::min();
   }
 
   constexpr TimeDelta operator%(TimeDelta a) const {

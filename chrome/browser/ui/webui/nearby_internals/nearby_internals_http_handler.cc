@@ -32,7 +32,7 @@ NearbyInternalsHttpHandler::~NearbyInternalsHttpHandler() = default;
 
 void NearbyInternalsHttpHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "initialize",
+      "initializeHttp",
       base::BindRepeating(&NearbyInternalsHttpHandler::InitializeContents,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(

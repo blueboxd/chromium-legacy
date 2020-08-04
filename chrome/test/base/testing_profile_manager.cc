@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_file_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -273,8 +274,7 @@ void TestingProfileManager::SetUpInternal(const base::FilePath& profiles_path) {
 
   // Set up the directory for profiles.
   if (profiles_path.empty()) {
-    ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
-    profiles_path_ = profiles_dir_.GetPath();
+    profiles_path_ = base::CreateUniqueTempDirectoryScopedToTest();
   } else {
     profiles_path_ = profiles_path;
   }

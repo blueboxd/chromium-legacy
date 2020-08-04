@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" />-ն ուզում է զուգակցվել</translation>
 <translation id="2000419248597011803">Ձեր կանխադրված որոնիչին է ուղարկում հասցեագոտու և որոնման դաշտի հարցումները, ինչպես նաև որոշ քուքիներ</translation>
 <translation id="2002537628803770967">Բանկային քարտեր ու հասցեներ Google Pay-ից</translation>
-<translation id="2012973609889389923">Արագ կայք</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ֆայլ}one{# ֆայլ}other{# ֆայլ}}</translation>
 <translation id="2017836877785168846">Մաքրում է պատմությունն ու հասցեագոտու ինքնալրացումները:</translation>
 <translation id="2021896219286479412">Լիաէկրան ռեժիմի կարգավորումներ</translation>
@@ -538,6 +537,7 @@
 <translation id="5304593522240415983">Այս դաշտը չի կարող դատարկ լինել</translation>
 <translation id="5308380583665731573">Կապակցվել</translation>
 <translation id="5317780077021120954">Պահել</translation>
+<translation id="5319359161174645648">Google-ը խորհուրդ է տալիս Chrome դիտարկիչը</translation>
 <translation id="5324858694974489420">Ծնողական կայանքներ</translation>
 <translation id="5327248766486351172">Անուն</translation>
 <translation id="5342314432463739672">Թույլտվությունների հարցումներ</translation>

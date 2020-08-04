@@ -54,6 +54,18 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0,
                                  Gradient::ColorInterpolation::kUnpremultiplied,
                                  Gradient::DegenerateHandling::kDisallow)) {}
 
+// CanvasRenderingContext2D.createConicGradient only takes one angle argument
+// it makes sense to make that rotation here and always make the angles 0 -> 2pi
+CanvasGradient::CanvasGradient(float startAngle, const FloatPoint& center)
+    : gradient_(
+          Gradient::CreateConic(center,
+                                startAngle,
+                                0,
+                                360,
+                                kSpreadMethodPad,
+                                Gradient::ColorInterpolation::kUnpremultiplied,
+                                Gradient::DegenerateHandling::kDisallow)) {}
+
 void CanvasGradient::addColorStop(double value,
                                   const String& color_string,
                                   ExceptionState& exception_state) {

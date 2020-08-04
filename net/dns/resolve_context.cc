@@ -408,7 +408,7 @@ void ResolveContext::RecordRttForUma(size_t server_index,
       // continue in parallel with new attempts made by the transaction. Scale
       // the ratio up by 10 for sub-integer granularity.
       // TODO(crbug.com/1105138): Remove after determining good timeout logic.
-      int timeout_ratio = (10 * rtt).IntDiv(base_timeout);
+      int timeout_ratio = base::ClampFloor(rtt / base_timeout * 10);
       UMA_HISTOGRAM_COUNTS_1000(
           "Net.DNS.DnsTransaction.SecureValidated.SuccessTimeoutRatio",
           timeout_ratio);

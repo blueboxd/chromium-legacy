@@ -210,6 +210,14 @@ suite('SafetyCheckPageUiTests', function() {
     // Ensure the browser proxy call is done.
     await safetyCheckBrowserProxy.whenCalled('runSafetyCheck');
 
+    // Mock all incoming messages that indicate safety check is running.
+    fireSafetyCheckUpdatesEvent(SafetyCheckUpdatesStatus.CHECKING);
+    fireSafetyCheckPasswordsEvent(SafetyCheckPasswordsStatus.CHECKING);
+    fireSafetyCheckSafeBrowsingEvent(SafetyCheckSafeBrowsingStatus.CHECKING);
+    fireSafetyCheckExtensionsEvent(SafetyCheckExtensionsStatus.CHECKING);
+    fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.CHECKING);
+    fireSafetyCheckParentEvent(SafetyCheckParentStatus.CHECKING);
+
     flush();
     // Only the icon button is present.
     assertFalse(!!page.$$('#safetyCheckParentButton'));

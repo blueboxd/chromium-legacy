@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> დაწყვილებას ითხოვს</translation>
 <translation id="2000419248597011803">თქვენს ნაგულისხმევ საძიებო სისტემას უგზავნის ზოგიერთ ქუქი-ჩანაწერს და საძიებო მოთხოვნებს მისამართთა ზოლიდან ან საძიებო ველიდან</translation>
 <translation id="2002537628803770967">საკრედიტო ბარათები და მისამართები Google Pay-დან</translation>
-<translation id="2012973609889389923">სწრაფი საიტი</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ფაილი}other{# ფაილი}}</translation>
 <translation id="2017836877785168846">გაასუფთავებს ისტორიას და მისამართთა ზოლის ავტომატური დასრულების მონაცემებს.</translation>
 <translation id="2021896219286479412">სრულეკრანიანი რეჟიმის მართვა</translation>
@@ -538,6 +537,7 @@
 <translation id="5304593522240415983">ეს ველი არ შეიძლება იყოს ცარიელი</translation>
 <translation id="5308380583665731573">დაკავშირება</translation>
 <translation id="5317780077021120954">შენახვა</translation>
+<translation id="5319359161174645648">Google გირჩევთ Chrome-ს</translation>
 <translation id="5324858694974489420">მშობელის პარამეტრები</translation>
 <translation id="5327248766486351172">სახელი</translation>
 <translation id="5342314432463739672">ნებართვების მოთხოვნები</translation>

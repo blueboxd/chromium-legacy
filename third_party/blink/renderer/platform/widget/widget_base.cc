@@ -38,15 +38,6 @@ namespace {
 
 static const int kInvalidNextPreviousFlagsValue = -1;
 
-scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() {
-  if (auto* main_thread_scheduler =
-          scheduler::WebThreadScheduler::MainThreadScheduler()) {
-    return main_thread_scheduler->CleanupTaskRunner();
-  } else {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-}
-
 void OnDidPresentForceDrawFrame(
     mojom::blink::Widget::ForceRedrawCallback callback,
     const gfx::PresentationFeedback& feedback) {
@@ -162,7 +153,7 @@ void WidgetBase::InitializeCompositing(
 void WidgetBase::Shutdown(
     scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) {
   if (!cleanup_runner)
-    cleanup_runner = GetCleanupTaskRunner();
+    cleanup_runner = base::ThreadTaskRunnerHandle::Get();
 
   // The |input_event_queue_| is refcounted and will live while an event is
   // being handled. This drops the connection back to this WidgetBase which

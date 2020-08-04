@@ -289,6 +289,271 @@ TEST(PpdMetadataParserTest, ParsePrintersFailsGracefully) {
   EXPECT_FALSE(ParsePrinters(kInvalidJson).has_value());
 }
 
+// Verifies that ParseForwardIndex() can parse forward index metadata.
+TEST(PpdMetadataParserTest, CanParseForwardIndex) {
+  constexpr base::StringPiece kJsonForwardIndex = R"({
+  "ppdIndex": {
+    "der wanderer": {
+      "ppdMetadata": [ {
+        "name": "d-489.ppd.gz"
+      } ]
+    },
+    "morgenlied": {
+      "ppdMetadata": [ {
+        "name": "d-685.ppd.gz"
+      } ]
+    },
+    "wandrers nachtlied": {
+      "ppdMetadata": [ {
+        "name": "d-224.ppd.gz"
+      } ]
+    }
+  }
+})";
+
+  const auto parsed = ParseForwardIndex(kJsonForwardIndex);
+  ASSERT_TRUE(parsed.has_value());
+  EXPECT_THAT(
+      parsed.value(),
+      UnorderedElementsAre(
+          ParsedIndexEntryLike(
+              "der wanderer",
+              UnorderedElementsAre(
+                  ParsedIndexLeafWithPpdBasename("d-489.ppd.gz"))),
+          ParsedIndexEntryLike(
+              "morgenlied", UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                                "d-685.ppd.gz"))),
+          ParsedIndexEntryLike(
+              "wandrers nachtlied",
+              UnorderedElementsAre(
+                  ParsedIndexLeafWithPpdBasename("d-224.ppd.gz")))));
+}
+
+// Verifies that ParseForwardIndex() can parse forward index metadata
+// and return a partial list even when it encounters unexpected values.
+TEST(PpdMetadataParserTest, CanPartiallyParseForwardIndex) {
+  // Uses the same value as the CanParseForwardIndex test, but
+  // with garbage values mixed in.
+  constexpr base::StringPiece kJsonForwardIndex = R"({
+  "ppdIndex": {
+    "garbage": "unused value",
+    "more garbage": [ "more", "unused", "values" ],
+    "der wanderer": {
+      "ppdMetadata": [ {
+        "name": "d-489.ppd.gz",
+        "more garbage still": "unused value"
+      }, {
+        "also garbage": "unused value"
+      } ],
+      "unending garbage": "unused value"
+    },
+    "morgenlied": {
+      "ppdMetadata": [ {
+        "name": "d-685.ppd.gz"
+      } ]
+    },
+    "wandrers nachtlied": {
+      "ppdMetadata": [ {
+        "name": "d-224.ppd.gz"
+      } ]
+    }
+  }
+})";
+
+  const auto parsed = ParseForwardIndex(kJsonForwardIndex);
+  ASSERT_TRUE(parsed.has_value());
+  EXPECT_THAT(
+      parsed.value(),
+      UnorderedElementsAre(
+          ParsedIndexEntryLike(
+              "der wanderer",
+              UnorderedElementsAre(
+                  ParsedIndexLeafWithPpdBasename("d-489.ppd.gz"))),
+          ParsedIndexEntryLike(
+              "morgenlied", UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                                "d-685.ppd.gz"))),
+          ParsedIndexEntryLike(
+              "wandrers nachtlied",
+              UnorderedElementsAre(
+                  ParsedIndexLeafWithPpdBasename("d-224.ppd.gz")))));
+}
+
+// Verifies that ParseForwardIndex() can parse forward index metadata
+// in which leaf values have multiple ppdMetadata key-value pairs.
+TEST(PpdMetadataParserTest, CanParseForwardIndexWithMultiplePpdMetadataLeafs) {
+  constexpr base::StringPiece kJsonForwardIndex = R"({
+  "ppdIndex": {
+    "rastlose liebe": {
+      "ppdMetadata": [ {
+        "name": "d-138.ppd.gz"
+      }, {
+        "name": "1815.ppd.gz"
+      } ]
+    }
+  }
+})";
+
+  const auto parsed = ParseForwardIndex(kJsonForwardIndex);
+  ASSERT_TRUE(parsed.has_value());
+  EXPECT_THAT(parsed.value(),
+              UnorderedElementsAre(ParsedIndexEntryLike(
+                  "rastlose liebe",
+                  UnorderedElementsAre(
+                      ParsedIndexLeafWithPpdBasename("d-138.ppd.gz"),
+                      ParsedIndexLeafWithPpdBasename("1815.ppd.gz")))));
+}
+
+// Verifies that ParseForwardIndex() can parse forward index metadata
+// and its well-formed restrictions (if any are specified).
+TEST(PpdMetadataParserTest, CanParseForwardIndexWithRestrictions) {
+  // Specifies
+  // *  a PPD metadata leaf with a minimum milestone,
+  // *  a PPD metadata leaf with a maximum milestone, and
+  // *  a PPD metadata leaf with both minimum and maximum milestones.
+  constexpr base::StringPiece kJsonForwardIndex = R"({
+  "ppdIndex": {
+    "nähe des geliebten": {
+      "ppdMetadata": [ {
+        "name": "d-162.ppd.gz",
+        "restriction": {
+          "minMilestone": 25
+        }
+      } ]
+    },
+    "der fischer": {
+      "ppdMetadata": [ {
+        "name": "d-225.ppd.gz",
+        "restriction": {
+          "maxMilestone": 35
+        }
+      } ]
+    },
+    "erster verlust": {
+      "ppdMetadata": [ {
+        "name": "d-226.ppd.gz",
+        "restriction": {
+          "minMilestone": 45,
+          "maxMilestone": 46
+        }
+      } ]
+    }
+  }
+})";
+
+  const auto parsed = ParseForwardIndex(kJsonForwardIndex);
+  ASSERT_TRUE(parsed.has_value());
+  EXPECT_THAT(parsed.value(),
+              UnorderedElementsAre(
+                  ParsedIndexEntryLike(
+                      "nähe des geliebten",
+                      UnorderedElementsAre(AllOf(
+                          ParsedIndexLeafWithPpdBasename("d-162.ppd.gz"),
+                          Field(&ParsedIndexLeaf::restrictions,
+                                Optional(RestrictionsWithMinMilestone(25)))))),
+                  ParsedIndexEntryLike(
+                      "der fischer",
+                      UnorderedElementsAre(AllOf(
+                          ParsedIndexLeafWithPpdBasename("d-225.ppd.gz"),
+                          Field(&ParsedIndexLeaf::restrictions,
+                                Optional(RestrictionsWithMaxMilestone(35)))))),
+                  ParsedIndexEntryLike(
+                      "erster verlust",
+                      UnorderedElementsAre(AllOf(
+                          ParsedIndexLeafWithPpdBasename("d-226.ppd.gz"),
+                          Field(&ParsedIndexLeaf::restrictions,
+                                Optional(RestrictionsWithMinAndMaxMilestones(
+                                    45, 46))))))));
+}
+
+// Verifies that ParseForwardIndex() can parse forward index metadata
+// and ignore malformed restrictions.
+TEST(PpdMetadataParserTest, CanParseForwardIndexWithMalformedRestrictions) {
+  // Same test data as the CanParseForwardIndexWithRestrictions test
+  // above, but defines
+  // *  a PPD metadata leaf with a malformed minimum milestone,
+  // *  a PPD metadata leaf with a malformed maximum milestone, and
+  // *  a PPD metadata leaf with malformed minimum and maximum
+  //    milestones.
+  constexpr base::StringPiece kJsonForwardIndex = R"({
+  "ppdIndex": {
+    "nähe des geliebten": {
+      "ppdMetadata": [ {
+        "name": "d-162.ppd.gz",
+        "restriction": {
+          "minMilestone": "garbage value",
+          "maxMilestone": 25
+        }
+      } ]
+    },
+    "der fischer": {
+      "ppdMetadata": [ {
+        "name": "d-225.ppd.gz",
+        "restriction": {
+          "minMilestone": 35,
+          "maxMilestone": "garbage value"
+        }
+      } ]
+    },
+    "erster verlust": {
+      "ppdMetadata": [ {
+        "name": "d-226.ppd.gz",
+        "restriction": {
+          "minMilestone": "garbage value",
+          "maxMilestone": "garbage value"
+        }
+      } ]
+    }
+  }
+})";
+
+  const auto parsed = ParseForwardIndex(kJsonForwardIndex);
+  ASSERT_TRUE(parsed.has_value());
+  EXPECT_THAT(
+      parsed.value(),
+      UnorderedElementsAre(
+          ParsedIndexEntryLike(
+              "nähe des geliebten",
+              UnorderedElementsAre(
+                  AllOf(ParsedIndexLeafWithPpdBasename("d-162.ppd.gz"),
+                        Field(&ParsedIndexLeaf::restrictions,
+                              Optional(RestrictionsWithMaxMilestone(25)))))),
+          ParsedIndexEntryLike(
+              "der fischer",
+              UnorderedElementsAre(
+                  AllOf(ParsedIndexLeafWithPpdBasename("d-225.ppd.gz"),
+                        Field(&ParsedIndexLeaf::restrictions,
+                              Optional(RestrictionsWithMinMilestone(35)))))),
+          ParsedIndexEntryLike(
+              "erster verlust",
+              UnorderedElementsAre(AllOf(
+                  ParsedIndexLeafWithPpdBasename("d-226.ppd.gz"),
+                  Field(&ParsedIndexLeaf::restrictions, Eq(base::nullopt)))))));
+}
+
+// Verifies that ParseForwardIndex() returns base::nullopt rather than
+// an empty container.
+TEST(PpdMetadataParserTest, ParseForwardIndexDoesNotReturnEmptyContainer) {
+  // Specifies a forward index that is valid JSON but which has
+  // no PPDs whose leaf values are non-empty.
+  constexpr base::StringPiece kJsonForwardIndex = R"({
+  "ppdIndex": {
+    "der könig in thule": {
+      "ppdMetadata": [ {
+        "garbage": "unused value"
+      } ]
+    }
+  }
+})";
+
+  EXPECT_FALSE(ParseForwardIndex(kJsonForwardIndex).has_value());
+}
+
+// Verifies that ParseForwardIndex() returns base::nullopt on
+// irrecoverable parse error.
+TEST(PpdMetadataParserTest, ParseForwardIndexFailsGracefully) {
+  EXPECT_FALSE(ParseForwardIndex(kInvalidJson).has_value());
+}
+
 // Verifies that ParseReverseIndex() can parse reverse index metadata.
 TEST(PpdMetadataParserTest, CanParseReverseIndex) {
   constexpr base::StringPiece kReverseIndexJson = R"(

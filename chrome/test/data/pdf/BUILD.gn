@@ -23,7 +23,7 @@ js_type_check("closure_compile") {
     ":material_elements_test",
 
     #":metrics_test",
-    #":navigator_test",
+    ":navigator_test",
     ":nobeep_test",
     ":page_change_test",
     ":params_parser_test",
@@ -121,6 +121,16 @@ js_library("download_controls_test") {
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
     "//ui/webui/resources/js:util.m",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("navigator_test") {
+  deps = [
+    ":test_util",
+    "//chrome/browser/resources/pdf:navigator",
+    "//chrome/browser/resources/pdf:open_pdf_params_parser",
+    "//chrome/browser/resources/pdf:pdf_scripting_api",
   ]
   externs_list = [ "$externs_path/test.js" ]
 }

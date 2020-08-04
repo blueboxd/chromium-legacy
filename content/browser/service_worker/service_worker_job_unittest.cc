@@ -446,6 +446,7 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   RunUnregisterJob(options.scope);
 
   WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
+  registry()->GetRemoteStorageControl().FlushForTesting();
 
   // The service worker registration object host and service worker object host
   // have been destroyed together with |worker_host| by the above

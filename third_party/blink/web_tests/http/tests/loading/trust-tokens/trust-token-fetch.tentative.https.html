@@ -42,7 +42,7 @@
       return fetch('https://destination.test', {
         trustToken: {
           type: 'send-srr',
-          issuer: 'https://issuer.test'
+          issuers: ['https://issuer.test']
         }
       });
     })(), 'Trust Token signing should not fail a request.'),

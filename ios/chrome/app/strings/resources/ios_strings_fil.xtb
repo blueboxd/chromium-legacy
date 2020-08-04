@@ -354,7 +354,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">I-enable ang pag-sync</translation>
-<translation id="5234764350956374838">Balewalain</translation>
+<translation id="5234764350956374838">Huwag pansinin</translation>
 <translation id="5245322853195994030">Kanselahin ang Pag-sync</translation>
 <translation id="5271549068863921519">I-save ang password</translation>
 <translation id="5295239312320826323">Alisin ang account na <ph name="USER_EMAIL" />?</translation>
@@ -422,7 +422,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6021332621416007159">Buksan sa...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Isara</translation>
-<translation id="6042308850641462728">Higit pa</translation>
+<translation id="6042308850641462728">Marami pang iba</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">Pindutin upang kanselahin.</translation>
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>

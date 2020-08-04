@@ -57,8 +57,6 @@ class SafeBrowsingService {
   void AddInterface(service_manager::BinderRegistry* registry,
                     content::RenderProcessHost* render_process_host);
   void StopDBManager();
-  void SetSafeBrowsingDisabled(bool disabled);
-  bool GetSafeBrowsingDisabled();
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
  private:
@@ -76,7 +74,6 @@ class SafeBrowsingService {
   void CreateURLLoaderFactoryForIO(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
   void StopDBManagerOnIOThread();
-  void SetSafeBrowsingDisabledOnIOThread(bool disabled);
 
   // The UI manager handles showing interstitials. Accessed on both UI and IO
   // thread.
@@ -101,8 +98,6 @@ class SafeBrowsingService {
       safe_browsing_api_handler_;
 
   std::string user_agent_;
-
-  bool safe_browsing_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

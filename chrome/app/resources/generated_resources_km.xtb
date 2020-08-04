@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">ឯកសារ</translation>
 <translation id="1296911687402551044">ខ្ទាស់ផ្ទាំងដែលបានជ្រើសរើស</translation>
 <translation id="1297175357211070620">គោលដៅ</translation>
-<translation id="1297646507722131691">យើងសូមណែនាំឱ្យបម្រុងទុកឯកសារ សម្រាប់ជាផ្នែកនៃការដំឡើងកំណែនេះ ដើម្បីបង្ការការបាត់បង់​ទិន្នន័យ ក្នុងករណីដែលការដំឡើងកំណែមិនអាចបញ្ចប់។ ការចាប់ផ្ដើមការ​ដំឡើងកំណែនេះនឹងបិទ Linux (បេតា)។ សូមរក្សាទុកឯកសារដែលបើក មុនពេលបន្ត។</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> ចង់​ផ្ទៀងផ្ទាត់​អត្តសញ្ញាណ​ឧបករណ៍​របស់អ្នក​ដោយ Google ដើម្បី​កំណត់​សិទ្ធិ​ក្នុងការចាក់​ដែលបានកែលម្អ​សម្រាប់ខ្លឹមសារ​​ដែល​ត្រូវ​បាន​ការពារ។</translation>
 <translation id="1300806585489372370">ដើម្បី​ប្ដូរការ​កំណត់​នេះ <ph name="BEGIN_LINK" />សូម​បើកព័ត៌មានសម្គាល់<ph name="END_LINK" />ជាមុន​សិន</translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> អាច​កែ​ឯកសារ​ខាងក្រោម</translation>
@@ -1981,7 +1980,6 @@
 <translation id="3435738964857648380">សុវត្ថិភាព</translation>
 <translation id="343578350365773421">អស់ក្រដាស</translation>
 <translation id="3435896845095436175">បើកដំណើរការ</translation>
-<translation id="3436642683618870087">អក្សររត់ក្នុងពេលជាក់ស្ដែងចាប់​យកការនិយាយ​នៅក្នុងមេឌៀ និង​បង្កើត​អក្សររត់​ដោយស្វ័យប្រវត្តិសម្រាប់ការចាក់មេឌៀទាំងអស់នៅក្នុង Chrome។</translation>
 <translation id="3438633801274389918">និនចា</translation>
 <translation id="3439153939049640737">អនុញ្ញាត <ph name="HOST" /> ឲ្យចូលប្រើម៉ៃក្រូហ្វូនរបស់អ្នកជានិច្ច</translation>
 <translation id="3439970425423980614">កំពុងបើក PDF នៅក្នុងពិនិត្យមើល</translation>
@@ -3624,7 +3622,6 @@
 <translation id="5511379779384092781">តូច​​ជាង​ធម្មតា</translation>
 <translation id="5511823366942919280">តើអ្នកប្រាកដថាចង់តំឡើងឧបករណ៍នេះជា "ត្រីឆ្លាម" ឬ?</translation>
 <translation id="5512653252560939721">វិញ្ញាបនប័ត្រអ្នកប្រើត្រូវតែមានផ្នែករឹងបម្រុង</translation>
-<translation id="5515923816438946203">ជ្រើសរើស​អ្វីដែលអ្នកមើល​ឃើញ​នៅលើអេក្រង់របស់អ្នក</translation>
 <translation id="5517304475148761050">កម្មវិធី​នេះ​ត្រូវការ​សិទ្ធិចូល​ប្រើប្រាស់ Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">កំពុងបន្ថែមម៉ាស៊ីនបោះពុម្ពទៅគណនីរបស់អ្នក - វាអាចចំណាយពេលមួយភ្លែត...</translation>
@@ -3740,6 +3737,7 @@
 <translation id="5642508497713047">អ្នកចុះហត្ថលេខា CRL</translation>
 <translation id="5643321261065707929">បណ្ដាញផ្អែកតាមទិន្នន័យដែលប្រើ</translation>
 <translation id="5643620609347735571">សម្អាត ហើយបន្ត</translation>
+<translation id="5646376287012673985">ទីតាំង</translation>
 <translation id="5646558797914161501">អ្នកជំនួញ</translation>
 <translation id="5648166631817621825">7 ថ្ងៃមុន</translation>
 <translation id="5649053991847567735">ទាញយកស្វ័យប្រវត្តិ</translation>
@@ -6392,7 +6390,6 @@
 <translation id="8952831374766033534">មិនស្គាល់ជម្រើស​នៃការកំណត់រចនាសម្ព័ន្ធ៖ <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">ពេលកំពុង​សាកថ្ម</translation>
 <translation id="895347679606913382">កំពុងចាប់ផ្តើម...</translation>
-<translation id="8957762313041272117">អក្សររត់ក្នុងពេលជាក់ស្ដែង</translation>
 <translation id="895944840846194039">មេម៉ូរី JavaScript</translation>
 <translation id="8962083179518285172">លាក់ព័ត៌មានលំអិត</translation>
 <translation id="8962918469425892674">គេហទំព័រ​នេះ​កំពុង​ប្រើ​ឧបករណ៍​ចាប់​ពន្លឺ ឬ​ឧបករណ៍​ចាប់​​ចលនា​។​</translation>

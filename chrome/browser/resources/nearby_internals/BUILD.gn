@@ -102,7 +102,6 @@ js_library("contact_tab") {
     ":types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 

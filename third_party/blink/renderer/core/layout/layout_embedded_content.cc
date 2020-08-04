@@ -182,13 +182,13 @@ bool LayoutEmbeddedContent::NodeAtPoint(
   if (local_frame_view->ShouldThrottleRendering() ||
       !local_frame_view->GetFrame().GetDocument() ||
       local_frame_view->GetFrame().GetDocument()->Lifecycle().GetState() <
-          DocumentLifecycle::kCompositingClean) {
+          DocumentLifecycle::kCompositingAssignmentsClean) {
     return NodeAtPointOverEmbeddedContentView(result, hit_test_location,
                                               accumulated_offset, action);
   }
 
   DCHECK_GE(GetDocument().Lifecycle().GetState(),
-            DocumentLifecycle::kCompositingClean);
+            DocumentLifecycle::kCompositingAssignmentsClean);
 
   if (action == kHitTestForeground) {
     auto* child_layout_view = local_frame_view->GetLayoutView();

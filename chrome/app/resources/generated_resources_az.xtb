@@ -245,7 +245,6 @@
 <translation id="1293556467332435079">Fayllar</translation>
 <translation id="1296911687402551044">Seçilmiş tabı sancın</translation>
 <translation id="1297175357211070620">Təyinat yeri</translation>
-<translation id="1297646507722131691">Təkmilləşdirmə tamamlanmadığı halda data itkisinin qarşısını almaq üçün bu təkmilləşdirmənin bir hissəsi olaraq faylların yedəklənməsi tövsiyə olunur. Təkmilləşdirmə başladılan zaman Linux (Beta) sönəcək. Davam etməzdən əvvəl açıq faylları yaddaşda saxlayın.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> qorunan kontentin təkmilləşdirilmiş oxudulma uyğunluğunu müəyyən etmək üçün cihazın kimliyinin Google tərəfindən doğrulanmasını tələb edir.</translation>
 <translation id="1300806585489372370">Bu ayarı dəyişmək üçün əvvəclə <ph name="BEGIN_LINK" />identifikatorları aktiv edin<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> aşağıdakı faylları redaktə edə bilər</translation>
@@ -1976,7 +1975,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3435738964857648380">Təhlükəsizlik</translation>
 <translation id="343578350365773421">Kağız bitdi</translation>
 <translation id="3435896845095436175">Aktivləşdirin</translation>
-<translation id="3436642683618870087">Canlı altyazı mediada nitqi aşkarlayır və Chrome'da bütün media oxutma üçün avtomatik olaraq altyazılar yaradır.</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Mikrofonunuza daxil olmaq üçün həmişə <ph name="HOST" /> hostuna icazə verin</translation>
 <translation id="3439970425423980614">PDF Önizləmədə açılır</translation>
@@ -3617,7 +3615,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5511379779384092781">Çox kiçik</translation>
 <translation id="5511823366942919280">Bu cihazı "Köpəkbalığı" olaraq quraşdırmaq istəyirsiniz?</translation>
 <translation id="5512653252560939721">Istifadəçi sertifikatı avadanlığa əsaslanmalıdır.</translation>
-<translation id="5515923816438946203">Ekranda gördüyünüzü seçin</translation>
 <translation id="5517304475148761050">Bu tətbiq Play Marketə giriş tələb edir</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Hesabınıza printer əlavə edilir - bir az vaxt çəkə bilər...</translation>
@@ -3732,6 +3729,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5642508497713047">CRL İmzalayıcısı</translation>
 <translation id="5643321261065707929">Limitli şəbəkə</translation>
 <translation id="5643620609347735571">Silin və davam edin</translation>
+<translation id="5646376287012673985">Məkan</translation>
 <translation id="5646558797914161501">Biznesmen</translation>
 <translation id="5648166631817621825">Son 7 gün</translation>
 <translation id="5649053991847567735">Avtomatik endirmələr</translation>
@@ -6379,7 +6377,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8952831374766033534">Konfiqurasiya seçimi dəstəklənmir: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Şarj edilən zaman</translation>
 <translation id="895347679606913382">Başlayır...</translation>
-<translation id="8957762313041272117">Canlı altyazı</translation>
 <translation id="895944840846194039">JavaScript yaddaşı</translation>
 <translation id="8962083179518285172">Detalları gizlədin</translation>
 <translation id="8962918469425892674">Bu sayt hərəkət və ya açıq sensorlardan istifadə edir.</translation>

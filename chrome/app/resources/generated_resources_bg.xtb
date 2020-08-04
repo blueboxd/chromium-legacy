@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Файлове</translation>
 <translation id="1296911687402551044">Фиксиране на избрания раздел</translation>
 <translation id="1297175357211070620">Принтер</translation>
-<translation id="1297646507722131691">Препоръчваме да създадете резервно копие на файловете, за да не загубите данни, в случай че надстройването не завърши успешно. Linux (бета) ще се изключи при стартиране на надстройването. Преди да продължите, запазете отворените файлове.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> изисква удостоверяване на идентичността на устройството ви чрез Google, за да се установи дали то отговаря на условията за подобрено възпроизвеждане на защитено съдържание.</translation>
 <translation id="1300806585489372370">За да промените тази настройка, първо, <ph name="BEGIN_LINK" />включете идентификаторите<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> може да редактира следните файлове</translation>
@@ -1978,7 +1977,6 @@
 <translation id="3435738964857648380">Сигурност</translation>
 <translation id="343578350365773421">Няма хартия</translation>
 <translation id="3435896845095436175">Активиране</translation>
-<translation id="3436642683618870087">Услугата за надписи на живо разпознава говора във всяко мултимедийното съдържание, възпроизвеждано в Chrome, и автоматично генерира надписи за него.</translation>
 <translation id="3438633801274389918">Нинджа</translation>
 <translation id="3439153939049640737">Достъпът на <ph name="HOST" /> до микрофона ви винаги да е разрешен</translation>
 <translation id="3439970425423980614">Отваря се визуализация на PDF</translation>
@@ -3623,7 +3621,6 @@
 <translation id="5511379779384092781">Много нисък</translation>
 <translation id="5511823366942919280">Наистина ли искате да настроите това устройство като Shark?</translation>
 <translation id="5512653252560939721">Потребителският сертификат трябва да бъде с хардуерна поддръжка.</translation>
-<translation id="5515923816438946203">Изберете какво да се показва на екрана</translation>
 <translation id="5517304475148761050">Това приложение изисква достъп до Google Play Магазин</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Принтерът се добавя в профила ви. Това може да отнеме известно време...</translation>
@@ -3739,6 +3736,7 @@
 <translation id="5642508497713047">Подписващ CRL</translation>
 <translation id="5643321261065707929">Мрежа с отчитане</translation>
 <translation id="5643620609347735571">Изчистване и продължаване</translation>
+<translation id="5646376287012673985">Местоположение</translation>
 <translation id="5646558797914161501">Бизнесмен</translation>
 <translation id="5648166631817621825">Последните 7 дни</translation>
 <translation id="5649053991847567735">Автоматични изтегляния</translation>
@@ -4924,7 +4922,7 @@
 <translation id="7140928199327930795">Няма други налични устройства.</translation>
 <translation id="7141105143012495934">Влизането не бе успешно, тъй като данните за профила ви не можаха да се извлекат. Моля, свържете се с администратора си или опитайте отново.</translation>
 <translation id="7143207342074048698">Свързва се</translation>
-<translation id="7144878232160441200">Нов опит</translation>
+<translation id="7144878232160441200">Повторен опит</translation>
 <translation id="714876143603641390">Връзка с LAN</translation>
 <translation id="7149893636342594995">Последните 24 часа</translation>
 <translation id="715118844758971915">Традиционни принтери</translation>
@@ -6392,7 +6390,6 @@
 <translation id="8952831374766033534">Конфигурационната опция не се поддържа: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">При зареждане</translation>
 <translation id="895347679606913382">Стартира...</translation>
-<translation id="8957762313041272117">Надписи на живо</translation>
 <translation id="895944840846194039">Памет за JavaScript</translation>
 <translation id="8962083179518285172">Скриване на подробностите</translation>
 <translation id="8962918469425892674">Този сайт използва сензорите за движение или светлина.</translation>

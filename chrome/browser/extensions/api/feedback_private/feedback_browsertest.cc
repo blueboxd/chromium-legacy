@@ -300,8 +300,10 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_GetTargetTabUrl) {
     // Sanity check that we always have one tab in the browser.
     ASSERT_EQ(browser()->tab_strip_model()->count(), 1);
 
-    ASSERT_EQ(expected_url,
-              browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+    ASSERT_EQ(expected_url, browser()
+                                ->tab_strip_model()
+                                ->GetWebContentsAt(0)
+                                ->GetLastCommittedURL());
 
     ASSERT_EQ(expected_url,
               chrome::GetTargetTabUrl(browser()->session_id(), 0));

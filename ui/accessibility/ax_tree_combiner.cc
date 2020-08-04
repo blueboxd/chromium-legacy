@@ -17,6 +17,11 @@ AXTreeCombiner::~AXTreeCombiner() {
 }
 
 void AXTreeCombiner::AddTree(const AXTreeUpdate& tree, bool is_root) {
+  if (tree.tree_data.tree_id == AXTreeIDUnknown()) {
+    LOG(WARNING) << "Skipping AXTreeID because its tree ID is unknown";
+    return;
+  }
+
   trees_.push_back(tree);
   if (is_root) {
     DCHECK_EQ(root_tree_id_, AXTreeIDUnknown());

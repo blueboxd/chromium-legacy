@@ -8,6 +8,7 @@
 #include "content/browser/devtools/devtools_issue_storage.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 namespace protocol {
@@ -42,9 +43,8 @@ namespace {
 void SendStoredIssuesForFrameToAgent(RenderFrameHostImpl* rfh,
                                      protocol::AuditsHandler* handler) {
   // Check the storage first. No need to do any work in case its empty.
-  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
   DevToolsIssueStorage* issue_storage =
-      DevToolsIssueStorage::FromWebContents(web_contents);
+      DevToolsIssueStorage::GetForCurrentDocument(rfh->GetMainFrame());
   if (!issue_storage)
     return;
 

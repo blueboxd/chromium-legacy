@@ -14,7 +14,7 @@ export class NearbyHttpBrowserProxy {
    * Initializes web contents in the WebUI handler.
    */
   initialize() {
-    chrome.send('initialize');
+    chrome.send('initializeHttp');
   }
 
   /**

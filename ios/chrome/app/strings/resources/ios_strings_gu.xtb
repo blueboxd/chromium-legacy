@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">ફોટા સાચવી શકતું નથી</translation>
 <translation id="1180526666083833456">સમગ્ર ડિવાઇસ પર સિંક કરો અને વ્યક્તિગત બનાવો.</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
+<translation id="1185569544548277362">નવું: તમે Chromeને તમારું ડિફૉલ્ટ બ્રાઉઝર બનાવી શકો છો. <ph name="BEGIN_LINK" />સેટિંગ ખોલો<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">નવી શોધ</translation>
 <translation id="1209206284964581585">હમણાં માટે છુપાવો</translation>
 <translation id="1219674500290482172">ઇન્ટરનેટથી કનેક્ટ કરવામાં અક્ષમ.</translation>
@@ -570,7 +571,7 @@
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="766891008101699113">વેબને ખાનગી રીતે બ્રાઉઝ કરવા માટે, નવી ટૅબ ઉમેરો.</translation>
 <translation id="7671141431838911305">ઇન્સ્ટોલ કરો</translation>
-<translation id="7701040980221191251">કોઈ નહીં</translation>
+<translation id="7701040980221191251">કોઈ નથી</translation>
 <translation id="7765158879357617694">સ્થાન</translation>
 <translation id="7771470029643830783">સાઇન આઉટ કરવાથી તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય Chrome ડેટા હવેથી તમારા Google એકાઉન્ટ પર સિંક થશે નહીં.
 
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ના  <ph name="FIRST_VISIBLE_TAB" /> થી <ph name="LAST_VISIBLE_TAB" /> સુધી <ph name="INCOGNITO" /> ટેબ્સ</translation>
 <translation id="8529767659511976195">નવી</translation>
 <translation id="8532105204136943229">સમય સમાપ્તિ વર્ષ</translation>
+<translation id="8533166274275423134">અન્ય ક્યાંક ખોલવામાં આવ્યું છે</translation>
 <translation id="8534481786647257214">Google+ પોસ્ટ પૂર્ણ કરેલ છે.</translation>
 <translation id="8548878600947630424">પૃષ્ઠમાં શોધો...</translation>
 <translation id="8574235780160508979">Chromeની સેવાની શરતો 31મી માર્ચથી બદલાઈ રહી છે. <ph name="BEGIN_LINK" />કૃપા કરીને તેનો રિવ્યૂ કરો<ph name="END_LINK" /></translation>

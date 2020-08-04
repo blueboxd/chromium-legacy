@@ -45,16 +45,10 @@ chrome.test.sendMessage('loaded', function(test) {
           setTimeout(callback.bind(null, 'OK'), 0);
           break;
         case 'INVALID_VALUE':
-          var jsBindingsError =
-              'Invalid value for argument 1. ' +
-              'Value must be one of: ' +
-              '\\[OK, FAILED, INVALID_TICKET, INVALID_DATA\\].';
-          var nativeBindingsError =
+          var expectedError =
               'Error at parameter \'result\': Value must be one of ' +
               'FAILED, INVALID_DATA, INVALID_TICKET, OK.';
-          chrome.test.assertThrows(
-              callback, ['XXX'],
-              new RegExp(jsBindingsError + '|' + nativeBindingsError));
+          chrome.test.assertThrows(callback, ['XXX'], expectedError);
           break;
         case 'FAILED':
         case 'INVALID_TICKET':

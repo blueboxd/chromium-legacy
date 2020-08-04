@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Fajlovi</translation>
 <translation id="1296911687402551044">Zakačite odabranu karticu</translation>
 <translation id="1297175357211070620">Odredište</translation>
-<translation id="1297646507722131691">Izrada sigurnosne kopije fajlova je preporučena u sklopu nadogradnje radi sprečavanja gubitka podataka u slučaju neuspješnog završetka nadogradnje. Započinjanjem nadogradnje će se isključiti Linux (Beta). Sačuvajte otvorene fajlove prije nego što nastavite.</translation>
 <translation id="1300415640239881824">Domena <ph name="DOMAIN" /> traži da Google provjeri i potvrdi identitet vašeg uređaja kako bi utvrdio ispunjava li uvjete za poboljšanu reprodukciju zaštićenog sadržaja.</translation>
 <translation id="1300806585489372370">Da promijenite ovu postavku prvo <ph name="BEGIN_LINK" />uključite identifikatore<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> može uređivati sljedeće fajlove</translation>
@@ -1601,7 +1600,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2932085390869194046">Predloži lozinku…</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (račun za djecu)</translation>
 <translation id="2932483646085333864">Odjavite se, a zatim se ponovo prijavite da započnete sinhroniziranje</translation>
-<translation id="2932883381142163287">Prijavi zloupotrebu</translation>
+<translation id="2932883381142163287">Prijavite zloupotrebu</translation>
 <translation id="2933632078076743449">Posljednji put ažurirano</translation>
 <translation id="2936851848721175671">Sigurnosna kopija i vraćanje</translation>
 <translation id="2938225289965773019">Otvoriti linkove protokola <ph name="PROTOCOL" /></translation>
@@ -1981,7 +1980,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3435738964857648380">Sigurnost</translation>
 <translation id="343578350365773421">Nema papira</translation>
 <translation id="3435896845095436175">Omogući</translation>
-<translation id="3436642683618870087">Funkcija Automatski titlovi otkriva govor u medijima i automatski generira titlove za sve medije koji se reproduciraju u Chromeu.</translation>
 <translation id="3438633801274389918">Nindža</translation>
 <translation id="3439153939049640737">Uvijek dozvoli host računaru <ph name="HOST" /> da pristupi mikrofonu</translation>
 <translation id="3439970425423980614">Otvaranje PDF-a u Pregledu</translation>
@@ -3624,7 +3622,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5511379779384092781">Izuzetno mali</translation>
 <translation id="5511823366942919280">Jeste li sigurni da želite postaviti ovaj uređaj kao "Ajkulu"?</translation>
 <translation id="5512653252560939721">Korisnički certifikat mora biti hardverski podržan.</translation>
-<translation id="5515923816438946203">Odaberite šta se prikazuje na ekranu</translation>
 <translation id="5517304475148761050">Ovoj aplikaciji je potreban pristup Play trgovini</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Štampač se dodaje na vaš račun. To može potrajati nekoliko trenutaka...</translation>
@@ -3739,6 +3736,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5642508497713047">Potpisnik CRL-a</translation>
 <translation id="5643321261065707929">Mreža s naplatom</translation>
 <translation id="5643620609347735571">Obriši i nastavi</translation>
+<translation id="5646376287012673985">Lokacija</translation>
 <translation id="5646558797914161501">Poslovni čovjek</translation>
 <translation id="5648166631817621825">Posljednjih 7 dana</translation>
 <translation id="5649053991847567735">Automatska preuzimanja</translation>
@@ -4924,7 +4922,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7140928199327930795">Nema drugih dostupnih uređaja.</translation>
 <translation id="7141105143012495934">Prijava nije uspjela jer nije bilo moguće preuzeti vaše podatke računa. Kontaktirajte administratora ili pokušajte ponovo.</translation>
 <translation id="7143207342074048698">Povezivanje</translation>
-<translation id="7144878232160441200">Pokušaj ponovo</translation>
+<translation id="7144878232160441200">Pokušajte ponovo.</translation>
 <translation id="714876143603641390">Povezivost LAN-a</translation>
 <translation id="7149893636342594995">Posljednja 24 sata</translation>
 <translation id="715118844758971915">Klasični štampači</translation>
@@ -6392,7 +6390,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8952831374766033534">Opcija za konfiguraciju nije podržana: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Tokom punjenja</translation>
 <translation id="895347679606913382">Pokretanje…</translation>
-<translation id="8957762313041272117">Automatski titlovi</translation>
 <translation id="895944840846194039">JavaScript memorija</translation>
 <translation id="8962083179518285172">Sakrij detalje</translation>
 <translation id="8962918469425892674">Ova web lokacija koristi senzore pokreta ili svjetlosne senzore.</translation>
@@ -6601,7 +6598,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="923467487918828349">Prikaži sve</translation>
 <translation id="929117907539171075">Obrisat će se i offline podaci u instaliranoj aplikaciji</translation>
 <translation id="930268624053534560">Detaljne vremenske oznake</translation>
-<translation id="932327136139879170">Početna stranica</translation>
+<translation id="932327136139879170">Dom</translation>
 <translation id="932508678520956232">Pokretanje štampanja nije uspjelo.</translation>
 <translation id="933427034780221291">{NUM_FILES,plural, =1{Ovaj fajl je prevelik za sigurnosnu provjeru. Možete otpremiti fajlove veličine do 50 MB.}one{Neki od ovih fajlova su preveliki za sigurnosnu provjeru. Možete otpremiti fajlove veličine do 50 MB.}few{Neki od ovih fajlova su preveliki za sigurnosnu provjeru. Možete otpremiti fajlove veličine do 50 MB.}other{Neki od ovih fajlova su preveliki za sigurnosnu provjeru. Možete otpremiti fajlove veličine do 50 MB.}}</translation>
 <translation id="93343527085570547">Idite na stranicu <ph name="BEGIN_LINK1" />Pravna pomoć<ph name="END_LINK1" /> da zatražite promjenu sadržaja iz pravnih razloga.  Neke informacije o računu i sistemu mogu se slati Google.  Informacije koje navedete će nam pomoći da riješimo tehničke probleme i poboljšamo usluge, u skladu s našim <ph name="BEGIN_LINK2" />Pravilima privatnosti<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />Uslovima korištenja usluge<ph name="END_LINK3" />.</translation>
@@ -6621,7 +6618,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="939736085109172342">Novi folder</translation>
 <translation id="941070664607309480">Kliknite da postanete vidljivi kako bi uređaj mogao dijeliti sadržaj s vama</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> dijeli Chrome karticu i zvuk.</translation>
-<translation id="945522503751344254">Slanje povratnih informacija</translation>
+<translation id="945522503751344254">Pošaljite povratne informacije</translation>
 <translation id="947329552760389097">&amp;Provjeri elemente</translation>
 <translation id="951991426597076286">Odbij</translation>
 <translation id="952992212772159698">Nije aktivirano</translation>

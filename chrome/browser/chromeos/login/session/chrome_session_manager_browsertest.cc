@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -68,8 +69,7 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 
 class ChromeSessionManagerTest : public LoginManagerTest {
  public:
-  ChromeSessionManagerTest()
-      : LoginManagerTest(), fake_gaia_{&mixin_host_, embedded_test_server()} {}
+  ChromeSessionManagerTest() = default;
   ~ChromeSessionManagerTest() override {}
 
   // LoginManagerTest:
@@ -79,16 +79,10 @@ class ChromeSessionManagerTest : public LoginManagerTest {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
   }
 
-  void StartSignInScreen() {
-    WizardController* wizard_controller =
-        WizardController::default_controller();
-    ASSERT_TRUE(wizard_controller);
-    wizard_controller->SkipToLoginForTesting();
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
-  }
-
  protected:
-  FakeGaiaMixin fake_gaia_;
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManagerTest);
@@ -105,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
   fake_gaia_.SetupFakeGaiaForLoginManager();
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
-  StartSignInScreen();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
@@ -189,7 +183,7 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
     fake_gaia_.SetupFakeGaiaForLoginManager();
     fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
         FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
-    StartSignInScreen();
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()

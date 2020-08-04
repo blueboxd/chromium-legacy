@@ -9,6 +9,7 @@
 #include "content/public/common/content_features.h"
 #include "net/url_request/referrer_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 
 namespace content {
 
@@ -104,7 +105,7 @@ TEST(ReferrerTest, BlinkNetRoundTripConversion) {
 
   for (auto policy : policies) {
     EXPECT_EQ(Referrer::ReferrerPolicyForUrlRequest(
-                  Referrer::NetReferrerPolicyToBlinkReferrerPolicy(policy)),
+                  blink::NetToMojoReferrerPolicy(policy)),
               policy);
   }
 }

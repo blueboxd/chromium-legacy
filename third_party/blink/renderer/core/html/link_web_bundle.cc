@@ -23,8 +23,8 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
                   ExecutionContext& execution_context,
                   const KURL& url)
       : link_web_bundle_(&link_web_bundle),
-        pending_factory_receiver_(
-            loader_factory_.BindNewPipeAndPassReceiver()) {
+        pending_factory_receiver_(loader_factory_.BindNewPipeAndPassReceiver()),
+        url_(url) {
     ResourceRequest request(url);
     request.SetUseStreamOnResponse(true);
     // TODO(crbug.com/1082020): Revisit these once the fetch and process the
@@ -77,6 +77,8 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   void DidFail(const ResourceError&) override { DidFailInternal(); }
   void DidFailRedirectCheck() override { DidFailInternal(); }
 
+  const KURL& url() const { return url_; }
+
  private:
   void DidFailInternal() {
     if (pending_factory_receiver_) {
@@ -97,6 +99,7 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   mojo::PendingReceiver<network::mojom::blink::URLLoaderFactory>
       pending_factory_receiver_;
   bool failed_ = false;
+  KURL url_;
 };
 
 LinkWebBundle::LinkWebBundle(HTMLLinkElement* owner) : LinkResource(owner) {}
@@ -123,8 +126,10 @@ void LinkWebBundle::Process() {
   if (!resource_fetcher)
     return;
 
-  bundle_loader_ = MakeGarbageCollected<WebBundleLoader>(
-      *this, *owner_->GetDocument().GetExecutionContext(), owner_->Href());
+  if (!bundle_loader_ || bundle_loader_->url() != owner_->Href()) {
+    bundle_loader_ = MakeGarbageCollected<WebBundleLoader>(
+        *this, *owner_->GetDocument().GetExecutionContext(), owner_->Href());
+  }
 
   resource_fetcher->AddSubresourceWebBundle(*this);
 }

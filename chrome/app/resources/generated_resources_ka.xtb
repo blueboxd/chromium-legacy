@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">ფაილები</translation>
 <translation id="1296911687402551044">არჩეული ჩანართის ჩამაგრება</translation>
 <translation id="1297175357211070620">დანიშნულება</translation>
-<translation id="1297646507722131691">ვერსიის განახლებამდე რეკომენდებულია ფაილების სარეზერვო ასლების შექმნა, რომ არაფერი დაგეკარგოთ, თუ ვერსიის განახლება ვერ მოხერხდება. ვერსიის განახლების დაწყების შემთხვევაში Linux (ბეტა) გამოირთვება. გაგრძელებამდე შეინახეთ გახსნილი ფაილები.</translation>
 <translation id="1300415640239881824">დაცული კონტენტის გაუმჯობესებული გაშვების უფლების შესამოწმებლად <ph name="DOMAIN" /> საჭიროებს თქვენი მოწყობილობის იდენტიფიკაციას Google-ის მიერ.</translation>
 <translation id="1300806585489372370">ამ პარამეტრის შესაცვლელად, პირველ რიგში, <ph name="BEGIN_LINK" />ჩართეთ იდენტიფიკატორები<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" />-ს შეუძლია მითითებული ფაილების რედაქტირება</translation>
@@ -1980,7 +1979,6 @@
 <translation id="3435738964857648380">უსაფრთხოება</translation>
 <translation id="343578350365773421">ქაღალდი ამოიწურა</translation>
 <translation id="3435896845095436175">ჩართვა</translation>
-<translation id="3436642683618870087">ავტოსუბტიტრები ამოიცნობს მეტყველებას მედიაფაილში და ავტომატურად შექმნის სუბტიტრებს Chrome-ში გაშვებული მედიაკონტენტისთვის.</translation>
 <translation id="3438633801274389918">ნინძა</translation>
 <translation id="3439153939049640737">ყოველთვის მიეცი ნება <ph name="HOST" />-ს, მიიღოს წვდომა მიკროფონზე</translation>
 <translation id="3439970425423980614">PDF-ის გახსნა წინასწარ ხედში</translation>
@@ -3623,7 +3621,6 @@
 <translation id="5511379779384092781">ძალიან პატარა</translation>
 <translation id="5511823366942919280">ნამდვილად გსურთ დააყენოთ მოწყობილობა, როგორც „Shark“?</translation>
 <translation id="5512653252560939721">მომხმარებლის სერთიფიკატიაპარატურის შესაბამისი უდნა იყოს.</translation>
-<translation id="5515923816438946203">არჩიეთ, რას ხედავთ ეკრანზე</translation>
 <translation id="5517304475148761050">ეს აპი საჭიროებს წვდომას Play Store-ზე</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> — <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">თქვენს ანგარიშზე პრინტერის დამატება - ამას შეიძლება დასჭირდეს მცირე დრო…</translation>
@@ -3738,6 +3735,7 @@
 <translation id="5642508497713047">CRL ხელმომწერი</translation>
 <translation id="5643321261065707929">ლიმიტირებული ქსელი</translation>
 <translation id="5643620609347735571">გასუფთავება და გაგრძელება</translation>
+<translation id="5646376287012673985">მდებარეობა</translation>
 <translation id="5646558797914161501">ბიზნესმენი</translation>
 <translation id="5648166631817621825">ბოლო 7 დღე</translation>
 <translation id="5649053991847567735">ავტომატური ჩამოტვირთვები</translation>
@@ -6389,7 +6387,6 @@
 <translation id="8952831374766033534">კონფიგურაციის ვარიანტი მხარდაუჭერელია: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">დატენისას</translation>
 <translation id="895347679606913382">იწყება…</translation>
-<translation id="8957762313041272117">ავტოსუბტიტრები</translation>
 <translation id="895944840846194039">JavaScript მეხსიერება</translation>
 <translation id="8962083179518285172">დეტალების დამალვა</translation>
 <translation id="8962918469425892674">ეს საიტი იყენებს მოძრაობისა თუ განათების სენსორებს.</translation>

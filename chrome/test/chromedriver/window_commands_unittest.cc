@@ -6,8 +6,10 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
+#include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/net/timeout.h"
@@ -800,4 +802,111 @@ TEST(WindowCommandsTest, ExecutePrintSpecifyMargin) {
   params.SetDictionary("margin", std::move(dv));
   status = CallWindowCommand(ExecutePrint, &webview, params, &result_value);
   ASSERT_EQ(kInvalidArgument, status.code()) << status.message();
+}
+
+namespace {
+constexpr double wd = 345.6;
+constexpr double hd = 5432.1;
+constexpr int wi = 346;
+constexpr int hi = 5433;
+constexpr bool mobile = false;
+constexpr double device_scale_factor = 0.3;
+
+class StoreScreenshotParamsWebView : public StubWebView {
+ public:
+  explicit StoreScreenshotParamsWebView(DevToolsClient* dtc = nullptr,
+                                        DeviceMetrics* dm = nullptr)
+      : StubWebView("1"), meom_(new MobileEmulationOverrideManager(dtc, dm)) {}
+  ~StoreScreenshotParamsWebView() override = default;
+
+  Status SendCommandAndGetResult(const std::string& cmd,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value) override {
+    if (cmd == "Page.getLayoutMetrics") {
+      std::unique_ptr<base::DictionaryValue> res =
+          std::make_unique<base::DictionaryValue>();
+      std::unique_ptr<base::DictionaryValue> d =
+          std::make_unique<base::DictionaryValue>();
+      d->SetDouble("width", wd);
+      d->SetDouble("height", hd);
+      res->SetDictionary("contentSize", std::move(d));
+      *value = std::move(res);
+    } else if (cmd == "Emulation.setDeviceMetricsOverride") {
+      base::DictionaryValue expect;
+      expect.SetInteger("width", wi);
+      expect.SetInteger("height", hi);
+      if (meom_->HasOverrideMetrics()) {
+        expect.SetInteger("deviceScaleFactor", device_scale_factor);
+        expect.SetBoolean("mobile", mobile);
+      } else {
+        expect.SetInteger("deviceScaleFactor", 1);
+        expect.SetBoolean("mobile", false);
+      }
+      if (expect != params)
+        return Status(kInvalidArgument);
+    }
+
+    return Status(kOk);
+  }
+
+  Status CaptureScreenshot(std::string* screenshot,
+                           const base::DictionaryValue& params) override {
+    params_ = params.Clone();
+    return Status(kOk);
+  }
+
+  const base::Value& getParams() const { return params_; }
+
+  MobileEmulationOverrideManager* GetMobileEmulationOverrideManager()
+      const override {
+    return meom_.get();
+  }
+
+ private:
+  base::Value params_;
+  std::unique_ptr<MobileEmulationOverrideManager> meom_;
+};
+
+base::DictionaryValue getExpectedCaptureParams() {
+  base::DictionaryValue clip;
+  return clip;
+}
+}  // namespace
+
+TEST(WindowCommandsTest, ExecuteScreenCapture) {
+  StoreScreenshotParamsWebView webview;
+  base::DictionaryValue params;
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteScreenshot, &webview, params, &result_value);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  base::DictionaryValue screenshotParams = base::DictionaryValue();
+  ASSERT_EQ(static_cast<const base::Value&>(screenshotParams),
+            webview.getParams());
+}
+
+TEST(WindowCommandsTest, ExecuteFullPageScreenCapture) {
+  StoreScreenshotParamsWebView webview;
+  base::DictionaryValue params;
+  std::unique_ptr<base::Value> result_value;
+  Status status = CallWindowCommand(ExecuteFullPageScreenshot, &webview, params,
+                                    &result_value);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_EQ(static_cast<const base::Value&>(getExpectedCaptureParams()),
+            webview.getParams());
+}
+
+TEST(WindowCommandsTest, ExecuteMobileFullPageScreenCapture) {
+  StubDevToolsClient sdtc;
+  DeviceMetrics dm(0, 0, device_scale_factor, false, mobile);
+  StoreScreenshotParamsWebView webview(&sdtc, &dm);
+  ASSERT_EQ(webview.GetMobileEmulationOverrideManager()->HasOverrideMetrics(),
+            true);
+  base::DictionaryValue params;
+  std::unique_ptr<base::Value> result_value;
+  Status status = CallWindowCommand(ExecuteFullPageScreenshot, &webview, params,
+                                    &result_value);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_EQ(static_cast<const base::Value&>(getExpectedCaptureParams()),
+            webview.getParams());
 }

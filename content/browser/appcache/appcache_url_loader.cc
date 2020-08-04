@@ -380,14 +380,14 @@ void AppCacheURLLoader::NotifyCompleted(int error_code) {
 
   network::URLLoaderCompletionStatus status(error_code);
   if (!error_code) {
-    const net::HttpResponseInfo* http_info =
-        is_range_request() ? range_response_info_.get()
-                           : (info_ ? &info_->http_response_info() : nullptr);
+    const net::HttpResponseInfo* http_info = is_range_request()
+                                                 ? range_response_info_.get()
+                                                 : &info_->http_response_info();
     status.exists_in_cache = http_info->was_cached;
     status.completion_time = base::TimeTicks::Now();
     status.encoded_body_length =
         is_range_request() ? range_response_info_->headers->GetContentLength()
-                           : (info_ ? info_->response_data_size() : 0);
+                           : info_->response_data_size();
     status.decoded_body_length = status.encoded_body_length;
   }
   client_->OnComplete(status);

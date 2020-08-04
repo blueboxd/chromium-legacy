@@ -125,7 +125,6 @@
 <translation id="1993768208584545658">Сайт <ph name="SITE" /> запрашивает подключение</translation>
 <translation id="2000419248597011803">Отправлять некоторые файлы cookie и поисковые запросы из адресной строки в поисковую систему по умолчанию</translation>
 <translation id="2002537628803770967">Кредитные карты и адреса из Google Pay</translation>
-<translation id="2012973609889389923">Быстрая загрузка</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файла}many{# файлов}other{# файла}}</translation>
 <translation id="2017836877785168846">Удаление истории и вариантов автозаполнения в адресной строке</translation>
 <translation id="2021896219286479412">Настройки полноэкранного режима</translation>
@@ -220,6 +219,7 @@
 <translation id="2744248271121720757">Нажмите на слово, чтобы увидеть связанные с ним результаты поиска и действия.</translation>
 <translation id="2760989362628427051">Использовать тёмную тему, когда на устройстве включена тёмная тема или режим энергосбережения.</translation>
 <translation id="2762000892062317888">только что</translation>
+<translation id="2771869497727323769">Не удалось создать ссылку на текст. Поделитесь ссылкой на страницу через приложение.</translation>
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2779651927720337254">ошибка</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
@@ -460,6 +460,7 @@
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4738836084190194332">Последняя синхронизация: <ph name="WHEN" /></translation>
+<translation id="474698142248234220">Ошибка TWA: код <ph name="ERROR_CODE" />, URL <ph name="VIOLATED_URL" />.</translation>
 <translation id="4749960740855309258">Открыть новую вкладку</translation>
 <translation id="4759238208242260848">Скачанные файлы</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Скачивание 1 файла завершено.}one{Скачивание # файла завершено.}few{Скачивание # файлов завершено.}many{Скачивание # файлов завершено.}other{Скачивание # файла завершено.}}</translation>
@@ -509,6 +510,7 @@
 <translation id="5040262127954254034">Конфиденциальность</translation>
 <translation id="5087580092889165836">Добавить карту</translation>
 <translation id="509429900233858213">Произошла ошибка.</translation>
+<translation id="5100748015044654621">Поделитесь ссылкой на выделенный текст через приложение.</translation>
 <translation id="510275257476243843">Остался 1 час</translation>
 <translation id="5123685120097942451">Вкладка инкогнито</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
@@ -535,6 +537,7 @@
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="5317780077021120954">Сохранить</translation>
+<translation id="5319359161174645648">Google рекомендует браузер Chrome</translation>
 <translation id="5324858694974489420">Родительские настройки</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5342314432463739672">Запросы разрешений</translation>
@@ -579,7 +582,7 @@
 <translation id="5639724618331995626">Разрешить доступ ко всем сайтам</translation>
 <translation id="5648166631817621825">Последние 7 дней</translation>
 <translation id="5655963694829536461">Поиск в загрузках</translation>
-<translation id="5659593005791499971">Электронная почта</translation>
+<translation id="5659593005791499971">Эл. почта</translation>
 <translation id="5665379678064389456">Создать мероприятие в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="5668404140385795438">Игнорировать запросы сайтов на запрет масштабирования</translation>
 <translation id="568275469169136466">Для временного доступа</translation>
@@ -975,6 +978,7 @@
 <translation id="8562452229998620586">Здесь будут показаны сохраненные пароли.</translation>
 <translation id="8569404424186215731">с <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Последние 4 недели</translation>
+<translation id="8572344201470131220">Изображение скопировано.</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
 <translation id="860043288473659153">Имя владельца карты</translation>
 <translation id="8616006591992756292">Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1017,6 +1021,7 @@
 <translation id="8988028529677883095">Использовать телефон в качестве электронного ключа</translation>
 <translation id="8990209962746788689">Не удалось создать QR-код.</translation>
 <translation id="8993760627012879038">Открыть новое окно в режиме инкогнито</translation>
+<translation id="8996847606757455498">Выбрать другого поставщика</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="9028914725102941583">Включите синхронизацию</translation>
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>

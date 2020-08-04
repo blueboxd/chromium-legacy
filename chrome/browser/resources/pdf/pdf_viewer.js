@@ -29,7 +29,7 @@ import {InkController} from './ink_controller.js';
 //</if>
 import {LocalStorageProxyImpl} from './local_storage_proxy.js';
 import {PDFMetrics} from './metrics.js';
-import {NavigatorDelegate, PdfNavigator} from './navigator.js';
+import {NavigatorDelegateImpl, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
 import {PDFViewerBaseElement} from './pdf_viewer_base.js';
@@ -357,7 +357,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     this.navigator_ = new PdfNavigator(
         this.originalUrl, this.viewport,
         /** @type {!OpenPdfParamsParser} */ (this.paramsParser),
-        new NavigatorDelegate(tabId));
+        new NavigatorDelegateImpl(tabId));
 
     // Listen for save commands from the browser.
     if (chrome.mimeHandlerPrivate && chrome.mimeHandlerPrivate.onSave) {

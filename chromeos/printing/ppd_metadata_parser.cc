@@ -120,12 +120,70 @@ base::Optional<ParsedPrinter> ParsePrinterFromValue(const base::Value& value) {
   return printer;
 }
 
+// Returns a ParsedIndexLeaf from |value|.
+base::Optional<ParsedIndexLeaf> ParsedIndexLeafFrom(const base::Value& value) {
+  if (!value.is_dict()) {
+    return base::nullopt;
+  }
+
+  ParsedIndexLeaf leaf;
+
+  const std::string* const ppd_basename = value.FindStringKey("name");
+  if (!ppd_basename) {
+    return base::nullopt;
+  }
+  leaf.ppd_basename = *ppd_basename;
+
+  const base::Value* const restrictions_value =
+      value.FindDictKey("restriction");
+  if (restrictions_value) {
+    leaf.restrictions = ParseRestrictionsFromValue(*restrictions_value);
+  }
+  return leaf;
+}
+
+// Returns a ParsedIndexValues from a |value| extracted from a forward
+// index.
+base::Optional<ParsedIndexValues> UnnestPpdMetadata(const base::Value& value) {
+  if (!value.is_dict()) {
+    return base::nullopt;
+  }
+  const base::Value* const ppd_metadata_list = value.FindListKey("ppdMetadata");
+  if (!ppd_metadata_list || ppd_metadata_list->GetList().size() == 0) {
+    return base::nullopt;
+  }
+
+  ParsedIndexValues parsed_index_values;
+  for (const base::Value& v : ppd_metadata_list->GetList()) {
+    base::Optional<ParsedIndexLeaf> parsed_index_leaf = ParsedIndexLeafFrom(v);
+    if (parsed_index_leaf.has_value()) {
+      parsed_index_values.values.push_back(parsed_index_leaf.value());
+    }
+  }
+
+  if (parsed_index_values.values.empty()) {
+    return base::nullopt;
+  }
+  return parsed_index_values;
+}
+
 }  // namespace
 
 ParsedPrinter::ParsedPrinter() = default;
 ParsedPrinter::~ParsedPrinter() = default;
 ParsedPrinter::ParsedPrinter(const ParsedPrinter&) = default;
 ParsedPrinter& ParsedPrinter::operator=(const ParsedPrinter&) = default;
+
+ParsedIndexLeaf::ParsedIndexLeaf() = default;
+ParsedIndexLeaf::~ParsedIndexLeaf() = default;
+ParsedIndexLeaf::ParsedIndexLeaf(const ParsedIndexLeaf&) = default;
+ParsedIndexLeaf& ParsedIndexLeaf::operator=(const ParsedIndexLeaf&) = default;
+
+ParsedIndexValues::ParsedIndexValues() = default;
+ParsedIndexValues::~ParsedIndexValues() = default;
+ParsedIndexValues::ParsedIndexValues(const ParsedIndexValues&) = default;
+ParsedIndexValues& ParsedIndexValues::operator=(const ParsedIndexValues&) =
+    default;
 
 base::Optional<std::vector<std::string>> ParseLocales(
     base::StringPiece locales_json) {
@@ -169,6 +227,32 @@ base::Optional<ParsedManufacturers> ParseManufacturers(
     return base::nullopt;
   }
   return manufacturers;
+}
+
+base::Optional<ParsedIndex> ParseForwardIndex(
+    base::StringPiece forward_index_json) {
+  // Firstly, we unnest the dictionary keyed by "ppdIndex."
+  base::Optional<base::Value> ppd_index = ParseJsonAndUnnestKey(
+      forward_index_json, "ppdIndex", base::Value::Type::DICTIONARY);
+  if (!ppd_index || ppd_index->DictSize() == 0) {
+    return base::nullopt;
+  }
+
+  ParsedIndex parsed_index;
+
+  // Secondly, we iterate on the key-value pairs of the ppdIndex.
+  // This yields a list of leaf values (dictionaries).
+  for (const auto& kv : ppd_index->DictItems()) {
+    base::Optional<ParsedIndexValues> values = UnnestPpdMetadata(kv.second);
+    if (values.has_value()) {
+      parsed_index.insert_or_assign(kv.first, values.value());
+    }
+  }
+
+  if (parsed_index.empty()) {
+    return base::nullopt;
+  }
+  return parsed_index;
 }
 
 base::Optional<ParsedPrinters> ParsePrinters(base::StringPiece printers_json) {

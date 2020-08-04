@@ -4,6 +4,7 @@
 
 #include "net/cert/cert_verify_proc_builtin.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -176,7 +177,8 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
-      GetCertVerifyProcBuiltinTimeLimitForTesting().IntDiv(timeout_increment) +
+      base::ClampFloor(GetCertVerifyProcBuiltinTimeLimitForTesting() /
+                       timeout_increment) +
       1;
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
@@ -248,7 +250,8 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
-      GetCertVerifyProcBuiltinTimeLimitForTesting().IntDiv(timeout_increment) +
+      base::ClampFloor(GetCertVerifyProcBuiltinTimeLimitForTesting() /
+                       timeout_increment) +
       1;
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
@@ -326,7 +329,8 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
-      GetCertVerifyProcBuiltinTimeLimitForTesting().IntDiv(timeout_increment) +
+      base::ClampFloor(GetCertVerifyProcBuiltinTimeLimitForTesting() /
+                       timeout_increment) +
       1;
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);

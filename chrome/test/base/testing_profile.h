@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -392,13 +391,6 @@ class TestingProfile : public Profile {
   }
 
  private:
-  // We use a temporary directory to store testing profile data. This
-  // must be declared before anything that may make use of the
-  // directory so as to ensure files are closed before cleanup.  In a
-  // multi-profile environment, this is invalid and the directory is
-  // managed by the TestingProfileManager.
-  base::ScopedTempDir temp_dir_;
-
   // Called when profile is deleted.
   ProfileDestructionCallback profile_destruction_callback_;
 
@@ -414,9 +406,6 @@ class TestingProfile : public Profile {
   sync_preferences::TestingPrefServiceSyncable* testing_prefs_;
 
  private:
-  // Creates a temporary directory for use by this profile.
-  void CreateTempProfileDir();
-
   // Common initialization between the two constructors.
   void Init();
 

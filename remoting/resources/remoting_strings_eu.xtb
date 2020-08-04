@@ -152,7 +152,7 @@ Baimen hori emateko, sakatu beheko "<ph name="BUTTON_NAME" />" botoia pantailare
 <translation id="8041089156583427627">Bidali oharrak</translation>
 <translation id="8060029310790625334">Laguntza-zentroa</translation>
 <translation id="806699900641041263"><ph name="HOSTNAME" /> ostalarira konektatzen</translation>
-<translation id="8073845705237259513">Chrome-ren Urruneko pantaila erabili ahal izateko, Google-ko kontua gehitu beharko duzu gailuan.</translation>
+<translation id="8073845705237259513">Chrome-ren Urruneko pantaila erabili ahal izateko, Google-ko kontu bat gehitu beharko duzu gailuan.</translation>
 <translation id="809687642899217504">Nire ordenagailuak</translation>
 <translation id="8116630183974937060">Sareko errore bat gertatu da. Egiaztatu gailua konektatuta duzula eta saiatu berriro.</translation>
 <translation id="8187079423890319756">Copyright 2013, The Chromium Authors. Eskubide guztiak erreserbatuta.</translation>
@@ -161,7 +161,7 @@ Baimen hori emateko, sakatu beheko "<ph name="BUTTON_NAME" />" botoia pantailare
 Baimen hori emateko, sakatu beheko "<ph name="BUTTON_NAME" />" botoia. Erabilerraztasun-eginbideen hobespen-panela irekitzen denean, markatu "<ph name="SERVICE_SCRIPT_NAME" />" elementuaren ondoan dagoen koadroa.
 
 "'<ph name="SERVICE_SCRIPT_NAME" />" dagoeneko markatuta badago, desmarka ezazu eta marka ezazu berriro.</translation>
-<translation id="8383794970363966105">Chromoting erabili ahal izateko, Google kontua gehitu beharko duzu gailuan.</translation>
+<translation id="8383794970363966105">Chromoting erabili ahal izateko, Google-ko kontu bat gehitu beharko duzu gailuan.</translation>
 <translation id="8386846956409881180">Balio ez duten OAuth kredentzialekin dago konfiguratuta ostalaria.</translation>
 <translation id="8397385476380433240">Eman baimena <ph name="PRODUCT_NAME" /> atzitzeko</translation>
 <translation id="8406498562923498210">Hautatu saio bat Chrome-ren Urruneko pantaila ingurunean abiarazteko. Gogoan izan saio mota batzuk ezin direla aldi berean abiarazi Chrome-ren Urruneko pantaila eginbidean eta kontsola lokalean.</translation>

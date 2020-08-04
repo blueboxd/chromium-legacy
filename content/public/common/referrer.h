@@ -50,9 +50,6 @@ struct CONTENT_EXPORT Referrer {
   static net::ReferrerPolicy ReferrerPolicyForUrlRequest(
       network::mojom::ReferrerPolicy referrer_policy);
 
-  static network::mojom::ReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
-      net::ReferrerPolicy net_policy);
-
   static net::ReferrerPolicy GetDefaultReferrerPolicy();
 
   // Configures retaining the pre-M80 default referrer

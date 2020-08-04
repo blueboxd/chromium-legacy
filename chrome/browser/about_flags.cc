@@ -2732,11 +2732,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
                                switches::kDisableDeviceDiscoveryNotifications)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-#if defined(OS_WIN)
-    {"enable-cloud-print-xps", flag_descriptions::kCloudPrintXpsName,
-     flag_descriptions::kCloudPrintXpsDescription, kOsWin,
-     SINGLE_VALUE_TYPE(switches::kEnableCloudPrintXps)},
-#endif  // OS_WIN
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     {"enable-webgl2-compute-context",
      flag_descriptions::kWebGL2ComputeContextName,

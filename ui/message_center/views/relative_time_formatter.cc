@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/relative_time_formatter.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -69,7 +70,7 @@ void GetRelativeTimeStringAndNextUpdateTime(TimeDelta delta,
   }
 
   int string_id = past ? format.past : format.future;
-  int count = static_cast<int>(absolute.IntDiv(format.range));
+  int count = base::ClampFloor(absolute / format.range);
   TimeDelta delay = past
                         ? format.range * (count + 1)
                         : TimeDelta::FromMilliseconds(1) - format.range * count;

@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
                                   signRequestData: 'include',
-                                  issuer: $1}});
+                                  issuers: [$1]}});
     return "Success"; })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
     request.setTrustToken({
       type: 'send-srr',
       signRequestData: 'include',
-      issuer: $1
+      issuers: [$1]
     });
     promise = new Promise((res, rej) => {
       request.onload = res; request.onerror = rej;
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
   std::string command = JsReplace(R"((async () => {
       await fetch("/sign", {trustToken: {type: 'send-srr',
                                          signRequestData: 'include',
-                                         issuer: $1}});
+                                         issuers: [$1]}});
       return "Success";
       })(); )",
                                   IssuanceOriginFromHost("a.test"));
@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
                                   signRequestData: 'include',
-                                  issuer: $1}});
+                                  issuers: [$1]}});
     return "Success"; })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
                                   signRequestData: 'include',
-                                  issuer: $1}});
+                                  issuers: [$1]}});
     return "Success"; })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, AdditionalSigningData) {
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
       signRequestData: 'include',
-      issuer: $1,
+      issuers: [$1],
       additionalSigningData: 'some additional data to sign'}});
     return "Success"; })(); )";
 
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
   cmd = R"(
     fetch("/sign", {trustToken: {type: 'send-srr',
       signRequestData: 'include',
-      issuer: $1,
+      issuers: [$1],
       additionalSigningData: $2}}).then(()=>"Success");)";
 
   EXPECT_EQ("Success",
@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
   command = R"(
     fetch("/sign", {trustToken: {type: 'send-srr',
       signRequestData: 'include',
-      issuer: $1,
+      issuers: [$1],
       additionalSigningData: '\r'}}).then(()=>"Success");)";
 
   EXPECT_EQ(

@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/core/browser/safe_browsing_network_context.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -21,6 +23,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 #include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 
@@ -38,8 +41,9 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams(
   return network_context_params;
 }
 
-// Helper method that checks the RenderProcessHost is still alive before hopping
-// over to the IO thread.
+// Helper method that checks the RenderProcessHost is still alive and checks the
+// latest Safe Browsing pref value on the UI thread before hopping over to the
+// IO thread.
 void MaybeCreateSafeBrowsing(
     int rph_id,
     content::ResourceContext* resource_context,
@@ -53,6 +57,14 @@ void MaybeCreateSafeBrowsing(
   if (!render_process_host)
     return;
 
+  bool is_safe_browsing_enabled = safe_browsing::IsSafeBrowsingEnabled(
+      *static_cast<BrowserContextImpl*>(
+           render_process_host->GetBrowserContext())
+           ->pref_service());
+
+  if (!is_safe_browsing_enabled)
+    return;
+
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
@@ -63,7 +75,7 @@ void MaybeCreateSafeBrowsing(
 }  // namespace
 
 SafeBrowsingService::SafeBrowsingService(const std::string& user_agent)
-    : user_agent_(user_agent), safe_browsing_disabled_(false) {}
+    : user_agent_(user_agent) {}
 
 SafeBrowsingService::~SafeBrowsingService() = default;
 
@@ -124,8 +136,7 @@ SafeBrowsingService::GetSafeBrowsingUrlCheckerDelegate() {
 
   if (!safe_browsing_url_checker_delegate_) {
     safe_browsing_url_checker_delegate_ = new UrlCheckerDelegateImpl(
-        GetSafeBrowsingDBManager(), GetSafeBrowsingUIManager(),
-        safe_browsing_disabled_);
+        GetSafeBrowsingDBManager(), GetSafeBrowsingUIManager());
   }
 
   return safe_browsing_url_checker_delegate_;
@@ -217,35 +228,11 @@ void SafeBrowsingService::StopDBManagerOnIOThread() {
   }
 }
 
-void SafeBrowsingService::SetSafeBrowsingDisabled(bool disabled) {
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SafeBrowsingService::SetSafeBrowsingDisabledOnIOThread,
-                     base::Unretained(this), disabled));
-}
-
-void SafeBrowsingService::SetSafeBrowsingDisabledOnIOThread(bool disabled) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (safe_browsing_disabled_ != disabled) {
-    safe_browsing_disabled_ = disabled;
-    // If there is no safe_browsing_url_checker_delegate_ yet the opt_out
-    // setting will be set later during its creation.
-    if (safe_browsing_url_checker_delegate_) {
-      safe_browsing_url_checker_delegate_->SetSafeBrowsingDisabled(disabled);
-    }
-  }
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 SafeBrowsingService::GetURLLoaderFactory() {
   if (!network_context_)
     return nullptr;
   return network_context_->GetURLLoaderFactory();
-}
-
-bool SafeBrowsingService::GetSafeBrowsingDisabled() {
-  return safe_browsing_disabled_;
 }
 
 }  // namespace weblayer

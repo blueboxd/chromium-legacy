@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">无法保存图片</translation>
 <translation id="1180526666083833456">在所有设备上保持同步并进行个性化设置。</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1185569544548277362">新功能：您可将 Chrome 设为默认浏览器。<ph name="BEGIN_LINK" />打开“设置”<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">新搜索</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1219674500290482172">无法连接到互联网。</translation>
@@ -244,7 +245,7 @@
 <translation id="3783017676699494206">保存图片</translation>
 <translation id="3789841737615482174">安装</translation>
 <translation id="3803696231112616155">主动询问是否翻译此网站</translation>
-<translation id="385051799172605136">后退</translation>
+<translation id="385051799172605136">返回</translation>
 <translation id="3892144330757387737">您的历史记录会显示在此处</translation>
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3915450441834151894">网站信息</translation>
@@ -421,7 +422,7 @@
 <translation id="6021332621416007159">打开方式...</translation>
 <translation id="6039429417015973673">标题：<ph name="TITLE" />；发布者：<ph name="PUBLISHER_INFORMATION" />；发布日期：<ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">关闭</translation>
-<translation id="6042308850641462728">更多</translation>
+<translation id="6042308850641462728">展开</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
 <translation id="6108923351542677676">正在设置…</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="INCOGNITO" />标签页<ph name="FIRST_VISIBLE_TAB" />-<ph name="LAST_VISIBLE_TAB" />（共<ph name="NUMBER_OF_OPEN_TABS" />个）</translation>
 <translation id="8529767659511976195">新功能</translation>
 <translation id="8532105204136943229">到期年份</translation>
+<translation id="8533166274275423134">已在别处打开</translation>
 <translation id="8534481786647257214">Google+ 信息发布已完成。</translation>
 <translation id="8548878600947630424">在网页中查找...</translation>
 <translation id="8574235780160508979">Chrome 的《服务条款》将于 3 月 31 日变更。<ph name="BEGIN_LINK" />请查阅<ph name="END_LINK" /></translation>

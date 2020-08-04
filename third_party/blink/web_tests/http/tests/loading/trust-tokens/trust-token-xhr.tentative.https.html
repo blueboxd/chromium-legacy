@@ -43,7 +43,7 @@
       request.open('GET', 'https://destination.test');
       request.setTrustToken({
         type: 'send-srr',
-        issuer: 'https://issuer.test'
+        issuers: ['https://issuer.test']
       });
       request.onerror = t.step_func(() => {
         assert_equals(request.trustTokenOperationError, null,

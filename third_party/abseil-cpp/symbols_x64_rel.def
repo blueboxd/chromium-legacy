@@ -368,6 +368,7 @@ EXPORTS
     ?FromUniversal@absl@@YA?AVTime@1@_J@Z
     ?GetAppendRegion@InlineRep@Cord@absl@@QEAAXPEAPEADPEA_K@Z
     ?GetAppendRegion@InlineRep@Cord@absl@@QEAAXPEAPEADPEA_K_K@Z
+    ?GetCachedTID@base_internal@absl@@YAIXZ
     ?GetCurrentTimeNanos@absl@@YA_JXZ
     ?GetFlatAux@Cord@absl@@CA_NPEAUCordRep@cord_internal@2@PEAVstring_view@2@@Z
     ?GetId@GraphCycles@synchronization_internal@absl@@QEAA?AUGraphId@23@PEAX@Z

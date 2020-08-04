@@ -23,10 +23,15 @@ network::mojom::blink::TrustTokenParamsPtr NetworkParamsToBlinkParams(
   ret->refresh_policy = params->refresh_policy;
   ret->sign_request_data = params->sign_request_data;
   ret->include_timestamp_header = params->include_timestamp_header;
-  if (params->issuer)
-    ret->issuer = SecurityOrigin::CreateFromUrlOrigin(*params->issuer);
+  for (const url::Origin& issuer : params->issuers) {
+    ret->issuers.push_back(SecurityOrigin::CreateFromUrlOrigin(issuer));
+  }
   for (const std::string& header : params->additional_signed_headers) {
     ret->additional_signed_headers.push_back(String::FromUTF8(header));
+  }
+  if (params->possibly_unsafe_additional_signing_data) {
+    ret->possibly_unsafe_additional_signing_data =
+        String::FromUTF8(*params->possibly_unsafe_additional_signing_data);
   }
   return ret;
 }
@@ -73,7 +78,7 @@ TEST_P(TrustTokenAttributeParsingSuccess, Roundtrip) {
   ASSERT_TRUE(result);
 
   // We can't use mojo's generated Equals method here because it doesn't play
-  // well with the "issuer" field's type of
+  // well with the "issuers" field's members' type of
   // scoped_refptr<blink::SecurityOrigin>: in particular, the method does an
   // address-to-address comparison of the pointers.
   EXPECT_EQ(result->type, expectation->type);
@@ -82,12 +87,20 @@ TEST_P(TrustTokenAttributeParsingSuccess, Roundtrip) {
   EXPECT_EQ(result->include_timestamp_header,
             expectation->include_timestamp_header);
 
-  EXPECT_EQ(!!result->issuer, !!expectation->issuer);
-  if (result->issuer)
-    EXPECT_EQ(result->issuer->ToString(), expectation->issuer->ToString());
+  EXPECT_EQ(result->issuers.size(), expectation->issuers.size());
+  for (size_t i = 0; i < result->issuers.size(); ++i) {
+    EXPECT_EQ(!!result->issuers.at(i), !!expectation->issuers.at(i));
+    if (result->issuers.at(i)) {
+      EXPECT_EQ(result->issuers.at(i)->ToString(),
+                expectation->issuers.at(i)->ToString());
+    }
+  }
 
   EXPECT_EQ(result->additional_signed_headers,
             expectation->additional_signed_headers);
+
+  EXPECT_EQ(result->possibly_unsafe_additional_signing_data,
+            expectation->possibly_unsafe_additional_signing_data);
 }
 
 TEST(TrustTokenAttributeParsing, NotADictionary) {
@@ -167,43 +180,65 @@ TEST(TrustTokenAttributeParsing, TypeUnsafeIncludeTimestampHeader) {
   ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
 }
 
-TEST(TrustTokenAttributeParsing, TypeUnsafeIssuer) {
+TEST(TrustTokenAttributeParsing, NonListIssuers) {
   auto json = ParseJSON(R"(
     { "type": "token-request",
-      "issuer": 3 }
+      "issuers": 3 }
   )");
   ASSERT_TRUE(json);
   ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
 }
 
-// Test that the parser requires that |issuer| be a valid origin.
-TEST(TrustTokenAttributeParsing, NonUrlIssuer) {
+TEST(TrustTokenAttributeParsing, EmptyIssuers) {
+  auto json = ParseJSON(R"(
+    { "type": "token-request",
+      "issuers": [] }
+  )");
+  ASSERT_TRUE(json);
+  ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
+}
+
+TEST(TrustTokenAttributeParsing, WrongListTypeIssuers) {
   JSONParseError err;
   auto json = ParseJSON(R"(
     { "type": "token-request",
-      "issuer": "not a URL" }
+      "issuers": [1995] }
   )",
                         &err);
   ASSERT_TRUE(json);
   ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
 }
 
-// Test that the parser requires that |issuer| be a potentially trustworthy
-// origin.
+// Test that the parser requires each member of |issuers| be a valid origin.
+TEST(TrustTokenAttributeParsing, NonUrlIssuer) {
+  JSONParseError err;
+  auto json = ParseJSON(R"(
+    { "type": "token-request",
+      "issuers": ["https://ok.test", "not a URL"] }
+  )",
+                        &err);
+  ASSERT_TRUE(json);
+  ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
+}
+
+// Test that the parser requires that each member of |issuers| be a potentially
+// trustworthy origin.
 TEST(TrustTokenAttributeParsing, InsecureIssuer) {
   auto json = ParseJSON(R"(
     { "type": "token-request",
-      "issuer": "http://not-potentially-trustworthy.example" }
+      "issuers": ["https://trustworthy.example",
+                  "http://not-potentially-trustworthy.example"] }
   )");
   ASSERT_TRUE(json);
   ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
 }
 
-// Test that the parser requires that |issuer| be a HTTP or HTTPS origin.
+// Test that the parser requires that each member of |issuers| be a HTTP or
+// HTTPS origin.
 TEST(TrustTokenAttributeParsing, NonHttpNonHttpsIssuer) {
   auto json = ParseJSON(R"(
     { "type": "token-request",
-      "issuer": "file:///" }
+      "issuers": ["https://ok.test", "file:///"] }
   )");
   ASSERT_TRUE(json);
   ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));

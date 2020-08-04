@@ -4224,6 +4224,21 @@
             ]
         }
     ],
+    "MediaApp": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaApp"
+                    ]
+                }
+            ]
+        }
+    ],
     "MediaFoundationAsyncH264Encoding": [
         {
             "platforms": [

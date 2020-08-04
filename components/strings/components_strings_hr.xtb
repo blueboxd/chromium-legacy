@@ -1131,7 +1131,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5644090287519800334">X-pomak 1. strane slike</translation>
 <translation id="5645854190134202180">Druga smjena</translation>
 <translation id="5654927323611874862">ID prenesenog izvješća o rušenju:</translation>
-<translation id="5659593005791499971">E-pošta</translation>
+<translation id="5659593005791499971">e-pošta</translation>
 <translation id="5663614846592581799">9x11 (omotnica)</translation>
 <translation id="5663955426505430495">Administrator uređaja instalirao je proširenja za dodatne funkcije. Proširenja imaju pristup nekim vašim podacima.</translation>
 <translation id="5675650730144413517">Stranica ne funkcionira</translation>
@@ -1621,7 +1621,7 @@ Dodatne pojedinosti:
 <translation id="7697066736081121494">Prc8 (omotnica)</translation>
 <translation id="769721561045429135">Trenutačno imate kartice kojima se može plaćati samo na ovom uređaju. Kliknite Nastavi da biste pregledali kartice.</translation>
 <translation id="7699293099605015246">Članci trenutačno nisu dostupni</translation>
-<translation id="7701040980221191251">Nema</translation>
+<translation id="7701040980221191251">Nema ih</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Idi na web-lokaciju <ph name="SITE" /> (nije sigurno)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikat</translation>
 <translation id="7716147886133743102">Blokirao administrator</translation>
@@ -1645,7 +1645,7 @@ Dodatne pojedinosti:
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791011319128895129">Neobjavljeno</translation>
 <translation id="7791196057686275387">Napusti</translation>
-<translation id="7791543448312431591">Dodaj</translation>
+<translation id="7791543448312431591">Dodavanje</translation>
 <translation id="7792318290931435557">Prikaz pojedinačne stranice</translation>
 <translation id="7798389633136518089">Zanemareno jer pravilo nije postavio izvor u oblaku.</translation>
 <translation id="7800304661137206267">Veza je šifrirana pomoću <ph name="CIPHER" />, za provjeru autentičnosti poruke koristi se <ph name="MAC" />, a <ph name="KX" /> služi za mehanizam razmjene ključeva.</translation>

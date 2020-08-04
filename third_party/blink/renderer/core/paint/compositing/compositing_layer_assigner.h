@@ -93,7 +93,8 @@ class CompositingLayerAssigner {
   };
 
   void AssignLayersToBackingsInternal(
-      PaintLayer*,
+      PaintLayer* layer,
+      PaintLayer* paint_invalidation_container,
       SquashingState&,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
   SquashingDisallowedReasons GetReasonsPreventingSquashing(

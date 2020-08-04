@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -235,8 +236,7 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
       override_policy_connector_is_managed_(base::nullopt),
       otr_profile_id_(base::nullopt) {
   if (profile_path_.empty()) {
-    CreateTempProfileDir();
-    profile_path_ = temp_dir_.GetPath();
+    profile_path_ = base::CreateUniqueTempDirectoryScopedToTest();
   }
   Init();
   if (delegate_) {
@@ -298,8 +298,7 @@ TestingProfile::TestingProfile(
 
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
-    CreateTempProfileDir();
-    profile_path_ = temp_dir_.GetPath();
+    profile_path_ = base::CreateUniqueTempDirectoryScopedToTest();
   }
 
   // Set any testing factories prior to initializing the services.
@@ -321,34 +320,6 @@ TestingProfile::TestingProfile(
   }
 
   SetSupervisedUserId(supervised_user_id);
-}
-
-void TestingProfile::CreateTempProfileDir() {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  if (!temp_dir_.CreateUniqueTempDir()) {
-    LOG(ERROR) << "Failed to create unique temporary directory.";
-
-    // Fallback logic in case we fail to create unique temporary directory.
-    base::FilePath system_tmp_dir;
-    bool success = base::PathService::Get(base::DIR_TEMP, &system_tmp_dir);
-
-    // We're severly screwed if we can't get the system temporary
-    // directory. Die now to avoid writing to the filesystem root
-    // or other bad places.
-    CHECK(success);
-
-    base::FilePath fallback_dir(
-        system_tmp_dir.AppendASCII("TestingProfilePath"));
-    base::DeletePathRecursively(fallback_dir);
-    base::CreateDirectory(fallback_dir);
-    if (!temp_dir_.Set(fallback_dir)) {
-      // That shouldn't happen, but if it does, try to recover.
-      LOG(ERROR) << "Failed to use a fallback temporary directory.";
-
-      // We're screwed if this fails, see CHECK above.
-      CHECK(temp_dir_.Set(system_tmp_dir));
-    }
-  }
 }
 
 void TestingProfile::Init() {
@@ -565,9 +536,6 @@ TestingProfile::~TestingProfile() {
     resource_context_ = nullptr;
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ignore_result(temp_dir_.Delete());
 }
 
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {

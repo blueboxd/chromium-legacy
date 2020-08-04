@@ -245,7 +245,7 @@
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3803696231112616155">اقتراح ترجمة هذا الموقع الإلكتروني</translation>
-<translation id="385051799172605136">الرجوع إلى الوراء</translation>
+<translation id="385051799172605136">رجوع</translation>
 <translation id="3892144330757387737">سيظهر لك السجلّ هنا</translation>
 <translation id="3897092660631435901">قائمة</translation>
 <translation id="3915450441834151894">معلومات الموقع الإلكتروني</translation>
@@ -354,7 +354,7 @@
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="5197255632782567636">الإنترنت</translation>
 <translation id="5228579091201413441">تفعيل المزامنة</translation>
-<translation id="5234764350956374838">رفض</translation>
+<translation id="5234764350956374838">تجاهل</translation>
 <translation id="5245322853195994030">إلغاء المزامنة</translation>
 <translation id="5271549068863921519">حفظ كلمة المرور</translation>
 <translation id="5295239312320826323">هل تريد إزالة الحساب <ph name="USER_EMAIL" />؟</translation>
@@ -422,7 +422,7 @@
 <translation id="6021332621416007159">فتح في...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />، <ph name="PUBLISHER_INFORMATION" />، <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">إغلاق</translation>
-<translation id="6042308850641462728">المزيد</translation>
+<translation id="6042308850641462728">عرض المزيد</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6066301408025741299">انقر للإلغاء.</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>

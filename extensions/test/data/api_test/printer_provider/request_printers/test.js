@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function eitherError(error1, error2) {
-  return new RegExp(error1 + '|' + error2);
-}
-
 chrome.test.sendMessage('loaded', function(test) {
   chrome.test.runTests([function printTest() {
     if (test == 'NO_LISTENER') {
@@ -35,18 +31,10 @@ chrome.test.sendMessage('loaded', function(test) {
           }
 
           if (test == 'NOT_ARRAY') {
-            var jsBindingsError =
-                'Invalid value for argument 1. ' +
-                'Expected \'array\' but got \'string\'.'
-            var nativeBindingsError = 'No matching signature';
-            chrome.test.assertThrows(
-                callback, ['XXX'],
-                eitherError(jsBindingsError, nativeBindingsError));
+            chrome.test.assertThrows(callback, ['XXX'],
+                                     'No matching signature.');
           } else if (test == 'INVALID_PRINTER_TYPE') {
-            var jsBindingsError =
-                'Invalid value for argument 1. ' +
-                'Property \'.1\': Expected \'object\' but got \'string\'.';
-            var nativeBindingsError =
+            var expectedError =
                 'Error at parameter \'printerInfo\': Error at index 1: ' +
                 'Invalid type: expected printerProvider.PrinterInfo, ' +
                 'found string.';
@@ -57,12 +45,9 @@ chrome.test.sendMessage('loaded', function(test) {
                   name: 'Printer 1',
                   description: 'Test printer'
                 }, 'printer2']],
-                eitherError(jsBindingsError, nativeBindingsError));
+                expectedError);
           } else if (test == 'INVALID_PRINTER') {
-            var jsBindingsError =
-                'Invalid value for argument 1. ' +
-                'Property \'.0.unsupported\': Unexpected property.';
-            var nativeBindingsError =
+            var expectedError =
                 'Error at parameter \'printerInfo\': ' +
                 'Error at index 0: Unexpected property: \'unsupported\'.';
             chrome.test.assertThrows(
@@ -73,7 +58,7 @@ chrome.test.sendMessage('loaded', function(test) {
                   description: 'Test printer',
                   unsupported: 'print'
                 }]],
-                eitherError(jsBindingsError, nativeBindingsError));
+                expectedError);
           } else {
             chrome.test.assertEq('OK', test);
             callback([{

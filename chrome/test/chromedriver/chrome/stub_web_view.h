@@ -96,6 +96,8 @@ class StubWebView : public WebView {
   Status IsPendingNavigation(const Timeout* timeout,
                              bool* is_pending) const override;
   JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  MobileEmulationOverrideManager* GetMobileEmulationOverrideManager()
+      const override;
   Status OverrideGeolocation(const Geoposition& geoposition) override;
   Status OverrideNetworkConditions(
       const NetworkConditions& network_conditions) override;

@@ -142,6 +142,7 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
@@ -3450,9 +3451,8 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
   // resolve referrer_policy() into a concrete policy.
   auto policy_for_comparison = referrer_policy();
   if (policy_for_comparison == network::mojom::ReferrerPolicy::kDefault) {
-    policy_for_comparison =
-        content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-            content::Referrer::GetDefaultReferrerPolicy());
+    policy_for_comparison = blink::NetToMojoReferrerPolicy(
+        content::Referrer::GetDefaultReferrerPolicy());
   }
 
   switch (policy_for_comparison) {

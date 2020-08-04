@@ -6,16 +6,17 @@
 
 #include "content/browser/devtools/protocol/audits.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
 
 static const unsigned kMaxIssueCount = 1000;
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(DevToolsIssueStorage)
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(DevToolsIssueStorage)
 
-DevToolsIssueStorage::DevToolsIssueStorage(WebContents* contents)
-    : WebContentsObserver(contents) {}
+DevToolsIssueStorage::DevToolsIssueStorage(RenderFrameHost* rfh)
+    : WebContentsObserver(content::WebContents::FromRenderFrameHost(rfh)) {}
 DevToolsIssueStorage::~DevToolsIssueStorage() = default;
 
 void DevToolsIssueStorage::AddInspectorIssue(
@@ -38,20 +39,6 @@ DevToolsIssueStorage::FilterIssuesBy(
     }
   }
   return issues;
-}
-
-void DevToolsIssueStorage::DidFinishNavigation(
-    NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return;
-  if (!navigation_handle->HasCommitted())
-    return;
-
-  const auto transition = navigation_handle->GetPageTransition();
-  if (ui::PageTransitionIsRedirect(transition))
-    return;
-
-  issues_.clear();
 }
 
 void DevToolsIssueStorage::FrameDeleted(RenderFrameHost* render_frame_host) {

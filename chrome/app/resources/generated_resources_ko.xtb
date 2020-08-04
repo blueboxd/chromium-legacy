@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">파일</translation>
 <translation id="1296911687402551044">선택한 탭 고정</translation>
 <translation id="1297175357211070620">대상</translation>
-<translation id="1297646507722131691">업그레이드를 완료할 수 없는 경우에 발생하는 데이터 손실을 예방하기 위해 업그레이드 시 파일을 백업해 두는 것이 좋습니다. 업그레이드를 시작하면 Linux(베타)가 종료됩니다. 진행하기 전에 열려 있는 파일을 저장하세요.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" />에서 보호된 콘텐츠의 개선된 재생 기능을 사용할 수 있는지 확인하려면 Google에서 기기의 ID를 인증해야 합니다.</translation>
 <translation id="1300806585489372370">이 설정을 변경하려면 우선 <ph name="BEGIN_LINK" />식별자를 사용 설정<ph name="END_LINK" />하세요</translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" />에서 다음 파일을 수정할 수 있습니다.</translation>
@@ -1121,6 +1120,7 @@
 <translation id="2352662711729498748">1MB 미만</translation>
 <translation id="2352810082280059586">잠금 화면 메모는 자동으로 <ph name="LOCK_SCREEN_APP_NAME" />에 저장됩니다. 가장 최근 메모는 잠금 화면에 계속 표시됩니다.</translation>
 <translation id="2353297238722298836">카메라 및 마이크 허용됨</translation>
+<translation id="2355314311311231464">계정 세부정보를 가져올 수 없으므로 프로비저닝할 수 없습니다. 다시 시도해 주세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="2355604387869345912">인스턴트 테더링 켜기</translation>
 <translation id="2356070529366658676">확인</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> 삭제</translation>
@@ -1215,6 +1215,7 @@
 <translation id="2473195200299095979">이 페이지 번역하기</translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>
 <translation id="2476578072172137802">사이트 설정</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" />을 제거하려면 Windows를 종료하세요.</translation>
 <translation id="2478176599153288112">'<ph name="EXTENSION" />'의 미디어 파일 권한</translation>
 <translation id="247949520305900375">오디오 공유</translation>
 <translation id="248003956660572823">비밀번호가 저장되지 않음</translation>
@@ -1305,6 +1306,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />에 대한 읽기 전용 액세스가 허용되었습니다.</translation>
 <translation id="2575247648642144396">현재 페이지에서 확장 프로그램을 실행할 수 있으면 아이콘이 표시됩니다. 아이콘을 클릭하거나 <ph name="EXTENSION_SHORTCUT" />을(를) 눌러 확장 프로그램을 사용합니다.</translation>
 <translation id="257779572837908839">Chromebox 화상회의 시스템으로 설정</translation>
+<translation id="2579232805407578790">서버에 연결할 수 없습니다. 네트워크 연결을 확인한 다음 다시 시도해 주세요. 문제가 지속되면 Chromebook을 다시 시작하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="2580889980133367162"><ph name="HOST" />에서 여러 파일을 다운로드할 수 있도록 항상 허용</translation>
 <translation id="258095186877893873">길게</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />(플랫폼 <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1524,6 +1526,7 @@
 <translation id="2836635946302913370">해당 사용자 이름 로그인이 관리자에 의해 사용 중지되었습니다.</translation>
 <translation id="283669119850230892">네트워크 <ph name="NETWORK_ID" />을(를) 사용하려면 먼저 아래에서 인터넷 연결을 완료합니다.</translation>
 <translation id="2838379631617906747">설치 중</translation>
+<translation id="2838835911926931318">로그인하여 모든 기기의 북마크, 비밀번호, 기록 등을 동기화하세요.</translation>
 <translation id="2839032553903800133">알림 차단됨</translation>
 <translation id="2841013758207633010">시간</translation>
 <translation id="2841837950101800123">발급기관</translation>
@@ -1583,6 +1586,7 @@
     서버 메시지: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">디렉터리별 미디어 갤러리 추가</translation>
 <translation id="2910318910161511225">네트워크에 연결하고 다시 시도해 주세요</translation>
+<translation id="2910718431259223434">문제가 발생했습니다. 다시 시도하거나 기기 소유자 또는 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
 <translation id="2915102088417824677">활동 로그 보기</translation>
 <translation id="2915873080513663243">자동 스캔</translation>
@@ -1976,7 +1980,6 @@
 <translation id="3435738964857648380">보안</translation>
 <translation id="343578350365773421">용지 부족</translation>
 <translation id="3435896845095436175">사용</translation>
-<translation id="3436642683618870087">실시간 자막 기능은 미디어에서 음성을 감지하여 Chrome에서 재생되는 모든 미디어에 자동으로 자막을 생성합니다.</translation>
 <translation id="3438633801274389918">닌자</translation>
 <translation id="3439153939049640737"><ph name="HOST" />에서 마이크에 액세스하도록 항상 허용</translation>
 <translation id="3439970425423980614">미리보기에서 PDF 여는 중</translation>
@@ -2322,6 +2325,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{확장 프로그램 1개 승인됨}other{확장 프로그램 #개 승인됨}}</translation>
 <translation id="3822559385185038546">이 프록시는 관리자가 강제로 설정해 놓았습니다.</translation>
 <translation id="3823310065043511710">Linux를 사용하려면 최소 <ph name="INSTALL_SIZE" />의 여유 공간이 권장됩니다.</translation>
+<translation id="3824621460022590830">기기 등록 토큰이 잘못되었습니다. 기기 소유자 또는 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="3826440694796503677">관리자가 Google 계정 추가를 사용 중지했습니다.</translation>
 <translation id="3827306204503227641">샌드박스 처리되지 않은 플러그인 계속 허용</translation>
 <translation id="3827774300009121996">전체화면(&amp;F)</translation>
@@ -3273,6 +3277,7 @@
 <translation id="5079950360618752063">추천 비밀번호 사용</translation>
 <translation id="508059534790499809">Kerberos 티켓 새로고침</translation>
 <translation id="5084230410268011727">사이트에서 모션 및 조도 센서 사용 허용</translation>
+<translation id="5084328598860513926">프로비저닝 흐름이 중단되었습니다. 다시 시도하거나 기기 소유자 또는 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="5085162214018721575">업데이트를 확인하는 중</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">기본 홈페이지를 복원하시겠습니까?</translation>
@@ -3387,7 +3392,7 @@
 <translation id="5233231016133573565">프로세스 ID</translation>
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="5233736638227740678">붙여넣기(&amp;P)</translation>
-<translation id="5234764350956374838">숨기기</translation>
+<translation id="5234764350956374838">닫기</translation>
 <translation id="5235050375939235066">앱을 제거하시겠습니까?</translation>
 <translation id="523505283826916779">접근성 설정</translation>
 <translation id="5235750401727657667">새 탭을 열 때 표시되는 페이지 변경</translation>
@@ -3615,7 +3620,6 @@
 <translation id="5511379779384092781">아주 작게</translation>
 <translation id="5511823366942919280">이 기기를 'Shark'로 설정하시겠습니까?</translation>
 <translation id="5512653252560939721">사용자 인증서를 하드웨어에 백업해야 합니다.</translation>
-<translation id="5515923816438946203">화면에 표시되는 항목 선택</translation>
 <translation id="5517304475148761050">Play 스토어 액세스가 필요한 앱입니다</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">계정에 프린터를 추가하고 있습니다. 잠시만 기다려 주세요...</translation>
@@ -3671,6 +3675,7 @@
 <translation id="557722062034137776">기기를 재설정해도 Google 계정 또는 계정에 동기화된 데이터에 영향을 주지 않습니다. 하지만 기기에 로컬로 저장된 파일은 모두 삭제됩니다.</translation>
 <translation id="5578059481725149024">자동 로그인</translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
+<translation id="5581972110672966454">기기가 도메인에 참여할 수 없습니다. 다시 시도하거나 기기 소유자 또는 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="5582839680698949063">기본 메뉴</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">사용자 이름을 저장하시겠습니까?</translation>
@@ -3729,6 +3734,7 @@
 <translation id="5642508497713047">CRL 서명자</translation>
 <translation id="5643321261065707929">종량제 네트워크</translation>
 <translation id="5643620609347735571">삭제하고 계속</translation>
+<translation id="5646376287012673985">위치</translation>
 <translation id="5646558797914161501">사업가</translation>
 <translation id="5648166631817621825">지난 7일</translation>
 <translation id="5649053991847567735">자동 다운로드</translation>
@@ -3743,6 +3749,7 @@
 <translation id="5667546120811588575">Google Play 설정 중...</translation>
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5669691691057771421">새 PIN 입력</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">이미지가 차단됨</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> 추천 검색어를 삭제합니다.</translation>
 <translation id="567587836466137939">이 기기는 <ph name="MONTH_AND_YEAR" />까지 자동 소프트웨어 및 보안 업데이트를 받습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
@@ -4035,7 +4042,7 @@
     <ph name="BEGIN_PARAGRAPH2" />기기에서 기본 위치 설정을 사용 중지하여 위치 정보를 끌 수 있습니다. 또한 위치 설정에서 위치 파악에 Wi‑Fi, 모바일 네트워크, 센서의 사용을 중지할 수도 있습니다.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">전체화면 종료</translation>
 <translation id="604124094241169006">자동</translation>
-<translation id="6042308850641462728">더보기</translation>
+<translation id="6042308850641462728">자세히</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) Chrome 탭을 공유 중입니다.</translation>
 <translation id="604388835206766544">설정을 파싱할 수 없습니다.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) Chrome 탭과 오디오를 공유 중입니다.</translation>
@@ -4349,7 +4356,7 @@
 <translation id="6429384232893414837">업데이트 오류</translation>
 <translation id="6430814529589430811">Base64-인코딩 ASCII, 단일 인증서</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" />에서 이 컴퓨터의 모든 사용자에 대해 자동 업데이트를 설정합니다.</translation>
-<translation id="6434309073475700221">중지</translation>
+<translation id="6434309073475700221">삭제</translation>
 <translation id="6434325376267409267"><ph name="APP_NAME" /> 앱을 사용하려면 기기를 업데이트해야 합니다.</translation>
 <translation id="6436164536244065364">웹 스토어에서 보기</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 오디오 재생</translation>
@@ -5389,6 +5396,7 @@
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" />에서 <ph name="DOWNLOAD_RECEIVED" />을(를) 다운로드함</translation>
 <translation id="7765158879357617694">이동</translation>
+<translation id="7766082757934713382">자동 앱 및 시스템 업데이트를 일시중지하여 네트워크 데이터 사용량을 줄일 수 있습니다.</translation>
 <translation id="7766807826975222231">둘러보기</translation>
 <translation id="7766838926148951335">권한 수락</translation>
 <translation id="7768770796815395237">변경</translation>
@@ -6301,6 +6309,7 @@
 <translation id="885701979325669005">저장소</translation>
 <translation id="8859057652521303089">언어 선택:</translation>
 <translation id="8859174528519900719">서브프레임: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">서비스 약관을 로드할 수 없습니다.</translation>
 <translation id="8859662783913000679">부모 계정</translation>
 <translation id="8862003515646449717">빠른 브라우저로 전환</translation>
 <translation id="8863753581171631212">새 <ph name="APP" />에서 링크 열기</translation>
@@ -6379,7 +6388,6 @@
 <translation id="8952831374766033534">설정 옵션이 지원되지 않음: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">충전 시</translation>
 <translation id="895347679606913382">다운로드 시작...</translation>
-<translation id="8957762313041272117">실시간 자막</translation>
 <translation id="895944840846194039">자바스크립트 메모리</translation>
 <translation id="8962083179518285172">세부정보 숨기기</translation>
 <translation id="8962918469425892674">사이트에서 모션 센서 또는 조도 센서를 사용 중입니다.</translation>
@@ -6569,6 +6577,7 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> 검색</translation>
 <translation id="9201023452444595544">모든 오프라인 데이터가 삭제됩니다.</translation>
 <translation id="9201220332032049474">화면 잠금 옵션</translation>
+<translation id="9201842707396338580">문제가 발생했습니다. 기기 소유자 또는 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="9203398526606335860">프로파일링 사용(&amp;P)</translation>
 <translation id="9203904171912129171">기기를 선택하세요.</translation>
 <translation id="9203962528777363226">이 기기의 관리자가 새로운 사용자를 추가하지 못하도록 설정함</translation>
@@ -6584,7 +6593,7 @@
 <translation id="9219103736887031265">이미지</translation>
 <translation id="9220525904950070496">계정 삭제</translation>
 <translation id="9220820413868316583">손가락을 뗀 뒤 다시 시도하세요.</translation>
-<translation id="923467487918828349">모두 표시</translation>
+<translation id="923467487918828349">모두 보기</translation>
 <translation id="929117907539171075">설치된 앱의 오프라인 데이터도 삭제됩니다.</translation>
 <translation id="930268624053534560">상세 타임스탬프</translation>
 <translation id="932327136139879170">홈</translation>
@@ -6640,6 +6649,7 @@
 <translation id="983511809958454316">이 기능은 VR에서 지원되지 않습니다</translation>
 <translation id="984275831282074731">결제 수단</translation>
 <translation id="98515147261107953">가로 방향</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">일반</translation>
 <translation id="987897973846887088">사용 가능한 이미지 없음</translation>
 <translation id="988978206646512040">암호를 빈칸으로 두어서는 안 됩니다.</translation>

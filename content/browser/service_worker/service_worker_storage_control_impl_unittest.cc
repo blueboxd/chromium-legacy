@@ -282,10 +282,12 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     base::RunLoop loop;
     storage()->StoreRegistration(
         std::move(registration), std::move(resources),
-        base::BindLambdaForTesting([&](DatabaseStatus status) {
-          out_status = status;
-          loop.Quit();
-        }));
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status, int64_t /*=deleted_version_id*/,
+                const std::vector<int64_t>& /*=newly_purgeable_resources*/) {
+              out_status = status;
+              loop.Quit();
+            }));
     loop.Run();
     return out_status;
   }
@@ -298,7 +300,9 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
         registration_id, origin,
         base::BindLambdaForTesting(
             [&](DatabaseStatus status,
-                storage::mojom::ServiceWorkerStorageOriginState origin_state) {
+                storage::mojom::ServiceWorkerStorageOriginState origin_state,
+                int64_t /*=deleted_version_id*/,
+                const std::vector<int64_t>& /*=newly_purgeable_resources*/) {
               result.status = status;
               result.origin_state = origin_state;
               loop.Quit();

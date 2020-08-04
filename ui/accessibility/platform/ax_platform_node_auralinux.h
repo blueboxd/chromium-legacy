@@ -340,8 +340,11 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // the toplevel frame which contains the node.
   void SetDocumentParentOnFrameIfNecessary();
 
-  // Find the first child which is a document containing web content.
-  AtkObject* FindFirstWebContentDocument();
+  // Find the child which is a document containing the primary web content.
+  AtkObject* FindPrimaryWebContentDocument();
+
+  // Returns true if it is a web content for the relations.
+  bool IsWebDocumentForRelations();
 
   // If a selection that intersects this node get the full selection
   // including start and end node ids.

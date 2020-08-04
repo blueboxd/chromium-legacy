@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">Помилка збереження</translation>
 <translation id="1180526666083833456">Синхронізуйте та персоналізуйте служби на всіх пристроях.</translation>
 <translation id="1181037720776840403">Видалити</translation>
+<translation id="1185569544548277362">Новинка: тепер ви можете встановити Chrome веб-переглядачем за умовчанням. <ph name="BEGIN_LINK" />Відкрити налаштування<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Новий пошук</translation>
 <translation id="1209206284964581585">Приховати</translation>
 <translation id="1219674500290482172">Неможливо під’єднатися до Інтернету.</translation>
@@ -353,7 +354,7 @@
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5197255632782567636">Інтернет</translation>
 <translation id="5228579091201413441">Увімкнути синхронізацію</translation>
-<translation id="5234764350956374838">Відхилити</translation>
+<translation id="5234764350956374838">Закрити</translation>
 <translation id="5245322853195994030">Скасувати синхронізацію</translation>
 <translation id="5271549068863921519">Зберегти пароль</translation>
 <translation id="5295239312320826323">Вилучити обліковий запис <ph name="USER_EMAIL" />?</translation>
@@ -384,7 +385,7 @@
 <translation id="5614553682702429503">Зберегти пароль?</translation>
 <translation id="5626245204502895507">Зараз неможливо завантажити цей файл.</translation>
 <translation id="5631164295104953411">Додати спосіб оплати</translation>
-<translation id="5659593005791499971">Електронна пошта</translation>
+<translation id="5659593005791499971">Ел. пошта</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версія <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5706552126692816153">У мережі 1 день тому</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="INCOGNITO" />: вкладки <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" /> з <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Нове</translation>
 <translation id="8532105204136943229">Рік закінчення терміну дії</translation>
+<translation id="8533166274275423134">Відкрито в іншому вікні</translation>
 <translation id="8534481786647257214">Опубліковано в Google+</translation>
 <translation id="8548878600947630424">Знайти на сторінці...</translation>
 <translation id="8574235780160508979">31 березня змінюються Умови використання Chrome. <ph name="BEGIN_LINK" />Переглянути<ph name="END_LINK" /></translation>

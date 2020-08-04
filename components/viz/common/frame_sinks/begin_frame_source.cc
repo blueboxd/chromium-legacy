@@ -15,6 +15,7 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -131,9 +132,8 @@ uint64_t BeginFrameSource::BeginFrameArgsGenerator::EstimateTickCountsBetween(
   // deadlines.
   constexpr double kErrorMarginIntervalPct = 0.05;
   base::TimeDelta error_margin = vsync_interval * kErrorMarginIntervalPct;
-  int ticks_since_estimated_frame_time =
-      (frame_time + error_margin - next_expected_frame_time)
-          .IntDiv(vsync_interval);
+  int ticks_since_estimated_frame_time = base::ClampFloor(
+      (frame_time + error_margin - next_expected_frame_time) / vsync_interval);
   return std::max(0, ticks_since_estimated_frame_time);
 }
 

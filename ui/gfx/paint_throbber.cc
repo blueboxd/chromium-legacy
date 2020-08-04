@@ -73,7 +73,7 @@ void CalculateWaitingAngles(const base::TimeDelta& elapsed_time,
   int64_t twelve_oclock = 90;
   int64_t finish_angle_cc =
       twelve_oclock +
-      base::ClampRound<int64_t>(elapsed_time.FltDiv(kRevolutionTime) * 360);
+      base::ClampRound<int64_t>(elapsed_time / kRevolutionTime * 360);
   int64_t start_angle_cc = std::max(finish_angle_cc - 180, twelve_oclock);
 
   // Negate the angles to convert to the clockwise numbers Skia expects.
@@ -100,7 +100,8 @@ void PaintThrobberSpinningWithStartAngle(
   // This tween is equivalent to cubic-bezier(0.4, 0.0, 0.2, 1).
   double sweep = kMaxArcSize *
                  Tween::CalculateValue(Tween::FAST_OUT_SLOW_IN, arc_progress);
-  const int64_t sweep_frame = elapsed_time.IntDiv(kArcTime);
+  const int64_t sweep_frame =
+      base::ClampFloor<int64_t>(elapsed_time / kArcTime);
   if (sweep_frame % 2 == 0)
     sweep -= kMaxArcSize;
 
@@ -130,7 +131,7 @@ void PaintThrobberSpinning(Canvas* canvas,
                            const base::TimeDelta& elapsed_time,
                            base::Optional<SkScalar> stroke_width) {
   const int64_t start_angle =
-      270 + base::ClampRound<int64_t>(elapsed_time.FltDiv(kRotationTime) * 360);
+      270 + base::ClampRound<int64_t>(elapsed_time / kRotationTime * 360);
   PaintThrobberSpinningWithStartAngle(canvas, bounds, color, elapsed_time,
                                       start_angle, stroke_width);
 }
@@ -183,7 +184,7 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
 
   const int64_t start_angle =
       waiting_start_angle +
-      base::ClampRound<int64_t>(elapsed_time.FltDiv(kRotationTime) * 360);
+      base::ClampRound<int64_t>(elapsed_time / kRotationTime * 360);
   const base::TimeDelta effective_elapsed_time =
       elapsed_time + waiting_state->arc_time_offset;
 

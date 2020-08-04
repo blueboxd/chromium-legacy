@@ -101,19 +101,29 @@ network::mojom::blink::TrustTokenParamsPtr TrustTokenParamsFromJson(
       return nullptr;
   }
 
-  // |issuer| is optional, but, if it's present, it must be a valid origin,
-  // potentially trustworthy, and HTTP or HTTPS.
-  if (JSONValue* issuer = object->Get("issuer")) {
-    String str_issuer;
-    if (!issuer->AsString(&str_issuer))
+  // |issuers| is optional; if it's provided, it should be nonempty and contain
+  // origins that are valid, potentially trustworthy, and HTTP or HTTPS.
+  if (JSONValue* issuers = object->Get("issuers")) {
+    JSONArray* issuers_array = JSONArray::Cast(issuers);
+    if (!issuers_array || !issuers_array->size())
       return nullptr;
-    ret->issuer = SecurityOrigin::CreateFromString(str_issuer);
-    if (!ret->issuer)
-      return nullptr;
-    if (!ret->issuer->IsPotentiallyTrustworthy())
-      return nullptr;
-    if (ret->issuer->Protocol() != "http" && ret->issuer->Protocol() != "https")
-      return nullptr;
+
+    // Because of the characteristics of the Trust Tokens protocol, we expect
+    // under 5 elements in this array.
+    for (size_t i = 0; i < issuers_array->size(); ++i) {
+      String str_issuer;
+      if (!issuers_array->at(i)->AsString(&str_issuer))
+        return nullptr;
+
+      ret->issuers.push_back(SecurityOrigin::CreateFromString(str_issuer));
+      const scoped_refptr<const SecurityOrigin>& issuer = ret->issuers.back();
+      if (!issuer)
+        return nullptr;
+      if (!issuer->IsPotentiallyTrustworthy())
+        return nullptr;
+      if (issuer->Protocol() != "http" && issuer->Protocol() != "https")
+        return nullptr;
+    }
   }
 
   // |additionalSignedHeaders| is optional.

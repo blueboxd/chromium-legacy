@@ -22,6 +22,7 @@
 <translation id="1176932207622159128">Không thể lưu ảnh</translation>
 <translation id="1180526666083833456">Đồng bộ hóa và cá nhân hóa trên các thiết bị.</translation>
 <translation id="1181037720776840403">Xóa</translation>
+<translation id="1185569544548277362">Mới: Bạn có thể đặt Chrome làm trình duyệt mặc định. <ph name="BEGIN_LINK" />Mở phần Cài đặt<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Lượt tìm kiếm mới</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1219674500290482172">Không thể kết nối Internet.</translation>
@@ -353,7 +354,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Bật đồng bộ hóa</translation>
-<translation id="5234764350956374838">Loại bỏ</translation>
+<translation id="5234764350956374838">Bỏ qua</translation>
 <translation id="5245322853195994030">Hủy đồng bộ hóa</translation>
 <translation id="5271549068863921519">Lưu mật khẩu</translation>
 <translation id="5295239312320826323">Xóa tài khoản <ph name="USER_EMAIL" />?</translation>
@@ -639,6 +640,7 @@ Các trang web có thể dùng cookie để giám sát hoạt động duyệt we
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Thẻ <ph name="FIRST_VISIBLE_TAB" /> qua <ph name="LAST_VISIBLE_TAB" /> / <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Mới</translation>
 <translation id="8532105204136943229">Năm hết hạn</translation>
+<translation id="8533166274275423134">Đã mở bằng cửa sổ khác</translation>
 <translation id="8534481786647257214">Đã đăng lên Google+.</translation>
 <translation id="8548878600947630424">Tìm trong trang...</translation>
 <translation id="8574235780160508979">Điều khoản dịch vụ của Chrome sẽ thay đổi từ ngày 31 tháng 3. <ph name="BEGIN_LINK" />Vui lòng xem các điều khoản mới này<ph name="END_LINK" /></translation>

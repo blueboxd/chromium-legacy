@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
@@ -79,6 +80,8 @@ class EmojiSuggester : public Suggester {
 
   // The map holding one-word-mapping to emojis.
   std::map<std::string, std::vector<base::string16>> emoji_map_;
+
+  base::TimeTicks session_start_;
 
   // Pointer for callback, must be the last declared in the file.
   base::WeakPtrFactory<EmojiSuggester> weak_factory_{this};

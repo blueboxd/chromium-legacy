@@ -53,7 +53,7 @@ void CompositingLayerAssigner::Assign(
   TRACE_EVENT0("blink", "CompositingLayerAssigner::assign");
 
   SquashingState squashing_state;
-  AssignLayersToBackingsInternal(update_root, squashing_state,
+  AssignLayersToBackingsInternal(update_root, update_root, squashing_state,
                                  layers_needing_paint_invalidation);
   if (squashing_state.most_recent_mapping) {
     squashing_state.most_recent_mapping->FinishAccumulatingSquashingLayers(
@@ -290,12 +290,10 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
 
 void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     PaintLayer* layer,
+    PaintLayer* paint_invalidation_container,
     SquashingState& squashing_state,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   if (layer->NeedsCompositingLayerAssignment()) {
-    DCHECK(layer->GetCompositingReasons() ||
-           (layer->GetCompositingState() != kNotComposited) ||
-           layer->LostGroupedMapping());
     if (RequiresSquashing(layer->GetCompositingReasons())) {
       SquashingDisallowedReasons reasons_preventing_squashing =
           GetReasonsPreventingSquashing(layer, squashing_state);
@@ -354,10 +352,14 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     }
   }
 
+  if (layer->GetCompositingState() != kNotComposited)
+    paint_invalidation_container = layer;
+
   if (layer->StackingDescendantNeedsCompositingLayerAssignment()) {
     PaintLayerPaintOrderIterator iterator(*layer, kNegativeZOrderChildren);
     while (PaintLayer* child_node = iterator.Next()) {
-      AssignLayersToBackingsInternal(child_node, squashing_state,
+      AssignLayersToBackingsInternal(child_node, paint_invalidation_container,
+                                     squashing_state,
                                      layers_needing_paint_invalidation);
     }
   }
@@ -375,7 +377,8 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     PaintLayerPaintOrderIterator iterator(*layer,
                                           kNormalFlowAndPositiveZOrderChildren);
     while (PaintLayer* curr_layer = iterator.Next()) {
-      AssignLayersToBackingsInternal(curr_layer, squashing_state,
+      AssignLayersToBackingsInternal(curr_layer, paint_invalidation_container,
+                                     squashing_state,
                                      layers_needing_paint_invalidation);
     }
   }
@@ -395,6 +398,19 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
           .ContentDocumentIsCompositing()) {
     squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
         false;
+  }
+
+  if (layer->NeedsCheckRasterInvalidation()) {
+    DCHECK(paint_invalidation_container);
+    if (!paint_invalidation_container->SelfNeedsRepaint()) {
+      auto* mapping = paint_invalidation_container->GetCompositedLayerMapping();
+      if (!mapping)
+        mapping = paint_invalidation_container->GroupedMapping();
+      if (mapping)
+        mapping->SetNeedsCheckRasterInvalidation();
+    }
+
+    layer->ClearNeedsCheckRasterInvalidation();
   }
 
   layer->ClearNeedsCompositingLayerAssignment();

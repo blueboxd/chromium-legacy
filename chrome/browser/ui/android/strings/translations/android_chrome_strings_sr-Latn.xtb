@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> želi da se upari</translation>
 <translation id="2000419248597011803">Podrazumevanom pretraživaču šalje neke kolačiće i pretrage iz trake za adresu i okvira za pretragu</translation>
 <translation id="2002537628803770967">Kreditne kartice i adrese iz Google Pay-a</translation>
-<translation id="2012973609889389923">Brz sajt</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# datoteka}one{# datoteka}few{# datoteke}other{# datoteka}}</translation>
 <translation id="2017836877785168846">Briše istoriju i automatska dovršavanja u traci za adresu.</translation>
 <translation id="2021896219286479412">Kontrole sajta na celom ekranu</translation>
@@ -538,6 +537,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5304593522240415983">Ovo polje ne sme da bude prazno</translation>
 <translation id="5308380583665731573">Povezivanje</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
+<translation id="5319359161174645648">Google preporučuje Chrome</translation>
 <translation id="5324858694974489420">Roditeljska podešavanja</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5342314432463739672">Zahtevi za dozvolu</translation>

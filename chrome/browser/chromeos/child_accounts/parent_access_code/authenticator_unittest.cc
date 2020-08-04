@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h"
@@ -62,9 +63,9 @@ TEST_F(ParentAccessCodeAuthenticatorTest, GenerateInTheSameTimeBucket) {
   base::Optional<AccessCode> first_code = gen.Generate(timestamp);
   ASSERT_NO_FATAL_FAILURE(Verify(first_code, timestamp));
 
-  int range =
-      (config.code_validity().IntDiv(Authenticator::kAccessCodeGranularity)) -
-      1;
+  int range = base::ClampFloor(config.code_validity() /
+                               Authenticator::kAccessCodeGranularity) -
+              1;
   for (int i = 0; i < range; ++i) {
     timestamp += Authenticator::kAccessCodeGranularity;
     base::Optional<AccessCode> code = gen.Generate(timestamp);
@@ -209,8 +210,8 @@ TEST_F(ParentAccessCodeAuthenticatorTest,
   EXPECT_FALSE(validated_code);
 
   // In valid period.
-  int range =
-      config.code_validity().IntDiv(Authenticator::kAccessCodeGranularity);
+  int range = base::ClampFloor(config.code_validity() /
+                               Authenticator::kAccessCodeGranularity);
   for (int i = 0; i < range; ++i) {
     validated_code = validator.Validate(
         generated_code->code(),
@@ -247,8 +248,8 @@ TEST_F(ParentAccessCodeAuthenticatorTest,
   EXPECT_FALSE(validated_code);
 
   // In valid period.
-  int range =
-      config.code_validity().IntDiv(Authenticator::kAccessCodeGranularity);
+  int range = base::ClampFloor(config.code_validity() /
+                               Authenticator::kAccessCodeGranularity);
   for (int i = 0; i < range; ++i) {
     validated_code = authenticator.Validate(
         generated_code->code(),
@@ -282,8 +283,8 @@ TEST_F(ParentAccessCodeAuthenticatorTest, ValidationWithClockDriftTolerance) {
   ASSERT_NO_FATAL_FAILURE(Verify(generated_code, generation_timestamp));
 
   // Both validators accept the code in valid period.
-  int range =
-      kDefaultCodeValidity.IntDiv(Authenticator::kAccessCodeGranularity);
+  int range = base::ClampFloor(kDefaultCodeValidity /
+                               Authenticator::kAccessCodeGranularity);
   base::Time timestamp;
   base::Optional<AccessCode> validated_code_no_tolerance;
   base::Optional<AccessCode> validated_code_with_tolerance;

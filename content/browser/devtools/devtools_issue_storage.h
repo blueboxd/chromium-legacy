@@ -7,8 +7,8 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/unguessable_token.h"
+#include "content/public/browser/render_document_host_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
 
@@ -18,18 +18,14 @@ class InspectorIssue;
 }  // namespace Audits
 }  // namespace protocol
 
+// TODO(crbug.com/1063007): Attribute issues to ongoing navigations correctly.
+// TODO(crbug.com/1090679): Replace RenderDocumentHostUserData with
+//                          PageUserData.
 class DevToolsIssueStorage
-    : public content::WebContentsUserData<DevToolsIssueStorage>,
+    : public content::RenderDocumentHostUserData<DevToolsIssueStorage>,
       public WebContentsObserver {
  public:
   ~DevToolsIssueStorage() override;
-
-  static DevToolsIssueStorage* GetOrCreateForWebContents(
-      WebContents* contents) {
-    content::WebContentsUserData<DevToolsIssueStorage>::CreateForWebContents(
-        contents);
-    return FromWebContents(contents);
-  }
 
   void AddInspectorIssue(
       int frame_tree_node_id,
@@ -38,12 +34,11 @@ class DevToolsIssueStorage
       const base::flat_set<int>& frame_tree_node_ids) const;
 
  private:
-  explicit DevToolsIssueStorage(content::WebContents* contents);
-  friend class content::WebContentsUserData<DevToolsIssueStorage>;
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  explicit DevToolsIssueStorage(RenderFrameHost* rfh);
+  friend class content::RenderDocumentHostUserData<DevToolsIssueStorage>;
+  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 
   // WebContentsObserver overrides.
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void FrameDeleted(RenderFrameHost* render_frame_host) override;
 
   using FrameAssociatedIssue =

@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
@@ -142,6 +142,35 @@ NGPrePaintInfo SetupFragmentData(const NGFragmentChildIterator& iterator,
 
 }  // anonymous namespace
 
+static void SetNeedsCompositingLayerPropertyUpdate(const LayoutObject& object) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  if (!object.HasLayer())
+    return;
+
+  auto* compositor = object.View()->Compositor();
+  if (!compositor)
+    return;
+
+  PaintLayer* paint_layer = ToLayoutBoxModelObject(object).Layer();
+
+  DisableCompositingQueryAsserts disabler;
+  // This ensures that CompositingLayerPropertyUpdater::Update will
+  // be called and update LayerState for the LayoutView.
+  auto* mapping = paint_layer->GetCompositedLayerMapping();
+  if (!mapping)
+    mapping = paint_layer->GroupedMapping();
+  if (!mapping)
+    return;
+
+  // These two calls will cause GraphicsLayerUpdater to run on |paint_layer|
+  // from with PLC::UpdateIfNeeded.
+  compositor->SetNeedsCompositingUpdate(
+      kCompositingUpdateAfterCompositingInputChange);
+  mapping->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateLocal);
+}
+
 void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (root_frame_view.ShouldThrottleRendering()) {
     // Skip the throttled frame. Will update it when it becomes unthrottled.
@@ -172,6 +201,8 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
     if (property_changed >
         PaintPropertyChangeType::kChangedOnlyCompositedValues) {
       root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+      if (auto* layout_view = root_frame_view.GetLayoutView())
+        SetNeedsCompositingLayerPropertyUpdate(*layout_view);
     }
   }
 
@@ -436,6 +467,8 @@ void PrePaintTreeWalk::UpdatePaintInvalidationContainer(
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
+  DisableCompositingQueryAsserts disabler;
+
   if (object.IsPaintInvalidationContainer()) {
     context.paint_invalidation_container = ToLayoutBoxModelObject(&object);
     if (object.IsStackingContext() || object.IsSVGRoot()) {
@@ -551,6 +584,11 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
         if ((property_changed >
              PaintPropertyChangeType::kChangedOnlyCompositedValues) &&
             context.paint_invalidation_container) {
+          // Mark the previous paint invalidation container as needing
+          // raster invalidation. This handles cases where raster invalidation
+          // needs to happen but no compositing layers were added or removed.
+          DisableCompositingQueryAsserts disabler;
+
           const auto* paint_invalidation_container =
               context.paint_invalidation_container->Layer();
           if (!paint_invalidation_container->SelfNeedsRepaint()) {
@@ -561,6 +599,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
             if (mapping)
               mapping->SetNeedsCheckRasterInvalidation();
           }
+
+          SetNeedsCompositingLayerPropertyUpdate(object);
         }
       } else if (!context.tree_builder_context
                       ->supports_composited_raster_invalidation) {
@@ -574,10 +614,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   // may paint more or less results according to the changed clip.
   if (context.clip_changed && object.HasLayer())
     ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
-
-  // TODO(crbug.com/1058792): Allow multiple fragments for composited elements
-  // (passing |iterator| here is probably part of the solution).
-  CompositingLayerPropertyUpdater::Update(object);
 }
 
 LocalFrameView* FindWebViewPluginContentFrameView(

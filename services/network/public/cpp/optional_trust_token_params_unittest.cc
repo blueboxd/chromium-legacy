@@ -27,7 +27,7 @@ OptionalTrustTokenParams NonemptyTrustTokenParams() {
       mojom::TrustTokenRefreshPolicy::kRefresh,
       mojom::TrustTokenSignRequestData::kInclude,
       /*include_timestamp_header=*/true,
-      url::Origin::Create(GURL("https://issuer.com")),
+      std::vector<url::Origin>{url::Origin::Create(GURL("https://issuer.com"))},
       std::vector<std::string>{"some_header", "another_header"},
       "some additional signing data");
 }

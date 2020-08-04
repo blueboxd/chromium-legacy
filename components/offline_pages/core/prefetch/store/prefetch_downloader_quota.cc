@@ -87,9 +87,9 @@ int64_t PrefetchDownloaderQuota::GetAvailableQuotaBytes() {
   int64_t available_quota = statement.ColumnInt64(1);
 
   int64_t remaining_quota =
-      available_quota + base::ClampFloor<int64_t>(
-                            GetMaxDailyQuotaBytes() *
-                            (clock_->Now() - update_time).FltDiv(kQuotaPeriod));
+      available_quota +
+      base::ClampFloor<int64_t>(GetMaxDailyQuotaBytes() *
+                                ((clock_->Now() - update_time) / kQuotaPeriod));
 
   if (remaining_quota < 0)
     SetAvailableQuotaBytes(0);

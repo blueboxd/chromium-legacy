@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">文件</translation>
 <translation id="1296911687402551044">固定所选标签页</translation>
 <translation id="1297175357211070620">目标打印机</translation>
-<translation id="1297646507722131691">建议您在执行此项升级操作前先备份文件，以防因无法完成升级而出现数据丢失。启动升级会导致 Linux（Beta 版）关闭。请先保存打开的文件，然后再继续操作。</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> 想让 Google 对您的设备身份进行验证，以确定能否对受保护的内容使用增强播放功能。</translation>
 <translation id="1300806585489372370">要更改此设置，请先<ph name="BEGIN_LINK" />启用标识符<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> 可修改以下文件</translation>
@@ -1118,6 +1117,7 @@
 <translation id="2352662711729498748">&lt; 1MB</translation>
 <translation id="2352810082280059586">锁定屏幕记事会自动保存到 <ph name="LOCK_SCREEN_APP_NAME" /> 中。最近的记事将保留在锁定屏幕上。</translation>
 <translation id="2353297238722298836">已允许使用摄像头和麦克风</translation>
+<translation id="2355314311311231464">未能成功配置，因为检索不到您的帐号详情。请重试。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="2355604387869345912">开启“即时网络共享”</translation>
 <translation id="2356070529366658676">询问</translation>
 <translation id="2357330829548294574">移除<ph name="USER_NAME" /></translation>
@@ -1211,6 +1211,7 @@
 <translation id="2473195200299095979">翻译此页</translation>
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="2476578072172137802">网站设置</translation>
+<translation id="2476974672882258506">请关闭 Windows 以卸载 <ph name="PARALLELS_DESKTOP" />。</translation>
 <translation id="2478176599153288112">“<ph name="EXTENSION" />”的媒体文件权限</translation>
 <translation id="247949520305900375">分享音频</translation>
 <translation id="248003956660572823">未能保存密码</translation>
@@ -1301,6 +1302,7 @@
 <translation id="2572032849266859634">已授予对 <ph name="VOLUME_NAME" />的只读权限。</translation>
 <translation id="2575247648642144396">仅当此扩展程序能够对当前网页采取操作时，该图标才会显示。要使用此扩展程序，请点击该图标或按 <ph name="EXTENSION_SHORTCUT" />。</translation>
 <translation id="257779572837908839">设为 Chromebox 会易设备</translation>
+<translation id="2579232805407578790">无法连接到此服务器。请检查您的网络连接情况，然后重试。如果该问题仍然存在，请重启您的 Chromebook。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="2580889980133367162">始终允许 <ph name="HOST" /> 下载多个文件</translation>
 <translation id="258095186877893873">长</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />（平台：<ph name="PLATFORM_VERSION" />）<ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1520,6 +1522,7 @@
 <translation id="2836635946302913370">管理员已禁止使用此用户名登录。</translation>
 <translation id="283669119850230892">要使用网络“<ph name="NETWORK_ID" />”，请先在下方连接互联网。</translation>
 <translation id="2838379631617906747">正在安装</translation>
+<translation id="2838835911926931318">只需登录，即可同步您所有设备上的书签、密码、历史记录等信息</translation>
 <translation id="2839032553903800133">已阻止显示通知</translation>
 <translation id="2841013758207633010">时间</translation>
 <translation id="2841837950101800123">提供方</translation>
@@ -1579,6 +1582,7 @@
 服务器消息：<ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">按目录添加媒体库</translation>
 <translation id="2910318910161511225">请连接到网络，然后重试</translation>
+<translation id="2910718431259223434">出了点问题。请重试，或与您设备的所有者/管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2915102088417824677">查看活动日志</translation>
 <translation id="2915873080513663243">自动扫描</translation>
@@ -1972,7 +1976,6 @@
 <translation id="3435738964857648380">安全</translation>
 <translation id="343578350365773421">纸张已用完</translation>
 <translation id="3435896845095436175">启用</translation>
-<translation id="3436642683618870087">实时字幕功能可检测媒体中的语音内容，并自动为在 Chrome 中播放的所有媒体生成字幕。</translation>
 <translation id="3438633801274389918">忍者</translation>
 <translation id="3439153939049640737">始终允许 <ph name="HOST" /> 使用您的麦克风</translation>
 <translation id="3439970425423980614">准备使用预览程序打开 PDF</translation>
@@ -2318,6 +2321,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{有 1 个扩展程序已获批准}other{有 # 个扩展程序已获批准}}</translation>
 <translation id="3822559385185038546">此代理已由您的管理员强制启用</translation>
 <translation id="3823310065043511710">建议为 Linux 留出至少 <ph name="INSTALL_SIZE" /> 的空间。</translation>
+<translation id="3824621460022590830">设备注册令牌无效。请与您设备的所有者或管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="3826440694796503677">您的管理员已禁止添加更多 Google 帐号</translation>
 <translation id="3827306204503227641">继续允许使用未经过沙盒屏蔽的插件</translation>
 <translation id="3827774300009121996">全屏幕(&amp;F)</translation>
@@ -2341,7 +2345,7 @@
 <translation id="3843464315703645664">已列入内部许可名单</translation>
 <translation id="3846116211488856547">获取用于开发网站、Android 应用等内容的工具。安装 Linux 会使系统下载 <ph name="DOWNLOAD_SIZE" /> 的数据。</translation>
 <translation id="3847319713229060696">帮助我们为所有人改善网络安全环境</translation>
-<translation id="385051799172605136">后退</translation>
+<translation id="385051799172605136">返回</translation>
 <translation id="3850914401008572843"><ph name="ORIGIN" /> 无法打开此文件夹，因为其中含有系统文件</translation>
 <translation id="3851428669031642514">加载不安全的脚本</translation>
 <translation id="3854599674806204102">选择一个选项</translation>
@@ -3270,6 +3274,7 @@
 <translation id="5079950360618752063">使用建议的密码</translation>
 <translation id="508059534790499809">刷新 Kerberos 票据</translation>
 <translation id="5084230410268011727">允许网站使用动态传感器和光传感器</translation>
+<translation id="5084328598860513926">配置流程已中断。请重试，或与您设备的所有者/管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="5085162214018721575">正在检查更新</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">要恢复默认主页吗？</translation>
@@ -3612,7 +3617,6 @@
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">确定要将此设备设为“Shark”吗？</translation>
 <translation id="5512653252560939721">用户证书必须受硬件支持。</translation>
-<translation id="5515923816438946203">选择屏幕上显示的内容</translation>
 <translation id="5517304475148761050">此应用需要获得对 Play 商店的访问权限</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">正在将打印机添加到您的帐号 - 这可能需要一段时间…</translation>
@@ -3668,6 +3672,7 @@
 <translation id="557722062034137776">重置您的设备不会影响您的 Google 帐号或已同步到这些帐号的任何数据，但您的设备中本地保存的所有文件都将被删除。</translation>
 <translation id="5578059481725149024">自动登录</translation>
 <translation id="558170650521898289">Microsoft Windows 硬件驱动程序验证</translation>
+<translation id="5581972110672966454">无法将此设备加入到该网域中。请重试，或与您设备的所有者/管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="5582839680698949063">主菜单</translation>
 <translation id="5583640892426849032">退格</translation>
 <translation id="5584088138253955452">保存用户名？</translation>
@@ -3726,6 +3731,7 @@
 <translation id="5642508497713047">CRL 签名人</translation>
 <translation id="5643321261065707929">按流量计费的网络</translation>
 <translation id="5643620609347735571">清除并继续</translation>
+<translation id="5646376287012673985">位置信息</translation>
 <translation id="5646558797914161501">商务人士</translation>
 <translation id="5648166631817621825">过去 7 天</translation>
 <translation id="5649053991847567735">自动下载项</translation>
@@ -3740,6 +3746,7 @@
 <translation id="5667546120811588575">正在设置 Google Play…</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5669691691057771421">请输入新的 PIN 码</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">已拦截图片</translation>
 <translation id="5671658447180261823">移除该项推荐内容：<ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">此设备将会自动获取软件更新和安全更新，直至 <ph name="MONTH_AND_YEAR" />为止。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
@@ -4032,7 +4039,7 @@
     <ph name="BEGIN_PARAGRAPH2" />您可以通过关闭相应设备上的主要“位置信息”设置来关闭位置信息服务。此外，您还可以在“位置信息”设置中关闭那些使用 WLAN、移动网络和传感器来获取位置信息的功能。<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">退出全屏</translation>
 <translation id="604124094241169006">自动</translation>
-<translation id="6042308850641462728">更多</translation>
+<translation id="6042308850641462728">展开</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享 Chrome 标签页。</translation>
 <translation id="604388835206766544">无法解析配置</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享 Chrome 标签页和音频。</translation>
@@ -4346,7 +4353,7 @@
 <translation id="6429384232893414837">更新错误</translation>
 <translation id="6430814529589430811">Base64 编码 ASCII，单一证书</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" />将为此计算机上的所有用户设置自动更新。</translation>
-<translation id="6434309073475700221">放弃</translation>
+<translation id="6434309073475700221">舍弃</translation>
 <translation id="6434325376267409267">您需要更新设备，才能使用 <ph name="APP_NAME" />。</translation>
 <translation id="6436164536244065364">在 Chrome 网上应用店中查看</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 正在播放音频</translation>
@@ -5386,6 +5393,7 @@
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" />，来自 <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">移动</translation>
+<translation id="7766082757934713382">可通过暂停对应用和系统的自动更新，帮助降低网络流量消耗</translation>
 <translation id="7766807826975222231">功能导览</translation>
 <translation id="7766838926148951335">接受权限</translation>
 <translation id="7768770796815395237">更改</translation>
@@ -6297,6 +6305,7 @@
 <translation id="885701979325669005">存储数据</translation>
 <translation id="8859057652521303089">选择语言：</translation>
 <translation id="8859174528519900719">辅助框架：<ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">无法加载《服务条款》</translation>
 <translation id="8859662783913000679">家长帐号</translation>
 <translation id="8862003515646449717">改用极速浏览器</translation>
 <translation id="8863753581171631212">在<ph name="APP" />的新窗口中打开链接</translation>
@@ -6375,7 +6384,6 @@
 <translation id="8952831374766033534">有配置选项不受支持：<ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">充电时</translation>
 <translation id="895347679606913382">即将开始下载...</translation>
-<translation id="8957762313041272117">实时字幕</translation>
 <translation id="895944840846194039">JavaScript 使用的内存</translation>
 <translation id="8962083179518285172">隐藏详细信息</translation>
 <translation id="8962918469425892674">此网站正在使用动态传感器或光传感器。</translation>
@@ -6565,6 +6573,7 @@
 <translation id="920045321358709304">在<ph name="SEARCH_ENGINE" />中搜索</translation>
 <translation id="9201023452444595544">所有离线数据都会被清除</translation>
 <translation id="9201220332032049474">屏幕锁定选项</translation>
+<translation id="9201842707396338580">出了点问题。请与您设备的所有者或管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="9203398526606335860">分析已启用(&amp;P)</translation>
 <translation id="9203904171912129171">选择设备</translation>
 <translation id="9203962528777363226">此设备的管理员已禁止添加新用户</translation>
@@ -6636,6 +6645,7 @@
 <translation id="983511809958454316">此功能在虚拟实境中不受支持</translation>
 <translation id="984275831282074731">付款方式</translation>
 <translation id="98515147261107953">横向</translation>
+<translation id="987068745968718743">Parallels Desktop：<ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">常规</translation>
 <translation id="987897973846887088">没有可用的图片</translation>
 <translation id="988978206646512040">密码字段不能留空</translation>

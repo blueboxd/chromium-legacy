@@ -74,6 +74,30 @@ MATCHER_P2(ReverseIndexLeafLike,
                             result_listener);
 }
 
+// Matches a ParsedIndexLeaf struct against its
+// |ppd_basename| member.
+MATCHER_P(ParsedIndexLeafWithPpdBasename,
+          ppd_basename,
+          "is a ParsedIndexLeaf with ppd_basename ``" +
+              std::string(ppd_basename) + "''") {
+  return ExplainMatchResult(
+      Field(&ParsedIndexLeaf::ppd_basename, StrEq(ppd_basename)), arg,
+      result_listener);
+}
+
+// Matches a key-value pair in a ParsedIndex against its constituent
+// members. |parsed_index_leaf_matcher| is matched against the |values|
+// member of a ParsedIndexValues struct.
+MATCHER_P2(ParsedIndexEntryLike,
+           emm,
+           parsed_index_leaf_matcher,
+           "is a ParsedIndex entry with effective-make-and-model string ``" +
+               std::string(emm) + "''") {
+  return ExplainMatchResult(Pair(StrEq(emm), Field(&ParsedIndexValues::values,
+                                                   parsed_index_leaf_matcher)),
+                            arg, result_listener);
+}
+
 // Matches a ParsedPrinter struct against its
 // |user_visible_printer_name| and |effective_make_and_model| members.
 MATCHER_P2(ParsedPrinterLike,

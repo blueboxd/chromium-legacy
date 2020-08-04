@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
+#include "chromeos/components/camera_app_ui/camera_app_ui_delegate.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/webui/mojo_web_ui_controller.h"
@@ -23,7 +24,8 @@ namespace chromeos {
 
 class CameraAppUI : public ui::MojoWebUIController {
  public:
-  explicit CameraAppUI(content::WebUI* web_ui);
+  CameraAppUI(content::WebUI* web_ui,
+              std::unique_ptr<CameraAppUIDelegate> delegate);
   ~CameraAppUI() override;
 
   // [To be deprecated] This method is only used for CCA as a platform app and
@@ -51,8 +53,12 @@ class CameraAppUI : public ui::MojoWebUIController {
   void BindInterface(
       mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver);
 
+  CameraAppUIDelegate* delegate() { return delegate_.get(); }
+
  private:
   aura::Window* window();
+
+  std::unique_ptr<CameraAppUIDelegate> delegate_;
 
   std::unique_ptr<media::CameraAppDeviceProviderImpl> provider_;
 

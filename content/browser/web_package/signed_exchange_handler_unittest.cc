@@ -137,7 +137,10 @@ class GMockCertVerifier : public net::CertVerifier {
              std::unique_ptr<net::CertVerifier::Request>* out_req,
              const net::NetLogWithSource& net_log) override {
     verify_result->Reset();
-    return VerifyImpl(params, verify_result, out_req, net_log);
+    int result = VerifyImpl(params, verify_result, out_req, net_log);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
+    return net::ERR_IO_PENDING;
   }
 
   MOCK_METHOD4(VerifyImpl,
@@ -265,6 +268,7 @@ class SignedExchangeHandlerTest
         LoadCertificate(cert_file);
     result.verified_cert = original_cert;
     auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+    mock_cert_verifier->set_async(true);
     mock_cert_verifier->AddResultForCertAndHost(
         original_cert, "test.example.org", result, net::OK);
     SetCertVerifier(std::move(mock_cert_verifier));
@@ -693,6 +697,7 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   // Set the default result of MockCertVerifier to OK, to check that the
   // verification of SignedExchange must fail even if the certificate is valid.
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->set_async(true);
   mock_cert_verifier->set_default_result(net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 

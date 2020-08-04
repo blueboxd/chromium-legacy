@@ -125,7 +125,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> သည် တွဲချိတ်လိုပါသည်</translation>
 <translation id="2000419248597011803">လိပ်စာဘားနှင့် ရှာဖွေမှုအကွက်ထဲရှိ အချို့သော ကွတ်ကီးများနှင့် ရှာဖွေမှုများကို သင်၏မူရင်းရှာဖွေမှုအင်ဂျင်သို့ ပို့သည်</translation>
 <translation id="2002537628803770967">Google Pay ကို အသုံးပြုသည့် ခရက်ဒစ်ကတ်နှင့် လိပ်စာများ</translation>
-<translation id="2012973609889389923">မြန်ဆန်သော ဝဘ်ဆိုက်</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ဖိုင်}other{# ဖိုင်}}</translation>
 <translation id="2017836877785168846">လိပ်စာဘားရှိ မှတ်တမ်းနှင့် အလိုအလျောက်ဖြည့်ခြင်းများကို ရှင်းလင်းရန်</translation>
 <translation id="2021896219286479412">မျက်နှာပြင်အပြည့် ထိန်းချုပ်မှု</translation>
@@ -538,6 +537,7 @@
 <translation id="5304593522240415983">ဒီအကွက် ပလာ မဖြစ်နိုင်ပါ</translation>
 <translation id="5308380583665731573">ချိတ်ဆက်ရန်</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
+<translation id="5319359161174645648">Google က Chrome ကို အသုံးပြုရန် အကြံပြုထားပါသည်</translation>
 <translation id="5324858694974489420">အုပ်ထိန်းမှု ချိန်ညှိချက်များ</translation>
 <translation id="5327248766486351172">အမည်</translation>
 <translation id="5342314432463739672">ခွင့်ပြုချက် တောင်းဆိုမှုများ</translation>

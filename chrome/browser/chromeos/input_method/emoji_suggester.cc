@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -73,6 +74,15 @@ std::string GetLastWord(const std::string& str) {
              ? str.substr(0, last_pos_to_search + 1)
              : str.substr(space_before_last_word + 1,
                           last_pos_to_search - space_before_last_word);
+}
+
+void RecordTimeToAccept(base::TimeDelta delta) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("InputMethod.Assistive.TimeToAccept.Emoji", delta);
+}
+
+void RecordTimeToDismiss(base::TimeDelta delta) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("InputMethod.Assistive.TimeToDismiss.Emoji",
+                             delta);
 }
 
 }  // namespace
@@ -232,6 +242,7 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   IncrementPrefValueTilCapped(kEmojiSuggesterShowSettingCount,
                               kEmojiSuggesterShowSettingMaxCount);
   ShowSuggestionWindowWithIndices(false);
+  session_start_ = base::TimeTicks::Now();
 
   buttons_.clear();
   for (size_t i = 0; i < candidates_.size(); i++) {
@@ -266,8 +277,10 @@ bool EmojiSuggester::AcceptSuggestion(size_t index) {
 
   if (!error.empty()) {
     LOG(ERROR) << "Failed to accept suggestion. " << error;
+    return false;
   }
 
+  RecordTimeToAccept(base::TimeTicks::Now() - session_start_);
   suggestion_shown_ = false;
   RecordAcceptanceIndex(index);
   return true;
@@ -275,14 +288,16 @@ bool EmojiSuggester::AcceptSuggestion(size_t index) {
 
 void EmojiSuggester::DismissSuggestion() {
   std::string error;
-  suggestion_shown_ = false;
   properties_.visible = false;
   properties_.announce_string = kDismissEmojiSuggestionMessage;
   suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties_,
                                                     &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
+    return;
   }
+  suggestion_shown_ = false;
+  RecordTimeToDismiss(base::TimeTicks::Now() - session_start_);
 }
 
 void EmojiSuggester::SetButtonHighlighted(

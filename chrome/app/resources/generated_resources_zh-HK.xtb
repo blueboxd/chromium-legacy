@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">檔案</translation>
 <translation id="1296911687402551044">固定已選取的分頁</translation>
 <translation id="1297175357211070620">目標</translation>
-<translation id="1297646507722131691">建議您在升級前先備份檔案，避免系統無法完成升級而導致資料遺失。開始升級時會關閉 Linux (Beta 版本)，請在繼續下一步前儲存已開啟的檔案。</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> 希望您的裝置進行 Google 身分驗證，以確定是否能使用加強受保護內容播放功能。</translation>
 <translation id="1300806585489372370">如要變更此設定，請先<ph name="BEGIN_LINK" />啟用識別碼<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> 可編輯以下檔案</translation>
@@ -1600,7 +1599,7 @@
 <translation id="2932085390869194046">建議密碼…</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (兒童帳戶)</translation>
 <translation id="2932483646085333864">登出後再次登入，即開始同步處理</translation>
-<translation id="2932883381142163287">檢舉濫用情形</translation>
+<translation id="2932883381142163287">舉報濫用</translation>
 <translation id="2933632078076743449">上次更新時間</translation>
 <translation id="2936851848721175671">備份與還原</translation>
 <translation id="2938225289965773019">開放<ph name="PROTOCOL" />連結</translation>
@@ -1980,7 +1979,6 @@
 <translation id="3435738964857648380">安全性</translation>
 <translation id="343578350365773421">紙張用完</translation>
 <translation id="3435896845095436175">啟用</translation>
-<translation id="3436642683618870087">「即時字幕」功能可偵測媒體中的語音，然後自動在 Chrome 的媒體播放器中產生字幕。</translation>
 <translation id="3438633801274389918">忍者</translation>
 <translation id="3439153939049640737">永遠允許 <ph name="HOST" /> 存取您的麥克風</translation>
 <translation id="3439970425423980614">正在預覽中開啟 PDF</translation>
@@ -3623,7 +3621,6 @@
 <translation id="5511379779384092781">非常小</translation>
 <translation id="5511823366942919280">您確定要將這部裝置設為 "Shark" 嗎？</translation>
 <translation id="5512653252560939721">必須使用硬件支援的使用者憑證。</translation>
-<translation id="5515923816438946203">選擇畫面上顯示的內容</translation>
 <translation id="5517304475148761050">此應用程式需要存取「Play 商店」才能執行</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">正在將打印機新增到您的帳戶中，這可能需要幾分鐘的時間…</translation>
@@ -3738,6 +3735,7 @@
 <translation id="5642508497713047">CRL 簽署者</translation>
 <translation id="5643321261065707929">按用量收費的網絡</translation>
 <translation id="5643620609347735571">清除並繼續</translation>
+<translation id="5646376287012673985">位置</translation>
 <translation id="5646558797914161501">商人</translation>
 <translation id="5648166631817621825">最近 7 天</translation>
 <translation id="5649053991847567735">自動下載</translation>
@@ -6013,6 +6011,7 @@
 <translation id="8500234928660943538">PUK 不正確。剩餘重試次數：<ph name="RETRIES" /> 次。</translation>
 <translation id="8502536196501630039">如要使用從 Google Play 下載的應用程式，請先還原您的應用程式。此操作可能會導致部分資料遺失。</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
+<translation id="8504640708321980506">資料</translation>
 <translation id="8507227974644337342">螢幕解像度</translation>
 <translation id="850875081535031620">未發現任何有害軟件</translation>
 <translation id="8509177919508253835">重設安全密鑰並建立 PIN</translation>
@@ -6390,7 +6389,6 @@
 <translation id="8952831374766033534">不支援的設定選項：<ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">充電時</translation>
 <translation id="895347679606913382">即將開始下載…</translation>
-<translation id="8957762313041272117">即時字幕</translation>
 <translation id="895944840846194039">JavaScript 記憶體使用量</translation>
 <translation id="8962083179518285172">隱藏詳情</translation>
 <translation id="8962918469425892674">此網站正在使用動作或光線感應器。</translation>

@@ -247,7 +247,6 @@
 <translation id="1293556467332435079">Файлдар</translation>
 <translation id="1296911687402551044">Таңдалған қойындыны бекіту</translation>
 <translation id="1297175357211070620">Межелі орын</translation>
-<translation id="1297646507722131691">Жаңартуды аяқтау мүмкін болмаған жағдайда, деректердің жоғалуына жол бермеу үшін осы жаңартудың бір бөлігі ретінде файлдардың сақтық көшірмесін жасаған жөн. Жаңарту басталғанда, Linux (бета нұсқасы) жүйесі өшіріледі. Жалғастырмас бұрын, ашылған файлдарды сақтаңыз.</translation>
 <translation id="1300415640239881824">Қорғалған мазмұнды жақсырақ ойнату құқығын анықтау үшін <ph name="DOMAIN" /> домені Google қызметінің құрылғыны растауын қалайды.</translation>
 <translation id="1300806585489372370">Бұл параметрді өзгерту үшін, алдымен <ph name="BEGIN_LINK" />идентификаторларды іске қосу<ph name="END_LINK" /> қажет</translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> мына файлдарды өңдей алады.</translation>
@@ -1978,7 +1977,6 @@
 <translation id="3435738964857648380">Қауіпсіздік</translation>
 <translation id="343578350365773421">Қағаз бітті</translation>
 <translation id="3435896845095436175">Қосу</translation>
-<translation id="3436642683618870087">Live Caption медиамазмұндағы сөздерді анықтап, Chrome браузерінде ойнатылатын барлық медиамазмұнды автоматты түрде жазуға айналдырады.</translation>
 <translation id="3438633801274389918">Ниндзя</translation>
 <translation id="3439153939049640737">Әрқашан <ph name="HOST" /> хостына камераға кіру рұқсатын беру</translation>
 <translation id="3439970425423980614">PDF файлын алдын ала көру режимінде ашу</translation>
@@ -3621,7 +3619,6 @@
 <translation id="5511379779384092781">Өте кішкентай</translation>
 <translation id="5511823366942919280">Бұл құрылғыны "Shark" ретінде орнатқыңыз келе ме?</translation>
 <translation id="5512653252560939721">Пайдаланушы сертификатының аппараттық көшірмесі болуы керек.</translation>
-<translation id="5515923816438946203">Экранда не көргіңіз келетінін таңдаңыз</translation>
 <translation id="5517304475148761050">Қолданбаға Play Store дүкеніне кіру рұқсаты қажет</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Есептік жазбаңызға принтер қосу – бұл бір сәтті алуы мүмкін…</translation>
@@ -3736,6 +3733,7 @@
 <translation id="5642508497713047">CRL қол қоюшы</translation>
 <translation id="5643321261065707929">Шектелген желі</translation>
 <translation id="5643620609347735571">Өшіру және жалғастыру</translation>
+<translation id="5646376287012673985">Орын</translation>
 <translation id="5646558797914161501">Бизнесмен</translation>
 <translation id="5648166631817621825">Соңғы 7 күн</translation>
 <translation id="5649053991847567735">Автоматты жүктеулер</translation>
@@ -6388,7 +6386,6 @@
 <translation id="8952831374766033534">Конфигурация опциясына қолдау көрсетілмейді: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Зарядтау кезінде</translation>
 <translation id="895347679606913382">Басталуда…</translation>
-<translation id="8957762313041272117">Live Caption</translation>
 <translation id="895944840846194039">JavaScript жады</translation>
 <translation id="8962083179518285172">Мәліметтерді жасыру</translation>
 <translation id="8962918469425892674">Бұл сайт қозғалыс не жарық датчиктерін пайдалануда.</translation>

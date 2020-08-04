@@ -4,16 +4,22 @@
 
 #include <map>
 
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/content/base_blocking_page.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/browser/browser_context_impl.h"
+#include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
@@ -80,14 +86,17 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
   SafeBrowsingBrowserTest() : fake_handler_(new FakeSafeBrowsingApiHandler()) {}
   ~SafeBrowsingBrowserTest() override = default;
 
-  // WebLayerBrowserTest:
   void SetUpOnMainThread() override {
+    InitializeOnMainThread();
+    // Safe Browsing is enabled by default
+    ASSERT_TRUE(GetSafeBrowsingEnabled());
+  }
+
+  void InitializeOnMainThread() {
     NavigateAndWaitForCompletion(GURL("about:blank"), shell());
     safe_browsing::SafeBrowsingApiHandler::SetInstance(fake_handler_.get());
     ASSERT_TRUE(embedded_test_server()->Start());
     url_ = embedded_test_server()->GetURL("/simple_page.html");
-    // Safe Browsing is enabled by default
-    ASSERT_TRUE(GetSafeBrowsingEnabled());
   }
 
   void SetSafeBrowsingEnabled(bool value) {
@@ -149,11 +158,39 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
 
   bool HasInterstitial() { return GetSecurityInterstitialPage() != nullptr; }
 
+  void KillRenderer() {
+    content::RenderProcessHost* child_process =
+        static_cast<TabImpl*>(shell()->tab())
+            ->web_contents()
+            ->GetMainFrame()
+            ->GetProcess();
+    content::RenderProcessHostWatcher crash_observer(
+        child_process,
+        content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    child_process->Shutdown(0);
+    crash_observer.Wait();
+  }
+
   std::unique_ptr<FakeSafeBrowsingApiHandler> fake_handler_;
   GURL url_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBrowserTest);
+};
+
+class SafeBrowsingDisabledBrowserTest : public SafeBrowsingBrowserTest {
+ public:
+  SafeBrowsingDisabledBrowserTest() {}
+  ~SafeBrowsingDisabledBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    SetSafeBrowsingEnabled(false);
+    SafeBrowsingBrowserTest::InitializeOnMainThread();
+    ASSERT_FALSE(GetSafeBrowsingEnabled());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDisabledBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
@@ -188,46 +225,63 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
-                       DoesNotShowInterstitial_NoRestriction_disableSB) {
-  SetSafeBrowsingEnabled(false);
-  EXPECT_FALSE(GetSafeBrowsingEnabled());
-  Navigate(url_, false);
-}
-
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
-                       DoesNotShowInterstitial_Safe_disableSB) {
-  SetSafeBrowsingEnabled(false);
-  EXPECT_FALSE(GetSafeBrowsingEnabled());
-  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_SAFE, false);
-}
-
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
-                       DoesNotShowInterstitial_Malware_disableSB) {
-  SetSafeBrowsingEnabled(false);
-  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_MALWARE, false);
-}
-
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
                        DoesNotShowInterstitial_Phishing_disableSB) {
+  // Test that the browser checks the safe browsing setting for new navigations.
   SetSafeBrowsingEnabled(false);
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_PHISHING, false);
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
-                       DoesNotShowInterstitial_Unwanted_disableSB) {
+                       DoesNotShowInterstitial_Malware_Subresource_disableSB) {
+  // Test that new renderer checks the safe browsing setting.
   SetSafeBrowsingEnabled(false);
+  KillRenderer();
+  NavigateWithSubResourceAndThreatType(
+      safe_browsing::SB_THREAT_TYPE_URL_MALWARE, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, CheckSetsPrefs) {
+  // Check that changing safe browsing setting sets corresponding pref,
+  // which is persistent.
+  PrefService* prefs = GetProfile()->GetBrowserContext()->pref_service();
+  SetSafeBrowsingEnabled(true);
+  EXPECT_TRUE(prefs->GetBoolean(::prefs::kSafeBrowsingEnabled));
+  SetSafeBrowsingEnabled(false);
+  EXPECT_FALSE(prefs->GetBoolean(::prefs::kSafeBrowsingEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_NoRestriction) {
+  Navigate(url_, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_Safe) {
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_SAFE, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_Malware) {
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_MALWARE, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_Phishing) {
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_PHISHING, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_Unwanted) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_UNWANTED, false);
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
-                       DoesNotShowInterstitial_Billing_disableSB) {
-  SetSafeBrowsingEnabled(false);
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_Billing) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_BILLING, false);
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
-                       DoesNotShowInterstitial_Malware_Subresource_disableSB) {
-  SetSafeBrowsingEnabled(false);
+IN_PROC_BROWSER_TEST_F(SafeBrowsingDisabledBrowserTest,
+                       DoesNotShowInterstitial_Malware_Subresource) {
   NavigateWithSubResourceAndThreatType(
       safe_browsing::SB_THREAT_TYPE_URL_MALWARE, false);
 }

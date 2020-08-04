@@ -11,6 +11,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/logging/proto_to_dictionary_conversion.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 
 namespace {
 
@@ -79,11 +81,17 @@ base::Value ContactMessageToDictionary(
 
 }  // namespace
 
-NearbyInternalsContactHandler::NearbyInternalsContactHandler() = default;
+NearbyInternalsContactHandler::NearbyInternalsContactHandler(
+    content::BrowserContext* context)
+    : context_(context) {}
 
 NearbyInternalsContactHandler::~NearbyInternalsContactHandler() = default;
 
 void NearbyInternalsContactHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "initializeContacts",
+      base::BindRepeating(&NearbyInternalsContactHandler::InitializeContents,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "downloadContacts",
       base::BindRepeating(
@@ -91,16 +99,36 @@ void NearbyInternalsContactHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
-void NearbyInternalsContactHandler::OnJavascriptAllowed() {}
+void NearbyInternalsContactHandler::OnJavascriptAllowed() {
+  NearbySharingService* service_ =
+      NearbySharingServiceFactory::GetForBrowserContext(context_);
+  if (service_) {
+    observer_.Add(service_->GetContactManager());
+  } else {
+    NS_LOG(ERROR) << "No NearbyShareService instance to call.";
+  }
+}
 
-void NearbyInternalsContactHandler::OnJavascriptDisallowed() {}
+void NearbyInternalsContactHandler::OnJavascriptDisallowed() {
+  observer_.RemoveAll();
+}
+
+void NearbyInternalsContactHandler::InitializeContents(
+    const base::ListValue* args) {
+  AllowJavascript();
+}
 
 void NearbyInternalsContactHandler::HandleDownloadContacts(
     const base::ListValue* args) {
-  AllowJavascript();
-  // TODO(julietlevesque): Trigger Download Contact RPC. A boolean that
-  // represents whether the RPC should be forced is passed to this function from
-  // the JavaScript button interaction.
+  NearbySharingService* service_ =
+      NearbySharingServiceFactory::GetForBrowserContext(context_);
+  if (service_) {
+    const bool only_download_if_contacts_changed = args->GetList()[0].GetBool();
+    service_->GetContactManager()->DownloadContacts(
+        only_download_if_contacts_changed);
+  } else {
+    NS_LOG(ERROR) << "No NearbyShareService instance to call.";
+  }
 }
 
 void NearbyInternalsContactHandler::OnContactsUpdated(

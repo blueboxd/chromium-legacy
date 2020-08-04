@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 112 tests; 111 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 112 tests; 103 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -58,21 +58,18 @@ PASS HIDReportItem interface: attribute hasNull
 PASS HIDReportItem interface: attribute usages
 PASS HIDReportItem interface: attribute usageMinimum
 PASS HIDReportItem interface: attribute usageMaximum
+FAIL HIDReportItem interface: attribute designatorMinimum assert_true: The prototype object must have a property "designatorMinimum" expected true got false
+FAIL HIDReportItem interface: attribute designatorMaximum assert_true: The prototype object must have a property "designatorMaximum" expected true got false
+FAIL HIDReportItem interface: attribute stringMinimum assert_true: The prototype object must have a property "stringMinimum" expected true got false
+FAIL HIDReportItem interface: attribute stringMaximum assert_true: The prototype object must have a property "stringMaximum" expected true got false
 PASS HIDReportItem interface: attribute reportSize
 PASS HIDReportItem interface: attribute reportCount
 PASS HIDReportItem interface: attribute unitExponent
-PASS HIDReportItem interface: attribute unitSystem
-PASS HIDReportItem interface: attribute unitFactorLengthExponent
-PASS HIDReportItem interface: attribute unitFactorMassExponent
-PASS HIDReportItem interface: attribute unitFactorTimeExponent
-PASS HIDReportItem interface: attribute unitFactorTemperatureExponent
-PASS HIDReportItem interface: attribute unitFactorCurrentExponent
-PASS HIDReportItem interface: attribute unitFactorLuminousIntensityExponent
+FAIL HIDReportItem interface: attribute unit assert_true: The prototype object must have a property "unit" expected true got false
 PASS HIDReportItem interface: attribute logicalMinimum
 PASS HIDReportItem interface: attribute logicalMaximum
 PASS HIDReportItem interface: attribute physicalMinimum
 PASS HIDReportItem interface: attribute physicalMaximum
-PASS HIDReportItem interface: attribute strings
 PASS HIDReportInfo interface: existence and properties of interface object
 PASS HIDReportInfo interface object length
 PASS HIDReportInfo interface object name
@@ -93,6 +90,9 @@ PASS HIDCollectionInfo interface: attribute children
 PASS HIDCollectionInfo interface: attribute inputReports
 PASS HIDCollectionInfo interface: attribute outputReports
 PASS HIDCollectionInfo interface: attribute featureReports
+FAIL HIDCollectionInfo interface: attribute reportIds assert_true: The prototype object must have a property "reportIds" expected true got false
+FAIL HIDCollectionInfo interface: operation getField(BufferSource, HIDFieldOptions) assert_own_property: interface prototype object missing non-static operation expected property "getField" missing
+FAIL HIDCollectionInfo interface: operation setField(BufferSource, HIDFieldOptions, double) assert_own_property: interface prototype object missing non-static operation expected property "setField" missing
 PASS HIDDevice interface: existence and properties of interface object
 PASS HIDDevice interface object length
 PASS HIDDevice interface object name

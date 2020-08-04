@@ -250,7 +250,7 @@ const base::Feature kHelpAppFirstRun{"HelpAppFirstRun",
 
 // Enable the release notes functionality in the Help app.
 const base::Feature kHelpAppReleaseNotes{"HelpAppReleaseNotes",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the search service integration in the Help app.
 const base::Feature kHelpAppSearchServiceIntegration{

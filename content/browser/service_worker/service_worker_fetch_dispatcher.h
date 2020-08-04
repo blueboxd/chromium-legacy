@@ -91,11 +91,11 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                  blink::mojom::FetchAPIResponsePtr response,
                  blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                  blink::mojom::ServiceWorkerFetchEventTimingPtr timing);
-  void Complete(blink::ServiceWorkerStatusCode status,
-                FetchEventResult fetch_result,
-                blink::mojom::FetchAPIResponsePtr response,
-                blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-                blink::mojom::ServiceWorkerFetchEventTimingPtr timing);
+  void RunCallback(blink::ServiceWorkerStatusCode status,
+                   FetchEventResult fetch_result,
+                   blink::mojom::FetchAPIResponsePtr response,
+                   blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+                   blink::mojom::ServiceWorkerFetchEventTimingPtr timing);
 
   // The fetch event stays open until all respondWith() and waitUntil() promises
   // are settled. This function is called once the renderer signals that
@@ -110,7 +110,6 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   ServiceWorkerMetrics::EventType GetEventType() const;
 
   bool IsEventDispatched() const;
-  bool IsCompleted() const;
 
   blink::mojom::FetchAPIRequestPtr request_;
   std::string client_id_;

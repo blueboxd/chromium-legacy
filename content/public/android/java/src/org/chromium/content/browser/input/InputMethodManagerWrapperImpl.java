@@ -142,11 +142,13 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
     }
 
     private void showSoftInputInternal(View view, int flags, ResultReceiver resultReceiver) {
-        if (DEBUG_LOGS) Log.i(TAG, "showSoftInputInternal");
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites(); // crbug.com/616283
         try {
             InputMethodManager manager = getInputMethodManager();
-            if (manager != null) manager.showSoftInput(view, flags, resultReceiver);
+            if (manager != null) {
+                boolean result = manager.showSoftInput(view, flags, resultReceiver);
+                if (DEBUG_LOGS) Log.i(TAG, "showSoftInputInternal: " + view + ", " + result);
+            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

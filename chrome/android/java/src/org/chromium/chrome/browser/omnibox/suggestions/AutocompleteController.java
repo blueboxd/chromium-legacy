@@ -365,22 +365,51 @@ public class AutocompleteController {
 
     /**
      * Updates aqs parameters on the selected match that we will navigate to and returns the
-     * updated URL. |selected_index| is the position of the selected match and
-     * |elapsed_time_since_input_change| is the time in ms between the first typed input and match
-     * selection.
+     * updated URL. |selectedIndex| and |hashCode| is the position and hash code of the selected
+     * match. |elapsedTimeSinceInputChange| is the time in ms between the first typed input
+     * and match selection.
      *
      * @param selectedIndex The index of the autocomplete entry selected.
+     * @param hashCode Hash code of the OmniboxSuggestion object that is selected.
      * @param elapsedTimeSinceInputChange The number of ms between the time the user started
      *                                    typing in the omnibox and the time the user has selected
      *                                    a suggestion.
-     * @return The url to navigate to for this match with aqs parameter updated, if we are
-     *         making a Google search query.
      */
     GURL updateMatchDestinationUrlWithQueryFormulationTime(
             int selectedIndex, int hashCode, long elapsedTimeSinceInputChange) {
+        return updateMatchDestinationUrlWithQueryFormulationTime(
+                selectedIndex, hashCode, elapsedTimeSinceInputChange, null, null);
+    }
+
+    /**
+     * Updates destination url on the selected match that we will navigate to and returns the
+     * updated URL. |selectedIndex| and |hashCode| is the position and hash code of the selected
+     * match. |elapsedTimeSinceInputChange| is the time in ms between the first typed input
+     * and match selection. If |newQueryText| and |newQueryParams| is not empty, they will be
+     * used to replace the existing query string and query params.
+     * For example, if |elapsedTimeSinceInputChange| > 0, |newQyeryText| is "Politics news".
+     * and the existing destination URL is "www.google.com/search?q=News+&aqs=chrome.0.69i...l3",
+     * the returned new URL will be of the format
+     * "www.google.com/search?q=Politics+news&aqs=chrome.0.69i...l3.1409j0j9" where
+     * ".1409j0j9" is the encoded elapsed time.
+     *
+     * @param selectedIndex The index of the autocomplete entry selected.
+     * @param hashCode Hash code of the OmniboxSuggestion object that is selected.
+     * @param elapsedTimeSinceInputChange The number of ms between the time the user started
+     *                                    typing in the omnibox and the time the user has selected
+     *                                    a suggestion.
+     * @param newQueryText The new query string that will replace the existing one.
+     * @param newQueryParams A list of search params to be appended to the query.
+     * @return The url to navigate to for this match with aqs parameter, query string and parameters
+     *         updated, if we are making a Google search query.
+     */
+    GURL updateMatchDestinationUrlWithQueryFormulationTime(int selectedIndex, int hashCode,
+            long elapsedTimeSinceInputChange, String newQueryText, List<String> newQueryParams) {
         return AutocompleteControllerJni.get().updateMatchDestinationURLWithQueryFormulationTime(
                 mNativeAutocompleteControllerAndroid, AutocompleteController.this, selectedIndex,
-                hashCode, elapsedTimeSinceInputChange);
+                hashCode, elapsedTimeSinceInputChange, newQueryText,
+                newQueryParams == null ? null
+                                       : newQueryParams.toArray(new String[newQueryParams.size()]));
     }
 
     /**
@@ -418,7 +447,8 @@ public class AutocompleteController {
                 AutocompleteController caller, int selectedIndex, int hashCode);
         GURL updateMatchDestinationURLWithQueryFormulationTime(
                 long nativeAutocompleteControllerAndroid, AutocompleteController caller,
-                int selectedIndex, int hashCode, long elapsedTimeSinceInputChange);
+                int selectedIndex, int hashCode, long elapsedTimeSinceInputChange,
+                String newQueryText, String[] newQueryParams);
         Tab findMatchingTabWithUrl(
                 long nativeAutocompleteControllerAndroid, AutocompleteController caller, GURL url);
         /**

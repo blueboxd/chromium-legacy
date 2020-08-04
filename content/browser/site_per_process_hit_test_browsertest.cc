@@ -6855,7 +6855,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessUserActivationHitTestBrowserTest,
 
   // Clear the activation state.
   root->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kClearActivation);
+      blink::mojom::UserActivationUpdateType::kClearActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
 
   // Send a mouse down to child frame.
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseDown);

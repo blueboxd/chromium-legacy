@@ -201,8 +201,7 @@ public class DownloadDialogBridge
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                         .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
-                        .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
-                                mDownloadLaterChoice)
+                        .with(DownloadLaterDialogProperties.INITIAL_CHOICE, mDownloadLaterChoice)
                         .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
                                 promptStatus);
         if (mShowEditLocation) {

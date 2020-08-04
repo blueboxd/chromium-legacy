@@ -7,6 +7,10 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,9 +24,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -33,6 +41,25 @@ bool IsShowingInterstitial(content::WebContents* contents) {
   return helper &&
          (helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
           nullptr);
+}
+
+std::vector<net::CanonicalCookie> GetCookies(
+    network::mojom::NetworkContext* network_context) {
+  base::RunLoop run_loop;
+  std::vector<net::CanonicalCookie> cookies;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_remote;
+  network_context->GetCookieManager(
+      cookie_manager_remote.BindNewPipeAndPassReceiver());
+  cookie_manager_remote->GetAllCookies(base::BindOnce(
+      [](base::RunLoop* run_loop,
+         std::vector<net::CanonicalCookie>* out_cookies,
+         const std::vector<net::CanonicalCookie>& cookies) {
+        *out_cookies = cookies;
+        run_loop->Quit();
+      },
+      &run_loop, &cookies));
+  run_loop.Run();
+  return cookies;
 }
 
 }  // namespace
@@ -57,9 +84,12 @@ class V4EmbeddedTestServerBrowserTest : public InProcessBrowserTest {
     v4_db_factory_ = v4_db_factory.get();
     V4Database::RegisterDatabaseFactoryForTest(std::move(v4_db_factory));
 
-    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    secure_embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::Type::TYPE_HTTPS);
+
     InProcessBrowserTest::SetUp();
   }
+
   void TearDown() override {
     InProcessBrowserTest::TearDown();
     V4Database::RegisterStoreFactoryForTest(nullptr);
@@ -73,6 +103,9 @@ class V4EmbeddedTestServerBrowserTest : public InProcessBrowserTest {
     v4_db_factory_->MarkPrefixAsBad(list_id, full_hash);
   }
 
+ protected:
+  std::unique_ptr<net::EmbeddedTestServer> secure_embedded_test_server_;
+
  private:
   std::unique_ptr<net::MappedHostResolver> mapped_host_resolver_;
 
@@ -83,6 +116,8 @@ class V4EmbeddedTestServerBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest, SimpleTest) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
   const char kMalwarePage[] = "/safe_browsing/malware.html";
   const GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
 
@@ -107,6 +142,8 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest, SimpleTest) {
 
 IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
                        WrongFullHash_NoInterstitial) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
   const char kMalwarePage[] = "/safe_browsing/malware.html";
   const GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
 
@@ -130,6 +167,54 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(IsShowingInterstitial(contents));
+}
+
+class V4EmbeddedTestServerWithSeparateNetworkContexts
+    : public V4EmbeddedTestServerBrowserTest {
+ public:
+  V4EmbeddedTestServerWithSeparateNetworkContexts() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures(
+        {kSafeBrowsingSeparateNetworkContexts}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerWithSeparateNetworkContexts,
+                       DoesNotSaveCookies) {
+  ASSERT_TRUE(secure_embedded_test_server_->InitializeAndListen());
+  const char kMalwarePage[] = "/safe_browsing/malware.html";
+  const GURL bad_url = secure_embedded_test_server_->GetURL(kMalwarePage);
+
+  ThreatMatch match;
+  FullHash full_hash = V4ProtocolManagerUtil::GetFullHash(bad_url);
+  LocallyMarkPrefixAsBad(bad_url, GetUrlMalwareId());
+  match.set_platform_type(GetUrlMalwareId().platform_type());
+  match.set_threat_entry_type(ThreatEntryType::URL);
+  match.set_threat_type(ThreatType::MALWARE_THREAT);
+  match.mutable_threat()->set_hash(full_hash);
+  match.mutable_cache_duration()->set_seconds(0);
+
+  std::map<GURL, safe_browsing::ThreatMatch> response_map{{bad_url, match}};
+  StartRedirectingV4RequestsForTesting(
+      response_map, secure_embedded_test_server_.get(),
+      /*delay_map=*/std::map<GURL, base::TimeDelta>(),
+      /*serve_cookies=*/true);
+  secure_embedded_test_server_->StartAcceptingConnections();
+
+  EXPECT_EQ(GetCookies(
+                g_browser_process->safe_browsing_service()->GetNetworkContext())
+                .size(),
+            0u);
+
+  ui_test_utils::NavigateToURL(browser(), bad_url);
+
+  EXPECT_EQ(GetCookies(
+                g_browser_process->safe_browsing_service()->GetNetworkContext())
+                .size(),
+            0u);
 }
 
 }  // namespace safe_browsing

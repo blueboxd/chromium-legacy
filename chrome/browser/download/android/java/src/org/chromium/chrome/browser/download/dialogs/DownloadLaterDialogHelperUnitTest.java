@@ -32,6 +32,7 @@ import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Unit test for {@link DownloadLaterDialogHelper}.
@@ -88,6 +89,19 @@ public class DownloadLaterDialogHelperUnitTest {
         verify(mMockCallback, times(1)).onResult(captor.capture());
         Assert.assertEquals(START_TIME, captor.getValue().startTimeMs);
         Assert.assertFalse(captor.getValue().onlyOnWifi);
+    }
+
+    @Test
+    public void testShowDialogWithScheduledStartTime() {
+        OfflineItemSchedule schedule = new OfflineItemSchedule(false, START_TIME);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                schedule, Source.DOWNLOAD_HOME, mMockCallback);
+        ArgumentCaptor<PropertyModel> captor = ArgumentCaptor.forClass(PropertyModel.class);
+
+        verify(mDownloadLaterDialog, times(1)).showDialog(any(), any(), any(), captor.capture());
+        PropertyModel model = captor.getValue();
+        Assert.assertEquals(
+                START_TIME, (long) model.get(DownloadDateTimePickerDialogProperties.INITIAL_TIME));
     }
 
     @Test

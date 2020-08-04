@@ -291,6 +291,11 @@ bool IsExtendedReportingEnabled(const PrefService& prefs);
 // enterprise policy, meaning the user can't change it.
 bool IsExtendedReportingPolicyManaged(const PrefService& prefs);
 
+// Return whether the Safe Browsing preference is managed. It can be managed by
+// either the SafeBrowsingEnabled policy(legacy) or the
+// SafeBrowsingProtectionLevel policy(new).
+bool IsSafeBrowsingPolicyManaged(const PrefService& prefs);
+
 // Updates UMA metrics about Safe Browsing Extended Reporting states.
 void RecordExtendedReportingMetrics(const PrefService& prefs);
 

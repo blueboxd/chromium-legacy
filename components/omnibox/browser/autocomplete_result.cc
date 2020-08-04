@@ -755,8 +755,9 @@ base::string16 AutocompleteResult::GetHeaderForGroupId(
   return base::string16();
 }
 
-bool AutocompleteResult::IsSuggestionGroupIdHidden(PrefService* prefs,
-                                                   int suggestion_group_id) {
+bool AutocompleteResult::IsSuggestionGroupIdHidden(
+    PrefService* prefs,
+    int suggestion_group_id) const {
   omnibox::SuggestionGroupVisibility user_preference =
       omnibox::GetUserPreferenceForSuggestionGroupVisibility(
           prefs, suggestion_group_id);

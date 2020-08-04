@@ -154,6 +154,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void ScrubTo(base::TimeDelta scrub_to) override;
   void EnterPictureInPicture() override;
   void ExitPictureInPicture() override;
+  void SetAudioSinkId(const base::Optional<std::string>& id) override {}
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }

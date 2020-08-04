@@ -1214,8 +1214,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
 TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
   const std::string google("https://www.google.com");
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  ASSERT_TRUE(profile()->CreateHistoryService(/* delete_file= */ true,
-                                              /* no_db= */ false));
+  ASSERT_TRUE(profile()->CreateHistoryService());
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::EXPLICIT_ACCESS);
   history_service->AddPage(GURL(google), base::Time::Now(),
@@ -1271,8 +1270,7 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
 #define MAYBE_DefaultSettingSource DefaultSettingSource
 #endif
 TEST_F(SiteSettingsHandlerTest, MAYBE_DefaultSettingSource) {
-  ASSERT_TRUE(profile()->CreateHistoryService(/* delete_file= */ true,
-                                              /* no_db= */ false));
+  ASSERT_TRUE(profile()->CreateHistoryService());
 
   // Use a non-default port to verify the display name does not strip this
   // off.

@@ -115,17 +115,21 @@ PowerButtonController::PowerButtonController(
   power_manager_client->GetSwitchStates(base::BindOnce(
       &PowerButtonController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
   AccelerometerReader::GetInstance()->AddObserver(this);
-  Shell::Get()->display_configurator()->AddObserver(this);
+  auto* shell = Shell::Get();
+  shell->display_configurator()->AddObserver(this);
   backlights_forced_off_observer_.Add(backlights_forced_off_setter);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->lock_state_controller()->AddObserver(this);
+  shell->tablet_mode_controller()->AddObserver(this);
+  shell->lock_state_controller()->AddObserver(this);
+  shell->session_controller()->AddObserver(this);
 }
 
 PowerButtonController::~PowerButtonController() {
-  Shell::Get()->lock_state_controller()->RemoveObserver(this);
-  if (Shell::Get()->tablet_mode_controller())
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->display_configurator()->RemoveObserver(this);
+  auto* shell = Shell::Get();
+  shell->session_controller()->RemoveObserver(this);
+  shell->lock_state_controller()->RemoveObserver(this);
+  if (shell->tablet_mode_controller())
+    shell->tablet_mode_controller()->RemoveObserver(this);
+  shell->display_configurator()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
@@ -362,6 +366,12 @@ void PowerButtonController::SuspendImminent(
 
 void PowerButtonController::SuspendDone(const base::TimeDelta& sleep_duration) {
   last_resume_time_ = tick_clock_->NowTicks();
+}
+
+void PowerButtonController::OnLoginStatusChanged(LoginStatus status) {
+  // Destroy |menu_widget_| on login status change to reset the content of the
+  // menu since the menu items change if login stauts changed.
+  menu_widget_.reset();
 }
 
 void PowerButtonController::OnGetSwitchStates(

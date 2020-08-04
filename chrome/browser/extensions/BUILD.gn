@@ -493,8 +493,6 @@ static_library("extensions") {
     "event_router_forwarder.h",
     "extension_action_icon_factory.cc",
     "extension_action_icon_factory.h",
-    "extension_action_manager.cc",
-    "extension_action_manager.h",
     "extension_action_runner.cc",
     "extension_action_runner.h",
     "extension_action_storage_manager.cc",

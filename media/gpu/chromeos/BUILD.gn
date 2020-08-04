@@ -7,8 +7,8 @@ import("//testing/test.gni")
 
 assert(use_v4l2_codec || use_vaapi)
 
-# V4L2 or Vaapi imply the OS is Linux.
-assert(is_linux)
+# V4L2 or Vaapi imply the OS is Linux or ChromeOS
+assert(is_linux || is_chromeos)
 
 # This target can depend on targets in //media/gpu/{v4l2,vaapi}.
 source_set("chromeos") {

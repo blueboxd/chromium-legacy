@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics.h"
@@ -122,6 +123,12 @@ bool NotificationPromoWhatsNew::ClearAndInitFromJson(base::Value json) {
 
 bool NotificationPromoWhatsNew::CanShow() const {
   if (!valid_ || !notification_promo_.CanShow()) {
+    return false;
+  }
+
+  // Current NTP default browser promo should only be shown for users on iOS14.
+  if (!base::ios::IsRunningOnIOS14OrLater() &&
+      command_ == kSetDefaultBrowserCommand) {
     return false;
   }
 

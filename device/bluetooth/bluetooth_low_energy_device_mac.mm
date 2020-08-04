@@ -20,6 +20,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_mac.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_mac.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 
 // Remove when Chrome no longer supports 10.12.
 #if defined(MAC_OS_X_VERSION_10_13)
@@ -415,8 +416,7 @@ std::string BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(
   const size_t kCanonicalAddressNumberOfBytes = 6;
   char raw[kCanonicalAddressNumberOfBytes];
   crypto::SHA256HashString(device_identifier, raw, sizeof(raw));
-  return BluetoothDevice::CanonicalizeAddress(
-      base::HexEncode(raw, sizeof(raw)));
+  return CanonicalizeBluetoothAddress(base::HexEncode(raw, sizeof(raw)));
 }
 
 void BluetoothLowEnergyDeviceMac::DidConnectPeripheral() {

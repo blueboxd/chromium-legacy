@@ -41,6 +41,7 @@
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/event_utils_winrt.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 
 namespace device {
 
@@ -1085,8 +1086,8 @@ void BluetoothAdapterWinrt::OnGetDefaultAdapter(
     return;
   }
 
-  address_ = BluetoothDevice::CanonicalizeAddress(
-      base::StringPrintf("%012llX", raw_address));
+  address_ =
+      CanonicalizeBluetoothAddress(base::StringPrintf("%012llX", raw_address));
   DCHECK(!address_.empty());
 
   HSTRING device_id;

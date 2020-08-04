@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -290,21 +291,23 @@ void ScriptController::ExecuteJavaScriptURL(
 
   bool had_navigation_before = GetFrame()->Loader().HasProvisionalNavigation();
 
-  v8::HandleScope handle_scope(GetIsolate());
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#javascript-protocol
+  // Step 6. "Let baseURL be settings's API base URL." [spec text]
+  const KURL base_url = GetFrame()->GetDocument()->BaseURL();
 
-  // https://html.spec.whatwg.org/C/#navigate
-  // Step 12.8 "Let base URL be settings object's API base URL." [spec text]
-  KURL base_url = GetFrame()->GetDocument()->BaseURL();
-
-  // Step 12.9 "Let script be result of creating a classic script given script
-  // source, settings, base URL, and the default classic script fetch options."
-  // [spec text]
+  // Step 7. "Let script be the result of creating a classic script given
+  // scriptSource, settings, baseURL, and the default classic script fetch
+  // options." [spec text]
+  //
   // We pass |SanitizeScriptErrors::kDoNotSanitize| because |muted errors| is
   // false by default.
-  v8::Local<v8::Value> v8_result = EvaluateScriptInMainWorld(
+  ClassicScript* script = MakeGarbageCollected<ClassicScript>(
       ScriptSourceCode(script_source, ScriptSourceLocationType::kJavascriptUrl),
-      base_url, SanitizeScriptErrors::kDoNotSanitize, ScriptFetchOptions(),
-      kDoNotExecuteScriptWhenScriptsDisabled);
+      base_url, ScriptFetchOptions(), SanitizeScriptErrors::kDoNotSanitize);
+
+  DCHECK_EQ(&GetFrame()->GetScriptController(), this);
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Value> v8_result = script->RunScriptAndReturnValue(GetFrame());
   UseCounter::Count(*GetFrame()->GetDocument(),
                     WebFeature::kExecutedJavaScriptURL);
 

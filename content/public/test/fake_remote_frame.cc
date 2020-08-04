@@ -60,7 +60,8 @@ void FakeRemoteFrame::BubbleLogicalScroll(
     ui::ScrollGranularity granularity) {}
 
 void FakeRemoteFrame::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType) {}
+    blink::mojom::UserActivationUpdateType update_type,
+    blink::mojom::UserActivationNotificationType notification_type) {}
 
 void FakeRemoteFrame::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {}

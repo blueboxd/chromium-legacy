@@ -16,10 +16,12 @@ class PasswordFormManager;
 // PasswordStore, etc.
 class CredentialsFilter {
  public:
-  CredentialsFilter() {}
-  virtual ~CredentialsFilter() {}
+  CredentialsFilter() = default;
+  virtual ~CredentialsFilter() = default;
 
   // Should |form| be offered to be saved?
+  // Note that this only refers to *saving* - *updating* an already stored
+  // credential should still be allowed even if this returns false!
   virtual bool ShouldSave(const autofill::PasswordForm& form) const = 0;
 
   // Returns true if the hash of the password in |form| should be saved for Gaia

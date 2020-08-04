@@ -152,3 +152,33 @@ TEST_F(InfobarModalOverlayCoordinatorTest, ModalPresentation) {
     return !root_view_controller_.presentedViewController;
   }));
 }
+
+// Tests the modal dismiss flow for a FakeInfobarModalOverlayCoordinator.
+TEST_F(InfobarModalOverlayCoordinatorTest, ModalDismiss) {
+  // Start the coordinator, expecting OverlayUIDidFinishPresentation() to be
+  // executed.
+  EXPECT_CALL(delegate_, OverlayUIDidFinishPresentation(request_.get()));
+  [coordinator_ startAnimated:NO];
+
+  // Wait for presentation to finish.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^BOOL {
+    UIViewController* presented_view_controller =
+        root_view_controller_.presentedViewController;
+    return presented_view_controller &&
+           !presented_view_controller.beingPresented;
+  }));
+
+  // Stop the coordinator, expecting OverlayUIDidFinishDismissal() to be
+  // executed once.
+  EXPECT_CALL(delegate_, OverlayUIDidFinishDismissal(request_.get())).Times(1);
+  [coordinator_ stopAnimated:NO];
+
+  // Stop coordinator again. It should be a no-op since stop has been called
+  // already (i.e. No OverlayUIDidFinishDismissal called).
+  [coordinator_ stopAnimated:NO];
+
+  // Wait for dismissal to finish.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^BOOL {
+    return !root_view_controller_.presentedViewController;
+  }));
+}

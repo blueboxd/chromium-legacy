@@ -89,7 +89,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         ios::FaviconServiceFactory::GetDefaultFactory());
 
     chrome_browser_state_ = test_cbs_builder.Build();
-    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
+    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService());
 
     id passKitController =
         [OCMockObject niceMockForClass:[PKAddPassesViewController class]];

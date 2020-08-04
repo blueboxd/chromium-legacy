@@ -143,19 +143,8 @@ class NearbyShareCertificateStorageImplTest : public ::testing::Test {
 
     cert_store_ = NearbyShareCertificateStorageImpl::Factory::Create(
         pref_service_.get(), std::move(db));
-  }
 
-  bool Initialize(leveldb_proto::Enums::InitStatus init_status) {
-    // Make a fresh copy of cert_store_ to get back to uninitialized state.
-    if (cert_store_->IsInitialized())
-      SetUp();
-
-    bool init_success = false;
-    cert_store_->Initialize(base::BindOnce(
-        &NearbyShareCertificateStorageImplTest::CaptureBoolCallback,
-        base::Unretained(this), &init_success));
-    db_->InitStatusCallback(init_status);
-    return init_success;
+    db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   }
 
   void PrepopulatePublicCertificates() {
@@ -208,34 +197,7 @@ class NearbyShareCertificateStorageImplTest : public ::testing::Test {
   std::vector<nearbyshare::proto::PublicCertificate> public_certificates_;
 };
 
-TEST_F(NearbyShareCertificateStorageImplTest, InitializeSucceeded) {
-  if (cert_store_->IsInitialized())
-    SetUp();
-
-  ASSERT_FALSE(cert_store_->IsInitialized());
-
-  bool succeeded = Initialize(leveldb_proto::Enums::InitStatus::kOK);
-
-  ASSERT_TRUE(cert_store_->IsInitialized());
-  ASSERT_TRUE(succeeded);
-}
-
-TEST_F(NearbyShareCertificateStorageImplTest, InitializeFailed) {
-  if (cert_store_->IsInitialized())
-    SetUp();
-
-  ASSERT_FALSE(cert_store_->IsInitialized());
-
-  bool succeeded = Initialize(leveldb_proto::Enums::InitStatus::kError);
-
-  ASSERT_FALSE(cert_store_->IsInitialized());
-  ASSERT_FALSE(succeeded);
-}
-
 TEST_F(NearbyShareCertificateStorageImplTest, GetPublicCertificateIds) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   auto ids = cert_store_->GetPublicCertificateIds();
   ASSERT_EQ(3u, ids.size());
   EXPECT_EQ(ids[0], kSecretId1);
@@ -244,9 +206,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, GetPublicCertificateIds) {
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, GetPublicCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   std::vector<nearbyshare::proto::PublicCertificate> public_certificates;
   cert_store_->GetPublicCertificates(base::BindOnce(
       &NearbyShareCertificateStorageImplTest::PublicCertificateCallback,
@@ -264,9 +223,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, GetPublicCertificates) {
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, ReplacePublicCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   std::vector<nearbyshare::proto::PublicCertificate> new_certs = {
       CreatePublicCertificate(kSecretId4, kSecretKey4, kPublicKey4,
                               kStartSeconds4, kStartNanos4, kEndSeconds4,
@@ -301,9 +257,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, ReplacePublicCertificates) {
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, AddPublicCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   std::vector<nearbyshare::proto::PublicCertificate> new_certs = {
       CreatePublicCertificate(kSecretId3, kSecretKey2, kPublicKey2,
                               kStartSeconds2, kStartNanos2, kEndSeconds2,
@@ -354,9 +307,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, AddPublicCertificates) {
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, ClearPublicCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   bool succeeded = false;
   cert_store_->ClearPublicCertificates(base::BindOnce(
       &NearbyShareCertificateStorageImplTest::CaptureBoolCallback,
@@ -368,9 +318,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, ClearPublicCertificates) {
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, RemoveExpiredPublicCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   std::vector<base::Time> expiration_times;
   for (const auto& pair : db_entries_) {
     expiration_times.emplace_back(TimestampToTime(pair.second.end_time()));
@@ -393,9 +340,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, RemoveExpiredPublicCertificates) {
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, ReplaceGetPrivateCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   auto certs_before = CreatePrivateCertificates(3);
   cert_store_->ReplacePrivateCertificates(certs_before);
   auto certs_after = cert_store_->GetPrivateCertificates();
@@ -419,9 +363,6 @@ TEST_F(NearbyShareCertificateStorageImplTest, ReplaceGetPrivateCertificates) {
 
 TEST_F(NearbyShareCertificateStorageImplTest,
        NextPrivateCertificateExpirationTime) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   auto certs = CreatePrivateCertificates(3);
   cert_store_->ReplacePrivateCertificates(certs);
   base::Optional<base::Time> next_expiration =
@@ -439,9 +380,6 @@ TEST_F(NearbyShareCertificateStorageImplTest,
 
 TEST_F(NearbyShareCertificateStorageImplTest,
        NextPublicCertificateExpirationTime) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   base::Optional<base::Time> next_expiration =
       cert_store_->NextPublicCertificateExpirationTime();
 
@@ -457,9 +395,6 @@ TEST_F(NearbyShareCertificateStorageImplTest,
 }
 
 TEST_F(NearbyShareCertificateStorageImplTest, ClearPrivateCertificates) {
-  Initialize(leveldb_proto::Enums::InitStatus::kOK);
-  ASSERT_TRUE(cert_store_->IsInitialized());
-
   std::vector<NearbySharePrivateCertificate> certs_before =
       CreatePrivateCertificates(3);
   cert_store_->ReplacePrivateCertificates(certs_before);

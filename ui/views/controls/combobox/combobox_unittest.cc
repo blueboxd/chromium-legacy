@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -821,6 +822,108 @@ TEST_F(ComboboxTest, MenuModel) {
   EXPECT_EQ(ASCIIToUTF16("JELLY"), menu_model->GetLabelAt(1));
 
   EXPECT_TRUE(menu_model->IsVisibleAt(0));
+}
+
+namespace {
+
+using ComboboxDefaultTest = ViewsTestBase;
+
+class ConfigurableComboboxModel final : public ui::ComboboxModel {
+ public:
+  explicit ConfigurableComboboxModel(bool* destroyed = nullptr)
+      : destroyed_(destroyed) {
+    if (destroyed_)
+      *destroyed_ = false;
+  }
+  ConfigurableComboboxModel(ConfigurableComboboxModel&) = delete;
+  ConfigurableComboboxModel& operator=(const ConfigurableComboboxModel&) =
+      delete;
+  ~ConfigurableComboboxModel() override {
+    if (destroyed_)
+      *destroyed_ = true;
+  }
+
+  // ui::ComboboxModel:
+  int GetItemCount() const override { return item_count_; }
+  base::string16 GetItemAt(int index) const override {
+    DCHECK_LT(index, item_count_);
+    return base::NumberToString16(index);
+  }
+  int GetDefaultIndex() const override { return default_index_; }
+
+  void SetItemCount(int item_count) { item_count_ = item_count; }
+
+  void SetDefaultIndex(int default_index) { default_index_ = default_index; }
+
+ private:
+  bool* const destroyed_;
+  int item_count_ = 0;
+  int default_index_ = -1;
+};
+
+}  // namespace
+
+TEST_F(ComboboxDefaultTest, Default) {
+  auto combobox = std::make_unique<Combobox>();
+  EXPECT_EQ(0, combobox->GetRowCount());
+  EXPECT_EQ(-1, combobox->GetSelectedRow());
+}
+
+TEST_F(ComboboxDefaultTest, SetModel) {
+  bool destroyed = false;
+  std::unique_ptr<ConfigurableComboboxModel> model =
+      std::make_unique<ConfigurableComboboxModel>(&destroyed);
+  model->SetItemCount(42);
+  model->SetDefaultIndex(27);
+  {
+    auto combobox = std::make_unique<Combobox>();
+    combobox->SetModel(model.get());
+    EXPECT_EQ(42, combobox->GetRowCount());
+    EXPECT_EQ(27, combobox->GetSelectedRow());
+  }
+  EXPECT_FALSE(destroyed);
+}
+
+TEST_F(ComboboxDefaultTest, SetOwnedModel) {
+  bool destroyed = false;
+  std::unique_ptr<ConfigurableComboboxModel> model =
+      std::make_unique<ConfigurableComboboxModel>(&destroyed);
+  model->SetItemCount(42);
+  model->SetDefaultIndex(27);
+  {
+    auto combobox = std::make_unique<Combobox>();
+    combobox->SetOwnedModel(std::move(model));
+    EXPECT_EQ(42, combobox->GetRowCount());
+    EXPECT_EQ(27, combobox->GetSelectedRow());
+  }
+  EXPECT_TRUE(destroyed);
+}
+
+TEST_F(ComboboxDefaultTest, SetModelOverwriteOwned) {
+  bool destroyed = false;
+  std::unique_ptr<ConfigurableComboboxModel> model =
+      std::make_unique<ConfigurableComboboxModel>(&destroyed);
+  auto combobox = std::make_unique<Combobox>();
+  combobox->SetModel(model.get());
+  ASSERT_FALSE(destroyed);
+  combobox->SetOwnedModel(std::make_unique<ConfigurableComboboxModel>());
+  EXPECT_FALSE(destroyed);
+}
+
+TEST_F(ComboboxDefaultTest, SetOwnedModelOverwriteOwned) {
+  bool destroyed_first = false;
+  bool destroyed_second = false;
+  {
+    auto combobox = std::make_unique<Combobox>();
+    combobox->SetOwnedModel(
+        std::make_unique<ConfigurableComboboxModel>(&destroyed_first));
+    ASSERT_FALSE(destroyed_first);
+    combobox->SetOwnedModel(
+        std::make_unique<ConfigurableComboboxModel>(&destroyed_second));
+    EXPECT_TRUE(destroyed_first);
+    ASSERT_FALSE(destroyed_second);
+  }
+  EXPECT_TRUE(destroyed_second);
 }
 
 }  // namespace views

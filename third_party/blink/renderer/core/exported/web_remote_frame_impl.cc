@@ -327,8 +327,9 @@ bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
 }
 
 void WebRemoteFrameImpl::UpdateUserActivationState(
-    mojom::blink::UserActivationUpdateType update_type) {
-  GetFrame()->UpdateUserActivationState(update_type);
+    mojom::blink::UserActivationUpdateType update_type,
+    mojom::blink::UserActivationNotificationType notification_type) {
+  GetFrame()->UpdateUserActivationState(update_type, notification_type);
 }
 
 void WebRemoteFrameImpl::SetHadStickyUserActivationBeforeNavigation(

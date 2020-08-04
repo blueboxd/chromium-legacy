@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -509,10 +508,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         // For last level tile, start a search query, unless we want to let user have a chance to
         // edit the query.
         if (queryTile.children.isEmpty() && !QueryTileUtils.isQueryEditingEnabled()) {
-            String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(
-                    queryTile.queryText, queryTile.searchParams);
-            mDelegate.loadUrl(url, PageTransition.LINK, mLastActionUpTimestamp);
-            mDelegate.setKeyboardVisibility(false);
+            launchSearchUrlForQueryTileSuggestion(queryTile);
             return;
         }
 
@@ -688,7 +684,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         // receive suggestions until the native side is ready, so this is safe
         assert mNativeInitialized
             : "updateSuggestionUrlIfNeeded called before native initialization";
-
         if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST
                 || suggestion.getType() == OmniboxSuggestionType.TILE_SUGGESTION) {
             return suggestion.getUrl();
@@ -704,11 +699,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
         // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
         // for query in the omnibox and voice suggestions, but it's currently difficult to do.
-        long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
-                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
-                : -1;
         GURL updatedUrl = mAutocomplete.updateMatchDestinationUrlWithQueryFormulationTime(
-                verifiedIndex, suggestion.hashCode(), elapsedTimeSinceInputChange);
+                verifiedIndex, suggestion.hashCode(), getElapsedTimeSinceInputChange());
 
         return updatedUrl == null ? suggestion.getUrl() : updatedUrl;
     }
@@ -1149,9 +1141,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         String currentPageUrl = mDataProvider.getCurrentUrl();
         int pageClassification =
                 mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
-        long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
-                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
-                : -1;
+        long elapsedTimeSinceModified = getElapsedTimeSinceInputChange();
         int autocompleteLength = mUrlBarEditingTextProvider.getTextWithAutocomplete().length()
                 - mUrlBarEditingTextProvider.getTextWithoutAutocomplete().length();
         WebContents webContents =
@@ -1167,5 +1157,40 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         if (mEnableAdaptiveSuggestionsCount) {
             mDelegate.setKeyboardVisibility(true);
         }
+    }
+
+    /**
+     * @return elapsed time (in milliseconds) since last input or -1 if user has chosen
+     *         a zero-prefix suggestion.
+     */
+    private long getElapsedTimeSinceInputChange() {
+        return mNewOmniboxEditSessionTimestamp > 0
+                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
+                : -1;
+    }
+
+    /**
+     * Launches the search URL for the query tile suggestion.
+     * @param queryTile The query tile user selected.
+     */
+    @SuppressWarnings("VisibleForTests")
+    private void launchSearchUrlForQueryTileSuggestion(QueryTile queryTile) {
+        int position = -1;
+        int hashCode = 0;
+        int suggestionCount = getSuggestionCount();
+        // Find the suggestion position and hashCode.
+        for (int i = 0; i < suggestionCount; ++i) {
+            OmniboxSuggestion suggestion = getSuggestionAt(i);
+            if (suggestion.getType() == OmniboxSuggestionType.TILE_SUGGESTION) {
+                position = i;
+                hashCode = suggestion.hashCode();
+                break;
+            }
+        }
+        GURL updatedUrl = mAutocomplete.updateMatchDestinationUrlWithQueryFormulationTime(position,
+                hashCode, getElapsedTimeSinceInputChange(), queryTile.queryText,
+                queryTile.searchParams);
+        mDelegate.loadUrl(updatedUrl.getSpec(), PageTransition.LINK, mLastActionUpTimestamp);
+        mDelegate.setKeyboardVisibility(false);
     }
 }

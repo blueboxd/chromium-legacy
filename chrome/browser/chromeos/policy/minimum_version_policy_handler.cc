@@ -186,6 +186,10 @@ bool MinimumVersionPolicyHandler::CurrentVersionSatisfies(
   return true;
 }
 
+bool MinimumVersionPolicyHandler::IsPolicyRestrictionAppliedForUser() const {
+  return delegate_->IsUserEnterpriseManaged() || unmanaged_user_restricted_;
+}
+
 //  static
 void MinimumVersionPolicyHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(prefs::kUpdateRequiredTimerStartTime,
@@ -194,8 +198,9 @@ void MinimumVersionPolicyHandler::RegisterPrefs(PrefRegistrySimple* registry) {
                                   base::TimeDelta());
 }
 
-bool MinimumVersionPolicyHandler::IsUpdateRequiredEol() const {
-  return !RequirementsAreSatisfied() && eol_reached_;
+bool MinimumVersionPolicyHandler::ShouldShowUpdateRequiredEolBanner() const {
+  return !RequirementsAreSatisfied() && IsPolicyRestrictionAppliedForUser() &&
+         eol_reached_;
 }
 
 bool MinimumVersionPolicyHandler::IsDeadlineTimerRunningForTesting() const {
@@ -294,7 +299,7 @@ void MinimumVersionPolicyHandler::HandleUpdateNotRequired() {
 }
 
 void MinimumVersionPolicyHandler::Reset() {
-  deadline_reached = false;
+  deadline_reached_ = false;
   eol_reached_ = false;
   update_required_deadline_ = base::Time();
   update_required_time_ = base::Time();
@@ -471,8 +476,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
     base::TimeDelta warning) {
   const NetworkStatus status = GetCurrentNetworkStatus();
   if ((!eol_reached_ && status == NetworkStatus::kAllowed) ||
-      !delegate_->IsUserLoggedIn() ||
-      (!delegate_->IsUserEnterpriseManaged() && !unmanaged_user_restricted_)) {
+      !delegate_->IsUserLoggedIn() || !IsPolicyRestrictionAppliedForUser()) {
     return;
   }
 
@@ -621,13 +625,12 @@ void MinimumVersionPolicyHandler::OnSetUpdateOverCellularOneTimePermission(
 }
 
 void MinimumVersionPolicyHandler::OnDeadlineReached() {
-  deadline_reached = true;
+  deadline_reached_ = true;
   if (delegate_->IsLoginSessionState() && !delegate_->IsLoginInProgress()) {
     // Show update required screen over the login screen.
     delegate_->ShowUpdateRequiredScreen();
   } else if (delegate_->IsUserLoggedIn() &&
-             (delegate_->IsUserEnterpriseManaged() ||
-              unmanaged_user_restricted_)) {
+             IsPolicyRestrictionAppliedForUser()) {
     // Terminate the current user session to show update required
     // screen on the login screen if the user is managed or
     // |unmanaged_user_restricted_| is set to true.

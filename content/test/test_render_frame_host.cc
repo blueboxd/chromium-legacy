@@ -255,7 +255,8 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
 
 void TestRenderFrameHost::SimulateUserActivation() {
   frame_tree_node()->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
 }
 
 const std::vector<std::string>& TestRenderFrameHost::GetConsoleMessages() {

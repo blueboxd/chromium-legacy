@@ -49,7 +49,7 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
                                       bool is_secure) override;
 
  protected:
-  static bool IsExtensionWhitelistedForScreenCapture(
+  static bool IsExtensionAllowedForScreenCapture(
       const extensions::Extension* extension);
 
   static bool IsBuiltInExtension(const GURL& origin);

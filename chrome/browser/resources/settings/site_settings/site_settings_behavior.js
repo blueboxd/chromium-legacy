@@ -223,8 +223,8 @@ const SiteSettingsBehaviorImpl = {
         ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');
     addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
-        'enableNativeFileSystemWriteContentSetting');
+        ContentSettingsTypes.FILE_SYSTEM_WRITE,
+        'enableFileSystemWriteContentSetting');
     addOrRemoveSettingWithFlag(
         ContentSettingsTypes.MIXEDSCRIPT,
         'enableInsecureContentContentSetting');

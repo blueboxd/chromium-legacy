@@ -27,6 +27,8 @@ class BrowserRemovalWaiter : public BrowserListObserver {
   explicit BrowserRemovalWaiter(const Browser* browser) : browser_(browser) {
     BrowserList::AddObserver(this);
   }
+  BrowserRemovalWaiter(const BrowserRemovalWaiter&) = delete;
+  BrowserRemovalWaiter& operator=(const BrowserRemovalWaiter&) = delete;
   ~BrowserRemovalWaiter() override = default;
 
   void WaitForRemoval() {
@@ -47,8 +49,6 @@ class BrowserRemovalWaiter : public BrowserListObserver {
 
   const Browser* const browser_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserRemovalWaiter);
 };
 
 using PinnedTabServiceBrowserTest = InProcessBrowserTest;

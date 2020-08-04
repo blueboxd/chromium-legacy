@@ -46,32 +46,15 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry);
 //
 // Warning: UI code should use AutocompleteResult::IsSuggestionGroupIdHidden()
 // instead, which uses the server-provided hint on default-hidden groups.
-//
-// TODO(tommycli): Once all UI code has migrated to calling
-// AutocompleteResult::IsSuggestionGroupIdHidden(), we can likely make this
-// method an inaccessible anonymous function.
+// This method is accessible for testing only.
 SuggestionGroupVisibility GetUserPreferenceForSuggestionGroupVisibility(
     PrefService* prefs,
     int suggestion_group_id);
-
-// Returns whether the given suggestion group ID is allowed to appear in the
-// results.
-//
-// DEPRECATED: Use AutocompleteResult::IsSuggestionGroupIdHidden() instead.
-bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id);
 
 // Sets the group visibility of |suggestion_group_id| to |new_value|.
 void SetSuggestionGroupVisibility(PrefService* prefs,
                                   int suggestion_group_id,
                                   SuggestionGroupVisibility new_value);
-
-// Allows suggestions with the given suggestion group ID to appear in the
-// results if they currently are not allowed to or prevents them from
-// appearing in the results if they are currently permitted to.
-//
-// DEPRECATED: Use SetSuggestionGroupVisibility() instead.
-void ToggleSuggestionGroupIdVisibility(PrefService* prefs,
-                                       int suggestion_group_id);
 
 }  // namespace omnibox
 

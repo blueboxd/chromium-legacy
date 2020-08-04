@@ -72,10 +72,6 @@
         padding-bottom: 8px;
       }
 
-      #other-sync-items > .list-item:not(.first) {
-        border-top: var(--cr-separator-line);
-      }
-
       .passphrase-reset-icon {
         margin-inline-end: 8px;
       }
@@ -179,9 +175,7 @@
           <template is="dom-if" if="[[!syncSetupFriendlySettings_]]">
             <div id="encryptionDescription"
                 hidden="[[syncPrefs.passphraseRequired]]"
-                class$="single-column cr-padded-text
-                    [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
-                    list-item">
+                class="hr cr-padded-text">
               $i18n{encryptionOptionsTitle}
               <div class="secondary">
                 $i18n{syncDataEncryptedText}
@@ -204,8 +198,7 @@
             <cr-expand-button id="encryptionDescription"
                 hidden="[[syncPrefs.passphraseRequired]]"
                 expanded="{{encryptionExpanded_}}"
-                class$="list-item
-                    [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]">
+                class="hr">
               $i18n{encryptionOptionsTitle}
               <div class="secondary">
                 $i18n{syncDataEncryptedText}

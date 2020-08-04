@@ -243,7 +243,8 @@ void FrameTreeNode::ResetForNavigation() {
   // before arriving here. We just need to clear them here and in the other
   // renderer processes that may have a reference to this frame.
   UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kClearActivation);
+      blink::mojom::UserActivationUpdateType::kClearActivation,
+      blink::mojom::UserActivationNotificationType::kNone);
 }
 
 size_t FrameTreeNode::GetFrameTreeSize() const {
@@ -644,15 +645,15 @@ bool FrameTreeNode::VerifyUserActivation() {
 }
 
 bool FrameTreeNode::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type,
+    blink::mojom::UserActivationNotificationType notification_type) {
   bool update_result = false;
   switch (update_type) {
     case blink::mojom::UserActivationUpdateType::kConsumeTransientActivation:
       update_result = ConsumeTransientUserActivation();
       break;
     case blink::mojom::UserActivationUpdateType::kNotifyActivation:
-      update_result = NotifyUserActivation(
-          blink::mojom::UserActivationNotificationType::kNone);
+      update_result = NotifyUserActivation(notification_type);
       break;
     case blink::mojom::UserActivationUpdateType::
         kNotifyActivationPendingBrowserVerification:
@@ -671,7 +672,7 @@ bool FrameTreeNode::UpdateUserActivationState(
       update_result = ClearUserActivation();
       break;
   }
-  render_manager_.UpdateUserActivationState(update_type);
+  render_manager_.UpdateUserActivationState(update_type, notification_type);
   return update_result;
 }
 

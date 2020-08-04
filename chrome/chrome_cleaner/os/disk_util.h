@@ -75,7 +75,7 @@ bool ExpandEnvPath(const base::FilePath& path, base::FilePath* expanded_path);
 // Replace an absolute file path by its WOW64 folder equivalent.
 void ExpandWow64Path(const base::FilePath& path, base::FilePath* expanded_path);
 
-// Return a string16 representation of |file_information|.
+// Return a wstring representation of |file_information|.
 std::wstring FileInformationToString(
     const internal::FileInformation& file_information);
 
@@ -177,7 +177,7 @@ base::FilePath ExpandEnvPathAndWow64Path(const base::FilePath& path);
 // Return true if |name| contains wildcard characters '?' or '*'.
 bool NameContainsWildcards(const std::wstring& name);
 
-// See |String16WildcardMatchInsensitive|.
+// See |WStringWildcardMatchInsensitive|.
 bool NameMatchesPattern(const std::wstring& name,
                         const std::wstring& pattern,
                         const wchar_t escape_char);

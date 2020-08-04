@@ -70,7 +70,7 @@ class TestRunnerTest(unittest.TestCase):
   @mock.patch.object(os.path, 'isfile', return_value=True)
   @mock.patch.object(test_runner,
                      '_GetLatestVersionOfAshChrome',
-                     return_value='86.0.4187.0')
+                     return_value='793554')
   @mock.patch.object(test_runner, '_DownloadAshChromeIfNecessary')
   @mock.patch.object(subprocess, 'Popen', return_value=mock.Mock())
   # Tests that the test runner downloads and spawns ash-chrome if ash-chrome is
@@ -79,12 +79,12 @@ class TestRunnerTest(unittest.TestCase):
     args = ['script_name', 'test', command]
     with mock.patch.object(sys, 'argv', args):
       test_runner.Main()
-      mock_download.assert_called_with('86.0.4187.0')
+      mock_download.assert_called_with('793554')
       self.assertEqual(2, mock_popen.call_count)
 
       ash_chrome_args = mock_popen.call_args_list[0][0][0]
       self.assertTrue(ash_chrome_args[0].endswith(
-          'build/lacros/prebuilt_ash_chrome/86.0.4187.0/chrome'))
+          'build/lacros/prebuilt_ash_chrome/793554/chrome'))
       self.assertListEqual([
           '--user-data-dir=/tmp/ash-data', '--enable-wayland-server',
           '--no-startup-window'
@@ -107,19 +107,18 @@ class TestRunnerTest(unittest.TestCase):
   @mock.patch.object(os.path, 'isfile', return_value=True)
   @mock.patch.object(test_runner,
                      '_GetLatestVersionOfAshChrome',
-                     return_value='86.0.4187.0')
+                     return_value='793554')
   @mock.patch.object(test_runner, '_DownloadAshChromeIfNecessary')
   @mock.patch.object(subprocess, 'Popen', return_value=mock.Mock())
   # Tests that when a ash-chrome version is specified, that version is used
   # instead of the latest one.
   def test_specify_ash_chrome_version(self, mock_popen, mock_download, *_):
     args = [
-        'script_name', 'test', 'browser_tests', '--ash-chrome-version',
-        '85.0.4142.0'
+        'script_name', 'test', 'browser_tests', '--ash-chrome-version', '781122'
     ]
     with mock.patch.object(sys, 'argv', args):
       test_runner.Main()
-      mock_download.assert_called_with('85.0.4142.0')
+      mock_download.assert_called_with('781122')
 
   @mock.patch.object(os,
                      'listdir',
@@ -134,11 +133,11 @@ class TestRunnerTest(unittest.TestCase):
                                                *_):
     args = [
         'script_name', 'test', './url_unittests', '--ash-chrome-version',
-        '86.0.4187.0'
+        '793554'
     ]
     with mock.patch.object(sys, 'argv', args):
       test_runner.Main()
-      mock_download.assert_called_with('86.0.4187.0')
+      mock_download.assert_called_with('793554')
       self.assertEqual(2, mock_popen.call_count)
 
   @mock.patch.object(os.path, 'isfile', return_value=True)

@@ -264,9 +264,7 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 // Tests whether a changed setting in the setting bubble is displayed again when
 // the bubble is re-opened.
 TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
-  ASSERT_TRUE(profile()->CreateHistoryService(
-      /* delete_file= */ true,
-      /* no_db= */ false));
+  ASSERT_TRUE(profile()->CreateHistoryService());
 
   // Required to break dependency on BrowserMainLoop.
   MediaCaptureDevicesDispatcher::GetInstance()->

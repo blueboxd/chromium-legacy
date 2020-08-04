@@ -143,6 +143,8 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
                        const std::vector<MediaSinkInternal>& internal_sinks,
                        const std::vector<url::Origin>& origins) override;
 
+  LoggerImpl* GetLogger() override;
+
   // Mojo remotes to media route providers. Providers are added via
   // RegisterMediaRouteProvider().
   base::flat_map<MediaRouteProviderId, mojo::Remote<mojom::MediaRouteProvider>>

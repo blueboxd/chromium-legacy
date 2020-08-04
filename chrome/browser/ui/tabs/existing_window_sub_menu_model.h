@@ -18,6 +18,9 @@ class ExistingWindowSubMenuModel : public ExistingBaseSubMenuModel {
   ExistingWindowSubMenuModel(ui::SimpleMenuModel::Delegate* parent_delegate,
                              TabStripModel* model,
                              int context_index);
+  ExistingWindowSubMenuModel(const ExistingWindowSubMenuModel&) = delete;
+  ExistingWindowSubMenuModel& operator=(const ExistingWindowSubMenuModel&) =
+      delete;
   ~ExistingWindowSubMenuModel() override;
 
   // ui::SimpleMenuModel
@@ -37,8 +40,6 @@ class ExistingWindowSubMenuModel : public ExistingBaseSubMenuModel {
   // ExistingBaseSubMenuModel
   void ExecuteNewCommand(int event_flags) override;
   void ExecuteExistingCommand(int command_index) override;
-
-  DISALLOW_COPY_AND_ASSIGN(ExistingWindowSubMenuModel);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_EXISTING_WINDOW_SUB_MENU_MODEL_H_

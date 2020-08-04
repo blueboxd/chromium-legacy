@@ -108,10 +108,7 @@ cast_source_set("graphics") {
   }
 
   if (use_ozone) {
-    deps += [
-      "//components/exo",
-      "//ui/ozone",
-    ]
+    deps += [ "//ui/ozone" ]
   }
 }
 

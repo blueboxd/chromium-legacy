@@ -15982,6 +15982,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="39" label="Tab moved to drawer"/>
   <int value="40" label="Tab moved to main panel"/>
   <int value="41" label="Capture CSS Overview clicked"/>
+  <int value="42" label="Virtual authenticator environment enabled"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -21350,6 +21351,7 @@ Called by update_document_policy_enum.py.-->
   <int value="758" label="BackForwardCacheEnabled"/>
   <int value="759" label="NoteTakingAppsLockScreenAllowlist"/>
   <int value="760" label="CCTToSDialogEnabled"/>
+  <int value="761" label="NearbyShareAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28626,6 +28628,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3361" label="MainFrameCSPViaOriginPolicy"/>
   <int value="3362" label="HtmlClipboardApiRead"/>
   <int value="3363" label="HtmlClipboardApiWrite"/>
+  <int value="3364" label="CSSSystemColorComputeToSelf"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41713,6 +41716,7 @@ from previous Chrome versions.
   <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
   <int value="-138760381" label="AutofillManualFallbackAndroid:enabled"/>
   <int value="-137303226" label="enable-chromevox-developer-option"/>
+  <int value="-136485076" label="NtpModules:disabled"/>
   <int value="-135584721"
       label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:disabled"/>
   <int value="-135584175" label="EnableAggregatedMlAppRanking:enabled"/>
@@ -43283,6 +43287,7 @@ from previous Chrome versions.
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
   <int value="1584039096" label="highlight-all-webviews"/>
+  <int value="1584425198" label="NtpModules:enabled"/>
   <int value="1584536816" label="LimitAltTabToActiveDesk:enabled"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
@@ -45254,6 +45259,7 @@ Called by update_use_counter_css.py.-->
   <int value="671" label="scrollbar-gutter"/>
   <int value="672" label="ascent-override"/>
   <int value="673" label="descent-override"/>
+  <int value="674" label="letter-spacing-override"/>
 </enum>
 
 <enum name="MappedEditingCommands">

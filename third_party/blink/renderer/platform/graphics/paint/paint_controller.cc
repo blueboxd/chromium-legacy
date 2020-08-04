@@ -781,17 +781,17 @@ void PaintController::CheckUnderInvalidation() {
 }
 
 void PaintController::SetFirstPainted() {
-  if (!IgnorePaintTimingScope::ShouldIgnore())
+  if (!IgnorePaintTimingScope::IgnoreDepth())
     frame_first_paints_.back().first_painted = true;
 }
 
 void PaintController::SetTextPainted() {
-  if (!IgnorePaintTimingScope::ShouldIgnore())
+  if (!IgnorePaintTimingScope::IgnoreDepth())
     frame_first_paints_.back().text_painted = true;
 }
 
 void PaintController::SetImagePainted() {
-  if (!IgnorePaintTimingScope::ShouldIgnore())
+  if (!IgnorePaintTimingScope::IgnoreDepth())
     frame_first_paints_.back().image_painted = true;
 }
 

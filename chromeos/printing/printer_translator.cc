@@ -15,6 +15,7 @@
 #include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/uri.h"
+#include "url/url_constants.h"
 
 using base::DictionaryValue;
 
@@ -199,23 +200,16 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
     return printer_info;
   }
 
-  if (printer.uri().GetScheme() == "usb") {
-    // USB has URI path (and, maybe, query) components that aren't really
-    // associated with a queue -- the mapping between printing semantics and URI
-    // semantics breaks down a bit here.  From the user's point of view, the
-    // entire host/path/query block is the printer address for USB.
-    printer_info->SetString(
-        "printerAddress",
-        printer.uri().GetNormalized().substr(strlen("usb://")));
+  if (printer.uri().GetScheme() == "usb")
     printer_info->SetString("ppdManufacturer", printer.manufacturer());
-  } else {
-    printer_info->SetString("printerAddress", PrinterAddress(printer.uri()));
-    if (!printer.uri().GetPath().empty()) {
-      printer_info->SetString("printerQueue",
-                              printer.uri().GetPathEncodedAsString().substr(1));
-    }
-  }
   printer_info->SetString("printerProtocol", printer.uri().GetScheme());
+  printer_info->SetString("printerAddress", PrinterAddress(printer.uri()));
+  std::string printer_queue = printer.uri().GetPathEncodedAsString();
+  if (!printer_queue.empty())
+    printer_queue = printer_queue.substr(1);  // removes the leading '/'
+  if (!printer.uri().GetQueryEncodedAsString().empty())
+    printer_queue += "?" + printer.uri().GetQueryEncodedAsString();
+  printer_info->SetString("printerQueue", printer_queue);
 
   return printer_info;
 }

@@ -29,6 +29,7 @@
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/devtools_mhtml_helper.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
+#include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/manifest/manifest_manager_host.h"
@@ -470,20 +471,10 @@ void PageHandler::Navigate(const std::string& url,
   else
     type = ui::PAGE_TRANSITION_TYPED;
 
-  FrameTreeNode* frame_tree_node = nullptr;
   std::string out_frame_id = frame_id.fromMaybe(
       host_->frame_tree_node()->devtools_frame_token().ToString());
-  FrameTreeNode* root = host_->frame_tree_node();
-  if (root->devtools_frame_token().ToString() == out_frame_id) {
-    frame_tree_node = root;
-  } else {
-    for (FrameTreeNode* node : root->frame_tree()->SubtreeNodes(root)) {
-      if (node->devtools_frame_token().ToString() == out_frame_id) {
-        frame_tree_node = node;
-        break;
-      }
-    }
-  }
+  FrameTreeNode* frame_tree_node = FrameTreeNodeFromDevToolsFrameToken(
+      host_->frame_tree_node(), out_frame_id);
 
   if (!frame_tree_node) {
     callback->sendFailure(

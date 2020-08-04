@@ -250,8 +250,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
 
 TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
   // Set up UKM recording conditions.
-  ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
-                                            /* no_db= */ false));
+  ASSERT_TRUE(profile_.CreateHistoryService());
   auto* history_service = HistoryServiceFactory::GetForProfile(
       &profile_, ServiceAccessType::EXPLICIT_ACCESS);
   history_service->AddPage(Origin(), base::Time::Now(),

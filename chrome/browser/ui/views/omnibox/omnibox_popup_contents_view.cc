@@ -367,7 +367,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       // Set visibility of the result view based on whether the group is hidden.
       bool match_hidden = pref_service &&
                           match.suggestion_group_id.has_value() &&
-                          omnibox::IsSuggestionGroupIdHidden(
+                          model_->result().IsSuggestionGroupIdHidden(
                               pref_service, match.suggestion_group_id.value());
       result_view->SetVisible(!match_hidden);
 
@@ -556,8 +556,8 @@ void OmniboxPopupContentsView::OnSuggestionGroupVisibilityUpdate() {
     const AutocompleteMatch& match = model_->result().match_at(i);
     bool match_hidden =
         match.suggestion_group_id.has_value() &&
-        omnibox::IsSuggestionGroupIdHidden(GetPrefService(),
-                                           match.suggestion_group_id.value());
+        model_->result().IsSuggestionGroupIdHidden(
+            GetPrefService(), match.suggestion_group_id.value());
     if (OmniboxResultView* result_view = result_view_at(i))
       result_view->SetVisible(!match_hidden);
   }

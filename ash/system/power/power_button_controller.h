@@ -9,6 +9,7 @@
 
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/wm/lock_state_observer.h"
@@ -42,7 +43,8 @@ class ASH_EXPORT PowerButtonController
       public AccelerometerReader::Observer,
       public ScreenBacklightObserver,
       public TabletModeObserver,
-      public LockStateObserver {
+      public LockStateObserver,
+      public SessionObserver {
  public:
   enum class ButtonType {
     // Indicates normal power button type.
@@ -125,6 +127,9 @@ class ASH_EXPORT PowerButtonController
                                 const base::TimeTicks& timestamp) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // SessionObserver:
+  void OnLoginStatusChanged(LoginStatus status) override;
 
   // Initializes |screenshot_controller_| according to the tablet mode switch in
   // |result|.

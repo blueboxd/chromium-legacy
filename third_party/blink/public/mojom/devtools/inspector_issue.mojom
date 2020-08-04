@@ -82,6 +82,8 @@ struct ContentSecurityPolicyIssueDetails {
   ContentSecurityPolicyViolationType content_security_policy_violation_type;
   AffectedFrame? frame_ancestor;
   network.mojom.SourceLocation? source_location;
+  // 0 is not a valid node id and is used to indicate absence.
+  int32 violating_node_id = 0;
 };
 
 enum SameSiteCookieOperation {

@@ -72,9 +72,24 @@ class POLICY_EXPORT ConfigurationPolicyHandler {
 };
 
 // Abstract class derived from ConfigurationPolicyHandler that should be
+// subclassed to handle policies that have a name.
+class POLICY_EXPORT NamedPolicyHandler : public ConfigurationPolicyHandler {
+ public:
+  explicit NamedPolicyHandler(const char* policy_name);
+  ~NamedPolicyHandler() override;
+  NamedPolicyHandler(const NamedPolicyHandler&) = delete;
+  NamedPolicyHandler& operator=(const NamedPolicyHandler&) = delete;
+
+  const char* policy_name() const;
+
+ private:
+  // The name of the policy.
+  const char* policy_name_;
+};
+
+// Abstract class derived from ConfigurationPolicyHandler that should be
 // subclassed to handle a single policy (not a combination of policies).
-class POLICY_EXPORT TypeCheckingPolicyHandler
-    : public ConfigurationPolicyHandler {
+class POLICY_EXPORT TypeCheckingPolicyHandler : public NamedPolicyHandler {
  public:
   TypeCheckingPolicyHandler(const char* policy_name,
                             base::Value::Type value_type);
@@ -84,8 +99,6 @@ class POLICY_EXPORT TypeCheckingPolicyHandler
   bool CheckPolicySettings(const PolicyMap& policies,
                            PolicyErrorMap* errors) override;
 
-  const char* policy_name() const;
-
  protected:
   // Runs policy checks and returns the policy value if successful.
   bool CheckAndGetValue(const PolicyMap& policies,
@@ -93,9 +106,6 @@ class POLICY_EXPORT TypeCheckingPolicyHandler
                         const base::Value** value);
 
  private:
-  // The name of the policy.
-  const char* policy_name_;
-
   // The type the value of the policy should have.
   base::Value::Type value_type_;
 
@@ -306,8 +316,7 @@ class POLICY_EXPORT IntPercentageToDoublePolicyHandler
 // Like TypeCheckingPolicyHandler, but validates against a schema instead of a
 // single type. |schema| is the schema used for this policy, and |strategy| is
 // the strategy used for schema validation errors.
-class POLICY_EXPORT SchemaValidatingPolicyHandler
-    : public ConfigurationPolicyHandler {
+class POLICY_EXPORT SchemaValidatingPolicyHandler : public NamedPolicyHandler {
  public:
   SchemaValidatingPolicyHandler(const char* policy_name,
                                 Schema schema,
@@ -318,8 +327,6 @@ class POLICY_EXPORT SchemaValidatingPolicyHandler
   bool CheckPolicySettings(const PolicyMap& policies,
                            PolicyErrorMap* errors) override;
 
-  const char* policy_name() const;
-
  protected:
   // Runs policy checks and returns the policy value if successful.
   bool CheckAndGetValue(const PolicyMap& policies,
@@ -327,7 +334,6 @@ class POLICY_EXPORT SchemaValidatingPolicyHandler
                         std::unique_ptr<base::Value>* output);
 
  private:
-  const char* policy_name_;
   const Schema schema_;
   const SchemaOnErrorStrategy strategy_;
 
@@ -380,7 +386,7 @@ class POLICY_EXPORT SimpleSchemaValidatingPolicyHandler
 // - You don't have to parse JSON every time you read it from the pref store.
 // - Nested dicts are simple, but nested JSON strings are complicated.
 class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
-    : public ConfigurationPolicyHandler {
+    : public NamedPolicyHandler {
  public:
   SimpleJsonStringSchemaValidatingPolicyHandler(
       const char* policy_name,
@@ -431,7 +437,6 @@ class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
   // Returns true if the schema root is a list.
   bool IsListSchema() const;
 
-  const char* policy_name_;
   const Schema schema_;
   const char* pref_path_;
   const bool allow_recommended_;
@@ -478,8 +483,8 @@ class POLICY_EXPORT SimpleDeprecatingPolicyHandler
     : public ConfigurationPolicyHandler {
  public:
   SimpleDeprecatingPolicyHandler(
-      std::unique_ptr<TypeCheckingPolicyHandler> legacy_policy_handler,
-      std::unique_ptr<TypeCheckingPolicyHandler> new_policy_handler);
+      std::unique_ptr<NamedPolicyHandler> legacy_policy_handler,
+      std::unique_ptr<NamedPolicyHandler> new_policy_handler);
   ~SimpleDeprecatingPolicyHandler() override;
   SimpleDeprecatingPolicyHandler(const SimpleDeprecatingPolicyHandler&) =
       delete;
@@ -500,8 +505,8 @@ class POLICY_EXPORT SimpleDeprecatingPolicyHandler
                            PrefValueMap* prefs) override;
 
  private:
-  std::unique_ptr<TypeCheckingPolicyHandler> legacy_policy_handler_;
-  std::unique_ptr<TypeCheckingPolicyHandler> new_policy_handler_;
+  std::unique_ptr<NamedPolicyHandler> legacy_policy_handler_;
+  std::unique_ptr<NamedPolicyHandler> new_policy_handler_;
 };
 
 }  // namespace policy

@@ -1695,6 +1695,7 @@ void TestLauncher::RunTests() {
       if (!found)
         continue;
     }
+
     if (!negative_test_filter_.empty()) {
       bool excluded = false;
       for (auto filter : negative_test_filter_) {
@@ -1737,9 +1738,41 @@ void TestLauncher::RunTests() {
 
   test_started_count_ = test_names.size();
 
+  // If there are no matching tests, warn and notify of any matches against
+  // *<filter>*.
+  if (test_started_count_ == 0) {
+    PrintFuzzyMatchingTestNames();
+    fprintf(stdout, "WARNING: No matching tests to run.\n");
+    fflush(stdout);
+  }
+
   TestRunner test_runner(this, parallel_jobs_,
                          launcher_delegate_->GetBatchSize());
   test_runner.Run(test_names);
+}
+
+void TestLauncher::PrintFuzzyMatchingTestNames() {
+  for (auto filter : positive_test_filter_) {
+    if (filter.empty())
+      continue;
+    std::string almost_filter;
+    if (filter.front() != '*')
+      almost_filter += '*';
+    almost_filter += filter;
+    if (filter.back() != '*')
+      almost_filter += '*';
+
+    for (const TestInfo& test_info : tests_) {
+      std::string test_name = test_info.GetFullName();
+      std::string prefix_stripped_name = test_info.GetPrefixStrippedName();
+      if (MatchPattern(test_name, almost_filter) ||
+          MatchPattern(prefix_stripped_name, almost_filter)) {
+        fprintf(stdout, "Filter \"%s\" would have matched: %s\n",
+                almost_filter.c_str(), test_name.c_str());
+        fflush(stdout);
+      }
+    }
+  }
 }
 
 bool TestLauncher::RunRetryTests() {

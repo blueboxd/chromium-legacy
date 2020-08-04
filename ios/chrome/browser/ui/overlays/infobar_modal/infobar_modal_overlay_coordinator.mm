@@ -52,11 +52,13 @@
 - (void)stopAnimated:(BOOL)animated {
   if (!self.started)
     return;
+  // Mark started as NO before calling dismissal callback to prevent dup
+  // stopAnimated: executions.
+  self.started = NO;
   [self.baseViewController dismissViewControllerAnimated:animated
                                               completion:^{
                                                 [self finishDismissal];
                                               }];
-  self.started = NO;
 }
 
 - (UIViewController*)viewController {

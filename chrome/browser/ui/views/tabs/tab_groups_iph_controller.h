@@ -10,7 +10,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/views/feature_promos/feature_promo_controller.h"
+#include "chrome/browser/ui/views/in_product_help/feature_promo_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 

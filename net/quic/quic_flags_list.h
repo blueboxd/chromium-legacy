@@ -266,7 +266,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v3, false)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, true)
 
 // If true, support for IETF QUIC 0-rtt is enabled.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_zero_rtt_for_tls_v2, true)
@@ -293,11 +293,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_default_enable_5rto_blackhole_detection2,
     true)
 
-// If true, session does not send duplicate MAX_STREAMS.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_stop_sending_duplicate_max_streams,
-          true)
-
 // If true, disable QUIC version h3-29.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_29, false)
 
@@ -317,17 +312,9 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_dont_send_max_ack_delay_if_default,
           true)
 
-// If true, remove the head of line blocking caused by an unprocessable packet
-// in the undecryptable packets list.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_undecryptable_packets, true)
-
-// If true, do not use QuicUtil::IsBidirectionalStreamId() to determine gQUIC
-// stream type.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_gquic_stream_type, true)
-
 // When true, do not pad the QUIC_CRYPTO CHLO message itself. Note that the
 // packet containing the CHLO will still be padded.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, true)
 
 // When true, QuicDispatcher supports decapsulation of Legacy Version
 // Encapsulation packets.
@@ -450,3 +437,15 @@ QUIC_FLAG(bool,
 
 // If true, enable QUIC version h3-T051.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t051, true)
+
+// If true, fix a case where data is marked lost in HANDSHAKE level but
+// HANDSHAKE key gets decrypted later.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_neuter_handshake_data,
+          false)
+
+// If true, when data is sending in fast path mode in the creator, making sure
+// stream data is sent in the right encryption level.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_check_encryption_level_in_fast_path,
+          true)

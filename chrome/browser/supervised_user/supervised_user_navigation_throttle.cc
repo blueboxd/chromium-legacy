@@ -158,9 +158,15 @@ SupervisedUserNavigationThrottle::CheckURL() {
   deferred_ = false;
   DCHECK_EQ(SupervisedUserURLFilter::INVALID, behavior_);
   GURL url = navigation_handle()->GetURL();
+
+  bool skip_manual_parent_filter =
+      url_filter_->ShouldSkipParentManualAllowlistFiltering(
+          navigation_handle()->GetWebContents()->GetOutermostWebContents());
   bool got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
-      url, base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
-                          weak_ptr_factory_.GetWeakPtr(), url));
+      url,
+      base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
+                     weak_ptr_factory_.GetWeakPtr(), url),
+      skip_manual_parent_filter);
   DCHECK_EQ(got_result, behavior_ != SupervisedUserURLFilter::INVALID);
   // If we got a "not blocked" result synchronously, don't defer.
   deferred_ = !got_result || (behavior_ == SupervisedUserURLFilter::BLOCK);

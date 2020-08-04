@@ -583,6 +583,7 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
   SupervisedUserURLFilter::FilteringBehavior behavior =
       SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
   url_filter_.SetDefaultFilteringBehavior(behavior);
+  UpdateAsyncUrlChecker();
 
   for (SupervisedUserServiceObserver& observer : observer_list_)
     observer.OnURLFilterChanged();
@@ -603,8 +604,19 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
     // Do nothing - we'll check the setting again when the load finishes.
   }
 
+  UpdateAsyncUrlChecker();
+}
+
+void SupervisedUserService::UpdateAsyncUrlChecker() {
+  int behavior_value = profile_->GetPrefs()->GetInteger(
+      prefs::kDefaultSupervisedUserFilteringBehavior);
+  SupervisedUserURLFilter::FilteringBehavior behavior =
+      SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
+
   bool use_online_check =
-      supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
+      supervised_users::IsSafeSitesOnlineCheckEnabled(profile_) ||
+      behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK;
+
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check) {
       url_filter_.InitAsyncURLChecker(

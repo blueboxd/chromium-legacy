@@ -55,7 +55,7 @@ using KnownFolder = chrome_cleaner::mojom::KnownFolder;
 #define STATUS_OBJECT_PATH_SYNTAX_BAD ((NTSTATUS)0xC000003BL)
 
 WStringEmbeddedNulls StringWithTrailingNull(const std::wstring& str) {
-  // string16::size() does not count the trailing null.
+  // wstring::size() does not count the trailing null.
   return WStringEmbeddedNulls(str.c_str(), str.size() + 1);
 }
 

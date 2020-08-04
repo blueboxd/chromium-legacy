@@ -132,24 +132,20 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
   ArFrame_getUpdatedTrackables(arcore_session_, ar_frame, plane_tracked_type,
                                arcore_planes_.get());
 
-  // Collect the IDs of the updated planes. |ar_plane_address_to_id_| might
-  // grow.
+  // Collect the IDs of the updated planes. |plane_address_to_id_| might grow.
   std::set<PlaneId> updated_plane_ids;
   ForEachArCorePlane(
       arcore_planes_.get(),
       [this, &updated_plane_ids](
           internal::ScopedArCoreObject<ArTrackable*> trackable,
           ArPlane* ar_plane, ArTrackingState tracking_state) {
-        // ID
-        PlaneId plane_id;
-        bool created;
-        std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
+        auto result = plane_address_to_id_.CreateOrGetId(ar_plane);
 
-        DVLOG(3) << "Previously detected plane found, plane_id=" << plane_id
-                 << ", created?=" << created
+        DVLOG(3) << "Previously detected plane found, plane_id=" << result.id
+                 << ", created?=" << result.created
                  << ", tracking_state=" << tracking_state;
 
-        updated_plane_ids.insert(plane_id);
+        updated_plane_ids.insert(result.id);
       });
 
   DVLOG(3) << __func__
@@ -161,44 +157,42 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
                              arcore_planes_.get());
 
   // Collect the objects of all currently tracked planes.
-  // |ar_plane_address_to_id_| should *not* grow.
+  // |plane_address_to_id_| should *not* grow.
   std::map<PlaneId, PlaneInfo> new_plane_id_to_plane_info;
   ForEachArCorePlane(
       arcore_planes_.get(),
       [this, &new_plane_id_to_plane_info, &updated_plane_ids](
           internal::ScopedArCoreObject<ArTrackable*> trackable,
           ArPlane* ar_plane, ArTrackingState tracking_state) {
-        // ID
-        PlaneId plane_id;
-        bool created;
-        std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
+        auto result = plane_address_to_id_.CreateOrGetId(ar_plane);
 
-        DCHECK(!created)
+        DCHECK(!result.created)
             << "Newly detected planes should already be handled - new plane_id="
-            << plane_id;
+            << result.id;
 
         // Inspect the tracking state of this plane in the previous frame. If it
         // changed, mark the plane as updated.
-        if (base::Contains(plane_id_to_plane_info_, plane_id) &&
-            plane_id_to_plane_info_.at(plane_id).tracking_state !=
+        if (base::Contains(plane_id_to_plane_info_, result.id) &&
+            plane_id_to_plane_info_.at(result.id).tracking_state !=
                 tracking_state) {
-          updated_plane_ids.insert(plane_id);
+          updated_plane_ids.insert(result.id);
         }
 
         PlaneInfo new_plane_info =
             PlaneInfo(std::move(trackable), tracking_state);
 
-        new_plane_id_to_plane_info.emplace(plane_id, std::move(new_plane_info));
+        new_plane_id_to_plane_info.emplace(result.id,
+                                           std::move(new_plane_info));
       });
 
   DVLOG(3) << __func__ << ": new_plane_id_to_plane_info.size()="
            << new_plane_id_to_plane_info.size();
 
-  // Shrink |ar_plane_address_to_id_|, removing all planes that are no longer
+  // Shrink |plane_address_to_id_|, removing all planes that are no longer
   // tracked or were subsumed - if they do not show up in
   // |new_plane_id_to_plane_info| map, they are no longer tracked.
-  base::EraseIf(ar_plane_address_to_id_, [&new_plane_id_to_plane_info](
-                                             const auto& plane_address_and_id) {
+  plane_address_to_id_.EraseIf([&new_plane_id_to_plane_info](
+                                   const auto& plane_address_and_id) {
     return !base::Contains(new_plane_id_to_plane_info,
                            plane_address_and_id.second);
   });
@@ -271,30 +265,9 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
                                           std::move(updated_planes));
 }
 
-std::pair<PlaneId, bool> ArCorePlaneManager::CreateOrGetPlaneId(
-    void* plane_address) {
-  auto it = ar_plane_address_to_id_.find(plane_address);
-  if (it != ar_plane_address_to_id_.end()) {
-    return std::make_pair(it->second, false);
-  }
-
-  CHECK(next_id_ != std::numeric_limits<uint64_t>::max())
-      << "preventing ID overflow";
-
-  uint64_t current_id = next_id_++;
-  ar_plane_address_to_id_.emplace(plane_address, current_id);
-
-  return std::make_pair(PlaneId(current_id), true);
-}
-
 base::Optional<PlaneId> ArCorePlaneManager::GetPlaneId(
     void* plane_address) const {
-  auto it = ar_plane_address_to_id_.find(plane_address);
-  if (it == ar_plane_address_to_id_.end()) {
-    return base::nullopt;
-  }
-
-  return it->second;
+  return plane_address_to_id_.GetId(plane_address);
 }
 
 bool ArCorePlaneManager::PlaneExists(PlaneId id) const {

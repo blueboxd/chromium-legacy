@@ -14,7 +14,19 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "content/public/browser/navigation_controller.h"
+#endif
+
+namespace {
+
+// URL that the "leave site" button aborts to by default.
 const char kSafetyTipLeaveSiteUrl[] = "chrome://newtab";
+
+}  // namespace
 
 void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
                                          SafetyTipInteraction interaction) {
@@ -32,8 +44,32 @@ void LeaveSiteFromSafetyTip(content::WebContents* web_contents,
                             const GURL& safe_url) {
   RecordSafetyTipInteractionHistogram(web_contents,
                                       SafetyTipInteraction::kLeaveSite);
+  auto navigated_to = safe_url;
+  if (navigated_to.is_empty()) {
+    navigated_to = GURL(kSafetyTipLeaveSiteUrl);
+
+#if defined(OS_ANDROID)
+    if (TabAndroid::FromWebContents(web_contents)->IsCustomTab()) {
+      auto& controller = web_contents->GetController();
+      // For CCTs, just go back if we can...
+      if (controller.CanGoBack()) {
+        controller.GoBack();
+        return;
+      }
+      // ... or close the CCT otherwise.
+      auto* tab_model = TabModelList::GetTabModelForWebContents(web_contents);
+      if (tab_model) {
+        tab_model->CloseTabAt(tab_model->GetActiveIndex());
+        return;
+      }
+      // (And if we don't have a tab model for some reason, just navigate away
+      //  someplace at least slightly. To my knowledge, this shouldn't happen.)
+    }
+#endif
+  }
+
   content::OpenURLParams params(
-      safe_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      navigated_to, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initiated */);
   params.should_replace_current_entry = true;
   web_contents->OpenURL(params);

@@ -15,7 +15,6 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 
 import java.util.Calendar;
 
@@ -42,8 +41,8 @@ public class DownloadDateTimePickerDialogImpl
     public void showDialog(
             Context context, ModalDialogManager modalDialogManager, PropertyModel model) {
         // Reset and compute the initial time.
-        long initialTime = getLong(model, DownloadDateTimePickerDialogProperties.INITIAL_TIME,
-                System.currentTimeMillis());
+        long initialTime = DownloadDialogUtils.getLong(model,
+                DownloadDateTimePickerDialogProperties.INITIAL_TIME, System.currentTimeMillis());
         mCalendar.setTimeInMillis(initialTime);
 
         // Reset dialogs.
@@ -54,10 +53,10 @@ public class DownloadDateTimePickerDialogImpl
         mDatePickerDialog = new DatePickerDialog(context,
                 R.style.Theme_DownloadDateTimePickerDialog, null, mCalendar.get(Calendar.YEAR),
                 mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
-        long minDate =
-                getLong(model, DownloadDateTimePickerDialogProperties.MIN_TIME, INVALID_TIMESTAMP);
-        long maxDate =
-                getLong(model, DownloadDateTimePickerDialogProperties.MAX_TIME, INVALID_TIMESTAMP);
+        long minDate = DownloadDialogUtils.getLong(
+                model, DownloadDateTimePickerDialogProperties.MIN_TIME, INVALID_TIMESTAMP);
+        long maxDate = DownloadDialogUtils.getLong(
+                model, DownloadDateTimePickerDialogProperties.MAX_TIME, INVALID_TIMESTAMP);
         if (minDate > 0) mDatePickerDialog.getDatePicker().setMinDate(minDate);
         if (maxDate > 0) mDatePickerDialog.getDatePicker().setMaxDate(maxDate);
 
@@ -109,12 +108,6 @@ public class DownloadDateTimePickerDialogImpl
         assert mController != null;
         mController.onDateTimePicked(mCalendar.getTimeInMillis());
         mCalendar.clear();
-    }
-
-    private static long getLong(
-            PropertyModel model, ReadableObjectPropertyKey<Long> key, long defaultValue) {
-        Long value = model.get(key);
-        return (value != null) ? value : defaultValue;
     }
 
     // DownloadTimePickerDialog.Controller overrides.

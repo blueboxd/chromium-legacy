@@ -339,16 +339,8 @@ void FrameLoader::DispatchUnloadEvent(
   FrameNavigationDisabler navigation_disabler(*frame_);
   SaveScrollState();
 
-  Document* document = frame_->GetDocument();
-  if (document && !SVGImage::IsInSVGImage(document)) {
-    document->DispatchUnloadEvents(committing_origin, timing);
-    // Remove event listeners if we're firing unload events for a reason other
-    // than committing a navigation. In the commit case, we'll determine whether
-    // event listeners should be retained when choosing whether to reuse the
-    // LocalDOMWindow.
-    if (!timing)
-      document->RemoveAllEventListenersRecursively();
-  }
+  if (!SVGImage::IsInSVGImage(frame_->GetDocument()))
+    frame_->GetDocument()->DispatchUnloadEvents(committing_origin, timing);
 }
 
 void FrameLoader::DidExplicitOpen() {

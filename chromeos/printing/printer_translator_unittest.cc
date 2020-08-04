@@ -301,7 +301,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUsbUri) {
       GetCupsPrinterInfo(printer);
   CheckGenericPrinterInfo(CreateGenericPrinter(), *printer_info);
 
-  CheckPrinterInfoUri(*printer_info, "usb", "1234/af9d?serial=ink1", "");
+  CheckPrinterInfoUri(*printer_info, "usb", "1234", "af9d?serial=ink1");
 
   ExpectDictBooleanValue(false, *printer_info, "printerPpdReference.autoconf");
 }

@@ -16,7 +16,7 @@
 namespace blink {
 
 class LocalFrame;
-class WorkerGlobalScope;
+class WorkerOrWorkletGlobalScope;
 
 // https://html.spec.whatwg.org/C/#concept-script
 class CORE_EXPORT Script : public GarbageCollected<Script> {
@@ -34,9 +34,9 @@ class CORE_EXPORT Script : public GarbageCollected<Script> {
   // https://html.spec.whatwg.org/C/#run-a-module-script,
   // depending on the script type,
   // on Window or on WorkerGlobalScope, respectively.
-  // RunScriptOnWorker returns true if evaluated successfully.
+  // RunScriptOnWorkerOrWorklet returns true if evaluated successfully.
   virtual void RunScript(LocalFrame*) = 0;
-  virtual bool RunScriptOnWorker(WorkerGlobalScope&) = 0;
+  virtual bool RunScriptOnWorkerOrWorklet(WorkerOrWorkletGlobalScope&) = 0;
 
   const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
   const KURL& BaseURL() const { return base_url_; }

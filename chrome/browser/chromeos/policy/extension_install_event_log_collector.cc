@@ -51,7 +51,7 @@ em::ExtensionInstallReportLogEvent_FailureReason ConvertFailureReasonToProto(
     extensions::InstallStageTracker::FailureReason failure_reason) {
   switch (failure_reason) {
     case extensions::InstallStageTracker::FailureReason::UNKNOWN:
-      return em::ExtensionInstallReportLogEvent::UNKNOWN;
+      return em::ExtensionInstallReportLogEvent::FAILURE_REASON_UNKNOWN;
     case extensions::InstallStageTracker::FailureReason::INVALID_ID:
       return em::ExtensionInstallReportLogEvent::INVALID_ID;
     case extensions::InstallStageTracker::FailureReason::

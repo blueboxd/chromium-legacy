@@ -127,7 +127,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
  public:
   AutocompleteActionPredictorTest()
       : profile_(std::make_unique<TestingProfile>()), predictor_(nullptr) {
-    CHECK(profile_->CreateHistoryService(true, false));
+    CHECK(profile_->CreateHistoryService());
     predictor_ = std::make_unique<AutocompleteActionPredictor>(profile_.get());
     predictor_->CreateLocalCachesFromDatabase();
     profile_->BlockUntilHistoryProcessesPendingRequests();

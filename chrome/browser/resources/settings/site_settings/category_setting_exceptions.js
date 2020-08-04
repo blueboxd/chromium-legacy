@@ -116,7 +116,7 @@ Polymer({
    * @private
    */
   computeShowAllowSiteList_() {
-    return this.category !== ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+    return this.category !== ContentSettingsTypes.FILE_SYSTEM_WRITE;
   },
 
   /**

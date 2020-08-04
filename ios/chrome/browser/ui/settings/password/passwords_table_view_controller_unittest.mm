@@ -761,6 +761,12 @@ TEST_P(PasswordsTableViewControllerTest, PasswordStoreListener) {
   EXPECT_EQ(1, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
   AddSavedForm2();
   EXPECT_EQ(2, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
+
+  auto password =
+      GetTestStore().stored_passwords().at("http://www.example.com/").at(0);
+  GetTestStore().RemoveLogin(password);
+  RunUntilIdle();
+  EXPECT_EQ(1, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
 }
 
 // Test verifies Passwords View Controller handles deletion of passwords.

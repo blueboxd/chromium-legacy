@@ -70,7 +70,7 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
       const extensions::Extension* extension);
 
   // Returns whether desktop capture is always approved for |extension|.
-  // Currently component extensions and some whitelisted extensions are default
+  // Currently component extensions and some external extensions are default
   // approved.
   static bool IsDefaultApproved(const extensions::Extension* extension);
 

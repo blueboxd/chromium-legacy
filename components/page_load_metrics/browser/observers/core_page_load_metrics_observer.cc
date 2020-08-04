@@ -168,6 +168,9 @@ const char kHistogramFirstContentfulPaintOnBattery[] =
 const char kHistogramFirstContentfulPaintNotOnBattery[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.NotOnBattery";
 
+const char kHistogramFirstContentfulPaintHiddenWhileFlushing[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.HiddenWhileFlushing";
+
 const char kHistogramLoadTypeFirstContentfulPaintReload[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "Reload";
@@ -552,6 +555,16 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToNavigationOmnibox,
                             timing.input_to_navigation_start.value());
       }
+    }
+
+    if (GetDelegate().GetFirstBackgroundTime()) {
+      // We were started in the foreground, and got FCP while in foreground, but
+      // became hidden while propagating the FCP value from Blink into the PLM
+      // observer. In this case, we will have missed the FCP UKM value, since it
+      // is logged in UkmPageLoadMetricsObserver::OnHidden.
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramFirstContentfulPaintHiddenWhileFlushing,
+          timing.paint_timing->first_contentful_paint.value());
     }
 
     switch (GetPageLoadType(transition_)) {

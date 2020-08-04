@@ -10,6 +10,7 @@
 
 #include "base/bits.h"
 #include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 #if __SIZEOF_POINTER__ == 4
@@ -47,7 +48,8 @@ TestElfImage::TestElfImage(TestElfImage&&) = default;
 
 TestElfImage& TestElfImage::operator=(TestElfImage&&) = default;
 
-TestElfImageBuilder::TestElfImageBuilder() = default;
+TestElfImageBuilder::TestElfImageBuilder(MappingType mapping_type)
+    : mapping_type_(mapping_type) {}
 
 TestElfImageBuilder::~TestElfImageBuilder() = default;
 
@@ -102,6 +104,21 @@ struct TestElfImageBuilder::ImageMeasures {
   size_t strtab_start;
   size_t total_size;
 };
+
+Addr TestElfImageBuilder::GetVirtualAddressForOffset(
+    Off offset,
+    const uint8_t* elf_start) const {
+  switch (mapping_type_) {
+    case RELOCATABLE:
+      return static_cast<Addr>(offset);
+
+    case RELOCATABLE_WITH_BIAS:
+      return static_cast<Addr>(offset + kLoadBias);
+
+    case NON_RELOCATABLE:
+      return reinterpret_cast<Addr>(elf_start + offset);
+  }
+}
 
 TestElfImageBuilder::ImageMeasures TestElfImageBuilder::MeasureSizesAndOffsets()
     const {
@@ -163,9 +180,15 @@ TestElfImageBuilder::ImageMeasures TestElfImageBuilder::MeasureSizesAndOffsets()
 TestElfImage TestElfImageBuilder::Build() {
   ImageMeasures measures = MeasureSizesAndOffsets();
 
-  // Write the ELF contents into |buffer|.
-  std::vector<uint8_t> buffer(measures.total_size + kPageSize - 1, '\0');
-  uint8_t* const elf_start = bits::Align(&buffer.front(), kPageSize);
+  // Write the ELF contents into |buffer|. Extends the buffer back to the 0
+  // address in the case of load bias, so that the memory between the 0 address
+  // and the image start is zero-initialized.
+  const size_t load_bias =
+      mapping_type_ == RELOCATABLE_WITH_BIAS ? kLoadBias : 0;
+  std::vector<uint8_t> buffer(load_bias + (kPageSize - 1) + measures.total_size,
+                              '\0');
+  uint8_t* const elf_start =
+      bits::Align(&buffer.front() + load_bias, kPageSize);
   uint8_t* loc = elf_start;
 
   // Add the ELF header.
@@ -173,9 +196,11 @@ TestElfImage TestElfImageBuilder::Build() {
 
   // Add the program header table.
   loc = bits::Align(loc, kPhdrAlign);
-  loc = AppendHdr(CreatePhdr(PT_PHDR, PF_R, kPhdrAlign, loc - elf_start,
-                             sizeof(Phdr) * measures.phdrs_required),
-                  loc);
+  loc = AppendHdr(
+      CreatePhdr(PT_PHDR, PF_R, kPhdrAlign, loc - elf_start,
+                 GetVirtualAddressForOffset(loc - elf_start, elf_start),
+                 sizeof(Phdr) * measures.phdrs_required),
+      loc);
   for (size_t i = 0; i < load_segments_.size(); ++i) {
     const LoadSegment& load_segment = load_segments_[i];
     size_t size = load_segment.size;
@@ -184,18 +209,26 @@ TestElfImage TestElfImageBuilder::Build() {
     if (i == 0)
       size += loc - elf_start;
     loc = AppendHdr(CreatePhdr(PT_LOAD, load_segment.flags, kLoadAlign,
-                               measures.load_segment_start[i], size),
+                               measures.load_segment_start[i],
+                               GetVirtualAddressForOffset(
+                                   measures.load_segment_start[i], elf_start),
+                               size),
                     loc);
   }
   if (measures.note_size != 0) {
-    loc = AppendHdr(CreatePhdr(PT_NOTE, PF_R, kNoteAlign, measures.note_start,
-                               measures.note_size),
-                    loc);
+    loc = AppendHdr(
+        CreatePhdr(PT_NOTE, PF_R, kNoteAlign, measures.note_start,
+                   GetVirtualAddressForOffset(measures.note_start, elf_start),
+                   measures.note_size),
+        loc);
   }
   if (soname_) {
-    loc = AppendHdr(CreatePhdr(PT_DYNAMIC, PF_R | PF_W, kDynamicAlign,
-                               measures.dynamic_start, sizeof(Dyn) * 2),
-                    loc);
+    loc = AppendHdr(
+        CreatePhdr(
+            PT_DYNAMIC, PF_R | PF_W, kDynamicAlign, measures.dynamic_start,
+            GetVirtualAddressForOffset(measures.dynamic_start, elf_start),
+            sizeof(Dyn) * 2),
+        loc);
   }
 
   // Add the notes.
@@ -227,9 +260,13 @@ TestElfImage TestElfImageBuilder::Build() {
   Dyn* strtab_dyn = reinterpret_cast<Dyn*>(loc);
   strtab_dyn->d_tag = DT_STRTAB;
 #if defined(OS_FUCHSIA) || defined(OS_ANDROID)
-  // Fuchsia and Android do not relocate the symtab pointer on ELF load.
-  strtab_dyn->d_un.d_ptr = measures.strtab_start;
+  // Fuchsia and Android do not alter the symtab pointer on ELF load -- it's
+  // expected to remain a 'virutal address'.
+  strtab_dyn->d_un.d_ptr =
+      GetVirtualAddressForOffset(measures.strtab_start, elf_start);
 #else
+  // Linux relocates this value on ELF load, so produce the pointer value after
+  // relocation. That value will always be equal to the actual memory address.
   strtab_dyn->d_un.d_ptr =
       reinterpret_cast<uintptr_t>(elf_start + measures.strtab_start);
 #endif
@@ -292,13 +329,14 @@ Phdr TestElfImageBuilder::CreatePhdr(Word type,
                                      Word flags,
                                      size_t align,
                                      Off offset,
+                                     Addr vaddr,
                                      size_t size) {
   Phdr phdr;
   phdr.p_type = type;
   phdr.p_flags = flags;
   phdr.p_offset = offset;
   phdr.p_filesz = size;
-  phdr.p_vaddr = phdr.p_offset;
+  phdr.p_vaddr = vaddr;
   phdr.p_paddr = 0;
   phdr.p_memsz = phdr.p_filesz;
   phdr.p_align = align;

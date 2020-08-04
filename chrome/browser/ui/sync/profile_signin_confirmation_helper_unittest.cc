@@ -153,7 +153,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     // Initialize the services we check.
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
-    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+    ASSERT_TRUE(profile_->CreateHistoryService());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::TestExtensionSystem* system =
         static_cast<extensions::TestExtensionSystem*>(

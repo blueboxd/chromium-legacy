@@ -29,6 +29,7 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/common/media_router/mojom/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -191,6 +192,9 @@ class MediaRouter : public KeyedService {
       const MediaRoute::Id& route_id,
       mojo::PendingReceiver<mojom::MediaController> controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) = 0;
+
+  // Returns a pointer to LoggerImpl that can be used to add logging messages.
+  virtual LoggerImpl* GetLogger() = 0;
 #endif  // !defined(OS_ANDROID)
 
   // Registers/Unregisters a CastRemotingConnector with the |tab_id|. For a

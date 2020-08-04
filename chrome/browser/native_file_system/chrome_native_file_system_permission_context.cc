@@ -323,7 +323,7 @@ ChromeNativeFileSystemPermissionContext::GetWriteGuardContentSetting(
     const url::Origin& origin) {
   return content_settings()->GetContentSetting(
       origin.GetURL(), origin.GetURL(),
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
       /*provider_id=*/std::string());
 }
 
@@ -332,7 +332,7 @@ ChromeNativeFileSystemPermissionContext::GetReadGuardContentSetting(
     const url::Origin& origin) {
   return content_settings()->GetContentSetting(
       origin.GetURL(), origin.GetURL(),
-      ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD,
+      ContentSettingsType::FILE_SYSTEM_READ_GUARD,
       /*provider_id=*/std::string());
 }
 

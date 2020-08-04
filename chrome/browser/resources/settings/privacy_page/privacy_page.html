@@ -468,18 +468,18 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+      <template is="dom-if" if="[[enableFileSystemWriteContentSetting_]]">
         <template is="dom-if" route-path="/content/filesystem" no-search>
           <settings-subpage
-              page-title="$i18n{siteSettingsNativeFileSystemWrite}">
+              page-title="$i18n{siteSettingsFileSystemWrite}">
             <category-default-setting
-                toggle-off-label="$i18n{siteSettingsNativeFileSystemWriteBlock}"
+                toggle-off-label="$i18n{siteSettingsFileSystemWriteBlock}"
                 toggle-on-label=
-                    "$i18n{siteSettingsNativeFileSystemWriteAskRecommended}"
-                category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}">
+                    "$i18n{siteSettingsFileSystemWriteAskRecommended}"
+                category="{{ContentSettingsTypes.FILE_SYSTEM_WRITE}}">
             </category-default-setting>
             <category-setting-exceptions
-                category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
+                category="{{ContentSettingsTypes.FILE_SYSTEM_WRITE}}"
                 read-only-list
                 block-header="$i18n{siteSettingsBlock}"
                 search-filter="[[searchFilter_]]">

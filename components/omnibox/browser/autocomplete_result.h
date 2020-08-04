@@ -171,7 +171,8 @@ class AutocompleteResult {
   // Returns whether or not |suggestion_group_id| should be collapsed in the UI.
   // This method takes into account both the user's stored |prefs| as well as
   // the server-provided visibility hint for |suggestion_group_id|.
-  bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id);
+  bool IsSuggestionGroupIdHidden(PrefService* prefs,
+                                 int suggestion_group_id) const;
 
   // Logs metrics for when |new_result| replaces |old_result| asynchronously.
   // |old_result| a list of the comparators for the old matches.

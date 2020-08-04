@@ -528,6 +528,21 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   }
 }
 
+bool GuestOsSharePath::IsPathShared(const std::string& vm_name,
+                                    base::FilePath path) const {
+  while (true) {
+    auto it = shared_paths_.find(path);
+    if (it != shared_paths_.end() && it->second.vm_names.count(vm_name) > 0) {
+      return true;
+    }
+    base::FilePath parent = path.DirName();
+    if (parent == path) {
+      return false;
+    }
+    path = std::move(parent);
+  }
+}
+
 void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
                                        const file_manager::Volume& volume) {
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {

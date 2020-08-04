@@ -848,4 +848,49 @@ TEST_F(TextPaintTimingDetectorTest, VisibleTextAfterUserScroll) {
   EXPECT_EQ(CountVisibleTexts(), 1u);
 }
 
+TEST_F(TextPaintTimingDetectorTest, OpacityZeroHTML) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      :root {
+        opacity: 0;
+        will-change: opacity;
+      }
+    </style>
+    <div>Text</div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+
+  // Change the opacity of documentElement, now the img should be a candidate.
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "opacity: 1");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+  EXPECT_TRUE(TextRecordOfLargestTextPaint());
+}
+
+TEST_F(TextPaintTimingDetectorTest, OpacityZeroHTML2) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        opacity: 0;
+        will-change: opacity;
+      }
+    </style>
+    <div id="target">Text</div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "opacity: 0");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "opacity: 1");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+}
+
 }  // namespace blink

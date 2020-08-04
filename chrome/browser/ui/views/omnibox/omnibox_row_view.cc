@@ -82,8 +82,9 @@ class OmniboxRowView::HeaderView : public views::View,
     header_label_->SetText(base::i18n::ToUpper(header_text_));
 
     if (row_view_->pref_service_) {
-      suggestion_group_hidden_ = omnibox::IsSuggestionGroupIdHidden(
-          row_view_->pref_service_, suggestion_group_id_);
+      suggestion_group_hidden_ =
+          row_view_->popup_model_->result().IsSuggestionGroupIdHidden(
+              row_view_->pref_service_, suggestion_group_id_);
 
       header_toggle_button_->SetToggled(suggestion_group_hidden_);
     }
@@ -192,8 +193,9 @@ class OmniboxRowView::HeaderView : public views::View,
   void OnPrefChanged() {
     DCHECK(row_view_->pref_service_);
     bool was_hidden = suggestion_group_hidden_;
-    suggestion_group_hidden_ = omnibox::IsSuggestionGroupIdHidden(
-        row_view_->pref_service_, suggestion_group_id_);
+    suggestion_group_hidden_ =
+        row_view_->popup_model_->result().IsSuggestionGroupIdHidden(
+            row_view_->pref_service_, suggestion_group_id_);
 
     if (was_hidden != suggestion_group_hidden_) {
       NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);

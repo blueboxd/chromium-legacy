@@ -28,9 +28,8 @@ namespace {
 
 constexpr char kLoggerComponent[] = "CastMediaRouteProvider";
 
-// Whitelist of origins allowed to use a PresentationRequest to initiate
-// mirroring.
-constexpr std::array<base::StringPiece, 2> kPresentationApiWhitelist = {
+// List of origins allowed to use a PresentationRequest to initiate mirroring.
+constexpr std::array<base::StringPiece, 2> kPresentationApiAllowlist = {
     "https://docs.google.com",
     "https://meet.google.com",
 };
@@ -43,8 +42,8 @@ std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
   // using generic Presentation API.  See also cast_media_source.cc.
   std::vector<url::Origin> allowed_origins;
   if (IsSiteInitiatedMirroringSource(source_id)) {
-    allowed_origins.reserve(kPresentationApiWhitelist.size());
-    for (const auto& origin : kPresentationApiWhitelist)
+    allowed_origins.reserve(kPresentationApiAllowlist.size());
+    for (const auto& origin : kPresentationApiAllowlist)
       allowed_origins.push_back(url::Origin::Create(GURL(origin)));
   }
   return allowed_origins;

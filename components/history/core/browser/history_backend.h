@@ -39,7 +39,6 @@
 #include "sql/init_status.h"
 
 class SkBitmap;
-class TestingProfile;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -633,7 +632,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteFTSIndexDatabases);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTypedUrlTest,
                            ProcessUserChangeRemove);
-  friend class ::TestingProfile;
 
   // Returns the name of the Favicons database.
   base::FilePath GetFaviconsFileName() const;

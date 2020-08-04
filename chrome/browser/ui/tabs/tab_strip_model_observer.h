@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -141,6 +140,8 @@ class TabStripModelChange {
   explicit TabStripModelChange(Remove delta);
   explicit TabStripModelChange(Replace delta);
   explicit TabStripModelChange(Move delta);
+  TabStripModelChange(const TabStripModelChange&) = delete;
+  TabStripModelChange& operator=(const TabStripModelChange&) = delete;
   ~TabStripModelChange();
 
   Type type() const { return type_; }
@@ -154,8 +155,6 @@ class TabStripModelChange {
 
   const Type type_ = kSelectionOnly;
   std::unique_ptr<Delta> delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelChange);
 };
 
 // Struct to carry changes on selection/activation.
@@ -242,6 +241,9 @@ class TabStripModelObserver {
     // Used to indicate that CloseAllTab event complete successfully.
     kCloseAllCompleted = 1,
   };
+
+  TabStripModelObserver(const TabStripModelObserver&) = delete;
+  TabStripModelObserver& operator=(const TabStripModelObserver&) = delete;
 
   // |change| is a series of changes in tabstrip model. |change| consists
   // of changes with same type and those changes may have caused selection or
@@ -337,8 +339,6 @@ class TabStripModelObserver {
 
  private:
   std::set<TabStripModel*> observed_models_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelObserver);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_

@@ -89,7 +89,7 @@ void PerfTestWithBVC::SetUp() {
   bookmarks::test::WaitForBookmarkModelToLoad(
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_browser_state_.get()));
-  ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(false));
+  ASSERT_TRUE(chrome_browser_state_->CreateHistoryService());
 
   // Force creation of AutocompleteClassifier instance.
   ios::AutocompleteClassifierFactory::GetForBrowserState(

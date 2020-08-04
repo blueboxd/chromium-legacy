@@ -1032,6 +1032,13 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_refptr<ChildURLLoaderFactoryBundle>
   GetLoaderFactoryBundleFromCreator();
 
+  // Returns a mostly empty bundle, with a fallback that uses a process-wide,
+  // direct-network factory.
+  //
+  // TODO(lukasza): https://crbug.com/1098938: Remove once the fallback is no
+  // longer needed.
+  scoped_refptr<ChildURLLoaderFactoryBundle> GetLoaderFactoryBundleFallback();
+
   scoped_refptr<ChildURLLoaderFactoryBundle> CreateLoaderFactoryBundle(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> info,
       base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>

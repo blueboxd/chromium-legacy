@@ -75,7 +75,7 @@ void ShortcutsProviderExtensionTest::SetUp() {
           &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting));
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
-  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
+  ASSERT_TRUE(profile_.CreateHistoryService());
   provider_ = new ShortcutsProvider(&client_);
   PopulateShortcutsBackendWithTestData(client_.GetShortcutsBackend(),
                                        shortcut_test_db,
@@ -85,9 +85,7 @@ void ShortcutsProviderExtensionTest::SetUp() {
 void ShortcutsProviderExtensionTest::TearDown() {
   // Run all pending tasks or else some threads hold on to the message loop
   // and prevent it from being deleted.
-  base::RunLoop().RunUntilIdle();
-
-  profile_.BlockUntilHistoryBackendDestroyed();
+  task_environment_.RunUntilIdle();
 }
 
 // Actual tests ---------------------------------------------------------------

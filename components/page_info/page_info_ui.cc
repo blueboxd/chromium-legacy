@@ -173,7 +173,7 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {ContentSettingsType::SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
 #endif
     {ContentSettingsType::BLUETOOTH_GUARD, IDS_PAGE_INFO_TYPE_BLUETOOTH},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+    {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
      IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
     {ContentSettingsType::BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
@@ -622,7 +622,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
       break;
-    case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
+    case ContentSettingsType::FILE_SYSTEM_WRITE_GUARD:
       icon = &vector_icons::kSaveOriginalFileIcon;
       break;
     case ContentSettingsType::VR:

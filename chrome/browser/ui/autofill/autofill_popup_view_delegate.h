@@ -16,8 +16,11 @@ namespace gfx {
 class Point;
 class Rect;
 class RectF;
-}
+}  // namespace gfx
 
+namespace content {
+class WebContents;
+}  // namespace content
 namespace autofill {
 
 // Base class for Controllers of Autofill-style popups. This interface is
@@ -38,6 +41,9 @@ class AutofillPopupViewDelegate {
 
   // The view that the form field element sits in.
   virtual gfx::NativeView container_view() const = 0;
+
+  // The web contents the form field element sits in.
+  virtual content::WebContents* GetWebContents() const = 0;
 
   // The bounds of the form field element (screen coordinates).
   virtual const gfx::RectF& element_bounds() const = 0;

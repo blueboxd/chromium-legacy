@@ -96,6 +96,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -617,6 +618,15 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
       }
 
       Image* image = cached_image->GetImage();
+
+      // If the image is an SVG, then adjust the scale to reflect the device
+      // scale factor so that the SVG can be rasterized in the native
+      // resolution and scaled down to the correct size for the cursor.
+      if (image && image->IsSVGImage()) {
+        scale *=
+            page->GetChromeClient().GetScreenInfo(*frame_).device_scale_factor;
+      }
+
       // Ensure no overflow possible in calculations above.
       if (scale < kMinimumCursorScale)
         continue;
@@ -625,9 +635,22 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
       hot_spot.Scale(scale, scale);
 
       ui::Cursor cursor(ui::mojom::blink::CursorType::kCustom);
-      cursor.set_custom_bitmap(
-          image ? image->AsSkBitmapForCurrentFrame(kRespectImageOrientation)
-                : SkBitmap());
+      if (image) {
+        // Special case for SVG so that it can be rasterized in the appropriate
+        // resolution for high DPI displays.
+        if (image->IsSVGImage()) {
+          SVGImage* svg = static_cast<SVGImage*>(image);
+          cursor.set_custom_bitmap(
+              svg->AsSkBitmapForCursor(page->GetChromeClient()
+                                           .GetScreenInfo(*frame_)
+                                           .device_scale_factor));
+        } else {
+          cursor.set_custom_bitmap(
+              image->AsSkBitmapForCurrentFrame(kRespectImageOrientation));
+        }
+      } else {
+        cursor.set_custom_bitmap(SkBitmap());
+      }
       cursor.set_custom_hotspot(
           DetermineHotSpot(*image, hot_spot_specified, hot_spot));
       cursor.set_image_scale_factor(scale);

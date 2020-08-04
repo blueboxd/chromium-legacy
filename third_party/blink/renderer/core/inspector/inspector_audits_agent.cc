@@ -512,6 +512,8 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
                                  .build();
       cspDetails.setSourceCodeLocation(std::move(source_location));
     }
+    if (d->violating_node_id)
+      cspDetails.setViolatingNodeId(d->violating_node_id);
     issueDetails.setContentSecurityPolicyIssueDetails(cspDetails.build());
   }
 

@@ -52,14 +52,26 @@ bool RequiresProvisionalNavigationFailureWorkaround() {
 
 void CreateFullPagePdf(WKWebView* web_view,
                        base::OnceCallback<void(NSData*)> callback) {
-  // iOS14 createPDFWithConfiguration returns a PDF of the WebView
-  // Asynchronously though a |callback| thus this method's signature matches it
-  // for future insertion.
 
   if (!web_view) {
     std::move(callback).Run(nil);
     return;
   }
+
+  __block base::OnceCallback<void(NSData*)> callback_for_block =
+      std::move(callback);
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14, *)) {
+    WKPDFConfiguration* pdf_configuration = [[WKPDFConfiguration alloc] init];
+    [web_view createPDFWithConfiguration:pdf_configuration
+                       completionHandler:^(NSData* pdf_document_data,
+                                           NSError* error) {
+                         std::move(callback_for_block).Run(pdf_document_data);
+                       }];
+    return;
+  }
+#endif
 
   UIPrintPageRenderer* print_renderer = [[UIPrintPageRenderer alloc] init];
   [print_renderer addPrintFormatter:[web_view viewPrintFormatter]
@@ -77,11 +89,13 @@ void CreateFullPagePdf(WKWebView* web_view,
   UIGraphicsPDFRenderer* pdf_renderer =
       [[UIGraphicsPDFRenderer alloc] initWithBounds:entire_web_page];
 
-  NSData* pdf_document_data = [pdf_renderer
-      PDFDataWithActions:^(UIGraphicsPDFRendererContext* context) {
-        [context beginPage];
-        [print_renderer drawPageAtIndex:0 inRect:entire_web_page];
-      }];
-  std::move(callback).Run(pdf_document_data);
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSData* pdf_document_data = [pdf_renderer
+        PDFDataWithActions:^(UIGraphicsPDFRendererContext* context) {
+          [context beginPage];
+          [print_renderer drawPageAtIndex:0 inRect:entire_web_page];
+        }];
+    std::move(callback_for_block).Run(pdf_document_data);
+  });
 }
 }  // namespace web

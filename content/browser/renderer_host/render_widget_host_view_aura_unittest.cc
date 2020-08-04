@@ -559,8 +559,13 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void TearDownEnvironment() {
     sink_ = nullptr;
     process_host_ = nullptr;
-    if (view_)
+    if (view_) {
       DestroyView(view_);
+    } else if (widget_host_) {
+      // Delete |widget_host_| in cases where |view_| gets destroyed
+      // by its parent, but the host does not get destroyed.
+      delete widget_host_;
+    }
 
     parent_view_->Destroy();
     delete parent_host_;
@@ -6592,6 +6597,8 @@ TEST_P(DelegatedInkPointTest, EventForwardedToCompositor) {
   view_->InitAsChild(nullptr);
   aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(1.0f);
 
+  ui::Compositor* old_compositor =
+      view_->GetNativeView()->layer()->GetCompositor();
   MockCompositor compositor(aura_test_helper_->GetHost()->compositor());
   view_->GetNativeView()->layer()->SetCompositorForTesting(&compositor);
 
@@ -6713,8 +6720,10 @@ TEST_P(DelegatedInkPointTest, EventForwardedToCompositor) {
 
   EXPECT_FALSE(delegated_ink_point_renderer->HasDelegatedInkPoint());
 
-  widget_host_ = nullptr;
-  view_ = nullptr;
+  // Restore the view's compositor to the old value so it no longer references
+  // the MockCompositor that is about to go out of scope. This also ensures
+  // that the view can be properly destroyed by TearDownEnvironment().
+  view_->GetNativeView()->layer()->SetCompositorForTesting(old_compositor);
 }
 
 // Confirm that the interface is rebound if the receiver disconnects.
@@ -6722,6 +6731,8 @@ TEST_P(DelegatedInkPointTest, MojoInterfaceReboundOnDisconnect) {
   view_->InitAsChild(nullptr);
   aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(1.0f);
 
+  ui::Compositor* old_compositor =
+      view_->GetNativeView()->layer()->GetCompositor();
   MockCompositor compositor(aura_test_helper_->GetHost()->compositor());
   view_->GetNativeView()->layer()->SetCompositorForTesting(&compositor);
 
@@ -6777,8 +6788,10 @@ TEST_P(DelegatedInkPointTest, MojoInterfaceReboundOnDisconnect) {
   EXPECT_TRUE(delegated_ink_point_renderer);
   EXPECT_TRUE(delegated_ink_point_renderer->ReceiverIsBound());
 
-  widget_host_ = nullptr;
-  view_ = nullptr;
+  // Restore the view's compositor to the old value so it no longer references
+  // the MockCompositor that is about to go out of scope. This also ensures
+  // that the view can be properly destroyed by TearDownEnvironment().
+  view_->GetNativeView()->layer()->SetCompositorForTesting(old_compositor);
 }
 
 }  // namespace content

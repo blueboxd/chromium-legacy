@@ -40,6 +40,7 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   // TODO(jdduke): Mock this method upon resolution of crbug.com/352463.
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect());
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());
+  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
   MOCK_CONST_METHOD0(IsRTL, bool());
 };
@@ -63,15 +64,10 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
                              browser()->window()->GetNativeWindow()));
   }
 
-  void ShowView() {
-    view_->DoShow();
-  }
+  void ShowView() { view_->DoShow(); }
 
   ui::GestureEvent CreateGestureEvent(ui::EventType type, gfx::Point point) {
-    return ui::GestureEvent(point.x(),
-                            point.y(),
-                            0,
-                            ui::EventTimeForNow(),
+    return ui::GestureEvent(point.x(), point.y(), 0, ui::EventTimeForNow(),
                             ui::GestureEventDetails(type));
   }
 

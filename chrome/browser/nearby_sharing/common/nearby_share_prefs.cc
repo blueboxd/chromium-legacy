@@ -7,27 +7,33 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 
-const char prefs::kNearbySharingEnabledPrefName[] = "nearby_sharing.enabled";
-const char prefs::kNearbySharingActiveProfilePrefName[] =
+namespace prefs {
+
+const char kNearbySharingActiveProfilePrefName[] =
     "nearby_sharing.active_profile";
-const char prefs::kNearbySharingBackgroundVisibilityName[] =
-    "nearby_sharing.background_visibility";
-const char prefs::kNearbySharingDataUsageName[] = "nearby_sharing.data_usage";
-const char prefs::kNearbySharingDeviceIdPrefName[] = "nearby_sharing.device_id";
-const char prefs::kNearbySharingDeviceNamePrefName[] =
-    "nearby_sharing.device_name";
-const char prefs::kNearbySharingAllowedContactsPrefName[] =
+const char kNearbySharingAllowedContactsPrefName[] =
     "nearby_sharing.allowed_contacts";
-const char prefs::kNearbySharingFullNamePrefName[] = "nearby_sharing.full_name";
-const char prefs::kNearbySharingIconUrlPrefName[] = "nearby_sharing.icon_url";
-const char prefs::kNearbySharingSchedulerDownloadDeviceDataPrefName[] =
+const char kNearbySharingBackgroundVisibilityName[] =
+    "nearby_sharing.background_visibility";
+const char kNearbySharingDataUsageName[] = "nearby_sharing.data_usage";
+const char kNearbySharingDeviceIdPrefName[] = "nearby_sharing.device_id";
+const char kNearbySharingDeviceNamePrefName[] = "nearby_sharing.device_name";
+const char kNearbySharingEnabledPrefName[] = "nearby_sharing.enabled";
+const char kNearbySharingFullNamePrefName[] = "nearby_sharing.full_name";
+const char kNearbySharingIconUrlPrefName[] = "nearby_sharing.icon_url";
+const char kNearbySharingOnboardingDismissedTimePrefName[] =
+    "nearby_sharing.onboarding_dismissed_time";
+const char kNearbySharingSchedulerDownloadDeviceDataPrefName[] =
     "nearby_sharing.scheduler.download_device_data";
-const char prefs::kNearbySharingSchedulerUploadDeviceNamePrefName[] =
+const char kNearbySharingSchedulerUploadDeviceNamePrefName[] =
     "nearby_sharing.scheduler.upload_device_name";
+
+}  // namespace prefs
 
 void RegisterNearbySharingPrefs(PrefRegistrySimple* registry) {
   // These prefs are not synced across devices on purpose.
@@ -55,6 +61,9 @@ void RegisterNearbySharingPrefs(PrefRegistrySimple* registry) {
       prefs::kNearbySharingSchedulerDownloadDeviceDataPrefName);
   registry->RegisterDictionaryPref(
       prefs::kNearbySharingSchedulerUploadDeviceNamePrefName);
+  registry->RegisterTimePref(
+      prefs::kNearbySharingOnboardingDismissedTimePrefName,
+      /*default_value=*/base::Time());
 }
 
 void RegisterNearbySharingLocalPrefs(PrefRegistrySimple* local_state) {

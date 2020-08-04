@@ -6,6 +6,7 @@
 
 namespace blink {
 
-bool IgnorePaintTimingScope::should_ignore_ = false;
+int IgnorePaintTimingScope::ignore_depth_ = 0;
+bool IgnorePaintTimingScope::is_document_element_invisible_ = false;
 
 }  // namespace blink

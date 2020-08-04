@@ -51,6 +51,23 @@ namespace {
 // Used to indicate that no item is currently selected by the user.
 constexpr int kNoSelection = -1;
 
+// An empty model for a combo box.
+class EmptyComboboxModel final : public ui::ComboboxModel {
+ public:
+  EmptyComboboxModel() = default;
+  EmptyComboboxModel(EmptyComboboxModel&) = delete;
+  EmptyComboboxModel& operator=(const EmptyComboboxModel&) = delete;
+  ~EmptyComboboxModel() override = default;
+
+  // ui::ComboboxModel:
+  int GetItemCount() const override { return 0; }
+  base::string16 GetItemAt(int index) const override {
+    NOTREACHED();
+    return base::string16();
+  }
+  int GetDefaultIndex() const override { return -1; }
+};
+
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   const int style = enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
   return style::GetColor(combobox, style::CONTEXT_TEXTFIELD, style);
@@ -230,6 +247,9 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, public:
 
+Combobox::Combobox(int text_context, int text_style)
+    : Combobox(std::make_unique<EmptyComboboxModel>()) {}
+
 Combobox::Combobox(std::unique_ptr<ui::ComboboxModel> model,
                    int text_context,
                    int text_style)
@@ -238,17 +258,10 @@ Combobox::Combobox(std::unique_ptr<ui::ComboboxModel> model,
 }
 
 Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
-    : model_(model),
-      text_context_(text_context),
+    : text_context_(text_context),
       text_style_(text_style),
-      listener_(nullptr),
-      selected_index_(model_->GetDefaultIndex()),
-      invalid_(false),
-      menu_model_(new ComboboxMenuModel(this, model)),
-      arrow_button_(new TransparentButton(this)),
-      size_to_largest_label_(true) {
-  observer_.Add(model_);
-  OnComboboxModelChanged(model_);
+      arrow_button_(new TransparentButton(this)) {
+  SetModel(model);
 #if defined(OS_APPLE)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
@@ -300,6 +313,28 @@ bool Combobox::SelectValue(const base::string16& value) {
     }
   }
   return false;
+}
+
+void Combobox::SetOwnedModel(std::unique_ptr<ui::ComboboxModel> model) {
+  // The swap keeps the outgoing model alive for SetModel().
+  owned_model_.swap(model);
+  SetModel(owned_model_.get());
+}
+
+void Combobox::SetModel(ui::ComboboxModel* model) {
+  DCHECK(model) << "After construction, the model must not be null.";
+
+  if (model_)
+    observer_.Remove(model_);
+
+  model_ = model;
+
+  if (model_) {
+    menu_model_ = std::make_unique<ComboboxMenuModel>(this, model_);
+    observer_.Add(model_);
+    selected_index_ = model_->GetDefaultIndex();
+    OnComboboxModelChanged(model_);
+  }
 }
 
 void Combobox::SetTooltipText(const base::string16& tooltip_text) {

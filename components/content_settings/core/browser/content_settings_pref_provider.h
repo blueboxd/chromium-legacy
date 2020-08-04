@@ -75,7 +75,7 @@ class PrefProvider : public UserModifiableProvider {
               const std::string& resource_identifier);
 
   // Clean up the obsolete preferences from the user's profile.
-  void DiscardObsoletePreferences();
+  void DiscardOrMigrateObsoletePreferences();
 
   // Returns true if this provider supports the given |content_type|.
   bool supports_type(ContentSettingsType content_type) const {

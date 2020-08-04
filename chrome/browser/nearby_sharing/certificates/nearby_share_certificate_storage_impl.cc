@@ -11,6 +11,10 @@
 #include "base/base64url.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
@@ -104,6 +108,7 @@ NearbyShareCertificateStorageImpl::NearbyShareCertificateStorageImpl(
         proto_database)
     : pref_service_(pref_service), db_(std::move(proto_database)) {
   FetchPublicCertificateExpirations();
+  Initialize();
 }
 
 NearbyShareCertificateStorageImpl::~NearbyShareCertificateStorageImpl() =
@@ -117,56 +122,78 @@ void NearbyShareCertificateStorageImpl::RegisterPrefs(
   registry->RegisterListPref(kNearbySharePrivateCertificateListPref);
 }
 
-bool NearbyShareCertificateStorageImpl::IsInitialized() {
-  return is_initialized_;
-}
+void NearbyShareCertificateStorageImpl::Initialize() {
+  switch (init_status_) {
+    case InitStatus::kUninitialized:
+    case InitStatus::kFailed:
+      num_initialize_attempts_++;
+      if (num_initialize_attempts_ > kMaxNumInitializeAttempts) {
+        FinishInitialization(false);
+        break;
+      }
 
-void NearbyShareCertificateStorageImpl::Initialize(ResultCallback callback) {
-  DCHECK(!is_initialized_);
-
-  num_initialize_attempts_++;
-  if (num_initialize_attempts_ > kMaxNumInitializeAttempts) {
-    std::move(callback).Run(false);
-    return;
+      db_->Init(base::BindOnce(
+          &NearbyShareCertificateStorageImpl::OnDatabaseInitialized,
+          base::Unretained(this)));
+      break;
+    case InitStatus::kInitialized:
+      NOTREACHED();
+      break;
   }
-
-  db_->Init(
-      base::BindOnce(&NearbyShareCertificateStorageImpl::OnDatabaseInitialized,
-                     base::Unretained(this), std::move(callback)));
 }
 
-void NearbyShareCertificateStorageImpl::DestroyAndReinitialize(
-    ResultCallback callback) {
-  is_initialized_ = false;
-  db_->Destroy(
-      base::BindOnce(&NearbyShareCertificateStorageImpl::OnDatabaseDestroyed,
-                     base::Unretained(this), /*should_reinitialize=*/true,
-                     std::move(callback)));
+void NearbyShareCertificateStorageImpl::DestroyAndReinitialize() {
+  init_status_ = InitStatus::kUninitialized;
+  db_->Destroy(base::BindOnce(
+      &NearbyShareCertificateStorageImpl::OnDatabaseDestroyedReinitialize,
+      base::Unretained(this)));
 }
 
 void NearbyShareCertificateStorageImpl::OnDatabaseInitialized(
-    ResultCallback callback,
     leveldb_proto::Enums::InitStatus status) {
   switch (status) {
     case leveldb_proto::Enums::InitStatus::kOK:
-      is_initialized_ = true;
-      std::move(callback).Run(true);
+      FinishInitialization(true);
       break;
     case leveldb_proto::Enums::InitStatus::kError:
-      Initialize(std::move(callback));
+      Initialize();
       break;
     case leveldb_proto::Enums::InitStatus::kCorrupt:
-      DestroyAndReinitialize(std::move(callback));
+      DestroyAndReinitialize();
       break;
     case leveldb_proto::Enums::InitStatus::kInvalidOperation:
     case leveldb_proto::Enums::InitStatus::kNotInitialized:
-      std::move(callback).Run(false);
+      FinishInitialization(false);
       break;
   }
 }
 
+void NearbyShareCertificateStorageImpl::FinishInitialization(bool success) {
+  init_status_ = success ? InitStatus::kInitialized : InitStatus::kFailed;
+
+  // We run deferred callbacks even if initialization failed not to cause
+  // possible client-side blocks of next calls to the database.
+  while (!deferred_callbacks_.empty()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(deferred_callbacks_.front()));
+    deferred_callbacks_.pop();
+  }
+}
+
+void NearbyShareCertificateStorageImpl::OnDatabaseDestroyedReinitialize(
+    bool success) {
+  if (!success) {
+    FinishInitialization(false);
+    return;
+  }
+
+  public_certificate_expirations_.clear();
+  SavePublicCertificateExpirations();
+
+  Initialize();
+}
+
 void NearbyShareCertificateStorageImpl::OnDatabaseDestroyed(
-    bool should_reinitialize,
     ResultCallback callback,
     bool success) {
   if (!success) {
@@ -177,10 +204,7 @@ void NearbyShareCertificateStorageImpl::OnDatabaseDestroyed(
   public_certificate_expirations_.clear();
   SavePublicCertificateExpirations();
 
-  if (should_reinitialize)
-    Initialize(std::move(callback));
-  else
-    std::move(callback).Run(true);
+  std::move(callback).Run(true);
 }
 
 void NearbyShareCertificateStorageImpl::
@@ -269,6 +293,19 @@ NearbyShareCertificateStorageImpl::GetPublicCertificateIds() const {
 
 void NearbyShareCertificateStorageImpl::GetPublicCertificates(
     PublicCertificateCallback callback) {
+  if (init_status_ == InitStatus::kFailed) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
+    return;
+  }
+
+  if (init_status_ == InitStatus::kUninitialized) {
+    deferred_callbacks_.push(base::BindOnce(
+        &NearbyShareCertificateStorageImpl::GetPublicCertificates,
+        base::Unretained(this), std::move(callback)));
+    return;
+  }
+
   db_->LoadEntries(std::move(callback));
 }
 
@@ -329,7 +366,19 @@ void NearbyShareCertificateStorageImpl::ReplacePublicCertificates(
     const std::vector<nearbyshare::proto::PublicCertificate>&
         public_certificates,
     ResultCallback callback) {
-  DCHECK(is_initialized_);
+  if (init_status_ == InitStatus::kFailed) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (init_status_ == InitStatus::kUninitialized) {
+    deferred_callbacks_.push(base::BindOnce(
+        &NearbyShareCertificateStorageImpl::ReplacePublicCertificates,
+        base::Unretained(this), public_certificates, std::move(callback)));
+    return;
+  }
+
   auto new_entries = std::make_unique<std::vector<
       std::pair<std::string, nearbyshare::proto::PublicCertificate>>>();
   auto new_expirations = std::make_unique<ExpirationList>();
@@ -351,7 +400,19 @@ void NearbyShareCertificateStorageImpl::AddPublicCertificates(
     const std::vector<nearbyshare::proto::PublicCertificate>&
         public_certificates,
     ResultCallback callback) {
-  DCHECK(is_initialized_);
+  if (init_status_ == InitStatus::kFailed) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (init_status_ == InitStatus::kUninitialized) {
+    deferred_callbacks_.push(base::BindOnce(
+        &NearbyShareCertificateStorageImpl::AddPublicCertificates,
+        base::Unretained(this), public_certificates, std::move(callback)));
+    return;
+  }
+
   auto new_entries = std::make_unique<std::vector<
       std::pair<std::string, nearbyshare::proto::PublicCertificate>>>();
   auto new_expirations = std::make_unique<ExpirationList>();
@@ -374,7 +435,19 @@ void NearbyShareCertificateStorageImpl::AddPublicCertificates(
 void NearbyShareCertificateStorageImpl::RemoveExpiredPublicCertificates(
     base::Time now,
     ResultCallback callback) {
-  DCHECK(is_initialized_);
+  if (init_status_ == InitStatus::kFailed) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (init_status_ == InitStatus::kUninitialized) {
+    deferred_callbacks_.push(base::BindOnce(
+        &NearbyShareCertificateStorageImpl::RemoveExpiredPublicCertificates,
+        base::Unretained(this), now, std::move(callback)));
+    return;
+  }
+
   auto ids_to_remove = std::make_unique<std::vector<std::string>>();
   for (const auto& pair : public_certificate_expirations_) {
     if (pair.second > now)
@@ -407,11 +480,22 @@ void NearbyShareCertificateStorageImpl::ClearPrivateCertificates() {
 
 void NearbyShareCertificateStorageImpl::ClearPublicCertificates(
     ResultCallback callback) {
-  DCHECK(is_initialized_);
+  if (init_status_ == InitStatus::kFailed) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (init_status_ == InitStatus::kUninitialized) {
+    deferred_callbacks_.push(base::BindOnce(
+        &NearbyShareCertificateStorageImpl::ClearPublicCertificates,
+        base::Unretained(this), std::move(callback)));
+    return;
+  }
+
   db_->Destroy(
       base::BindOnce(&NearbyShareCertificateStorageImpl::OnDatabaseDestroyed,
-                     base::Unretained(this), /*should_reinitialize=*/false,
-                     std::move(callback)));
+                     base::Unretained(this), std::move(callback)));
 }
 
 bool NearbyShareCertificateStorageImpl::FetchPublicCertificateExpirations() {

@@ -37,7 +37,7 @@ export const ContentSettingsTypes = {
   PAYMENT_HANDLER: 'payment-handler',
   MIXEDSCRIPT: 'mixed-script',
   BLUETOOTH_SCANNING: 'bluetooth-scanning',
-  NATIVE_FILE_SYSTEM_WRITE: 'native-file-system-write',
+  FILE_SYSTEM_WRITE: 'file-system-write',
   HID_DEVICES: 'hid-devices',
   AR: 'ar',
   VR: 'vr',

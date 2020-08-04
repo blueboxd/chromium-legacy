@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
@@ -122,6 +123,7 @@ class MockMediaRouter : public MediaRouterBase {
                void(const MediaRoute::Id& route_id,
                     mojo::PendingReceiver<mojom::MediaController> controller,
                     mojo::PendingRemote<mojom::MediaStatusObserver> observer));
+  MOCK_METHOD0(GetLogger, LoggerImpl*());
 #endif  // !defined(OS_ANDROID)
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&

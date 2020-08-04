@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
+#include "chrome/common/media_router/mojom/logger.mojom.h"
 #include "url/origin.h"
 
 namespace media_router {
@@ -50,6 +51,10 @@ class DialMediaSinkService {
     return impl_.get();
   }
 
+  // Binds |pending_remote| to the Mojo Remote owned by |impl_|.
+  // Marked virtual for tests.
+  virtual void BindLogger(mojo::PendingRemote<mojom::Logger> pending_remote);
+
  private:
   // Marked virtual for tests.
   virtual std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
@@ -59,7 +64,8 @@ class DialMediaSinkService {
       const OnSinksDiscoveredCallback& sinks_discovered_cb,
       std::vector<MediaSinkInternal> sinks);
 
-  // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
+  // Created on the UI thread, used and destroyed on its
+  // SequencedTaskRunner.
   std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
 
   SEQUENCE_CHECKER(sequence_checker_);

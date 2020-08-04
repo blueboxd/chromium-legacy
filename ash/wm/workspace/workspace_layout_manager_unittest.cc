@@ -1561,33 +1561,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 }
 
-// TODO(crbug.com/803286): The npot texture check failed on asan tests bot.
-// TODO(crbug.com/838756): Very flaky on mash_ash_unittests.
-TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
-  WorkspaceController* wc = ShellTestApi().workspace_controller();
-  WorkspaceControllerTestApi test_helper(wc);
-
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-
-  // Turn the top window backdrop on.
-  SetTabletModeEnabled(true);
-  EXPECT_TRUE(test_helper.GetBackdropWindow());
-
-  // Enter overview mode.
-  Shell::Get()->overview_controller()->StartOverview();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-
-  ui::ScopedAnimationDurationScaleMode test_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-  // Showing the app list in overview mode should still hide the backdrop.
-  GetAppListTestHelper()->Show(GetPrimaryDisplay().id());
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-}
-
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
   WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType, TwoUpViewAction} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
+import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
 import {ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-pdf-toolbar-new.js';
 
 /** @return {!ViewerPdfToolbarNewElement} */
@@ -155,7 +155,7 @@ const tests = [
         toolbar.shadowRoot.querySelector('#two-page-view-button');
 
     toolbar.addEventListener('two-up-view-changed', function(e) {
-      chrome.test.assertEq(TwoUpViewAction.TWO_UP_VIEW_DISABLE, e.detail);
+      chrome.test.assertEq(false, e.detail);
       chrome.test.assertFalse(
           singlePageViewButton.querySelector('iron-icon').hidden);
       chrome.test.assertTrue(
@@ -173,7 +173,7 @@ const tests = [
         toolbar.shadowRoot.querySelector('#two-page-view-button');
 
     toolbar.addEventListener('two-up-view-changed', function(e) {
-      chrome.test.assertEq(TwoUpViewAction.TWO_UP_VIEW_ENABLE, e.detail);
+      chrome.test.assertEq(true, e.detail);
       chrome.test.assertFalse(
           twoPageViewButton.querySelector('iron-icon').hidden);
       chrome.test.assertTrue(

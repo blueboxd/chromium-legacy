@@ -13,6 +13,7 @@ namespace switches {
 extern const char kLiteVideoIgnoreNetworkConditions[];
 extern const char kLiteVideoForceOverrideDecision[];
 extern const char kLiteVideoForceCoinflipHoldback[];
+extern const char kLiteVideoDefaultDownlinkBandwidthKbps[];
 
 // Returns true if checking the network condition should be ignored.
 bool ShouldIgnoreLiteVideoNetworkConditions();
@@ -24,6 +25,11 @@ bool ShouldOverrideLiteVideoDecision();
 // Returns true if the coinflip experiment should be set to true, resulting
 // in LiteVideos being heldback.
 bool ShouldForceCoinflipHoldback();
+
+// Returns the default downlink bandwidth kbps to use when throttling media
+// requests. Only used if the decision logic is skipped for testing and a
+// default hint is used.
+int GetDefaultDownlinkBandwidthKbps();
 
 }  // namespace switches
 }  // namespace lite_video

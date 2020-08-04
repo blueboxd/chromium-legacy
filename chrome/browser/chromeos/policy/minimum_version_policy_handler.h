@@ -148,13 +148,9 @@ class MinimumVersionPolicyHandler
   void RemoveObserver(Observer* observer);
   bool RequirementsAreSatisfied() const { return GetState() == nullptr; }
 
-  // Returns |true| if the current version satisfies the given requirement.
-  bool CurrentVersionSatisfies(
-      const MinimumVersionRequirement& requirement) const;
-
   const MinimumVersionRequirement* GetState() const { return state_.get(); }
 
-  bool DeadlineReached() { return deadline_reached; }
+  bool DeadlineReached() { return deadline_reached_; }
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -163,9 +159,11 @@ class MinimumVersionPolicyHandler
   // deadline.
   void MaybeShowNotificationOnLogin();
 
-  // Returns true if an update is required and the device has reached
-  // End Of Life (Auto Update Expiration).
-  bool IsUpdateRequiredEol() const;
+  // Whether banner to return back the device should be visible in Settings. It
+  // is true when an update is required on a device that has reached End Of Life
+  // (Auto Update Expiration) and the currently signed in user is enterprise
+  // managed or an unmanaged user restricted by DeviceMinimumVersion policy.
+  bool ShouldShowUpdateRequiredEolBanner() const;
 
   // Returns the number of days to deadline if update is required and deadline
   // has not been reached. Returns null if update is not required.
@@ -184,6 +182,15 @@ class MinimumVersionPolicyHandler
   bool IsDeadlineTimerRunningForTesting() const;
 
  private:
+  // Returns |true| if the current version satisfies the given requirement.
+  bool CurrentVersionSatisfies(
+      const MinimumVersionRequirement& requirement) const;
+
+  // Whether the current user should receive update required notifications and
+  // force signed out on reaching the deadline. Retuns true if the user is
+  // enterprise managed or |unmanaged_user_restricted_| is true.
+  bool IsPolicyRestrictionAppliedForUser() const;
+
   void OnPolicyChanged();
   bool IsPolicyApplicable();
   void Reset();
@@ -269,7 +276,7 @@ class MinimumVersionPolicyHandler
 
   // If this flag is true, user should restricted to use the session by logging
   // out and/or showing update required screen.
-  bool deadline_reached = false;
+  bool deadline_reached_ = false;
 
   // Time when the policy is applied and with respect to which the deadline to
   // update the device is calculated.

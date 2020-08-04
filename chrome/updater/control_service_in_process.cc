@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/prefs.h"
-#include "chrome/updater/update_service.h"
+#include "chrome/updater/update_service_in_process.h"
 #include "components/prefs/pref_service.h"
 
 namespace updater {
@@ -32,7 +32,8 @@ void ControlServiceInProcess::Run(base::OnceClosure callback) {
   if (timeSinceUpdate >=
           base::TimeDelta::FromSeconds(config_->NextCheckDelay()) ||
       timeSinceUpdate < base::TimeDelta()) {
-    scoped_refptr<UpdateService> update_service = CreateUpdateService(config_);
+    scoped_refptr<UpdateServiceInProcess> update_service =
+        base::MakeRefCounted<UpdateServiceInProcess>(config_);
 
     update_service->UpdateAll(
         base::BindRepeating([](UpdateService::UpdateState) {}),

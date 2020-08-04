@@ -124,10 +124,10 @@ jumbo_component("service") {
     ]
     libs += [ "android" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "image_transport_surface_linux.cc" ]
   }
-  if (is_linux || use_ozone) {
+  if (is_linux || is_chromeos || use_ozone) {
     sources += [
       "gpu_memory_buffer_factory_native_pixmap.cc",
       "gpu_memory_buffer_factory_native_pixmap.h",

@@ -12,9 +12,12 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.FragmentSettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.settings.TextMessagePreference;
 
 /**
  * Fragment containing security settings.
@@ -23,7 +26,9 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
         implements FragmentSettingsLauncher,
                    RadioButtonGroupSafeBrowsingPreference.OnSafeBrowsingModeDetailsRequested {
     @VisibleForTesting
-    public static final String PREF_SAFE_BROWSING = "safe_browsing_radio_button_group";
+    static final String PREF_TEXT_MANAGED = "text_managed";
+    @VisibleForTesting
+    static final String PREF_SAFE_BROWSING = "safe_browsing_radio_button_group";
 
     // An instance of SettingsLauncher that is used to launch Safe Browsing subsections.
     private SettingsLauncher mSettingsLauncher;
@@ -33,18 +38,26 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
         SettingsUtils.addPreferencesFromResource(this, R.xml.security_preferences);
         getActivity().setTitle(R.string.prefs_security_title);
 
+        ManagedPreferenceDelegate managedPreferenceDelegate = createManagedPreferenceDelegate();
+
         RadioButtonGroupSafeBrowsingPreference safeBrowsingPreference =
                 findPreference(PREF_SAFE_BROWSING);
         safeBrowsingPreference.init(SafeBrowsingBridge.getSafeBrowsingState(),
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED));
         safeBrowsingPreference.setSafeBrowsingModeDetailsRequestedListener(this);
+        safeBrowsingPreference.setManagedPreferenceDelegate(managedPreferenceDelegate);
         safeBrowsingPreference.setOnPreferenceChangeListener((preference, newValue) -> {
             @SafeBrowsingState
             int newState = (int) newValue;
             SafeBrowsingBridge.setSafeBrowsingState(newState);
             return true;
         });
+
+        TextMessagePreference textManaged = findPreference(PREF_TEXT_MANAGED);
+        textManaged.setManagedPreferenceDelegate(managedPreferenceDelegate);
+        textManaged.setVisible(managedPreferenceDelegate.isPreferenceClickDisabledByPolicy(
+                safeBrowsingPreference));
     }
 
     @Override
@@ -63,5 +76,17 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
     @Override
     public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
         mSettingsLauncher = settingsLauncher;
+    }
+
+    private ChromeManagedPreferenceDelegate createManagedPreferenceDelegate() {
+        return preference -> {
+            String key = preference.getKey();
+            if (PREF_TEXT_MANAGED.equals(key) || PREF_SAFE_BROWSING.equals(key)) {
+                return SafeBrowsingBridge.isSafeBrowsingManaged();
+            } else {
+                assert false : "Should not be reached.";
+            }
+            return false;
+        };
     }
 }

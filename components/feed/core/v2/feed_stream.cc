@@ -343,6 +343,12 @@ void FeedStream::ProcessThereAndBackAgain(base::StringPiece data) {
   }
 }
 
+void FeedStream::ProcessViewAction(base::StringPiece data) {
+  feedwire::FeedAction msg;
+  msg.ParseFromArray(data.data(), data.size());
+  UploadAction(std::move(msg), /*upload_now=*/false, base::DoNothing());
+}
+
 void FeedStream::GetPrefetchSuggestions(
     base::OnceCallback<void(std::vector<offline_pages::PrefetchSuggestion>)>
         suggestions_callback) {

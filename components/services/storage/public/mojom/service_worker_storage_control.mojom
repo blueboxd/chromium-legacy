@@ -93,7 +93,6 @@ interface ServiceWorkerResourceMetadataWriter {
 // lifetime of user data is tied up with the registration.
 // It will be deleted when the corresponding registration is deleted.
 struct ServiceWorkerUserData {
-  int64 registration_id;
   string key;
   string value;
 };
@@ -249,14 +248,14 @@ interface ServiceWorkerStorageControl {
       (ServiceWorkerDatabaseStatus status);
 
   // Gets the user data from all registrations that have user data for |key|.
+  // Returns a map from registration IDs to their values.
   GetUserDataForAllRegistrations(string key) =>
-      (ServiceWorkerDatabaseStatus status,
-       array<ServiceWorkerUserData> values);
+      (ServiceWorkerDatabaseStatus status, map<int64, string> values);
   // Gets the user data from all registrations that have user data for
-  // |key_prefix| where |key_prefix| is a prefix of keys.
+  // |key_prefix| where |key_prefix| is a prefix of keys. Returns a map from
+  // registration IDs to their values.
   GetUserDataForAllRegistrationsByKeyPrefix(string key_prefix) =>
-      (ServiceWorkerDatabaseStatus status,
-       array<ServiceWorkerUserData> values);
+      (ServiceWorkerDatabaseStatus status, map<int64, string> values);
   // Clears the user data from all registrations using |key_prefix| as a prefix
   // of keys.
   ClearUserDataForAllRegistrationsByKeyPrefix(string key_prefix) =>

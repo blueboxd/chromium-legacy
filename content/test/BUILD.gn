@@ -301,8 +301,6 @@ jumbo_static_library("test_support") {
     "mock_widget_input_handler.h",
     "navigation_simulator_impl.cc",
     "navigation_simulator_impl.h",
-    "not_implemented_network_url_loader_factory.cc",
-    "not_implemented_network_url_loader_factory.h",
     "portal/portal_activated_observer.cc",
     "portal/portal_activated_observer.h",
     "portal/portal_created_observer.cc",

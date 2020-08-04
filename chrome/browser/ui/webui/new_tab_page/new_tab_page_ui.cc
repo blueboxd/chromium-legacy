@@ -83,6 +83,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "themeModeDoodlesEnabled",
       base::FeatureList::IsEnabled(ntp_features::kWebUIThemeModeDoodles));
+  source->AddBoolean("modulesEnabled",
+                     base::FeatureList::IsEnabled(ntp_features::kModules));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},

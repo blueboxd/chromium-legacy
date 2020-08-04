@@ -44,7 +44,7 @@ if (internal_khronos_glcts_tests) {
       "GTF_API=GTF_GLES20",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       defines += [ "_XOPEN_SOURCE=500" ]
     }
   }
@@ -79,7 +79,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":debase_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_c = [ "-Wno-implicit-function-declaration" ]
     }
   }
@@ -147,7 +147,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":dethread_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "//third_party/khronos_glcts/framework/delibs/dethread/unix/deMutexUnix.c",
         "//third_party/khronos_glcts/framework/delibs/dethread/unix/deSemaphoreUnix.c",
@@ -194,7 +194,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":deutil_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_c = [ "-Wno-string-conversion" ]
     }
   }
@@ -306,7 +306,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":qphelper_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_c = [ "-Wno-string-conversion" ]
     }
   }
@@ -394,7 +394,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":tcutil_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_cc = [ "-Wno-int-to-pointer-cast" ]
     }
   }
@@ -532,7 +532,7 @@ if (internal_khronos_glcts_tests) {
       "//third_party/khronos:khronos_headers",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_cc = [ "-Wno-int-to-void-pointer-cast" ]
     }
   }
@@ -611,7 +611,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":glcts_common_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_cc = [ "-Wno-string-conversion" ]
     }
   }
@@ -819,7 +819,7 @@ if (internal_khronos_glcts_tests) {
 
     public_configs = [ ":gtf_es_config" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       cflags_c = [
         "-Wno-pointer-sign",
         "-Wno-incompatible-pointer-types",

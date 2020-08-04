@@ -3237,11 +3237,13 @@ UpdateUserActivationStateInterceptor::GetForwardingInterface() {
 }
 
 void UpdateUserActivationStateInterceptor::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type,
+    blink::mojom::UserActivationNotificationType notification_type) {
   update_user_activation_state_ = true;
   if (quit_handler_)
     std::move(quit_handler_).Run();
-  GetForwardingInterface()->UpdateUserActivationState(update_type);
+  GetForwardingInterface()->UpdateUserActivationState(update_type,
+                                                      notification_type);
 }
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest) {

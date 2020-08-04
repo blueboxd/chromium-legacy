@@ -519,6 +519,17 @@ UIImage* DefaultFaviconImage() {
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
                        styleForRegion:(UIPointerRegion*)region
     API_AVAILABLE(ios(13.4)) {
+  // Hovering over this tab view and closing the tab simultaneously could result
+  // in this tab view having been removed from the window at the beginning of
+  // this method. If this tab view has already been removed from the view
+  // hierarchy, a nil pointer style should be returned so that the pointer
+  // remains with a default style. Attempting to construct a UITargetedPreview
+  // with a tab view that has already been removed from the hierarchy will
+  // result in a crash with an exception stating that the view has no window.
+  if (!_backgroundImageView.window) {
+    return nil;
+  }
+
   UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
   parameters.visiblePath = [self borderPath];
 

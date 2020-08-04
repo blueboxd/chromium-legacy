@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "chrome/browser/ui/tabs/existing_base_sub_menu_model.h"
 
 class TabStripModel;
@@ -21,6 +20,9 @@ class ExistingTabGroupSubMenuModel : public ExistingBaseSubMenuModel {
   ExistingTabGroupSubMenuModel(ui::SimpleMenuModel::Delegate* parent_delegate,
                                TabStripModel* model,
                                int context_index);
+  ExistingTabGroupSubMenuModel(const ExistingTabGroupSubMenuModel&) = delete;
+  ExistingTabGroupSubMenuModel& operator=(const ExistingTabGroupSubMenuModel&) =
+      delete;
   ~ExistingTabGroupSubMenuModel() override = default;
 
   // Whether the submenu should be shown in the provided context. True iff
@@ -44,8 +46,6 @@ class ExistingTabGroupSubMenuModel : public ExistingBaseSubMenuModel {
   static bool ShouldShowGroup(TabStripModel* model,
                               int context_index,
                               tab_groups::TabGroupId group);
-
-  DISALLOW_COPY_AND_ASSIGN(ExistingTabGroupSubMenuModel);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_EXISTING_TAB_GROUP_SUB_MENU_MODEL_H_

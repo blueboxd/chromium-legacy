@@ -167,6 +167,32 @@ def ExpandChromeStar(platforms):
   return platforms
 
 
+def _GetSupportedVersionPlatformAndRange(supported_on):
+  (supported_on_platform, supported_on_versions) = supported_on.split(':')
+
+  (supported_on_from, supported_on_to) = supported_on_versions.split('-')
+
+  return supported_on_platform, (int(supported_on_from) if supported_on_from
+                                 else None), (int(supported_on_to)
+                                              if supported_on_to else None)
+
+
+def _PolicyStillSupported(supported_on, current_version):
+  for s in supported_on:
+    _, _, supported_on_to = _GetSupportedVersionPlatformAndRange(s)
+
+    # If supported_on_to isn't given, this policy is still supported.
+    if supported_on_to is None:
+      return True
+
+    # If supported_on_to is equal or greater than the current version, it's
+    # still supported.
+    if current_version <= int(supported_on_to):
+      return True
+
+  return False
+
+
 def MergeDict(*dicts):
   result = {}
   for dictionary in dicts:
@@ -435,7 +461,8 @@ class PolicyTemplateChecker(object):
                       "Field '%s' not present in device policy proto." %
                       (policy, field))
 
-  def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids):
+  def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids,
+                   current_version):
     if not isinstance(policy, dict):
       self._Error('Each policy must be a dictionary.', 'policy', None, policy)
       return
@@ -564,7 +591,7 @@ class PolicyTemplateChecker(object):
               supported_on_platform,
               supported_on_from,
               supported_on_to,
-          ) = self._GetSupportedVersionPlatformAndRange(s)
+          ) = _GetSupportedVersionPlatformAndRange(s)
 
           supported_platforms.append(supported_on_platform)
           if not isinstance(supported_on_platform,
@@ -583,6 +610,13 @@ class PolicyTemplateChecker(object):
                 'Entries in "supported_on" that have an ending '
                 'supported version must have a version larger than the '
                 'starting supported version.', 'policy', policy, supported_on)
+
+        if (not _PolicyStillSupported(supported_on, current_version)
+            and not policy.get('deprecated', False)):
+          self._Error(
+              'Policy %s is marked as no longer supported (%s), but isn\'t '
+              'marked as deprecated. Unsupported policies must be marked as '
+              '"deprecated": True' % (policy.get('name'), supported_on))
 
       supported_platforms = ExpandChromeStar(supported_platforms)
       future_on = ExpandChromeStar(
@@ -862,15 +896,6 @@ class PolicyTemplateChecker(object):
       if vkey not in ('desc', 'text'):
         self._Warning('In message %s: Warning: Unknown key: %s' % (key, vkey))
 
-  def _GetSupportedVersionPlatformAndRange(self, supported_on):
-    (supported_on_platform, supported_on_versions) = supported_on.split(':')
-
-    (supported_on_from, supported_on_to) = supported_on_versions.split('-')
-
-    return supported_on_platform, (
-        int(supported_on_from) if supported_on_from else None), (
-            int(supported_on_to) if supported_on_to else None)
-
   def _GetReleasedPlatforms(self, policy, current_version):
     '''
     Returns a dictionary that contains released platforms and their released
@@ -902,7 +927,7 @@ class PolicyTemplateChecker(object):
 
     for supported_on in policy.get('supported_on', []):
       supported_platform, supported_from, _ = \
-              self._GetSupportedVersionPlatformAndRange(supported_on)
+              _GetSupportedVersionPlatformAndRange(supported_on)
       if supported_from < current_version - 1:
         released_platforms[supported_platform] = supported_from
       else:
@@ -1578,7 +1603,8 @@ class PolicyTemplateChecker(object):
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
-        self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids)
+        self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids,
+                          current_version)
         self._CheckDevicePolicyProtoMappingDeviceOnly(
             policy, device_policy_proto_map, legacy_device_policy_proto_map)
       self._CheckPolicyIDs(policy_ids, deleted_policy_ids)

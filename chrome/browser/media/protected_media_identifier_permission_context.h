@@ -52,7 +52,7 @@ class ProtectedMediaIdentifierPermissionContext
 
  private:
   friend class ProtectedMediaIdentifierPermissionContextTest;
-  static bool IsOriginWhitelisted(const GURL& origin);
+  static bool IsOriginAllowed(const GURL& origin);
 
   void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,

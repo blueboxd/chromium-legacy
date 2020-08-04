@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dev_tools_host.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -39,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 
 namespace blink {
 
@@ -98,8 +98,8 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
   }
 
   if (!api_script_.IsEmpty()) {
-    GetSupplementable()->GetScriptController().ExecuteScriptInMainWorld(
-        api_script_);
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(api_script_))
+        ->RunScript(GetSupplementable());
   }
 }
 

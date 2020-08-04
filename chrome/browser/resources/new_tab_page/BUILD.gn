@@ -19,6 +19,9 @@ js_type_check("closure_compile") {
     ":grid",
     ":iframe",
     ":logo",
+    ":module_descriptor",
+    ":module_registry",
+    ":modules",
     ":one_google_bar_api",
     ":realbox",
     ":realbox_button",
@@ -45,6 +48,7 @@ js_library("app") {
   deps = [
     ":background_manager",
     ":browser_proxy",
+    ":modules",
     ":most_visited",
     ":one_google_bar_api",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -214,7 +218,24 @@ js_library("background_manager") {
 js_library("one_google_bar_api") {
 }
 
-html_to_js("web_components") {
+js_library("module_descriptor") {
+  sources = [ "modules/module_descriptor.js" ]
+}
+
+js_library("modules") {
+  sources = [ "modules/modules.js" ]
+  deps = [
+    ":module_registry",
+    "modules/dummy:module",
+  ]
+}
+
+js_library("module_registry") {
+  sources = [ "modules/module_registry.js" ]
+  deps = [ ":module_descriptor" ]
+}
+
+html_to_js("web_components_local") {
   js_files = [
     "app.js",
     "customize_backgrounds.js",
@@ -235,6 +256,13 @@ html_to_js("web_components") {
     "theme_icon.js",
     "iframe.js",
     "voice_search_overlay.js",
+  ]
+}
+
+group("web_components") {
+  public_deps = [
+    ":web_components_local",
+    "modules/dummy:web_components",
   ]
 }
 

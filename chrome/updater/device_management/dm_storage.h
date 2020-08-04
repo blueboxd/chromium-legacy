@@ -88,11 +88,11 @@ class DMStorage : public base::RefCountedThreadSafe<DMStorage> {
 
   // Persists DM policies.
   //
-  // |policy_info_data| is the serialized data of a PolicyFetchResponse. It will
-  // be saved into a fixed file named "CachedPolicyInfo" in cache root. The
-  // file content will be used to construct an updater::CachedPolicyInfo object
-  // to get public key, its version, and signing timestamp. The values will
-  // be used in subsequent policy fetches.
+  // If the first policy in the map contains a valid public key, its serialized
+  // data will be saved into a fixed file named "CachedPolicyInfo" in the cache
+  // root. The file content will be used to construct an
+  // updater::CachedPolicyInfo object to get public key, its version, and
+  // signing timestamp. The values will be used in subsequent policy fetches.
   //
   // Each entry in |policy_map| will be stored within a sub-directory named
   // {Base64Encoded{policy_type}}, with a fixed file name of
@@ -113,8 +113,7 @@ class DMStorage : public base::RefCountedThreadSafe<DMStorage> {
   //  ('Z29vZ2xlL21hY2hpbmUtbGV2ZWwtb21haGE=' is base64 encoding of
   //  "google/machine-level-omaha").
   //
-  bool PersistPolicies(const std::string& policy_info_data,
-                       const DMPolicyMap& policy_map) const;
+  bool PersistPolicies(const DMPolicyMap& policy_map) const;
 
   // Creates a CachedPolicyInfo object and populates it with the public key
   // information loaded from file |policy_cache_root_|\CachedPolicyInfo.

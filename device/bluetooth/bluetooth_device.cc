@@ -407,55 +407,6 @@ BluetoothRemoteGattService* BluetoothDevice::GetGattService(
   return it->second.get();
 }
 
-// static
-std::string BluetoothDevice::CanonicalizeAddress(base::StringPiece address) {
-  std::array<uint8_t, 6> bytes;
-
-  if (!ParseAddress(address, bytes))
-    return std::string();
-
-  std::string canonicalized;
-  canonicalized.reserve(17);
-
-  for (size_t i = 0; i < bytes.size(); ++i) {
-    if (i != 0)
-      canonicalized.push_back(':');
-    base::StringAppendF(&canonicalized, "%02X", bytes[i]);
-  }
-
-  return canonicalized;
-}
-
-bool BluetoothDevice::ParseAddress(base::StringPiece input,
-                                   base::span<uint8_t> output) {
-  if (output.size() != 6)
-    return false;
-
-  // Try parsing addresses that lack separators, like "1A2B3C4D5E6F".
-  if (input.size() == 12)
-    return base::HexStringToSpan(input, output);
-
-  // Try parsing MAC address with separators like: "00:11:22:33:44:55" or
-  // "00-11-22-33-44-55". Separator can be either '-' or ':', but must use the
-  // same style throughout.
-  if (input.size() == 17) {
-    const char separator = input[2];
-    if (separator != '-' && separator != ':')
-      return false;
-    return (input[2] == separator) && (input[5] == separator) &&
-           (input[8] == separator) && (input[11] == separator) &&
-           (input[14] == separator) &&
-           base::HexStringToSpan(input.substr(0, 2), output.subspan<0, 1>()) &&
-           base::HexStringToSpan(input.substr(3, 2), output.subspan<1, 1>()) &&
-           base::HexStringToSpan(input.substr(6, 2), output.subspan<2, 1>()) &&
-           base::HexStringToSpan(input.substr(9, 2), output.subspan<3, 1>()) &&
-           base::HexStringToSpan(input.substr(12, 2), output.subspan<4, 1>()) &&
-           base::HexStringToSpan(input.substr(15, 2), output.subspan<5, 1>());
-  }
-
-  return false;
-}
-
 std::string BluetoothDevice::GetIdentifier() const {
   return GetAddress();
 }

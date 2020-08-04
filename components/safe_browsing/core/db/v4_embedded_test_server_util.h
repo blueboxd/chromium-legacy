@@ -23,11 +23,13 @@ namespace safe_browsing {
 // 1. Rewrites the global V4 server URL prefix to point to the test server.
 // 2. Registers the FullHash request handler with the server.
 // 3. (Optionally) associates some delay with the resulting http response.
+// 4. (Optionally) attaches a cookie to the response.
 void StartRedirectingV4RequestsForTesting(
     const std::map<GURL, ThreatMatch>& response_map,
     net::test_server::EmbeddedTestServer* embedded_test_server,
     const std::map<GURL, base::TimeDelta>& delay_map =
-        std::map<GURL, base::TimeDelta>());
+        std::map<GURL, base::TimeDelta>(),
+    bool serve_cookies = false);
 
 }  // namespace safe_browsing
 

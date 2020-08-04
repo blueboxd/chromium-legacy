@@ -2832,7 +2832,7 @@ message ExtensionInstallReportLogEvent {
   // details. InstallStageTracker::FailureReason is the main enum and this is
   // a copy used for reporting purposes.
   enum FailureReason {
-    UNKNOWN = 0;
+    FAILURE_REASON_UNKNOWN = 0;
 
     INVALID_ID = 1;
 

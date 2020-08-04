@@ -9401,7 +9401,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
 
   // Simulate a user gesture.
   root->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
 
   // Since the last navigations refer to a different document, a user gesture
   // here should not reset the skippable bit in the previous entries.
@@ -9767,7 +9768,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   // A user gesture in the main frame now will lead to all same document
   // entries to be marked as non-skippable.
   root->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
@@ -9802,7 +9804,8 @@ IN_PROC_BROWSER_TEST_P(
   // user gesture will not lead to the last committed entry being marked as
   // skippable.
   root->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
 

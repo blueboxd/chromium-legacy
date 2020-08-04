@@ -341,8 +341,7 @@ class DownloadProtectionServiceTestBase
                          .AppendASCII("safe_browsing")
                          .AppendASCII("download_protection");
 
-    ASSERT_TRUE(profile()->CreateHistoryService(true /* delete_file */,
-                                                false /* no_db */));
+    ASSERT_TRUE(profile()->CreateHistoryService());
 
     // Setup a directory to place test files in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

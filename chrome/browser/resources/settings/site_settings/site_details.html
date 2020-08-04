@@ -196,11 +196,11 @@
             label="$i18n{siteSettingsBluetoothDevices}">
         </site-details-permission>
       </template>
-      <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+      <template is="dom-if" if="[[enableFileSystemWriteContentSetting_]]">
         <site-details-permission
-            category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
-            icon="settings:save-original" id="nativeFileSystemWrite"
-            label="$i18n{siteSettingsNativeFileSystemWrite}">
+            category="{{ContentSettingsTypes.FILE_SYSTEM_WRITE}}"
+            icon="settings:save-original" id="fileSystemWrite"
+            label="$i18n{siteSettingsFileSystemWrite}">
         </site-details-permission>
       </template>
       <site-details-permission

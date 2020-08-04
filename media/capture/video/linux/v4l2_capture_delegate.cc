@@ -141,7 +141,7 @@ bool IsSpecialControl(int control_id) {
 #if !defined(V4L2_CID_PANTILT_CMD)
 #define V4L2_CID_PANTILT_CMD (V4L2_CID_CAMERA_CLASS_BASE + 34)
 #endif
-bool IsBlacklistedControl(int control_id) {
+bool IsBlockedControl(int control_id) {
   switch (control_id) {
     case V4L2_CID_PAN_RELATIVE:
     case V4L2_CID_TILT_RELATIVE:
@@ -730,7 +730,7 @@ void V4L2CaptureDelegate::ResetUserAndCameraControlsToDefault() {
 
       if (IsSpecialControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
         continue;
-      if (IsBlacklistedControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
+      if (IsBlockedControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
         continue;
 
       struct v4l2_ext_control ext_control = {};

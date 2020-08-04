@@ -182,7 +182,7 @@ TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
 #endif
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  info = registry()->Get(ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+  info = registry()->Get(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
   EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif
 }

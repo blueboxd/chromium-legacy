@@ -45,6 +45,8 @@ source_set("passwords") {
     "save_passwords_consumer.mm",
     "update_password_infobar_controller.h",
     "update_password_infobar_controller.mm",
+    "well_known_change_password_tab_helper.h",
+    "well_known_change_password_tab_helper.mm",
   ]
   deps = [
     ":infobar_delegates",
@@ -172,6 +174,7 @@ source_set("unit_tests") {
     "js_credential_manager_unittest.mm",
     "password_controller_js_unittest.mm",
     "password_controller_unittest.mm",
+    "well_known_change_password_tab_helper_unittest.mm",
   ]
   deps = [
     ":passwords",

@@ -12,6 +12,7 @@
 #include "chrome/updater/device_management/dm_storage.h"
 #include "chrome/updater/policy_manager.h"
 #include "chrome/updater/protos/omaha_settings.pb.h"
+#include "chrome/updater/unittest_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,7 +64,7 @@ std::string CannedOmahaPolicyFetchResponse() {
       ::wireless_android_enterprise_devicemanagement::MANUAL_UPDATES_ONLY);
 
   ::wireless_android_enterprise_devicemanagement::ApplicationSettings app;
-  app.set_app_guid("{8A69D345-D564-463C-AFF1-A69D9E530F96}");
+  app.set_app_guid(kChromeAppId);
 
   app.set_install(
       ::wireless_android_enterprise_devicemanagement::INSTALL_DISABLED);
@@ -111,13 +112,10 @@ TEST(DMStorage, PersistPolicies) {
   EXPECT_TRUE(base::DirectoryExists(stale_poliy));
 
   auto storage = base::MakeRefCounted<DMStorage>(cache_root.GetPath());
-  EXPECT_TRUE(storage->PersistPolicies("policy-meta-data", policies));
+  EXPECT_TRUE(storage->PersistPolicies(policies));
   base::FilePath policy_info_file =
       cache_root.GetPath().AppendASCII("CachedPolicyInfo");
-  EXPECT_TRUE(base::PathExists(policy_info_file));
-  std::string policy_info_data;
-  EXPECT_TRUE(base::ReadFileToString(policy_info_file, &policy_info_data));
-  EXPECT_EQ(policy_info_data, "policy-meta-data");
+  EXPECT_FALSE(base::PathExists(policy_info_file));
 
   base::FilePath omaha_policy_file =
       cache_root.GetPath()
@@ -164,8 +162,9 @@ TEST(DMStorage, GetCachedPolicyInfo) {
   ASSERT_TRUE(cache_root.CreateUniqueTempDir());
   auto storage = base::MakeRefCounted<DMStorage>(
       cache_root.GetPath(), std::make_unique<TestTokenService>());
-  EXPECT_TRUE(storage->PersistPolicies(response.SerializeAsString(),
-                                       /* policies map */ {}));
+  EXPECT_TRUE(storage->PersistPolicies({
+      {"sample-policy-type", response.SerializeAsString()},
+  }));
 
   auto policy_info = storage->GetCachedPolicyInfo();
   ASSERT_NE(policy_info, nullptr);
@@ -176,17 +175,14 @@ TEST(DMStorage, GetCachedPolicyInfo) {
 }
 
 TEST(DMStorage, ReadCachedOmahaPolicy) {
-  // Persist the default testing omaha policy.
-  std::string omaha_policy_data = CannedOmahaPolicyFetchResponse();
-
   DMPolicyMap policies({
-      {"google/machine-level-omaha", omaha_policy_data},
+      {"google/machine-level-omaha", CannedOmahaPolicyFetchResponse()},
   });
   base::ScopedTempDir cache_root;
   ASSERT_TRUE(cache_root.CreateUniqueTempDir());
   auto storage = base::MakeRefCounted<DMStorage>(
       cache_root.GetPath(), std::make_unique<TestTokenService>());
-  EXPECT_TRUE(storage->PersistPolicies(omaha_policy_data, policies));
+  EXPECT_TRUE(storage->PersistPolicies(policies));
 
   auto policy_manager = storage->GetOmahaPolicyManager();
   ASSERT_NE(policy_manager, nullptr);
@@ -228,22 +224,21 @@ TEST(DMStorage, ReadCachedOmahaPolicy) {
   EXPECT_FALSE(policy_manager->GetPackageCacheExpirationTimeDays(&cache_life));
 
   // Chrome policies.
-  const std::string chrome_appid = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
   int chrome_install_policy = -1;
   EXPECT_TRUE(policy_manager->GetEffectivePolicyForAppInstalls(
-      chrome_appid, &chrome_install_policy));
+      kChromeAppId, &chrome_install_policy));
   EXPECT_EQ(chrome_install_policy, kPolicyDisabled);
   int chrome_update_policy = -1;
   EXPECT_TRUE(policy_manager->GetEffectivePolicyForAppUpdates(
-      chrome_appid, &chrome_update_policy));
+      kChromeAppId, &chrome_update_policy));
   EXPECT_EQ(chrome_update_policy, kPolicyAutomaticUpdatesOnly);
   std::string target_version_prefix;
-  EXPECT_TRUE(policy_manager->GetTargetVersionPrefix(chrome_appid,
+  EXPECT_TRUE(policy_manager->GetTargetVersionPrefix(kChromeAppId,
                                                      &target_version_prefix));
   EXPECT_EQ(target_version_prefix, "3.6.55");
   bool rollback_allowed = false;
   EXPECT_TRUE(policy_manager->IsRollbackToTargetVersionAllowed(
-      chrome_appid, &rollback_allowed));
+      kChromeAppId, &rollback_allowed));
   EXPECT_TRUE(rollback_allowed);
 
   // No app-specific policy should fallback to global.

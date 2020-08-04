@@ -368,7 +368,7 @@ void BaseSearchProviderTest::CustomizableSetUp(
     const std::string& search_url,
     const std::string& suggestions_url) {
   // We need both the history service and template url model loaded.
-  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
+  ASSERT_TRUE(profile_.CreateHistoryService());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_,
       base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));

@@ -27,6 +27,7 @@ namespace policy {
 class ChromeBrowserCloudManagementRegisterWatcher;
 class CloudPolicyInvalidator;
 class MachineLevelDeviceAccountInitializerHelper;
+class RemoteCommandsInvalidator;
 
 // Desktop implementation of the platform-specific operations of CBCMController.
 class ChromeBrowserCloudManagementControllerDesktop
@@ -90,6 +91,9 @@ class ChromeBrowserCloudManagementControllerDesktop
   std::unique_ptr<instance_id::InstanceIDDriver> device_instance_id_driver_;
   std::unique_ptr<invalidation::FCMInvalidationService> invalidation_service_;
   std::unique_ptr<CloudPolicyInvalidator> policy_invalidator_;
+
+  // This invalidator is responsible for receiving remote commands invalidations
+  std::unique_ptr<RemoteCommandsInvalidator> commands_invalidator_;
 };
 
 }  // namespace policy

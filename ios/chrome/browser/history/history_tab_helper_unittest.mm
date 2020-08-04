@@ -36,7 +36,7 @@ class HistoryTabHelperTest : public PlatformTest {
     test_cbs_builder.SetPath(state_dir_.GetPath());
 
     chrome_browser_state_ = test_cbs_builder.Build();
-    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
+    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService());
 
     web_state_.SetBrowserState(chrome_browser_state_.get());
     HistoryTabHelper::CreateForWebState(&web_state_);

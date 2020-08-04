@@ -615,10 +615,14 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
     return false;
 
   // When the omnibox is empty, only allow zero suggest for the ChromeOS
-  // Launcher and NTP.
+  // Launcher and NTP, unless the clobber flag is on.
+  //
+  // TODO(tommycli): Add more nuance here, likely with an omnibox_focus_type.
   if (input_type == metrics::OmniboxInputType::EMPTY &&
       !(page_class == metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
-        IsNTPPage(page_class))) {
+        IsNTPPage(page_class) ||
+        base::FeatureList::IsEnabled(
+            omnibox::kClobberIsZeroSuggestEntrypoint))) {
     return false;
   }
 

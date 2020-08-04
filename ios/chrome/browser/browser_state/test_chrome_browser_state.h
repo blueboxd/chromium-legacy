@@ -74,11 +74,8 @@ class TestChromeBrowserState : public ChromeBrowserState {
   void CreateBookmarkModel(bool delete_file);
 
   // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
-  // Creates the history service. If |delete_file| is true, the history file is
-  // deleted first, then the HistoryService is created. As
-  // TestChromeBrowserState deletes the directory containing the files used by
-  // HistoryService, this only matters if you're recreating the HistoryService.
-  bool CreateHistoryService(bool delete_file) WARN_UNUSED_RESULT;
+  // Creates the history service.
+  bool CreateHistoryService() WARN_UNUSED_RESULT;
 
   // Returns the preferences as a TestingPrefServiceSyncable if possible or
   // null. Returns null for off-the-record TestChromeBrowserState and also

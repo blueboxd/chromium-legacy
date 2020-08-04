@@ -169,9 +169,8 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 
   // The existing grant should not change if the permission is blocked globally.
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 
   // Getting a grant for the same file again should also not change the grant,
@@ -211,18 +210,17 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_InitialState_OpenAction_GlobalGuardBlocked) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
+  SetContentSettingValueForOrigin(kTestOrigin,
+                                  ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                  CONTENT_SETTING_ASK);
 
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
@@ -232,18 +230,17 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 TEST_F(
     OriginScopedNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_InitialState_WritableImplicitState_GlobalGuardBlocked) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
+  SetContentSettingValueForOrigin(kTestOrigin,
+                                  ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                  CONTENT_SETTING_ASK);
 
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
@@ -253,9 +250,9 @@ TEST_F(
 TEST_F(
     OriginScopedNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_WriteGrantedChangesExistingGrant_GlobalGuardBlocked) {
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetContentSettingValueForOrigin(kTestOrigin,
+                                  ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                  CONTENT_SETTING_BLOCK);
 
   auto grant1 = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
@@ -272,9 +269,8 @@ TEST_F(
 TEST_F(
     OriginScopedNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedBeforeNewGrant) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
@@ -302,9 +298,8 @@ TEST_F(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   // After the guard is blocked, the permission status for |grant| should remain
   // unchanged.
@@ -419,9 +414,8 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   // If the guard content setting is blocked, a call to RequestPermission()
   // should update the PermissionStatus to DENIED, call the passed-in
   // callback, and return immediately without showing a prompt.
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
@@ -450,9 +444,9 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
 
   grant2.reset();
-  SetContentSettingValueForOrigin(
-      kTestOrigin2, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
+  SetContentSettingValueForOrigin(kTestOrigin2,
+                                  ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                  CONTENT_SETTING_ASK);
 
   grant2 = permission_context()->GetWritePermissionGrant(
       kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
@@ -478,9 +472,8 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   auto grant2 = permission_context()->GetWritePermissionGrant(
       kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
 
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -505,9 +498,9 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   grant.reset();
   grant2.reset();
 
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
+  SetContentSettingValueForOrigin(kTestOrigin,
+                                  ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                  CONTENT_SETTING_ASK);
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   grant2 = permission_context()->GetWritePermissionGrant(
@@ -536,15 +529,14 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_AllowlistedOrigin_InitialState) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context());
   allowlist->RegisterAutoGrantedPermission(
-      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+      kChromeOrigin, ContentSettingsType::FILE_SYSTEM_READ_GUARD);
   allowlist->RegisterAutoGrantedPermission(
-      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+      kChromeOrigin, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
 
   // Allowlisted origin automatically gets write permission.
   auto grant1 = permission_context()->GetWritePermissionGrant(
@@ -566,15 +558,14 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_AllowlistedOrigin_ExistingGrant) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
 
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context());
   allowlist->RegisterAutoGrantedPermission(
-      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+      kChromeOrigin, ContentSettingsType::FILE_SYSTEM_READ_GUARD);
   allowlist->RegisterAutoGrantedPermission(
-      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+      kChromeOrigin, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
 
   // Initial grant (file).
   auto grant1 = permission_context()->GetWritePermissionGrant(

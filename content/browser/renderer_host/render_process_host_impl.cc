@@ -3143,6 +3143,13 @@ bool RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes() {
   return true;
 }
 
+// static
+bool RenderProcessHostImpl::IsSpareProcessForCrashReporting(
+    RenderProcessHost* render_process_host) {
+  return render_process_host == SpareRenderProcessHostManager::GetInstance()
+                                    .spare_render_process_host();
+}
+
 bool RenderProcessHostImpl::HostHasNotBeenUsed() {
   return IsUnused() && listeners_.IsEmpty() && keep_alive_ref_count_ == 0 &&
          pending_views_ == 0;

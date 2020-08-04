@@ -344,9 +344,22 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (selection_drag_image_only && !paint_layer_.GetLayoutObject().IsSelected())
     return result;
 
-  base::Optional<IgnorePaintTimingScope> ignore_paint_timing;
-  if (PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef()))
-    ignore_paint_timing.emplace();
+  IgnorePaintTimingScope ignore_paint_timing;
+  if (paint_layer_.GetLayoutObject().StyleRef().Opacity() == 0.0f) {
+    IgnorePaintTimingScope::IncrementIgnoreDepth();
+  }
+  // Explicitly compute opacity of documentElement, as it is special-cased in
+  // Largest Contentful Paint.
+  bool is_document_element_invisible = false;
+  if (const auto* document_element =
+          paint_layer_.GetLayoutObject().GetDocument().documentElement()) {
+    if (document_element->GetLayoutObject() &&
+        document_element->GetLayoutObject()->StyleRef().Opacity() == 0.0f) {
+      is_document_element_invisible = true;
+    }
+  }
+  IgnorePaintTimingScope::SetIsDocumentElementInvisible(
+      is_document_element_invisible);
 
   PaintLayerFlags paint_flags = paint_flags_arg;
   PaintLayerPaintingInfo painting_info = painting_info_arg;

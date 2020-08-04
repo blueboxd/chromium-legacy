@@ -22,19 +22,19 @@ namespace {
 // A map from (text offset, pattern offest) to bool.
 typedef std::map<std::pair<size_t, size_t>, bool> WildcardMatchCache;
 
-bool String16WildcardMatchRecursive(const std::wstring& text,
-                                    size_t text_offset,
-                                    const std::wstring& pattern,
-                                    size_t pattern_offset,
-                                    const wchar_t escape_char,
-                                    WildcardMatchCache* cache);
+bool WStringWildcardMatchRecursive(const std::wstring& text,
+                                   size_t text_offset,
+                                   const std::wstring& pattern,
+                                   size_t pattern_offset,
+                                   const wchar_t escape_char,
+                                   WildcardMatchCache* cache);
 
-bool String16WildcardMatchRecursiveCached(const std::wstring& text,
-                                          size_t text_offset,
-                                          const std::wstring& pattern,
-                                          size_t pattern_offset,
-                                          const wchar_t escape_char,
-                                          WildcardMatchCache* cache) {
+bool WStringWildcardMatchRecursiveCached(const std::wstring& text,
+                                         size_t text_offset,
+                                         const std::wstring& pattern,
+                                         size_t pattern_offset,
+                                         const wchar_t escape_char,
+                                         WildcardMatchCache* cache) {
   DCHECK(cache);
 
   // Look for a pre-computed value.
@@ -45,18 +45,18 @@ bool String16WildcardMatchRecursiveCached(const std::wstring& text,
     return entry->second;
 
   // Compute the recursive match and cache it.
-  bool result = String16WildcardMatchRecursive(
+  bool result = WStringWildcardMatchRecursive(
       text, text_offset, pattern, pattern_offset, escape_char, cache);
   (*cache)[key] = result;
   return result;
 }
 
-bool String16WildcardMatchRecursive(const std::wstring& text,
-                                    size_t text_offset,
-                                    const std::wstring& pattern,
-                                    size_t pattern_offset,
-                                    const wchar_t escape_char,
-                                    WildcardMatchCache* cache) {
+bool WStringWildcardMatchRecursive(const std::wstring& text,
+                                   size_t text_offset,
+                                   const std::wstring& pattern,
+                                   size_t pattern_offset,
+                                   const wchar_t escape_char,
+                                   WildcardMatchCache* cache) {
   while (true) {
     if (text_offset >= text.length()) {
       // The text is empty, the matching decision is based on the remaining
@@ -92,9 +92,9 @@ bool String16WildcardMatchRecursive(const std::wstring& text,
       // character.
       for (size_t match_offset = text_offset; match_offset <= text.size();
            ++match_offset) {
-        if (String16WildcardMatchRecursiveCached(text, match_offset, pattern,
-                                                 pattern_offset + 1,
-                                                 escape_char, cache)) {
+        if (WStringWildcardMatchRecursiveCached(text, match_offset, pattern,
+                                                pattern_offset + 1, escape_char,
+                                                cache)) {
           return true;
         }
       }
@@ -125,23 +125,23 @@ bool String16WildcardMatchRecursive(const std::wstring& text,
 
 }  // namespace
 
-bool String16EqualsCaseInsensitive(const std::wstring& str1,
-                                   const std::wstring& str2) {
+bool WStringEqualsCaseInsensitive(const std::wstring& str1,
+                                  const std::wstring& str2) {
   return _wcsicmp(str1.c_str(), str2.c_str()) == 0;
 }
 
-bool String16ContainsCaseInsensitive(const std::wstring& value,
-                                     const std::wstring& substring) {
+bool WStringContainsCaseInsensitive(const std::wstring& value,
+                                    const std::wstring& substring) {
   return std::search(
              value.begin(), value.end(), substring.begin(), substring.end(),
              base::CaseInsensitiveCompareASCII<std::wstring::value_type>()) !=
          value.end();
 }
 
-bool String16SetMatchEntry(const std::wstring& value,
-                           const std::wstring& delimiters,
-                           const std::wstring& substring,
-                           String16Matcher matcher) {
+bool WStringSetMatchEntry(const std::wstring& value,
+                          const std::wstring& delimiters,
+                          const std::wstring& substring,
+                          WStringMatcher matcher) {
   // Split the string in tokens.
   std::vector<std::wstring> tokens = base::SplitString(
       value, delimiters, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -155,14 +155,14 @@ bool String16SetMatchEntry(const std::wstring& value,
   return false;
 }
 
-bool String16WildcardMatchInsensitive(const std::wstring& text,
-                                      const std::wstring& pattern,
-                                      const wchar_t escape_char) {
+bool WStringWildcardMatchInsensitive(const std::wstring& text,
+                                     const std::wstring& pattern,
+                                     const wchar_t escape_char) {
   // TODO(crbug.com/837637): Check the performance of Chromium's MatchPattern
   // and replace this with it if possible.
   WildcardMatchCache cache;
-  return String16WildcardMatchRecursive(text, 0, pattern, 0, escape_char,
-                                        &cache);
+  return WStringWildcardMatchRecursive(text, 0, pattern, 0, escape_char,
+                                       &cache);
 }
 
 std::string RemoveInvalidUTF8Chars(const std::string& input) {

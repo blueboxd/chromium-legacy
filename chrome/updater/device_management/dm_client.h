@@ -22,6 +22,7 @@ class NetworkFetcher;
 
 namespace updater {
 
+class CachedPolicyInfo;
 class DMStorage;
 
 // This class is responsible for everything related to communication with the
@@ -63,6 +64,9 @@ class DMClient {
     // Request is not sent because the device is de-registered.
     kDeregistered,
 
+    // Policy fetch request is not sent because there's no DM token.
+    kNoDMToken,
+
     // Request is not sent because network fetcher fails to create.
     kFetcherError,
 
@@ -71,6 +75,9 @@ class DMClient {
 
     // Request failed with an HTTP error from server.
     kHttpError,
+
+    // Failed to persist the response into storage.
+    kSerializationError,
 
     // Got an unexpected response for the request.
     kUnexpectedResponse,
@@ -92,6 +99,10 @@ class DMClient {
   // token is saved into the storage before |request_callback| is called.
   void PostRegisterRequest(DMRequestCallback request_callback);
 
+  // Posts a policy fetch request to the server. Upon success, new polices
+  // are saved into the storage before |request_callback| is called.
+  void PostPolicyFetchRequest(DMRequestCallback request_callback);
+
  private:
   // Gets the full request URL to DM server for the given request type.
   // Additional device specific values, such as device ID, platform etc. will
@@ -101,14 +112,21 @@ class DMClient {
   // Callback functions for the URLFetcher.
   void OnRequestStarted(int response_code, int64_t content_length);
   void OnRequestProgress(int64_t current);
-  void OnRequestComplete(std::unique_ptr<std::string> response_body,
-                         int net_error,
-                         const std::string& header_etag,
-                         const std::string& header_x_cup_server_proof,
-                         int64_t xheader_retry_after_sec);
+  void OnRegisterRequestComplete(std::unique_ptr<std::string> response_body,
+                                 int net_error,
+                                 const std::string& header_etag,
+                                 const std::string& header_x_cup_server_proof,
+                                 int64_t xheader_retry_after_sec);
+  void OnPolicyFetchRequestComplete(
+      std::unique_ptr<std::string> response_body,
+      int net_error,
+      const std::string& header_etag,
+      const std::string& header_x_cup_server_proof,
+      int64_t xheader_retry_after_sec);
 
   std::unique_ptr<Configurator> config_;
   scoped_refptr<DMStorage> storage_;
+  std::unique_ptr<CachedPolicyInfo> cached_info_;
 
   std::unique_ptr<update_client::NetworkFetcher> network_fetcher_;
   DMRequestCallback request_callback_;

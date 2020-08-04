@@ -327,16 +327,15 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
        CanObtainWritePermission_ContentSettingAsk) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD, CONTENT_SETTING_ASK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_ASK);
   EXPECT_TRUE(permission_context()->CanObtainWritePermission(kTestOrigin));
 }
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
        CanObtainWritePermission_ContentSettingsBlock) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(permission_context()->CanObtainWritePermission(kTestOrigin));
 }
 

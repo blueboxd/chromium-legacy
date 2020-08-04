@@ -130,11 +130,18 @@ void CustomScrollbar::SetPressedPart(ScrollbarPart part,
 scoped_refptr<const ComputedStyle>
 CustomScrollbar::GetScrollbarPseudoElementStyle(ScrollbarPart part_type,
                                                 PseudoId pseudo_id) {
-  if (!StyleSource()->GetLayoutObject())
+  Element* element = StyleSource();
+  DCHECK(element);
+  Document& document = element->GetDocument();
+  // This method may be called as part of style recalc. Don't re-enter into
+  // updating style for those cases.
+  if (!document.InStyleRecalc())
+    document.UpdateStyleAndLayoutTreeForNode(element);
+  if (!element->GetLayoutObject())
     return nullptr;
-  const ComputedStyle* source_style = StyleSource()->GetLayoutObject()->Style();
+  const ComputedStyle* source_style = element->GetLayoutObject()->Style();
   scoped_refptr<const ComputedStyle> part_style =
-      StyleSource()->StyleForPseudoElement(
+      element->StyleForPseudoElement(
           PseudoElementStyleRequest(pseudo_id, this, part_type), source_style);
   if (!part_style)
     return nullptr;

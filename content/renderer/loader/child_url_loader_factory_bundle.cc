@@ -243,6 +243,7 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
   DCHECK(request.request_initiator.has_value());
   if (is_deprecated_process_wide_factory_ &&
       !request.request_initiator->opaque()) {
+    NOTREACHED();
     ScopedRequestCrashKeys crash_keys(request);
     base::debug::DumpWithoutCrashing();
   }

@@ -105,7 +105,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void DidStartLoading() override;
   bool IsIgnoredForHitTest() const override;
   void UpdateUserActivationState(
-      mojom::blink::UserActivationUpdateType) override;
+      mojom::blink::UserActivationUpdateType update_type,
+      mojom::blink::UserActivationNotificationType notification_type) override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;

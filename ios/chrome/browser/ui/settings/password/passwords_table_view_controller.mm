@@ -446,16 +446,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       _passwordProblemsItem = [self passwordProblemsItem];
     }
 
+    [self updatePasswordCheckStatusLabelWithState:_passwordCheckState];
     [model addItem:_passwordProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+
     if (!_checkForProblemsItem) {
       _checkForProblemsItem = [self checkForProblemsItem];
     }
 
+    [self updatePasswordCheckButtonWithState:_passwordCheckState];
     [model addItem:_checkForProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
-    [self updatePasswordCheckButtonWithState:_passwordCheckState];
-    [self updatePasswordCheckStatusLabelWithState:_passwordCheckState];
   }
 
   // Saved passwords.
@@ -708,8 +709,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state {
   _passwordCheckState = state;
-  [self updatePasswordCheckButtonWithState:state];
-  [self updatePasswordCheckStatusLabelWithState:state];
+  if (_checkForProblemsItem) {
+    [self updatePasswordCheckButtonWithState:state];
+    [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+  }
+  if (_passwordProblemsItem) {
+    [self updatePasswordCheckStatusLabelWithState:state];
+    [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
+  }
 }
 
 - (void)setPasswordsForms:
@@ -1020,7 +1027,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           UIAccessibilityTraitNotEnabled;
       break;
   }
-  [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
 }
 
 // Updates password check status label according to provided state.
@@ -1081,7 +1087,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       break;
     }
   }
-  [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
 }
 
 - (void)updateExportPasswordsButton {

@@ -1287,8 +1287,8 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDevicesInfo) {
   EXPECT_FALSE(it->descriptor.pan_tilt_zoom_supported());
 
   // Devices that are listed in both MediaFoundation and DirectShow but are
-  // blacklisted for use with MediaFoundation are expected to get enumerated
-  // with VideoCaptureApi::WIN_DIRECT_SHOW.
+  // blocked for use with MediaFoundation are expected to get enumerated with
+  // VideoCaptureApi::WIN_DIRECT_SHOW.
   it = FindDeviceInRange(devices_info.begin(), devices_info.end(),
                          base::SysWideToUTF8(kDirectShowDeviceId6));
   ASSERT_NE(it, devices_info.end());

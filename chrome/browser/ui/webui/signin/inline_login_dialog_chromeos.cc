@@ -86,11 +86,7 @@ GURL GetInlineLoginUrl(const std::string& email,
       source == InlineLoginDialogChromeOS::Source::kArc) {
     return GURL(chrome::kChromeUIAccountManagerErrorURL);
   }
-  DCHECK_EQ(std::string(chrome::kChromeUIChromeSigninURL).back(), '/');
-  // chrome://chrome-signin/edu
-  const std::string kEduAccountLoginURL =
-      std::string(chrome::kChromeUIChromeSigninURL) + "edu";
-  return GetUrlWithEmailParam(kEduAccountLoginURL, email);
+  return GetUrlWithEmailParam(chrome::kChromeUIEDUCoexistenceLoginURL, email);
 }
 
 }  // namespace

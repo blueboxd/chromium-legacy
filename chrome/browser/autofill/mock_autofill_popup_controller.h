@@ -34,6 +34,7 @@ class MockAutofillPopupController
   MOCK_CONST_METHOD0(HasSelection, bool());
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect());
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());
+  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   const gfx::RectF& element_bounds() const override {
     static base::NoDestructor<gfx::RectF> bounds({100, 100, 250, 50});
     return *bounds;

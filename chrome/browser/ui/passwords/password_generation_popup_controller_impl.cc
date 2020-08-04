@@ -306,6 +306,11 @@ gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() const {
   return controller_common_.container_view;
 }
 
+content::WebContents* PasswordGenerationPopupControllerImpl::GetWebContents()
+    const {
+  return WebContentsObserver::web_contents();
+}
+
 const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
     const {
   return controller_common_.element_bounds;

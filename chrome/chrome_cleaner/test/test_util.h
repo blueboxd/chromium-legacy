@@ -119,7 +119,7 @@ void ExpectDiskFootprint(const PUPData::PUP& pup,
 void ExpectScheduledTaskFootprint(const PUPData::PUP& pup,
                                   const wchar_t* task_name);
 
-// This function is the 8 bits version of String16ContainsCaseInsensitive in
+// This function is the 8 bits version of WStringContainsCaseInsensitive in
 // chrome_cleaner/string_util. Since it's only used in tests, we decided not to
 // move it to the main lib.
 bool StringContainsCaseInsensitive(const std::string& value,

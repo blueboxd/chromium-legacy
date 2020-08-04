@@ -6,12 +6,16 @@
 
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -242,15 +246,64 @@ class ConnectionRequestNotificationDelegate
   bool has_accept_button_;
 };
 
+class OnboardingNotificationDelegate : public NearbyNotificationDelegate {
+ public:
+  explicit OnboardingNotificationDelegate(NearbyNotificationManager* manager)
+      : manager_(manager) {}
+  ~OnboardingNotificationDelegate() override = default;
+
+  // NearbyNotificationDelegate:
+  void OnClick(const std::string& notification_id,
+               const base::Optional<int>& action_index) override {
+    manager_->OnOnboardingClicked();
+  }
+
+  void OnClose(const std::string& notification_id) override {
+    manager_->OnOnboardingDismissed();
+  }
+
+ private:
+  NearbyNotificationManager* manager_;
+};
+
+bool ShouldShowOnboardingNotification(PrefService* pref_service) {
+  base::Time last_dismissed = pref_service->GetTime(
+      prefs::kNearbySharingOnboardingDismissedTimePrefName);
+  if (last_dismissed.is_null())
+    return true;
+
+  base::TimeDelta last_dismissed_delta = base::Time::Now() - last_dismissed;
+  if (last_dismissed_delta <
+      NearbyNotificationManager::kOnboardingDismissedTimeout) {
+    NS_LOG(VERBOSE) << "Not showing onboarding notification: the user recently "
+                       "dismissed the notification.";
+    return false;
+  }
+
+  return true;
+}
+
+void UpdateOnboardingDismissedTime(PrefService* pref_service) {
+  pref_service->SetTime(prefs::kNearbySharingOnboardingDismissedTimePrefName,
+                        base::Time::Now());
+}
+
 }  // namespace
+
+// static
+constexpr base::TimeDelta
+    NearbyNotificationManager::kOnboardingDismissedTimeout;
 
 NearbyNotificationManager::NearbyNotificationManager(
     NotificationDisplayService* notification_display_service,
-    NearbySharingService* nearby_service)
+    NearbySharingService* nearby_service,
+    PrefService* pref_service)
     : notification_display_service_(notification_display_service),
-      nearby_service_(nearby_service) {
+      nearby_service_(nearby_service),
+      pref_service_(pref_service) {
   DCHECK(notification_display_service_);
   DCHECK(nearby_service_);
+  DCHECK(pref_service_);
   nearby_service_->RegisterReceiveSurface(
       this, NearbySharingService::ReceiveSurfaceState::kBackground);
   nearby_service_->RegisterSendSurface(
@@ -380,6 +433,8 @@ void NearbyNotificationManager::ShowConnectionRequest(
 
 void NearbyNotificationManager::ShowOnboarding() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!ShouldShowOnboardingNotification(pref_service_))
+    return;
 
   message_center::Notification notification =
       CreateNearbyNotification(kNearbyOnboardingNotificationId);
@@ -387,6 +442,9 @@ void NearbyNotificationManager::ShowOnboarding() {
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ONBOARDING_TITLE));
   notification.set_message(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE));
+
+  delegate_map_[kNearbyOnboardingNotificationId] =
+      std::make_unique<OnboardingNotificationDelegate>(this);
 
   notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
@@ -428,6 +486,12 @@ void NearbyNotificationManager::CloseTransfer() {
                                        kNearbyNotificationId);
 }
 
+void NearbyNotificationManager::CloseOnboarding() {
+  delegate_map_.erase(kNearbyOnboardingNotificationId);
+  notification_display_service_->Close(NotificationHandler::Type::NEARBY_SHARE,
+                                       kNearbyOnboardingNotificationId);
+}
+
 NearbyNotificationDelegate* NearbyNotificationManager::GetNotificationDelegate(
     const std::string& notification_id) {
   auto iter = delegate_map_.find(notification_id);
@@ -450,4 +514,15 @@ void NearbyNotificationManager::RejectTransfer() {
 void NearbyNotificationManager::AcceptTransfer() {
   // Do not close the notification as it will be replaced soon.
   nearby_service_->Accept(*share_target_, base::DoNothing());
+}
+
+void NearbyNotificationManager::OnOnboardingClicked() {
+  CloseOnboarding();
+  // TODO(crbug.com/1102348): Start user onboarding or high visibility if user
+  // has been onboarded already.
+}
+
+void NearbyNotificationManager::OnOnboardingDismissed() {
+  CloseOnboarding();
+  UpdateOnboardingDismissedTime(pref_service_);
 }

@@ -1414,6 +1414,22 @@ TEST_F(FeedStreamTest, StorePendingActionAndUploadNow) {
   ASSERT_EQ(0ul, result.size());
 }
 
+TEST_F(FeedStreamTest, ProcessViewActionResultsInDelayedUpload) {
+  network_.consistency_token = "token-11";
+
+  stream_->ProcessViewAction(MakeFeedAction(42ul).SerializeAsString());
+  WaitForIdleTaskQueue();
+  // Verify it's not uploaded immediately.
+  ASSERT_EQ(0, network_.action_request_call_count);
+
+  // Trigger a network refresh.
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Verify the action was uploaded.
+  EXPECT_EQ(1, network_.action_request_call_count);
+}
+
 TEST_F(FeedStreamTest, LoadStreamFromNetworkUploadsActions) {
   stream_->UploadAction(MakeFeedAction(99ul), false, base::DoNothing());
   WaitForIdleTaskQueue();

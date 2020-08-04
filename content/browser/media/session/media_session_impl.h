@@ -253,6 +253,10 @@ class MediaSessionImpl : public MediaSession,
   // Exit picture-in-picture.
   void ExitPictureInPicture() override;
 
+  // Routes the audio from this Media Session to the given output device. If
+  // |id| is null, we will route to the default output device.
+  void SetAudioSinkId(const base::Optional<std::string>& id) override;
+
   // Downloads the bitmap version of a MediaImage at least |minimum_size_px|
   // and closest to |desired_size_px|. If the download failed, was too small or
   // the image did not come from the media session then returns a null image.

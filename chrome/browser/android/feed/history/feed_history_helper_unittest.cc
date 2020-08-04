@@ -28,8 +28,7 @@ class FeedHistoryHelperTest : public testing::Test {
   FeedHistoryHelperTest() {}
 
   void SetUp() override {
-    ASSERT_TRUE(profile_.CreateHistoryService(/*delete_file=*/false,
-                                              /*no_db=*/false));
+    ASSERT_TRUE(profile_.CreateHistoryService());
     history_service_ = HistoryServiceFactory::GetForProfile(
         &profile_, ServiceAccessType::IMPLICIT_ACCESS);
     ASSERT_TRUE(history_service_);

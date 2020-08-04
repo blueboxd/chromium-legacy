@@ -21,6 +21,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
@@ -1794,7 +1795,7 @@ std::string WebTestBluetoothAdapterProvider::errorUUID(uint32_t alias) {
 
 // static
 std::string WebTestBluetoothAdapterProvider::makeMACAddress(uint64_t addr) {
-  return BluetoothDevice::CanonicalizeAddress(
+  return device::CanonicalizeBluetoothAddress(
       base::StringPrintf("%012" PRIx64, addr));
 }
 

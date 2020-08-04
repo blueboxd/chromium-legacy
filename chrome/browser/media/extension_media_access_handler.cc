@@ -25,8 +25,7 @@ namespace {
 // 6. XKB input method component extension.
 // 7. M17n/T13n/CJK input method component extension.
 // Once http://crbug.com/292856 is fixed, remove this whitelist.
-bool IsMediaRequestWhitelistedForExtension(
-    const extensions::Extension* extension) {
+bool IsMediaRequestAllowedForExtension(const extensions::Extension* extension) {
   return extension->id() == "mppnpdlheglhdfmldimlhpnegondlapf" ||
          extension->id() == "jokbpnebhdcladagohdnfgjcpejggllo" ||
          extension->id() == "clffjmdilanldobdnedchkdbofoimcgb" ||
@@ -50,7 +49,7 @@ bool ExtensionMediaAccessHandler::SupportsStreamType(
     const extensions::Extension* extension) {
   return extension &&
          (extension->is_platform_app() ||
-          IsMediaRequestWhitelistedForExtension(extension)) &&
+          IsMediaRequestAllowedForExtension(extension)) &&
          (type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
           type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
 }

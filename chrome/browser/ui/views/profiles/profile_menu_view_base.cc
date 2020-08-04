@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -155,15 +156,14 @@ gfx::ImageSkia SizeImageModel(const ui::ImageModel& image_model,
 
 class CircularImageButton : public views::ImageButton {
  public:
-  CircularImageButton(
-      views::ButtonListener* listener,
-      const gfx::VectorIcon& icon,
-      const base::string16& text,
-      SkColor background_color_for_contrast = SK_ColorTRANSPARENT,
-      bool show_border = false)
+  CircularImageButton(views::ButtonListener* listener,
+                      const gfx::VectorIcon& icon,
+                      const base::string16& text,
+                      SkColor background_profile_color = SK_ColorTRANSPARENT,
+                      bool show_border = false)
       : ImageButton(listener),
         icon_(icon),
-        background_color_for_contrast_(background_color_for_contrast),
+        background_profile_color_(background_profile_color),
         show_border_(show_border) {
     SetTooltipText(text);
     SetInkDropMode(views::Button::InkDropMode::ON);
@@ -182,13 +182,8 @@ class CircularImageButton : public views::ImageButton {
 
     SkColor icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
-    if (background_color_for_contrast_ != SK_ColorTRANSPARENT) {
-      // Adjust |icon_color| to assure high enough contrast with the bg.
-      icon_color = color_utils::BlendForMinContrast(
-                       icon_color, background_color_for_contrast_)
-                       .color;
-    }
-
+    if (background_profile_color_ != SK_ColorTRANSPARENT)
+      icon_color = GetProfileForegroundIconColor(background_profile_color_);
     gfx::ImageSkia image =
         ImageForMenu(icon_, kShortcutIconToImageRatio, icon_color);
     SetImage(views::Button::STATE_NORMAL,
@@ -205,7 +200,7 @@ class CircularImageButton : public views::ImageButton {
 
  private:
   const gfx::VectorIcon& icon_;
-  const SkColor background_color_for_contrast_;
+  const SkColor background_profile_color_;
   bool show_border_;
 };
 
@@ -506,6 +501,7 @@ gfx::ImageSkia ProfileMenuViewBase::GetSyncIcon() const {
 
 void ProfileMenuViewBase::SetProfileIdentityInfo(
     const base::string16& profile_name,
+    SkColor profile_background_color,
     base::Optional<EditButtonParams> edit_button_params,
     const ui::ImageModel& image_model,
     const base::string16& title,
@@ -560,13 +556,7 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
   // Only show a colored background when there is an edit button (this
   // coincides with the profile being a real profile that can be edited).
   if (edit_button_params.has_value()) {
-    // We get the theme provider from the anchor view since our widget hasn't
-    // been created yet.
-    const ui::ThemeProvider* theme_provider =
-        anchor_button_->GetThemeProvider();
-    DCHECK(theme_provider);
-    background_color =
-        theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
+    background_color = profile_background_color;
   }
 
   std::unique_ptr<views::Label> heading_label;
@@ -579,9 +569,9 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
     heading_label->SetElideBehavior(gfx::ELIDE_TAIL);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     if (background_color) {
-      // This only informs the label about the color it is put on so that it can
-      // assure minimum contrast automatically.
-      heading_label->SetBackgroundColor(*background_color);
+      heading_label->SetAutoColorReadabilityEnabled(false);
+      heading_label->SetEnabledColor(
+          GetProfileForegroundTextColor(*background_color));
     }
   }
 

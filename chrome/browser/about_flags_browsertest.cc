@@ -140,13 +140,20 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
   AboutFlagsBrowserTest() {
-    about_flags::testing::SetFeatureEntries(
-        {{kFlagName, "name-1", "description-1", -1,
-          ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
-         {kExpiredFlagName, "name-2", "description-2", -1,
-          SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)},
-         {kFlagWithOptionSelectorName, "name-3", "description-3", -1,
-          SINGLE_VALUE_TYPE(kFlagWithOptionSelectorSwitchName)}});
+    std::vector<flags_ui::FeatureEntry> entries = {
+        {kFlagName, "name-1", "description-1", -1,
+         ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
+        {kExpiredFlagName, "name-2", "description-2", -1,
+         SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)},
+        {kFlagWithOptionSelectorName, "name-3", "description-3", -1,
+         SINGLE_VALUE_TYPE(kFlagWithOptionSelectorSwitchName)}};
+    unexpire_name_ = base::StringPrintf("temporary-unexpire-flags-m%d",
+                                        CHROME_VERSION_MAJOR - 1);
+    flags_ui::FeatureEntry expiry_entry = {
+        unexpire_name_.c_str(), "unexpire name", "unexpire desc", -1,
+        SINGLE_VALUE_TYPE("unexpire-dummy-switch")};
+    entries.push_back(expiry_entry);
+    about_flags::testing::SetFeatureEntries(entries);
 
     flags::testing::SetFlagExpiration(kExpiredFlagName,
                                       CHROME_VERSION_MAJOR - 1);
@@ -179,6 +186,7 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   }
 
   bool expiration_enabled_ = true;
+  std::string unexpire_name_;
 
   base::test::ScopedFeatureList feature_list_;
 };
@@ -361,6 +369,30 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
       kExpiredFlagSwitchName));
 }
 #endif
+
+// Regression test for https://crbug.com/1101828:
+// Test that simply setting a flag (without the backing feature) is sufficient
+// to consider a flag unexpired. This test checks that by using a flag with the
+// expected unexpire name, but wired to a dummy switch rather than the usual
+// feature.
+//
+// This isn't a perfect regression test - that would require two separate
+// browser restarts:
+// 1) Enable temporary-unexpire-flags-m$M, restart
+// 2) Enable the test flag (which is only visible after the previous restart),
+//    restart
+// 3) Ensure that the test flag got applied at startup
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, RawFlagUnexpiryWorks) {
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+  ToggleEnableDropdown(contents, unexpire_name_.c_str(), true);
+
+  NavigateToFlagsPage();
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
+}
 
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, FormRestore) {
   NavigateToFlagsPage();

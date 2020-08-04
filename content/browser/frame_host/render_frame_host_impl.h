@@ -1567,7 +1567,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateTitle(const base::Optional<::base::string16>& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type) override;
+      blink::mojom::UserActivationUpdateType update_type,
+      blink::mojom::UserActivationNotificationType notification_type) override;
   void HandleAccessibilityFindInPageResult(
       blink::mojom::FindInPageResultAXParamsPtr params) override;
   void HandleAccessibilityFindInPageTermination() override;

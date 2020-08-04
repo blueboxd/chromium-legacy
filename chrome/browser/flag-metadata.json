@@ -3067,6 +3067,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "ntp-modules",
+    "owners": [ "aee", "mahmadi", "tiborg" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "ntp-one-google-bar-modal-overlays",
     "owners": [ "aee", "mahmadi", "tiborg" ],
     "expiry_milestone": 86

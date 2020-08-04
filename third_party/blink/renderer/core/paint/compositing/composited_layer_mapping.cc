@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ignore_paint_timing_scope.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -1710,10 +1711,33 @@ void CompositedLayerMapping::DoPaintTask(
   float device_scale_factor = blink::DeviceScaleFactorDeprecated(
       paint_info.paint_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
-
   Settings* settings = GetLayoutObject().GetFrame()->GetSettings();
   context.SetDarkMode(
       BuildDarkModeSettings(*settings, *GetLayoutObject().View()));
+
+  // As a composited layer may be painted directly, we need to traverse the
+  // effect tree starting from the current node all the way up through the
+  // parents to determine which effects are opacity 0, for the purposes of
+  // correctly computing paint metrics such as First Contentful Paint and
+  // Largest Contentful Paint. For the latter we special-case the nodes where
+  // the opacity:0 depth is 1, so we need to only compute up to the first two
+  // opacity:0 effects in here and can ignore the rest.
+  base::Optional<IgnorePaintTimingScope> ignore_paint_timing_scope;
+  int num_ignores = 0;
+  DCHECK_EQ(IgnorePaintTimingScope::IgnoreDepth(), 0);
+  for (const auto* effect_node = &paint_info.paint_layer->GetLayoutObject()
+                                      .FirstFragment()
+                                      .PreEffect()
+                                      .Unalias();
+       effect_node && num_ignores < 2;
+       effect_node = effect_node->UnaliasedParent()) {
+    if (effect_node->Opacity() == 0.0f) {
+      if (!ignore_paint_timing_scope)
+        ignore_paint_timing_scope.emplace();
+      IgnorePaintTimingScope::IncrementIgnoreDepth();
+      ++num_ignores;
+    }
+  }
 
   if (paint_info.paint_layer->GetCompositingState() !=
       kPaintsIntoGroupedBacking) {

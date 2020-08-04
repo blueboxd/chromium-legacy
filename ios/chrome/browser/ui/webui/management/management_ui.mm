@@ -27,12 +27,15 @@ web::WebUIIOSDataSource* CreateManagementUIHTMLSource() {
   bool is_managed =
       policy_connector && policy_connector->HasMachineLevelPolicies();
   source->AddString("isManaged", is_managed ? "true" : "false");
+  source->AddString("learnMoreURL", kManagementLearnMoreURL);
 
   source->AddLocalizedString("managementMessage",
                              IDS_IOS_MANAGEMENT_UI_MESSAGE);
   source->AddLocalizedString("managedInfo", IDS_IOS_MANAGEMENT_UI_DESC);
   source->AddLocalizedString("unmanagedInfo",
                              IDS_IOS_MANAGEMENT_UI_UNMANAGED_DESC);
+  source->AddLocalizedString("learnMore",
+                             IDS_IOS_MANAGEMENT_UI_LEARN_MORE_LINK);
 
   source->UseStringsJs();
   source->AddResourcePath("management.css", IDR_MOBILE_MANAGEMENT_CSS);

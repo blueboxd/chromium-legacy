@@ -23,7 +23,7 @@ namespace chrome_cleaner {
 //   {
 //     MessageBuilder::ScopedIndent scoped_indent(&builder);
 //     builder
-//         .AddFieldValueLine(L"String16 field", L"abc")
+//         .AddFieldValueLine(L"WString field", L"abc")
 //         .AddFieldValueLine(L"Int field", 10)
 //         .AddFieldValueLine(L"String field", "xyz");
 //     {
@@ -40,7 +40,7 @@ namespace chrome_cleaner {
 // At the end, builder.content() will contain (| represents the start of the
 // line):
 //     |Main header:
-//     |\tString16 field: abc
+//     |\tWString field: abc
 //     |\tInt field: 10
 //     |\tString field: xyz
 //     |\t\tabc xyz 10

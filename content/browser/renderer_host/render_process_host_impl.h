@@ -528,6 +528,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Returns true if a spare RenderProcessHost should be kept at all times.
   static bool IsSpareProcessKeptAtAllTimes();
 
+  // Helper method that allows crash reporting logic to determine if a
+  // specific RenderProcessHost is the current spare process.
+  // Returns true if |render_process_host| is the current spare
+  // RenderProcessHost.
+  static bool IsSpareProcessForCrashReporting(
+      RenderProcessHost* render_process_host);
+
   PermissionServiceContext& permission_service_context() {
     return *permission_service_context_;
   }

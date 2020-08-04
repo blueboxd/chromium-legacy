@@ -40,8 +40,6 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/resources/grit/inspector_overlay_resources_map.h"
 #include "third_party/blink/public/web/web_widget_client.h"
-#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_inspector_overlay_host.h"
@@ -73,6 +71,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -1167,14 +1166,14 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
   command->pushValue(protocol::StringValue::create(argument));
   std::vector<uint8_t> json;
   ConvertCBORToJSON(SpanFrom(command->Serialize()), &json);
-  To<LocalFrame>(OverlayMainFrame())
-      ->GetScriptController()
-      .ExecuteScriptInMainWorld(
+  ClassicScript::CreateUnspecifiedScript(
+      ScriptSourceCode(
           "dispatch(" +
               String(reinterpret_cast<const char*>(json.data()), json.size()) +
               ")",
-          ScriptSourceLocationType::kInspector,
-          ScriptController::kExecuteScriptWhenScriptsDisabled);
+          ScriptSourceLocationType::kInspector))
+      ->RunScript(To<LocalFrame>(OverlayMainFrame()),
+                  ScriptController::kExecuteScriptWhenScriptsDisabled);
 }
 
 void InspectorOverlayAgent::EvaluateInOverlay(
@@ -1186,25 +1185,24 @@ void InspectorOverlayAgent::EvaluateInOverlay(
   command->pushValue(std::move(argument));
   std::vector<uint8_t> json;
   ConvertCBORToJSON(SpanFrom(command->Serialize()), &json);
-  To<LocalFrame>(OverlayMainFrame())
-      ->GetScriptController()
-      .ExecuteScriptInMainWorld(
+  ClassicScript::CreateUnspecifiedScript(
+      ScriptSourceCode(
           "dispatch(" +
               String(reinterpret_cast<const char*>(json.data()), json.size()) +
               ")",
-          ScriptSourceLocationType::kInspector,
-          ScriptController::kExecuteScriptWhenScriptsDisabled);
+          ScriptSourceLocationType::kInspector))
+      ->RunScript(To<LocalFrame>(OverlayMainFrame()),
+                  ScriptController::kExecuteScriptWhenScriptsDisabled);
 }
 
 String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   v8::HandleScope handle_scope(ToIsolate(OverlayMainFrame()));
   v8::Local<v8::Value> string =
-      To<LocalFrame>(OverlayMainFrame())
-          ->GetScriptController()
-          .ExecuteScriptInMainWorldAndReturnValue(
-              ScriptSourceCode(script, ScriptSourceLocationType::kInspector),
-              KURL(), SanitizeScriptErrors::kSanitize, ScriptFetchOptions(),
+      ClassicScript::CreateUnspecifiedScript(
+          ScriptSourceCode(script, ScriptSourceLocationType::kInspector))
+          ->RunScriptAndReturnValue(
+              To<LocalFrame>(OverlayMainFrame()),
               ScriptController::kExecuteScriptWhenScriptsDisabled);
   return ToCoreStringWithUndefinedOrNullCheck(string);
 }

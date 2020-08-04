@@ -78,7 +78,14 @@
           file="utils.js" type="BINDATA" compress="false" />
       <include name="IDR_NEW_TAB_PAGE_BACKGROUND_MANAGER_JS"
           file="background_manager.js" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_MODULES_MODULE_DESCRIPTOR_JS"
+          file="modules/module_descriptor.js" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_MODULES_MODULES_JS"
+          file="modules/modules.js" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_MODULES_MODULE_REGISTRY_JS"
+          file="modules/module_registry.js" type="BINDATA" compress="false" />
       <part file="new_tab_page_resources_common.grdp" />
+      <part file="modules/modules_resources.grdp" />
     </includes>
   </release>
 </grit>

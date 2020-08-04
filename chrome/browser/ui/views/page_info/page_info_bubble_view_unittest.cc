@@ -272,9 +272,7 @@ TEST_F(PageInfoBubbleViewTest, NotificationPermissionRevokeUkm) {
   TestingProfile* profile =
       static_cast<TestingProfile*>(web_contents_helper_.profile());
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  ASSERT_TRUE(profile->CreateHistoryService(
-      /* delete_file= */ true,
-      /* no_db= */ false));
+  ASSERT_TRUE(profile->CreateHistoryService());
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   history_service->AddPage(origin_url, base::Time::Now(),
@@ -320,9 +318,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
 
   TestingProfile* profile =
       static_cast<TestingProfile*>(web_contents_helper_.profile());
-  ASSERT_TRUE(profile->CreateHistoryService(
-      /* delete_file= */ true,
-      /* no_db= */ false));
+  ASSERT_TRUE(profile->CreateHistoryService());
 
   PermissionInfoList list(1);
   list.back().type = ContentSettingsType::GEOLOCATION;

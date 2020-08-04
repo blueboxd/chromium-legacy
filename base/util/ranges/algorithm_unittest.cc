@@ -15,6 +15,9 @@
 
 using ::testing::ElementsAre;
 using ::testing::Field;
+using ::testing::Gt;
+using ::testing::Lt;
+using ::testing::Pair;
 
 namespace util {
 
@@ -28,6 +31,14 @@ struct Int {
 
 bool operator==(Int lhs, Int rhs) {
   return lhs.value == rhs.value;
+}
+
+bool operator<(Int lhs, Int rhs) {
+  return lhs.value < rhs.value;
+}
+
+bool operator>(Int lhs, Int rhs) {
+  return lhs.value > rhs.value;
 }
 
 // Move-only int that clears `value` when moving out.
@@ -892,6 +903,17 @@ TEST(RangesTest, IsSortedUntil) {
             ranges::is_sorted_until(ints, ranges::greater(), &Int::value));
 }
 
+TEST(RangesTest, NthElement) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 5, ranges::nth_element(input, input + 2, input + 5));
+  EXPECT_THAT(input, ElementsAre(Lt(2), Lt(2), 2, Gt(2), Gt(2)));
+
+  Int ints[] = {0, 1, 2, 3, 4};
+  EXPECT_EQ(ints + 5, ranges::nth_element(ints, ints + 2, ranges::greater(),
+                                          &Int::value));
+  EXPECT_THAT(ints, ElementsAre(Gt(2), Gt(2), 2, Lt(2), Lt(2)));
+}
+
 TEST(RangesTest, LowerBound) {
   int array[] = {0, 0, 1, 1, 2, 2};
 
@@ -901,7 +923,7 @@ TEST(RangesTest, LowerBound) {
   EXPECT_EQ(array + 4, ranges::lower_bound(array, array + 6, 2));
   EXPECT_EQ(array + 6, ranges::lower_bound(array, array + 6, 3));
 
-  Int ints[] = {{0}, {0}, {1}, {1}, {2}, {2}};
+  Int ints[] = {0, 0, 1, 1, 2, 2};
 
   EXPECT_EQ(ints, ranges::lower_bound(ints, -1, {}, &Int::value));
   EXPECT_EQ(ints, ranges::lower_bound(ints, 0, {}, &Int::value));
@@ -915,6 +937,93 @@ TEST(RangesTest, LowerBound) {
   EXPECT_EQ(ints + 2, ranges::lower_bound(ints, 1, ranges::greater{}, proj));
   EXPECT_EQ(ints + 4, ranges::lower_bound(ints, 0, ranges::greater{}, proj));
   EXPECT_EQ(ints + 6, ranges::lower_bound(ints, -1, ranges::greater{}, proj));
+}
+
+TEST(RangesTest, UpperBound) {
+  int array[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_EQ(array, ranges::upper_bound(array, array + 6, -1));
+  EXPECT_EQ(array + 2, ranges::upper_bound(array, array + 6, 0));
+  EXPECT_EQ(array + 4, ranges::upper_bound(array, array + 6, 1));
+  EXPECT_EQ(array + 6, ranges::upper_bound(array, array + 6, 2));
+  EXPECT_EQ(array + 6, ranges::upper_bound(array, array + 6, 3));
+
+  Int ints[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_EQ(ints, ranges::upper_bound(ints, -1, {}, &Int::value));
+  EXPECT_EQ(ints + 2, ranges::upper_bound(ints, 0, {}, &Int::value));
+  EXPECT_EQ(ints + 4, ranges::upper_bound(ints, 1, {}, &Int::value));
+  EXPECT_EQ(ints + 6, ranges::upper_bound(ints, 2, {}, &Int::value));
+  EXPECT_EQ(ints + 6, ranges::upper_bound(ints, 3, {}, &Int::value));
+
+  const auto proj = [](const Int& i) { return 2 - i.value; };
+  EXPECT_EQ(ints, ranges::upper_bound(ints, 3, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 2, ranges::upper_bound(ints, 2, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 4, ranges::upper_bound(ints, 1, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 6, ranges::upper_bound(ints, 0, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 6, ranges::upper_bound(ints, -1, ranges::greater{}, proj));
+}
+
+TEST(RangesTest, EqualRange) {
+  int array[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_THAT(ranges::equal_range(array, array + 6, -1), Pair(array, array));
+  EXPECT_THAT(ranges::equal_range(array, array + 6, 0), Pair(array, array + 2));
+  EXPECT_THAT(ranges::equal_range(array, array + 6, 1),
+              Pair(array + 2, array + 4));
+  EXPECT_THAT(ranges::equal_range(array, array + 6, 2),
+              Pair(array + 4, array + 6));
+  EXPECT_THAT(ranges::equal_range(array, array + 6, 3),
+              Pair(array + 6, array + 6));
+
+  Int ints[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_THAT(ranges::equal_range(ints, -1, {}, &Int::value), Pair(ints, ints));
+  EXPECT_THAT(ranges::equal_range(ints, 0, {}, &Int::value),
+              Pair(ints, ints + 2));
+  EXPECT_THAT(ranges::equal_range(ints, 1, {}, &Int::value),
+              Pair(ints + 2, ints + 4));
+  EXPECT_THAT(ranges::equal_range(ints, 2, {}, &Int::value),
+              Pair(ints + 4, ints + 6));
+  EXPECT_THAT(ranges::equal_range(ints, 3, {}, &Int::value),
+              Pair(ints + 6, ints + 6));
+
+  const auto proj = [](const Int& i) { return 2 - i.value; };
+  EXPECT_THAT(ranges::equal_range(ints, 3, ranges::greater{}, proj),
+              Pair(ints, ints));
+  EXPECT_THAT(ranges::equal_range(ints, 2, ranges::greater{}, proj),
+              Pair(ints, ints + 2));
+  EXPECT_THAT(ranges::equal_range(ints, 1, ranges::greater{}, proj),
+              Pair(ints + 2, ints + 4));
+  EXPECT_THAT(ranges::equal_range(ints, 0, ranges::greater{}, proj),
+              Pair(ints + 4, ints + 6));
+  EXPECT_THAT(ranges::equal_range(ints, -1, ranges::greater{}, proj),
+              Pair(ints + 6, ints + 6));
+}
+
+TEST(RangesTest, BinarySearch) {
+  int array[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_FALSE(ranges::binary_search(array, array + 6, -1));
+  EXPECT_TRUE(ranges::binary_search(array, array + 6, 0));
+  EXPECT_TRUE(ranges::binary_search(array, array + 6, 1));
+  EXPECT_TRUE(ranges::binary_search(array, array + 6, 2));
+  EXPECT_FALSE(ranges::binary_search(array, array + 6, 3));
+
+  Int ints[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_FALSE(ranges::binary_search(ints, -1, {}, &Int::value));
+  EXPECT_TRUE(ranges::binary_search(ints, 0, {}, &Int::value));
+  EXPECT_TRUE(ranges::binary_search(ints, 1, {}, &Int::value));
+  EXPECT_TRUE(ranges::binary_search(ints, 2, {}, &Int::value));
+  EXPECT_FALSE(ranges::binary_search(ints, 3, {}, &Int::value));
+
+  const auto proj = [](const Int& i) { return 2 - i.value; };
+  EXPECT_FALSE(ranges::binary_search(ints, 3, ranges::greater{}, proj));
+  EXPECT_TRUE(ranges::binary_search(ints, 2, ranges::greater{}, proj));
+  EXPECT_TRUE(ranges::binary_search(ints, 1, ranges::greater{}, proj));
+  EXPECT_TRUE(ranges::binary_search(ints, 0, ranges::greater{}, proj));
+  EXPECT_FALSE(ranges::binary_search(ints, -1, ranges::greater{}, proj));
 }
 
 }  // namespace util

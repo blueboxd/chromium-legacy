@@ -340,7 +340,7 @@ target(link_target_type, "gles2_sources") {
       "//gpu/vulkan",
     ]
 
-    if (is_linux || is_fuchsia || is_android || is_win) {
+    if (is_linux || is_chromeos || is_fuchsia || is_android || is_win) {
       sources += [
         "external_semaphore.cc",
         "external_semaphore.h",
@@ -368,7 +368,7 @@ target(link_target_type, "gles2_sources") {
       ]
     }
 
-    if (is_linux && use_dawn) {
+    if ((is_linux || is_chromeos) && use_dawn) {
       sources += [
         "external_vk_image_dawn_representation.cc",
         "external_vk_image_dawn_representation.h",

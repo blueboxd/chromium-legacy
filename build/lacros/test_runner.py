@@ -28,12 +28,12 @@
   the underlying test binary can be specified in the command.
 
   ./build/lacros/test_runner.py test out/lacros/browser_tests \\
-    --ash-chrome-version=86.0.4187.0
+    --ash-chrome-version=793554
 
   The above command runs tests with a given version of ash-chrome, which is
-  useful to reproduce test failures, and a list of prebuilt versions can be
-  found at: {link}. TODO(crbug.com/1035562): replace version with real scheme
-  and {link} with real link once ash-chrome is built and uploaded continuously.
+  useful to reproduce test failures, the version corresponds to the commit
+  position of commits on the master branch, and a list of prebuilt versions can
+  be found at: gs://ash-chromium-on-linux-prebuilts/x86_64.
 """
 
 import argparse
@@ -52,24 +52,16 @@ _SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
 sys.path.append(os.path.join(_SRC_ROOT, 'third_party', 'depot_tools'))
 
-# Base GS URL to store nightly uploaded official Chrome.
-# TODO(crbug.com/1035562): This URL is created for testing purpose only.
-# Replace this and the following GS paths with real URL and paths once nightly
-# official builds of ash-chrome are uploaded continuously.
-_GS_URL_BASE = 'gs://lacros-testing/desktop-5c0tCh'
-
-# GS path to the file containing the latest version of ash-chrome.
-_GS_ASH_CHROME_LATEST_VERSION_FILE = _GS_URL_BASE + '/latest/linux-chromeos.txt'
+# Base GS URL to store prebuilt ash-chrome.
+_GS_URL_BASE = 'gs://ash-chromium-on-linux-prebuilts/x86_64'
 
 # GS path to the zipped ash-chrome build with any given version.
-_GS_ASH_CHROME_PATH = 'linux-chromeos/chrome-linux-chromeos.zip'
+_GS_ASH_CHROME_PATH = 'ash-chromium.zip'
 
 # Directory to cache downloaded ash-chrome versions to avoid re-downloading.
 _PREBUILT_ASH_CHROME_DIR = os.path.join(os.path.dirname(__file__),
                                         'prebuilt_ash_chrome')
 
-# TODO(crbug.com/1104291): Complete this list once the lacros FYI builder is
-# running all the test targets.
 # List of targets that require ash-chrome as a Wayland server in order to run.
 _TARGETS_REQUIRE_ASH_CHROME = [
     'app_shell_unittests',
@@ -147,7 +139,7 @@ def _DownloadAshChromeIfNecessary(version, is_download_for_bots=False):
   to chromium/src.
 
   Args:
-    version: A string representing the version, such as "86.0.4187.0".
+    version: A string representing the version, such as "793554".
 
   Raises:
       RuntimeError: If failed to download the specified version, for example,
@@ -200,14 +192,16 @@ def _DownloadAshChromeIfNecessary(version, is_download_for_bots=False):
 
 
 def _GetLatestVersionOfAshChrome():
-  """Returns the latest version of uploaded official ash-chrome."""
-  with tempfile.NamedTemporaryFile() as tmp:
-    import download_from_google_storage
-    gsutil = download_from_google_storage.Gsutil(
-        download_from_google_storage.GSUTIL_DEFAULT_PATH)
-    gsutil.check_call('cp', _GS_ASH_CHROME_LATEST_VERSION_FILE, tmp.name)
-    with open(tmp.name, 'r') as f:
-      return f.read().strip()
+  """Returns the latest version of uploaded ash-chrome."""
+  import download_from_google_storage
+  gsutil = download_from_google_storage.Gsutil(
+      download_from_google_storage.GSUTIL_DEFAULT_PATH)
+
+  # gsutil.check_call returns (code, out, err), and each path in the output is
+  # of format: gs://ash-chromium-on-linux-prebuilts/x86_64/{cr-commit-position}
+  _, output, _ = gsutil.check_call('ls', _GS_URL_BASE)
+  latest_gs_path = sorted(output.splitlines())[-1]
+  return latest_gs_path.rstrip('/').split('/')[-1]
 
 
 def _RunTestWithAshChrome(args, forward_args):
@@ -357,8 +351,9 @@ def Main():
       '-a',
       '--ash-chrome-version',
       type=str,
-      help='Version of ash_chrome to use for testing, for example: '
-      '"86.0.4187.0". If not specified, will use the latest version available')
+      help='Version of ash_chrome to use for testing, for example: "793554", '
+      'and the version corresponds to the commit position of commits on the '
+      'master branch. If not specified, will use the latest version available')
 
   args = arg_parser.parse_known_args()
   return args[0].func(args[0], args[1])

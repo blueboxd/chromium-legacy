@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -26,6 +25,8 @@ class PinnedTabService : public content::NotificationObserver,
                          public KeyedService {
  public:
   explicit PinnedTabService(Profile* profile);
+  PinnedTabService(const PinnedTabService&) = delete;
+  PinnedTabService& operator=(const PinnedTabService&) = delete;
   ~PinnedTabService() override;
 
  private:
@@ -57,8 +58,6 @@ class PinnedTabService : public content::NotificationObserver,
   bool need_to_write_pinned_tabs_ = true;
 
   content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinnedTabService);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_H_

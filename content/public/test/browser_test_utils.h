@@ -1694,7 +1694,8 @@ class UpdateUserActivationStateInterceptor
 
   blink::mojom::LocalFrameHost* GetForwardingInterface() override;
   void UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type) override;
+      blink::mojom::UserActivationUpdateType update_type,
+      blink::mojom::UserActivationNotificationType notification_type) override;
 
  private:
   content::RenderFrameHost* render_frame_host_;

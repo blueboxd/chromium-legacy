@@ -7,10 +7,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using omnibox::IsSuggestionGroupIdHidden;
-using omnibox::kToggleSuggestionGroupIdOffHistogram;
-using omnibox::kToggleSuggestionGroupIdOnHistogram;
-using omnibox::ToggleSuggestionGroupIdVisibility;
+namespace omnibox {
 
 class OmniboxPrefsTest : public ::testing::Test {
  public:
@@ -35,41 +32,58 @@ TEST_F(OmniboxPrefsTest, SuggestionGroupId) {
   const int kOnboardingGroupId = 40001;
   const int kRZPSGroupId = 40009;
   {
-    // Expect |kOnboardingGroupId| to be visible.
-    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
+    // Expect |kOnboardingGroupId| to be in the default state.
+    EXPECT_EQ(SuggestionGroupVisibility::DEFAULT,
+              GetUserPreferenceForSuggestionGroupVisibility(
+                  GetPrefs(), kOnboardingGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 0);
 
-    // Expect |kRZPSGroupId| to be visible.
-    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kRZPSGroupId));
+    // Expect |kRZPSGroupId| to be in the default state.
+    EXPECT_EQ(SuggestionGroupVisibility::DEFAULT,
+              GetUserPreferenceForSuggestionGroupVisibility(GetPrefs(),
+                                                            kRZPSGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 0);
   }
   {
-    ToggleSuggestionGroupIdVisibility(GetPrefs(), kOnboardingGroupId);
+    SetSuggestionGroupVisibility(GetPrefs(), kOnboardingGroupId,
+                                 SuggestionGroupVisibility::HIDDEN);
 
     // Expect |kOnboardingGroupId| to have been toggled hidden.
-    EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
+    EXPECT_EQ(SuggestionGroupVisibility::HIDDEN,
+              GetUserPreferenceForSuggestionGroupVisibility(
+                  GetPrefs(), kOnboardingGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 1);
     histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
                                    kOnboardingGroupId, 1);
 
-    // Expect |kRZPSGroupId| to have remained visible.
-    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kRZPSGroupId));
+    // Expect |kRZPSGroupId| to have remained in the default state.
+    EXPECT_EQ(SuggestionGroupVisibility::DEFAULT,
+              GetUserPreferenceForSuggestionGroupVisibility(GetPrefs(),
+                                                            kRZPSGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 0);
   }
   {
-    ToggleSuggestionGroupIdVisibility(GetPrefs(), kOnboardingGroupId);
-    ToggleSuggestionGroupIdVisibility(GetPrefs(), kRZPSGroupId);
-
-    // Expect |kRZPSGroupId| to have been toggled hidden.
-    EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kRZPSGroupId));
-    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 2);
-    histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
-                                   kRZPSGroupId, 1);
+    SetSuggestionGroupVisibility(GetPrefs(), kOnboardingGroupId,
+                                 SuggestionGroupVisibility::SHOWN);
+    SetSuggestionGroupVisibility(GetPrefs(), kRZPSGroupId,
+                                 SuggestionGroupVisibility::HIDDEN);
 
     // Expect |kOnboardingGroupId| to have been toggled visible again.
-    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
+    EXPECT_EQ(SuggestionGroupVisibility::SHOWN,
+              GetUserPreferenceForSuggestionGroupVisibility(
+                  GetPrefs(), kOnboardingGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 1);
     histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOnHistogram,
                                    kOnboardingGroupId, 1);
+
+    // Expect |kRZPSGroupId| to have been toggled hidden.
+    EXPECT_EQ(SuggestionGroupVisibility::HIDDEN,
+              GetUserPreferenceForSuggestionGroupVisibility(GetPrefs(),
+                                                            kRZPSGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 2);
+    histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
+                                   kRZPSGroupId, 1);
   }
 }
+
+}  // namespace omnibox

@@ -20,15 +20,6 @@ export const FittingType = {
 };
 
 /**
- * Enumeration of two up view actions.
- * @enum {string}
- */
-export const TwoUpViewAction = {
-  TWO_UP_VIEW_ENABLE: 'two-up-view-enable',
-  TWO_UP_VIEW_DISABLE: 'two-up-view-disable',
-};
-
-/**
  * Enumeration of save message request types. Must Match SaveRequestType in
  * pdf/out_of_process_instance.h.
  * @enum {number}

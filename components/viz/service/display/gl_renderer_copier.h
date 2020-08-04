@@ -19,10 +19,6 @@
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace gfx {
 class ColorSpace;
 class Rect;
@@ -103,11 +99,6 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // activity is no longer using them. This should be called after a frame has
   // finished drawing (after all copy requests have been executed).
   void FreeUnusedCachedResources();
-
-  void set_async_gl_task_runner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    async_gl_task_runner_ = task_runner;
-  }
 
  private:
   friend class GLRendererCopierTest;
@@ -287,12 +278,6 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // platforms means that a somewhat-to-fully active compositor will cause
   // things to be auto-purged after approx. 1-2 seconds of not being used.
   static constexpr int kKeepalivePeriod = 60;
-
-  // The task runner that is being used to call into GLRendererCopier. This
-  // allows for CopyOutputResults, owned by external entities, to execute
-  // post-destruction clean-up tasks. If null, assume CopyOutputResults are
-  // always destroyed from the same task runner
-  scoped_refptr<base::SingleThreadTaskRunner> async_gl_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRendererCopier);
 };

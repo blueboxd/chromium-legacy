@@ -118,6 +118,7 @@ feedwire::Request CreateFeedQueryRequest(
   feed_request.add_client_capability(feedwire::Capability::BASE_UI);
   feed_request.add_client_capability(feedwire::Capability::REQUEST_SCHEDULE);
   feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
+  feed_request.add_client_capability(feedwire::Capability::CARD_MENU);
   feed_request.add_client_capability(feedwire::Capability::DOWNLOAD_LINK);
   feed_request.add_client_capability(feedwire::Capability::INFINITE_FEED);
   feed_request.add_client_capability(feedwire::Capability::DISMISS_COMMAND);

@@ -74,7 +74,7 @@ bool SafetyTipInfoBarDelegate::Accept() {
   action_taken_ = SafetyTipInteraction::kLeaveSite;
   auto url = safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
                  ? suggested_url_
-                 : GURL(kSafetyTipLeaveSiteUrl);
+                 : GURL();
   LeaveSiteFromSafetyTip(web_contents_, url);
   return true;
 }

@@ -129,9 +129,9 @@ bool TouchIdContext::TouchIdAvailableImpl(const AuthenticatorConfig& config) {
   }
 
   base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  base::scoped_nsobject<NSError> nserr;
+  NSError* nserr;
   if (![context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
-                            error:nserr.InitializeInto()]) {
+                            error:&nserr]) {
     FIDO_LOG(DEBUG) << "canEvaluatePolicy failed: " << nserr;
     return false;
   }

@@ -34,9 +34,9 @@ void EnsureRunsOnCFRunLoopEnabledThread() {
   }
 }
 
-// Blacklisted devices are identified by a characteristic trailing substring of
+// Blocked devices are identified by a characteristic trailing substring of
 // uniqueId. At the moment these are just Blackmagic devices.
-const char* kBlacklistedCamerasIdSignature[] = {"-01FDA82C8A9C"};
+const char* kBlockedCamerasIdSignature[] = {"-01FDA82C8A9C"};
 
 int32_t get_device_descriptors_retry_count = 0;
 
@@ -44,20 +44,18 @@ int32_t get_device_descriptors_retry_count = 0;
 
 namespace media {
 
-static bool IsDeviceBlacklisted(
-    const VideoCaptureDeviceDescriptor& descriptor) {
-  bool is_device_blacklisted = false;
+static bool IsDeviceBlocked(const VideoCaptureDeviceDescriptor& descriptor) {
+  bool is_device_blocked = false;
   for (size_t i = 0;
-       !is_device_blacklisted && i < base::size(kBlacklistedCamerasIdSignature);
-       ++i) {
-    is_device_blacklisted =
-        base::EndsWith(descriptor.device_id, kBlacklistedCamerasIdSignature[i],
+       !is_device_blocked && i < base::size(kBlockedCamerasIdSignature); ++i) {
+    is_device_blocked =
+        base::EndsWith(descriptor.device_id, kBlockedCamerasIdSignature[i],
                        base::CompareCase::INSENSITIVE_ASCII);
   }
-  DVLOG_IF(2, is_device_blacklisted)
-      << "Blacklisted camera: " << descriptor.display_name()
+  DVLOG_IF(2, is_device_blocked)
+      << "Blocked camera: " << descriptor.display_name()
       << ", id: " << descriptor.device_id;
-  return is_device_blacklisted;
+  return is_device_blocked;
 }
 
 VideoCaptureDeviceFactoryMac::VideoCaptureDeviceFactoryMac() {
@@ -125,7 +123,7 @@ void VideoCaptureDeviceFactoryMac::GetDevicesInfo(
         [[[capture_devices valueForKey:key] deviceName] UTF8String], device_id,
         model_id, capture_api,
         /*pan_tilt_zoom_supported=*/false, device_transport_type);
-    if (IsDeviceBlacklisted(descriptor))
+    if (IsDeviceBlocked(descriptor))
       continue;
     devices_info.emplace_back(descriptor);
 

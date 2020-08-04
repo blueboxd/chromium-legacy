@@ -24,7 +24,7 @@ namespace {
 
 // Whether to show tips on server-side-flagged sites included in the component.
 const base::FeatureParam<bool> kEnableSuspiciousSiteChecks{
-    &security_state::features::kSafetyTipUI, "suspicioussites", false};
+    &security_state::features::kSafetyTipUI, "suspicioussites", true};
 
 void RecordHeuristicsUKMData(ReputationCheckResult result,
                              ukm::SourceId navigation_source_id,

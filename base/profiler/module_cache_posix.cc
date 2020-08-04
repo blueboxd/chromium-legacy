@@ -25,9 +25,8 @@ namespace {
 // On POSIX, the unique ID is read from the ELF binary located at |module_addr|.
 // The age field is always 0.
 std::string GetUniqueBuildId(const void* module_addr) {
-  base::debug::ElfBuildIdBuffer build_id;
-  size_t build_id_length =
-      base::debug::ReadElfBuildId(module_addr, true, build_id);
+  debug::ElfBuildIdBuffer build_id;
+  size_t build_id_length = debug::ReadElfBuildId(module_addr, true, build_id);
   if (!build_id_length)
     return std::string();
 
@@ -41,13 +40,16 @@ std::string GetUniqueBuildId(const void* module_addr) {
 // range [addr, addr + GetLastExecutableOffset(addr)).
 // If no executable segment is found, returns 0.
 size_t GetLastExecutableOffset(const void* module_addr) {
+  const size_t relocation_offset = debug::GetRelocationOffset(module_addr);
   size_t max_offset = 0;
-  for (const Phdr& header : base::debug::GetElfProgramHeaders(module_addr)) {
+  for (const Phdr& header : debug::GetElfProgramHeaders(module_addr)) {
     if (header.p_type != PT_LOAD || !(header.p_flags & PF_X))
       continue;
 
-    max_offset = std::max(max_offset,
-                          static_cast<size_t>(header.p_vaddr + header.p_memsz));
+    max_offset = std::max(
+        max_offset, static_cast<size_t>(
+                        header.p_vaddr + relocation_offset + header.p_memsz -
+                        reinterpret_cast<uintptr_t>(module_addr)));
   }
 
   return max_offset;

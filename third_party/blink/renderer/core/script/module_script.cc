@@ -7,8 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
@@ -111,11 +110,12 @@ void ModuleScript::RunScript(LocalFrame* frame) {
                                   Modulator::CaptureEvalErrorFlag::kReport);
 }
 
-bool ModuleScript::RunScriptOnWorker(WorkerGlobalScope& worker_global_scope) {
+bool ModuleScript::RunScriptOnWorkerOrWorklet(
+    WorkerOrWorkletGlobalScope& global_scope) {
   // We need a HandleScope for the ModuleEvaluationResult that is created
   // in ::ExecuteModule(...).
   ScriptState::Scope scope(SettingsObject()->GetScriptState());
-  DCHECK(worker_global_scope.IsContextThread());
+  DCHECK(global_scope.IsContextThread());
 
   // This |error| is always null because the second argument is |kReport|.
   // TODO(nhiroki): Catch an error when an evaluation error happens.
@@ -126,7 +126,6 @@ bool ModuleScript::RunScriptOnWorker(WorkerGlobalScope& worker_global_scope) {
 }
 
 std::pair<size_t, size_t> ModuleScript::GetClassicScriptSizes() const {
-  NOTREACHED();
   return std::pair<size_t, size_t>(0, 0);
 }
 

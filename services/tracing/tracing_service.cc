@@ -15,6 +15,10 @@ namespace tracing {
 
 namespace {
 
+void OnProcessConnectFailed(PerfettoService* perfetto_service, uint32_t pid) {
+  perfetto_service->RemoveActiveServicePid(pid);
+}
+
 void OnProcessConnected(
     PerfettoService* perfetto_service,
     mojo::Remote<mojom::TracedProcess> traced_process,
@@ -44,12 +48,22 @@ void TracingService::Initialize(std::vector<mojom::ClientInfoPtr> clients) {
 }
 
 void TracingService::AddClient(mojom::ClientInfoPtr client) {
+  mojo::Remote<mojom::TracedProcess> process(std::move(client->process));
+
   perfetto_service_->AddActiveServicePid(client->pid);
 
-  mojo::Remote<mojom::TracedProcess> process(std::move(client->process));
+  // If the remote traced process goes away before ConnectToTracingService
+  // responds, the PID should be removed from the list of active service PID.
+  // Note that the perfetto service will start monitoring disconnects after the
+  // service receiver is bound to it in OnProcessConnected().
+  process.set_disconnect_handler(
+      base::BindOnce(&OnProcessConnectFailed,
+                     base::Unretained(perfetto_service_), client->pid));
+
   auto new_connection_request = mojom::ConnectToTracingRequest::New();
   auto service_receiver =
       new_connection_request->perfetto_service.InitWithNewPipeAndPassReceiver();
+
   mojom::TracedProcess* raw_process = process.get();
   raw_process->ConnectToTracingService(
       std::move(new_connection_request),

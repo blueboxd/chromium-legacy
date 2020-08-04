@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/device_management/dm_cached_policy_info.h"
 #include "chrome/updater/device_management/dm_storage.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
@@ -45,6 +46,11 @@ constexpr char kAuthorizationHeader[] = "Authorization";
 // Constants for device management enrollment requests.
 constexpr char kRegistrationRequestType[] = "register_policy_agent";
 constexpr char kRegistrationTokenType[] = "GoogleEnrollmentToken";
+
+// Constants for policy fetch requests.
+constexpr char kPolicyFetchRequestType[] = "policy";
+constexpr char kPolicyFetchTokenType[] = "GoogleDMToken";
+constexpr char kGoogleUpdateMachineLevelApps[] = "google/machine-level-apps";
 
 constexpr int kHTTPStatusOK = 200;
 constexpr int kHTTPStatusGone = 410;
@@ -154,18 +160,19 @@ void DMClient::PostRegisterRequest(DMRequestCallback request_callback) {
       policy::GetOSVersion());
 
   // Authorization token is the enrollment token for device registration.
-  base::flat_map<std::string, std::string> additional_headers;
-  additional_headers.emplace(
-      kAuthorizationHeader,
-      base::StringPrintf("%s token=%s", kRegistrationTokenType,
-                         enrollment_token.c_str()));
+  const base::flat_map<std::string, std::string> additional_headers = {
+      {kAuthorizationHeader,
+       base::StringPrintf("%s token=%s", kRegistrationTokenType,
+                          enrollment_token.c_str())},
+  };
 
   network_fetcher_->PostRequest(
       BuildURL(kRegistrationRequestType), data, kDMContentType,
       additional_headers,
       base::BindOnce(&DMClient::OnRequestStarted, base::Unretained(this)),
       base::BindRepeating(&DMClient::OnRequestProgress, base::Unretained(this)),
-      base::BindOnce(&DMClient::OnRequestComplete, base::Unretained(this)));
+      base::BindOnce(&DMClient::OnRegisterRequestComplete,
+                     base::Unretained(this)));
 }
 
 void DMClient::OnRequestStarted(int response_code, int64_t content_length) {
@@ -180,11 +187,12 @@ void DMClient::OnRequestProgress(int64_t current) {
   VLOG(1) << "POST request progess made, current bytes: " << current;
 }
 
-void DMClient::OnRequestComplete(std::unique_ptr<std::string> response_body,
-                                 int net_error,
-                                 const std::string& header_etag,
-                                 const std::string& header_x_cup_server_proof,
-                                 int64_t xheader_retry_after_sec) {
+void DMClient::OnRegisterRequestComplete(
+    std::unique_ptr<std::string> response_body,
+    int net_error,
+    const std::string& header_etag,
+    const std::string& header_x_cup_server_proof,
+    int64_t xheader_retry_after_sec) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RequestResult request_result = RequestResult::kSuccess;
 
@@ -206,7 +214,91 @@ void DMClient::OnRequestComplete(std::unique_ptr<std::string> response_body,
       request_result = RequestResult::kUnexpectedResponse;
     } else {
       VLOG(1) << "Register request completed, got DM token: " << dm_token;
-      storage_->StoreDmToken(dm_token);
+      if (!storage_->StoreDmToken(dm_token))
+        request_result = RequestResult::kSerializationError;
+    }
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(request_callback_), request_result));
+}
+
+void DMClient::PostPolicyFetchRequest(DMRequestCallback request_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RequestResult result = RequestResult::kSuccess;
+  const std::string dm_token = storage_->GetDmToken();
+  network_fetcher_ = config_->CreateNetworkFetcher();
+  request_callback_ = std::move(request_callback);
+
+  if (storage_->IsDeviceDeregistered()) {
+    result = RequestResult::kDeregistered;
+  } else if (dm_token.empty()) {
+    result = RequestResult::kNoDMToken;
+  } else if (storage_->GetDeviceID().empty()) {
+    result = RequestResult::kNoDeviceID;
+  } else if (!network_fetcher_) {
+    result = RequestResult::kFetcherError;
+  }
+
+  if (result != RequestResult::kSuccess) {
+    LOG(ERROR) << "Policy fetch skipped with DM error: "
+               << static_cast<int>(result);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(request_callback_), result));
+    return;
+  }
+
+  cached_info_ = storage_->GetCachedPolicyInfo();
+  const std::string data =
+      GetPolicyFetchRequestData(kGoogleUpdateMachineLevelApps, *cached_info_);
+
+  // Authorization token is the DM token for policy fetch
+  const base::flat_map<std::string, std::string> additional_headers = {
+      {kAuthorizationHeader,
+       base::StringPrintf("%s token=%s", kPolicyFetchTokenType,
+                          dm_token.c_str())},
+  };
+
+  network_fetcher_->PostRequest(
+      BuildURL(kPolicyFetchRequestType), data, kDMContentType,
+      additional_headers,
+      base::BindOnce(&DMClient::OnRequestStarted, base::Unretained(this)),
+      base::BindRepeating(&DMClient::OnRequestProgress, base::Unretained(this)),
+      base::BindOnce(&DMClient::OnPolicyFetchRequestComplete,
+                     base::Unretained(this)));
+}
+
+void DMClient::OnPolicyFetchRequestComplete(
+    std::unique_ptr<std::string> response_body,
+    int net_error,
+    const std::string& header_etag,
+    const std::string& header_x_cup_server_proof,
+    int64_t xheader_retry_after_sec) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RequestResult request_result = RequestResult::kSuccess;
+
+  if (net_error != 0) {
+    LOG(ERROR) << "DM policy fetch failed due to net error: " << net_error;
+    request_result = RequestResult::kNetworkError;
+  } else if (http_status_code_ == kHTTPStatusGone) {
+    VLOG(1) << "Device is now de-registered.";
+    storage_->DeregisterDevice();
+  } else if (http_status_code_ != kHTTPStatusOK) {
+    LOG(ERROR) << "DM policy fetch failed due to http error: "
+               << http_status_code_;
+    request_result = RequestResult::kHttpError;
+  } else {
+    DMPolicyMap policies = ParsePolicyFetchResponse(
+        *response_body, *cached_info_, storage_->GetDmToken(),
+        storage_->GetDeviceID());
+
+    if (policies.empty()) {
+      request_result = RequestResult::kUnexpectedResponse;
+    } else {
+      VLOG(1) << "Policy fetch request completed, got " << policies.size()
+              << " new policies.";
+      if (!storage_->PersistPolicies(policies))
+        request_result = RequestResult::kSerializationError;
     }
   }
 

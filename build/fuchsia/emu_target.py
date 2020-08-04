@@ -129,8 +129,13 @@ class EmuTarget(target.Target):
 
 # TODO(crbug.com/1100402): Delete when no longer needed for debug info.
 def _LogSystemStatistics(log_file_name):
+  statistics_log = runner_logs.FileStreamFor(log_file_name)
   # Log the cpu load and process information.
   subprocess.call(['top', '-b', '-n', '1'],
                   stdin=open(os.devnull),
-                  stdout=runner_logs.FileStreamFor(log_file_name),
+                  stdout=statistics_log,
+                  stderr=subprocess.STDOUT)
+  subprocess.call(['ps', '-ax'],
+                  stdin=open(os.devnull),
+                  stdout=statistics_log,
                   stderr=subprocess.STDOUT)

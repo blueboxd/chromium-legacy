@@ -607,16 +607,14 @@ static_library("ui") {
       "//components/security_state/content/android",
     ]
     if (enable_feed_in_chrome) {
-      deps += [ "//chrome/browser/ui/webui/feed_internals:mojo_bindings" ]
+      deps += [
+        "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
+        "//components/feed/core/common:feed_core_common",
+        "//components/feed/core/v2:feed_core_v2",
+      ]
     }
   } else {
     # !is_android
-
-    sources += [
-      "webui/media/media_feeds_ui.cc",
-      "webui/media/media_feeds_ui.h",
-    ]
-
     deps += [ "//components/autofill/content/browser/webauthn" ]
   }
 
@@ -797,10 +795,6 @@ static_library("ui") {
         "webui/feed_internals/feed_internals_ui.h",
         "webui/feed_internals/feedv2_internals_page_handler.cc",
         "webui/feed_internals/feedv2_internals_page_handler.h",
-      ]
-      deps += [
-        "//components/feed/core/common:feed_core_common",
-        "//components/feed/core/v2:feed_core_v2",
       ]
     }
 
@@ -1153,6 +1147,8 @@ static_library("ui") {
       "serial/serial_chooser.h",
       "serial/serial_chooser_controller.cc",
       "serial/serial_chooser_controller.h",
+      "signin/profile_colors_util.cc",
+      "signin/profile_colors_util.h",
       "singleton_tabs.cc",
       "singleton_tabs.h",
       "startup/automation_infobar_delegate.cc",
@@ -1330,6 +1326,8 @@ static_library("ui") {
       "webui/management_ui.h",
       "webui/management_ui_handler.cc",
       "webui/management_ui_handler.h",
+      "webui/media/media_feeds_ui.cc",
+      "webui/media/media_feeds_ui.h",
       "webui/media_router/media_router_internals_ui.cc",
       "webui/media_router/media_router_internals_ui.h",
       "webui/media_router/media_router_internals_webui_message_handler.cc",
@@ -3387,20 +3385,6 @@ static_library("ui") {
       "views/extensions/extensions_toolbar_button.h",
       "views/extensions/extensions_toolbar_container.cc",
       "views/extensions/extensions_toolbar_container.h",
-      "views/feature_promos/feature_promo_bubble_params.cc",
-      "views/feature_promos/feature_promo_bubble_params.h",
-      "views/feature_promos/feature_promo_bubble_timeout.cc",
-      "views/feature_promos/feature_promo_bubble_timeout.h",
-      "views/feature_promos/feature_promo_bubble_view.cc",
-      "views/feature_promos/feature_promo_bubble_view.h",
-      "views/feature_promos/feature_promo_colors.cc",
-      "views/feature_promos/feature_promo_colors.h",
-      "views/feature_promos/feature_promo_controller.cc",
-      "views/feature_promos/feature_promo_controller.h",
-      "views/feature_promos/global_media_controls_promo_controller.cc",
-      "views/feature_promos/global_media_controls_promo_controller.h",
-      "views/feature_promos/reopen_tab_promo_controller.cc",
-      "views/feature_promos/reopen_tab_promo_controller.h",
       "views/find_bar_host.cc",
       "views/find_bar_host.h",
       "views/find_bar_view.cc",
@@ -3484,6 +3468,20 @@ static_library("ui") {
       "views/hung_renderer_view.h",
       "views/importer/import_lock_dialog_view.cc",
       "views/importer/import_lock_dialog_view.h",
+      "views/in_product_help/feature_promo_bubble_params.cc",
+      "views/in_product_help/feature_promo_bubble_params.h",
+      "views/in_product_help/feature_promo_bubble_timeout.cc",
+      "views/in_product_help/feature_promo_bubble_timeout.h",
+      "views/in_product_help/feature_promo_bubble_view.cc",
+      "views/in_product_help/feature_promo_bubble_view.h",
+      "views/in_product_help/feature_promo_colors.cc",
+      "views/in_product_help/feature_promo_colors.h",
+      "views/in_product_help/feature_promo_controller.cc",
+      "views/in_product_help/feature_promo_controller.h",
+      "views/in_product_help/global_media_controls_promo_controller.cc",
+      "views/in_product_help/global_media_controls_promo_controller.h",
+      "views/in_product_help/reopen_tab_promo_controller.cc",
+      "views/in_product_help/reopen_tab_promo_controller.h",
       "views/infobars/alternate_nav_infobar_view.cc",
       "views/infobars/alternate_nav_infobar_view.h",
       "views/infobars/confirm_infobar.cc",

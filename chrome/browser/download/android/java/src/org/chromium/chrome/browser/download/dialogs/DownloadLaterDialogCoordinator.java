@@ -88,8 +88,7 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mDownloadLaterDialogModel, mCustomView,
                         DownloadLaterDialogView.Binder::bind, true /*performInitialBind*/);
-        mDownloadLaterChoice =
-                model.get(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION);
+        mDownloadLaterChoice = model.get(DownloadLaterDialogProperties.INITIAL_CHOICE);
 
         // Set up the modal dialog.
         mDialogModel = getModalDialogModel(context, this);
@@ -154,12 +153,15 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
 
     private void showDateTimePicker() {
         long now = System.currentTimeMillis();
-        // TODO(xingliu): Round up default time to next hour from now.
+        long initialTime = DownloadDialogUtils.getLong(mDownloadLaterDialogModel,
+                DownloadDateTimePickerDialogProperties.INITIAL_TIME, now);
+
         PropertyModel model =
                 new PropertyModel.Builder(DownloadDateTimePickerDialogProperties.ALL_KEYS)
                         .with(DownloadDateTimePickerDialogProperties.STATE, State.DATE)
-                        .with(DownloadDateTimePickerDialogProperties.INITIAL_TIME, now)
-                        .with(DownloadDateTimePickerDialogProperties.MIN_TIME, now)
+                        .with(DownloadDateTimePickerDialogProperties.INITIAL_TIME, initialTime)
+                        .with(DownloadDateTimePickerDialogProperties.MIN_TIME,
+                                Math.min(now, initialTime))
                         .build();
 
         mDateTimePickerDialog.showDialog(mContext, mModalDialogManager, model);

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_security_policy_violation_event_init.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
@@ -1148,7 +1149,7 @@ void ContentSecurityPolicy::ReportViolation(
     delegate_->DispatchViolationEvent(*violation_data, element);
 
   ReportContentSecurityPolicyIssue(*violation_data, violation_type,
-                                   context_frame);
+                                   context_frame, element);
 }
 
 void ContentSecurityPolicy::PostViolationReport(
@@ -1425,7 +1426,8 @@ ContentSecurityPolicy::BuildCSPViolationType(
 void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
     const blink::SecurityPolicyViolationEventInit& violation_data,
     ContentSecurityPolicyViolationType violation_type,
-    LocalFrame* frame_ancestor) {
+    LocalFrame* frame_ancestor,
+    Element* element) {
   auto cspDetails = mojom::blink::ContentSecurityPolicyIssueDetails::New();
   if (violation_type == ContentSecurityPolicyViolationType::kURLViolation ||
       violation_data.violatedDirective() == "frame-ancestors") {
@@ -1448,6 +1450,9 @@ void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
     source_location->column = violation_data.columnNumber();
     cspDetails->source_location = std::move(source_location);
   }
+  if (element) {
+    cspDetails->violating_node_id = DOMNodeIds::IdForNode(element);
+  }
 
   auto details = mojom::blink::InspectorIssueDetails::New();
   details->csp_issue_details = std::move(cspDetails);
@@ -1460,7 +1465,10 @@ void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
   // TODO(crbug.com/1082628): Add handling of other CSP violation types later as
   // they'll need more work.
   if (violation_type == blink::ContentSecurityPolicy::
-                            ContentSecurityPolicyViolationType::kURLViolation) {
+                            ContentSecurityPolicyViolationType::kURLViolation ||
+      violation_type ==
+          blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+              kInlineViolation) {
     if (frame_ancestor)
       frame_ancestor->AddInspectorIssue(std::move(info));
     else if (delegate_)

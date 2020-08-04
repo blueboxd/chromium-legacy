@@ -120,6 +120,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // If |profile_name| is empty, no heading will be displayed.
   void SetProfileIdentityInfo(
       const base::string16& profile_name,
+      SkColor profile_background_color,
       base::Optional<EditButtonParams> edit_button_params,
       const ui::ImageModel& image_model,
       const base::string16& title,

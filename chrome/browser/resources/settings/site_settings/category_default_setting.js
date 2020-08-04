@@ -181,7 +181,7 @@ Polymer({
       case ContentSettingsTypes.SERIAL_PORTS:
       case ContentSettingsTypes.BLUETOOTH_DEVICES:
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
-      case ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
+      case ContentSettingsTypes.FILE_SYSTEM_WRITE:
       case ContentSettingsTypes.HID_DEVICES:
       case ContentSettingsTypes.VR:
       case ContentSettingsTypes.AR:

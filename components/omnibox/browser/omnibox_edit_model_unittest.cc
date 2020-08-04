@@ -270,7 +270,7 @@ TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
 
   // Test that we don't clobber the unelided text with inline autocomplete text.
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
-  model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+  model()->StartZeroSuggestRequest();
   model()->OnPopupDataChanged(base::string16(), /*is_temporary_text=*/false,
                               base::string16(), base::string16(), false,
                               base::string16());
@@ -290,7 +290,7 @@ TEST_F(OmniboxEditModelTest, RevertZeroSuggestTemporaryText) {
 
   // Simulate getting ZeroSuggestions and arrowing to a different match.
   view()->SelectAll(true);
-  model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+  model()->StartZeroSuggestRequest();
   model()->OnPopupDataChanged(base::ASCIIToUTF16("fake_temporary_text"),
                               /*is_temporary_text=*/true, base::string16(),
                               base::string16(), false, base::string16());

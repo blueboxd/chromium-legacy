@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -882,9 +883,9 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     const String source = scripts_to_evaluate_on_load_.Get(key);
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
     if (world_name.IsEmpty()) {
-      frame->GetScriptController().ExecuteScriptInMainWorld(
-          source, ScriptSourceLocationType::kUnknown,
-          ScriptController::kExecuteScriptWhenScriptsDisabled);
+      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+          ->RunScript(frame,
+                      ScriptController::kExecuteScriptWhenScriptsDisabled);
       continue;
     }
 
@@ -896,14 +897,14 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
-    frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world->GetWorldId(), source, KURL(), SanitizeScriptErrors::kSanitize);
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+        ->RunScriptInIsolatedWorldAndReturnValue(frame, world->GetWorldId());
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
-    frame->GetScriptController().ExecuteScriptInMainWorld(
-        script_to_evaluate_on_load_once_, ScriptSourceLocationType::kUnknown,
-        ScriptController::kExecuteScriptWhenScriptsDisabled);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode(script_to_evaluate_on_load_once_))
+        ->RunScript(frame, ScriptController::kExecuteScriptWhenScriptsDisabled);
   }
 }
 

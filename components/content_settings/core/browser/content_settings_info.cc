@@ -56,14 +56,9 @@ bool ContentSettingsInfo::IsDefaultSettingValid(ContentSetting setting) const {
     return false;
   }
 
-  // Don't support ALLOW for the native file system write access.
-  if (type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD &&
-      setting == CONTENT_SETTING_ALLOW) {
-    return false;
-  }
-
-  // Don't support ALLOW for the native file system read access.
-  if (type == ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD &&
+  // Don't support ALLOW for the file system settings.
+  if ((type == ContentSettingsType::FILE_SYSTEM_WRITE_GUARD ||
+       type == ContentSettingsType::FILE_SYSTEM_READ_GUARD) &&
       setting == CONTENT_SETTING_ALLOW) {
     return false;
   }

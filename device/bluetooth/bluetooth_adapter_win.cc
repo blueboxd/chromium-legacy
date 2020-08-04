@@ -28,6 +28,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace device {
@@ -192,7 +193,7 @@ void BluetoothAdapterWin::AdapterStateChanged(
   name_ = state.name;
   bool was_present = IsPresent();
   bool is_present = !state.address.empty();
-  address_ = BluetoothDevice::CanonicalizeAddress(state.address);
+  address_ = CanonicalizeBluetoothAddress(state.address);
   if (was_present != is_present) {
     for (auto& observer : observers_)
       observer.AdapterPresentChanged(this, is_present);

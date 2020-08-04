@@ -69,5 +69,3 @@
 # crbug.com/1096295
 -org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testActivityCanBeGarbageCollectedAfterFinished
 
-# crbug.com/1093050
--org.chromium.chrome.browser.signin.AccountPickerBottomSheetTest.*

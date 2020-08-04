@@ -471,9 +471,8 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
 
     WebContents* const web_contents = it.first;
 
-    // The audio/video icon is shown only for non-whitelisted extensions or on
-    // Android. For regular tabs on desktop, we show an indicator in the tab
-    // icon.
+    // The audio/video icon is shown for extensions or on Android. For
+    // regular tabs on desktop, we show an indicator in the tab icon.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     const extensions::Extension* extension = GetExtension(web_contents);
     if (!extension)

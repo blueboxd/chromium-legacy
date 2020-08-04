@@ -129,6 +129,8 @@ static_library("sandbox") {
     "src/signed_interception.h",
     "src/signed_policy.cc",
     "src/signed_policy.h",
+    "src/startup_information_helper.cc",
+    "src/startup_information_helper.h",
     "src/sync_dispatcher.cc",
     "src/sync_dispatcher.h",
     "src/sync_interception.cc",

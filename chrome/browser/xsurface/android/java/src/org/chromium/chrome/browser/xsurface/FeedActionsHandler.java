@@ -24,6 +24,12 @@ public interface FeedActionsHandler {
     default void processThereAndBackAgainData(byte[] data) {}
 
     /**
+     * Stores a view FeedAction for eventual upload. 'data' is a serialized FeedAction protobuf
+     * message.
+     */
+    default void processViewAction(byte[] data) {}
+
+    /**
      * Triggers Chrome to send user feedback for this card.
      */
     default void sendFeedback(Map<String, String> productSpecificDataMap) {}

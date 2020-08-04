@@ -137,7 +137,8 @@ suite('SyncSettingsTests', function() {
     assertFalse(syncSection.hidden);
     assertTrue(syncPage.$$('#sync-separator').hidden);
     assertTrue(otherItems.classList.contains('list-frame'));
-    assertEquals(otherItems.querySelectorAll(':scope > .list-item').length, 1);
+    assertEquals(
+        otherItems.querySelectorAll(':scope > cr-expand-button').length, 1);
     assertEquals(otherItems.querySelectorAll(':scope > cr-link-row').length, 3);
 
     // Test sync paused state.

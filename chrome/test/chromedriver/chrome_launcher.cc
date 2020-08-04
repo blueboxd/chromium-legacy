@@ -65,6 +65,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 #elif defined(OS_WIN)
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 #endif
@@ -727,6 +728,33 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
 }
 
 }  // namespace
+
+Status PipeSetUp(base::LaunchOptions* options, int* write_fd, int* read_fd) {
+#if defined(OS_POSIX)
+
+  int chrome_to_driver_pipe_fds[2];
+  int driver_to_chrome_pipe_fds[2];
+
+  if (pipe(chrome_to_driver_pipe_fds) == -1 ||
+      pipe(driver_to_chrome_pipe_fds) == -1)
+    return Status(kUnknownError, "cannot set up pipe");
+
+  // Numbers 3 & 4 come from kReadDf and kWriteFD in
+  // content/browser/devtools/devtools_pipe_handler.cc
+  options->fds_to_remap.emplace_back(driver_to_chrome_pipe_fds[0], 3);
+  options->fds_to_remap.emplace_back(chrome_to_driver_pipe_fds[1], 4);
+
+  close(driver_to_chrome_pipe_fds[0]);
+  close(chrome_to_driver_pipe_fds[1]);
+
+  *write_fd = driver_to_chrome_pipe_fds[1];
+  *read_fd = chrome_to_driver_pipe_fds[0];
+
+  return Status(kOk);
+#endif
+
+  return Status(kUnknownError, "feature not supported");
+}
 
 Status LaunchChrome(network::mojom::URLLoaderFactory* factory,
                     const SyncWebSocketFactory& socket_factory,

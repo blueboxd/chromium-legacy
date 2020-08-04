@@ -2693,6 +2693,7 @@ enum WebFeature {
   kMainFrameCSPViaOriginPolicy = 3361,
   kHtmlClipboardApiRead = 3362,
   kHtmlClipboardApiWrite = 3363,
+  kCSSSystemColorComputeToSelf = 3364,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
+#include "ios/chrome/browser/screenshot/screenshot_delegate.h"
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -149,6 +150,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 // Coordinator for displaying history.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
+
+// Coordinates the creation of PDF screenshots with the window's content.
+@property(nonatomic, strong) ScreenshotDelegate* screenshotDelegate;
 
 // The tab switcher command and the voice search commands can be sent by views
 // that reside in a different UIWindow leading to the fact that the exclusive
@@ -508,6 +512,16 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Ensure the main browser is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];
 
+  if (IsSceneStartupSupported() &&
+      base::FeatureList::IsEnabled(kEnableFullPageScreenshot)) {
+    if (@available(iOS 13, *)) {
+      self.screenshotDelegate = [[ScreenshotDelegate alloc]
+          initWithBrowserInterfaceProvider:self.browserViewWrangler];
+      [self.sceneState.scene.screenshotService
+          setDelegate:self.screenshotDelegate];
+    }
+  }
+
   // Only create the restoration helper if the browser state was backed up
   // successfully.
   if (self.sceneState.appState.sessionRestorationRequired) {
@@ -634,6 +648,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
+
+  // Force close the settings if open. This gives Settings the opportunity to
+  // unregister observers and destroy C++ objects before the application is
+  // shut down without depending on non-deterministic call to -dealloc.
+  [self settingsWasDismissed];
 
   [_mainCoordinator stop];
   _mainCoordinator = nil;
@@ -2209,5 +2228,4 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Notify the _tabSwitcher with the new Incognito Browser.
   [self.tabSwitcher setOtrBrowser:self.incognitoInterface.browser];
 }
-
 @end

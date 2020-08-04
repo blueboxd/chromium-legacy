@@ -336,8 +336,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                         storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserDataForAllRegistrations(
       GetUserDataForAllRegistrationsCallback callback,
-      storage::mojom::ServiceWorkerDatabaseStatus status,
-      std::vector<storage::mojom::ServiceWorkerUserDataPtr> entries);
+      const std::vector<std::pair<int64_t, std::string>>& user_data,
+      storage::mojom::ServiceWorkerDatabaseStatus status);
 
   void DidGetNewRegistrationId(
       blink::mojom::ServiceWorkerRegistrationOptions options,

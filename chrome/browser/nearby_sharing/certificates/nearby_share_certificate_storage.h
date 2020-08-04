@@ -25,13 +25,6 @@ class NearbyShareCertificateStorage {
   NearbyShareCertificateStorage() = default;
   virtual ~NearbyShareCertificateStorage() = default;
 
-  // Initialize the LevelDB and Prefs databases. Must be called successfully
-  // before calling other methods.
-  virtual void Initialize(ResultCallback callback) = 0;
-
-  // Returns whether Initialize has been called and succeeded.
-  virtual bool IsInitialized() = 0;
-
   // Returns the secret ids of all stored public certificates
   virtual std::vector<std::string> GetPublicCertificateIds() const = 0;
 

@@ -644,6 +644,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     @Override
+    public void processViewAction(byte[] data) {
+        FeedStreamSurfaceJni.get().processViewAction(
+                mNativeFeedStreamSurface, FeedStreamSurface.this, data);
+    }
+
+    @Override
     public void sendFeedback(Map<String, String> productSpecificDataMap) {
         FeedStreamSurfaceJni.get().reportSendFeedbackAction(
                 mNativeFeedStreamSurface, FeedStreamSurface.this);
@@ -827,6 +833,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                 long nativeFeedStreamSurface, FeedStreamSurface caller, Callback<Boolean> callback);
         void processThereAndBackAgain(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);
+        void processViewAction(long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);
         int executeEphemeralChange(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);
         void commitEphemeralChange(

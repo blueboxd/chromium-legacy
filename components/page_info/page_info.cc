@@ -115,7 +115,7 @@ ContentSettingsType kPermissionType[] = {
 #if !defined(OS_ANDROID)
     ContentSettingsType::HID_GUARD,
     ContentSettingsType::SERIAL_GUARD,
-    ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+    ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
 #endif
     ContentSettingsType::BLUETOOTH_GUARD,
     ContentSettingsType::BLUETOOTH_SCANNING,
@@ -184,8 +184,8 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
   if (info.type == ContentSettingsType::GEOLOCATION && !info.is_incognito)
     return true;
 
-  // The Native File System write permission is desktop only at the moment.
-  if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD)
+  // The File System write permission is desktop only at the moment.
+  if (info.type == ContentSettingsType::FILE_SYSTEM_WRITE_GUARD)
     return false;
 #else
   // Flash is shown if the user has ever changed its setting for |site_url|.
@@ -200,9 +200,9 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
   if (info.type == ContentSettingsType::NFC)
     return false;
 
-  // Display the Native File System write permission if the Native File System
-  // API is currently being used.
-  if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD &&
+  // Display the File System write permission if the File System API is
+  // currently being used.
+  if (info.type == ContentSettingsType::FILE_SYSTEM_WRITE_GUARD &&
       web_contents->HasNativeFileSystemHandles()) {
     return true;
   }

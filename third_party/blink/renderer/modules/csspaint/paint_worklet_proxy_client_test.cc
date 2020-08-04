@@ -11,9 +11,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
-#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
@@ -72,10 +72,10 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     // proxy client during its first registerPaint call. Rather than circumvent
     // this with a specialised AddGlobalScopeForTesting method, we just use the
     // standard flow.
-    worker_thread->GlobalScope()->ScriptController()->Evaluate(
+    ClassicScript::CreateUnspecifiedScript(
         ScriptSourceCode(
-            "registerPaint('add_global_scope', class { paint() { } });"),
-        SanitizeScriptErrors::kDoNotSanitize);
+            "registerPaint('add_global_scope', class { paint() { } });"))
+        ->RunScriptOnWorkerOrWorklet(*worker_thread->GlobalScope());
     waitable_event->Signal();
   }
 
@@ -211,9 +211,9 @@ void RunPaintTestOnWorklet(WorkerThread* thread,
 
   // Register the painter on all global scopes.
   for (const auto& global_scope : proxy_client->GetGlobalScopesForTesting()) {
-    global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
-        SanitizeScriptErrors::kDoNotSanitize);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode("registerPaint('foo', class { paint() { } });"))
+        ->RunScriptOnWorkerOrWorklet(*global_scope);
   }
 
   PaintWorkletStylePropertyMap::CrossThreadData data;
@@ -256,48 +256,48 @@ void RunDefinitionsMustBeCompatibleTestOnWorklet(
       document_definition_map = proxy_client->DocumentDefinitionMapForTesting();
 
   // Differing native properties.
-  global_scopes[0]->ScriptController()->Evaluate(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(R"JS(registerPaint('test1', class {
         static get inputProperties() { return ['border-image', 'color']; }
         paint() { }
-      });)JS"),
-      SanitizeScriptErrors::kDoNotSanitize);
+      });)JS"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes[0]);
   EXPECT_NE(document_definition_map.at("test1"), nullptr);
-  global_scopes[1]->ScriptController()->Evaluate(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(R"JS(registerPaint('test1', class {
         static get inputProperties() { return ['left']; }
         paint() { }
-      });)JS"),
-      SanitizeScriptErrors::kDoNotSanitize);
+      });)JS"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes[1]);
   EXPECT_EQ(document_definition_map.at("test1"), nullptr);
 
   // Differing custom properties.
-  global_scopes[0]->ScriptController()->Evaluate(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(R"JS(registerPaint('test2', class {
         static get inputProperties() { return ['--foo', '--bar']; }
         paint() { }
-      });)JS"),
-      SanitizeScriptErrors::kDoNotSanitize);
+      });)JS"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes[0]);
   EXPECT_NE(document_definition_map.at("test2"), nullptr);
-  global_scopes[1]->ScriptController()->Evaluate(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(R"JS(registerPaint('test2', class {
         static get inputProperties() { return ['--zoinks']; }
         paint() { }
-      });)JS"),
-      SanitizeScriptErrors::kDoNotSanitize);
+      });)JS"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes[1]);
   EXPECT_EQ(document_definition_map.at("test2"), nullptr);
 
   // Differing alpha values. The default is 'true'.
-  global_scopes[0]->ScriptController()->Evaluate(
-      ScriptSourceCode("registerPaint('test3', class { paint() { } });"),
-      SanitizeScriptErrors::kDoNotSanitize);
+  ClassicScript::CreateUnspecifiedScript(
+      ScriptSourceCode("registerPaint('test3', class { paint() { } });"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes[0]);
   EXPECT_NE(document_definition_map.at("test3"), nullptr);
-  global_scopes[1]->ScriptController()->Evaluate(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(R"JS(registerPaint('test3', class {
         static get contextOptions() { return {alpha: false}; }
         paint() { }
-      });)JS"),
-      SanitizeScriptErrors::kDoNotSanitize);
+      });)JS"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes[1]);
   EXPECT_EQ(document_definition_map.at("test3"), nullptr);
 
   waitable_event->Signal();
@@ -357,16 +357,16 @@ void RunAllDefinitionsMustBeRegisteredBeforePostingTestOnWorklet(
   const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>& global_scopes =
       proxy_client->GetGlobalScopesForTesting();
   for (size_t i = 0; i < global_scopes.size() - 1; i++) {
-    global_scopes[i]->ScriptController()->Evaluate(
-        ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
-        SanitizeScriptErrors::kDoNotSanitize);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode("registerPaint('foo', class { paint() { } });"))
+        ->RunScriptOnWorkerOrWorklet(*global_scopes[i]);
     EXPECT_FALSE(fake_runner.TaskHasBeenPosted());
   }
 
   // Now register the final one; the task should then be posted.
-  global_scopes.back()->ScriptController()->Evaluate(
-      ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
-      SanitizeScriptErrors::kDoNotSanitize);
+  ClassicScript::CreateUnspecifiedScript(
+      ScriptSourceCode("registerPaint('foo', class { paint() { } });"))
+      ->RunScriptOnWorkerOrWorklet(*global_scopes.back());
   EXPECT_TRUE(fake_runner.TaskHasBeenPosted());
 
   waitable_event->Signal();

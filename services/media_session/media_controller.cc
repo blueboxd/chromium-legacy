@@ -291,6 +291,13 @@ void MediaController::ExitPictureInPicture() {
     session_->ipc()->ExitPictureInPicture();
 }
 
+void MediaController::SetAudioSinkId(const base::Optional<std::string>& id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->ipc()->SetAudioSinkId(id);
+}
+
 void MediaController::SetMediaSession(AudioFocusRequest* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

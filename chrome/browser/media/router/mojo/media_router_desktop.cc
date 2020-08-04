@@ -52,6 +52,7 @@ void MediaRouterDesktop::OnUserGesture() {
   // media source.
   UpdateMediaSinks(MediaSource::ForDesktop().id());
 
+  media_sink_service_->BindLogger(GetLogger());
   media_sink_service_->OnUserGesture();
 
 #if defined(OS_WIN)

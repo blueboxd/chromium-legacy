@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/api/extension_action/test_icon_image_observer.h"
 
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace extensions {

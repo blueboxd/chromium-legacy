@@ -1535,7 +1535,7 @@ While in incognito, sites can't use cookies to see your browsing activity across
         Mark Unread
       </message>
       <message name="IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE" desc="Message shown on the Reading List screen when there are no entries, explaining the purpose of the Reading List screen.">
-          You can save pages to your reading list to find them again or read offline
+          You can save pages to read later or offline
       </message>
       <message name="IDS_IOS_READING_LIST_NO_ENTRIES_TITLE" desc="Title shown on the Reading List screen when there are no entries.">
           You'll find your reading list here

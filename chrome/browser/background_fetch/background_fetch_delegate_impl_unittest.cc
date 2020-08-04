@@ -38,8 +38,7 @@ class BackgroundFetchDelegateImplTest : public testing::Test {
 
     // Add |OriginUrl()| to |profile_|'s history so the UKM background
     // recording conditions are met.
-    ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
-                                              /* no_db= */ false));
+    ASSERT_TRUE(profile_.CreateHistoryService());
     auto* history_service = HistoryServiceFactory::GetForProfile(
         &profile_, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->AddPage(OriginUrl(), base::Time::Now(),

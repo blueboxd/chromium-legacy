@@ -1071,6 +1071,8 @@ void MediaSessionImpl::ExitPictureInPicture() {
       normal_players_.begin()->first.player_id);
 }
 
+void MediaSessionImpl::SetAudioSinkId(const base::Optional<std::string>& id) {}
+
 void MediaSessionImpl::GetMediaImageBitmap(
     const media_session::MediaImage& image,
     int minimum_size_px,

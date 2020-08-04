@@ -179,9 +179,9 @@ TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchFiles(
   auto* installation = new TestSystemWebAppInstallation(SystemAppType::MEDIA,
                                                         media_system_app_info);
   installation->RegisterAutoGrantedPermissions(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+      ContentSettingsType::FILE_SYSTEM_READ_GUARD);
   installation->RegisterAutoGrantedPermissions(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+      ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
 
   return base::WrapUnique(installation);
 }

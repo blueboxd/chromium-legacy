@@ -29,6 +29,8 @@ std::ostream& operator<<(std::ostream& os, const base::Optional<T>& opt) {
 // Externally-defined printers for chrome/updater-related types.
 namespace updater {
 
+extern const char kChromeAppId[];
+
 namespace tagging {
 std::ostream& operator<<(std::ostream&, const ErrorCode&);
 std::ostream& operator<<(std::ostream&, const AppArgs::NeedsAdmin&);

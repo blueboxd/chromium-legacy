@@ -136,7 +136,7 @@ suite('SiteDetails', function() {
               ContentSettingsTypes.BLUETOOTH_SCANNING,
               [createRawSiteException('https://foo.com:443')]),
           createContentSettingTypeToValuePair(
-              ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+              ContentSettingsTypes.FILE_SYSTEM_WRITE,
               [createRawSiteException('https://foo.com:443', {
                 setting: ContentSetting.BLOCK,
               })]),
@@ -216,8 +216,8 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.MIXEDSCRIPT] =
         'enableInsecureContentContentSetting';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
-                                                .NATIVE_FILE_SYSTEM_WRITE] =
-        'enableNativeFileSystemWriteContentSetting';
+                                                .FILE_SYSTEM_WRITE] =
+        'enableFileSystemWriteContentSetting';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .PAYMENT_HANDLER] =
         'enablePaymentHandlerContentSetting';
@@ -231,7 +231,7 @@ suite('SiteDetails', function() {
 
     controlledSettingsCount['enableExperimentalWebPlatformFeatures'] = 2;
     controlledSettingsCount['enableInsecureContentContentSetting'] = 1;
-    controlledSettingsCount['enableNativeFileSystemWriteContentSetting'] = 1;
+    controlledSettingsCount['enableFileSystemWriteContentSetting'] = 1;
     controlledSettingsCount['enablePaymentHandlerContentSetting'] = 1;
     controlledSettingsCount['enableSafeBrowsingSubresourceFilter'] = 1;
     controlledSettingsCount['enableWebBluetoothNewPermissionsBackend'] = 1;
@@ -362,7 +362,7 @@ suite('SiteDetails', function() {
     loadTimeData.overrideValues({
       enableExperimentalWebPlatformFeatures: true,
       enableInsecureContentContentSetting: true,
-      enableNativeFileSystemWriteContentSetting: true,
+      enableFileSystemWriteContentSetting: true,
       enablePaymentHandlerContentSetting: true,
       enableSafeBrowsingSubresourceFilter: true,
       enableWebBluetoothNewPermissionsBackend: true,
@@ -400,7 +400,7 @@ suite('SiteDetails', function() {
                     siteDetailsPermission.category ===
                         ContentSettingsTypes.POPUPS ||
                     siteDetailsPermission.category ===
-                        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE) {
+                        ContentSettingsTypes.FILE_SYSTEM_WRITE) {
                   expectedSetting =
                       prefs.exceptions[siteDetailsPermission.category][0]
                           .setting;

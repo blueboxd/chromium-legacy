@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
@@ -48,6 +49,26 @@ class CONTENT_EXPORT ChildPendingURLLoaderFactoryBundle
           pending_prefetch_loader_factory,
       bool bypass_redirect_checks);
   ~ChildPendingURLLoaderFactoryBundle() override;
+
+  template <typename T>
+  static std::unique_ptr<ChildPendingURLLoaderFactoryBundle>
+  CreateFromDefaultFactoryImpl(std::unique_ptr<T> default_factory_impl) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::move(default_factory_impl),
+        pending_remote.InitWithNewPipeAndPassReceiver());
+
+    std::unique_ptr<ChildPendingURLLoaderFactoryBundle> pending_bundle(
+        new ChildPendingURLLoaderFactoryBundle(
+            std::move(pending_remote),  // pending_default_factory
+            {},                         // pending_default_network_factory
+            {},                         // pending_scheme_specific_factories
+            {},                         // pending_isolated_world_factories
+            {},                         // direct_network_factory_remote
+            {},                         // pending_prefetch_loader_factory
+            false));                    // bypass_redirect_checks
+    return pending_bundle;
+  }
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>&
   direct_network_factory_remote() {

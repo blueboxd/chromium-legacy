@@ -188,6 +188,10 @@ gfx::NativeView AutofillKeyboardAccessoryAdapter::container_view() const {
   return controller_->container_view();
 }
 
+content::WebContents* AutofillKeyboardAccessoryAdapter::GetWebContents() const {
+  return controller_->GetWebContents();
+}
+
 const gfx::RectF& AutofillKeyboardAccessoryAdapter::element_bounds() const {
   DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
   return controller_->element_bounds();

@@ -181,6 +181,56 @@ inconsistent behavior based on factors outside of their control only causes
 confusion and is source for support requests. Use the step 3 above if the policy
 needs external testers before being officially announced.
 
+## Deprecating a policy
+
+A policy is deprecated when admins should stop using it. This is often because
+a new policy was been released that should be used instead.
+
+When marking a policy as deprecated, it still needs to work the same as before
+in Chrome. If you wish to remove the functionality, you'll need to changed the
+supported_on field. See "Removing support for a policy" below for more details.
+
+### Steps
+1. Update policy_templates.json, marking the policy as deprecated and updating
+   the description to describe when and why the policy as deprecated and what
+   admins should be doing instead.
+1. Update the policy handling code. This is generally ensuring that if the old
+   policy is set, the values are propagated to the new policies if they were
+   unset.
+1. Notify chromium-enterprise@chromium.org to ensure this deprecation is
+   mentioned in the enterprise release notes.
+
+## Removing support for a policy
+
+Generally speaking, policies shouldn't be removed from Chrome. Although they can
+be deprecated fairly easily, removing support for a policy is a much bigger
+issue, because admins might be relying on that functionality.
+
+The two main reasons for removing support for a policy are:
+1.  It was a policy that was always documented as having a limited lifespan,
+    such as an escape hatch policy.
+1.  The feature this policy impacts was removed from Chrome.
+
+If the policy was never launched, it can also be deleted from
+policy_templates.json instead of just being marked as no longer supported.
+In this case, please remember to add the deleted id to deleted_policy_ids.
+
+If you want to remove support for another reason, please reach out to someone in [ENTERPRISE_POLICY_OWNERS](https://cs.chromium.org/chromium/src/components/policy/resources/ENTERPRISE_POLICY_OWNERS)
+to ensure this is okay. The general preference is to leave policies as
+deprecated, but still supported.
+
+When removing support for a policy, update `supported_on` to correctly list the
+last milestone the policy is supported on. Please also set 'deprecated' to True
+if the policy skipped past the deprecation state.
+
+### Steps
+1. Update policy_templates.json, marking the policy as no longer supported.
+   Also marking as deprecated if not previously done.
+1. Remove the related policy_test_case.json code one milestone before support is removed.
+1. Remove the policy handling code.
+1. Notify chromium-enterprise@chromium.org to ensure this removal of support is
+   mentioned in the enterprise release notes.
+
 ## Examples
 
 Here is an example based on the instructions above. It's a good, simple place to

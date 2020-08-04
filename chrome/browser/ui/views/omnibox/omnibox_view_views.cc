@@ -600,7 +600,7 @@ void OmniboxViewViews::SetFocus(bool is_user_initiated) {
 
   // |is_user_initiated| is true for focus events from keyboard accelerators.
   if (is_user_initiated)
-    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+    model()->StartZeroSuggestRequest();
 
   // Restore caret visibility if focus is explicitly requested. This is
   // necessary because if we already have invisible focus, the RequestFocus()
@@ -1364,7 +1364,7 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   //  - The textfield doesn't already have focus.
   //  - Or if the textfield is empty, to cover the NTP ZeroSuggest case.
   if (event.IsOnlyLeftMouseButton() && (!HasFocus() || GetText().empty()))
-    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+    model()->StartZeroSuggestRequest();
 
   bool handled = views::Textfield::OnMousePressed(event);
 
@@ -1474,7 +1474,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   //  - The textfield is taking focus.
   //  - The textfield is focused but empty, to cover the NTP ZeroSuggest case.
   if (gesture_should_take_focus || (HasFocus() && GetText().empty()))
-    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+    model()->StartZeroSuggestRequest();
 
   views::Textfield::OnGestureEvent(event);
 

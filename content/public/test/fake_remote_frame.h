@@ -63,7 +63,8 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void BubbleLogicalScroll(blink::mojom::ScrollDirection direction,
                            ui::ScrollGranularity granularity) override;
   void UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType) override;
+      blink::mojom::UserActivationUpdateType update_type,
+      blink::mojom::UserActivationNotificationType notification_type) override;
   void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) override;
   void SetPageFocus(bool is_focused) override;

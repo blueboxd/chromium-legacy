@@ -59,7 +59,6 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_view_client.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -92,6 +91,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -367,9 +367,10 @@ function createShadowRootWithin(node) {
 }
 createShadowRootWithin(document.body);
 )";
-    web_frame_->GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-        script, ScriptSourceLocationType::kInternal,
-        ScriptController::kExecuteScriptWhenScriptsDisabled);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode(script, ScriptSourceLocationType::kInternal))
+        ->RunScript(web_frame_->GetFrame(),
+                    ScriptController::kExecuteScriptWhenScriptsDisabled);
   }
 
   if (web_frame_->Client()) {

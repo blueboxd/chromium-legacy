@@ -153,6 +153,11 @@ class TabStripTest : public ChromeViewsTestBase,
 
     widget_ = CreateTestWidget();
     tab_strip_parent_ = widget_->SetContentsView(std::move(tab_strip_parent));
+
+    // Prevent hover cards from appearing when the mouse is over the tab. Tests
+    // don't typically account for this possibly, so it can cause unrelated
+    // tests to fail due to tab data not being set. See crbug.com/1050012.
+    Tab::SetShowHoverCardOnMouseHoverForTesting(false);
   }
 
   void TearDown() override {

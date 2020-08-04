@@ -334,8 +334,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // (which initiated the update).  Returns |false| if the update tries to
   // consume an already consumed/expired transient state, |true| otherwise.  See
   // the comment on user_activation_state_ below.
+  //
+  // The |notification_type| parameter is used for histograms, only for the case
+  // |update_state == kNotifyActivation|.
   bool UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type);
+      blink::mojom::UserActivationUpdateType update_type,
+      blink::mojom::UserActivationNotificationType notification_type);
 
   void OnSetHadStickyUserActivationBeforeNavigation(bool value);
 

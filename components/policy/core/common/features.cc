@@ -14,6 +14,9 @@ const base::Feature kPolicyAtomicGroup{"PolicyAtomicGroup",
 const base::Feature kCBCMPolicyInvalidations{"CBCMPolicyInvalidations",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCBCMRemoteCommands{"CBCMRemoteCommands",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_APPLE)
 const base::Feature kIgnoreSensitivePoliciesOnUnmanagedMac{
     "IgnoreSensitivePoliciesOnUnmanagedMac", base::FEATURE_ENABLED_BY_DEFAULT};

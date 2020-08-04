@@ -69,6 +69,7 @@ static_library("vr_android") {
 
   if (enable_arcore) {
     sources += [
+      "arcore_device/address_to_id_map.h",
       "arcore_device/ar_image_transport.cc",
       "arcore_device/ar_image_transport.h",
       "arcore_device/ar_renderer.cc",

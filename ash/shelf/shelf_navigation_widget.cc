@@ -145,8 +145,7 @@ class BoundsAnimationReporter : public gfx::AnimationDelegate {
 }  // namespace
 
 // An animation metrics reporter for the shelf navigation buttons.
-class ASH_EXPORT NavigationButtonAnimationMetricsReporter
-    : public ShelfLayoutManagerObserver {
+class ASH_EXPORT NavigationButtonAnimationMetricsReporter {
  public:
   // The different kinds of navigation buttons.
   enum class NavigationButtonType {
@@ -155,24 +154,19 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
     // The Navigation Widget's home button.
     kHomeButton
   };
-  NavigationButtonAnimationMetricsReporter(
-      Shelf* shelf,
+  explicit NavigationButtonAnimationMetricsReporter(
       NavigationButtonType navigation_button_type)
-      : shelf_(shelf), navigation_button_type_(navigation_button_type) {
-    shelf_->shelf_layout_manager()->AddObserver(this);
-  }
+      : navigation_button_type_(navigation_button_type) {}
 
-  ~NavigationButtonAnimationMetricsReporter() override {
-    shelf_->shelf_layout_manager()->RemoveObserver(this);
-  }
+  ~NavigationButtonAnimationMetricsReporter() = default;
 
   NavigationButtonAnimationMetricsReporter(
       const NavigationButtonAnimationMetricsReporter&) = delete;
   NavigationButtonAnimationMetricsReporter& operator=(
       const NavigationButtonAnimationMetricsReporter&) = delete;
 
-  void ReportSmoothness(int smoothness) {
-    switch (target_state_) {
+  void ReportSmoothness(HotseatState target_hotseat_state, int smoothness) {
+    switch (target_hotseat_state) {
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
         switch (navigation_button_type_) {
@@ -237,27 +231,17 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
     }
   }
 
-  metrics_util::ReportCallback GetReportCallback() {
+  metrics_util::ReportCallback GetReportCallback(
+      HotseatState target_hotseat_state) {
+    DCHECK_NE(target_hotseat_state, HotseatState::kNone);
     return metrics_util::ForSmoothness(base::BindRepeating(
         &NavigationButtonAnimationMetricsReporter::ReportSmoothness,
-        weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // ShelfLayoutManagerObserver:
-  void OnHotseatStateChanged(HotseatState old_state,
-                             HotseatState new_state) override {
-    target_state_ = new_state;
+        weak_ptr_factory_.GetWeakPtr(), target_hotseat_state));
   }
 
  private:
-  // Owned by RootWindowController
-  Shelf* const shelf_;
-
   // The type of navigation button that is animated.
   const NavigationButtonType navigation_button_type_;
-
-  // The state to which the animation is transitioning.
-  HotseatState target_state_ = HotseatState::kShownHomeLauncher;
 
   base::WeakPtrFactory<NavigationButtonAnimationMetricsReporter>
       weak_ptr_factory_{this};
@@ -455,12 +439,10 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
                                                   /*use_transforms=*/true)),
       back_button_metrics_reporter_(
           std::make_unique<NavigationButtonAnimationMetricsReporter>(
-              shelf,
               NavigationButtonAnimationMetricsReporter::NavigationButtonType::
                   kBackButton)),
       home_button_metrics_reporter_(
           std::make_unique<NavigationButtonAnimationMetricsReporter>(
-              shelf,
               NavigationButtonAnimationMetricsReporter::NavigationButtonType::
                   kHomeButton)) {
   DCHECK(shelf_);
@@ -595,6 +577,10 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
       animate ? ShelfConfig::Get()->shelf_animation_duration()
               : base::TimeDelta::FromMilliseconds(0);
 
+  const HotseatState target_hotseat_state =
+      layout_manager->CalculateHotseatState(layout_manager->visibility_state(),
+                                            layout_manager->auto_hide_state());
+
   const bool update_opacity = !animate || GetLayer()->GetTargetOpacity() !=
                                               layout_manager->GetOpacity();
   const bool update_bounds =
@@ -611,7 +597,8 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
     base::Optional<ui::AnimationThroughputReporter> reporter;
     if (animate) {
       reporter.emplace(nav_animation_setter.GetAnimator(),
-                       shelf_->GetNavigationWidgetAnimationReportCallback());
+                       shelf_->GetNavigationWidgetAnimationReportCallback(
+                           target_hotseat_state));
     }
     if (update_opacity)
       GetLayer()->SetOpacity(layout_manager->GetOpacity());
@@ -624,11 +611,13 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
 
   views::View* const back_button = delegate_->back_button();
   UpdateButtonVisibility(back_button, back_button_shown, animate,
-                         back_button_metrics_reporter_.get());
+                         back_button_metrics_reporter_.get(),
+                         target_hotseat_state);
 
   views::View* const home_button = delegate_->home_button();
   UpdateButtonVisibility(home_button, home_button_shown, animate,
-                         home_button_metrics_reporter_.get());
+                         home_button_metrics_reporter_.get(),
+                         target_hotseat_state);
 
   if (back_button_shown) {
     // TODO(https://crbug.com/1058205): Test this behavior.
@@ -647,13 +636,16 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
                         : GetFirstButtonBounds(shelf_->IsHorizontalAlignment());
 
   if (animate) {
-    bounds_animator_->SetAnimationDuration(animation_duration);
-    bounds_animator_->AnimateViewTo(
-        home_button, home_button_bounds,
-        std::make_unique<BoundsAnimationReporter>(
-            home_button, home_button_metrics_reporter_->GetReportCallback()));
+    if (bounds_animator_->GetTargetBounds(home_button) != home_button_bounds) {
+      bounds_animator_->SetAnimationDuration(animation_duration);
+      bounds_animator_->AnimateViewTo(
+          home_button, home_button_bounds,
+          std::make_unique<BoundsAnimationReporter>(
+              home_button, home_button_metrics_reporter_->GetReportCallback(
+                               target_hotseat_state)));
+    }
   } else {
-    bounds_animator_->StopAnimatingView(home_button);
+    bounds_animator_->Cancel();
     home_button->SetBoundsRect(home_button_bounds);
   }
 
@@ -683,7 +675,8 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
     views::View* button,
     bool visible,
     bool animate,
-    NavigationButtonAnimationMetricsReporter* metrics_reporter) {
+    NavigationButtonAnimationMetricsReporter* metrics_reporter,
+    HotseatState target_hotseat_state) {
   if (animate && button->layer()->GetTargetOpacity() == visible)
     return;
 
@@ -705,7 +698,7 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
   base::Optional<ui::AnimationThroughputReporter> reporter;
   if (animate) {
     reporter.emplace(opacity_settings.GetAnimator(),
-                     metrics_reporter->GetReportCallback());
+                     metrics_reporter->GetReportCallback(target_hotseat_state));
   }
 
   if (!visible)

@@ -548,19 +548,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual BluetoothRemoteGattService* GetGattService(
       const std::string& identifier) const;
 
-  // Returns the |address| in the canonical format: XX:XX:XX:XX:XX:XX, where
-  // each 'X' is a hex digit.  If the input |address| is invalid, returns an
-  // empty string.
-  static std::string CanonicalizeAddress(base::StringPiece address);
-
-  // Parses a Bluetooth address to an output buffer. The output buffer must be
-  // exactly 6 bytes in size. The address can be formatted in one of three ways:
-  //
-  //   1A:2B:3C:4D:5E:6F
-  //   1A-2B-3C-4D-5E-6F
-  //   1A2B3C4D5E6F
-  static bool ParseAddress(base::StringPiece input, base::span<uint8_t> output);
-
   // Update the last time this device was seen.
   void UpdateTimestamp();
 

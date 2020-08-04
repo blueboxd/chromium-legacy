@@ -18,7 +18,6 @@
 #include "components/history/core/browser/history_types.h"
 
 class GURL;
-class TestingProfile;
 
 namespace base {
 class SequencedTaskRunner;
@@ -126,8 +125,6 @@ class ExpireHistoryBackend {
   FRIEND_TEST_ALL_PREFIXES(
       ExpireHistoryTest,
       ClearOldOnDemandFaviconsDoesNotDeleteAfterShortDelay);
-
-  friend class ::TestingProfile;
 
   struct DeleteEffects {
     DeleteEffects();

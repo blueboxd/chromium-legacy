@@ -110,14 +110,14 @@ void TestDeserialize(const ProtoTranslator& translator) {
 
   // Due to fuzzy interpretation in BackoffEntrySerializer::
   // DeserializeFromValue, we cannot assert that |*reserialized == *value|.
-  // Rather, we can deserialize |reserialized| and check that the result is
-  // equivalent to |entry|.
+  // Rather, we can deserialize |reserialized| and check that some weaker
+  // properties are preserved.
   std::unique_ptr<BackoffEntry> entry_reparsed =
       BackoffEntrySerializer::DeserializeFromValue(
           *reserialized, &policy, &clock, translator.parse_time());
   CHECK(entry_reparsed);
-  CHECK_EQ(entry->failure_count(), entry_reparsed->failure_count());
-  CHECK_EQ(entry->GetReleaseTime(), entry_reparsed->GetReleaseTime());
+  CHECK_EQ(entry_reparsed->failure_count(), entry->failure_count());
+  CHECK_LE(entry_reparsed->GetReleaseTime(), entry->GetReleaseTime());
 }
 
 // Tests the "serialize-deserialize" property. Serializes an arbitrary

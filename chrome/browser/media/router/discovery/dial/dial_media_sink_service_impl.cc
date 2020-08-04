@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
@@ -17,6 +18,8 @@ namespace media_router {
 using SinkAppStatus = DialMediaSinkServiceImpl::SinkAppStatus;
 
 namespace {
+
+constexpr char kLoggerComponent[] = "DialMediaSinkServiceImpl";
 
 static constexpr const char* kDiscoveryOnlyModelNames[3] = {
     "eureka dongle", "chromecast audio", "chromecast ultra"};
@@ -51,8 +54,7 @@ SinkAppStatus GetSinkAppStatusFromResponse(const DialAppInfoResult& result) {
 DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : MediaSinkServiceBase(on_sinks_discovered_cb),
-      task_runner_(task_runner) {
+    : MediaSinkServiceBase(on_sinks_discovered_cb), task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -179,7 +181,12 @@ void DialMediaSinkServiceImpl::OnDialDeviceEvent(
 
 void DialMediaSinkServiceImpl::OnDialError(DialRegistry::DialErrorCode type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/687380): Log events for DIAL errors
+  if (logger_.is_bound()) {
+    logger_->LogError(
+        mojom::LogCategory::kDiscovery, kLoggerComponent,
+        base::StringPrintf("DialErrorCode: %d", static_cast<int>(type)), "", "",
+        "");
+  }
 }
 
 void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
@@ -219,6 +226,12 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionError(
     const DialDeviceData& device,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (logger_.is_bound()) {
+    logger_->LogError(mojom::LogCategory::kDiscovery, kLoggerComponent,
+                      base::StrCat({"Device id: ", device.device_id(),
+                                    ", error message: ", error_message}),
+                      "", "", "");
+  }
 }
 
 void DialMediaSinkServiceImpl::OnAppInfoParseCompleted(
@@ -321,6 +334,12 @@ std::vector<MediaSinkInternal> DialMediaSinkServiceImpl::GetAvailableSinks(
       sinks.push_back(sink.second);
   }
   return sinks;
+}
+
+void DialMediaSinkServiceImpl::BindLogger(
+    mojo::PendingRemote<mojom::Logger> pending_remote) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  logger_.Bind(std::move(pending_remote));
 }
 
 }  // namespace media_router

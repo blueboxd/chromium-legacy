@@ -95,17 +95,12 @@ class FakeNearbyShareCertificateStorage : public NearbyShareCertificateStorage {
   FakeNearbyShareCertificateStorage();
   ~FakeNearbyShareCertificateStorage() override;
 
-  void SetIsInitialized(bool is_initialized);
   void SetPublicCertificateIds(const std::vector<std::string>& ids);
   void SetPrivateCertificates(
       base::Optional<std::vector<NearbySharePrivateCertificate>>
           private_certificates);
   void SetNextPrivateCertificateExpirationTime(base::Optional<base::Time> time);
   void SetNextPublicCertificateExpirationTime(base::Optional<base::Time> time);
-
-  std::vector<ResultCallback>& initialize_callbacks() {
-    return initialize_callbacks_;
-  }
 
   std::vector<PublicCertificateCallback>& get_public_certificates_callbacks() {
     return get_public_certificates_callbacks_;
@@ -140,8 +135,6 @@ class FakeNearbyShareCertificateStorage : public NearbyShareCertificateStorage {
 
  private:
   // NearbyShareCertificateStorage:
-  bool IsInitialized() override;
-  void Initialize(ResultCallback callback) override;
   std::vector<std::string> GetPublicCertificateIds() const override;
   void GetPublicCertificates(PublicCertificateCallback callback) override;
   base::Optional<std::vector<NearbySharePrivateCertificate>>
@@ -166,14 +159,12 @@ class FakeNearbyShareCertificateStorage : public NearbyShareCertificateStorage {
   void ClearPrivateCertificates() override;
   void ClearPublicCertificates(ResultCallback callback) override;
 
-  bool is_initialized_ = false;
   size_t num_clear_private_certificates_calls_ = 0;
   base::Optional<base::Time> next_private_certificate_expiration_time_;
   base::Optional<base::Time> next_public_certificate_expiration_time_;
   std::vector<std::string> public_certificate_ids_;
   base::Optional<std::vector<NearbySharePrivateCertificate>>
       private_certificates_;
-  std::vector<ResultCallback> initialize_callbacks_;
   std::vector<PublicCertificateCallback> get_public_certificates_callbacks_;
   std::vector<std::vector<NearbySharePrivateCertificate>>
       replace_private_certificates_calls_;

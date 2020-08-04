@@ -59,6 +59,9 @@ class TabStripModelTestIDUserData : public base::SupportsUserData::Data {
 class MockTabStripModelObserver : public TabStripModelObserver {
  public:
   MockTabStripModelObserver() = default;
+  MockTabStripModelObserver(const MockTabStripModelObserver&) = delete;
+  MockTabStripModelObserver& operator=(const MockTabStripModelObserver&) =
+      delete;
   ~MockTabStripModelObserver() override = default;
 
   enum TabStripModelObserverAction {
@@ -330,8 +333,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
  private:
   std::vector<State> states_;
   std::map<tab_groups::TabGroupId, TabGroupUpdate> group_updates_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
 
 const char* const MockTabStripModelObserver::State::kActionNames[]{

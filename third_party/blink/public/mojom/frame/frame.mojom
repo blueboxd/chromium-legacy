@@ -300,7 +300,11 @@ interface LocalFrameHost {
   // Indicates that the user activation state in the current frame has been
   // updated, so the replicated states need to be synced (in the browser process
   // as well as in all other renderer processes).
-  UpdateUserActivationState(UserActivationUpdateType update_type);
+  //
+  // The |notification_type| parameter is used for histograms, only for the case
+  // |update_state == kNotifyActivation|.
+  UpdateUserActivationState(UserActivationUpdateType update_type,
+                            UserActivationNotificationType notification_type);
 
   // Provides accessibility information about a find in page result.
   HandleAccessibilityFindInPageResult(FindInPageResultAXParams params);
@@ -795,7 +799,11 @@ interface RemoteFrame {
   // Sent to the remote frame placeholder in the parent process to update the
   // user activation state in appropriate part of the frame tree (ancestors for
   // activation notification and all nodes for consumption).
-  UpdateUserActivationState(blink.mojom.UserActivationUpdateType state_update_type);
+  //
+  // The |notification_type| parameter is used for histograms, only for the case
+  // |update_state == kNotifyActivation|.
+  UpdateUserActivationState(blink.mojom.UserActivationUpdateType state_update_type,
+                            UserActivationNotificationType notification_type);
 
   // Sent to the process that owns this frame's HTMLFrameOwnerElement to
   // set the embedding token. This token uniquely specifies the relationship

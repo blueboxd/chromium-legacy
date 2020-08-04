@@ -61,6 +61,9 @@ class DMSigningKeyForTesting {
   std::string key_signature_domain_;
 };
 
+std::unique_ptr<DMSigningKeyForTesting> GetTestKey1();
+std::unique_ptr<DMSigningKeyForTesting> GetTestKey2();
+
 // Builds DM policy response.
 class DMPolicyBuilderForTesting {
  public:

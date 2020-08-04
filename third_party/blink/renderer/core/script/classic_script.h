@@ -50,10 +50,10 @@ class CORE_EXPORT ClassicScript final : public Script {
   // a tentative interface. When crbug/1111134 is done, this should be gone.
   void RunScript(LocalFrame*) override;
   void RunScript(LocalFrame*, ScriptController::ExecuteScriptPolicy);
-  bool RunScriptOnWorker(WorkerGlobalScope&) override;
+  bool RunScriptOnWorkerOrWorklet(WorkerOrWorkletGlobalScope&) override;
 
-  // Unlike RunScript() and RunScriptOnWorker(), callers of the following
-  // methods must enter a v8::HandleScope before calling.
+  // Unlike RunScript() and RunScriptOnWorkerOrWorklet(), callers of the
+  // following methods must enter a v8::HandleScope before calling.
   v8::Local<v8::Value> RunScriptAndReturnValue(
       LocalFrame*,
       ScriptController::ExecuteScriptPolicy = ScriptController::

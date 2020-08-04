@@ -12,7 +12,7 @@ import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   import("//build/linux/extract_symbols.gni")
 }
 
@@ -246,7 +246,7 @@ source_set("app_shell_lib") {
       "//ppapi/shared_impl:shared_impl",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       deps += [ "//components/nacl/loader:nacl_helper" ]
 
       if (enable_nacl_nonsfi) {

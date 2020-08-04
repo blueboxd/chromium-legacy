@@ -300,7 +300,7 @@ const base::Feature kLoginDeviceManagementDisclosure{
 
 // Enables or disables the display password button on login / lock screen.
 const base::Feature kLoginDisplayPasswordButton{
-    "LoginDisplayPasswordButton", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LoginDisplayPasswordButton", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy MinimumChromeVersionEnforced. If the requirement is

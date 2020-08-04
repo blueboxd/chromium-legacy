@@ -22,6 +22,7 @@ namespace {
 
 base::flat_map<int32_t, search::mojom::SuggestionGroupPtr>
 CreateSuggestionGroupsMap(
+    const AutocompleteResult& result,
     PrefService* prefs,
     const SearchSuggestionParser::HeadersMap& headers_map) {
   base::flat_map<int32_t, search::mojom::SuggestionGroupPtr> result_map;
@@ -30,7 +31,7 @@ CreateSuggestionGroupsMap(
         search::mojom::SuggestionGroup::New();
     suggestion_group->header = pair.second;
     suggestion_group->hidden =
-        omnibox::IsSuggestionGroupIdHidden(prefs, pair.first);
+        result.IsSuggestionGroupIdHidden(prefs, pair.first);
     result_map.emplace(pair.first, std::move(suggestion_group));
   }
   return result_map;
@@ -143,7 +144,7 @@ search::mojom::AutocompleteResultPtr CreateAutocompleteResult(
     const AutocompleteResult& result,
     PrefService* prefs) {
   return search::mojom::AutocompleteResult::New(
-      input, CreateSuggestionGroupsMap(prefs, result.headers_map()),
+      input, CreateSuggestionGroupsMap(result, prefs, result.headers_map()),
       CreateAutocompleteMatches(result));
 }
 

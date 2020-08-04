@@ -49,9 +49,9 @@ bool ReadUnsignedShort(const std::vector<BYTE>& buffer,
   return true;
 }
 
-bool NullTerminatedASCIIBufferToString16(const std::vector<BYTE>& buffer,
-                                         DWORD* current_byte,
-                                         std::wstring* parsed_string) {
+bool NullTerminatedASCIIBufferToWString(const std::vector<BYTE>& buffer,
+                                        DWORD* current_byte,
+                                        std::wstring* parsed_string) {
   const DWORD string_start = *current_byte;
   const int kMaxCharactersToRead = buffer.size() - *current_byte;
   int string_size =
@@ -72,9 +72,9 @@ bool NullTerminatedASCIIBufferToString16(const std::vector<BYTE>& buffer,
   return true;
 }
 
-bool NullTerminatedUtf16BufferToString16(const std::vector<BYTE>& buffer,
-                                         DWORD* current_byte,
-                                         std::wstring* parsed_string) {
+bool NullTerminatedUtf16BufferToWString(const std::vector<BYTE>& buffer,
+                                        DWORD* current_byte,
+                                        std::wstring* parsed_string) {
   const DWORD string_start = *current_byte;
   const int kMaxWideCharactersToRead =
       (buffer.size() - *current_byte) / sizeof(wchar_t);
@@ -99,19 +99,19 @@ bool NullTerminatedUtf16BufferToString16(const std::vector<BYTE>& buffer,
 // Retrieves a null terminated string from the provided |buffer| and also
 // modifies the value of |current_byte| to point to the next byte after the
 // string.
-bool NullTerminatedStringToString16(const std::vector<BYTE>& buffer,
-                                    bool is_unicode,
-                                    DWORD* current_byte,
-                                    std::wstring* parsed_string) {
+bool NullTerminatedStringToWString(const std::vector<BYTE>& buffer,
+                                   bool is_unicode,
+                                   DWORD* current_byte,
+                                   std::wstring* parsed_string) {
   if (*current_byte >= buffer.size()) {
     LOG(ERROR) << "Error parsing null terminated string";
     return false;
   }
 
-  return (is_unicode) ? NullTerminatedUtf16BufferToString16(
-                            buffer, current_byte, parsed_string)
-                      : NullTerminatedASCIIBufferToString16(
-                            buffer, current_byte, parsed_string);
+  return (is_unicode) ? NullTerminatedUtf16BufferToWString(buffer, current_byte,
+                                                           parsed_string)
+                      : NullTerminatedASCIIBufferToWString(buffer, current_byte,
+                                                           parsed_string);
 }
 
 // Reads the size of a string structure and then moves the value of
@@ -294,8 +294,8 @@ mojom::LnkParsingResult internal::ParseLnkBytes(
   current_byte = structure_beginning + path_prefix_offset;
 
   std::wstring prefix_string;
-  if (!NullTerminatedStringToString16(file_buffer, is_unicode, &current_byte,
-                                      &prefix_string)) {
+  if (!NullTerminatedStringToWString(file_buffer, is_unicode, &current_byte,
+                                     &prefix_string)) {
     LOG(ERROR) << "Error parsing path prefix";
     return mojom::LnkParsingResult::BAD_FORMAT;
   }
@@ -304,8 +304,8 @@ mojom::LnkParsingResult internal::ParseLnkBytes(
   current_byte = structure_beginning + path_suffix_offset;
   std::wstring suffix_string;
 
-  if (!NullTerminatedStringToString16(file_buffer, is_unicode, &current_byte,
-                                      &suffix_string)) {
+  if (!NullTerminatedStringToWString(file_buffer, is_unicode, &current_byte,
+                                     &suffix_string)) {
     LOG(ERROR) << "Error parsing path suffix";
     return mojom::LnkParsingResult::BAD_FORMAT;
   }

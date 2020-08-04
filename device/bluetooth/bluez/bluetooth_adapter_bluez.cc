@@ -47,6 +47,7 @@
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -325,7 +326,7 @@ std::string BluetoothAdapterBlueZ::GetAddress() const {
           ->GetProperties(object_path_);
   DCHECK(properties);
 
-  return BluetoothDevice::CanonicalizeAddress(properties->address.value());
+  return device::CanonicalizeBluetoothAddress(properties->address.value());
 }
 
 std::string BluetoothAdapterBlueZ::GetName() const {

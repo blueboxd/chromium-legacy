@@ -477,7 +477,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
   // user is trying to focus the header itself (which is still shown).
   if (selection.state != FOCUSED_BUTTON_HEADER &&
       match.suggestion_group_id.has_value() && pref_service_ &&
-      omnibox::IsSuggestionGroupIdHidden(pref_service_,
+      result().IsSuggestionGroupIdHidden(pref_service_,
                                          match.suggestion_group_id.value())) {
     return false;
   }
@@ -534,12 +534,18 @@ bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
 
   auto& match = result().match_at(selection.line);
   switch (selection.state) {
-    case FOCUSED_BUTTON_HEADER:
+    case FOCUSED_BUTTON_HEADER: {
       DCHECK(match.suggestion_group_id.has_value());
-      omnibox::ToggleSuggestionGroupIdVisibility(
-          pref_service_, match.suggestion_group_id.value());
-      break;
 
+      omnibox::SuggestionGroupVisibility new_value =
+          result().IsSuggestionGroupIdHidden(pref_service_,
+                                             match.suggestion_group_id.value())
+              ? omnibox::SuggestionGroupVisibility::SHOWN
+              : omnibox::SuggestionGroupVisibility::HIDDEN;
+      omnibox::SetSuggestionGroupVisibility(
+          pref_service_, match.suggestion_group_id.value(), new_value);
+      break;
+    }
     case FOCUSED_BUTTON_KEYWORD:
       // TODO(yoangela): Merge logic with mouse/gesture events in
       // OmniboxSuggestionButtonRowView::ButtonPressed - This case currently
@@ -593,7 +599,7 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
   int additional_message_id = 0;
   switch (selection_.state) {
     case FOCUSED_BUTTON_HEADER: {
-      bool group_hidden = omnibox::IsSuggestionGroupIdHidden(
+      bool group_hidden = result().IsSuggestionGroupIdHidden(
           pref_service_, match.suggestion_group_id.value());
       int message_id = group_hidden ? IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON
                                     : IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON;

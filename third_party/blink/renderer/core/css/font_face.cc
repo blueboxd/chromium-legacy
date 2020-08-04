@@ -195,6 +195,8 @@ FontFace* FontFace::Create(Document* document,
                                       AtRuleDescriptorID::AscentOverride) &&
       font_face->SetPropertyFromStyle(properties,
                                       AtRuleDescriptorID::DescentOverride) &&
+      font_face->SetPropertyFromStyle(
+          properties, AtRuleDescriptorID::LetterSpacingOverride) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
     font_face->InitCSSFontFace(document->GetExecutionContext(), *src);
@@ -362,6 +364,9 @@ bool FontFace::SetPropertyValue(const CSSValue* value,
       break;
     case AtRuleDescriptorID::DescentOverride:
       descent_override_ = value;
+      break;
+    case AtRuleDescriptorID::LetterSpacingOverride:
+      letter_spacing_override_ = value;
       break;
     default:
       NOTREACHED();
@@ -806,6 +811,7 @@ void FontFace::Trace(Visitor* visitor) const {
   visitor->Trace(display_);
   visitor->Trace(ascent_override_);
   visitor->Trace(descent_override_);
+  visitor->Trace(letter_spacing_override_);
   visitor->Trace(error_);
   visitor->Trace(loaded_property_);
   visitor->Trace(css_font_face_);
@@ -842,6 +848,10 @@ FontMetricsOverride FontFace::GetFontMetricsOverride() const {
   if (descent_override_) {
     result.descent_override =
         To<CSSPrimitiveValue>(*descent_override_).GetFloatValue() / 100;
+  }
+  if (letter_spacing_override_) {
+    result.letter_spacing_override =
+        To<CSSPrimitiveValue>(*letter_spacing_override_).GetFloatValue();
   }
   return result;
 }

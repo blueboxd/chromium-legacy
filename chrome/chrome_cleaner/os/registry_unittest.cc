@@ -151,29 +151,29 @@ TEST(RegistryTests, GetNativeFullPath) {
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kHardwareKeyPath)
                   .GetNativeFullPath(&native_path));
   EXPECT_TRUE(
-      String16EqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
+      WStringEqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kHardwareKeyPath, KEY_WOW64_32KEY)
                   .GetNativeFullPath(&native_path));
   EXPECT_TRUE(
-      String16EqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
+      WStringEqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kHardwareKeyPath, KEY_WOW64_64KEY)
                   .GetNativeFullPath(&native_path));
   EXPECT_TRUE(
-      String16EqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
+      WStringEqualsCaseInsensitive(native_path, kNativeHardwareKeyPath));
 
   // The 'HKLM\\software' registry key may have a redirection.
   std::wstring native_path32;
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kSoftwareKeyPath, KEY_WOW64_32KEY)
                   .GetNativeFullPath(&native_path32));
   EXPECT_TRUE(
-      String16EqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath) ||
-      String16EqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath32));
+      WStringEqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath) ||
+      WStringEqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath32));
 
   std::wstring native_path64;
   EXPECT_TRUE(RegKeyPath(HKEY_LOCAL_MACHINE, kSoftwareKeyPath, KEY_WOW64_64KEY)
                   .GetNativeFullPath(&native_path64));
   EXPECT_TRUE(
-      String16EqualsCaseInsensitive(native_path64, kNativeSoftwareKeyPath));
+      WStringEqualsCaseInsensitive(native_path64, kNativeSoftwareKeyPath));
 }
 
 TEST(RegistryTests, GetNativeFullPathUpCase) {
@@ -182,8 +182,8 @@ TEST(RegistryTests, GetNativeFullPathUpCase) {
       RegKeyPath(HKEY_LOCAL_MACHINE, kSoftwareKeyPathUpCase, KEY_WOW64_32KEY)
           .GetNativeFullPath(&native_path32));
   EXPECT_TRUE(
-      String16EqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath) ||
-      String16EqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath32));
+      WStringEqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath) ||
+      WStringEqualsCaseInsensitive(native_path32, kNativeSoftwareKeyPath32));
 }
 
 }  // namespace chrome_cleaner

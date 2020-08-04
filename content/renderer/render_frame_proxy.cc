@@ -370,7 +370,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
     // and setting those (as well as the active one?). But the call to
     // UpdateUserActivationState sets the transient activation.
     web_frame_->UpdateUserActivationState(
-        blink::mojom::UserActivationUpdateType::kNotifyActivation);
+        blink::mojom::UserActivationUpdateType::kNotifyActivation,
+        blink::mojom::UserActivationNotificationType::kMedia);
   }
   web_frame_->SetHadStickyUserActivationBeforeNavigation(
       state.has_received_user_gesture_before_nav);

@@ -62,7 +62,7 @@ namespace {
 
 enum class UIStatus {
   kDisabled,
-  kEnabledWithNoFeatures,
+  kEnabledWithDefaultFeatures,
   kEnabledWithSuspiciousSites,
   kEnabledWithAllFeatures,
 };
@@ -233,13 +233,14 @@ class SafetyTipPageInfoBubbleViewBrowserTest
   UIStatus ui_status() const { return GetParam(); }
 
   bool IsSuspiciousSiteWarningEnabled() const {
-    return ui_status() == UIStatus::kEnabledWithSuspiciousSites ||
+    return ui_status() == UIStatus::kEnabledWithDefaultFeatures ||
+           ui_status() == UIStatus::kEnabledWithSuspiciousSites ||
            ui_status() == UIStatus::kEnabledWithAllFeatures;
   }
 
   bool AreLookalikeWarningsEnabled() const {
     // By default, lookalike detection is enabled unless explicitly turned off.
-    return ui_status() == UIStatus::kEnabledWithNoFeatures ||
+    return ui_status() == UIStatus::kEnabledWithDefaultFeatures ||
            ui_status() == UIStatus::kEnabledWithAllFeatures;
   }
 
@@ -249,7 +250,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         feature_list_.InitAndDisableFeature(
             security_state::features::kSafetyTipUI);
         break;
-      case UIStatus::kEnabledWithNoFeatures:
+      case UIStatus::kEnabledWithDefaultFeatures:
         feature_list_.InitAndEnableFeature(
             security_state::features::kSafetyTipUI);
         break;
@@ -325,11 +326,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
   }
 
   bool IsUIShowingOrSuspiciousSitesDisabled() {
-    auto status = ui_status();
-    if (status == UIStatus::kEnabledWithSuspiciousSites ||
-        status == UIStatus::kEnabledWithAllFeatures)
-      return IsUIShowing();
-    return !IsUIShowing();
+    return IsSuspiciousSiteWarningEnabled() ? IsUIShowing() : !IsUIShowing();
   }
 
   bool IsUIShowingOrAllFeaturesEnabled() {
@@ -432,7 +429,7 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     SafetyTipPageInfoBubbleViewBrowserTest,
     ::testing::Values(UIStatus::kDisabled,
-                      UIStatus::kEnabledWithNoFeatures,
+                      UIStatus::kEnabledWithDefaultFeatures,
                       UIStatus::kEnabledWithSuspiciousSites,
                       UIStatus::kEnabledWithAllFeatures));
 
@@ -1096,8 +1093,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     // If a warning should show, dismiss it to ensure UKM data gets recorded.
     if ((test_case.expected_results.lookalike_heuristic_triggered ||
          test_case.expected_results.blocklist_heuristic_triggered) &&
-        (ui_status() == UIStatus::kEnabledWithAllFeatures ||
-         ui_status() == UIStatus::kEnabledWithSuspiciousSites)) {
+        IsSuspiciousSiteWarningEnabled()) {
       CloseWarningLeaveSite(browser());
     }
   }

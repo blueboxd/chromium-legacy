@@ -39,11 +39,14 @@
 - (void)stopAnimated:(BOOL)animated {
   if (!self.started)
     return;
+
+  // Mark started as NO before calling dismissal callback to prevent dup
+  // stopAnimated: executions.
+  self.started = NO;
   // Notify the presentation context that the dismissal has finished.  This
   // is necessary to synchronize OverlayPresenter scheduling logic with the UI
   // layer.
   self.delegate->OverlayUIDidFinishDismissal(self.request);
-  self.started = NO;
 }
 
 @end

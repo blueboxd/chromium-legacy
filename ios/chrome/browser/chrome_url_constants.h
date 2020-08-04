@@ -114,4 +114,7 @@ extern const char kReadingListReferrerURL[];
 // URL used internally by ios/web when loading the NTP.
 extern const char kChromeUIAboutNewTabURL[];
 
+// "Learn more" URL for enterprise management information.
+extern const char kManagementLearnMoreURL[];
+
 #endif  // IOS_CHROME_BROWSER_CHROME_URL_CONSTANTS_H_

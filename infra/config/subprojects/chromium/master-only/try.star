@@ -287,6 +287,10 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
+    name = 'linux-lacros-compile-rel',
+)
+
+try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-dbg',
 )
 
@@ -315,13 +319,8 @@ try_.chromium_dawn_builder(
     os = os.WINDOWS_ANY,
 )
 
-
 try_.chromium_linux_builder(
     name = 'cast_shell_audio_linux',
-)
-
-try_.chromium_linux_builder(
-    name = 'linux-lacros-compile-rel',
 )
 
 try_.chromium_linux_builder(

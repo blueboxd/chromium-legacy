@@ -163,7 +163,7 @@ void CaptureAccessHandlerBase::UpdateExtensionTrusted(
     const extensions::Extension* extension) {
   const bool is_trusted = MediaCaptureDevicesDispatcher::IsOriginForCasting(
                               request.security_origin) ||
-                          IsExtensionWhitelistedForScreenCapture(extension) ||
+                          IsExtensionAllowedForScreenCapture(extension) ||
                           IsBuiltInExtension(request.security_origin);
   UpdateTrusted(request, is_trusted);
 }
@@ -304,7 +304,7 @@ void CaptureAccessHandlerBase::UpdateVideoScreenCaptureStatus(
   }
 }
 
-bool CaptureAccessHandlerBase::IsExtensionWhitelistedForScreenCapture(
+bool CaptureAccessHandlerBase::IsExtensionAllowedForScreenCapture(
     const extensions::Extension* extension) {
   if (!extension)
     return false;

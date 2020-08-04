@@ -107,8 +107,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   using GetUserKeysAndDataInDBCallback = storage::mojom::
       ServiceWorkerStorageControl::GetUserKeysAndDataByKeyPrefixCallback;
   using GetUserDataForAllRegistrationsInDBCallback = base::OnceCallback<void(
-      ServiceWorkerDatabase::Status,
-      std::vector<storage::mojom::ServiceWorkerUserDataPtr>)>;
+      const std::vector<std::pair<int64_t, std::string>>& user_data,
+      ServiceWorkerDatabase::Status)>;
 
   ~ServiceWorkerStorage();
 

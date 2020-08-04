@@ -160,9 +160,9 @@ enum class ContentSettingsType : int32_t {
   LEGACY_COOKIE_ACCESS,
 
   // Content settings which stores whether to allow sites to ask for permission
-  // to save changes to an original file selected by the user through the Native
+  // to save changes to an original file selected by the user through the
   // File System API.
-  NATIVE_FILE_SYSTEM_WRITE_GUARD,
+  FILE_SYSTEM_WRITE_GUARD,
 
   // Content settings for installed web apps that browsing history may be
   // inferred from e.g. last update check timestamp.
@@ -197,8 +197,8 @@ enum class ContentSettingsType : int32_t {
   AR,
 
   // Content setting which stores whether to allow site to open and read files
-  // and directories selected through the Native File System API.
-  NATIVE_FILE_SYSTEM_READ_GUARD,
+  // and directories selected through the File System API.
+  FILE_SYSTEM_READ_GUARD,
 
   // Access to first party storage in a third-party context. Exceptions are
   // scoped to the combination of requesting/top-level origin, and are managed

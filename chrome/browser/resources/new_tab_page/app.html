@@ -154,7 +154,7 @@
   #themeAttribution {
     align-self: flex-start;
     bottom: 16px;
-    color: var(--ntp-secondary-text-color);
+    color: var(--cr-secondary-text-color);
     margin-inline-start: 16px;
     position: fixed;
   }
@@ -255,11 +255,12 @@
       use-white-add-icon$="[[theme_.shortcutUseWhiteAddIcon]]"
       use-title-pill$="[[theme_.shortcutUseTitlePill]]">
   </ntp-most-visited>
-  <dom-if if="[[lazyRender_]]">
+  <dom-if if="[[lazyRender_]]" on-dom-change="onLazyRendered_">
     <template>
       <ntp-iframe id="promo" hidden$="[[!promoLoaded_]]"
           src="chrome-untrusted://new-tab-page/promo">
       </ntp-iframe>
+      <div id="modules"></div>
       <a id="backgroundImageAttribution"
           href="[[backgroundImageAttributionUrl_]]"
           hidden="[[!backgroundImageAttribution1_]]">

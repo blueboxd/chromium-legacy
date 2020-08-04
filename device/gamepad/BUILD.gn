@@ -113,7 +113,7 @@ component("gamepad") {
         [ "/wd4267" ]  # conversion from 'size_t' (64 bit) to 'type'(32 bit).
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     if (use_udev) {
       deps += [ "//device/udev_linux" ]
     } else {

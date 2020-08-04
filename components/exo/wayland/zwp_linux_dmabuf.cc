@@ -51,7 +51,6 @@ struct LinuxBufferParams {
     base::ScopedFD fd;
     uint32_t stride;
     uint32_t offset;
-    uint64_t modifier;
   };
 
   explicit LinuxBufferParams(Display* display) : display(display) {}
@@ -75,8 +74,7 @@ void linux_buffer_params_add(wl_client* client,
   LinuxBufferParams* linux_buffer_params =
       GetUserDataAs<LinuxBufferParams>(resource);
 
-  const uint64_t modifier = (static_cast<uint64_t>(modifier_hi) << 32) | modifier_lo;
-  LinuxBufferParams::Plane plane{base::ScopedFD(fd), stride, offset, modifier};
+  LinuxBufferParams::Plane plane{base::ScopedFD(fd), stride, offset};
 
   const auto& inserted = linux_buffer_params->planes.insert(
       std::pair<uint32_t, LinuxBufferParams::Plane>(plane_idx,
@@ -108,16 +106,8 @@ bool ValidateLinuxBufferParams(wl_resource* resource,
 
   LinuxBufferParams* linux_buffer_params =
       GetUserDataAs<LinuxBufferParams>(resource);
+  size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
 
-  size_t num_planes = linux_buffer_params->planes.size();
-  if (num_planes == 0) {
-    wl_resource_post_error(resource,
-                          ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
-                          "no planes given");
-    return false;
-  }
-
-  // Validate that we have planes 0..num_planes-1
   for (uint32_t i = 0; i < num_planes; ++i) {
     auto plane_it = linux_buffer_params->planes.find(i);
     if (plane_it == linux_buffer_params->planes.end()) {
@@ -128,24 +118,7 @@ bool ValidateLinuxBufferParams(wl_resource* resource,
     }
   }
 
-  // All planes must have the same modifier.
-  uint64_t modifier = linux_buffer_params->planes[0].modifier;
-  for (uint32_t i = 0; i < num_planes; ++i) {
-    if (linux_buffer_params->planes[i].modifier != modifier) {
-      wl_resource_post_error(resource,
-                             ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_FORMAT,
-                             "all planes must have same modifier");
-      return false;
-    }
-  }
-
-  // For linear layouts we know how many planes to expect, so check
-  // that.  Otherwise, we have to trust that the client gave us the
-  // right number and fail later when importing the EGLImage if that's
-  // wrong.
-  if (modifier == DRM_FORMAT_MOD_LINEAR &&
-      linux_buffer_params->planes.size() !=
-          gfx::NumberOfPlanesForLinearBufferFormat(format)) {
+  if (linux_buffer_params->planes.size() != num_planes) {
     wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
                            "plane idx out of bounds");
     return false;
@@ -180,12 +153,14 @@ wl_resource* create_buffer(wl_client* client,
   LinuxBufferParams* linux_buffer_params =
       GetUserDataAs<LinuxBufferParams>(resource);
 
+  size_t num_planes =
+      gfx::NumberOfPlanesForLinearBufferFormat(supported_format->buffer_format);
+
   gfx::NativePixmapHandle handle;
 
-  handle.modifier = linux_buffer_params->planes[0].modifier;
-
-  for (uint32_t i = 0; i < linux_buffer_params->planes.size(); ++i) {
-    auto& plane = linux_buffer_params->planes[i];
+  for (uint32_t i = 0; i < num_planes; ++i) {
+    auto plane_it = linux_buffer_params->planes.find(i);
+    LinuxBufferParams::Plane& plane = plane_it->second;
     handle.planes.emplace_back(plane.stride, plane.offset, 0,
                                std::move(plane.fd));
   }

@@ -3159,6 +3159,9 @@ const char kNtpWebUIName[] =
 const char kNtpWebUIDescription[] =
     "The WebUI new tab page is a replacement for the local NTP.";
 
+const char kNtpModulesName[] = "NTP Modules";
+const char kNtpModulesDescription[] = "Shows modules on the New Tab Page.";
+
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "

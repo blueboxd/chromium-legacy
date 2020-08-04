@@ -95,26 +95,6 @@ void RecordIppQueryResult(const PrinterQueryResult& result) {
   }
 }
 
-// Split the given |address| into host and port by the last occurrence of ':'.
-// If |address| has no ':', the |port| parameter is set to an empty string.
-// |host| and |port| cannot be nullptr.
-void SplitAddress(const std::string& address,
-                  std::string* host,
-                  std::string* port) {
-  DCHECK(host);
-  DCHECK(port);
-  const size_t pos = address.find_last_of(':');
-  if (pos == std::string::npos) {
-    // |address| has no ':' characters.
-    *host = address;
-    *port = "";
-    return;
-  }
-  *host = address.substr(0, pos);
-  // If |pos| points to the last character substr() returns an empty string.
-  *port = address.substr(pos + 1);
-}
-
 // Query an IPP printer to check for autoconf support where the printer is
 // located at |printer_uri|.  Results are reported through |callback|.  The
 // scheme of |printer_uri| must equal "ipp" or "ipps".
@@ -180,27 +160,14 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   printer->set_make_and_model(printer_make_and_model);
   printer->set_print_server_uri(print_server_uri);
 
-  std::string printer_host;
-  std::string printer_port;
-  SplitAddress(printer_address, &printer_host, &printer_port);
+  Uri uri(printer_protocol + url::kStandardSchemeSeparator + printer_address +
+          printer_queue);
+  if (uri.GetLastParsingError().status != Uri::ParserStatus::kNoErrors) {
+    PRINTER_LOG(ERROR) << "Uri parse error: "
+                       << static_cast<int>(uri.GetLastParsingError().status);
+    return nullptr;
+  }
 
-  Uri uri;
-  if (!uri.SetScheme(printer_protocol)) {
-    PRINTER_LOG(ERROR) << "Incorrect protocol: " << printer_protocol;
-    return nullptr;
-  }
-  if (!uri.SetHostEncoded(printer_host)) {
-    PRINTER_LOG(ERROR) << "Incorrect host: " << printer_host;
-    return nullptr;
-  }
-  if (!uri.SetPort(printer_port)) {
-    PRINTER_LOG(ERROR) << "Incorrect port: " << printer_port;
-    return nullptr;
-  }
-  if (!uri.SetPathEncoded(printer_queue)) {
-    PRINTER_LOG(ERROR) << "Incorrect path: " << printer_queue;
-    return nullptr;
-  }
   std::string message;
   if (!printer->SetUri(uri, &message)) {
     PRINTER_LOG(ERROR) << "Incorrect uri: " << message;
@@ -508,13 +475,9 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
   DCHECK(printer_protocol == kIppScheme || printer_protocol == kIppsScheme)
       << "Printer info requests only supported for IPP and IPPS printers";
 
-  std::string printer_host;
-  std::string printer_port;
-  SplitAddress(printer_address, &printer_host, &printer_port);
-
-  Uri uri;
-  if (!uri.SetScheme(printer_protocol) || !uri.SetHostEncoded(printer_host) ||
-      !uri.SetPort(printer_port) || !uri.SetPathEncoded(printer_queue) ||
+  Uri uri(printer_protocol + url::kStandardSchemeSeparator + printer_address +
+          printer_queue);
+  if (uri.GetLastParsingError().status != Uri::ParserStatus::kNoErrors ||
       !IsValidPrinterUri(uri)) {
     // Run the failure callback.
     OnAutoconfQueried(callback_id, PrinterQueryResult::UNKNOWN_FAILURE,

@@ -65,11 +65,12 @@ void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::MinimumVersionPolicyHandler* handler =
       connector->GetMinimumVersionPolicyHandler();
+  bool device_managed = connector->IsEnterpriseManaged();
 
   // |eol_return_banner_text| contains the update required end of life banner
   // text which is left empty when the banner should not be shown.
   base::string16 eol_return_banner_text;
-  if (handler && handler->IsUpdateRequiredEol()) {
+  if (device_managed && handler->ShouldShowUpdateRequiredEolBanner()) {
     base::Optional<int> days = handler->GetTimeRemainingInDays();
     // We only need to show the banner if less than equal to one week remains to
     // reach the update required deadline.

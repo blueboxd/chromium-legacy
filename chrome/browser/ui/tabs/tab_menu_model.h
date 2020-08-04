@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_
 
-#include "base/macros.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -25,6 +24,8 @@ class TabMenuModel : public ui::SimpleMenuModel {
   TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                TabStripModel* tab_strip,
                int index);
+  TabMenuModel(const TabMenuModel&) = delete;
+  TabMenuModel& operator=(const TabMenuModel&) = delete;
   ~TabMenuModel() override;
 
  private:
@@ -36,8 +37,6 @@ class TabMenuModel : public ui::SimpleMenuModel {
   // Send tab to self submenu.
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
       send_tab_to_self_sub_menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabMenuModel);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_

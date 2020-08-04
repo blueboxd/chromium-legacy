@@ -226,27 +226,13 @@ class TestingProfile : public Profile {
   // pointers.
   // Instead, use Builder::AddTestingFactory to inject your own factories.
   // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
-  // Creates the history service. If |delete_file| is true, the history file is
-  // deleted first, then the HistoryService is created. As TestingProfile
-  // deletes the directory containing the files used by HistoryService, this
-  // only matters if you're recreating the HistoryService.  If |no_db| is true,
-  // the history backend will fail to initialize its database; this is useful
-  // for testing error conditions. Returns true on success.
+  // Creates the history service. Returns true on success.
   // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
-  bool CreateHistoryService(bool delete_file, bool no_db) WARN_UNUSED_RESULT;
+  bool CreateHistoryService() WARN_UNUSED_RESULT;
 
   // Creates a WebDataService. If not invoked, the web data service is NULL.
   // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   void CreateWebDataService();
-
-  // Blocks until the HistoryService finishes restoring its in-memory cache.
-  // This is NOT invoked from CreateHistoryService.
-  void BlockUntilHistoryIndexIsRefreshed();
-
-  // Blocks until the HistoryBackend is completely destroyed. This is mostly
-  // useful to ensure the destruction tasks do not outlive this class on which
-  // they depend.
-  void BlockUntilHistoryBackendDestroyed();
 
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);

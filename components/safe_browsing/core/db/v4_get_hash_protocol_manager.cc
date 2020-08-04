@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
+#include "components/safe_browsing/core/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -339,6 +340,10 @@ void V4GetHashProtocolManager::GetFullHashes(
                        &resource_request->headers);
 
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  if (base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts)) {
+    resource_request->load_flags |=
+        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  }
   std::unique_ptr<network::SimpleURLLoader> owned_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);

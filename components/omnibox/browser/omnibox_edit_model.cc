@@ -42,6 +42,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -467,14 +468,25 @@ bool OmniboxEditModel::ShouldShowCurrentPageIcon() const {
 
 void OmniboxEditModel::UpdateInput(bool has_selected_text,
                                    bool prevent_inline_autocomplete) {
-  bool changed = SetInputInProgressNoNotify(true);
+  bool changed_to_user_input_in_progress = SetInputInProgressNoNotify(true);
   if (!has_focus()) {
-    if (changed)
+    if (changed_to_user_input_in_progress)
       NotifyObserversInputInProgress(true);
     return;
   }
-  StartAutocomplete(has_selected_text, prevent_inline_autocomplete);
-  if (changed)
+
+  if (changed_to_user_input_in_progress && user_text_.empty() &&
+      base::FeatureList::IsEnabled(omnibox::kClobberIsZeroSuggestEntrypoint)) {
+    // In the case the user enters user-input-in-progress mode by clearing
+    // everything (i.e. via Backspace), and the special flag is on, ask for
+    // ZeroSuggestions instead of the normal prefix (as-you-type) autocomplete.
+    StartZeroSuggestRequest(/*user_clobbered_permanent_text=*/true);
+  } else {
+    // Otherwise run the normal prefix (as-you-type) autocomplete.
+    StartAutocomplete(has_selected_text, prevent_inline_autocomplete);
+  }
+
+  if (changed_to_user_input_in_progress)
     NotifyObserversInputInProgress(true);
 }
 
@@ -1072,7 +1084,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     client_->OnInputStateChanged();
 }
 
-void OmniboxEditModel::ShowOnFocusSuggestionsIfAutocompleteIdle() {
+void OmniboxEditModel::StartZeroSuggestRequest(
+    bool user_clobbered_permanent_text) {
   // Early exit if a query is already in progress or the popup is already open.
   // This is what allows this method to be called multiple times in multiple
   // code locations without harm.
@@ -1084,7 +1097,7 @@ void OmniboxEditModel::ShowOnFocusSuggestionsIfAutocompleteIdle() {
     return;
 
   // Early exit if the user already has a navigation or search query in mind.
-  if (user_input_in_progress_)
+  if (user_input_in_progress_ && !user_clobbered_permanent_text)
     return;
 
   // Send the textfield contents exactly as-is, as otherwise the verbatim
@@ -1093,6 +1106,8 @@ void OmniboxEditModel::ShowOnFocusSuggestionsIfAutocompleteIdle() {
                              client_->GetSchemeClassifier());
   input_.set_current_url(client_->GetURL());
   input_.set_current_title(client_->GetTitle());
+  // TODO(tommycli): Distinguish between on-focus and on-clobber ZeroSuggest
+  // requests.
   input_.set_from_omnibox_focus(true);
   autocomplete_controller()->Start(input_);
 }

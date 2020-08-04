@@ -17,9 +17,11 @@ std::string ResolutionToString(AssistantInteractionResolution resolution) {
   return result.str();
 }
 
-#define LOG_INTERACTION()                      \
-  VLOG(AssistantInteractionLogger::kVLogLevel) \
-      << "Assistant: " << __FUNCTION__ << ": "
+#define LOG_INTERACTION() \
+  LOG_INTERACTION_AT_LEVEL(AssistantInteractionLogger::kVLogLevel)
+
+#define LOG_INTERACTION_AT_LEVEL(_level) \
+  VLOG(_level) << "Assistant: " << __FUNCTION__ << ": "
 
 }  // namespace
 
@@ -54,6 +56,8 @@ void AssistantInteractionLogger::OnHtmlResponse(const std::string& response,
   // Displaying fallback instead of the response as the response is filled with
   // HTML tags and rather large.
   LOG_INTERACTION() << "with fallback '" << fallback << "'";
+  // Display HTML at highest verbosity.
+  LOG_INTERACTION_AT_LEVEL(3) << "with HTML: " << response;
 }
 
 void AssistantInteractionLogger::OnSuggestionsResponse(

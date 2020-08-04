@@ -172,7 +172,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
           switches::kEnableUserMediaScreenCapturing) ||
       MediaCaptureDevicesDispatcher::IsOriginForCasting(
           request.security_origin) ||
-      IsExtensionWhitelistedForScreenCapture(extension) ||
+      IsExtensionAllowedForScreenCapture(extension) ||
       IsBuiltInExtension(request.security_origin);
 
   const bool origin_is_secure =
@@ -272,7 +272,7 @@ bool DesktopCaptureAccessHandler::IsDefaultApproved(
   return extension &&
          (extension->location() == extensions::Manifest::COMPONENT ||
           extension->location() == extensions::Manifest::EXTERNAL_COMPONENT ||
-          IsExtensionWhitelistedForScreenCapture(extension));
+          IsExtensionAllowedForScreenCapture(extension));
 }
 
 bool DesktopCaptureAccessHandler::SupportsStreamType(

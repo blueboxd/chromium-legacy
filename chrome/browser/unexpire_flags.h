@@ -8,9 +8,14 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 
+namespace flags_ui {
+class FlagsStorage;
+}  // namespace flags_ui
+
 namespace flags {
 
-bool IsFlagExpired(const char* internal_name);
+bool IsFlagExpired(const flags_ui::FlagsStorage* storage,
+                   const char* internal_name);
 
 namespace testing {
 

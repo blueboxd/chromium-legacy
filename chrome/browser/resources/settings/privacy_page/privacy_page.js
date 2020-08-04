@@ -143,11 +143,10 @@ Polymer({
     },
 
     /** @private */
-    enableNativeFileSystemWriteContentSetting_: {
+    enableFileSystemWriteContentSetting_: {
       type: Boolean,
       value() {
-        return loadTimeData.getBoolean(
-            'enableNativeFileSystemWriteContentSetting');
+        return loadTimeData.getBoolean('enableFileSystemWriteContentSetting');
       }
     },
 

@@ -27,9 +27,9 @@ const wchar_t kPendingFileRenameOps[] = L"PendingFileRenameOperations";
 
 const wchar_t kDoubleNullEntry[] = L"\0\0";
 
-// Convert the strings found in |buffer| to a list of string16s that is returned
+// Convert the strings found in |buffer| to a list of wstrings that is returned
 // in |value|. |buffer| is a string which contains a series of pairs of
-// null-terminated string16s followed by a terminating null character. |value|
+// null-terminated wstrings followed by a terminating null character. |value|
 // is a pointer to an empty vector of pending moves. On success, this vector
 // contains all of the strings extracted from |buffer|.
 // Returns false if buffer does not meet the above specification.

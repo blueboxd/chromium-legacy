@@ -931,7 +931,12 @@ void PasswordManager::OnLoginSuccessful() {
 
   // TODO(https://crbug.com/831123): Implement checking whether to save with
   // PasswordFormManager.
-  if (!client_->GetStoreResultFilter()->ShouldSave(
+  // Check whether the filter allows saving this credential. In practice, this
+  // prevents saving the password of the syncing account. However, if the
+  // password is already saved, then *updating* it is still allowed - better
+  // than keeping an outdated password around.
+  if (!submitted_manager->IsPasswordUpdate() &&
+      !client_->GetStoreResultFilter()->ShouldSave(
           *submitted_manager->GetSubmittedForm())) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SYNC_CREDENTIAL,

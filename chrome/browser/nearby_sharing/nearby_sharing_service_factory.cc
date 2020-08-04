@@ -66,6 +66,7 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
   PrefService* pref_service = profile->GetPrefs();
   NotificationDisplayService* notification_display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile);
+
   auto nearby_connections_manager =
       std::make_unique<NearbyConnectionsManagerImpl>(&process_manager, profile);
 

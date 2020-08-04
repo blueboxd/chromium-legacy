@@ -227,7 +227,9 @@ jumbo_component("capture_lib") {
   }
 
   # This includes the case of ChromeOS
-  if (is_linux) {
+  # TODO: As we move to separately version Chrome from ChromeOS, we may need to split
+  # these sources into linux, chromeos, and common.
+  if (is_linux || is_chromeos) {
     sources += [
       "video/linux/camera_config_chromeos.cc",
       "video/linux/camera_config_chromeos.h",

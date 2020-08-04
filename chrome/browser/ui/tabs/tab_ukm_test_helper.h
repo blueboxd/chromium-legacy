@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "components/ukm/test_ukm_recorder.h"
 
@@ -27,6 +26,8 @@ using SourceUkmMetricMap =
 class UkmEntryChecker {
  public:
   UkmEntryChecker();
+  UkmEntryChecker(const UkmEntryChecker&) = delete;
+  UkmEntryChecker& operator=(const UkmEntryChecker&) = delete;
   ~UkmEntryChecker();
 
   // Expects that the next untested entry for |entry_name| matches the value
@@ -72,8 +73,6 @@ class UkmEntryChecker {
   // |num_entries_| records the number of entries that have been expected via
   // calls to ExpectNewEntries() or similar.
   std::map<std::string, size_t> num_entries_;
-
-  DISALLOW_COPY_AND_ASSIGN(UkmEntryChecker);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_UKM_TEST_HELPER_H_

@@ -24,6 +24,7 @@
 #include "device/bluetooth/bluetooth_pairing_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/event_utils_winrt.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace device {
@@ -437,8 +438,8 @@ void BluetoothDeviceWinrt::ConnectToServiceInsecurely(
 
 // static
 std::string BluetoothDeviceWinrt::CanonicalizeAddress(uint64_t address) {
-  std::string bluetooth_address = BluetoothDevice::CanonicalizeAddress(
-      base::StringPrintf("%012llX", address));
+  std::string bluetooth_address =
+      CanonicalizeBluetoothAddress(base::StringPrintf("%012llX", address));
   DCHECK(!bluetooth_address.empty());
   return bluetooth_address;
 }

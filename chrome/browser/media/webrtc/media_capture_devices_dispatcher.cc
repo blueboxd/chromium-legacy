@@ -123,7 +123,7 @@ void MediaCaptureDevicesDispatcher::RegisterProfilePrefs(
 }
 
 bool MediaCaptureDevicesDispatcher::IsOriginForCasting(const GURL& origin) {
-  // Whitelisted tab casting extensions.
+  // Allowed tab casting extensions.
   return
       // Media Router Dev
       origin.spec() == "chrome-extension://enhhojjnijigcajfphajepfemndkmdlo/" ||

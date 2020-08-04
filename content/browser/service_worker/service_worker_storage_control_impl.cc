@@ -13,6 +13,20 @@ namespace content {
 
 namespace {
 
+void DidGetUserDataForAllRegistrations(
+    ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrationsCallback
+        callback,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  // TODO(bashi): Change ServiceWorkerStorage::GetUserDataForAllRegistrations()
+  // to return base::flat_map.
+  base::flat_map<int64_t, std::string> values;
+  for (auto& entry : user_data) {
+    values[entry.first] = entry.second;
+  }
+  std::move(callback).Run(status, std::move(values));
+}
+
 void DidGetAllRegistrations(
     ServiceWorkerStorageControlImpl::GetAllRegistrationsDeprecatedCallback
         callback,
@@ -332,14 +346,17 @@ void ServiceWorkerStorageControlImpl::ClearUserDataByKeyPrefixes(
 void ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrations(
     const std::string& key,
     GetUserDataForAllRegistrationsCallback callback) {
-  storage_->GetUserDataForAllRegistrations(key, std::move(callback));
+  storage_->GetUserDataForAllRegistrations(
+      key,
+      base::BindOnce(&DidGetUserDataForAllRegistrations, std::move(callback)));
 }
 
 void ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
     GetUserDataForAllRegistrationsByKeyPrefixCallback callback) {
-  storage_->GetUserDataForAllRegistrationsByKeyPrefix(key_prefix,
-                                                      std::move(callback));
+  storage_->GetUserDataForAllRegistrationsByKeyPrefix(
+      key_prefix,
+      base::BindOnce(&DidGetUserDataForAllRegistrations, std::move(callback)));
 }
 
 void ServiceWorkerStorageControlImpl::

@@ -91,8 +91,7 @@ class SubresourceFilterContentSettingsManagerHistoryTest
     : public SubresourceFilterContentSettingsManagerTest {
  public:
   void SetUp() override {
-    ASSERT_TRUE(profile()->CreateHistoryService(true /* delete_file */,
-                                                false /* no_db */));
+    ASSERT_TRUE(profile()->CreateHistoryService());
     SubresourceFilterContentSettingsManagerTest::SetUp();
   }
 };

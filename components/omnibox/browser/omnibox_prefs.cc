@@ -60,13 +60,6 @@ SuggestionGroupVisibility GetUserPreferenceForSuggestionGroupVisibility(
   return SuggestionGroupVisibility::DEFAULT;
 }
 
-bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id) {
-  // TODO(tommycli): Migrate all callsites to
-  // AutocompleteResult::IsSuggestionGroupIdHidden().
-  return GetUserPreferenceForSuggestionGroupVisibility(
-             prefs, suggestion_group_id) == SuggestionGroupVisibility::HIDDEN;
-}
-
 void SetSuggestionGroupVisibility(PrefService* prefs,
                                   int suggestion_group_id,
                                   SuggestionGroupVisibility new_value) {
@@ -81,17 +74,6 @@ void SetSuggestionGroupVisibility(PrefService* prefs,
           : kToggleSuggestionGroupIdOffHistogram,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(suggestion_group_id);
-}
-
-void ToggleSuggestionGroupIdVisibility(PrefService* prefs,
-                                       int suggestion_group_id) {
-  // TODO(tommycli): Migrate all callsites to use SetSuggestionGroupVisibility()
-  // instead of this method.
-  SuggestionGroupVisibility new_value =
-      IsSuggestionGroupIdHidden(prefs, suggestion_group_id)
-          ? SuggestionGroupVisibility::SHOWN
-          : SuggestionGroupVisibility::HIDDEN;
-  SetSuggestionGroupVisibility(prefs, suggestion_group_id, new_value);
 }
 
 }  // namespace omnibox

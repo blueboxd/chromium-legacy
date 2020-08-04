@@ -14,6 +14,7 @@
 #include "base/time/clock.h"
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
+#include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/lite_video/lite_video_user_blocklist.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -369,4 +370,25 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnBackForwardNavigation) {
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.HintCache.HasHint", false, 1);
+}
+
+TEST_F(LiteVideoDeciderTest, SetDefaultDownlinkBandwidthOverride) {
+  base::HistogramTester histogram_tester;
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps, "200");
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      lite_video::switches::kLiteVideoForceOverrideDecision);
+
+  GURL url("https://LiteVideo.com");
+  content::MockNavigationHandle navigation_handle(web_contents());
+  navigation_handle.set_url(url);
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
+  base::Optional<lite_video::LiteVideoHint> hint =
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
+
+  ASSERT_TRUE(hint);
+  EXPECT_EQ(200, hint->target_downlink_bandwidth_kbps());
 }

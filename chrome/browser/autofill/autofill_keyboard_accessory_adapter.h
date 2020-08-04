@@ -82,6 +82,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   void ViewDestroyed() override;
   void SelectionCleared() override;
   gfx::NativeView container_view() const override;
+  content::WebContents* GetWebContents() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
   std::vector<Suggestion> GetSuggestions() const override;

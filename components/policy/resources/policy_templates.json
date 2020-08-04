@@ -105,7 +105,7 @@
 #   platforms while the 'future_on' is used to enumerate platforms where the
 #   feature is not yet ready for use in production environments. Any unreleased
 #   platforms is hidden from policy templates and documentation. The policy
-#   defination in the source code is generated for platforms in both lists.
+#   definition in the source code is generated for platforms in both lists.
 #
 #   The format of the 'supported_on' is '<platform>:<since_version>-<until_version>'.
 #   It means the policy is officially released on the |platform| from
@@ -2119,6 +2119,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': '{ "RemoteAccessHostMatchUsername": true }',
       'id': 289,
       'caption': '''Policy overrides for Debug builds of the remote access host''',
@@ -3527,6 +3528,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': 104857600,
       'id': 111,
       'caption': '''Set media disk cache size in bytes''',
@@ -5681,6 +5683,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': 2,
       'id': 313,
       'caption': '''Default key generation setting''',
@@ -6304,6 +6307,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': ['https://www.example.com', '[*.]example.edu'],
       'id': 314,
       'caption': '''Allow key generation on these sites''',
@@ -6327,6 +6331,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': ['https://www.example.com', '[*.]example.edu'],
       'id': 315,
       'caption': '''Block key generation on these sites''',
@@ -6862,6 +6867,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': 1,
       'id': 57,
       'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
@@ -6881,6 +6887,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': ['https://www.example.com', 'https://www.example.edu'],
       'id': 58,
       'caption': '''Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
@@ -6903,6 +6910,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': ['https://www.example.com', 'https://www.example.edu'],
       'id': 59,
       'caption': '''Always render the following URL patterns in the host browser''',
@@ -6922,6 +6930,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': '--enable-media-stream --enable-media-source',
       'id': 141,
       'caption': '''Additional command line parameters for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
@@ -6939,6 +6948,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 238,
       'caption': '''Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
@@ -6963,6 +6973,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': ['text/xml', 'application/xml'],
       'id': 60,
       'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types''',
@@ -7336,6 +7347,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': '${user_home}/Chrome Frame',
       'id': 87,
       'caption': '''Set <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> user data directory''',
@@ -8218,6 +8230,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 118,
       'caption': '''Disable TLS False Start''',
@@ -8274,6 +8287,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 340,
       'caption': '''Allow SHA-1 signed certificates issued by local trust anchors''',
@@ -8315,6 +8329,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 413,
       'caption': '''Enable trust in Symantec Corporation's Legacy PKI Infrastructure''',
@@ -9305,6 +9320,7 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': [ 'https://google.com', 'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaa/' ],
       'id': 137,
       'caption': '''Load specified urls on demo login''',
@@ -9323,6 +9339,7 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': 60000,
       'id': 130,
       'caption': '''Timeout until idle user log-out is executed''',
@@ -9343,6 +9360,7 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': 15000,
       'id': 131,
       'caption': '''Duration of the idle log-out warning message''',
@@ -9363,6 +9381,7 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': 'fhblcfnmnbehmifidkddcenilbpddlfk',
       'id': 132,
       'caption': '''Screen saver to be used on the sign-in screen in retail mode''',
@@ -9381,6 +9400,7 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': 120000,
       'id': 133,
       'caption': '''Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode''',
@@ -9404,6 +9424,7 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': [ '{ "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "https://clients2.google.com/service/update2/crx" }' ],
       'id': 135,
       'caption': '''List of AppPack extensions''',
@@ -12811,6 +12832,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 221,
     },
@@ -13481,6 +13503,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': 'tls1.2',
       'id': 361,
       'caption': '''Maximum SSL version enabled''',
@@ -13814,6 +13837,7 @@
         'dynamic_refresh': False,
         'per_profile': False
       },
+      'deprecated': True,
       'example_value': False
     },
     {
@@ -14575,6 +14599,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 337,
       'caption': '''Enable Android Backup Service''',
@@ -14592,6 +14617,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 363,
       'caption': '''Enable Android Google Location Service''',
@@ -15682,6 +15708,28 @@
       If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
     {
+      'name': 'NearbyShareAllowed',
+      'owners': ['vecore@google.com', 'hansberry@chromium.org', 'better-together-dev@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'supported_on': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': True,
+      'id': 761,
+      'caption': '''Allow Nearby Share to be enabled.''',
+      'tags': ['local-data-access', 'google-sharing'],
+      'desc': '''If this setting is enabled, users will be allowed to opt in to Nearby Share, which allows them to send and receive files from people closeby.
+
+      If this setting is disabled, users will not be allowed to opt in to Nearby Share.
+
+      If this policy is left not set, the default is allowed for both enterprise-managed users and non-managed users.''',
+    },
+    {
       'name': 'BrowserNetworkTimeQueriesEnabled',
       'owners': ['estark@chromium.org', 'mab@chromium.org'],
       'type': 'main',
@@ -16208,6 +16256,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': 'https://example.com/,https://othersite.org/',
       'id': 417,
       'caption': '''Enable Site Isolation for specified origins''',
@@ -16230,6 +16279,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 418,
       'caption': '''Enable Site Isolation for every site''',
@@ -16305,6 +16355,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 414,
       'caption': '''Allow WebDriver to Override Incompatible Policies''',
@@ -17977,6 +18028,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 460,
       'caption': '''Allow background tabs freeze''',
@@ -21172,6 +21224,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:79-85', 'chrome_os:79-85', 'android:79-85'],
+      'deprecated': True,
       'caption': '''Enable a TLS 1.3 security feature for local trust anchors.''',
       'tags': ['system-security'],
       'desc': '''This policy controls a security feature in TLS 1.3 which protects connections against downgrade attacks. It is backwards-compatible and will not affect connections to compliant TLS 1.2 servers or proxies. However, older versions of some TLS-intercepting proxies have an implementation flaw which causes them to be incompatible.
@@ -23494,6 +23547,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 760,
+  'highest_id_currently_used': 761,
   'highest_atomic_group_id_currently_used': 39
 }

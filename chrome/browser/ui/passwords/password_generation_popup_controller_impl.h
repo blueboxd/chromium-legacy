@@ -133,6 +133,7 @@ class PasswordGenerationPopupControllerImpl
   void SetSelected() override;
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
+  content::WebContents* GetWebContents() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
 

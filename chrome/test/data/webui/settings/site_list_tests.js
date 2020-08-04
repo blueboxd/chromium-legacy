@@ -58,10 +58,10 @@ let prefsMixedProvider;
 let prefsMixedEmbeddingOrigin;
 
 /**
- * An example pref with native file system write
+ * An example pref with file system write
  * @type {SiteSettingsPref}
  */
-let prefsNativeFileSystemWrite;
+let prefsFileSystemWrite;
 
 /**
  * An example pref with multiple categories and multiple allow/block
@@ -279,9 +279,9 @@ function populateTestExceptions() {
 
   prefsGeolocationEmpty = createSiteSettingsPrefs([], []);
 
-  prefsNativeFileSystemWrite = createSiteSettingsPrefs(
+  prefsFileSystemWrite = createSiteSettingsPrefs(
       [], [createContentSettingTypeToValuePair(
-              ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+              ContentSettingsTypes.FILE_SYSTEM_WRITE,
               [createRawSiteException('http://foo.com', {
                 setting: ContentSetting.BLOCK,
               })])]);
@@ -1075,8 +1075,8 @@ suite('SiteList', function() {
       'Add site button is hidden for content settings that don\'t allow it',
       function() {
         setUpCategory(
-            ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE, ContentSetting.ALLOW,
-            prefsNativeFileSystemWrite);
+            ContentSettingsTypes.FILE_SYSTEM_WRITE, ContentSetting.ALLOW,
+            prefsFileSystemWrite);
         return browserProxy.whenCalled('getExceptionList').then(() => {
           flush();
           assertTrue(testElement.$$('#addSite').hidden);

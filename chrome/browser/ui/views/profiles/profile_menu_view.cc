@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -456,9 +457,11 @@ void ProfileMenuView::BuildIdentity() {
   }
 #endif
 
+  SkColor background_color =
+      GetThemeColorsForProfile(profile).profile_highlight_color;
   if (account_info.has_value()) {
     SetProfileIdentityInfo(
-        profile_name, edit_button_params,
+        profile_name, background_color, edit_button_params,
         ui::ImageModel::FromImage(account_info.value().account_image),
         base::UTF8ToUTF16(account_info.value().full_name),
         IsSyncPaused(profile)
@@ -466,7 +469,7 @@ void ProfileMenuView::BuildIdentity() {
             : base::UTF8ToUTF16(account_info.value().email));
   } else {
     SetProfileIdentityInfo(
-        profile_name, edit_button_params,
+        profile_name, background_color, edit_button_params,
         ui::ImageModel::FromImage(profile_attributes->GetAvatarIcon()),
         /*title=*/base::string16(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
@@ -475,6 +478,7 @@ void ProfileMenuView::BuildIdentity() {
 
 void ProfileMenuView::BuildGuestIdentity() {
   SetProfileIdentityInfo(/*profile_name=*/base::string16(),
+                         /*background_color=*/SK_ColorTRANSPARENT,
                          /*edit_button=*/base::nullopt,
                          profiles::GetGuestAvatar(),
                          l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));

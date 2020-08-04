@@ -10,8 +10,10 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,6 +64,7 @@ class NearbyNotificationManagerTest : public testing::Test {
  public:
   NearbyNotificationManagerTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kNearbySharing);
+    RegisterNearbySharingPrefs(pref_service_.registry());
     notification_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(&profile_);
     nearby_service_ = CreateAndUseMockNearbySharingService(&profile_);
@@ -84,12 +88,14 @@ class NearbyNotificationManagerTest : public testing::Test {
     NotificationDisplayService* notification_display_service =
         NotificationDisplayServiceFactory::GetForProfile(&profile_);
     return std::make_unique<NearbyNotificationManager>(
-        notification_display_service, nearby_service_);
+        notification_display_service, nearby_service_, &pref_service_);
   }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  TestingPrefServiceSimple pref_service_;
   TestingProfile profile_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
   MockNearbySharingService* nearby_service_;
@@ -733,4 +739,42 @@ TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Close) {
 
   // Notification should be closed.
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, Onboarding_Click) {
+  manager()->ShowOnboarding();
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
+                                      notifications[0].id(),
+                                      /*action_index=*/base::nullopt,
+                                      /*reply=*/base::nullopt);
+
+  // Notification should be closed.
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, Onboarding_DismissTimeout) {
+  // First notification should be shown by default.
+  manager()->ShowOnboarding();
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  notification_tester_->RemoveNotification(
+      NotificationHandler::Type::NEARBY_SHARE, notifications[0].id(),
+      /*by_user=*/true);
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+
+  // Second notification should be blocked if shown before the timeout passed.
+  manager()->ShowOnboarding();
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+
+  // Fast forward by the timeout until we can show the notification again.
+  task_environment_.FastForwardBy(
+      NearbyNotificationManager::kOnboardingDismissedTimeout);
+  manager()->ShowOnboarding();
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
 }

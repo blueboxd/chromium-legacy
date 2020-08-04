@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType, TwoUpViewAction} from './constants.js';
+import {FittingType} from './constants.js';
 
 // Handles events specific to the PDF viewer and logs the corresponding metrics.
 export class PDFMetrics {
@@ -22,13 +22,12 @@ export class PDFMetrics {
 
   /**
    * Records when the two up view mode is enabled or disabled.
-   * @param {TwoUpViewAction} twoUpViewAction the new TwoUpViewAction.
+   * @param {boolean} enabled True when two up view mode is enabled.
    */
-  static recordTwoUpView(twoUpViewAction) {
+  static recordTwoUpViewEnabled(enabled) {
     PDFMetrics.record(
-        twoUpViewAction === TwoUpViewAction.TWO_UP_VIEW_ENABLE ?
-            PDFMetrics.UserAction.TWO_UP_VIEW_ENABLE :
-            PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE);
+        enabled ? PDFMetrics.UserAction.TWO_UP_VIEW_ENABLE :
+                  PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE);
   }
 
   /**

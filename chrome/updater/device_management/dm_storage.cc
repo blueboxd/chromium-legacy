@@ -95,16 +95,25 @@ bool DMStorage::IsDeviceDeregistered() const {
   return GetDmToken() == kInvalidTokenValue;
 }
 
-bool DMStorage::PersistPolicies(const std::string& policy_info_data,
-                                const DMPolicyMap& policy_map) const {
+bool DMStorage::PersistPolicies(const DMPolicyMap& policy_map) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (policy_map.empty())
+    return true;
 
-  // Persists policy cached info
-  base::FilePath policy_info_file =
-      policy_cache_root_.AppendASCII(kPolicyInfoFileName);
-  if (!base::ImportantFileWriter::WriteFileAtomically(policy_info_file,
-                                                      policy_info_data)) {
-    return false;
+  // Each policy in the map should be signed in the same way. If a policy
+  // in the map contains a public key, normally it means the server rotates the
+  // key. In this case, we persists the policy into the cached policy info file
+  // for future policy fetch.
+  const std::string policy_info_data = policy_map.cbegin()->second;
+  CachedPolicyInfo cached_info;
+  if (cached_info.Populate(policy_info_data) &&
+      !cached_info.public_key().empty()) {
+    base::FilePath policy_info_file =
+        policy_cache_root_.AppendASCII(kPolicyInfoFileName);
+    if (!base::ImportantFileWriter::WriteFileAtomically(policy_info_file,
+                                                        policy_info_data)) {
+      return false;
+    }
   }
 
   // Persists individual policies.
@@ -135,18 +144,18 @@ bool DMStorage::PersistPolicies(const std::string& policy_info_data,
 
 std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto cached_info = std::make_unique<CachedPolicyInfo>();
 
   if (!IsValidDMToken())
-    return nullptr;
+    return cached_info;
 
   base::FilePath policy_info_file =
       policy_cache_root_.AppendASCII(kPolicyInfoFileName);
   std::string policy_info_data;
-  auto cached_info = std::make_unique<CachedPolicyInfo>();
   if (!base::PathExists(policy_info_file) ||
       !base::ReadFileToString(policy_info_file, &policy_info_data) ||
       !cached_info->Populate(policy_info_data)) {
-    return nullptr;
+    return cached_info;
   }
 
   return cached_info;

@@ -1888,6 +1888,7 @@ void CrosNetworkConfig::OnGetManagedProperties(
     NET_LOG(ERROR) << "GetManagedProperties failed for: " << guid
                    << " Error: " << error.value_or("Failed");
     std::move(callback).Run(nullptr);
+    return;
   }
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);

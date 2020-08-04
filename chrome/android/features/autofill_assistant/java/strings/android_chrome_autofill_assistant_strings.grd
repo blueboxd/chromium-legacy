@@ -177,6 +177,9 @@
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_RENT_CAR" desc="Onboarding message describing autofill assistant's capability for car rentals.">
         Rent a car\nin just a few taps
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_PASSWORD_CHANGE" desc="Onboarding message describing autofill assistant's capability for password change.">
+        Let Google Assistant help you\nchange your password
+      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_BUY_MOVIE_TICKETS" desc="Onboarding message describing autofill assistant's capability for movie tickets.">
         Buy movie tickets\nin just a few taps
       </message>

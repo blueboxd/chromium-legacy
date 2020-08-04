@@ -14,16 +14,14 @@ namespace content {
 class WebContents;
 }
 
-// URL that the "leave site" button aborts to by default.
-extern const char kSafetyTipLeaveSiteUrl[];
-
 // Records a histogram for a user's interaction with a Safety Tip in the given
 // |web_contents|.
 void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
                                          SafetyTipInteraction interaction);
 
 // Invokes action when 'leave site' button is clicked, and records a histogram.
-// Navigates to a safe URL, replacing the current page in the process.
+// Navigates to either |safe_url| (when !is_empty()), or a safe default
+// otherwise, replacing the current page in the process.
 void LeaveSiteFromSafetyTip(content::WebContents* web_contents,
                             const GURL& safe_url);
 

@@ -190,6 +190,12 @@ favicon_base::IconTypeSet FaviconHandler::GetIconTypesFromHandlerType(
 }
 
 void FaviconHandler::FetchFavicon(const GURL& page_url, bool is_same_document) {
+  // Some same document navigations (such as those done by
+  // history.replaceState) do not change the url. No need to start over in this
+  // case.
+  if (is_same_document && page_url == last_page_url_)
+    return;
+
   cancelable_task_tracker_for_page_url_.TryCancelAll();
   cancelable_task_tracker_for_candidates_.TryCancelAll();
 

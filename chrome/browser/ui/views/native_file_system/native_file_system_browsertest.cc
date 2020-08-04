@@ -376,8 +376,8 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   host_content_settings_map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      std::string(), CONTENT_SETTING_ALLOW);
+      url, url, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   // If a prompt shows up, deny it.
   NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
@@ -428,8 +428,8 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   host_content_settings_map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      std::string(), CONTENT_SETTING_ALLOW);
+      url, url, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   // If a prompt shows up, deny it.
   NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)

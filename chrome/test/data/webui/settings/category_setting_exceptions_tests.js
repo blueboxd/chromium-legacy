@@ -84,8 +84,8 @@ suite('CategorySettingExceptions', function() {
         });
       });
 
-  test('allow site list is hidden for NATIVE_FILE_SYSTEM_WRITE', function() {
-    testElement.category = ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+  test('allow site list is hidden for FILE_SYSTEM_WRITE', function() {
+    testElement.category = ContentSettingsTypes.FILE_SYSTEM_WRITE;
 
     // Flush to be sure that the container is updated.
     flush();

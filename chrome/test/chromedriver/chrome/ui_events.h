@@ -16,6 +16,7 @@ enum MouseEventType {
   kPressedMouseEventType = 0,
   kReleasedMouseEventType,
   kMovedMouseEventType,
+  kWheelMouseEventType,
   kPauseMouseEventType
 };
 
@@ -54,6 +55,8 @@ struct MouseEvent {
   int buttons;
   // |click_count| should not be negative.
   int click_count;
+  int delta_x;
+  int delta_y;
   PointerType pointer_type;
 };
 

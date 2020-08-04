@@ -5,21 +5,23 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_COMMON_NEARBY_SHARE_PREFS_H_
 #define CHROME_BROWSER_NEARBY_SHARING_COMMON_NEARBY_SHARE_PREFS_H_
 
-
 class PrefRegistrySimple;
 
 namespace prefs {
-extern const char kNearbySharingEnabledPrefName[];
+
 extern const char kNearbySharingActiveProfilePrefName[];
+extern const char kNearbySharingAllowedContactsPrefName[];
 extern const char kNearbySharingBackgroundVisibilityName[];
 extern const char kNearbySharingDataUsageName[];
 extern const char kNearbySharingDeviceIdPrefName[];
 extern const char kNearbySharingDeviceNamePrefName[];
-extern const char kNearbySharingAllowedContactsPrefName[];
+extern const char kNearbySharingEnabledPrefName[];
 extern const char kNearbySharingFullNamePrefName[];
 extern const char kNearbySharingIconUrlPrefName[];
+extern const char kNearbySharingOnboardingDismissedTimePrefName[];
 extern const char kNearbySharingSchedulerDownloadDeviceDataPrefName[];
 extern const char kNearbySharingSchedulerUploadDeviceNamePrefName[];
+
 }  // namespace prefs
 
 void RegisterNearbySharingPrefs(PrefRegistrySimple* registry);

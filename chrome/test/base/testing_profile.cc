@@ -35,9 +35,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_builder.h"
@@ -67,11 +65,6 @@
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/history/content/browser/content_visit_delegate.h"
-#include "components/history/content/browser/history_database_helper.h"
-#include "components/history/core/browser/history_backend.h"
-#include "components/history/core/browser/history_constants.h"
-#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -159,27 +152,6 @@ namespace {
 
 // Default profile name
 const char kTestingProfile[] = "testing_profile";
-
-std::unique_ptr<KeyedService> BuildHistoryService(
-    content::BrowserContext* context) {
-  return std::make_unique<history::HistoryService>(
-      std::make_unique<ChromeHistoryClient>(
-          BookmarkModelFactory::GetForBrowserContext(context)),
-      std::make_unique<history::ContentVisitDelegate>(context));
-}
-
-std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  std::unique_ptr<InMemoryURLIndex> in_memory_url_index(
-      new InMemoryURLIndex(BookmarkModelFactory::GetForBrowserContext(profile),
-                           HistoryServiceFactory::GetForProfile(
-                               profile, ServiceAccessType::IMPLICIT_ACCESS),
-                           TemplateURLServiceFactory::GetForProfile(profile),
-                           profile->GetPath(), SchemeSet()));
-  in_memory_url_index->Init();
-  return std::move(in_memory_url_index);
-}
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
                               sql::InitStatus status,
@@ -538,75 +510,26 @@ TestingProfile::~TestingProfile() {
   }
 }
 
-bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
+bool TestingProfile::CreateHistoryService() {
   // Should never be created multiple times.
   DCHECK(!HistoryServiceFactory::GetForProfileWithoutCreating(this));
 
-  if (delete_file) {
-    base::FilePath path = GetPath();
-    path = path.Append(history::kHistoryFilename);
-    if (!base::DeleteFile(path) || base::PathExists(path))
-      return false;
-  }
   // This will create and init the history service.
   history::HistoryService* history_service =
       static_cast<history::HistoryService*>(
           HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              this, base::BindRepeating(&BuildHistoryService)));
-  if (!history_service->Init(
-          no_db, history::HistoryDatabaseParamsForPath(GetPath()))) {
+              this, HistoryServiceFactory::GetDefaultFactory()));
+  if (!history_service) {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         this, BrowserContextKeyedServiceFactory::TestingFactory());
     return false;
   }
-  // Some tests expect that CreateHistoryService() will also make the
-  // InMemoryURLIndex available.
-  InMemoryURLIndexFactory::GetInstance()->SetTestingFactory(
-      this, base::BindRepeating(&BuildInMemoryURLIndex));
-  // Disable WebHistoryService by default, since it makes network requests.
-  WebHistoryServiceFactory::GetInstance()->SetTestingFactory(
-      this, BrowserContextKeyedServiceFactory::TestingFactory());
   return true;
 }
 
 void TestingProfile::CreateWebDataService() {
   WebDataServiceFactory::GetInstance()->SetTestingFactory(
       this, base::BindRepeating(&BuildWebDataService));
-}
-
-void TestingProfile::BlockUntilHistoryBackendDestroyed() {
-  // Only get the history service if it actually exists since the caller of the
-  // test should explicitly call CreateHistoryService to build it.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this);
-
-  // Nothing to destroy
-  if (!history_service) {
-    return;
-  }
-
-  base::RunLoop run_loop;
-  history_service->SetOnBackendDestroyTask(run_loop.QuitClosure());
-  HistoryServiceFactory::ShutdownForProfile(this);
-  run_loop.Run();
-}
-
-void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
-  // Only get the history service if it actually exists since the caller of the
-  // test should explicitly call CreateHistoryService to build it.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this);
-  DCHECK(history_service);
-  InMemoryURLIndex* index = InMemoryURLIndexFactory::GetForProfile(this);
-  if (!index || index->restored())
-    return;
-  base::RunLoop run_loop;
-  HistoryIndexRestoreObserver observer(
-      content::GetDeferredQuitTaskForRunLoop(&run_loop));
-  index->set_restore_cache_observer(&observer);
-  run_loop.Run();
-  index->set_restore_cache_observer(nullptr);
-  DCHECK(index->restored());
 }
 
 void TestingProfile::SetGuestSession(bool guest) {

@@ -27,6 +27,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadDateTimePickerDialogImpl.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadDateTimePickerDialogProperties.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadDateTimePickerView.java",
+    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadDialogUtils.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogChoice.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogController.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogCoordinator.java",

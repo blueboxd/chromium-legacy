@@ -18,7 +18,7 @@ import './shared-css.js';
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {FittingType, TwoUpViewAction} from '../constants.js';
+import {FittingType} from '../constants.js';
 // <if expr="chromeos">
 import {InkController} from '../ink_controller.js';
 // </if>
@@ -184,15 +184,13 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   onSinglePageViewClick_() {
     this.twoUpViewEnabled_ = false;
-    this.dispatchEvent(new CustomEvent(
-        'two-up-view-changed', {detail: TwoUpViewAction.TWO_UP_VIEW_DISABLE}));
+    this.dispatchEvent(new CustomEvent('two-up-view-changed', {detail: false}));
   }
 
   /** @private */
   onTwoPageViewClick_() {
     this.twoUpViewEnabled_ = true;
-    this.dispatchEvent(new CustomEvent(
-        'two-up-view-changed', {detail: TwoUpViewAction.TWO_UP_VIEW_ENABLE}));
+    this.dispatchEvent(new CustomEvent('two-up-view-changed', {detail: true}));
   }
 
   /** @private */

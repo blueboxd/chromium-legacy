@@ -119,6 +119,8 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
   // existing bundle.
   void Update(std::unique_ptr<PendingURLLoaderFactoryBundle> pending_factories);
 
+  bool HasBoundDefaultFactory() const { return default_factory_.is_bound(); }
+
  protected:
   ~URLLoaderFactoryBundle() override;
 

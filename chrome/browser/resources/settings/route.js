@@ -83,8 +83,8 @@ function addPrivacyChildRoutes(r) {
     r.SITE_SETTINGS_WINDOW_PLACEMENT =
         r.SITE_SETTINGS.createChild('windowPlacement');
   }
-  if (loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting')) {
-    r.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE =
+  if (loadTimeData.getBoolean('enableFileSystemWriteContentSetting')) {
+    r.SITE_SETTINGS_FILE_SYSTEM_WRITE =
         r.SITE_SETTINGS.createChild('filesystem');
   }
 }

@@ -51,7 +51,6 @@
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
@@ -94,6 +93,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
@@ -518,6 +518,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::V8ObjectForElement() {
   return v8::Local<v8::Object>::Cast(v8value);
 }
 
+// TODO(hiroshige): Consider merging with LocalFrame::ExecuteJavaScriptURL().
 WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
                                                    bool popups_allowed) {
   LocalFrame* frame = element_->GetDocument().GetFrame();
@@ -545,9 +546,9 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
 
   v8::HandleScope handle_scope(ToIsolate(frame));
   v8::Local<v8::Value> result =
-      frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
-          KURL(), SanitizeScriptErrors::kSanitize);
+      ClassicScript::CreateUnspecifiedScript(
+          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl))
+          ->RunScriptAndReturnValue(frame);
 
   // Failure is reported as a null string.
   if (result.IsEmpty() || !result->IsString())

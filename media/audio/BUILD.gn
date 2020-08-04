@@ -232,7 +232,7 @@ source_set("audio") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "linux/audio_manager_linux.cc" ]
   }
 

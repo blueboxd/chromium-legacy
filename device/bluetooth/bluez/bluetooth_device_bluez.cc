@@ -32,6 +32,7 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -298,7 +299,7 @@ std::string BluetoothDeviceBlueZ::GetAddress() const {
           object_path_);
   DCHECK(properties);
 
-  return CanonicalizeAddress(properties->address.value());
+  return device::CanonicalizeBluetoothAddress(properties->address.value());
 }
 
 BluetoothDevice::VendorIDSource BluetoothDeviceBlueZ::GetVendorIDSource()

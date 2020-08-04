@@ -53,7 +53,7 @@ class TranslateUIDelegate {
   size_t GetNumberOfLanguages() const;
 
   // Returns the original language index.
-  size_t GetOriginalLanguageIndex() const;
+  size_t GetOriginalLanguageIndex() const { return original_language_index_; }
 
   // Returns the original language code.
   std::string GetOriginalLanguageCode() const;
@@ -64,7 +64,7 @@ class TranslateUIDelegate {
   void UpdateOriginalLanguage(const std::string& language_code);
 
   // Returns the target language index.
-  size_t GetTargetLanguageIndex() const;
+  size_t GetTargetLanguageIndex() const { return target_language_index_; }
 
   // Returns the target language code.
   std::string GetTargetLanguageCode() const;

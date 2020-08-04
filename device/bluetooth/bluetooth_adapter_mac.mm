@@ -35,6 +35,7 @@
 #include "device/bluetooth/bluetooth_low_energy_device_watcher_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_peripheral_manager_delegate.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 
 extern "C" {
 // Undocumented IOBluetooth Preference API [1]. Used by `blueutil` [2] and
@@ -321,7 +322,7 @@ BluetoothAdapterMac::GetHostControllerState() {
   if (controller != nil) {
     state.classic_powered =
         ([controller powerState] == kBluetoothHCIPowerStateON);
-    state.address = BluetoothDevice::CanonicalizeAddress(
+    state.address = CanonicalizeBluetoothAddress(
         base::SysNSStringToUTF8([controller addressAsString]));
     state.is_present = !state.address.empty();
   }

@@ -75,7 +75,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void UpdateTitle(const WTF::String& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
-      mojom::blink::UserActivationUpdateType update_type) override;
+      mojom::blink::UserActivationUpdateType update_type,
+      mojom::UserActivationNotificationType notification_type) override;
   void HandleAccessibilityFindInPageResult(
       mojom::blink::FindInPageResultAXParamsPtr params) override;
   void HandleAccessibilityFindInPageTermination() override;

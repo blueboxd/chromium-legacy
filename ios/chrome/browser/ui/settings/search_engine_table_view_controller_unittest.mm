@@ -64,7 +64,7 @@ class SearchEngineTableViewControllerTest
         IOSChromeFaviconLoaderFactory::GetInstance(),
         IOSChromeFaviconLoaderFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
-    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
+    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService());
     DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
     template_url_service_ = ios::TemplateURLServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());

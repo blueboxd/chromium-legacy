@@ -1183,4 +1183,55 @@ TEST_P(ImagePaintTimingDetectorTest,
   EXPECT_EQ(record->first_size, 25u);
 }
 
+TEST_P(ImagePaintTimingDetectorTest, OpacityZeroHTML) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      :root {
+        opacity: 0;
+        will-change: opacity;
+      }
+    </style>
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+
+  // Change the opacity of documentElement, now the img should be a candidate.
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "opacity: 1");
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 1u);
+  EXPECT_EQ(GetPerformanceTiming().LargestImagePaintSize(), 25u);
+  EXPECT_GT(GetPerformanceTiming().LargestImagePaint(), 0u);
+  EXPECT_EQ(GetPerformanceTiming().LargestImagePaintSize(),
+            GetPerformanceTiming().ExperimentalLargestImagePaintSize());
+  EXPECT_EQ(GetPerformanceTiming().LargestImagePaint(),
+            GetPerformanceTiming().ExperimentalLargestImagePaint());
+}
+
+TEST_P(ImagePaintTimingDetectorTest, OpacityZeroHTML2) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        opacity: 0;
+      }
+    </style>
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "opacity: 0");
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "opacity: 1");
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+}
+
 }  // namespace blink

@@ -319,7 +319,7 @@ interface. At present, this set of objects is restricted to Element and
 derived classes. Refer to the web-animation section under animation types for a
 description of Element.animate.
 
-The animatable interface also includes a getAniamtions method, which returns all
+The animatable interface also includes a getAnimations method, which returns all
 active animations associated with the element in composite ordering. The rules
 for composite ordering are quite involved and presently span three
 specifications:
@@ -1143,7 +1143,7 @@ the document and extracts the active ones.
 [DocumentAnimations::getAnimations]: https://cs.chromium.org/search/?q=function:blink::DocumentAnimations::getAnimations$
 
 
-# The interpolation stack
+## The interpolation stack
 
 Animation keyframes serve as mileposts indicating property values at specific
 points through the progress of the animation. Most commonly, keyframes are
@@ -1254,7 +1254,7 @@ sorted by property name.
    // Styles are flushed when retrieving the list of animations. The left and
    // top transitions are created within the same style update and thus sorted
    // alphabetically.
-   const transitions = div.getAniamtions();
+   const transitions = div.getAnimations();
    assert_equals(transitions[0].transitionProperty, 'left');
    assert_equals(transitions[1].transitionProperty, 'top');
 
@@ -1262,7 +1262,7 @@ sorted by property name.
 
    // The opacity transition is at the end since created in a separate style
    // update cycle.
-   const updated_transitions = div.getAniamtions();
+   const updated_transitions = div.getAnimations();
    assert_equals(transitions[0].transitionProperty, 'left');
    assert_equals(transitions[1].transitionProperty, 'top');
    assert_equals(transitions[1].transitionProperty, 'opacity');
@@ -1271,7 +1271,7 @@ sorted by property name.
 CSS animations that are applied to a single element are ordered by index within
 the animation-name property. Pseudo-element selectors have a strict ordering by
 selector name. CSS animations applying to different elements are sorted in DOM
-order. Note that the DOM order sort is only applied for getAniamtions calls as
+order. Note that the DOM order sort is only applied for getAnimations calls as
 it is too expensive too apply in general and does not affect rendering if
 internally sorted for style calculations in creation order instead.
 

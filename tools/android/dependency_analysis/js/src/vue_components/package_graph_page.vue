@@ -11,10 +11,14 @@
       <GraphFilterItems
           :node-filter-data="displaySettingsData.nodeFilterData"
           @[CUSTOM_EVENTS.FILTER_ELEMENT_CLICKED]="removeNodeFromFilter"/>
-      <GraphInboundInput
-          :inbound-depth-data="displaySettingsData"/>
-      <GraphOutboundInput
-          :outbound-depth-data="displaySettingsData"/>
+      <NumericInput
+          description="Change inbound (blue) depth:"
+          input-id="inbound-input"
+          :input-value.sync="displaySettingsData.inboundDepth"/>
+      <NumericInput
+          description="Change outbound (yellow) depth:"
+          input-id="outbound-input"
+          :input-value.sync="displaySettingsData.outboundDepth"/>
     </div>
     <div id="graph-and-node-details-container">
       <GraphVisualization
@@ -53,10 +57,9 @@ import {parsePackageGraphModelFromJson} from '../process_graph_json.js';
 import GraphDisplaySettings from './graph_display_settings.vue';
 import GraphFilterInput from './graph_filter_input.vue';
 import GraphFilterItems from './graph_filter_items.vue';
-import GraphInboundInput from './graph_inbound_input.vue';
-import GraphOutboundInput from './graph_outbound_input.vue';
 import GraphSelectedNodeDetails from './graph_selected_node_details.vue';
 import GraphVisualization from './graph_visualization.vue';
+import NumericInput from './numeric_input.vue';
 import PackageDetailsPanel from './package_details_panel.vue';
 
 // @vue/component
@@ -65,10 +68,9 @@ const PackageGraphPage = {
     GraphDisplaySettings,
     GraphFilterInput,
     GraphFilterItems,
-    GraphInboundInput,
-    GraphOutboundInput,
     GraphSelectedNodeDetails,
     GraphVisualization,
+    NumericInput,
     PackageDetailsPanel,
   },
   props: {

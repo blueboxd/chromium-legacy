@@ -111,7 +111,8 @@ void FakeLocalFrameHost::UpdateTitle(
     base::i18n::TextDirection title_direction) {}
 
 void FakeLocalFrameHost::UpdateUserActivationState(
-    mojom::blink::UserActivationUpdateType update_type) {}
+    mojom::blink::UserActivationUpdateType update_type,
+    mojom::UserActivationNotificationType notification_type) {}
 
 void FakeLocalFrameHost::HandleAccessibilityFindInPageResult(
     mojom::blink::FindInPageResultAXParamsPtr params) {}

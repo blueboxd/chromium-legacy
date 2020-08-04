@@ -227,56 +227,71 @@ TEST(PlatformFontMacTest, DerivedFineGrainedFonts) {
     return;
 
   using Weight = Font::Weight;
-  Font base([NSFont systemFontOfSize:13]);
 
   // The resulting, actual font weight after deriving |weight| from |base|.
-  auto DerivedWeight = [&](Weight weight) {
+  auto DerivedIntWeight = [](const Font& base, Weight weight) {
     Font derived(base.Derive(0, 0, weight));
     // PlatformFont should always pass the requested weight, not what the OS
     // could provide. This just checks a constructor argument, so not very
     // interesting.
-    EXPECT_EQ(weight, derived.GetWeight());
+    EXPECT_EQ(static_cast<int>(weight), static_cast<int>(derived.GetWeight()));
 
-    // Return the weight enum value that PlatformFontMac internally derives from
+    // Return the weight int value that PlatformFontMac internally derives from
     // the floating point weight given by the kCTFontWeightTrait of |font|. Do
     // this by creating a new font based only off the NSFont in |derived|.
-    return Font(derived.GetNativeFont()).GetWeight();
+    return static_cast<int>(Font(derived.GetNativeFont()).GetWeight());
   };
 
-  // Only use NORMAL or BOLD as a base font. Mac font APIs go whacky otherwise.
+  // Only use NORMAL or BOLD as a base font. Mac font APIs go wacky otherwise.
   // See comments in PlatformFontMac::DeriveFont().
+  Font base([NSFont systemFontOfSize:13]);
   for (Weight base_weight : {Weight::NORMAL, Weight::BOLD}) {
     SCOPED_TRACE(testing::Message()
                  << "BaseWeight: " << static_cast<int>(base_weight));
     if (base_weight != Weight::NORMAL) {
       base = base.Derive(0, 0, base_weight);
-      EXPECT_EQ(base_weight, base.GetWeight());
+      EXPECT_EQ(static_cast<int>(base_weight),
+                static_cast<int>(base.GetWeight()));
     }
 
     // Normal and heavy weights map correctly on 10.11 and 10.12.
-    EXPECT_EQ(Weight::NORMAL, DerivedWeight(Weight::NORMAL));
-    EXPECT_EQ(Weight::BOLD, DerivedWeight(Weight::BOLD));
-    EXPECT_EQ(Weight::EXTRA_BOLD, DerivedWeight(Weight::EXTRA_BOLD));
-    EXPECT_EQ(Weight::BLACK, DerivedWeight(Weight::BLACK));
+    EXPECT_EQ(static_cast<int>(Weight::NORMAL),
+              DerivedIntWeight(base, Weight::NORMAL));
+    EXPECT_EQ(static_cast<int>(Weight::BOLD),
+              DerivedIntWeight(base, Weight::BOLD));
+    EXPECT_EQ(static_cast<int>(Weight::EXTRA_BOLD),
+              DerivedIntWeight(base, Weight::EXTRA_BOLD));
+    EXPECT_EQ(static_cast<int>(Weight::BLACK),
+              DerivedIntWeight(base, Weight::BLACK));
 
     if (base::mac::IsAtMostOS10_11()) {
       // The fine-grained font weights on 10.11 are incomplete.
-      EXPECT_EQ(Weight::NORMAL, DerivedWeight(Weight::EXTRA_LIGHT));
-      EXPECT_EQ(Weight::NORMAL, DerivedWeight(Weight::THIN));
-      EXPECT_EQ(Weight::NORMAL, DerivedWeight(Weight::LIGHT));
-      EXPECT_EQ(Weight::BOLD, DerivedWeight(Weight::MEDIUM));
-      EXPECT_EQ(Weight::BOLD, DerivedWeight(Weight::SEMIBOLD));
+      EXPECT_EQ(static_cast<int>(Weight::NORMAL),
+                DerivedIntWeight(base, Weight::THIN));
+      EXPECT_EQ(static_cast<int>(Weight::NORMAL),
+                DerivedIntWeight(base, Weight::EXTRA_LIGHT));
+      EXPECT_EQ(static_cast<int>(Weight::NORMAL),
+                DerivedIntWeight(base, Weight::LIGHT));
+      EXPECT_EQ(static_cast<int>(Weight::BOLD),
+                DerivedIntWeight(base, Weight::MEDIUM));
+      EXPECT_EQ(static_cast<int>(Weight::BOLD),
+                DerivedIntWeight(base, Weight::SEMIBOLD));
       continue;
     }
 
     // San Francisco doesn't offer anything between THIN and LIGHT.
-    EXPECT_EQ(Weight::THIN, DerivedWeight(Weight::EXTRA_LIGHT));
+    EXPECT_EQ(static_cast<int>(Weight::THIN),
+              DerivedIntWeight(base, Weight::EXTRA_LIGHT));
 
     // All the rest should map correctly.
-    EXPECT_EQ(Weight::THIN, DerivedWeight(Weight::THIN));
-    EXPECT_EQ(Weight::LIGHT, DerivedWeight(Weight::LIGHT));
-    EXPECT_EQ(Weight::MEDIUM, DerivedWeight(Weight::MEDIUM));
-    EXPECT_EQ(Weight::SEMIBOLD, DerivedWeight(Weight::SEMIBOLD));
+    EXPECT_EQ(static_cast<int>(Weight::THIN),
+              DerivedIntWeight(base, Weight::THIN));
+    EXPECT_EQ(static_cast<int>(Weight::LIGHT),
+              DerivedIntWeight(base, Weight::LIGHT));
+    EXPECT_EQ(static_cast<int>(Weight::MEDIUM),
+              DerivedIntWeight(base, Weight::MEDIUM));
+    EXPECT_EQ(static_cast<int>(Weight::SEMIBOLD),
+              DerivedIntWeight(base, Weight::SEMIBOLD));
   }
 }
 

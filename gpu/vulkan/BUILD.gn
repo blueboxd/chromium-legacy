@@ -171,24 +171,19 @@ if (enable_vulkan) {
       "//ui/gfx:native_widget_types",
     ]
 
-    if (use_x11 && !use_ozone) {
+    if (use_x11 || use_ozone) {
       sources += [ "tests/native_window.cc" ]
-      deps += [
-        "//ui/platform_window",
-        "//ui/platform_window/x11",
-      ]
+      deps += [ "//ui/platform_window" ]
+      if (use_x11) {
+        deps += [ "//ui/platform_window/x11" ]
+      }
+      if (use_ozone) {
+        deps += [ "//ui/ozone" ]
+      }
     }
 
     if (is_win) {
       sources += [ "tests/native_window_win.cc" ]
-    }
-
-    if (use_ozone) {
-      sources += [ "tests/native_window.cc" ]
-      deps += [
-        "//ui/ozone",
-        "//ui/platform_window",
-      ]
     }
 
     if (is_android) {

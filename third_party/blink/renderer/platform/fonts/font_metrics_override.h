@@ -12,6 +12,7 @@ namespace blink {
 struct FontMetricsOverride {
   base::Optional<float> ascent_override;
   base::Optional<float> descent_override;
+  base::Optional<float> letter_spacing_override;
 };
 
 }  // namespace blink

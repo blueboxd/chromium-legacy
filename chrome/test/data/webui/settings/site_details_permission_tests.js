@@ -474,11 +474,10 @@ suite('SiteDetailsPermission', function() {
       });
 
   test(
-      'Native File System Write: ASK/BLOCK can be chosen as a preference by ' +
-          'users',
+      'File System Write: ASK/BLOCK can be chosen as a preference by users',
       function() {
         const origin = 'https://www.example.com';
-        testElement.category = ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+        testElement.category = ContentSettingsTypes.FILE_SYSTEM_WRITE;
         testElement.label = 'Save to original files';
         testElement.site = {
           origin: origin,

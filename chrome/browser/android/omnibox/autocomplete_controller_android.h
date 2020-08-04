@@ -84,7 +84,9 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       jint selected_index,
       jint hash_code,
-      jlong elapsed_time_since_input_change);
+      jlong elapsed_time_since_input_change,
+      const base::android::JavaParamRef<jstring>& jnew_query_text,
+      const base::android::JavaParamRef<jobjectArray>& jnew_query_params);
   base::android::ScopedJavaLocalRef<jobject> FindMatchingTabWithUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

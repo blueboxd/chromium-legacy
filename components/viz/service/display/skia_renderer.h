@@ -236,10 +236,13 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // filters are cached in |color_filter_cache_|.  Resource offset and
   // multiplier are used to adjust the RGB output of the shader for YUV video
   // quads. The default values perform no adjustment.
-  sk_sp<SkColorFilter> GetColorFilter(const gfx::ColorSpace& src,
-                                      const gfx::ColorSpace& dst,
-                                      float resource_offset = 0.0f,
-                                      float resource_multiplier = 1.0f);
+  sk_sp<SkColorFilter> GetColorSpaceConversionFilter(
+      const gfx::ColorSpace& src,
+      const gfx::ColorSpace& dst,
+      float resource_offset = 0.0f,
+      float resource_multiplier = 1.0f);
+  // Returns the color filter that should be applied to the current canvas.
+  sk_sp<SkColorFilter> GetContentColorFilter();
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;

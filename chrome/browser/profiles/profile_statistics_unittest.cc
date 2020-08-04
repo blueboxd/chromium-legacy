@@ -99,7 +99,7 @@ TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   TestingProfile* profile = manager()->CreateTestingProfile("Test 1");
   ASSERT_TRUE(profile);
   // We need history, autofill and password services for the test to succeed.
-  ASSERT_TRUE(profile->CreateHistoryService(true, false));
+  ASSERT_TRUE(profile->CreateHistoryService());
   profile->CreateWebDataService();
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       profile,

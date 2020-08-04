@@ -634,7 +634,8 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
 
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
                        NotificationOnUnmanagedUserEnabled) {
-  DisconectAllNetworks();
+  fake_update_engine_client_->set_eol_date(
+      base::DefaultClock::GetInstance()->Now() - base::TimeDelta::FromDays(1));
   LoginUnmanagedUser();
   EXPECT_FALSE(
       display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
@@ -651,6 +652,8 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
   // policy.
   EXPECT_TRUE(
       display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->ShouldShowUpdateRequiredEolBanner());
 }
 
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NotificationsOnLogin) {

@@ -135,6 +135,7 @@ class FeedStream : public FeedStreamApi,
   bool CommitEphemeralChange(EphemeralChangeId id) override;
   bool RejectEphemeralChange(EphemeralChangeId id) override;
   void ProcessThereAndBackAgain(base::StringPiece data) override;
+  void ProcessViewAction(base::StringPiece data) override;
   DebugStreamData GetDebugStreamData() override;
   void ForceRefreshForDebugging() override;
   std::string DumpStateForDebugging() override;

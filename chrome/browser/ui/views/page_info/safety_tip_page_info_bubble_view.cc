@@ -251,7 +251,7 @@ void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
       web_contents(),
       safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
           ? suggested_url_
-          : GURL(kSafetyTipLeaveSiteUrl));
+          : GURL());
 }
 
 void SafetyTipPageInfoBubbleView::StyledLabelLinkClicked(

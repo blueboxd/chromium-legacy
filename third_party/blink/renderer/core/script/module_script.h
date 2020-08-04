@@ -68,7 +68,7 @@ class CORE_EXPORT ModuleScript : public Script {
     return mojom::ScriptType::kModule;
   }
   void RunScript(LocalFrame*) override;
-  bool RunScriptOnWorker(WorkerGlobalScope&) override;
+  bool RunScriptOnWorkerOrWorklet(WorkerOrWorkletGlobalScope&) override;
 
   std::pair<size_t, size_t> GetClassicScriptSizes() const override;
 

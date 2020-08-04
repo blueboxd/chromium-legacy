@@ -76,7 +76,8 @@ void NetworkIconImageSource::Draw(gfx::Canvas* canvas) {
   }
   if (badges_.bottom_right.icon) {
     const int badge_size =
-        gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon);
+        gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon) -
+        kIconStrokeWidth;
     paint_badge(badges_.bottom_right, width - badge_size, height - badge_size);
   }
 }

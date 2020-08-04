@@ -12,19 +12,34 @@
 namespace blink {
 
 // Creates a scope to ignore paint timing, e.g. when we are painting contents
-// under opacity:0.
+// under opacity:0. Currently we store the largest content when the depth is 1
+// in order to surface the LCP when the document's opacity changes from 0 to
+// nonzero. Care must be taken if changing the conditions under which
+// IgnorePaintTimingScope is used in order to ensure correctness.
 class PLATFORM_EXPORT IgnorePaintTimingScope {
   STACK_ALLOCATED();
 
  public:
-  IgnorePaintTimingScope() : auto_reset_(&should_ignore_, true) {}
+  IgnorePaintTimingScope()
+      : reset_ignore_depth_(&ignore_depth_, ignore_depth_),
+        reset_is_document_element_invisible_(&is_document_element_invisible_,
+                                             is_document_element_invisible_) {}
   ~IgnorePaintTimingScope() = default;
 
-  static bool ShouldIgnore() { return should_ignore_; }
+  static void SetIsDocumentElementInvisible(bool is_invisible) {
+    is_document_element_invisible_ = is_invisible;
+  }
+  static bool IsDocumentElementInvisible() {
+    return is_document_element_invisible_;
+  }
+  static void IncrementIgnoreDepth() { ++ignore_depth_; }
+  static int IgnoreDepth() { return ignore_depth_; }
 
  private:
-  base::AutoReset<bool> auto_reset_;
-  static bool should_ignore_;
+  base::AutoReset<int> reset_ignore_depth_;
+  base::AutoReset<bool> reset_is_document_element_invisible_;
+  static int ignore_depth_;
+  static bool is_document_element_invisible_;
 };
 
 }  // namespace blink

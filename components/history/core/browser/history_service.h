@@ -46,8 +46,6 @@ class HistoryQuickProviderTest;
 class HistoryURLProvider;
 class InMemoryURLIndexTest;
 class SkBitmap;
-class SyncBookmarkDataTypeControllerTest;
-class TestingProfile;
 
 namespace base {
 class FilePath;
@@ -574,8 +572,6 @@ class HistoryService : public KeyedService {
   friend class ::HistoryURLProvider;
   friend class HQPPerfTestOnePopularURL;
   friend class ::InMemoryURLIndexTest;
-  friend class ::SyncBookmarkDataTypeControllerTest;
-  friend class ::TestingProfile;
   friend std::unique_ptr<HistoryService> CreateHistoryService(
       const base::FilePath& history_dir,
       bool create_db);

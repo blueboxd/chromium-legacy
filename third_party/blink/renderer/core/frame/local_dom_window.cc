@@ -846,6 +846,7 @@ void LocalDOMWindow::FrameDestroyed() {
   // function should be renamed to Detach(), since in the Reset() case the frame
   // is not being destroyed.
   document()->Shutdown();
+  document()->RemoveAllEventListenersRecursively();
   GetAgent()->DetachContext(this);
   if (auto* agent_metrics = GetFrame()->GetPage()->GetAgentMetricsCollector())
     agent_metrics->DidDetachWindow(*this);

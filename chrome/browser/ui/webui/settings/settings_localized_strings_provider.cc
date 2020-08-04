@@ -1691,13 +1691,13 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_DEVICES_ASK_RECOMMENDED},
     {"siteSettingsBluetoothDevicesBlock",
      IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_DEVICES_BLOCK},
-    {"siteSettingsNativeFileSystemWrite",
+    {"siteSettingsFileSystemWrite",
      IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE},
-    {"siteSettingsNativeFileSystemWriteAsk",
+    {"siteSettingsFileSystemWriteAsk",
      IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK},
-    {"siteSettingsNativeFileSystemWriteAskRecommended",
+    {"siteSettingsFileSystemWriteAskRecommended",
      IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK_RECOMMENDED},
-    {"siteSettingsNativeFileSystemWriteBlock",
+    {"siteSettingsFileSystemWriteBlock",
      IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_BLOCK},
     {"siteSettingsRemoveZoomLevel",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_ZOOM_LEVEL},
@@ -1985,7 +1985,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
 
   html_source->AddBoolean(
-      "enableNativeFileSystemWriteContentSetting",
+      "enableFileSystemWriteContentSetting",
       base::FeatureList::IsEnabled(::blink::features::kNativeFileSystemAPI));
 
   html_source->AddBoolean(

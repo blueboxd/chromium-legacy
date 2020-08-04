@@ -1163,7 +1163,7 @@ TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
                 base::FilePath(FILE_PATH_LITERAL("foo.kindabad"))));
 
   // First the history service must exist.
-  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
+  ASSERT_TRUE(profile()->CreateHistoryService());
 
   GURL url("http://visited.example.com/visited-link.html");
   // The time of visit is picked to be several seconds prior to the most recent

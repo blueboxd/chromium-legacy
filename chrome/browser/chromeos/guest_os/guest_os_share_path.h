@@ -110,6 +110,9 @@ class GuestOsSharePath : public KeyedService,
   void RegisterPersistedPath(const std::string& vm_name,
                              const base::FilePath& path);
 
+  // Returns true if |path| or a parent is shared with |vm_name|.
+  bool IsPathShared(const std::string& vm_name, base::FilePath path) const;
+
   // file_manager::VolumeManagerObserver
   void OnVolumeMounted(chromeos::MountError error_code,
                        const file_manager::Volume& volume) override;

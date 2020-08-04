@@ -98,7 +98,7 @@ source_set("ipc_common_sources") {
       "gpu_memory_buffer_impl_dxgi.h",
     ]
   }
-  if (is_linux || use_ozone) {
+  if (is_linux || is_chromeos || use_ozone) {
     sources += [
       "gpu_memory_buffer_impl_native_pixmap.cc",
       "gpu_memory_buffer_impl_native_pixmap.h",

@@ -59,10 +59,12 @@ void AddPdfViewerStrings(base::Value* dict) {
     {"passwordInvalid", IDS_PDF_PASSWORD_INVALID},
     {"passwordPrompt", IDS_PDF_NEED_PASSWORD},
     {"passwordSubmit", IDS_PDF_PASSWORD_SUBMIT},
+    {"tooltipDocumentOutline", IDS_PDF_TOOLTIP_DOCUMENT_OUTLINE},
     {"tooltipDownload", IDS_PDF_TOOLTIP_DOWNLOAD},
     {"tooltipPrint", IDS_PDF_TOOLTIP_PRINT},
     {"tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW},
     {"tooltipRotateCCW", IDS_PDF_TOOLTIP_ROTATE_CCW},
+    {"tooltipThumbnails", IDS_PDF_TOOLTIP_THUMBNAILS},
     {"annotationsShowToggle", IDS_PDF_ANNOTATIONS_SHOW_TOGGLE},
 #if defined(OS_CHROMEOS)
     {"tooltipAnnotate", IDS_PDF_ANNOTATION_ANNOTATE},

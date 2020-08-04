@@ -186,7 +186,7 @@ bool RunOnceCommandLineContains(const std::wstring& product_shortname,
   DCHECK(sub_string);
   PostRebootRegistration post_reboot(product_shortname);
   std::wstring run_once_value = post_reboot.RunOnceOnRestartRegisteredValue();
-  return String16ContainsCaseInsensitive(run_once_value, sub_string);
+  return WStringContainsCaseInsensitive(run_once_value, sub_string);
 }
 
 bool RunOnceOverrideCommandLineContains(const std::string& cleanup_id,
@@ -203,7 +203,7 @@ bool RunOnceOverrideCommandLineContains(const std::string& cleanup_id,
     run_once_key.ReadValue(base::UTF8ToWide(cleanup_id).c_str(), &reg_value);
   }
 
-  return String16ContainsCaseInsensitive(reg_value, sub_string);
+  return WStringContainsCaseInsensitive(reg_value, sub_string);
 }
 
 bool RegisterTestTask(TaskScheduler* task_scheduler,

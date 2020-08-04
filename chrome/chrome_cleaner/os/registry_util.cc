@@ -110,8 +110,8 @@ void CollectMatchingRegistryPathsRecursive(
                                             wow64access);
   for (; subkeys_it.Valid(); ++subkeys_it) {
     std::wstring subkey_name = subkeys_it.Name();
-    if (String16WildcardMatchInsensitive(subkey_name, subkey_pattern,
-                                         escape_char)) {
+    if (WStringWildcardMatchInsensitive(subkey_name, subkey_pattern,
+                                        escape_char)) {
       CollectMatchingRegistryPathsRecursive(hkey, current_prefix + subkey_name,
                                             remaining_pattern, escape_char,
                                             wow64access, path_masks);
@@ -313,9 +313,9 @@ bool ReadRegistryValue(const base::win::RegKey& reg_key,
   if (content) {
     // For non string types, simply convert the value to a string.
     if (type != REG_SZ && type != REG_EXPAND_SZ && type != REG_MULTI_SZ) {
-      const std::wstring::value_type* char16_buffer =
+      const std::wstring::value_type* wide_buffer =
           reinterpret_cast<std::wstring::value_type*>(&buffer[0]);
-      GetRegistryValueAsString(char16_buffer, content_bytes, type, content);
+      GetRegistryValueAsString(wide_buffer, content_bytes, type, content);
     } else {
       // We may need to fix the null termination of the string read from the
       // registry, make sure we have enough room.
@@ -339,9 +339,9 @@ bool ReadRegistryValue(const base::win::RegKey& reg_key,
       DCHECK_LE(content_bytes, buffer.size());
 
       // Returns the content of the registry value.
-      const std::wstring::value_type* char16_buffer =
+      const std::wstring::value_type* wide_buffer =
           reinterpret_cast<std::wstring::value_type*>(&buffer[0]);
-      *content = std::wstring(char16_buffer, content_bytes / 2 - 1);
+      *content = std::wstring(wide_buffer, content_bytes / 2 - 1);
     }
   }
   if (content_type)

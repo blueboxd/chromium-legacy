@@ -1806,6 +1806,9 @@ extern const char kNtpRealboxMatchOmniboxThemeDescription[];
 extern const char kNtpWebUIName[];
 extern const char kNtpWebUIDescription[];
 
+extern const char kNtpModulesName[];
+extern const char kNtpModulesDescription[];
+
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 

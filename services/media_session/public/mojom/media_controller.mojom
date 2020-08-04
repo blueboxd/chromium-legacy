@@ -83,6 +83,10 @@ interface MediaController {
 
   // Exit picture-in-picture.
   ExitPictureInPicture();
+
+  // Routes the audio from this Media Session to the given output device. If
+  // |id| is null, we will route to the default output device.
+  SetAudioSinkId(string? id);
 };
 
 // The observer for observing media controller events. This is different to a

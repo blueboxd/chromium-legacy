@@ -393,21 +393,6 @@ bool RenderPassRemainsTransparent(SkBlendMode blendMode) {
          src == SkBlendModeCoeff::kDC;
 }
 
-sk_sp<SkColorFilter> TintCompositedContentColorTransformFilter() {
-  SkColorMatrix matrix;
-  auto color_transform =
-      cc::DebugColors::TintCompositedContentColorTransformMatrix();
-  std::array<float, 20> transposed;
-  transposed.fill(0.0f);
-  for (int r = 0; r < 4; r++) {
-    for (int c = 0; c < 4; c++) {
-      transposed[r * 5 + c] = color_transform[c * 4 + r];
-    }
-  }
-  matrix.setRowMajor(transposed.data());
-  return SkColorFilters::Matrix(matrix);
-}
-
 }  // namespace
 
 // chrome style prevents this from going in skia_renderer.h, but since it
@@ -506,10 +491,10 @@ struct SkiaRenderer::DrawQuadParams {
   // |scissor_rect_| of the renderer.
   base::Optional<gfx::Rect> scissor_rect;
 
-  SkPaint paint(bool tint_content) const {
+  SkPaint paint(sk_sp<SkColorFilter> color_filter) const {
     SkPaint p;
-    if (tint_content) {
-      p.setColorFilter(TintCompositedContentColorTransformFilter());
+    if (color_filter) {
+      p.setColorFilter(color_filter);
     }
     p.setFilterQuality(filter_quality);
     p.setBlendMode(blend_mode);
@@ -1077,7 +1062,7 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
   bool aa = params->aa_flags != SkCanvas::kNone_QuadAAFlags;
   current_canvas_->clipRect(gfx::RectToSkRect(rpdq_params.filter_bounds), aa);
 
-  SkPaint layer_paint = params->paint(false);
+  SkPaint layer_paint = params->paint(nullptr /* color_filter */);
   // The layer always consumes the opacity, but its blend mode depends on if
   // it was initialized with backdrop content or not.
   params->opacity = 1.f;
@@ -1652,10 +1637,9 @@ void SkiaRenderer::FlushBatchedQuads() {
                 batched_quad_state_.rounded_corner_bounds, nullptr);
 
   SkPaint paint;
-  if (debug_settings_->tint_composited_content &&
-      current_canvas_ == root_canvas_) {
-    paint.setColorFilter(TintCompositedContentColorTransformFilter());
-  }
+  sk_sp<SkColorFilter> color_filter = GetContentColorFilter();
+  if (color_filter)
+    paint.setColorFilter(color_filter);
   paint.setFilterQuality(batched_quad_state_.filter_quality);
   paint.setBlendMode(batched_quad_state_.blend_mode);
 
@@ -1690,10 +1674,9 @@ void SkiaRenderer::DrawColoredQuad(SkColor color,
     }
   }
 
-  if (debug_settings_->tint_composited_content &&
-      current_canvas_ == root_canvas_) {
-    color = TintCompositedContentColorTransformFilter()->filterColor(color);
-  }
+  sk_sp<SkColorFilter> color_filter = GetContentColorFilter();
+  if (color_filter)
+    color = color_filter->filterColor(color);
   // PrepareCanvasForRPDQ will have updated params->opacity and blend_mode to
   // account for the layer applying those effects.
   color = SkColorSetA(color, params->opacity * SkColorGetA(color));
@@ -1772,7 +1755,7 @@ void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
   }
   path.transform(cdt);
 
-  SkPaint paint = params->paint(false);
+  SkPaint paint = params->paint(nullptr /* color_filter */);
   paint.setColor(quad->color);  // Must correct alpha afterwards
   paint.setAlphaf(params->opacity * paint.getAlphaf());
   paint.setStyle(SkPaint::kStroke_Style);
@@ -1804,8 +1787,7 @@ void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
   // these represent the valid windows of content to show for the display list,
   // so they need to be used as a clip in Skia.
   SkRect visible_rect = gfx::RectFToSkRect(params->visible_rect);
-  SkPaint paint = params->paint(debug_settings_->tint_composited_content &&
-                                current_canvas_ == root_canvas_);
+  SkPaint paint = params->paint(GetContentColorFilter());
 
   if (params->draw_region.has_value()) {
     SkPath clip;
@@ -1877,8 +1859,7 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
           : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
 
   if (rpdq_params) {
-    SkPaint paint = params->paint(debug_settings_->tint_composited_content &&
-                                  current_canvas_ == root_canvas_);
+    SkPaint paint = params->paint(GetContentColorFilter());
     DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
   } else {
     AddQuadToBatch(image, valid_texel_bounds, params);
@@ -1938,8 +1919,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (!batched_quads_.empty())
     FlushBatchedQuads();
 
-  SkPaint paint = params->paint(debug_settings_->tint_composited_content &&
-                                current_canvas_ == root_canvas_);
+  SkPaint paint = params->paint(GetContentColorFilter());
 
   float quad_alpha;
   if (rpdq_params) {
@@ -2019,8 +1999,8 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (needs_color_conversion_filter) {
     // Skia won't perform color conversion.
     DCHECK(!image->colorSpace());
-    sk_sp<SkColorFilter> color_filter =
-        GetColorFilter(src_color_space, CurrentRenderPassColorSpace());
+    sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
+        src_color_space, CurrentRenderPassColorSpace());
     paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
   }
 
@@ -2064,8 +2044,7 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   }
 
   if (rpdq_params) {
-    SkPaint paint = params->paint(debug_settings_->tint_composited_content &&
-                                  current_canvas_ == root_canvas_);
+    SkPaint paint = params->paint(GetContentColorFilter());
     DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
   } else {
     AddQuadToBatch(image, valid_texel_bounds, params);
@@ -2132,12 +2111,11 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // Use provided, unclipped texture coordinates as the content area, which will
   // force coord clamping unless the geometry was clipped, or they span the
   // entire YUV image.
-  SkPaint paint = params->paint(debug_settings_->tint_composited_content &&
-                                current_canvas_ == root_canvas_);
+  SkPaint paint = params->paint(GetContentColorFilter());
 
-  sk_sp<SkColorFilter> color_filter =
-      GetColorFilter(src_color_space, dst_color_space, quad->resource_offset,
-                     quad->resource_multiplier);
+  sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
+      src_color_space, dst_color_space, quad->resource_offset,
+      quad->resource_multiplier);
   paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
 
   DrawSingleImage(image, quad->ya_tex_coord_rect, rpdq_params, &paint, params);
@@ -2250,10 +2228,11 @@ void SkiaRenderer::ScheduleOverlays() {
 #endif
 }
 
-sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
-                                                  const gfx::ColorSpace& dst,
-                                                  float resource_offset,
-                                                  float resource_multiplier) {
+sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
+    const gfx::ColorSpace& src,
+    const gfx::ColorSpace& dst,
+    float resource_offset,
+    float resource_multiplier) {
   // If the input color space is HDR, and it did not specify a white level,
   // override it with the frame's white level.
   gfx::ColorSpace adjusted_src = src.GetWithSDRWhiteLevel(
@@ -2296,6 +2275,42 @@ void main(inout half4 color) {
   sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
 
   return effect->makeColorFilter(std::move(data));
+}
+
+sk_sp<SkColorFilter> SkiaRenderer::GetContentColorFilter() {
+  sk_sp<SkColorFilter> color_transform = nullptr;
+  if (current_canvas_ == root_canvas_ &&
+      !output_surface_->color_matrix().isIdentity()) {
+    std::array<float, 20> values;
+    values.fill(0.0f);
+    for (uint32_t r = 0; r < 4; r++) {
+      for (uint32_t c = 0; c < 4; c++) {
+        values[r * 5 + c] = output_surface_->color_matrix().getFloat(r, c);
+      }
+    }
+    color_transform = SkColorFilters::Matrix(values.data());
+  }
+
+  sk_sp<SkColorFilter> tint_transform = nullptr;
+  if (current_canvas_ == root_canvas_ &&
+      debug_settings_->tint_composited_content) {
+    std::array<float, 20> values;
+    values.fill(0.0f);
+    auto tint = cc::DebugColors::TintCompositedContentColorTransformMatrix();
+    for (int r = 0; r < 4; r++) {
+      for (int c = 0; c < 4; c++) {
+        values[r * 5 + c] = tint[c * 4 + r];
+      }
+    }
+    tint_transform = SkColorFilters::Matrix(values.data());
+  }
+
+  if (color_transform) {
+    return tint_transform ? color_transform->makeComposed(tint_transform)
+                          : color_transform;
+  } else {
+    return tint_transform;
+  }
 }
 
 SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
@@ -2511,8 +2526,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   if (!batched_quads_.empty())
     FlushBatchedQuads();
 
-  SkPaint paint = params->paint(debug_settings_->tint_composited_content &&
-                                current_canvas_ == root_canvas_);
+  SkPaint paint = params->paint(GetContentColorFilter());
 
   DrawSingleImage(content_image.get(), valid_texel_bounds, &rpdq_params, &paint,
                   params);

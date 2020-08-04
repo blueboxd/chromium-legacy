@@ -67,6 +67,15 @@ npm run build && npm run serve-dist
 
 **To view the visualization, open `localhost:8888/package_view.html`.**
 
+### Deploy
+The Chromium Dependency Graph Visualizer is hosted at
+https://chromium-dependency-graph.firebaseapp.com.
+
+If you are a Googler, you can see this [doc][deploy doc] for how to deploy a new
+version of the viewer.
+
+[deploy doc]: https://docs.google.com/document/d/1u4wlB2EAWNx8zkQr60CQbxDD_Ji_mgSGjhBvX6K8IdM/edit?usp=sharing
+
 ### Miscellaneous
 To run [ESLint](https://eslint.org/) on the JS and Vue files:
 ```

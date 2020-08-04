@@ -134,6 +134,13 @@ class CORE_EXPORT ImageRecordsManager {
   void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
                              unsigned current_frame_index);
 
+  // Receives a candidate image painted under opacity 0 but without nested
+  // opacity. May update |largest_ignored_image_| if the new candidate has a
+  // larger size.
+  void MaybeUpdateLargestIgnoredImage(const RecordId&,
+                                      const uint64_t& visual_size);
+  void ReportLargestIgnoredImage(unsigned current_frame_index);
+
   // Compare the last frame index in queue with the last frame index that has
   // registered for assigning paint time.
   inline bool HasUnregisteredRecordsInQueue(
@@ -202,6 +209,14 @@ class CORE_EXPORT ImageRecordsManager {
   uint64_t largest_removed_image_size_ = 0u;
   base::TimeTicks largest_removed_image_paint_time_;
 
+  // Image paints are ignored when they (or an ancestor) have opacity 0. This
+  // can be a problem later on if the opacity changes to nonzero but this change
+  // is composited. We solve this for the special case of documentElement by
+  // storing a record for the largest ignored image without nested opacity. We
+  // consider this an LCP candidate when the documentElement's opacity changes
+  // from zero to nonzero.
+  std::unique_ptr<ImageRecord> largest_ignored_image_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };
 
@@ -263,6 +278,11 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // Return the candidate.
   ImageRecord* UpdateCandidate();
 
+  // Called when documentElement changes from zero to nonzero opacity. Makes the
+  // largest image that was hidden due to this a Largest Contentful Paint
+  // candidate.
+  void ReportLargestIgnoredImage();
+
   void Trace(Visitor*) const;
 
  private:
@@ -272,6 +292,11 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void RegisterNotifySwapTime();
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();
+  uint64_t ComputeImageRectSize(const IntRect&,
+                                const IntSize&,
+                                const PropertyTreeStateOrAlias&,
+                                const LayoutObject&,
+                                const ImageResourceContent&);
 
   // Used to find the last candidate.
   unsigned count_candidates_ = 0;

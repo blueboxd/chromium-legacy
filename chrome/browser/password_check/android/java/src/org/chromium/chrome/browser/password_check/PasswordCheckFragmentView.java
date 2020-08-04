@@ -34,12 +34,19 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.passwords_check_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
+        mPasswordCheckReferrer = getReferrerFromInstanceStateOrLaunchBundle(savedInstanceState);
+    }
+
+    private @PasswordCheckReferrer int getReferrerFromInstanceStateOrLaunchBundle(
+            Bundle savedInstanceState) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(PASSWORD_CHECK_REFERRER)) {
+            return savedInstanceState.getInt(PASSWORD_CHECK_REFERRER);
+        }
         Bundle extras = getArguments();
         assert extras.containsKey(PASSWORD_CHECK_REFERRER)
-            : "PasswordCheckFragmentView"
-                + "must be launched with a password-check-referrer fragment argument, but none was"
-                + "provided.";
-        mPasswordCheckReferrer = extras.getInt(PASSWORD_CHECK_REFERRER);
+            : "PasswordCheckFragmentView must be launched with a password-check-referrer fragment "
+                + "argument, but none was provided.";
+        return extras.getInt(PASSWORD_CHECK_REFERRER);
     }
 
     @Override
@@ -52,6 +59,11 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
                 && mPasswordCheckReferrer == PasswordCheckReferrer.LEAK_DIALOG) {
             mComponentDelegate.destroy();
         }
+    }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(PASSWORD_CHECK_REFERRER, mPasswordCheckReferrer);
     }
 
     @Override

@@ -20,19 +20,12 @@
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/sandbox_types.h"
 
-namespace base {
-namespace win {
-
-class StartupInformation;
-
-}  // namespace win
-}  // namespace base
-
 namespace sandbox {
 
 class SharedMemIPCServer;
 class Sid;
 class ThreadProvider;
+class StartupInformationHelper;
 
 // TargetProcess models a target instance (child process). Objects of this
 // class are owned by the Policy used to create them.
@@ -49,8 +42,7 @@ class TargetProcess {
   // Creates the new target process. The process is created suspended.
   ResultCode Create(const wchar_t* exe_path,
                     const wchar_t* command_line,
-                    bool inherit_handles,
-                    const base::win::StartupInformation& startup_info,
+                    std::unique_ptr<StartupInformationHelper> startup_info,
                     base::win::ScopedProcessInformation* target_info,
                     DWORD* win_error);
 
@@ -105,7 +97,9 @@ class TargetProcess {
   base::win::ScopedHandle initial_token_;
   // Kernel handle to the shared memory used by the IPC server.
   base::win::ScopedHandle shared_section_;
-  // Job object containing the target process.
+  // Job object containing the target process. This is used during
+  // process creation prior to Windows 10 and to identify the process in
+  // broker_services.cc.
   HANDLE job_;
   // Reference to the IPC subsystem.
   std::unique_ptr<SharedMemIPCServer> ipc_server_;

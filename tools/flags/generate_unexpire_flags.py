@@ -128,6 +128,9 @@ def gen_flags_fragment(prog_name, mstone):
   This creates a C++ source fragment defining flags, which are bound to the
   features described in gen_features_impl().
   """
+  # Note: The exact format of the flag name (temporary-unexpire-flags-m{m}) is
+  # depended on by a hack in UnexpiredMilestonesFromStorage(). See
+  # https://crbug.com/1101828 for more details.
   fragment = """
     {{"temporary-unexpire-flags-m{m}",
      "Temporarily unexpire M{m} flags.",

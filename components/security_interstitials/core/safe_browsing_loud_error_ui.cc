@@ -30,8 +30,8 @@ const char kReportPhishingErrorUrl[] =
     "https://safebrowsing.google.com/safebrowsing/report_error/?url=%s";
 
 void RecordExtendedReportingPrefChanged(bool report) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.SecurityInterstitial", report);
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Extended.SecurityInterstitial",
+                        report);
 }
 
 }  // namespace

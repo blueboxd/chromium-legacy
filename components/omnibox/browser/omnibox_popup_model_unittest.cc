@@ -285,7 +285,8 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelectionWithHiddenGroupIds) {
   // Hide the second two matches.
   matches[2].suggestion_group_id = 7;
   matches[3].suggestion_group_id = 7;
-  omnibox::ToggleSuggestionGroupIdVisibility(pref_service(), 7);
+  omnibox::SetSuggestionGroupVisibility(
+      pref_service(), 7, omnibox::SuggestionGroupVisibility::HIDDEN);
 
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(base::UTF8ToUTF16("match"),

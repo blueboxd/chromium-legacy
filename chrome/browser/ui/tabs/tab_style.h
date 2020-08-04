@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STYLE_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STYLE_H_
 
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -79,6 +78,8 @@ class TabStyle {
     SkColor background_color;
   };
 
+  TabStyle(const TabStyle&) = delete;
+  TabStyle& operator=(const TabStyle&) = delete;
   virtual ~TabStyle();
 
   // Gets the specific |path_type| associated with the specific |tab|.
@@ -156,9 +157,6 @@ class TabStyle {
   // Returns how far from the leading and trailing edges of a tab the contents
   // should actually be laid out.
   static int GetContentsHorizontalInsetSize();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabStyle);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STYLE_H_

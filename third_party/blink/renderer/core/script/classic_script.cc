@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 
 namespace blink {
@@ -53,12 +53,13 @@ v8::Local<v8::Value> ClassicScript::RunScriptInIsolatedWorldAndReturnValue(
       world_id, GetScriptSourceCode(), BaseURL(), sanitize_script_errors_);
 }
 
-bool ClassicScript::RunScriptOnWorker(WorkerGlobalScope& worker_global_scope) {
-  DCHECK(worker_global_scope.IsContextThread());
+bool ClassicScript::RunScriptOnWorkerOrWorklet(
+    WorkerOrWorkletGlobalScope& global_scope) {
+  DCHECK(global_scope.IsContextThread());
 
-  bool success = worker_global_scope.ScriptController()->Evaluate(
+  bool success = global_scope.ScriptController()->Evaluate(
       GetScriptSourceCode(), sanitize_script_errors_, nullptr /* error_event */,
-      worker_global_scope.GetV8CacheOptions());
+      global_scope.GetV8CacheOptions());
   return success;
 }
 

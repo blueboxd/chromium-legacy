@@ -177,6 +177,17 @@ void TextPaintTimingDetector::RecordAggregatedText(
       frame_view_->GetPaintTimingDetector().CalculateVisualRect(
           aggregated_visual_rect, property_tree_state);
   uint64_t aggregated_size = mapped_visual_rect.Size().Area();
+  DCHECK_LE(IgnorePaintTimingScope::IgnoreDepth(), 1);
+  // Record the largest aggregated text that is hidden due to documentElement
+  // being invisible but by no other reason (i.e. IgnoreDepth() needs to be 1).
+  if (IgnorePaintTimingScope::IgnoreDepth() == 1) {
+    if (IgnorePaintTimingScope::IsDocumentElementInvisible() &&
+        records_manager_.IsRecordingLargestTextPaint()) {
+      records_manager_.MaybeUpdateLargestIgnoredText(aggregator,
+                                                     aggregated_size);
+    }
+    return;
+  }
 
   if (aggregated_size == 0) {
     records_manager_.RecordInvisibleObject(aggregator);
@@ -197,6 +208,10 @@ void TextPaintTimingDetector::StopRecordingLargestTextPaint() {
   records_manager_.CleanUpLargestTextPaint();
 }
 
+void TextPaintTimingDetector::ReportLargestIgnoredText() {
+  records_manager_.ReportLargestIgnoredText();
+}
+
 void TextPaintTimingDetector::Trace(Visitor* visitor) const {
   visitor->Trace(records_manager_);
   visitor->Trace(frame_view_);
@@ -209,6 +224,19 @@ LargestTextPaintManager::LargestTextPaintManager(
     : size_ordered_set_(&LargeTextFirst),
       frame_view_(frame_view),
       paint_timing_detector_(paint_timing_detector) {}
+
+void LargestTextPaintManager::MaybeUpdateLargestIgnoredText(
+    const LayoutObject& object,
+    const uint64_t& size) {
+  if (size &&
+      (!largest_ignored_text_ || size > largest_ignored_text_->first_size)) {
+    Node* node = object.GetNode();
+    DCHECK(node);
+    DOMNodeId node_id = DOMNodeIds::IdForNode(node);
+    largest_ignored_text_ =
+        std::make_unique<TextRecord>(node_id, size, FloatRect());
+  }
+}
 
 void LargestTextPaintManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
@@ -303,6 +331,23 @@ void TextRecordsManager::RecordInvisibleObject(const LayoutObject& object) {
   std::unique_ptr<TextRecord> record =
       std::make_unique<TextRecord>(node_id, 0, FloatRect());
   size_zero_texts_queued_for_paint_time_.push_back(std::move(record));
+}
+
+void TextRecordsManager::ReportLargestIgnoredText() {
+  if (!ltp_manager_)
+    return;
+  std::unique_ptr<TextRecord> record = ltp_manager_->PopLargestIgnoredText();
+  if (!record)
+    return;
+  Node* node = DOMNodeIds::NodeForId(record->node_id);
+  // If the content has been removed, abort. It was never visible.
+  if (!node || !node->GetLayoutObject())
+    return;
+
+  base::WeakPtr<TextRecord> record_weak_ptr = record->AsWeakPtr();
+  ltp_manager_->InsertRecord(record_weak_ptr);
+  QueueToMeasurePaintTime(record_weak_ptr);
+  visible_objects_.insert(node->GetLayoutObject(), std::move(record));
 }
 
 base::WeakPtr<TextRecord> LargestTextPaintManager::FindLargestPaintCandidate() {

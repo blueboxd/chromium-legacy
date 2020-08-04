@@ -110,6 +110,23 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
   return service;
 }
 
+// Blocks until the HistoryBackend is completely destroyed, to ensure the
+// destruction tasks do not interfere with a newer instance of
+// HistoryService/HistoryBackend.
+void BlockUntilHistoryBackendDestroyed(Profile* profile) {
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+
+  // Nothing to destroy
+  if (!history_service)
+    return;
+
+  base::RunLoop run_loop;
+  history_service->SetOnBackendDestroyTask(run_loop.QuitClosure());
+  HistoryServiceFactory::ShutdownForProfile(profile);
+  run_loop.Run();
+}
+
 }  // namespace
 
 class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
@@ -161,7 +178,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
       scoped_refptr<base::SequencedTaskRunner> backend_runner) {
     // Triggers destruction of the existing HistoryService and waits for all
     // cleanup work to be done.
-    profile()->BlockUntilHistoryBackendDestroyed();
+    BlockUntilHistoryBackendDestroyed(profile());
 
     // Force the creation of a new HistoryService that runs its backend on
     // |backend_runner|.

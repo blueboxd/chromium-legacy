@@ -16,6 +16,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -56,7 +57,7 @@ SystemWebDialogDelegate* BluetoothPairingDialog::ShowDialog(
     bool paired,
     bool connected) {
   std::string cannonical_address =
-      device::BluetoothDevice::CanonicalizeAddress(address);
+      device::CanonicalizeBluetoothAddress(address);
   if (cannonical_address.empty()) {
     LOG(ERROR) << "BluetoothPairingDialog: Invalid address: " << address;
     return nullptr;

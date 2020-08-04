@@ -579,6 +579,18 @@ TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
   RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
 }
 
+// Verifies same document navigation to the last page does not trigger fetch.
+TEST_F(FaviconHandlerTest, SameDocumentNavigationToLastUrlDoesNotFetchAgain) {
+  EXPECT_CALL(favicon_service_,
+              UpdateFaviconMappingsAndFetch(base::flat_set<GURL>{kPageURL},
+                                            kIconURL16x16, kFavicon,
+                                            /*desired_size_in_dip=*/16, _, _));
+  EXPECT_CALL(favicon_service_, GetFaviconForPageURL(_, _, _, _, _)).Times(1);
+
+  auto handler = RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
+  handler->FetchFavicon(kPageURL, true);
+}
+
 // Test that we don't try to delete favicon mappings when a page URL is not in
 // history even if the page lists no favicons.
 TEST_F(FaviconHandlerTest, DoNotDeleteFaviconMappingsIfNotInHistory) {

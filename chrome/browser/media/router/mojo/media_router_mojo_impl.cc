@@ -934,6 +934,10 @@ void MediaRouterMojoImpl::GetLogger(
   logger_.Bind(std::move(receiver));
 }
 
+LoggerImpl* MediaRouterMojoImpl::GetLogger() {
+  return &logger_;
+}
+
 void MediaRouterMojoImpl::GetLogsAsString(GetLogsAsStringCallback callback) {
   std::move(callback).Run(logger_.GetLogsAsJson());
 }

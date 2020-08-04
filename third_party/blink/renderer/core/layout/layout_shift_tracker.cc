@@ -31,9 +31,6 @@ namespace blink {
 
 using ReattachHook = LayoutShiftTracker::ReattachHook;
 
-using ContainingBlockScope = LayoutShiftTracker::ContainingBlockScope;
-ContainingBlockScope* ContainingBlockScope::top_ = nullptr;
-
 namespace {
 
 ReattachHook& GetReattachHook() {
@@ -45,56 +42,33 @@ ReattachHook& GetReattachHook() {
 constexpr base::TimeDelta kTimerDelay = base::TimeDelta::FromMilliseconds(500);
 const float kMovementThreshold = 3.0;  // CSS pixels.
 
-// Calculates the physical coordinates of the starting point in the current
-// coordinate space. |paint_offset| is the physical offset of the top-left
-// corner. The starting point can be any of the four corners of the box,
-// depending on the writing mode and text direction. Note that the result is
-// still in physical coordinates, just may be of a different corner.
-// See https://wicg.github.io/layout-instability/#starting-point.
-FloatPoint StartingPoint(const PhysicalOffset& paint_offset,
-                         const LayoutBox& box,
-                         const LayoutSize& size) {
-  PhysicalOffset starting_point = paint_offset;
-  auto writing_direction = box.StyleRef().GetWritingDirection();
-  if (UNLIKELY(writing_direction.IsFlippedBlocks()))
-    starting_point.left += size.Width();
-  if (UNLIKELY(writing_direction.IsRtl())) {
-    if (writing_direction.IsHorizontal())
-      starting_point.left += size.Width();
-    else
-      starting_point.top += size.Height();
-  }
-  return FloatPoint(starting_point);
+FloatPoint LogicalStart(const FloatRect& rect, const LayoutObject& object) {
+  const ComputedStyle* style = object.Style();
+  DCHECK(style);
+  auto logical =
+      PhysicalToLogical<float>(style->GetWritingMode(), style->Direction(),
+                               rect.Y(), rect.MaxX(), rect.MaxY(), rect.X());
+  return FloatPoint(logical.InlineStart(), logical.BlockStart());
 }
 
-// Returns the part a rect logically below a starting point.
-PhysicalRect RectBelowStartingPoint(const PhysicalRect& rect,
-                                    const PhysicalOffset& starting_point,
-                                    WritingDirectionMode writing_direction) {
-  PhysicalRect result = rect;
-  if (writing_direction.IsHorizontal())
-    result.ShiftTopEdgeTo(starting_point.top);
-  else if (writing_direction.IsFlippedBlocks())
-    result.ShiftRightEdgeTo(starting_point.left);
-  else
-    result.ShiftLeftEdgeTo(starting_point.left);
-  return result;
-}
-
-float GetMoveDistance(const FloatPoint& old_starting_point,
-                      const FloatPoint& new_starting_point) {
-  FloatSize location_delta = new_starting_point - old_starting_point;
+float GetMoveDistance(const FloatRect& old_rect,
+                      const FloatRect& new_rect,
+                      const LayoutObject& object) {
+  FloatSize location_delta =
+      LogicalStart(new_rect, object) - LogicalStart(old_rect, object);
   return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
 }
 
 bool EqualWithinMovementThreshold(const FloatPoint& a,
                                   const FloatPoint& b,
-                                  float threshold_physical_px) {
+                                  const LayoutObject& object) {
+  float threshold_physical_px =
+      kMovementThreshold * object.StyleRef().EffectiveZoom();
   return fabs(a.X() - b.X()) < threshold_physical_px &&
          fabs(a.Y() - b.Y()) < threshold_physical_px;
 }
 
-bool SmallerThanRegionGranularity(const PhysicalRect& rect) {
+bool SmallerThanRegionGranularity(const FloatRect& rect) {
   // The region uses integer coordinates, so the rects are snapped to
   // pixel boundaries. Ignore rects smaller than half a pixel.
   return rect.Width() < 0.5 || rect.Height() < 0.5;
@@ -136,10 +110,6 @@ bool ShouldLog(const LocalFrame& frame) {
 
 LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
-      // This eliminates noise from the private Page object created by
-      // SVGImage::DataChanged.
-      is_active_(
-          !frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient()),
       score_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
@@ -150,138 +120,105 @@ LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
       observed_input_or_scroll_(false),
       most_recent_input_timestamp_initialized_(false) {}
 
-bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
-  if (!is_active_)
-    return false;
-
-  // SVG elements don't participate in the normal layout algorithms and are
-  // more likely to be used for animations.
-  if (object.IsSVGChild())
-    return false;
-
-  if (object.IsText())
-    return ContainingBlockScope::top_;
-
-  if (!object.IsBox())
-    return false;
-
-  // Don't report shift of anonymous objects. Will report the children because
-  // we want report real DOM nodes.
-  if (object.IsAnonymous())
-    return true;
-
-  // Ignore layout objects that move (in the coordinate space of the paint
-  // invalidation container) on scroll.
-  // TODO(skobes): Find a way to detect when these objects shift.
-  if (object.IsFixedPositioned() || object.IsStickyPositioned())
-    return false;
-
-  if (object.IsLayoutView())
-    return false;
-
-  if (Element* element = DynamicTo<Element>(object.GetNode())) {
-    if (element->IsSliderThumbElement())
-      return false;
-  }
-
-  return true;
-}
-
 void LayoutShiftTracker::ObjectShifted(
-    const LayoutObject& object,
+    const LayoutObject& source,
     const PropertyTreeStateOrAlias& property_tree_state,
-    const PhysicalRect& old_rect,
-    const PhysicalRect& new_rect,
-    const FloatPoint& old_starting_point,
-    const FloatPoint& new_starting_point) {
-  // The caller should ensure these conditions.
-  DCHECK(!old_rect.IsEmpty());
-  DCHECK(!new_rect.IsEmpty());
+    FloatRect old_rect,
+    FloatRect new_rect) {
+  if (old_rect.IsEmpty() || new_rect.IsEmpty())
+    return;
 
-  float threshold_physical_px =
-      kMovementThreshold * object.StyleRef().EffectiveZoom();
-
-  if (EqualWithinMovementThreshold(old_starting_point, new_starting_point,
-                                   threshold_physical_px))
+  if (EqualWithinMovementThreshold(LogicalStart(old_rect, source),
+                                   LogicalStart(new_rect, source), source))
     return;
 
   if (SmallerThanRegionGranularity(old_rect) &&
       SmallerThanRegionGranularity(new_rect))
     return;
 
+  // Ignore layout objects that move (in the coordinate space of the paint
+  // invalidation container) on scroll.
+  // TODO(skobes): Find a way to detect when these objects shift.
+  if (source.IsFixedPositioned() || source.IsStickyPositioned())
+    return;
+
+  // SVG elements don't participate in the normal layout algorithms and are
+  // more likely to be used for animations.
+  if (source.IsSVG())
+    return;
+
+  if (Element* element = DynamicTo<Element>(source.GetNode())) {
+    if (element->IsSliderThumbElement())
+      return;
+  }
+
   const auto& root_state =
-      object.View()->FirstFragment().LocalBorderBoxProperties();
+      source.View()->FirstFragment().LocalBorderBoxProperties();
   FloatClipRect clip_rect =
       GeometryMapper::LocalToAncestorClipRect(property_tree_state, root_state);
-  clip_rect.Intersect(FloatClipRect(FloatRect(
-      FloatPoint(),
-      FloatSize(
-          frame_view_->GetScrollableArea()->VisibleContentRect().Size()))));
 
   // If the clip region is empty, then the resulting layout shift isn't visible
   // in the viewport so ignore it.
-  if (clip_rect.Rect().IsEmpty())
+  if (!clip_rect.IsInfinite() && clip_rect.Rect().IsEmpty())
     return;
 
-  auto transform = GeometryMapper::SourceToDestinationProjection(
-      property_tree_state.Transform(), root_state.Transform());
-  FloatPoint old_starting_point_in_root =
-      transform.MapPoint(old_starting_point);
-  FloatPoint new_starting_point_in_root =
-      transform.MapPoint(new_starting_point);
+  GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
+                                          root_state.Transform(), old_rect);
+  GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
+                                          root_state.Transform(), new_rect);
 
-  if (EqualWithinMovementThreshold(old_starting_point_in_root,
-                                   new_starting_point_in_root,
-                                   threshold_physical_px))
+  if (EqualWithinMovementThreshold(old_rect.Location(), new_rect.Location(),
+                                   source)) {
     return;
+  }
 
-  if (EqualWithinMovementThreshold(
-          old_starting_point_in_root + frame_scroll_delta_,
-          new_starting_point_in_root, threshold_physical_px)) {
+  if (EqualWithinMovementThreshold(old_rect.Location() + frame_scroll_delta_,
+                                   new_rect.Location(), source)) {
     // TODO(skobes): Checking frame_scroll_delta_ is an imperfect solution to
     // allowing counterscrolled layout shifts. Ideally, we would map old_rect
     // to viewport coordinates using the previous frame's scroll tree.
     return;
   }
 
-  FloatRect old_rect_in_root(old_rect);
-  transform.MapRect(old_rect_in_root);
-  FloatRect new_rect_in_root(new_rect);
-  transform.MapRect(new_rect_in_root);
+  FloatRect clipped_old_rect(old_rect), clipped_new_rect(new_rect);
+  if (!clip_rect.IsInfinite()) {
+    clipped_old_rect.Intersect(clip_rect.Rect());
+    clipped_new_rect.Intersect(clip_rect.Rect());
+  }
 
-  IntRect visible_old_rect =
-      RoundedIntRect(Intersection(old_rect_in_root, clip_rect.Rect()));
-  IntRect visible_new_rect =
-      RoundedIntRect(Intersection(new_rect_in_root, clip_rect.Rect()));
+  IntRect viewport =
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
+
+  IntRect visible_old_rect = RoundedIntRect(clipped_old_rect);
+  visible_old_rect.Intersect(viewport);
+  IntRect visible_new_rect = RoundedIntRect(clipped_new_rect);
+  visible_new_rect.Intersect(viewport);
+
   if (visible_old_rect.IsEmpty() && visible_new_rect.IsEmpty())
     return;
 
   // Compute move distance based on unclipped rects, to accurately determine how
   // much the element moved.
-  float move_distance =
-      GetMoveDistance(old_starting_point_in_root, new_starting_point_in_root);
+  float move_distance = GetMoveDistance(old_rect, new_rect, source);
   frame_max_distance_ = std::max(frame_max_distance_, move_distance);
 
 #if DCHECK_IS_ON()
   LocalFrame& frame = frame_view_->GetFrame();
   if (ShouldLog(frame)) {
     DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
-             << frame.GetDocument()->Url() << ", " << object << " moved from "
-             << old_rect_in_root << " to " << new_rect_in_root
-             << " (visible from " << visible_old_rect << " to "
-             << visible_new_rect << ")";
-    if (old_starting_point_in_root != old_rect_in_root.Location() ||
-        new_starting_point_in_root != new_rect_in_root.Location()) {
-      DVLOG(2) << " (starting point from " << old_starting_point_in_root
-               << " to " << new_starting_point_in_root << ")";
-    }
+             << frame.GetDocument()->Url().GetString() << ", "
+             << source.DebugName() << " moved from " << old_rect.ToString()
+             << " to " << new_rect.ToString() << " (visible from "
+             << visible_old_rect.ToString() << " to "
+             << visible_new_rect.ToString() << ")";
   }
 #endif
 
   region_.AddRect(visible_old_rect);
   region_.AddRect(visible_new_rect);
 
-  if (Node* node = object.GetNode()) {
+  if (Node* node = source.GetNode()) {
     MaybeRecordAttribution(
         {DOMNodeIds::IdForNode(node), visible_old_rect, visible_new_rect});
   }
@@ -336,60 +273,16 @@ void LayoutShiftTracker::MaybeRecordAttribution(
     *smallest = attribution;
 }
 
-void LayoutShiftTracker::NotifyBoxPrePaint(
-    const LayoutBox& box,
+void LayoutShiftTracker::NotifyObjectPrePaint(
+    const LayoutObject& object,
     const PropertyTreeStateOrAlias& property_tree_state,
-    const PhysicalRect& old_rect,
-    const PhysicalRect& new_rect,
-    const PhysicalOffset& old_paint_offset,
-    const PhysicalOffset& new_paint_offset) {
-  DCHECK(NeedsToTrack(box));
-  ObjectShifted(box, property_tree_state, old_rect, new_rect,
-                StartingPoint(old_paint_offset, box, box.PreviousSize()),
-                StartingPoint(new_paint_offset, box, box.Size()));
-}
-
-void LayoutShiftTracker::NotifyTextPrePaint(
-    const LayoutText& text,
-    const PropertyTreeStateOrAlias& property_tree_state,
-    const LogicalOffset& old_starting_point,
-    const LogicalOffset& new_starting_point,
-    const PhysicalOffset& old_paint_offset,
-    const PhysicalOffset& new_paint_offset) {
-  DCHECK(NeedsToTrack(text));
-  auto* block = ContainingBlockScope::top_;
-  DCHECK(block);
-  LayoutUnit distance = std::max(
-      (new_starting_point.inline_offset - old_starting_point.inline_offset)
-          .Abs(),
-      (new_starting_point.block_offset - old_starting_point.block_offset)
-          .Abs());
-  if (distance <= block->max_text_shift_distance_)
+    const PhysicalRect& old_visual_rect,
+    const PhysicalRect& new_visual_rect) {
+  if (!IsActive())
     return;
 
-  block->max_text_shift_distance_ = distance;
-  auto writing_direction = text.StyleRef().GetWritingDirection();
-  PhysicalOffset old_physical_starting_point =
-      old_paint_offset + old_starting_point.ConvertToPhysical(writing_direction,
-                                                              block->old_size_,
-                                                              PhysicalSize());
-  PhysicalOffset new_physical_starting_point =
-      new_paint_offset + new_starting_point.ConvertToPhysical(writing_direction,
-                                                              block->new_size_,
-                                                              PhysicalSize());
-
-  PhysicalRect old_rect = RectBelowStartingPoint(
-      block->old_rect_, old_physical_starting_point, writing_direction);
-  if (old_rect.IsEmpty())
-    return;
-  PhysicalRect new_rect = RectBelowStartingPoint(
-      block->new_rect_, new_physical_starting_point, writing_direction);
-  if (new_rect.IsEmpty())
-    return;
-
-  ObjectShifted(text, property_tree_state, old_rect, new_rect,
-                FloatPoint(old_physical_starting_point),
-                FloatPoint(new_physical_starting_point));
+  ObjectShifted(object, property_tree_state, FloatRect(old_visual_rect),
+                FloatRect(new_visual_rect));
 }
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {
@@ -418,7 +311,7 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
 }
 
 void LayoutShiftTracker::NotifyPrePaintFinished() {
-  if (!is_active_)
+  if (!IsActive())
     return;
   if (region_.IsEmpty())
     return;
@@ -446,7 +339,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   LocalFrame& frame = frame_view_->GetFrame();
   if (ShouldLog(frame)) {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
-             << frame.GetDocument()->Url() << ", viewport was "
+             << frame.GetDocument()->Url().GetString() << ", viewport was "
              << (impact_fraction * 100) << "% impacted with distance fraction "
              << move_distance_factor;
   }
@@ -599,6 +492,14 @@ void LayoutShiftTracker::NotifyViewportSizeChanged() {
   UpdateInputTimestamp(base::TimeTicks::Now());
 }
 
+bool LayoutShiftTracker::IsActive() {
+  // This eliminates noise from the private Page object created by
+  // SVGImage::DataChanged.
+  if (frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient())
+    return false;
+  return true;
+}
+
 std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
     double score_delta,
     bool input_detected) const {
@@ -676,7 +577,7 @@ ReattachHook::Scope::~Scope() {
     auto& hook = GetReattachHook();
     hook.scope_ = outer_;
     if (!outer_)
-      hook.geometries_before_detach_.clear();
+      hook.visual_rects_.clear();
   }
 }
 
@@ -685,19 +586,17 @@ void ReattachHook::NotifyDetach(const Node& node) {
   if (!hook.scope_)
     return;
   auto* layout_object = node.GetLayoutObject();
-  if (!layout_object || !layout_object->IsBox())
+  if (!layout_object)
     return;
 
-  auto& map = hook.geometries_before_detach_;
+  auto& map = hook.visual_rects_;
   auto& fragment = layout_object->GetMutableForPainting().FirstFragment();
 
   // Save the visual rect for restoration on future reattachment.
-  const auto& box = ToLayoutBox(*layout_object);
-  PhysicalRect layout_overflow_rect = box.PreviousPhysicalLayoutOverflowRect();
-  if (layout_overflow_rect.IsEmpty())
+  PhysicalRect visual_rect = fragment.VisualRectForLayoutShiftTracking();
+  if (visual_rect.IsEmpty())
     return;
-  map.Set(&node, Geometry{layout_overflow_rect, fragment.PaintOffset(),
-                          box.PreviousSize()});
+  map.Set(&node, visual_rect);
 }
 
 void ReattachHook::NotifyAttach(const Node& node) {
@@ -705,25 +604,20 @@ void ReattachHook::NotifyAttach(const Node& node) {
   if (!hook.scope_)
     return;
   auto* layout_object = node.GetLayoutObject();
-  if (!layout_object || !layout_object->IsBox())
+  if (!layout_object)
     return;
-  auto& map = hook.geometries_before_detach_;
+  auto& map = hook.visual_rects_;
   auto& fragment = layout_object->GetMutableForPainting().FirstFragment();
 
-  // Restore geometries that was saved during detach. Note: this does not
-  // affect paint invalidation; we will fully invalidate the new layout object.
+  // Restore the visual rect that was saved during detach.
   auto iter = map.find(&node);
   if (iter == map.end())
     return;
-  ToLayoutBox(layout_object)
-      ->GetMutableForPainting()
-      .SetPreviousSizeAndLayoutOverflowRect(iter->value.size,
-                                            iter->value.layout_overflow_rect);
-  fragment.SetPaintOffset(iter->value.paint_offset);
+  fragment.SetVisualRectForLayoutShiftTracking(iter->value);
 }
 
 void ReattachHook::Trace(Visitor* visitor) const {
-  visitor->Trace(geometries_before_detach_);
+  visitor->Trace(visual_rects_);
 }
 
 }  // namespace blink

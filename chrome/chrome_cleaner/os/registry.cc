@@ -155,7 +155,7 @@ bool RegKeyPath::GetNativeFullPath(std::wstring* native_path) const {
 
 bool RegKeyPath::operator==(const RegKeyPath& other) const {
   return rootkey_ == other.rootkey_ &&
-         String16EqualsCaseInsensitive(subkey_, other.subkey_) &&
+         WStringEqualsCaseInsensitive(subkey_, other.subkey_) &&
          wow64access_ == other.wow64access_;
 }
 
@@ -169,7 +169,7 @@ bool RegKeyPath::IsEquivalent(const RegKeyPath& other) const {
     return false;
   }
 
-  return String16EqualsCaseInsensitive(key_path, other_key_path);
+  return WStringEqualsCaseInsensitive(key_path, other_key_path);
 }
 
 bool RegKeyPath::operator<(const RegKeyPath& other) const {

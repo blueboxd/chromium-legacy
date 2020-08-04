@@ -23,13 +23,13 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/not_implemented_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/not_implemented_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
@@ -93,7 +93,7 @@ class SharedWorkerHostTest : public testing::Test {
         SubresourceLoaderParams();
     mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory_remote;
     mojo::MakeSelfOwnedReceiver(
-        std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
+        std::make_unique<network::NotImplementedURLLoaderFactory>(),
         loader_factory_remote.InitWithNewPipeAndPassReceiver());
     subresource_loader_params->pending_appcache_loader_factory =
         std::move(loader_factory_remote);

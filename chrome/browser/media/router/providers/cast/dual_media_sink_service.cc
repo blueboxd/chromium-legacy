@@ -14,6 +14,7 @@
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media_router {
 
@@ -102,6 +103,19 @@ void DualMediaSinkService::OnSinksDiscovered(
   auto& sinks_for_provider = current_sinks_[provider_name];
   sinks_for_provider = std::move(sinks);
   sinks_discovered_callbacks_.Notify(provider_name, sinks_for_provider);
+}
+
+void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
+  if (logger_is_bound_)
+    return;
+  logger_is_bound_ = true;
+  mojo::PendingRemote<mojom::Logger> cast_pending_remote;
+  logger_impl->Bind(cast_pending_remote.InitWithNewPipeAndPassReceiver());
+  cast_media_sink_service_->BindLogger(std::move(cast_pending_remote));
+
+  mojo::PendingRemote<mojom::Logger> dial_pending_remote;
+  logger_impl->Bind(dial_pending_remote.InitWithNewPipeAndPassReceiver());
+  dial_media_sink_service_->BindLogger(std::move(dial_pending_remote));
 }
 
 }  // namespace media_router

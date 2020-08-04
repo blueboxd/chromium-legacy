@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/updater/device_management/dm_cached_policy_info.h"
 #include "chrome/updater/protos/omaha_settings.pb.h"
+#include "chrome/updater/unittest_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
@@ -136,6 +137,8 @@ const uint8_t kSigningKey2Signature[] = {
     0xDD, 0x6F, 0x80, 0xC3,
 };
 
+}  // namespace
+
 std::unique_ptr<DMSigningKeyForTesting> GetTestKey1() {
   constexpr int kFakeKeyVersion = 5;
   return std::make_unique<DMSigningKeyForTesting>(
@@ -149,8 +152,6 @@ std::unique_ptr<DMSigningKeyForTesting> GetTestKey2() {
       kSigningKey2, sizeof(kSigningKey2), kSigningKey2Signature,
       sizeof(kSigningKey2Signature), kFakeKeyVersion, "example.com");
 }
-
-}  // namespace
 
 std::unique_ptr<
     ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto>
@@ -172,7 +173,7 @@ GetDefaultTestingOmahaPolicyProto() {
       ::wireless_android_enterprise_devicemanagement::MANUAL_UPDATES_ONLY);
 
   ::wireless_android_enterprise_devicemanagement::ApplicationSettings app;
-  app.set_app_guid("{8A69D345-D564-463C-AFF1-A69D9E530F96}");
+  app.set_app_guid(kChromeAppId);
   app.set_install(
       ::wireless_android_enterprise_devicemanagement::INSTALL_DISABLED);
   app.set_update(

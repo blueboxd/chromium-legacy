@@ -293,6 +293,9 @@ class StyleBuilderConverter {
 
   static ScrollbarGutter ConvertScrollbarGutter(StyleResolverState& state,
                                                 const CSSValue& value);
+
+  static void CountSystemColorComputeToSelfUsage(
+      const StyleResolverState& state);
 };
 
 template <typename T>

@@ -109,6 +109,15 @@ void FeedStreamSurface::ProcessThereAndBackAgain(
   feed_stream_api_->ProcessThereAndBackAgain(data_string);
 }
 
+void FeedStreamSurface::ProcessViewAction(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jbyteArray>& data) {
+  std::string data_string;
+  base::android::JavaByteArrayToString(env, data, &data_string);
+  feed_stream_api_->ProcessViewAction(data_string);
+}
+
 int FeedStreamSurface::ExecuteEphemeralChange(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

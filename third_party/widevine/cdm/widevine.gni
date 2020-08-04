@@ -21,11 +21,10 @@ if (is_chromeos && !is_chromeos_device) {
 # Widevine CDM is available as a library CDM on the following platforms and
 # architectures. Notably on Android library CDM is not used and Widevine is
 # supported via Android MediaDrm API.
-# TODO(hmchen): Provide support on "arm64".
 library_widevine_cdm_available =
     (is_chromeos && (target_cpu == "x64" || target_cpu == "arm")) ||
     (is_desktop_linux && (target_cpu == "x86" || target_cpu == "x64")) ||
-    (is_mac && target_cpu == "x64") ||
+    (is_mac && (target_cpu == "x64" || target_cpu == "arm64")) ||
     (is_win && (target_cpu == "x86" || target_cpu == "x64"))
 
 # Widevine CDM is available as a library CDM and it's supported by Chromium.
@@ -42,6 +41,11 @@ enable_widevine_cdm_component =
 
 # Widevine CDM is bundled as part of Google Chrome builds.
 bundle_widevine_cdm = enable_library_widevine_cdm && is_chrome_branded
+
+# TODO(crbug.com/1111381): Remove this when MacOS ARM64 CDM is checked in.
+if (is_mac && target_cpu == "arm64") {
+  bundle_widevine_cdm = false
+}
 
 enable_widevine_cdm_host_verification =
     enable_library_widevine_cdm && enable_cdm_host_verification

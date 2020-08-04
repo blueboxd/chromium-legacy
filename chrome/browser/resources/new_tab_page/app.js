@@ -22,6 +22,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
+import {registry} from './modules/modules.js';
 import {oneGoogleBarApi} from './one_google_bar_api.js';
 import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
 
@@ -433,6 +434,18 @@ class AppElement extends PolymerElement {
     // theme arrives. Otherwise mismatching colors will cause flicker.
     return !loadTimeData.getBoolean('realboxMatchOmniboxTheme') ||
         !!this.theme_;
+  }
+
+  /** @private */
+  onLazyRendered_() {
+    if (!loadTimeData.getBoolean('modulesEnabled')) {
+      return;
+    }
+    const container = $$(this, '#modules');
+    if (!container) {
+      return;
+    }
+    registry.instantiateModules(container);
   }
 
   /** @private */

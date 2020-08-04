@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
-#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/top_sites.h"
@@ -321,18 +320,10 @@ void TestChromeBrowserState::CreateBookmarkModel(bool delete_file) {
           this, base::BindRepeating(&BuildBookmarkModel)));
 }
 
-bool TestChromeBrowserState::CreateHistoryService(bool delete_file) {
+bool TestChromeBrowserState::CreateHistoryService() {
   // Should never be created multiple times.
   DCHECK(!ios::HistoryServiceFactory::GetForBrowserStateIfExists(
       this, ServiceAccessType::EXPLICIT_ACCESS));
-
-  if (delete_file) {
-    base::FilePath path =
-        GetOriginalChromeBrowserState()->GetStatePath().Append(
-            history::kHistoryFilename);
-    if (!base::DeleteFile(path) && base::PathExists(path))
-      return false;
-  }
 
   // Create and initialize the HistoryService, but destroy it if the init fails.
   history::HistoryService* history_service =

@@ -69,6 +69,7 @@ source_set("unittest") {
     "//base",
     "//base/test:test_support",
     "//chrome/updater:base",
+    "//chrome/updater:updater_tests_support",
     "//chrome/updater/protos:omaha_proto",
     "//components/update_client:update_client",
     "//net:test_support",

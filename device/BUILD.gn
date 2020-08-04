@@ -15,7 +15,7 @@ if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
-is_linux_without_udev = is_linux && !use_udev
+is_linux_without_udev = (is_linux || is_chromeos) && !use_udev
 
 test("device_unittests") {
   sources = [
@@ -227,7 +227,7 @@ test("device_unittests") {
     }
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     if (is_chromecast) {
       # Cast does not support GATT server mode.
       sources -= [

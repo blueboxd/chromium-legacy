@@ -456,7 +456,8 @@ void WorkerGlobalScope::RunWorkerScript() {
 
   // Step 24. If script is a classic script, then run the classic script script.
   // Otherwise, it is a module script; run the module script script. [spec text]
-  bool is_success = std::move(worker_script_)->RunScriptOnWorker(*this);
+  bool is_success =
+      std::move(worker_script_)->RunScriptOnWorkerOrWorklet(*this);
 
   ReportingProxy().DidEvaluateTopLevelScript(is_success);
 

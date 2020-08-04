@@ -11,15 +11,25 @@
 <p><a href=https://bugs.webkit.org/show_bug.cgi?id=99493>Bug 99493</a></p>
 <div id="test-container">
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 1x), pointer'>25x25 image at 1x</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 1x), pointer'>25x25 SVG image at 1x</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 2x), pointer'>25x25 image at 2x</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 2x), pointer'>25x25 SVG image at 2x</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 1x, url(resources/greenbox30.png) 2x), pointer'>25x25 image at 1x, 30x30 image at 2x</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 1x, url(resources/greenbox30.svg) 2x), pointer'>25x25 SVG image at 1x, 30x30 SVG image at 2x</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 1.5x, url(resources/greenbox30.png) 5x), pointer'>25x25 image at 1.5x, 30x30 image at 5x</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 1.5x, url(resources/greenbox30.svg) 5x), pointer'>25x25 SVG image at 1.5x, 30x30 SVG image at 5x</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 0.0001x), pointer'>Invalid tiny scale with fallback to pointer</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 0.0001x), pointer'>Invalid tiny scale on SVG with fallback to pointer</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox200.png) 1x), pointer'>Over-large image with fallback to pointer</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox200.svg) 1x), pointer'>Over-large SVG image with fallback to pointer</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox200.png) 4x), pointer'>200x200 image at 4x (not over-large in UI pixels)</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox200.svg) 4x), pointer'>200x200 SVG image at 4x (not over-large in UI pixels)</div>
   <div style='cursor: -webkit-image-set(url(doesntexist.png) 1x), url(resources/greenbox.png), pointer'>Non-existent image in image-set with fallback to 25x25 image</div>
+  <div style='cursor: -webkit-image-set(url(doesntexist.svg) 1x), url(resources/greenbox.svg), pointer'>Non-existent SVG image in image-set with fallback to 25x25 SVG image</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 1x, url(resources/greenbox30.png) 2x) 5 3, pointer'>Explicit hotspot at (5,3) logical in 1x and 2x</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 1x, url(resources/greenbox30.svg) 2x) 5 3, pointer'>Explicit hotspot at (5,3) logical in 1x and 2x - SVG</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox.png) 0.7x, url(resources/greenbox30.png) 1.4x) 7 3, pointer'>Explicit hotspot at (7,3) logical in 0.7x and 1.4x - should round to nearest integer</div>
+  <div style='cursor: -webkit-image-set(url(resources/greenbox.svg) 0.7x, url(resources/greenbox30.svg) 1.4x) 7 3, pointer'>Explicit hotspot at (7,3) logical in 0.7x and 1.4x - SVG - should round to nearest integer</div>
   <div style='cursor: -webkit-image-set(url(resources/greenbox-hotspot5-4.cur) 1x, url(resources/greenbox30-hotspot28-3.cur) 2x), pointer'>Implicit hot-spot at (5,4) physical for 1x and (28,3) physical for 2x</div>
 </div>
 <br/>
@@ -55,7 +65,9 @@ function runTests() {
         // Repeat in high-dpi mode
         testRunner.setBackingScaleFactor(2, function() {
             // Failed images are apparently reset on scale factor change. 
-            loadImages([{ url: 'doesntexist.png', error: true }], function() {
+            loadImages([{ url: 'doesntexist.png', error: true },
+                        { url: 'doesntexist.svg', error: true }],
+                        function() {
                 checkCursors();
                 testContainer.style.display = 'none';
                 finishJSTest();
@@ -80,7 +92,7 @@ if (window.testRunner) {
 
 // Now wait for each image to load or fail to load before starting tests.
 // Without this we can get null images in the cursors - eg. no known size.
-preloadImagesFromStyle(testContainer, 6, runTests, /doesntexist/);
+preloadImagesFromStyle(testContainer, 10, runTests, /doesntexist/);
 
 </script>
 </body>

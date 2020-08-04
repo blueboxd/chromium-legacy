@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_CERTIFICATE_STORAGE_IMPL_H_
 
 #include "base/containers/flat_set.h"
+#include "base/containers/queue.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_storage.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
@@ -57,8 +58,6 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   void operator=(NearbyShareCertificateStorageImpl&) = delete;
 
   // NearbyShareCertificateStorage
-  bool IsInitialized() override;
-  void Initialize(ResultCallback callback) override;
   std::vector<std::string> GetPublicCertificateIds() const override;
   void GetPublicCertificates(PublicCertificateCallback callback) override;
   base::Optional<std::vector<NearbySharePrivateCertificate>>
@@ -90,14 +89,16 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
           leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
           proto_database);
 
-  void OnDatabaseInitialized(ResultCallback callback,
-                             leveldb_proto::Enums::InitStatus status);
+  enum class InitStatus { kUninitialized, kInitialized, kFailed };
 
-  void OnDatabaseDestroyed(bool should_reinitialize,
-                           ResultCallback callback,
-                           bool success);
+  void Initialize();
+  void OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status);
+  void FinishInitialization(bool success);
 
-  void DestroyAndReinitialize(ResultCallback callback);
+  void OnDatabaseDestroyedReinitialize(bool success);
+  void OnDatabaseDestroyed(ResultCallback callback, bool success);
+
+  void DestroyAndReinitialize();
 
   void ReplacePublicCertificatesDestroyCallback(
       std::unique_ptr<std::vector<
@@ -122,7 +123,7 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   bool FetchPublicCertificateExpirations();
   void SavePublicCertificateExpirations();
 
-  bool is_initialized_ = false;
+  InitStatus init_status_ = InitStatus::kUninitialized;
 
   size_t num_initialize_attempts_ = 0;
 
@@ -134,6 +135,7 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
 
   std::vector<NearbySharePrivateCertificate> private_certificates_;
   ExpirationList public_certificate_expirations_;
+  base::queue<base::OnceClosure> deferred_callbacks_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_CERTIFICATE_STORAGE_IMPL_H_

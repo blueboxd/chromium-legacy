@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "components/tab_groups/tab_group_id.h"
 
@@ -67,15 +66,14 @@ class TabStripModelDelegate {
   // TabStripModelDelegate, or perhaps even move this code elsewhere.
   struct NewStripContents {
     NewStripContents();
+    NewStripContents(const NewStripContents&) = delete;
+    NewStripContents& operator=(const NewStripContents&) = delete;
     ~NewStripContents();
     NewStripContents(NewStripContents&&);
     // The WebContents to add.
     std::unique_ptr<content::WebContents> web_contents;
     // A bitmask of TabStripModel::AddTabTypes to apply to the added contents.
     int add_types = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(NewStripContents);
   };
   virtual Browser* CreateNewStripWithContents(
       std::vector<NewStripContents> contentses,

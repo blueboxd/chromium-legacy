@@ -251,7 +251,7 @@ Polymer({
         category === ContentSettingsTypes.SERIAL_PORTS ||
         category === ContentSettingsTypes.USB_DEVICES ||
         category === ContentSettingsTypes.BLUETOOTH_SCANNING ||
-        category === ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE ||
+        category === ContentSettingsTypes.FILE_SYSTEM_WRITE ||
         category === ContentSettingsTypes.HID_DEVICES ||
         category === ContentSettingsTypes.BLUETOOTH_DEVICES);
   },
@@ -273,10 +273,10 @@ Polymer({
       return true;
     }
 
-    // For Bluetooth scanning permission and Native File System write permission
+    // For Bluetooth scanning permission and File System write permission
     // 'ask' takes the place of 'allow'.
     if (category === ContentSettingsTypes.BLUETOOTH_SCANNING ||
-        category === ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE) {
+        category === ContentSettingsTypes.FILE_SYSTEM_WRITE) {
       return true;
     }
 

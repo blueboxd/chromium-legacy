@@ -18,12 +18,11 @@ class TabActivitySimulator::TestWebContentsObserver
     : public content::WebContentsObserver {
  public:
   explicit TestWebContentsObserver(content::WebContents* web_contents);
+  TestWebContentsObserver(const TestWebContentsObserver&) = delete;
+  TestWebContentsObserver& operator=(const TestWebContentsObserver&) = delete;
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
 TabActivitySimulator::TestWebContentsObserver::TestWebContentsObserver(

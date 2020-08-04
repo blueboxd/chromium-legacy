@@ -27,6 +27,10 @@ namespace base {
 class TaskRunner;
 }
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -75,6 +79,11 @@ class SupervisedUserURLFilter {
   SupervisedUserURLFilter();
   ~SupervisedUserURLFilter();
 
+  // Returns true if the parental allowlist/blocklist should be skipped in
+  // |contents|. SafeSearch filtering is still applied to |contents|.
+  static bool ShouldSkipParentManualAllowlistFiltering(
+      content::WebContents* contents);
+
   static FilteringBehavior BehaviorFromInt(int behavior_value);
 
   static bool ReasonIsAutomatic(
@@ -115,10 +124,13 @@ class SupervisedUserURLFilter {
   // Like |GetFilteringBehaviorForURL|, but also includes asynchronous checks
   // against a remote service. If the result is already determined by the
   // synchronous checks, then |callback| will be called synchronously.
-  // Returns true if |callback| was called synchronously.
+  // Returns true if |callback| was called synchronously. If
+  // |skip_manual_parent_filter| is set to true, it only uses the asynchronous
+  // safe search checks.
   bool GetFilteringBehaviorForURLWithAsyncChecks(
       const GURL& url,
-      FilteringBehaviorCallback callback) const;
+      FilteringBehaviorCallback callback,
+      bool skip_manual_parent_filter = false) const;
 
   // Gets all the whitelists that the url is part of. Returns id->name of each
   // whitelist.

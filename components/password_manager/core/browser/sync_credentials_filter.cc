@@ -17,8 +17,6 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-using autofill::PasswordForm;
-
 namespace password_manager {
 
 SyncCredentialsFilter::SyncCredentialsFilter(

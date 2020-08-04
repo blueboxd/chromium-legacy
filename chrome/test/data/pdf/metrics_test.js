@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType, TwoUpViewAction} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
+import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
 import {PDFMetrics} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/metrics.js';
 
 chrome.test.runTests(function() {
@@ -87,11 +87,11 @@ chrome.test.runTests(function() {
 
       chrome.metricsPrivate = new MockMetricsPrivate();
       PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
-      PDFMetrics.recordTwoUpView(TwoUpViewAction.TWO_UP_VIEW_ENABLE);
-      PDFMetrics.recordTwoUpView(TwoUpViewAction.TWO_UP_VIEW_DISABLE);
-      PDFMetrics.recordTwoUpView(TwoUpViewAction.TWO_UP_VIEW_ENABLE);
-      PDFMetrics.recordTwoUpView(TwoUpViewAction.TWO_UP_VIEW_DISABLE);
-      PDFMetrics.recordTwoUpView(TwoUpViewAction.TWO_UP_VIEW_ENABLE);
+      PDFMetrics.recordTwoUpViewEnabled(true);
+      PDFMetrics.recordTwoUpViewEnabled(false);
+      PDFMetrics.recordTwoUpViewEnabled(true);
+      PDFMetrics.recordTwoUpViewEnabled(false);
+      PDFMetrics.recordTwoUpViewEnabled(true);
 
       chrome.test.assertEq(
           {

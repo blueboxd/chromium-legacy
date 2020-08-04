@@ -213,6 +213,7 @@ justifySelf
 left
 length
 letterSpacing
+letterSpacingOverride
 lightingColor
 lineBreak
 lineHeight

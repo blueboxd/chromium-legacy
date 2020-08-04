@@ -290,6 +290,10 @@ gfx::NativeView AutofillPopupControllerImpl::container_view() const {
   return controller_common_.container_view;
 }
 
+content::WebContents* AutofillPopupControllerImpl::GetWebContents() const {
+  return web_contents_;
+}
+
 const gfx::RectF& AutofillPopupControllerImpl::element_bounds() const {
   return controller_common_.element_bounds;
 }

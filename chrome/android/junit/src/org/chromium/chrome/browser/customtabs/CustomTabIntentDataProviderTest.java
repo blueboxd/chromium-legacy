@@ -4,12 +4,21 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.junit.Assert.assertEquals;
-
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
 
+import static org.junit.Assert.assertEquals;
+
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSession;
+import androidx.browser.trusted.ScreenOrientation;
+import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +26,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-
-import androidx.browser.customtabs.CustomTabColorSchemeParams;
-import androidx.browser.customtabs.CustomTabsIntent;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 
 /** Tests for {@link CustomTabIntentDataProvider}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -57,6 +65,37 @@ public class CustomTabIntentDataProviderTest {
 
         assertEquals(lightParams.navigationBarColor, lightProvider.getNavigationBarColor());
         assertEquals(darkParams.navigationBarColor, darkProvider.getNavigationBarColor());
+    }
+
+    /* Test the setting the default orientation for Trusted Web Activity and getting the default
+     * orientation.
+     */
+    @Test
+    public void defaultOrientationIsSet() throws Exception {
+        Context mContext = RuntimeEnvironment.application;
+        CustomTabsSession mSession = CustomTabsSession.createMockSessionForTesting(
+                new ComponentName(mContext, ChromeLauncherActivity.class));
+
+        TrustedWebActivityIntentBuilder twaBuilder =
+                new TrustedWebActivityIntentBuilder(getLaunchingUrl())
+                        .setScreenOrientation(ScreenOrientation.LANDSCAPE);
+        Intent intent = twaBuilder.build(mSession).getIntent();
+        CustomTabIntentDataProvider customTabIntentDataProvider =
+                new CustomTabIntentDataProvider(intent, mContext, COLOR_SCHEME_LIGHT);
+        assertEquals(ScreenOrientationLockType.LANDSCAPE,
+                customTabIntentDataProvider.getDefaultOrientation());
+
+        twaBuilder = new TrustedWebActivityIntentBuilder(getLaunchingUrl())
+                             .setScreenOrientation(ScreenOrientation.PORTRAIT);
+        intent = twaBuilder.build(mSession).getIntent();
+        customTabIntentDataProvider =
+                new CustomTabIntentDataProvider(intent, mContext, COLOR_SCHEME_LIGHT);
+        assertEquals(ScreenOrientationLockType.PORTRAIT,
+                customTabIntentDataProvider.getDefaultOrientation());
+    }
+
+    protected Uri getLaunchingUrl() {
+        return Uri.parse("https://www.example.com/");
     }
 }
 

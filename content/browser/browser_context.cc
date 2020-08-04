@@ -464,10 +464,45 @@ BrowserContext::~BrowserContext() {
     base::debug::DumpWithoutCrashing();
   }
 
-  // Clean up any isolated origins and other security state associated with this
-  // BrowserContext.
+  // Verify that there are no outstanding RenderProcessHosts that reference
+  // this context. Trigger a crash report if there are still references so
+  // we can detect/diagnose potential UAFs.
+  std::string rph_crash_key_value;
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
+
+  for (RenderProcessHost::iterator host_iterator =
+           RenderProcessHost::AllHostsIterator();
+       !host_iterator.IsAtEnd(); host_iterator.Advance()) {
+    RenderProcessHost* host = host_iterator.GetCurrentValue();
+    if (host->GetBrowserContext() == this) {
+      rph_crash_key_value += "{";
+
+      rph_crash_key_value += " process_lock='" +
+                             policy->GetProcessLock(host->GetID()).ToString() +
+                             "'";
+
+      if (host->HostHasNotBeenUsed())
+        rph_crash_key_value += " has_not_been_used ";
+
+      if (RenderProcessHostImpl::IsSpareProcessForCrashReporting(host))
+        rph_crash_key_value += " is_spare";
+
+      rph_crash_key_value += " }";
+    }
+  }
+  if (!rph_crash_key_value.empty()) {
+    NOTREACHED() << "rph_with_bc_reference : " << rph_crash_key_value;
+
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "rph_with_bc_reference", base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString auto_clear(crash_key,
+                                                 rph_crash_key_value);
+    base::debug::DumpWithoutCrashing();
+  }
+
+  // Clean up any isolated origins and other security state associated with this
+  // BrowserContext.
   policy->RemoveStateForBrowserContext(*this);
 
   if (GetUserData(kDownloadManagerKeyName))

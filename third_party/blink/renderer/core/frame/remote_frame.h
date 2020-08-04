@@ -137,7 +137,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void BubbleLogicalScroll(mojom::blink::ScrollDirection direction,
                            ui::ScrollGranularity granularity) override;
   void UpdateUserActivationState(
-      mojom::blink::UserActivationUpdateType) override;
+      mojom::blink::UserActivationUpdateType update_type,
+      mojom::blink::UserActivationNotificationType notification_type) override;
   void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) override;
   void SetPageFocus(bool is_focused) override;

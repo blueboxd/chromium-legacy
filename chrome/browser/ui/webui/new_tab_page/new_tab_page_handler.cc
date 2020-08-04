@@ -1014,8 +1014,16 @@ void NewTabPageHandler::DeleteAutocompleteMatch(uint8_t line) {
 
 void NewTabPageHandler::ToggleSuggestionGroupIdVisibility(
     int32_t suggestion_group_id) {
-  omnibox::ToggleSuggestionGroupIdVisibility(profile_->GetPrefs(),
-                                             suggestion_group_id);
+  if (!autocomplete_controller_)
+    return;
+
+  omnibox::SuggestionGroupVisibility new_value =
+      autocomplete_controller_->result().IsSuggestionGroupIdHidden(
+          profile_->GetPrefs(), suggestion_group_id)
+          ? omnibox::SuggestionGroupVisibility::SHOWN
+          : omnibox::SuggestionGroupVisibility::HIDDEN;
+  omnibox::SetSuggestionGroupVisibility(profile_->GetPrefs(),
+                                        suggestion_group_id, new_value);
 }
 
 void NewTabPageHandler::LogCharTypedToRepaintLatency(base::TimeDelta latency) {

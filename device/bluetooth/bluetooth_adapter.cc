@@ -22,6 +22,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 
 namespace device {
 
@@ -224,8 +225,7 @@ BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
 
 const BluetoothDevice* BluetoothAdapter::GetDevice(
     const std::string& address) const {
-  std::string canonicalized_address =
-      BluetoothDevice::CanonicalizeAddress(address);
+  std::string canonicalized_address = CanonicalizeBluetoothAddress(address);
   if (canonicalized_address.empty())
     return nullptr;
 

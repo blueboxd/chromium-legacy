@@ -8,6 +8,9 @@
 #include "chrome/updater/tag.h"
 
 namespace updater {
+
+const char kChromeAppId[] = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
+
 namespace tagging {
 
 std::ostream& operator<<(std::ostream& os, const ErrorCode& error_code) {

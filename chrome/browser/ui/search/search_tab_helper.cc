@@ -752,8 +752,13 @@ void SearchTabHelper::ToggleSuggestionGroupIdVisibility(
   if (!autocomplete_controller_)
     return;
 
-  omnibox::ToggleSuggestionGroupIdVisibility(profile()->GetPrefs(),
-                                             suggestion_group_id);
+  omnibox::SuggestionGroupVisibility new_value =
+      autocomplete_controller_->result().IsSuggestionGroupIdHidden(
+          profile()->GetPrefs(), suggestion_group_id)
+          ? omnibox::SuggestionGroupVisibility::SHOWN
+          : omnibox::SuggestionGroupVisibility::HIDDEN;
+  omnibox::SetSuggestionGroupVisibility(profile()->GetPrefs(),
+                                        suggestion_group_id, new_value);
 }
 
 void SearchTabHelper::LogCharTypedToRepaintLatency(uint32_t latency_ms) {

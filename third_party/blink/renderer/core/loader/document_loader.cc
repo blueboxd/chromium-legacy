@@ -1681,9 +1681,6 @@ void DocumentLoader::CommitNavigation() {
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
   if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
-    if (frame_->GetDocument())
-      frame_->GetDocument()->RemoveAllEventListenersRecursively();
-
     auto* agent = GetWindowAgentForOrigin(frame_.Get(), security_origin.get());
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_, agent));
 

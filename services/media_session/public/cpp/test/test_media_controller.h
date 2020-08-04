@@ -155,6 +155,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void ScrubTo(base::TimeDelta seek_time) override {}
   void EnterPictureInPicture() override;
   void ExitPictureInPicture() override;
+  void SetAudioSinkId(const base::Optional<std::string>& id) override {}
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;

@@ -21,6 +21,7 @@ extern const base::Feature kRealboxUseGoogleGIcon;
 extern const base::Feature kWebUI;
 extern const base::Feature kWebUIRealbox;
 extern const base::Feature kWebUIThemeModeDoodles;
+extern const base::Feature kModules;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
 extern const base::Feature kRealbox;

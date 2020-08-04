@@ -15,5 +15,7 @@ import './app.js';
 export {BackgroundManager} from './background_manager.js';
 export {BrowserProxy} from './browser_proxy.js';
 export {BackgroundSelectionType} from './customize_dialog.js';
+export {dummyDescriptor} from './modules/dummy/module.js';
+export {ModuleRegistry} from './modules/module_registry.js';
 export {NO_SUGGESTION_GROUP_ID} from './realbox_dropdown.js';
 export {$$, createScrollBorders, decodeString16, hexColorToSkColor, mojoString16, skColorToRgba} from './utils.js';

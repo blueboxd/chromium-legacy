@@ -23,7 +23,7 @@ config("bluetooth_config") {
       "/DELAYLOAD:setupapi.dll",
     ]
   }
-  if (is_linux && is_chromecast) {
+  if ((is_linux || is_chromeos) && is_chromecast) {
     defines = [ "USE_CAST_BLUETOOTH_ADAPTER" ]
   }
 }
@@ -382,7 +382,7 @@ component("bluetooth") {
         "dbus/bluez_dbus_manager.cc",
         "dbus/bluez_dbus_manager.h",
       ]
-      if (is_linux) {
+      if (is_linux || is_chromeos) {
         sources += [
           "dbus/bluez_dbus_thread_manager.cc",
           "dbus/bluez_dbus_thread_manager.h",
@@ -442,7 +442,7 @@ component("bluetooth") {
       }
       deps += [ "//dbus" ]
     } else {  # !use_dbus
-      if (is_chromecast && is_linux) {
+      if (is_chromecast && (is_linux || is_chromeos)) {
         sources += [
           "cast/bluetooth_adapter_cast.cc",
           "cast/bluetooth_adapter_cast.h",
@@ -468,7 +468,7 @@ component("bluetooth") {
         sources += [ "bluetooth_adapter_stub.cc" ]
       }
 
-      if (is_linux) {
+      if (is_linux || is_chromeos) {
         defines += [ "LINUX_WITHOUT_DBUS" ]
         sources += [
           "dbus/dbus_bluez_manager_wrapper_linux.h",

@@ -71,14 +71,6 @@ FakeNearbyShareCertificateStorage::FakeNearbyShareCertificateStorage() =
 FakeNearbyShareCertificateStorage::~FakeNearbyShareCertificateStorage() =
     default;
 
-bool FakeNearbyShareCertificateStorage::IsInitialized() {
-  return is_initialized_;
-}
-
-void FakeNearbyShareCertificateStorage::Initialize(ResultCallback callback) {
-  initialize_callbacks_.push_back(std::move(callback));
-}
-
 std::vector<std::string>
 FakeNearbyShareCertificateStorage::GetPublicCertificateIds() const {
   return public_certificate_ids_;
@@ -140,10 +132,6 @@ void FakeNearbyShareCertificateStorage::ClearPrivateCertificates() {
 void FakeNearbyShareCertificateStorage::ClearPublicCertificates(
     ResultCallback callback) {
   clear_public_certificates_callbacks_.push_back(std::move(callback));
-}
-
-void FakeNearbyShareCertificateStorage::SetIsInitialized(bool is_initialized) {
-  is_initialized_ = is_initialized;
 }
 
 void FakeNearbyShareCertificateStorage::SetPublicCertificateIds(

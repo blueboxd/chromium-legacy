@@ -166,8 +166,8 @@ Polymer({
         return this.i18n('siteSettingsInsecureContent');
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
         return this.i18n('siteSettingsBluetoothScanning');
-      case ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
-        return this.i18n('siteSettingsNativeFileSystemWrite');
+      case ContentSettingsTypes.FILE_SYSTEM_WRITE:
+        return this.i18n('siteSettingsFileSystemWrite');
       case ContentSettingsTypes.HID_DEVICES:
         return this.i18n('siteSettingsHidDevices');
       case ContentSettingsTypes.AR:

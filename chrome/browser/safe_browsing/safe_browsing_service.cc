@@ -384,9 +384,9 @@ void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
 }
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
+  services_delegate_->CreateSafeBrowsingNetworkContext(profile);
   services_delegate_->CreatePasswordProtectionService(profile);
   services_delegate_->CreateTelemetryService(profile);
-  services_delegate_->CreateSafeBrowsingNetworkContext(profile);
   observed_profiles_.Add(profile);
 }
 

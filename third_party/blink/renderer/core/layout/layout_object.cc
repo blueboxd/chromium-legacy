@@ -177,6 +177,7 @@ struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
   Member<void*> members[1];
   // The following fields are in FragmentData.
   PhysicalOffset paint_offset_;
+  PhysicalRect visual_rect_for_layout_shift_tracking;
   std::unique_ptr<int> rare_data_;
 };
 
@@ -2445,6 +2446,11 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
                                      EventHandlerRegistry::kTouchAction);
     }
     MarkEffectiveAllowedTouchActionChanged();
+  }
+  if (is_document_element && style_ && style_->Opacity() == 0.0f &&
+      new_style.Opacity() != 0.0f) {
+    if (LocalFrameView* frame_view = GetFrameView())
+      frame_view->GetPaintTimingDetector().ReportIgnoredContent();
   }
 }
 

@@ -55,6 +55,9 @@
       name: "initial-value"
     },
     {
+      name: "letter-spacing-override"
+    },
+    {
       name: "max-height",
     },
     {

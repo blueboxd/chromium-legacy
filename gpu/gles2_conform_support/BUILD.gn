@@ -59,7 +59,7 @@ executable("gles2_conform_support") {
     "//gpu/gles2_conform_support/egl",
     "//ui/gl",
   ]
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "native/egl_native_aura.cc",
       "native/egl_native_x11.cc",

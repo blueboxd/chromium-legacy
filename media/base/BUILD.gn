@@ -400,7 +400,7 @@ jumbo_source_set("base") {
     defines += [ "DISABLE_USER_INPUT_MONITOR" ]
   }
 
-  if (is_linux || is_win) {
+  if (is_linux || is_chromeos || is_win) {
     sources += [
       "keyboard_event_counter.cc",
       "keyboard_event_counter.h",
@@ -408,7 +408,7 @@ jumbo_source_set("base") {
   }
 
   # Note: should also work on is_posix || is_fuchsia
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "scopedfd_helper.cc",
       "scopedfd_helper.h",
@@ -613,7 +613,7 @@ source_set("unit_tests") {
     deps += [ "//media/base/mac:unit_tests" ]
   }
 
-  if (is_linux || is_win) {
+  if (is_linux || is_chromeos || is_win) {
     sources += [ "keyboard_event_counter_unittest.cc" ]
   }
   if (is_win) {

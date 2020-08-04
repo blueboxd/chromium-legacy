@@ -56,6 +56,7 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(ScrubTo, void(base::TimeDelta));
   MOCK_METHOD0(EnterPictureInPicture, void());
   MOCK_METHOD0(ExitPictureInPicture, void());
+  MOCK_METHOD1(SetAudioSinkId, void(const base::Optional<std::string>& id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
@@ -104,7 +105,6 @@ class CastMediaBlockerTest : public content::RenderViewHostTestHarness {
  private:
   DISALLOW_COPY_AND_ASSIGN(CastMediaBlockerTest);
 };
-
 
 TEST_F(CastMediaBlockerTest, Block_Unblock_Suspended) {
   // Testing block/unblock operations do nothing if media never plays.

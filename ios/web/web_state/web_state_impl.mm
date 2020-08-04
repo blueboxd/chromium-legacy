@@ -20,6 +20,7 @@
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
+#import "ios/web/navigation/text_fragment_utils.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/browser_state.h"
@@ -857,6 +858,10 @@ void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
     for (auto& observer : observers_) {
       observer.FaviconUrlUpdated(this, cached_favicon_urls_);
     }
+  }
+
+  if (AreTextFragmentsAllowed(context)) {
+    HandleTextFragments(context);
   }
 }
 

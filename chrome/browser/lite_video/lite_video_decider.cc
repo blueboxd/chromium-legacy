@@ -71,9 +71,6 @@ bool CanApplyOnCurrentNetworkConditions(
   return effective_connection_type >= lite_video::features::MinLiteVideoECT();
 }
 
-// The default downlink bandwidth estimate used for throttling media requests.
-// Only used when forcing LiteVideos to be allowed.
-constexpr double kLiteVideoDefaultDownlinkBandwidthKbps = 400.0;
 
 }  // namespace
 
@@ -128,7 +125,7 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
 
   if (switches::ShouldOverrideLiteVideoDecision()) {
     // Return a default configured hint.
-    return LiteVideoHint(kLiteVideoDefaultDownlinkBandwidthKbps,
+    return LiteVideoHint(switches::GetDefaultDownlinkBandwidthKbps(),
                          features::LiteVideoTargetDownlinkRTTLatency(),
                          features::LiteVideoKilobytesToBufferBeforeThrottle(),
                          features::LiteVideoMaxThrottlingDelay());

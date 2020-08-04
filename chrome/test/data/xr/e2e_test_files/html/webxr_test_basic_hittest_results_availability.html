@@ -40,7 +40,9 @@ Tests that AR hit test results are available in rAF as soon as hit test source i
         // feature points, and then to actually finding the plane. Given that, we should allow
         // for retry logic in the test - the initial hit tests may return empty results until
         // ARCore detects a plane.
-        let retries_left = 30;
+        // Since we try every frame and we currently run at 30FPS, it should mean we'll retry for
+        // 5 seconds.
+        let retries_left = 30 * 5;
 
         onARFrameCallback = (session, frame) => {
           switch(testState) {

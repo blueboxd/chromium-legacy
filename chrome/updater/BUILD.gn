@@ -262,6 +262,21 @@ if (is_win || is_mac) {
     }
   }
 
+  source_set("updater_tests_support") {
+    testonly = true
+
+    sources = [
+      "unittest_util.cc",
+      "unittest_util.h",
+    ]
+
+    deps = [
+      ":base",
+      ":lib",
+      "//base",
+    ]
+  }
+
   test("updater_tests") {
     testonly = true
 
@@ -277,8 +292,6 @@ if (is_win || is_mac) {
       "tag_unittest.cc",
       "test/integration_tests.cc",
       "test/integration_tests.h",
-      "unittest_util.cc",
-      "unittest_util.h",
       "unittest_util_unittest.cc",
       "updater_unittest.cc",
     ]
@@ -287,6 +300,7 @@ if (is_win || is_mac) {
       ":base",
       ":lib",
       ":updater",
+      ":updater_tests_support",
       ":version_header",
       "//base",
       "//base/test:test_support",

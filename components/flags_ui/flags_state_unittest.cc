@@ -172,7 +172,8 @@ class FlagsStateTest : public ::testing::Test,
   }
 
   // FlagsState::Delegate:
-  bool ShouldExcludeFlag(const FeatureEntry& entry) override {
+  bool ShouldExcludeFlag(const FlagsStorage* storage,
+                         const FeatureEntry& entry) override {
     return exclude_flags_.count(entry.internal_name) != 0;
   }
 

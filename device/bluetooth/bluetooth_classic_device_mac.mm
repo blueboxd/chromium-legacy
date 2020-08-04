@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 // Undocumented API for accessing the Bluetooth transmit power level.
@@ -287,7 +288,8 @@ int BluetoothClassicDeviceMac::GetHostTransmitPower(
 // static
 std::string BluetoothClassicDeviceMac::GetDeviceAddress(
     IOBluetoothDevice* device) {
-  return CanonicalizeAddress(base::SysNSStringToUTF8([device addressString]));
+  return CanonicalizeBluetoothAddress(
+      base::SysNSStringToUTF8([device addressString]));
 }
 
 }  // namespace device

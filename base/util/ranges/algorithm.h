@@ -2821,7 +2821,10 @@ template <typename InputIterator,
           typename = internal::iterator_category_t<RandomAccessIterator>,
           typename = indirect_result_t<Comp&,
                                        projected<InputIterator, Proj1>,
-                                       projected<RandomAccessIterator, Proj2>>>
+                                       projected<RandomAccessIterator, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj2>,
+                                       projected<InputIterator, Proj1>>>
 constexpr auto partial_sort_copy(InputIterator first,
                                  InputIterator last,
                                  RandomAccessIterator result_first,
@@ -2864,7 +2867,10 @@ template <typename Range1,
           typename = internal::range_category_t<Range2>,
           typename = indirect_result_t<Comp&,
                                        projected<iterator_t<Range1>, Proj1>,
-                                       projected<iterator_t<Range2>, Proj2>>>
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
 constexpr auto partial_sort_copy(Range1&& range,
                                  Range2&& result_range,
                                  Comp comp = {},
@@ -2883,7 +2889,7 @@ constexpr auto partial_sort_copy(Range1&& range,
 // and `proj`.
 //
 // Complexity: Linear.
-
+//
 // Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted(I
 template <typename ForwardIterator,
           typename Comp = ranges::less,
@@ -2900,11 +2906,10 @@ constexpr auto is_sorted(ForwardIterator first,
                         internal::ProjectedBinaryPredicate(comp, proj, proj));
 }
 
-// Returns: Whether the range `[first, last)` is sorted with respect to `comp`
-// and `proj`.
+// Returns: Whether `range` is sorted with respect to `comp` and `proj`.
 //
 // Complexity: Linear.
-
+//
 // Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted(R
 template <typename Range,
           typename Comp = ranges::less,
@@ -2922,7 +2927,7 @@ constexpr auto is_sorted(Range&& range, Comp comp = {}, Proj proj = {}) {
 // `[first, i)` is sorted with respect to `comp` and `proj`.
 //
 // Complexity: Linear.
-
+//
 // Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted_until(I
 template <typename ForwardIterator,
           typename Comp = ranges::less,
@@ -2943,7 +2948,7 @@ constexpr auto is_sorted_until(ForwardIterator first,
 // range `[begin(range), i)` is sorted with respect to `comp` and `proj`.
 //
 // Complexity: Linear.
-
+//
 // Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted_until(R
 template <typename Range,
           typename Comp = ranges::less,
@@ -2960,7 +2965,66 @@ constexpr auto is_sorted_until(Range&& range, Comp comp = {}, Proj proj = {}) {
 // [alg.nth.element] Nth element
 // Reference: https://wg21.link/alg.nth.element
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: `[first, nth)` and `[nth, last)` are valid ranges.
+//
+// Effects: After `nth_element` the element in the position pointed to by `nth`
+// is the element that would be in that position if the whole range were sorted
+// with respect to `comp` and `proj`, unless `nth == last`. Also for every
+// iterator `i` in the range `[first, nth)` and every iterator `j` in the range
+// `[nth, last)` it holds that:
+// `bool(invoke(comp, invoke(proj, *j), invoke(proj, *i)))` is false.
+//
+// Returns: `last`.
+//
+// Complexity: Linear on average.
+//
+// Reference: https://wg21.link/alg.nth.element#:~:text=ranges::nth_element(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto nth_element(RandomAccessIterator first,
+                           RandomAccessIterator nth,
+                           RandomAccessIterator last,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  std::nth_element(first, nth, last,
+                   internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Preconditions: `[begin(range), nth)` and `[nth, end(range))` are valid
+// ranges.
+//
+// Effects: After `nth_element` the element in the position pointed to by `nth`
+// is the element that would be in that position if the whole range were sorted
+// with respect to `comp` and `proj`, unless `nth == end(range)`. Also for every
+// iterator `i` in the range `[begin(range), nth)` and every iterator `j` in the
+// range `[nth, end(range))` it holds that:
+// `bool(invoke(comp, invoke(proj, *j), invoke(proj, *i)))` is false.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Linear on average.
+//
+// Reference: https://wg21.link/alg.nth.element#:~:text=ranges::nth_element(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto nth_element(Range&& range,
+                           iterator_t<Range> nth,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  return ranges::nth_element(ranges::begin(range), nth, ranges::end(range),
+                             std::move(comp), std::move(proj));
+}
 
 // [alg.binary.search] Binary search
 // Reference: https://wg21.link/alg.binary.search
@@ -2975,13 +3039,13 @@ constexpr auto is_sorted_until(Range&& range, Comp comp = {}, Proj proj = {}) {
 // for every iterator `j` in the range `[first, i)`,
 // `bool(invoke(comp, invoke(proj, *j), value))` is true.
 //
-// Complexity: At most `log(last - first) + O(1)` comparisons and projections.
+// Complexity: At most `log_2(last - first) + O(1)` comparisons and projections.
 //
 // Reference: https://wg21.link/lower.bound#:~:text=ranges::lower_bound(I
 template <typename ForwardIterator,
           typename T,
-          typename Proj = identity,
           typename Comp = ranges::less,
+          typename Proj = identity,
           typename = internal::iterator_category_t<ForwardIterator>>
 constexpr auto lower_bound(ForwardIterator first,
                            ForwardIterator last,
@@ -2996,20 +3060,21 @@ constexpr auto lower_bound(ForwardIterator first,
       internal::ProjectedBinaryPredicate(comp, proj, value_proj));
 }
 
-// Preconditions: The elements `e` of `[first, last)` are partitioned with
-// respect to the expression `bool(invoke(comp, invoke(proj, e), value))`.
+// Preconditions: The elements `e` of `range` are partitioned with respect to
+// the expression `bool(invoke(comp, invoke(proj, e), value))`.
 //
 // Returns: The furthermost iterator `i` in the range
 // `[begin(range), end(range)]` such that for every iterator `j` in the range
 // `[begin(range), i)`, `bool(invoke(comp, invoke(proj, *j), value))` is true.
 //
-// Complexity: At most `log(size(range)) + O(1)` comparisons and projections.
+// Complexity: At most `log_2(size(range)) + O(1)` comparisons and projections.
 //
 // Reference: https://wg21.link/lower.bound#:~:text=ranges::lower_bound(R
 template <typename Range,
           typename T,
+          typename Comp = ranges::less,
           typename Proj = identity,
-          typename Comp = ranges::less>
+          typename = internal::range_category_t<Range>>
 constexpr auto lower_bound(Range&& range,
                            const T& value,
                            Comp comp = {},
@@ -3021,17 +3086,163 @@ constexpr auto lower_bound(Range&& range,
 // [upper.bound] upper_bound
 // Reference: https://wg21.link/upper.bound
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The elements `e` of `[first, last)` are partitioned with
+// respect to the expression `!bool(invoke(comp, value, invoke(proj, e)))`.
+//
+// Returns: The furthermost iterator `i` in the range `[first, last]` such that
+// for every iterator `j` in the range `[first, i)`,
+// `!bool(invoke(comp, value, invoke(proj, *j)))` is true.
+//
+// Complexity: At most `log_2(last - first) + O(1)` comparisons and projections.
+//
+// Reference: https://wg21.link/upper.bound#:~:text=ranges::upper_bound(I
+template <typename ForwardIterator,
+          typename T,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto upper_bound(ForwardIterator first,
+                           ForwardIterator last,
+                           const T& value,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  // The first arg is guaranteed to be `value`, so we'll simply apply the
+  // identity projection.
+  identity value_proj;
+  return std::upper_bound(
+      first, last, value,
+      internal::ProjectedBinaryPredicate(comp, value_proj, proj));
+}
+
+// Preconditions: The elements `e` of `range` are partitioned with
+// respect to the expression `!bool(invoke(comp, value, invoke(proj, e)))`.
+//
+// Returns: The furthermost iterator `i` in the range
+// `[begin(range), end(range)]` such that for every iterator `j` in the range
+// `[begin(range), i)`, `!bool(invoke(comp, value, invoke(proj, *j)))` is true.
+//
+// Complexity: At most `log_2(size(range)) + O(1)` comparisons and projections.
+//
+// Reference: https://wg21.link/upper.bound#:~:text=ranges::upper_bound(R
+template <typename Range,
+          typename T,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto upper_bound(Range&& range,
+                           const T& value,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  return ranges::upper_bound(ranges::begin(range), ranges::end(range), value,
+                             std::move(comp), std::move(proj));
+}
 
 // [equal.range] equal_range
 // Reference: https://wg21.link/equal.range
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The elements `e` of `[first, last)` are partitioned with
+// respect to the expressions `bool(invoke(comp, invoke(proj, e), value))` and
+// `!bool(invoke(comp, value, invoke(proj, e)))`.
+//
+// Returns: `{ranges::lower_bound(first, last, value, comp, proj),
+//            ranges::upper_bound(first, last, value, comp, proj)}`.
+//
+// Complexity: At most 2 ∗ log_2(last - first) + O(1) comparisons and
+// projections.
+//
+// Reference: https://wg21.link/equal.range#:~:text=ranges::equal_range(I
+template <typename ForwardIterator,
+          typename T,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto equal_range(ForwardIterator first,
+                           ForwardIterator last,
+                           const T& value,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  // Note: This does not dispatch to std::equal_range, as otherwise it would not
+  // be possible to prevent applying `proj` to `value`, which can result in
+  // unintended behavior.
+  return std::make_pair(ranges::lower_bound(first, last, value, comp, proj),
+                        ranges::upper_bound(first, last, value, comp, proj));
+}
+
+// Preconditions: The elements `e` of `range` are partitioned with
+// respect to the expressions `bool(invoke(comp, invoke(proj, e), value))` and
+// `!bool(invoke(comp, value, invoke(proj, e)))`.
+//
+// Returns: `{ranges::lower_bound(range, value, comp, proj),
+//            ranges::upper_bound(range, value, comp, proj)}`.
+//
+// Complexity: At most 2 ∗ log_2(size(range)) + O(1) comparisons and
+// projections.
+//
+// Reference: https://wg21.link/equal.range#:~:text=ranges::equal_range(R
+template <typename Range,
+          typename T,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto equal_range(Range&& range,
+                           const T& value,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  return ranges::equal_range(ranges::begin(range), ranges::end(range), value,
+                             std::move(comp), std::move(proj));
+}
 
 // [binary.search] binary_search
 // Reference: https://wg21.link/binary.search
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The elements `e` of `[first, last)` are partitioned with
+// respect to the expressions `bool(invoke(comp, invoke(proj, e), value))` and
+// `!bool(invoke(comp, value, invoke(proj, e)))`.
+//
+// Returns: `true` if and only if for some iterator `i` in the range
+// `[first, last)`, `!bool(invoke(comp, invoke(proj, *i), value)) &&
+//                   !bool(invoke(comp, value, invoke(proj, *i)))` is true.
+//
+// Complexity: At most `log_2(last - first) + O(1)` comparisons and projections.
+//
+// Reference: https://wg21.link/binary.search#:~:text=ranges::binary_search(I
+template <typename ForwardIterator,
+          typename T,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto binary_search(ForwardIterator first,
+                             ForwardIterator last,
+                             const T& value,
+                             Comp comp = {},
+                             Proj proj = {}) {
+  first = ranges::lower_bound(first, last, value, comp, proj);
+  return first != last && !invoke(comp, value, invoke(proj, *first));
+}
+
+// Preconditions: The elements `e` of `range` are partitioned with
+// respect to the expressions `bool(invoke(comp, invoke(proj, e), value))` and
+// `!bool(invoke(comp, value, invoke(proj, e)))`.
+//
+// Returns: `true` if and only if for some iterator `i` in `range`
+// `!bool(invoke(comp, invoke(proj, *i), value)) &&
+//  !bool(invoke(comp, value, invoke(proj, *i)))` is true.
+//
+// Complexity: At most `log_2(size(range)) + O(1)` comparisons and projections.
+//
+// Reference: https://wg21.link/binary.search#:~:text=ranges::binary_search(R
+template <typename Range,
+          typename T,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto binary_search(Range&& range,
+                             const T& value,
+                             Comp comp = {},
+                             Proj proj = {}) {
+  return ranges::binary_search(ranges::begin(range), ranges::end(range), value,
+                               std::move(comp), std::move(proj));
+}
 
 // [alg.partitions] Partitions
 // Reference: https://wg21.link/alg.partitions

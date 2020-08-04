@@ -122,3 +122,6 @@ const char kReadingListReferrerURL[] =
     "chrome://do_not_consider_for_most_visited/reading_list";
 
 const char kChromeUIAboutNewTabURL[] = "about://newtab/";
+
+const char kManagementLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=is_chrome_managed";

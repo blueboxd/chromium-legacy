@@ -26,6 +26,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "net/base/winsock_init.h"
 
 namespace {
@@ -43,7 +44,7 @@ const int kMaxDeviceDiscoveryTimeoutMultiplier = 48;
 typedef device::BluetoothTaskManagerWin::ServiceRecordState ServiceRecordState;
 
 // Note: The string returned here must have the same format as
-// BluetoothDevice::CanonicalizeAddress.
+// CanonicalizeBluetoothAddress.
 std::string BluetoothAddressToCanonicalString(const BLUETOOTH_ADDRESS& btha) {
   std::string result = base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
                                           btha.rgBytes[5],
@@ -52,7 +53,7 @@ std::string BluetoothAddressToCanonicalString(const BLUETOOTH_ADDRESS& btha) {
                                           btha.rgBytes[2],
                                           btha.rgBytes[1],
                                           btha.rgBytes[0]);
-  DCHECK_EQ(result, device::BluetoothDevice::CanonicalizeAddress(result));
+  DCHECK_EQ(result, device::CanonicalizeBluetoothAddress(result));
   return result;
 }
 

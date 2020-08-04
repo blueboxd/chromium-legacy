@@ -227,6 +227,66 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
   }
 }
 
+TEST_F(ScrollbarLayerTest, SetNeedsDisplayDoesNotRequireUpdate) {
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> content_layer = Layer::Create();
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer =
+      FakePaintedScrollbarLayer::Create(true, true,
+                                        layer_tree_root->element_id());
+
+  // Setup.
+  {
+    layer_tree_root->AddChild(content_layer);
+    layer_tree_root->AddChild(scrollbar_layer);
+    layer_tree_host_->SetRootLayer(layer_tree_root);
+    scrollbar_layer->SetIsDrawable(true);
+    scrollbar_layer->SetBounds(gfx::Size(100, 100));
+    layer_tree_root->SetBounds(gfx::Size(100, 200));
+    content_layer->SetBounds(gfx::Size(100, 200));
+  }
+
+  layer_tree_host_->UpdateLayers();
+
+  // Simulate commit to compositor thread.
+  scrollbar_layer->PushPropertiesTo(
+      scrollbar_layer->CreateLayerImpl(layer_tree_host_->active_tree()).get());
+  scrollbar_layer->fake_scrollbar()->set_needs_repaint_thumb(false);
+  scrollbar_layer->fake_scrollbar()->set_needs_repaint_track(false);
+
+  EXPECT_FALSE(scrollbar_layer->Update());
+
+  // Opacity changes should cause an update.
+  {
+    scrollbar_layer->fake_scrollbar()->set_thumb_opacity(0.3f);
+    EXPECT_TRUE(scrollbar_layer->Update());
+  }
+
+  // Needing a thumb repaint should cause an update.
+  {
+    scrollbar_layer->fake_scrollbar()->set_needs_repaint_thumb(true);
+    EXPECT_TRUE(scrollbar_layer->Update());
+    scrollbar_layer->fake_scrollbar()->set_needs_repaint_thumb(false);
+    EXPECT_FALSE(scrollbar_layer->Update());
+  }
+
+  // Needing a track repaint should cause an update.
+  {
+    scrollbar_layer->fake_scrollbar()->set_needs_repaint_track(true);
+    EXPECT_TRUE(scrollbar_layer->Update());
+    scrollbar_layer->fake_scrollbar()->set_needs_repaint_track(false);
+    EXPECT_FALSE(scrollbar_layer->Update());
+  }
+
+  // A scroll will cause |SetNeedsDisplay| to be called, but the scrollbar parts
+  // are used for invalidation, rather than the scrollbar layer itself. This
+  // should not cause an update. This is important for performance as an update
+  // will cause a commit on every scroll offset change.
+  {
+    scrollbar_layer->SetNeedsDisplay();
+    EXPECT_FALSE(scrollbar_layer->Update());
+  }
+}
+
 class FakeNinePatchScrollbar : public FakeScrollbar {
  public:
   FakeNinePatchScrollbar() {
@@ -1263,6 +1323,8 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   // Simulate commit to compositor thread.
   scrollbar_layer->PushPropertiesTo(
       scrollbar_layer->CreateLayerImpl(layer_tree_host_->active_tree()).get());
+  scrollbar_layer->fake_scrollbar()->set_needs_repaint_thumb(false);
+  scrollbar_layer->fake_scrollbar()->set_needs_repaint_track(false);
 
   EXPECT_FALSE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());

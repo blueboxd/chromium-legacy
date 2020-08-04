@@ -47,6 +47,10 @@ class VIEWS_EXPORT Combobox : public View,
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
 
+  // A combobox with an empty model.
+  explicit Combobox(int text_context = kDefaultComboboxTextContext,
+                    int text_style = kDefaultComboboxTextStyle);
+
   // |model| is owned by the combobox when using this constructor.
   explicit Combobox(std::unique_ptr<ui::ComboboxModel> model,
                     int text_context = kDefaultComboboxTextContext,
@@ -69,6 +73,9 @@ class VIEWS_EXPORT Combobox : public View,
   // Looks for the first occurrence of |value| in |model()|. If found, selects
   // the found index and returns true. Otherwise simply noops and returns false.
   bool SelectValue(const base::string16& value);
+
+  void SetOwnedModel(std::unique_ptr<ui::ComboboxModel> model);
+  void SetModel(ui::ComboboxModel* model);
 
   ui::ComboboxModel* model() const { return model_; }
 
@@ -153,7 +160,7 @@ class VIEWS_EXPORT Combobox : public View,
   std::unique_ptr<ui::ComboboxModel> owned_model_;
 
   // Reference to our model, which may be owned or not.
-  ui::ComboboxModel* model_;
+  ui::ComboboxModel* model_ = nullptr;
 
   // Typography context for the text written in the combobox and the options
   // shown in the drop-down menu.
@@ -164,13 +171,13 @@ class VIEWS_EXPORT Combobox : public View,
   const int text_style_;
 
   // Our listener. Not owned. Notified when the selected index change.
-  ComboboxListener* listener_;
+  ComboboxListener* listener_ = nullptr;
 
   // The current selected index; -1 and means no selection.
-  int selected_index_;
+  int selected_index_ = -1;
 
   // True when the selection is visually denoted as invalid.
-  bool invalid_;
+  bool invalid_ = false;
 
   // The accessible name of this combobox.
   base::string16 accessible_name_;
@@ -204,7 +211,7 @@ class VIEWS_EXPORT Combobox : public View,
   // When true, the size of contents is defined by the selected label.
   // Otherwise, it's defined by the widest label in the menu. If this is set to
   // true, the parent view must relayout in ChildPreferredSizeChanged().
-  bool size_to_largest_label_;
+  bool size_to_largest_label_ = true;
 
   // The focus ring for this Combobox.
   FocusRing* focus_ring_ = nullptr;

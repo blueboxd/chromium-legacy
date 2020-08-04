@@ -22,7 +22,7 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
-import {FittingType, Point, SaveRequestType, TwoUpViewAction} from './constants.js';
+import {FittingType, Point, SaveRequestType} from './constants.js';
 import {ViewerPdfToolbarNewElement} from './elements/viewer-pdf-toolbar-new.js';
 // <if expr="chromeos">
 import {InkController} from './ink_controller.js';
@@ -559,19 +559,17 @@ export class PDFViewerElement extends PDFViewerBaseElement {
   /**
    * Changes two up view mode for the controller. Controller will trigger
    * layout update later, which will update the viewport accordingly.
-   * @param {!CustomEvent<!TwoUpViewAction>} e
+   * @param {!CustomEvent<boolean>} e
    * @private
    */
   onTwoUpViewChanged_(e) {
-    this.currentController.setTwoUpView(
-        e.detail === TwoUpViewAction.TWO_UP_VIEW_ENABLE);
+    const twoUpViewEnabled = e.detail;
+    this.currentController.setTwoUpView(twoUpViewEnabled);
     if (!this.pdfViewerUpdateEnabled_) {
       this.toolbarManager_.forceHideTopToolbar();
     }
-    this.getToolbar_().annotationAvailable =
-        (e.detail !== TwoUpViewAction.TWO_UP_VIEW_ENABLE);
-
-    PDFMetrics.recordTwoUpView(e.detail);
+    this.getToolbar_().annotationAvailable = !twoUpViewEnabled;
+    PDFMetrics.recordTwoUpViewEnabled(twoUpViewEnabled);
   }
 
   /**

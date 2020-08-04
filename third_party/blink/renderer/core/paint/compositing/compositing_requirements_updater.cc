@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/compositing_requirements_updater.h"
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -181,6 +182,13 @@ static CompositingReasons SubtreeReasonsForCompositing(
   if (layer->ShouldIsolateCompositedDescendants()) {
     DCHECK(layer->GetLayoutObject().IsStackingContext());
     subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
+  }
+
+  if (layer->GetLayoutObject().IsVideo() &&
+      To<HTMLMediaElement>(layer->GetLayoutObject().GetNode())
+          ->IsFullscreen()) {
+    subtree_reasons |=
+        CompositingReason::kFullscreenVideoWithCompositedDescendants;
   }
 
   // A layer with preserve-3d or perspective only needs to be composited if

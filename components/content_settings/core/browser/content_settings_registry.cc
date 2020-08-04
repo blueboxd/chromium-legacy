@@ -501,8 +501,8 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
-  Register(ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-           "native-file-system-write-guard", CONTENT_SETTING_ASK,
+  Register(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+           "file-system-write-guard", CONTENT_SETTING_ASK,
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK,
                          CONTENT_SETTING_BLOCK),
@@ -512,8 +512,8 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
-  Register(ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD,
-           "native-file-system-read-guard", CONTENT_SETTING_ASK,
+  Register(ContentSettingsType::FILE_SYSTEM_READ_GUARD,
+           "file-system-read-guard", CONTENT_SETTING_ASK,
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK,
                          CONTENT_SETTING_BLOCK),

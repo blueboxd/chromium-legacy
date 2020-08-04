@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace {
@@ -260,7 +261,7 @@ void BluetoothDeviceWin::Update(
     const BluetoothTaskManagerWin::DeviceState& device_state) {
   address_ = device_state.address;
   // Note: Callers are responsible for providing a canonicalized address.
-  DCHECK_EQ(address_, BluetoothDevice::CanonicalizeAddress(address_));
+  DCHECK_EQ(address_, CanonicalizeBluetoothAddress(address_));
   name_ = device_state.name;
   bluetooth_class_ = device_state.bluetooth_class;
   visible_ = device_state.visible;

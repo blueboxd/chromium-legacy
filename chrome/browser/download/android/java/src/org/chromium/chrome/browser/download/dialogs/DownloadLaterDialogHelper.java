@@ -82,13 +82,19 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
 
         mCallback = callback;
         mSource = source;
-        PropertyModel model =
+        PropertyModel.Builder builder =
                 new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                         .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
-                        .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
-                                initialChoice)
-                        .build();
-        mDownloadLaterDialog.showDialog(mContext, mModalDialogManager, mPrefService, model);
+                        .with(DownloadLaterDialogProperties.INITIAL_CHOICE, initialChoice);
+
+        // Set the previously selected time to the date time picker UI.
+        if (currentSchedule.startTimeMs > 0) {
+            builder.with(DownloadDateTimePickerDialogProperties.INITIAL_TIME,
+                    currentSchedule.startTimeMs);
+        }
+
+        mDownloadLaterDialog.showDialog(
+                mContext, mModalDialogManager, mPrefService, builder.build());
     }
 
     /**

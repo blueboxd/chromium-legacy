@@ -10,7 +10,8 @@
         android:key="safe_browsing_section"
         android:title="@string/prefs_section_safe_browsing_title"/>
 
-<!--  TODO(crbug.com/1097310): Add managed text view for Safe Browsing preference.  -->
+    <org.chromium.components.browser_ui.settings.TextMessagePreference
+        android:key="text_managed" />
 
     <org.chromium.chrome.browser.safe_browsing.settings.RadioButtonGroupSafeBrowsingPreference
         android:key="safe_browsing_radio_button_group"

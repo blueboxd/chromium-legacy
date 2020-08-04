@@ -217,8 +217,7 @@ TEST_F(WebStateTest, Snapshot) {
   });
 }
 
-// Tests that the create PDF method retuns an PDF of a rendered html page of the
-// appropriate size.
+// Tests that the create PDF method retuns an PDF of a rendered html page.
 TEST_F(WebStateTest, CreateFullPagePdf) {
   CGFloat kSaveAreaTopInset =
       UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
@@ -236,16 +235,19 @@ TEST_F(WebStateTest, CreateFullPagePdf) {
     callback_data = [pdf_document_data copy];
   }));
 
-  ASSERT_TRUE(callback_data);
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^bool {
+        return callback_data;
+      }));
 
   CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(
       CGDataProviderCreateWithCFData((CFDataRef)callback_data));
   CGSize pdf_size =
       CGPDFPageGetBoxRect(CGPDFDocumentGetPage(pdf, 1), kCGPDFMediaBox).size;
 
-  EXPECT_EQ(pdf_size.height,
+  EXPECT_GE(pdf_size.height,
             UIScreen.mainScreen.bounds.size.height - kSaveAreaTopInset);
-  EXPECT_EQ(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
+  EXPECT_GE(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
 
   CGPDFDocumentRelease(pdf);
 }

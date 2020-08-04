@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -145,7 +146,12 @@ class WebRemoteFrame : public WebFrame {
 
   // Update the user activation state in appropriate part of this frame's
   // "local" frame tree (ancestors-only vs all-nodes).
-  virtual void UpdateUserActivationState(mojom::UserActivationUpdateType) = 0;
+  //
+  // The |notification_type| parameter is used for histograms, only for the case
+  // |update_state == kNotifyActivation|.
+  virtual void UpdateUserActivationState(
+      mojom::UserActivationUpdateType update_type,
+      mojom::UserActivationNotificationType notification_type) = 0;
 
   virtual void SetHadStickyUserActivationBeforeNavigation(bool value) = 0;
 

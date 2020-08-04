@@ -148,11 +148,7 @@ public class PasswordSettings
 
         setHasOptionsMenu(true); // Password Export might be optional but Search is always present.
 
-        Bundle extras = getArguments();
-        assert extras.containsKey(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER)
-            : "PasswordSettings must be launched with a manage-passwords-referrer fragment"
-                + "argument, but none was provided.";
-        mManagePasswordsReferrer = extras.getInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER);
+        mManagePasswordsReferrer = getReferrerFromInstanceStateOrLaunchBundle(savedInstanceState);
 
         if (savedInstanceState == null) return;
 
@@ -160,6 +156,20 @@ public class PasswordSettings
             mSearchQuery = savedInstanceState.getString(SAVED_STATE_SEARCH_QUERY);
             mSearchRecorded = mSearchQuery != null; // We record a search when a query is set.
         }
+    }
+
+    private @ManagePasswordsReferrer int getReferrerFromInstanceStateOrLaunchBundle(
+            Bundle savedInstanceState) {
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(
+                        PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER)) {
+            return savedInstanceState.getInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER);
+        }
+        Bundle extras = getArguments();
+        assert extras.containsKey(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER)
+            : "PasswordSettings must be launched with a manage-passwords-referrer fragment"
+                + "argument, but none was provided.";
+        return extras.getInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER);
     }
 
     @Override
@@ -417,6 +427,7 @@ public class PasswordSettings
         if (mSearchQuery != null) {
             outState.putString(SAVED_STATE_SEARCH_QUERY, mSearchQuery);
         }
+        outState.putInt(PasswordManagerHelper.MANAGE_PASSWORDS_REFERRER, mManagePasswordsReferrer);
     }
 
     @Override

@@ -60,6 +60,14 @@ public final class SafeBrowsingBridge {
     }
 
     /**
+     * @return Whether the Safe Browsing preference is managed. It can be managed by either
+     * the SafeBrowsingEnabled policy(legacy) or the SafeBrowsingProtectionLevel policy(new).
+     */
+    public static boolean isSafeBrowsingManaged() {
+        return SafeBrowsingBridgeJni.get().isSafeBrowsingManaged();
+    }
+
+    /**
      * @return Whether there is a Google account to use for the leak detection check.
      */
     public static boolean hasAccountForLeakCheckRequest() {
@@ -76,5 +84,6 @@ public final class SafeBrowsingBridge {
         int getSafeBrowsingState();
         void setSafeBrowsingState(@SafeBrowsingState int state);
         boolean hasAccountForLeakCheckRequest();
+        boolean isSafeBrowsingManaged();
     }
 }

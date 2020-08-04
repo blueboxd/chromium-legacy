@@ -1056,10 +1056,12 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
 }
 
 void RenderFrameHostManager::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type,
+    blink::mojom::UserActivationNotificationType notification_type) {
   for (const auto& pair : proxy_hosts_) {
     RenderFrameProxyHost* proxy = pair.second.get();
-    proxy->GetAssociatedRemoteFrame()->UpdateUserActivationState(update_type);
+    proxy->GetAssociatedRemoteFrame()->UpdateUserActivationState(
+        update_type, notification_type);
   }
 
   // If any frame in an inner delegate is activated, then the FrameTreeNode that
@@ -1077,8 +1079,9 @@ void RenderFrameHostManager::UpdateUserActivationState(
       update_type ==
           blink::mojom::UserActivationUpdateType::kNotifyActivation) {
     outer_delegate_proxy->GetAssociatedRemoteFrame()->UpdateUserActivationState(
-        update_type);
-    GetOuterDelegateNode()->UpdateUserActivationState(update_type);
+        update_type, notification_type);
+    GetOuterDelegateNode()->UpdateUserActivationState(update_type,
+                                                      notification_type);
   }
 }
 

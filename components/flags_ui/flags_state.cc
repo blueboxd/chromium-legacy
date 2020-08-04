@@ -339,7 +339,8 @@ struct FlagsState::SwitchEntry {
   SwitchEntry() : feature_state(false) {}
 };
 
-bool FlagsState::Delegate::ShouldExcludeFlag(const FeatureEntry& entry) {
+bool FlagsState::Delegate::ShouldExcludeFlag(const FlagsStorage* state,
+                                             const FeatureEntry& entry) {
   return false;
 }
 
@@ -613,6 +614,7 @@ void FlagsState::GetFlagFeatureEntries(
     base::ListValue* supported_entries,
     base::ListValue* unsupported_entries,
     base::RepeatingCallback<bool(const FeatureEntry&)> skip_feature_entry) {
+  DCHECK(flags_storage);
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 
@@ -824,6 +826,7 @@ void FlagsState::MergeFeatureCommandLineSwitch(
 }
 
 std::set<std::string> FlagsState::SanitizeList(
+    const FlagsStorage* storage,
     const std::set<std::string>& enabled_entries,
     int platform_mask) const {
   std::set<std::string> new_enabled_entries;
@@ -834,7 +837,7 @@ std::set<std::string> FlagsState::SanitizeList(
   // |feature_entries_| first because |feature_entries_| is large and
   // |enabled_entries| should generally be small/empty.
   for (const std::string& entry_name : enabled_entries) {
-    if (IsSupportedFeature(entry_name, platform_mask))
+    if (IsSupportedFeature(storage, entry_name, platform_mask))
       new_enabled_entries.insert(entry_name);
   }
 
@@ -844,7 +847,8 @@ std::set<std::string> FlagsState::SanitizeList(
 void FlagsState::GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
                                           std::set<std::string>* result) const {
   std::set<std::string> enabled_entries = flags_storage->GetFlags();
-  std::set<std::string> new_enabled_entries = SanitizeList(enabled_entries, -1);
+  std::set<std::string> new_enabled_entries =
+      SanitizeList(flags_storage, enabled_entries, -1);
   if (new_enabled_entries.size() != enabled_entries.size())
     flags_storage->SetFlags(new_enabled_entries);
   result->swap(new_enabled_entries);
@@ -861,7 +865,8 @@ void FlagsState::GetSanitizedEnabledFlagsForCurrentPlatform(
 #if defined(OS_CHROMEOS)
   platform_mask |= kOsCrOSOwnerOnly;
 #endif
-  std::set<std::string> platform_entries = SanitizeList(*result, platform_mask);
+  std::set<std::string> platform_entries =
+      SanitizeList(flags_storage, *result, platform_mask);
   result->swap(platform_entries);
 }
 
@@ -942,7 +947,8 @@ const FeatureEntry* FlagsState::FindFeatureEntryByName(
   return nullptr;
 }
 
-bool FlagsState::IsSupportedFeature(const std::string& name,
+bool FlagsState::IsSupportedFeature(const FlagsStorage* storage,
+                                    const std::string& name,
                                     int platform_mask) const {
   for (const auto& entry : feature_entries_) {
     DCHECK(IsValidFeatureEntry(entry));
@@ -950,7 +956,7 @@ bool FlagsState::IsSupportedFeature(const std::string& name,
       continue;
     if (!entry.InternalNameMatches(name))
       continue;
-    if (delegate_ && delegate_->ShouldExcludeFlag(entry))
+    if (delegate_ && delegate_->ShouldExcludeFlag(storage, entry))
       continue;
     return true;
   }

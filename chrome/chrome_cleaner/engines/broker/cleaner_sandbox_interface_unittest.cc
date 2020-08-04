@@ -73,7 +73,7 @@ WStringEmbeddedNulls FullyQualifiedKeyPathWithTrailingNull(
 }
 
 WStringEmbeddedNulls StringWithTrailingNull(const std::wstring& str) {
-  // string16::size() does not count the trailing null.
+  // wstring::size() does not count the trailing null.
   return WStringEmbeddedNulls(str.c_str(), str.size() + 1);
 }
 

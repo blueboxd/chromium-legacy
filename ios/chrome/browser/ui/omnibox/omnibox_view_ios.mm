@@ -290,7 +290,7 @@ void OmniboxViewIOS::OnDidBeginEditing() {
       model()->set_focus_source(OmniboxFocusSource::OMNIBOX);
     }
 
-    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+    model()->StartZeroSuggestRequest();
     model()->OnSetFocus(/*control_down=*/false);
   }
 

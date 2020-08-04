@@ -83,9 +83,9 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   const url::Origin host_origin =
       url::Origin::Create(GURL(kChromeUIMediaAppURL));
   allowlist->RegisterAutoGrantedPermission(
-      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+      host_origin, ContentSettingsType::FILE_SYSTEM_READ_GUARD);
   allowlist->RegisterAutoGrantedPermission(
-      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+      host_origin, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
 
   content::WebUIDataSource* untrusted_source =
       CreateMediaAppUntrustedDataSource(delegate_.get());

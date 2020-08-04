@@ -469,8 +469,12 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Updates the user activation state in all proxies of this frame.  For
   // more details, see the comment on FrameTreeNode::user_activation_state_.
+  //
+  // The |notification_type| parameter is used for histograms, only for the case
+  // |update_state == kNotifyActivation|.
   void UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type);
+      blink::mojom::UserActivationUpdateType update_type,
+      blink::mojom::UserActivationNotificationType notification_type);
 
   void OnSetHadStickyUserActivationBeforeNavigation(bool value);
 

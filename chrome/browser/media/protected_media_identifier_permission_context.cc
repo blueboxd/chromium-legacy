@@ -125,23 +125,23 @@ ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
   // requires user intervention is problematic. If the domain has been
   // whitelisted as safe - suppress the request and allow.
   if (content_setting == CONTENT_SETTING_ASK &&
-      IsOriginWhitelisted(requesting_origin)) {
+      IsOriginAllowed(requesting_origin)) {
     content_setting = CONTENT_SETTING_ALLOW;
   }
 
   return content_setting;
 }
 
-bool ProtectedMediaIdentifierPermissionContext::IsOriginWhitelisted(
+bool ProtectedMediaIdentifierPermissionContext::IsOriginAllowed(
     const GURL& origin) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  const std::string whitelist = command_line.GetSwitchValueASCII(
+  const std::string allowlist = command_line.GetSwitchValueASCII(
       switches::kUnsafelyAllowProtectedMediaIdentifierForDomain);
 
   for (const std::string& domain : base::SplitString(
-           whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+           allowlist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     if (origin.DomainIs(domain)) {
       return true;
     }

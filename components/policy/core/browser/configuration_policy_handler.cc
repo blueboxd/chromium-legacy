@@ -47,18 +47,24 @@ void ConfigurationPolicyHandler::ApplyPolicySettingsWithParameters(
   ApplyPolicySettings(policies, prefs);
 }
 
+// NamedPolicyHandler implementation -------------------------------------------
+NamedPolicyHandler::NamedPolicyHandler(const char* policy_name)
+    : policy_name_(policy_name) {}
+
+NamedPolicyHandler::~NamedPolicyHandler() = default;
+
+const char* NamedPolicyHandler::policy_name() const {
+  return policy_name_;
+}
+
 // TypeCheckingPolicyHandler implementation ------------------------------------
 
 TypeCheckingPolicyHandler::TypeCheckingPolicyHandler(
     const char* policy_name,
     base::Value::Type value_type)
-    : policy_name_(policy_name), value_type_(value_type) {}
+    : NamedPolicyHandler(policy_name), value_type_(value_type) {}
 
 TypeCheckingPolicyHandler::~TypeCheckingPolicyHandler() {}
-
-const char* TypeCheckingPolicyHandler::policy_name() const {
-  return policy_name_;
-}
 
 bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
@@ -69,9 +75,9 @@ bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
                                                  PolicyErrorMap* errors,
                                                  const base::Value** value) {
-  *value = policies.GetValue(policy_name_);
+  *value = policies.GetValue(policy_name());
   if (*value && (*value)->type() != value_type_) {
-    errors->AddError(policy_name_, IDS_POLICY_TYPE_ERROR,
+    errors->AddError(policy_name(), IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(value_type_));
     return false;
   }
@@ -352,15 +358,11 @@ SchemaValidatingPolicyHandler::SchemaValidatingPolicyHandler(
     const char* policy_name,
     Schema schema,
     SchemaOnErrorStrategy strategy)
-    : policy_name_(policy_name), schema_(schema), strategy_(strategy) {
+    : NamedPolicyHandler(policy_name), schema_(schema), strategy_(strategy) {
   DCHECK(schema_.valid());
 }
 
 SchemaValidatingPolicyHandler::~SchemaValidatingPolicyHandler() {}
-
-const char* SchemaValidatingPolicyHandler::policy_name() const {
-  return policy_name_;
-}
 
 bool SchemaValidatingPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
@@ -376,7 +378,7 @@ bool SchemaValidatingPolicyHandler::CheckPolicySettings(
   if (errors && !error.empty()) {
     if (error_path.empty())
       error_path = "(ROOT)";
-    errors->AddError(policy_name_, error_path, error);
+    errors->AddError(policy_name(), error_path, error);
   }
 
   return result;
@@ -399,7 +401,7 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   if (errors && !error.empty()) {
     if (error_path.empty())
       error_path = "(ROOT)";
-    errors->AddError(policy_name_, error_path, error);
+    errors->AddError(policy_name(), error_path, error);
   }
 
   return result;
@@ -462,8 +464,8 @@ SimpleJsonStringSchemaValidatingPolicyHandler::
             recommended_permission,
         SimpleSchemaValidatingPolicyHandler::MandatoryPermission
             mandatory_permission)
-    : policy_name_(policy_name),
-      schema_(schema.GetKnownProperty(policy_name_)),
+    : NamedPolicyHandler(policy_name),
+      schema_(schema.GetKnownProperty(policy_name)),
       pref_path_(pref_path),
       allow_recommended_(
           recommended_permission ==
@@ -478,17 +480,17 @@ SimpleJsonStringSchemaValidatingPolicyHandler::
 bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  const base::Value* root_value = policies.GetValue(policy_name_);
+  const base::Value* root_value = policies.GetValue(policy_name());
   if (!root_value)
     return true;
 
-  const PolicyMap::Entry* policy_entry = policies.Get(policy_name_);
+  const PolicyMap::Entry* policy_entry = policies.Get(policy_name());
   if ((policy_entry->level == policy::POLICY_LEVEL_MANDATORY &&
        !allow_mandatory_) ||
       (policy_entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
        !allow_recommended_)) {
     if (errors)
-      errors->AddError(policy_name_, IDS_POLICY_LEVEL_ERROR);
+      errors->AddError(policy_name(), IDS_POLICY_LEVEL_ERROR);
     return false;
   }
 
@@ -504,7 +506,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckSingleJsonString(
   // First validate the root value is a string.
   if (!root_value->is_string()) {
     if (errors) {
-      errors->AddError(policy_name_, "(ROOT)", IDS_POLICY_TYPE_ERROR,
+      errors->AddError(policy_name(), "(ROOT)", IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(base::Value::Type::STRING));
     }
     return false;
@@ -525,7 +527,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
   // First validate the root value is a list.
   if (!root_value->is_list()) {
     if (errors) {
-      errors->AddError(policy_name_, "(ROOT)", IDS_POLICY_TYPE_ERROR,
+      errors->AddError(policy_name(), "(ROOT)", IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(base::Value::Type::LIST));
     }
     return false;
@@ -540,7 +542,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
     const base::Value& entry = list[index];
     if (!entry.is_string()) {
       if (errors) {
-        errors->AddError(policy_name_, index, IDS_POLICY_TYPE_ERROR,
+        errors->AddError(policy_name(), index, IDS_POLICY_TYPE_ERROR,
                          base::Value::GetTypeName(base::Value::Type::STRING));
       }
       continue;
@@ -567,7 +569,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
           json_string, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
   if (!value_with_error.value) {
     if (errors) {
-      errors->AddError(policy_name_, ErrorPath(index, ""),
+      errors->AddError(policy_name(), ErrorPath(index, ""),
                        IDS_POLICY_INVALID_JSON_ERROR,
                        value_with_error.error_message);
     }
@@ -585,7 +587,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
                                                SCHEMA_ALLOW_UNKNOWN,
                                                &error_path, &schema_error);
   if (errors && !schema_error.empty())
-    errors->AddError(policy_name_, ErrorPath(index, error_path), schema_error);
+    errors->AddError(policy_name(), ErrorPath(index, error_path), schema_error);
   if (!validated)
     return false;
 
@@ -609,13 +611,13 @@ void SimpleJsonStringSchemaValidatingPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   if (!pref_path_)
     return;
-  const base::Value* value = policies.GetValue(policy_name_);
+  const base::Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->Clone());
 }
 
 void SimpleJsonStringSchemaValidatingPolicyHandler::RecordJsonError() {
-  const PolicyDetails* details = GetChromePolicyDetails(policy_name_);
+  const PolicyDetails* details = GetChromePolicyDetails(policy_name());
   if (details) {
     base::UmaHistogramSparse("EnterpriseCheck.InvalidJsonPolicies",
                              details->id);
@@ -680,8 +682,8 @@ void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettings(
 // SimpleDeprecatingPolicyHandler implementation -----------------------
 
 SimpleDeprecatingPolicyHandler::SimpleDeprecatingPolicyHandler(
-    std::unique_ptr<TypeCheckingPolicyHandler> legacy_policy_handler,
-    std::unique_ptr<TypeCheckingPolicyHandler> new_policy_handler)
+    std::unique_ptr<NamedPolicyHandler> legacy_policy_handler,
+    std::unique_ptr<NamedPolicyHandler> new_policy_handler)
     : legacy_policy_handler_(std::move(legacy_policy_handler)),
       new_policy_handler_(std::move(new_policy_handler)) {}
 

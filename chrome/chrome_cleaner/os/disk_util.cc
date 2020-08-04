@@ -199,7 +199,7 @@ bool ExtractExecutablePathWithoutArgument(const base::FilePath& program_path,
 }
 
 bool IsActionRunDll32(const base::FilePath& exec_path) {
-  return String16EqualsCaseInsensitive(
+  return WStringEqualsCaseInsensitive(
       exec_path.BaseName().RemoveExtension().value(), L"rundll32");
 }
 
@@ -287,7 +287,7 @@ bool NameContainsWildcards(const std::wstring& name) {
 bool NameMatchesPattern(const std::wstring& name,
                         const std::wstring& pattern,
                         const wchar_t escape_char) {
-  return String16WildcardMatchInsensitive(name, pattern, escape_char);
+  return WStringWildcardMatchInsensitive(name, pattern, escape_char);
 }
 
 void CollectMatchingPaths(const base::FilePath& root_path,

@@ -333,7 +333,7 @@ fuzzer_test("fido_cable_handshake_handler_v2_fuzzer") {
   libfuzzer_options = [ "max_len=2048" ]
 }
 
-is_linux_without_udev = is_linux && !use_udev
+is_linux_without_udev = (is_linux || is_chromeos) && !use_udev
 
 source_set("test_support") {
   testonly = true

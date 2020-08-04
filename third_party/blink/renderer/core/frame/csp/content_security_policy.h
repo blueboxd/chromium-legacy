@@ -578,7 +578,8 @@ class CORE_EXPORT ContentSecurityPolicy final
   void ReportContentSecurityPolicyIssue(
       const blink::SecurityPolicyViolationEventInit& violation_data,
       ContentSecurityPolicyViolationType violation_type,
-      LocalFrame* = nullptr);
+      LocalFrame* = nullptr,
+      Element* = nullptr);
 
   Member<ContentSecurityPolicyDelegate> delegate_;
   bool override_inline_style_allowed_;

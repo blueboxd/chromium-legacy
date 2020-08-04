@@ -96,8 +96,8 @@ bool FrameFocusRules::SupportsChildActivation(const aura::Window*) const {
   return true;
 }
 
-bool IsOriginWhitelisted(const GURL& url,
-                         const std::vector<std::string>& allowed_origins) {
+bool IsOriginAllowed(const GURL& url,
+                     const std::vector<std::string>& allowed_origins) {
   constexpr const char kWildcard[] = "*";
 
   for (const std::string& origin : allowed_origins) {
@@ -106,8 +106,9 @@ bool IsOriginWhitelisted(const GURL& url,
 
     GURL origin_url(origin);
     if (!origin_url.is_valid()) {
-      DLOG(WARNING) << "Ignored invalid origin spec for whitelisting: "
-                    << origin;
+      DLOG(WARNING)
+          << "Ignored invalid origin spec when checking allowed list: "
+          << origin;
       continue;
     }
 
@@ -309,7 +310,7 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
     return;
   }
 
-  if (!IsOriginWhitelisted(web_contents_->GetLastCommittedURL(), origins)) {
+  if (!IsOriginAllowed(web_contents_->GetLastCommittedURL(), origins)) {
     result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
     callback(std::move(result));
     return;
@@ -543,7 +544,7 @@ void FrameImpl::MaybeInjectBeforeLoadScripts(
   before_load_script_injector->ClearOnLoadScripts();
   for (uint64_t script_id : before_load_scripts_order_) {
     const OriginScopedScript& script = before_load_scripts_[script_id];
-    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins())) {
+    if (IsOriginAllowed(navigation_handle->GetURL(), script.origins())) {
       // TODO(crbug.com/1060846): Stop using handle<shared_buffer>.
       before_load_script_injector->AddOnLoadScript(
           mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));

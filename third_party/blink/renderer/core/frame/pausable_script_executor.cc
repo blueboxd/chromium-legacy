@@ -11,13 +11,13 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -64,14 +64,12 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
   for (const auto& source : sources_) {
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
+    ClassicScript* classic_script = ClassicScript::CreateUnspecifiedScript(
+        source, SanitizeScriptErrors::kDoNotSanitize);
     v8::Local<v8::Value> script_value =
-        world_id_
-            ? frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-                  world_id_, source, KURL(),
-                  SanitizeScriptErrors::kDoNotSanitize)
-            : frame->GetScriptController()
-                  .ExecuteScriptInMainWorldAndReturnValue(
-                      source, KURL(), SanitizeScriptErrors::kDoNotSanitize);
+        world_id_ ? classic_script->RunScriptInIsolatedWorldAndReturnValue(
+                        frame, world_id_)
+                  : classic_script->RunScriptAndReturnValue(frame);
     results.push_back(script_value);
   }
 

@@ -24,6 +24,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 
 using device::mojom::BluetoothDeviceBatteryInfo;
@@ -96,7 +97,7 @@ BluetoothAddress AddressStrToBluetoothAddress(const std::string& address_str) {
 
   // If the string is not a valid encoding of a Bluetooth address, then the
   // underlying Bluetooth API returned an incorrect value.
-  CHECK(device::BluetoothDevice::ParseAddress(address_str, address_array));
+  CHECK(device::ParseBluetoothAddress(address_str, address_array));
 
   return address_array;
 }

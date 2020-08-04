@@ -14,7 +14,7 @@ namespace chrome_cleaner {
 // converting every '0' to null.
 std::vector<wchar_t> CreateVectorWithNulls(const std::wstring& str);
 
-// Returns a string16 obtained from |v| by replacing null characters with "\\0".
+// Returns a wstring obtained from |v| by replacing null characters with "\\0".
 std::wstring FormatVectorWithNulls(const std::vector<wchar_t>& v);
 
 }  // namespace chrome_cleaner

@@ -205,6 +205,10 @@ class CORE_EXPORT PaintTimingDetector
 
   void UpdateLargestContentfulPaintCandidate();
 
+  // Reports the largest image and text candidates painted under non-nested 0
+  // opacity layer.
+  void ReportIgnoredContent();
+
   base::Optional<PaintTimingVisualizer>& Visualizer() { return visualizer_; }
   void Trace(Visitor* visitor) const;
 
@@ -308,7 +312,7 @@ class ScopedPaintTimingDetectorBlockPaintHook {
 // static
 inline void PaintTimingDetector::NotifyTextPaint(
     const IntRect& text_visual_rect) {
-  if (IgnorePaintTimingScope::ShouldIgnore())
+  if (IgnorePaintTimingScope::IgnoreDepth() > 1)
     return;
   ScopedPaintTimingDetectorBlockPaintHook::AggregateTextPaint(text_visual_rect);
 }

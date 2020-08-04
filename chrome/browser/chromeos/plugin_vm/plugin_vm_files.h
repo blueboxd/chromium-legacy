@@ -20,12 +20,6 @@ void EnsureDefaultSharedDirExists(
     Profile* profile,
     base::OnceCallback<void(const base::FilePath&, bool)> callback);
 
-// Converts a cracked url to a path inside the VM.
-// Returns nullopt if the conversion isn't possible.
-base::Optional<std::string> ConvertFileSystemURLToPathInsidePluginVmSharedDir(
-    Profile* profile,
-    const storage::FileSystemURL& file_system_url);
-
 enum class LaunchPluginVmAppResult {
   SUCCESS,
   FAILED,

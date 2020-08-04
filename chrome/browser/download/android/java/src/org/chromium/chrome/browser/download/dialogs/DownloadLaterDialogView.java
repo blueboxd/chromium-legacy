@@ -51,10 +51,8 @@ public class DownloadLaterDialogView extends ScrollView implements OnCheckedChan
                 PropertyModel model, DownloadLaterDialogView view, PropertyKey propertyKey) {
             if (propertyKey == DownloadLaterDialogProperties.CONTROLLER) {
                 view.setController(model.get(DownloadLaterDialogProperties.CONTROLLER));
-            } else if (propertyKey
-                    == DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION) {
-                view.setChoice(
-                        model.get(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION));
+            } else if (propertyKey == DownloadLaterDialogProperties.INITIAL_CHOICE) {
+                view.setChoice(model.get(DownloadLaterDialogProperties.INITIAL_CHOICE));
             } else if (propertyKey == DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION) {
                 view.setCheckbox(
                         model.get(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION));

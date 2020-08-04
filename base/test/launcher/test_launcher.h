@@ -187,6 +187,9 @@ class TestLauncher {
   // Runs all tests in current iteration.
   void RunTests();
 
+  // Print test names that almost match a filter (matches *<filter>*).
+  void PrintFuzzyMatchingTestNames();
+
   // Retry to run tests that failed during RunTests.
   // Returns false if retry still fails or unable to start.
   bool RunRetryTests();

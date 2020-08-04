@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -49,6 +50,15 @@ const char kObsoleteMouseLockExceptionsPref[] =
     "profile.content_settings.exceptions.mouselock";
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
+
+// These settings were renamed, and should be migrated on profile startup.
+// Deprecated 8/2020
+#if !defined(OS_ANDROID)
+const char kDeprecatedNativeFileSystemReadGuardPref[] =
+    "profile.content_settings.exceptions.native_file_system_read_guard";
+const char kDeprecatedNativeFileSystemWriteGuardPref[] =
+    "profile.content_settings.exceptions.native_file_system_write_guard";
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -85,6 +95,11 @@ void PrefProvider::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
+
+#if !defined(OS_ANDROID)
+  registry->RegisterDictionaryPref(kDeprecatedNativeFileSystemReadGuardPref);
+  registry->RegisterDictionaryPref(kDeprecatedNativeFileSystemWriteGuardPref);
+#endif  // !defined(OS_ANDROID)
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,
@@ -108,7 +123,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
     return;
   }
 
-  DiscardObsoletePreferences();
+  DiscardOrMigrateObsoletePreferences();
 
   pref_change_registrar_.Init(prefs_);
 
@@ -267,7 +282,7 @@ void PrefProvider::Notify(
                   resource_identifier);
 }
 
-void PrefProvider::DiscardObsoletePreferences() {
+void PrefProvider::DiscardOrMigrateObsoletePreferences() {
   if (off_the_record_)
     return;
 
@@ -281,6 +296,32 @@ void PrefProvider::DiscardObsoletePreferences() {
   prefs_->ClearPref(kObsoleteMouseLockExceptionsPref);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
+
+#if !defined(OS_ANDROID)
+  // TODO(https://crbug.com/1111559): Remove this migration logic in M90.
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
+
+  const PrefService::Preference* deprecated_nfs_read_guard_pref =
+      prefs_->FindPreference(kDeprecatedNativeFileSystemReadGuardPref);
+  if (!deprecated_nfs_read_guard_pref->IsDefaultValue()) {
+    prefs_->Set(
+        website_settings->Get(ContentSettingsType::FILE_SYSTEM_READ_GUARD)
+            ->pref_name(),
+        *deprecated_nfs_read_guard_pref->GetValue());
+  }
+  prefs_->ClearPref(kDeprecatedNativeFileSystemReadGuardPref);
+
+  const PrefService::Preference* deprecated_nfs_write_guard_pref =
+      prefs_->FindPreference(kDeprecatedNativeFileSystemWriteGuardPref);
+  if (!deprecated_nfs_write_guard_pref->IsDefaultValue()) {
+    prefs_->Set(
+        website_settings->Get(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD)
+            ->pref_name(),
+        *deprecated_nfs_write_guard_pref->GetValue());
+  }
+  prefs_->ClearPref(kDeprecatedNativeFileSystemWriteGuardPref);
+#endif  // !defined(OS_ANDROID)
 }
 
 void PrefProvider::SetClockForTesting(base::Clock* clock) {

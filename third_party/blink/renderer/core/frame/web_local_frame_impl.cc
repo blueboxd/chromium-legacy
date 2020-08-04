@@ -233,6 +233,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -778,9 +779,7 @@ void WebLocalFrameImpl::SetIsAdSubframe(
 
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   DCHECK(GetFrame());
-  v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-      source, KURL(), SanitizeScriptErrors::kSanitize);
+  ClassicScript::CreateUnspecifiedScript(source)->RunScript(GetFrame());
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
@@ -793,8 +792,9 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   // Note: An error event in an isolated world will never be dispatched to
   // a foreign world.
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
+  ClassicScript::CreateUnspecifiedScript(source_in,
+                                         SanitizeScriptErrors::kDoNotSanitize)
+      ->RunScriptInIsolatedWorldAndReturnValue(GetFrame(), world_id);
 }
 
 v8::Local<v8::Value>
@@ -807,8 +807,9 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
 
   // Note: An error event in an isolated world will never be dispatched to
   // a foreign world.
-  return GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
+  return ClassicScript::CreateUnspecifiedScript(
+             source_in, SanitizeScriptErrors::kDoNotSanitize)
+      ->RunScriptInIsolatedWorldAndReturnValue(GetFrame(), world_id);
 }
 
 void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
@@ -855,11 +856,8 @@ void WebLocalFrameImpl::CollectGarbageForTesting() {
 v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
     const WebScriptSource& source) {
   DCHECK(GetFrame());
-
-  return GetFrame()
-      ->GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(),
-                                              SanitizeScriptErrors::kSanitize);
+  return ClassicScript::CreateUnspecifiedScript(source)
+      ->RunScriptAndReturnValue(GetFrame());
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(

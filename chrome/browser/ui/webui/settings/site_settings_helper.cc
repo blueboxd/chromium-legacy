@@ -102,8 +102,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::BLUETOOTH_SCANNING, "bluetooth-scanning"},
     {ContentSettingsType::HID_GUARD, "hid-devices"},
     {ContentSettingsType::HID_CHOOSER_DATA, kHidChooserDataGroupType},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-     "native-file-system-write"},
+    {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, "file-system-write"},
     {ContentSettingsType::MIXEDSCRIPT, "mixed-script"},
     {ContentSettingsType::VR, "vr"},
     {ContentSettingsType::AR, "ar"},
@@ -141,7 +140,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
     {ContentSettingsType::NFC, nullptr},
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, nullptr},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, nullptr},
+    {ContentSettingsType::FILE_SYSTEM_READ_GUARD, nullptr},
     {ContentSettingsType::STORAGE_ACCESS, nullptr},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, nullptr},
 };

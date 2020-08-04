@@ -192,9 +192,9 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
   allowlist->RegisterAutoGrantedPermission(
       host_origin, ContentSettingsType::MEDIASTREAM_CAMERA);
   allowlist->RegisterAutoGrantedPermission(
-      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+      host_origin, ContentSettingsType::FILE_SYSTEM_READ_GUARD);
   allowlist->RegisterAutoGrantedPermission(
-      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+      host_origin, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
   allowlist->RegisterAutoGrantedPermission(host_origin,
                                            ContentSettingsType::COOKIES);
   // The notifications permissison is needed by the IdleManager, which we use

@@ -26,6 +26,11 @@ POLICY_EXPORT extern const base::Feature kIgnoreSensitivePoliciesOnUnmanagedMac;
 // enabled.
 POLICY_EXPORT extern const base::Feature kCBCMPolicyInvalidations;
 
+// Feature that controls if remote commands are enabled in CBCM. If enabled,
+// the browser will register for remote commands FCM invalidations, and fetch
+// remote commands when fetching policies.
+POLICY_EXPORT extern const base::Feature kCBCMRemoteCommands;
+
 }  // namespace features
 }  // namespace policy
 

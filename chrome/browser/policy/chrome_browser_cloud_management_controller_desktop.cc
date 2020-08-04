@@ -14,9 +14,11 @@
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/cbcm_remote_commands_factory.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_register_watcher.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
+#include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
 #include "chrome/browser/policy/device_account_initializer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -376,6 +378,23 @@ void ChromeBrowserCloudManagementControllerDesktop::StartInvalidations() {
       base::ThreadTaskRunnerHandle::Get(), base::DefaultClock::GetInstance(),
       0 /* highest_handled_invalidation_version */);
   policy_invalidator_->Initialize(invalidation_service_.get());
+
+  if (base::FeatureList::IsEnabled(policy::features::kCBCMRemoteCommands)) {
+    g_browser_process->browser_policy_connector()
+        ->machine_level_user_cloud_policy_manager()
+        ->core()
+        ->StartRemoteCommandsService(
+            std::make_unique<CBCMRemoteCommandsFactory>(),
+            PolicyInvalidationScope::kCBCM);
+
+    commands_invalidator_ = std::make_unique<RemoteCommandsInvalidatorImpl>(
+        g_browser_process->browser_policy_connector()
+            ->machine_level_user_cloud_policy_manager()
+            ->core(),
+        base::DefaultClock::GetInstance(), PolicyInvalidationScope::kCBCM);
+    commands_invalidator_->Initialize(invalidation_service_.get());
+    commands_invalidator_->Start();
+  }
 }
 
 void ChromeBrowserCloudManagementControllerDesktop::AccountInitCallback(

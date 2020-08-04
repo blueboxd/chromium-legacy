@@ -61,6 +61,8 @@ source_set("navigation") {
     "serializable_user_data_manager_impl.mm",
     "session_storage_builder.h",
     "session_storage_builder.mm",
+    "text_fragment_utils.h",
+    "text_fragment_utils.mm",
     "time_smoother.cc",
     "time_smoother.h",
     "url_schemes.mm",

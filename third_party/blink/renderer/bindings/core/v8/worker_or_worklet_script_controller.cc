@@ -433,7 +433,6 @@ bool WorkerOrWorkletScriptController::Evaluate(
                                state.exception, world_.get());
       }
     } else {
-      DCHECK_EQ(sanitize_script_errors, SanitizeScriptErrors::kDoNotSanitize);
       ErrorEvent* event = nullptr;
       if (state.error_event_from_imported_script_) {
         event = state.error_event_from_imported_script_;

@@ -90,7 +90,7 @@ public class DownloadLaterDialogTest {
         mDialogCoordinator = new DownloadLaterDialogCoordinator(mDateTimePicker);
         mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                          .with(DownloadLaterDialogProperties.CONTROLLER, mDialogCoordinator)
-                         .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
+                         .with(DownloadLaterDialogProperties.INITIAL_CHOICE,
                                  DownloadLaterDialogChoice.ON_WIFI)
                          .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
                                  DownloadLaterPromptStatus.SHOW_INITIAL)

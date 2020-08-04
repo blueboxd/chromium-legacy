@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/webui/signin/dice_web_signin_intercept_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/webui/signin/dice_web_signin_intercept_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -33,14 +35,14 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
   source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
   source->AddResourcePath("signin_vars_css.js", IDR_SIGNIN_VARS_CSS_JS);
 
-  // TODO(droger): Use the color from the profile.
-  SkColor header_background_color = SkColorSetRGB(206, 234, 214);
-  SkColor header_text_color =
-      color_utils::GetColorWithMaxContrast(header_background_color);
+  Profile* profile = Profile::FromWebUI(web_ui);
+  SkColor background_color =
+      GetThemeColorsForProfile(profile).profile_highlight_color;
   source->AddString("headerBackgroundColor",
-                    color_utils::SkColorToRgbaString(header_background_color));
+                    color_utils::SkColorToRgbaString(background_color));
   source->AddString("headerTextColor",
-                    color_utils::SkColorToRgbaString(header_text_color));
+                    color_utils::SkColorToRgbaString(
+                        GetProfileForegroundTextColor(background_color)));
 
   // Localized strings.
   source->UseStringsJs();
@@ -64,7 +66,7 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 DiceWebSigninInterceptUI::~DiceWebSigninInterceptUI() = default;

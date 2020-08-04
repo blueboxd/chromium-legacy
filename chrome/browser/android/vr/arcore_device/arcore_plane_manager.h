@@ -9,6 +9,7 @@
 
 #include "base/util/type_safety/id_type.h"
 #include "base/util/type_safety/pass_key.h"
+#include "chrome/browser/android/vr/arcore_device/address_to_id_map.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
 #include "chrome/browser/android/vr/arcore_device/scoped_arcore_objects.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -92,13 +93,9 @@ class ArCorePlaneManager {
   // each call to the ARCore SDK.
   internal::ScopedArCoreObject<ArPose*> ar_pose_;
 
-  uint64_t next_id_ = 1;
-  // Returns tuple containing plane id and a boolean signifying that the
-  // plane was created. It should be called only during calls to |Update()|.
-  std::pair<PlaneId, bool> CreateOrGetPlaneId(void* plane_address);
   // Mapping from plane address to plane ID. It should be modified only during
   // calls to |Update()|.
-  std::map<void*, PlaneId> ar_plane_address_to_id_;
+  AddressToIdMap<PlaneId> plane_address_to_id_;
   // Mapping from plane ID to ARCore plane information. It should be modified
   // only during calls to |Update()|.
   std::map<PlaneId, PlaneInfo> plane_id_to_plane_info_;

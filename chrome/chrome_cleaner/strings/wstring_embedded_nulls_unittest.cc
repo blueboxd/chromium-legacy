@@ -58,7 +58,7 @@ TEST_F(WStringEmbeddedNullsTest, FromVector) {
   EXPECT_EQ(FormatVectorWithNulls(vec_), FormatWStringPiece(sp));
 }
 
-TEST_F(WStringEmbeddedNullsTest, FromString16) {
+TEST_F(WStringEmbeddedNullsTest, FromWString) {
   WStringEmbeddedNulls str(std::wstring(vec_.data(), vec_.size()));
   base::WStringPiece sp = str.CastAsWStringPiece();
   EXPECT_EQ(FormatVectorWithNulls(vec_), FormatWStringPiece(sp));

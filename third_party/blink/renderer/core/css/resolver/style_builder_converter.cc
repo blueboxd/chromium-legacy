@@ -1529,6 +1529,20 @@ scoped_refptr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
   return array;
 }
 
+void StyleBuilderConverter::CountSystemColorComputeToSelfUsage(
+    const StyleResolverState& state) {
+  // Count cases where a system color keyword is used on an element whose
+  // color-scheme is different from its parent.
+  // This is a superset of when the feature will change the resolved color
+  // (inheriting the keyword is also required) but it should be a reasonable
+  // approximation for use counting purposes.
+  if (state.Style()->ComputedColorScheme() !=
+      state.ParentStyle()->ComputedColorScheme()) {
+    UseCounter::Count(state.GetDocument(),
+                      WebFeature::kCSSSystemColorComputeToSelf);
+  }
+}
+
 StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
                                                     const CSSValue& value,
                                                     bool for_visited_link) {
@@ -1537,9 +1551,10 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
     CSSValueID value_id = identifier_value->GetValueID();
     if (value_id == CSSValueID::kCurrentcolor)
       return StyleColor::CurrentColor();
-    if (StyleColor::IsSystemColor(value_id) &&
-        RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
-      return StyleColor(value_id);
+    if (StyleColor::IsSystemColor(value_id)) {
+      CountSystemColorComputeToSelfUsage(state);
+      if (RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled())
+        return StyleColor(value_id);
     }
   }
   return StyleColor(state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
@@ -1563,9 +1578,10 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
       return StyleAutoColor::CurrentColor();
     if (value_id == CSSValueID::kAuto)
       return StyleAutoColor::AutoColor();
-    if (StyleColor::IsSystemColor(value_id) &&
-        RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
-      return StyleAutoColor(value_id);
+    if (StyleColor::IsSystemColor(value_id)) {
+      CountSystemColorComputeToSelfUsage(state);
+      if (RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled())
+        return StyleAutoColor(value_id);
     }
   }
   return StyleAutoColor(

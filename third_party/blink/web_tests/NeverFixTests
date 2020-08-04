@@ -1362,6 +1362,13 @@ crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-055.html
 crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Skip ]
 crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Skip ]
 
+# 'overflow: clip' not implemented.
+crbug.com/966283 external/wpt/css/css-overflow/clip-001.html [ Skip ]
+crbug.com/966283 external/wpt/css/css-overflow/dynamic-visible-to-clip-001.html [ Skip ]
+crbug.com/966283 external/wpt/css/css-overflow/overflow-body-propagation-007.html [ Skip ]
+crbug.com/966283 external/wpt/css/css-overflow/overflow-body-propagation-008.html [ Skip ]
+crbug.com/966283 external/wpt/css/css-overflow/overflow-body-propagation-009.html [ Skip ]
+
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Skip ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass ]

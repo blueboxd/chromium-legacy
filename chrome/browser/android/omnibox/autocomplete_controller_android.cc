@@ -290,7 +290,6 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
   const auto& match =
       autocomplete_controller_->result().match_at(selected_index);
   SuggestionAnswer::LogAnswerUsed(match.answer);
-
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   if (template_url_service &&
@@ -352,12 +351,33 @@ ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::
         const JavaParamRef<jobject>& obj,
         jint selected_index,
         jint hash_code,
-        jlong elapsed_time_since_input_change) {
+        jlong elapsed_time_since_input_change,
+        const base::android::JavaParamRef<jstring>& jnew_query_text,
+        const base::android::JavaParamRef<jobjectArray>& jnew_query_params) {
   if (!IsValidMatch(env, selected_index, hash_code))
     return ScopedJavaLocalRef<jstring>();
-
   AutocompleteMatch match(
       autocomplete_controller_->result().match_at(selected_index));
+
+  if (!jnew_query_text.is_null()) {
+    base::string16 query =
+        base::android::ConvertJavaStringToUTF16(env, jnew_query_text);
+    if (!match.search_terms_args) {
+      match.search_terms_args.reset(new TemplateURLRef::SearchTermsArgs(query));
+    } else {
+      match.search_terms_args->search_terms = query;
+    }
+  }
+
+  if (!jnew_query_params.is_null() && match.search_terms_args) {
+    std::vector<std::string> params;
+    base::android::AppendJavaStringArrayToStringVector(env, jnew_query_params,
+                                                       &params);
+    // The query params are from the query tiles server and doesn't need to be
+    // escaped.
+    match.search_terms_args->additional_query_params =
+        base::JoinString(params, "&");
+  }
   autocomplete_controller_->UpdateMatchDestinationURLWithQueryFormulationTime(
       base::TimeDelta::FromMilliseconds(elapsed_time_since_input_change),
       &match);

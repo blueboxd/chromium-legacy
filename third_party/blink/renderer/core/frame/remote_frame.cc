@@ -523,11 +523,11 @@ void RemoteFrame::BubbleLogicalScroll(mojom::blink::ScrollDirection direction,
 }
 
 void RemoteFrame::UpdateUserActivationState(
-    mojom::blink::UserActivationUpdateType update_type) {
+    mojom::blink::UserActivationUpdateType update_type,
+    mojom::blink::UserActivationNotificationType notification_type) {
   switch (update_type) {
     case mojom::blink::UserActivationUpdateType::kNotifyActivation:
-      NotifyUserActivationInLocalTree(
-          mojom::blink::UserActivationNotificationType::kNone);
+      NotifyUserActivationInLocalTree(notification_type);
       break;
     case mojom::blink::UserActivationUpdateType::kConsumeTransientActivation:
       ConsumeTransientUserActivationInLocalTree();

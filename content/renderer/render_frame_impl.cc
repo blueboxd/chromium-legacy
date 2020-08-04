@@ -147,6 +147,7 @@
 #include "net/http/http_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/not_implemented_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -3265,6 +3266,8 @@ void RenderFrameImpl::CommitNavigationWithParams(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(prefetch_loader_factory));
   }
+  DCHECK(new_loader_factories);
+  DCHECK(new_loader_factories->HasBoundDefaultFactory());
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put
   // in a special mode.
@@ -3360,6 +3363,7 @@ void RenderFrameImpl::CommitFailedNavigation(
           std::move(subresource_loader_factories),
           base::nullopt /* subresource_overrides */,
           mojo::NullRemote() /* prefetch_loader_factory */);
+  DCHECK(new_loader_factories->HasBoundDefaultFactory());
 
   // Send the provisional load failure.
   WebURLError error(
@@ -3610,6 +3614,8 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
   // workaround to paper-over the crash in https://crbug.com/1013254.
   if (!loader_factories_)
     loader_factories_ = GetLoaderFactoryBundleFromCreator();
+  if (!loader_factories_)
+    loader_factories_ = GetLoaderFactoryBundleFallback();
 
   if (loader_factories_->IsHostChildURLLoaderFactoryBundle()) {
     static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
@@ -4167,6 +4173,8 @@ void RenderFrameImpl::DidCommitNavigation(
     // initialized).
     loader_factories_ = GetLoaderFactoryBundleFromCreator();
   }
+  DCHECK(loader_factories_);
+  DCHECK(loader_factories_->HasBoundDefaultFactory());
 
   // TODO(dgozman): call DidStartNavigation in various places where we call
   // CommitNavigation() on the frame.
@@ -5792,7 +5800,16 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
 ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
   if (!loader_factories_)
     loader_factories_ = GetLoaderFactoryBundleFromCreator();
+  if (!loader_factories_)
+    loader_factories_ = GetLoaderFactoryBundleFallback();
   return loader_factories_.get();
+}
+
+scoped_refptr<ChildURLLoaderFactoryBundle>
+RenderFrameImpl::GetLoaderFactoryBundleFallback() {
+  return CreateLoaderFactoryBundle(
+      nullptr, base::nullopt /* subresource_overrides */,
+      mojo::NullRemote() /* prefetch_loader_factory */);
 }
 
 scoped_refptr<ChildURLLoaderFactoryBundle>
@@ -5806,9 +5823,7 @@ RenderFrameImpl::GetLoaderFactoryBundleFromCreator() {
     return base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
         std::move(bundle_info));
   }
-  return CreateLoaderFactoryBundle(
-      nullptr, base::nullopt /* subresource_overrides */,
-      mojo::NullRemote() /* prefetch_loader_factory */);
+  return nullptr;
 }
 
 scoped_refptr<ChildURLLoaderFactoryBundle>
@@ -6323,6 +6338,12 @@ void RenderFrameImpl::LoadHTMLString(const std::string& html,
                                      const std::string& text_encoding,
                                      const GURL& unreachable_url,
                                      bool replace_current_item) {
+  pending_loader_factories_ = CreateLoaderFactoryBundle(
+      ChildPendingURLLoaderFactoryBundle::CreateFromDefaultFactoryImpl(
+          std::make_unique<network::NotImplementedURLLoaderFactory>()),
+      base::nullopt,  // |subresource_overrides|
+      {});            // prefetch_loader_factory
+
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = base_url;
   WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",

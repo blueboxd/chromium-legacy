@@ -11,7 +11,6 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
@@ -123,6 +122,11 @@ class RenderWidgetHostVisibilityTracker
                                       "TabSwitchVisibilityRequest", this);
   }
 
+  RenderWidgetHostVisibilityTracker(const RenderWidgetHostVisibilityTracker&) =
+      delete;
+  RenderWidgetHostVisibilityTracker& operator=(
+      const RenderWidgetHostVisibilityTracker&) = delete;
+
   ~RenderWidgetHostVisibilityTracker() override {
     if (host_)
       host_->RemoveObserver(this);
@@ -150,8 +154,6 @@ class RenderWidgetHostVisibilityTracker
 
   content::RenderWidgetHost* host_ = nullptr;
   base::ElapsedTimer timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityTracker);
 };
 
 }  // namespace
@@ -164,6 +166,8 @@ class RenderWidgetHostVisibilityTracker
 class TabStripModel::WebContentsData : public content::WebContentsObserver {
  public:
   explicit WebContentsData(std::unique_ptr<WebContents> a_contents);
+  WebContentsData(const WebContentsData&) = delete;
+  WebContentsData& operator=(const WebContentsData&) = delete;
 
   // Changes the WebContents that this WebContentsData tracks.
   std::unique_ptr<WebContents> ReplaceWebContents(
@@ -225,8 +229,6 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   //   - The exact shape of the group-related changes to the TabStripModel API
   //     (and the relevant bits of the extension API) are TBD.
   base::Optional<tab_groups::TabGroupId> group_ = base::nullopt;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
 
 TabStripModel::WebContentsData::WebContentsData(
@@ -257,6 +259,8 @@ struct TabStripModel::DetachedWebContents {
       : contents(std::move(contents)),
         index_before_any_removals(index_before_any_removals),
         index_at_time_of_removal(index_at_time_of_removal) {}
+  DetachedWebContents(const DetachedWebContents&) = delete;
+  DetachedWebContents& operator=(const DetachedWebContents&) = delete;
   ~DetachedWebContents() = default;
   DetachedWebContents(DetachedWebContents&&) = default;
 
@@ -271,9 +275,6 @@ struct TabStripModel::DetachedWebContents {
   // tabs are being simultaneously removed, the index reflects previously
   // removed tabs in this batch.
   const int index_at_time_of_removal;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetachedWebContents);
 };
 
 // Holds all state necessary to send notifications for detached tabs. Will
@@ -285,6 +286,8 @@ struct TabStripModel::DetachNotifications {
       : initially_active_web_contents(initially_active_web_contents),
         selection_model(selection_model),
         will_delete(will_delete) {}
+  DetachNotifications(const DetachNotifications&) = delete;
+  DetachNotifications& operator=(const DetachNotifications&) = delete;
   ~DetachNotifications() = default;
 
   // The WebContents that was active prior to any detaches happening.
@@ -305,9 +308,6 @@ struct TabStripModel::DetachNotifications {
 
   // Whether to delete the WebContents after sending notifications.
   const bool will_delete;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetachNotifications);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

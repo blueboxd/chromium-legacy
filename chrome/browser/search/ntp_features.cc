@@ -68,6 +68,9 @@ const base::Feature kWebUIRealbox{"WebUIRealbox",
 const base::Feature kWebUIThemeModeDoodles{"WebUIThemeModeDoodles",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, modules will be shown.
+const base::Feature kModules{"NtpModules", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsRealboxEnabled() {
   if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
     return false;

@@ -9,6 +9,7 @@
 
 #include "base/util/type_safety/id_type.h"
 #include "base/util/type_safety/pass_key.h"
+#include "chrome/browser/android/vr/arcore_device/address_to_id_map.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
 #include "chrome/browser/android/vr/arcore_device/scoped_arcore_objects.h"
@@ -76,13 +77,9 @@ class ArCoreAnchorManager {
 
   internal::ScopedArCoreObject<ArAnchorList*> arcore_anchors_;
 
-  uint64_t next_id_ = 1;
-  // Returns tuple containing anchor id and a boolean signifying that the
-  // anchor was created. It should be called only during calls to |Update()|.
-  std::pair<AnchorId, bool> CreateOrGetAnchorId(void* anchor_address);
   // Mapping from anchor address to anchor ID. It should be modified only during
   // calls to |Update()| and anchor creation.
-  std::map<void*, AnchorId> ar_anchor_address_to_id_;
+  AddressToIdMap<AnchorId> anchor_address_to_id_;
   // Mapping from anchor ID to ARCore anchor information. It should be modified
   // only during calls to |Update()|.
   std::map<AnchorId, AnchorInfo> anchor_id_to_anchor_info_;

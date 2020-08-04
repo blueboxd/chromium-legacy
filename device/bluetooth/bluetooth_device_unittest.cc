@@ -14,6 +14,7 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "device/bluetooth/test/test_pairing_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,10 +71,10 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_AcceptsAllValidFormats) {
   for (size_t i = 0; i < base::size(kValidFormats); ++i) {
     SCOPED_TRACE(std::string("Input format: '") + kValidFormats[i] + "'");
     EXPECT_EQ("1A:2B:3C:4D:5E:6F",
-              BluetoothDevice::CanonicalizeAddress(kValidFormats[i]));
+              CanonicalizeBluetoothAddress(kValidFormats[i]));
 
     std::array<uint8_t, 6> parsed;
-    EXPECT_TRUE(BluetoothDevice::ParseAddress(kValidFormats[i], parsed));
+    EXPECT_TRUE(ParseBluetoothAddress(kValidFormats[i], parsed));
     EXPECT_EQ("\x1a\x2b\x3c\x4d\x5e\x6f",
               std::string(parsed.begin(), parsed.end()));
   }
@@ -101,11 +102,10 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
 
   for (size_t i = 0; i < base::size(kInvalidFormats); ++i) {
     SCOPED_TRACE(std::string("Input format: '") + kInvalidFormats[i] + "'");
-    EXPECT_EQ(std::string(),
-              BluetoothDevice::CanonicalizeAddress(kInvalidFormats[i]));
+    EXPECT_EQ(std::string(), CanonicalizeBluetoothAddress(kInvalidFormats[i]));
 
     std::array<uint8_t, 6> parsed;
-    EXPECT_FALSE(BluetoothDevice::ParseAddress(kInvalidFormats[i], parsed));
+    EXPECT_FALSE(ParseBluetoothAddress(kInvalidFormats[i], parsed));
   }
 }
 

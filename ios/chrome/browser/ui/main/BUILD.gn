@@ -75,6 +75,7 @@ source_set("scene") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ntp_snippets:ntp_snippets",
+    "//ios/chrome/browser/screenshot",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/ui:feature_flags",

@@ -400,9 +400,8 @@ bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRectOrOverflowRects() {
       box_.ContentSize() != box_.Size())
     return true;
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
-       BackgroundPaintsOntoScrollingContentsLayer() ||
-       !box_.HasOverflowClip()) &&
-      box_.HasLayoutOverflow())
+       BackgroundPaintsOntoScrollingContentsLayer()) &&
+      box_.LayoutOverflowRect() != box_.BorderBoxRect())
     return true;
 
   return false;

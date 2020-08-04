@@ -1542,7 +1542,8 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
   // JavaScriptExecuteRequestsForTests call is redundant with this update. We
   // should determine if the redundancy can be removed.
   frame_tree_node()->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
 
   const bool has_user_gesture = true;
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
@@ -4205,7 +4206,8 @@ void RenderFrameHostImpl::EnterFullscreen(
            ->browser()
            ->CanEnterFullscreenWithoutUserActivation()) {
     bool is_consumed = frame_tree_node_->UpdateUserActivationState(
-        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
+        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation,
+        blink::mojom::UserActivationNotificationType::kNone);
     if (!is_consumed) {
       DLOG(ERROR) << "Cannot enter fullscreen because there is no transient "
                   << "user activation, orientation change, or XR overlay.";
@@ -4336,14 +4338,15 @@ void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
 }
 
 void RenderFrameHostImpl::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type,
+    blink::mojom::UserActivationNotificationType notification_type) {
   // Don't update UserActivationState for non-active RenderFrameHost. In case
   // of BackForwardCache, this is only called for tests and it is safe to ignore
   // such requests.
   if (lifecycle_state_ != LifecycleState::kActive)
     return;
 
-  frame_tree_node_->UpdateUserActivationState(update_type);
+  frame_tree_node_->UpdateUserActivationState(update_type, notification_type);
 }
 
 void RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged(
@@ -4705,7 +4708,8 @@ void RenderFrameHostImpl::CreateNewWindow(
     // Consume activation even w/o User Activation v2, to sync other renderers
     // with calling renderer.
     was_consumed = frame_tree_node_->UpdateUserActivationState(
-        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
+        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation,
+        blink::mojom::UserActivationNotificationType::kNone);
   } else {
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;

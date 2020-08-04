@@ -91,7 +91,7 @@ class LocationBarCoordinatorTest : public PlatformTest {
         ios::FaviconServiceFactory::GetDefaultFactory());
 
     browser_state_ = test_cbs_builder.Build();
-    ASSERT_TRUE(browser_state_->CreateHistoryService(true));
+    ASSERT_TRUE(browser_state_->CreateHistoryService());
 
     browser_ =
         std::make_unique<TestBrowser>(browser_state_.get(), &web_state_list_);

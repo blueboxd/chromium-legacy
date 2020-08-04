@@ -91,6 +91,9 @@ class FeedStreamApi {
   // Sends 'ThereAndBackAgainData' back to the server. |data| is a serialized
   // |feedwire::ThereAndBackAgainData| message.
   virtual void ProcessThereAndBackAgain(base::StringPiece data) = 0;
+  // Saves a view action for eventual upload. |data| is a serialized
+  //|feedwire::FeedAction| message.
+  virtual void ProcessViewAction(base::StringPiece data) = 0;
 
   // User interaction reporting. These should have no side-effects other than
   // reporting metrics.

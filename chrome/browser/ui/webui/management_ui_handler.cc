@@ -644,12 +644,12 @@ bool ManagementUIHandler::IsUpdateRequiredEol() const {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::MinimumVersionPolicyHandler* handler =
       connector->GetMinimumVersionPolicyHandler();
-  return handler && handler->IsUpdateRequiredEol();
+  return handler && handler->ShouldShowUpdateRequiredEolBanner();
 }
 
 void ManagementUIHandler::AddUpdateRequiredEolInfo(
     base::Value* response) const {
-  if (!device_managed_ || !account_managed_ || !IsUpdateRequiredEol()) {
+  if (!device_managed_ || !IsUpdateRequiredEol()) {
     response->SetStringPath("eolMessage", std::string());
     return;
   }

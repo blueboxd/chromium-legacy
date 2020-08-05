@@ -253,7 +253,7 @@ class CONTENT_EXPORT TextInputManager {
   // The following maps track corresponding IME state for views. For each view,
   // the values in the map are initialized and cleared in Register and
   // Unregister methods, respectively.
-  ViewMap<ui::mojom::TextInputState> text_input_state_map_;
+  ViewMap<ui::mojom::TextInputStatePtr> text_input_state_map_;
   ViewMap<SelectionRegion> selection_region_map_;
   ViewMap<CompositionRangeInfo> composition_range_info_map_;
   ViewMap<TextSelection> text_selection_map_;

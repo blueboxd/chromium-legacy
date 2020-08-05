@@ -578,7 +578,7 @@ const char kWaitForInitialPolicyFetchForTest[] =
 // throttled.
 const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
 
-// If this switch is passed, the device policy MinimumChromeVersionEnforced
+// If this switch is passed, the device policy DeviceMinimumVersion
 // assumes that the device has reached Auto Update Expiration. This is useful
 // for testing the policy behaviour on the DUT.
 const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";

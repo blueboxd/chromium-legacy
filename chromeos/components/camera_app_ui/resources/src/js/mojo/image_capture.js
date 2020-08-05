@@ -32,7 +32,7 @@ export class CrosImageCapture {
 
     /**
      * The standard ImageCapture object.
-     * @type {ImageCapture}
+     * @type {!ImageCapture}
      * @private
      */
     this.capture_ = new ImageCapture(videoTrack);
@@ -40,7 +40,7 @@ export class CrosImageCapture {
 
   /**
    * Gets the photo capabilities with the available options/effects.
-   * @return {!Promise<!PhotoCapabilities|CrosPhotoCapabilities>} Promise
+   * @return {!Promise<!PhotoCapabilities|!CrosPhotoCapabilities>} Promise
    *     for the result.
    */
   async getPhotoCapabilities() {
@@ -70,13 +70,13 @@ export class CrosImageCapture {
    * received the shutter event.
    * @param {!PhotoSettings} photoSettings Photo settings for ImageCapture's
    *     takePhoto().
-   * @param {!Array<cros.mojom.Effect>=} photoEffects Photo effects to be
+   * @param {!Array<!cros.mojom.Effect>=} photoEffects Photo effects to be
    *     applied.
    * @return {!Promise<!Array<!Promise<!Blob>>>} A promise of the array
    *     containing promise of each blob result.
    */
   async takePhoto(photoSettings, photoEffects = []) {
-    /** @type {Array<!Promise<!Blob>>} */
+    /** @type {!Array<!Promise<!Blob>>} */
     const takes = [];
     const deviceOperator = await DeviceOperator.getInstance();
     if (deviceOperator === null && photoEffects.length > 0) {

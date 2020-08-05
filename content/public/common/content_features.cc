@@ -486,6 +486,12 @@ const base::Feature kPrioritizeBootstrapTasks = {
 const base::Feature kProactivelySwapBrowsingInstance{
     "ProactivelySwapBrowsingInstance", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Fires the `pushsubscriptionchange` event defined here:
+// https://w3c.github.io/push-api/#the-pushsubscriptionchange-event
+// for subscription refreshes, revoked permissions or subscription losses
+const base::Feature kPushSubscriptionChangeEvent{
+    "PushSubscriptionChangeEvent", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Reduce the amount of information in the default 'referer' header for
 // cross-origin requests.
 const base::Feature kReducedReferrerGranularity{

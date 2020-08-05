@@ -916,7 +916,11 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     bool notify_text_changed) {
   if (save_original_selection)
     saved_temporary_selection_ = GetRenderText()->GetAllSelections();
-  SetAccessibilityLabel(display_text, match);
+
+  // SetWindowTextAndCaretPos will fire the acesssibility notification,
+  // so do not also generate redundant notification here.
+  SetAccessibilityLabel(display_text, match, false);
+
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
   SetAdditionalText(match.fill_into_edit_additional_text);
@@ -951,16 +955,14 @@ void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
 
 void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
-  SetAccessibilityLabel(display_text, match);
-  SetSelectedRanges(saved_temporary_selection_);
-
   // We got here because the user hit the Escape key. We explicitly don't call
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
   // been called by now, and it would've called TextChanged() if it was
   // warranted.
   // However, it's important to notify accessibility that the value has changed,
   // otherwise the screen reader will use the old accessibility label text.
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+  SetAccessibilityLabel(display_text, match, true);
+  SetSelectedRanges(saved_temporary_selection_);
 }
 
 void OmniboxViewViews::ClearAccessibilityLabel() {
@@ -972,7 +974,8 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 }
 
 void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
-                                             const AutocompleteMatch& match) {
+                                             const AutocompleteMatch& match,
+                                             bool notify_text_changed) {
   if (model()->popup_model()->selected_line() == OmniboxPopupModel::kNoMatch) {
     // If nothing is selected in the popup, we are in the no-default-match edge
     // case, and |match| is a synthetically generated match. In that case,
@@ -985,6 +988,9 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
         model()->popup_model()->GetAccessibilityLabelForCurrentSelection(
             display_text, &friendly_suggestion_text_prefix_length_);
   }
+
+  if (notify_text_changed)
+    NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 
 #if defined(OS_MAC)
   // On macOS, the only way to get VoiceOver to speak the friendly suggestion

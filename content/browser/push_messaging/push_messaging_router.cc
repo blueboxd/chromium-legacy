@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
@@ -28,15 +30,15 @@ using ServiceWorkerStartCallback = base::OnceCallback<void(
     scoped_refptr<DevToolsBackgroundServicesContextImpl>,
     blink::ServiceWorkerStatusCode)>;
 
-void RunDeliverCallback(
-    PushMessagingRouter::DeliverMessageCallback deliver_message_callback,
-    blink::mojom::PushDeliveryStatus delivery_status) {
+void RunPushEventCallback(
+    PushMessagingRouter::PushEventCallback deliver_message_callback,
+    blink::mojom::PushDeliveryStatus push_event_status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // Use PostTask() instead of RunOrPostTaskOnThread() to ensure the callback
   // is called asynchronously.
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(deliver_message_callback), delivery_status));
+      base::BindOnce(std::move(deliver_message_callback), push_event_status));
 }
 
 // Given the |service_worker_registration|, this method finds and finishes the
@@ -123,7 +125,7 @@ void PushMessagingRouter::DeliverMessage(
     int64_t service_worker_registration_id,
     const std::string& message_id,
     base::Optional<std::string> payload,
-    DeliverMessageCallback deliver_message_callback) {
+    PushEventCallback deliver_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartServiceWorkerForDispatch(
       ServiceWorkerMetrics::EventType::PUSH, browser_context, origin,
@@ -136,7 +138,7 @@ void PushMessagingRouter::DeliverMessage(
 void PushMessagingRouter::DeliverMessageToWorker(
     const std::string& message_id,
     base::Optional<std::string> payload,
-    DeliverMessageCallback deliver_message_callback,
+    PushEventCallback deliver_message_callback,
     scoped_refptr<ServiceWorkerVersion> service_worker,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
     blink::ServiceWorkerStatusCode status) {
@@ -144,7 +146,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
   // Service worker registration was not found, run callback immediately
   if (!service_worker) {
     DCHECK_NE(blink::ServiceWorkerStatusCode::kOk, status);
-    RunDeliverCallback(
+    RunPushEventCallback(
         std::move(deliver_message_callback),
         status == blink::ServiceWorkerStatusCode::kErrorNotFound
             ? blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER
@@ -153,7 +155,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
   }
 
   // RunAfterStartWorker was not successful, end message delivery and log error
-  // in devtools_context before running RunDeliverCallback
+  // in devtools_context before running RunPushEventCallback
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     DeliverMessageEnd(std::move(service_worker), std::move(devtools_context),
                       message_id, std::move(deliver_message_callback), status);
@@ -188,26 +190,26 @@ void PushMessagingRouter::DeliverMessageEnd(
     scoped_refptr<ServiceWorkerVersion> service_worker,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
     const std::string& message_id,
-    DeliverMessageCallback deliver_message_callback,
+    PushEventCallback deliver_message_callback,
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.ServiceWorkerEvent",
                             service_worker_status);
-  blink::mojom::PushDeliveryStatus delivery_status =
+  blink::mojom::PushDeliveryStatus push_event_status =
       blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
   std::string status_description;
   switch (service_worker_status) {
     case blink::ServiceWorkerStatusCode::kOk:
-      delivery_status = blink::mojom::PushDeliveryStatus::SUCCESS;
+      push_event_status = blink::mojom::PushDeliveryStatus::SUCCESS;
       status_description = "Success";
       break;
     case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
-      delivery_status =
+      push_event_status =
           blink::mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED;
       status_description = "waitUntil Rejected";
       break;
     case blink::ServiceWorkerStatusCode::kErrorTimeout:
-      delivery_status = blink::mojom::PushDeliveryStatus::TIMEOUT;
+      push_event_status = blink::mojom::PushDeliveryStatus::TIMEOUT;
       status_description = "Timeout";
       break;
     case blink::ServiceWorkerStatusCode::kErrorFailed:
@@ -220,7 +222,8 @@ void PushMessagingRouter::DeliverMessageEnd(
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
-      delivery_status = blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
+      push_event_status =
+          blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
     case blink::ServiceWorkerStatusCode::kErrorExists:
     case blink::ServiceWorkerStatusCode::kErrorInstallWorkerFailed:
@@ -232,20 +235,106 @@ void PushMessagingRouter::DeliverMessageEnd(
       NOTREACHED() << "Got unexpected error code: "
                    << static_cast<uint32_t>(service_worker_status) << " "
                    << blink::ServiceWorkerStatusToString(service_worker_status);
-      delivery_status = blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
+      push_event_status =
+          blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
   }
-  RunDeliverCallback(std::move(deliver_message_callback), delivery_status);
+  RunPushEventCallback(std::move(deliver_message_callback), push_event_status);
 
   if (devtools_context->IsRecording(
           DevToolsBackgroundService::kPushMessaging) &&
-      delivery_status !=
+      push_event_status !=
           blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR) {
     devtools_context->LogBackgroundServiceEventOnCoreThread(
         service_worker->registration_id(), service_worker->script_origin(),
         DevToolsBackgroundService::kPushMessaging, "Push event completed",
         message_id, {{"Status", status_description}});
   }
+}
+
+// static
+void PushMessagingRouter::FireSubscriptionChangeEvent(
+    BrowserContext* browser_context,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    blink::mojom::PushSubscriptionPtr new_subscription,
+    blink::mojom::PushSubscriptionPtr old_subscription,
+    PushEventCallback subscription_change_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(base::FeatureList::IsEnabled(features::kPushSubscriptionChangeEvent));
+
+  StartServiceWorkerForDispatch(
+      ServiceWorkerMetrics::EventType::PUSH_SUBSCRIPTION_CHANGE,
+      browser_context, origin, service_worker_registration_id,
+      base::BindOnce(&PushMessagingRouter::FireSubscriptionChangeEventToWorker,
+                     std::move(new_subscription), std::move(old_subscription),
+                     std::move(subscription_change_callback)));
+}
+
+// static
+void PushMessagingRouter::FireSubscriptionChangeEventToWorker(
+    blink::mojom::PushSubscriptionPtr new_subscription,
+    blink::mojom::PushSubscriptionPtr old_subscription,
+    PushEventCallback subscription_change_callback,
+    scoped_refptr<ServiceWorkerVersion> service_worker,
+    scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
+    blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(base::FeatureList::IsEnabled(features::kPushSubscriptionChangeEvent));
+
+  if (!service_worker) {
+    DCHECK_NE(blink::ServiceWorkerStatusCode::kOk, status);
+    RunPushEventCallback(
+        std::move(subscription_change_callback),
+        status == blink::ServiceWorkerStatusCode::kErrorNotFound
+            ? blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER
+            : blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR);
+    return;
+  }
+
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    FireSubscriptionChangeEventEnd(std::move(service_worker),
+                                   std::move(subscription_change_callback),
+                                   status);
+    return;
+  }
+
+  int request_id = service_worker->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::PUSH_SUBSCRIPTION_CHANGE,
+      base::BindOnce(&PushMessagingRouter::FireSubscriptionChangeEventEnd,
+                     service_worker, std::move(subscription_change_callback)),
+      base::TimeDelta::FromSeconds(blink::mojom::kPushEventTimeoutSeconds),
+      ServiceWorkerVersion::KILL_ON_TIMEOUT);
+
+  service_worker->endpoint()->DispatchPushSubscriptionChangeEvent(
+      std::move(old_subscription), std::move(new_subscription),
+      service_worker->CreateSimpleEventCallback(request_id));
+}
+
+// static
+void PushMessagingRouter::FireSubscriptionChangeEventEnd(
+    scoped_refptr<ServiceWorkerVersion> service_worker,
+    PushEventCallback subscription_change_callback,
+    blink::ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  blink::mojom::PushDeliveryStatus push_event_status =
+      blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
+  switch (service_worker_status) {
+    case blink::ServiceWorkerStatusCode::kOk:
+      push_event_status = blink::mojom::PushDeliveryStatus::SUCCESS;
+      break;
+    case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
+      push_event_status =
+          blink::mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED;
+      break;
+    case blink::ServiceWorkerStatusCode::kErrorTimeout:
+      push_event_status = blink::mojom::PushDeliveryStatus::TIMEOUT;
+      break;
+    default:
+      break;
+  }
+  RunPushEventCallback(std::move(subscription_change_callback),
+                       push_event_status);
 }
 
 }  // namespace content

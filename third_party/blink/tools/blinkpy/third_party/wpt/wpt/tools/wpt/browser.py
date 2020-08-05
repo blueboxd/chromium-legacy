@@ -558,7 +558,7 @@ class Chrome(Browser):
         with open(installer_path, "rb") as f:
             unzip(f, dest)
         os.remove(installer_path)
-        return self.find_nightly_binary(dest, channel)
+        return self.find_nightly_binary(dest)
 
     def install_mojojs(self, dest):
         url = self._latest_chromium_snapshot_url() + "mojojs.zip"
@@ -603,10 +603,12 @@ class Chrome(Browser):
             self._last_change = get(revision_url).text.strip()
         return "https://storage.googleapis.com/chromium-browser-snapshots/%s/%s/" % (architecture, self._last_change)
 
-    def find_nightly_binary(self, dest, channel):
-        binary = "Chromium" if uname[0] == "Darwin" else "chrome"
+    def find_nightly_binary(self, dest):
+        if uname[0] == "Darwin":
+            return find_executable("Chromium",
+                                   os.path.join(dest, self._chromium_package_name(), "Chromium.app", "Contents", "MacOS"))
         # find_executable will add .exe on Windows automatically.
-        return find_executable(binary, os.path.join(dest, self._chromium_package_name()))
+        return find_executable("chrome", os.path.join(dest, self._chromium_package_name()))
 
     def find_binary(self, venv_path=None, channel=None):
         if channel == "nightly":
@@ -680,13 +682,21 @@ class Chrome(Browser):
             else self._chromium_chromedriver_url(None)
         self.logger.info("Downloading ChromeDriver from %s" % url)
         unzip(get(url).raw, dest)
+
+        # The two sources of ChromeDriver have different zip structures:
+        # * Chromium archives the binary inside a chromedriver_* directory;
+        # * Chrome archives the binary directly.
+        # We want to make sure the binary always ends up directly in bin/.
         chromedriver_dir = os.path.join(
             dest, 'chromedriver_%s' % self._chromedriver_platform_string())
-        unzipped_path = find_executable("chromedriver", chromedriver_dir)
-        assert unzipped_path is not None
-        shutil.move(unzipped_path, dest)
-        rmtree(chromedriver_dir)
-        return find_executable("chromedriver", dest)
+        binary_path = find_executable("chromedriver", chromedriver_dir)
+        if binary_path is not None:
+            shutil.move(binary_path, dest)
+            rmtree(chromedriver_dir)
+
+        binary_path = find_executable("chromedriver", dest)
+        assert binary_path is not None
+        return binary_path
 
     def install_webdriver(self, dest=None, channel=None, browser_binary=None):
         if channel == "nightly":

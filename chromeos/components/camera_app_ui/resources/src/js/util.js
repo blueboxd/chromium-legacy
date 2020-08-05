@@ -90,7 +90,7 @@ function dropPhotoOrientation(blob) {
 /**
  * Orients a photo to the upright orientation.
  * @param {!Blob} blob Photo as a blob.
- * @param {function(Blob)} onSuccess Success callback with the result photo as
+ * @param {function(!Blob)} onSuccess Success callback with the result photo as
  *     a blob.
  * @param {function()} onFailure Failure callback.
  */
@@ -159,7 +159,7 @@ export function orientPhoto(blob, onSuccess, onFailure) {
 
 /**
  * Cancels animating the element by removing 'animate' class.
- * @param {HTMLElement} element Element for canceling animation.
+ * @param {!HTMLElement} element Element for canceling animation.
  * @return {!Promise} Promise resolved when ongoing animation is canceled and
  *     next animation can be safely applied.
  */
@@ -205,7 +205,7 @@ function waitAnimationCompleted(element) {
 
 /**
  * Animates the element once by applying 'animate' class.
- * @param {HTMLElement} element Element to be animated.
+ * @param {!HTMLElement} element Element to be animated.
  * @param {function()=} callback Callback called on completion.
  */
 export function animateOnce(element, callback) {
@@ -222,7 +222,7 @@ export function animateOnce(element, callback) {
 
 /**
  * Returns a shortcut string, such as Ctrl-Alt-A.
- * @param {Event} event Keyboard event.
+ * @param {!Event} event Keyboard event.
  * @return {string} Shortcut identifier.
  */
 export function getShortcutIdentifier(event) {
@@ -259,7 +259,7 @@ export function getShortcutIdentifier(event) {
 
 /**
  * Makes the element unfocusable by mouse.
- * @param {HTMLElement} element Element to be unfocusable.
+ * @param {!HTMLElement} element Element to be unfocusable.
  */
 export function makeUnfocusableByMouse(element) {
   element.addEventListener('mousedown', (event) => event.preventDefault());
@@ -306,7 +306,7 @@ export function setupI18nElements(rootElement) {
  * Reads blob into Image.
  * @param {!Blob} blob
  * @return {!Promise<!HTMLImageElement>}
- * @throws {Error}
+ * @throws {!Error}
  */
 export function blobToImage(blob) {
   return new Promise((resolve, reject) => {
@@ -392,7 +392,7 @@ export function toggleChecked(element, checked) {
 
 /**
  * Binds on/off of specified state with different aria label on an element.
- * @param {!{element: !Element, state: state.State, onLabel: string,
+ * @param {!{element: !Element, state: !state.State, onLabel: string,
  *     offLabel: string}} params
  */
 export function bindElementAriaLabelWithState(

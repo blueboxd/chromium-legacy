@@ -462,11 +462,12 @@ void TextInputStateSender::Send() {
 
 void TextInputStateSender::SetFromCurrentState() {
   if (view_) {
-    *text_input_state_ =
-        *RenderWidgetHostImpl::From(view_->GetRenderWidgetHost())
-             ->delegate()
-             ->GetTextInputManager()
-             ->GetTextInputState();
+    const ui::mojom::TextInputState* state =
+        RenderWidgetHostImpl::From(view_->GetRenderWidgetHost())
+            ->delegate()
+            ->GetTextInputManager()
+            ->GetTextInputState();
+    text_input_state_ = state->Clone();
   }
 }
 

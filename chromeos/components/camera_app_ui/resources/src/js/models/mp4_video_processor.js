@@ -39,7 +39,7 @@ class StdinDevice {
   constructor() {
     /**
      * The data to be read from the device.
-     * @type {!Array<Int8Array>}
+     * @type {!Array<!Int8Array>}
      */
     this.data_ = [];
 
@@ -89,7 +89,7 @@ class StdinDevice {
 
   /**
    * Implements the read() operation for the emulated device.
-   * @param {FileStream} stream
+   * @param {!FileStream} stream
    * @param {!Int8Array} buffer The destination buffer.
    * @param {number} offset The destination buffer offset.
    * @param {number} length The maximum length to read.
@@ -123,7 +123,7 @@ class StdinDevice {
   }
 
   /**
-   * @return {FileOps}
+   * @return {!FileOps}
    */
   getFileOps() {
     return {
@@ -173,7 +173,7 @@ class StdoutDevice {
 
   /**
    * Implements the write() operation for the emulated device.
-   * @param {FileStream} stream
+   * @param {!FileStream} stream
    * @param {!Int8Array} buffer The source buffer.
    * @param {number} offset The source buffer offset.
    * @param {number} length The maximum length to be write.
@@ -205,7 +205,7 @@ class StdoutDevice {
   }
 
   /**
-   * @return {FileOps}
+   * @return {!FileOps}
    */
   getFileOps() {
     return {

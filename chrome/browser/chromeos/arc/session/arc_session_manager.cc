@@ -462,10 +462,14 @@ ArcSessionManager::ArcSessionManager(
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->AddVmObserver(this);
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->RemoveVmObserver(
+      this);
 
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->RemoveObserver(this);
@@ -961,6 +965,25 @@ void ArcSessionManager::RequestEnable() {
 
 bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
   return playstore_launcher_.get();
+}
+
+void ArcSessionManager::OnVmStarted(
+    const vm_tools::concierge::VmStartedSignal& vm_signal) {
+  // When an ARCVM starts, store the vm info.
+  if (vm_signal.name() == kArcVmName)
+    vm_info_ = vm_signal.vm_info();
+}
+
+void ArcSessionManager::OnVmStopped(
+    const vm_tools::concierge::VmStoppedSignal& vm_signal) {
+  // When an ARCVM stops, clear the stored vm info.
+  if (vm_signal.name() == kArcVmName)
+    vm_info_ = base::nullopt;
+}
+
+const base::Optional<vm_tools::concierge::VmInfo>&
+ArcSessionManager::GetVmInfo() const {
+  return vm_info_;
 }
 
 bool ArcSessionManager::RequestEnableImpl() {

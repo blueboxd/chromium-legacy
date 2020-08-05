@@ -11,7 +11,7 @@ import {BrowserProxy} from './browser_proxy_interface.js';
 
 /* eslint-disable new-cap */
 
-/** @throws {Error} */
+/** @throws {!Error} */
 function NOTIMPLEMENTED() {
   throw Error('Browser proxy method not implemented!');
 }

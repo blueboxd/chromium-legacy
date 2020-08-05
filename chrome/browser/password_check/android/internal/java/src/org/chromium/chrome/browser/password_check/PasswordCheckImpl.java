@@ -44,8 +44,11 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     }
 
     @Override
-    public void onCompromisedCredentialFound(String originUrl, String username, String password) {
-        // TODO(crbug.com/1106726): Broadcast to registered observers.
+    public void onCompromisedCredentialFound(
+            String originUrl, String username, String password, boolean hasScript) {
+        for (Observer obs : mObserverList) {
+            obs.onCompromisedCredentialFound(originUrl, username, password, hasScript);
+        }
     }
 
     @Override
@@ -95,6 +98,14 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     @Override
     public int getCompromisedCredentialsCount() {
         return mPasswordCheckBridge.getCompromisedCredentialsCount();
+    }
+
+    @Override
+    public CompromisedCredential[] getCompromisedCredentials() {
+        CompromisedCredential[] credentials =
+                new CompromisedCredential[getCompromisedCredentialsCount()];
+        mPasswordCheckBridge.getCompromisedCredentials(credentials);
+        return credentials;
     }
 
     @Override

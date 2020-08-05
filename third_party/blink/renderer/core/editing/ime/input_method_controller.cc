@@ -303,6 +303,24 @@ SuggestionMarker::SuggestionType ConvertImeTextSpanType(
   }
 }
 
+ImeTextSpan::Type ConvertSuggestionMarkerType(
+    SuggestionMarker::SuggestionType type) {
+  switch (type) {
+    case SuggestionMarker::SuggestionType::kAutocorrect:
+      return ImeTextSpan::Type::kAutocorrect;
+    case SuggestionMarker::SuggestionType::kMisspelling:
+      return ImeTextSpan::Type::kMisspellingSuggestion;
+    case SuggestionMarker::SuggestionType::kNotMisspelling:
+      return ImeTextSpan::Type::kSuggestion;
+  }
+}
+
+// ImeTextSpans types that need to be provided to TextInputInfo can be added
+// here.
+bool ShouldGetImeTextSpansAroundPosition(ImeTextSpan::Type type) {
+  return type == ImeTextSpan::Type::kAutocorrect;
+}
+
 }  // anonymous namespace
 
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
@@ -1544,6 +1562,12 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
     info.selection_end = selection_plain_text_range.End();
   }
 
+  // Only gets ime text spans when there is no selection range.
+  // ie. the selection range is just a cursor position.
+  if (info.selection_start == info.selection_end) {
+    info.ime_text_spans = GetImeTextSpansAroundPosition(info.selection_start);
+  }
+
   EphemeralRange range = CompositionEphemeralRange();
   PlainTextRange composition_plain_text_range =
       PlainTextRangeForEphemeralRange(range).second;
@@ -1762,6 +1786,46 @@ void InputMethodController::Trace(Visitor* visitor) const {
   visitor->Trace(composition_range_);
   visitor->Trace(active_edit_context_);
   ExecutionContextLifecycleObserver::Trace(visitor);
+}
+
+WebVector<ui::ImeTextSpan> InputMethodController::GetImeTextSpansAroundPosition(
+    unsigned position) const {
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+  Element* target = GetDocument().FocusedElement();
+  if (!target)
+    return WebVector<ui::ImeTextSpan>();
+
+  Element* editable = GetFrame()
+                          .Selection()
+                          .ComputeVisibleSelectionInDOMTreeDeprecated()
+                          .RootEditableElement();
+  if (!editable)
+    return WebVector<ui::ImeTextSpan>();
+
+  WebVector<ui::ImeTextSpan> ime_text_spans;
+  const EphemeralRange range =
+      PlainTextRange(position, position).CreateRange(*editable);
+  const DocumentMarkerVector& marker_list =
+      GetDocument().Markers().MarkersAroundPosition(
+          ToPositionInFlatTree(range.StartPosition()),
+          DocumentMarker::MarkerTypes::All());
+
+  for (DocumentMarker* marker : marker_list) {
+    if (marker->GetType() == DocumentMarker::MarkerType::kSuggestion) {
+      ImeTextSpan::Type type = ConvertSuggestionMarkerType(
+          To<SuggestionMarker>(marker)->GetSuggestionType());
+      if (ShouldGetImeTextSpansAroundPosition(type)) {
+        ime_text_spans.emplace_back(
+            ImeTextSpan(type, marker->StartOffset(), marker->EndOffset(),
+                        Color::kTransparent, ImeTextSpanThickness::kNone,
+                        ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
+                        Color::kTransparent)
+                .ToUiImeTextSpan());
+      }
+    }
+  }
+
+  return ime_text_spans;
 }
 
 }  // namespace blink

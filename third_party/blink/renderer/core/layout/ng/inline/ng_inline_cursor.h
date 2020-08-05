@@ -414,6 +414,28 @@ class CORE_EXPORT NGInlineCursor {
   bool TryToMoveToLastChild();
 
   //
+  // Moving across fragmentainers.
+  //
+  // When rooted at |LayoutBlockFlow|, |this| can move the current position
+  // across fragmentainers. Other root objects (e.g. |NGFragmentItems|) can
+  // contain only one fragmentainer that such cursors cannot move to different
+  // fragmentainers. See |CanMoveAcrossFragmentainer()|.
+  //
+  // However, |MoveToNext| etc. does not move the current position across
+  // fragmentainers. Use following functions when moving to different
+  // fragmentainers.
+
+  // Move to the first item of the first fragmentainer.
+  void MoveToFirstIncludingFragmentainer();
+
+  // Move to the next fragmentainer. Valid when |CanMoveAcrossFragmentainer|.
+  void MoveToNextFragmentainer();
+
+  // Same as |MoveToNext|, except this moves to the next fragmentainer if
+  // |Current| is at the end of a fragmentainer.
+  void MoveToNextIncludingFragmentainer();
+
+  //
   // Functions to enumerate fragments for a |LayoutObject|.
   //
 
@@ -451,10 +473,18 @@ class CORE_EXPORT NGInlineCursor {
       return root_paint_fragment_->Parent();
     return false;
   }
+  bool CanMoveAcrossFragmentainer() const {
+    return root_block_flow_ && IsItemCursor() && !IsDescendantsCursor();
+  }
+  bool CanUseLayoutObjectIndex() const;
 
   // True if the current position is a last line in inline block. It is error
   // to call at end or the current position is not line.
   bool IsLastLineInInlineBlock() const;
+
+  // Index conversions for |IsDescendantsCursor()|.
+  wtf_size_t SpanBeginItemIndex() const;
+  wtf_size_t SpanIndexFromItemIndex(unsigned index) const;
 
   // Make the current position points nothing, e.g. cursor moves over start/end
   // fragment, cursor moves to first/last child to parent has no children.
@@ -467,6 +497,9 @@ class CORE_EXPORT NGInlineCursor {
   void SetRoot(const NGFragmentItems& fragment_items, ItemsSpan items);
   void SetRoot(const NGPaintFragment& root_paint_fragment);
   void SetRoot(const LayoutBlockFlow& block_flow);
+  bool SetRoot(const LayoutBlockFlow& block_flow, wtf_size_t fragment_index);
+
+  bool TrySetRootFragmentItems();
 
   void MoveToItem(const ItemsSpan::iterator& iter);
   void MoveToNextItem();
@@ -480,13 +513,9 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToPreviousPaintFragment();
   void MoveToPreviousSiblingPaintFragment();
 
-  static ItemsSpan::iterator SlowFirstItemIteratorFor(
-      const LayoutObject& layout_object,
-      const ItemsSpan& items);
-  static wtf_size_t SlowFirstItemIndexFor(const LayoutObject& layout_object,
-                                          const ItemsSpan& items);
-  wtf_size_t SpanBeginItemIndex() const;
-  wtf_size_t SpanIndexFromItemIndex(unsigned index) const;
+  void SlowMoveToFirstFor(const LayoutObject& layout_object);
+  void SlowMoveToNextForSameLayoutObject(const LayoutObject& layout_object);
+  void SlowMoveToForIfNeeded(const LayoutObject& layout_object);
 
   // |MoveToNextForSameLayoutObject| that doesn't check |culled_inline_|.
   void MoveToNextForSameLayoutObjectExceptCulledInline();
@@ -507,7 +536,7 @@ class CORE_EXPORT NGInlineCursor {
     const LayoutObject* MoveToNext();
 
    private:
-    const LayoutObject* SetCurrent(const LayoutObject* child);
+    const LayoutObject* Find(const LayoutObject* child) const;
 
     const LayoutObject* current_object_ = nullptr;
     const LayoutInline* layout_inline_ = nullptr;
@@ -525,6 +554,14 @@ class CORE_EXPORT NGInlineCursor {
   const NGPaintFragment* root_paint_fragment_ = nullptr;
 
   CulledInlineTraversal culled_inline_;
+
+  // Used to traverse multiple |NGFragmentItems| when block fragmented.
+  const LayoutBlockFlow* root_block_flow_ = nullptr;
+  wtf_size_t fragment_index_ = 0;
+  wtf_size_t max_fragment_index_ = 0;
+
+  // Used only when |!CanUseLayoutObjectIndex|.
+  const LayoutObject* layout_object_to_slow_move_to_ = nullptr;
 
   friend class NGInlineBackwardCursor;
 };

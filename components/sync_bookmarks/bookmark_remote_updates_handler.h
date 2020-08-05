@@ -56,6 +56,11 @@ class BookmarkRemoteUpdatesHandler {
     return valid_updates_without_full_title_;
   }
 
+  static size_t ComputeChildNodeIndexForTest(
+      const bookmarks::BookmarkNode* parent,
+      const sync_pb::UniquePosition& unique_position,
+      const SyncedBookmarkTracker* bookmark_tracker);
+
  private:
   // Reorders incoming updates such that parent creation is before child
   // creation and child deletion is before parent deletion, and deletions should

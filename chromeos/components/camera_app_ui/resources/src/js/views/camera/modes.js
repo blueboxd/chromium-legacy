@@ -65,7 +65,7 @@ export let DoSwitchMode;
  * param {!PhotoResult} Captured photo result.
  * param {string} Name of the photo result to be saved as.
  * return {!Promise}
- * @typedef {function(PhotoResult, string): !Promise}
+ * @typedef {function(!PhotoResult, string): !Promise}
  */
 export let DoSavePhoto;
 
@@ -321,7 +321,7 @@ export class Modes {
     });
 
     [state.State.EXPERT, state.State.SAVE_METADATA].forEach(
-        (/** state.State */ s) => {
+        (/** !state.State */ s) => {
           state.addObserver(s, this.updateSaveMetadata_.bind(this));
         });
 
@@ -330,7 +330,7 @@ export class Modes {
   }
 
   /**
-   * @return {!Array<Mode>}
+   * @return {!Array<!Mode>}
    * @private
    */
   get allModeNames_() {
@@ -369,7 +369,7 @@ export class Modes {
    */
   getModeCandidates() {
     const tried = {};
-    const /** !Array<Mode> */ results = [];
+    const /** !Array<!Mode> */ results = [];
     let mode = this.allModeNames_.find(state.get);
     assert(mode !== undefined);
     while (!tried[mode]) {
@@ -408,7 +408,7 @@ export class Modes {
   /**
    * Gets capture intent for the given mode.
    * @param {!Mode} mode
-   * @return {cros.mojom.CaptureIntent} Capture intent for the given mode.
+   * @return {!cros.mojom.CaptureIntent} Capture intent for the given mode.
    */
   getCaptureIntent(mode) {
     return this.allModes_[mode].captureIntent;
@@ -421,7 +421,7 @@ export class Modes {
    *     the video device.
    */
   async getSupportedModes(deviceId) {
-    const /** !Array<Mode> */ supportedModes = [];
+    const /** !Array<!Mode> */ supportedModes = [];
     for (const mode of this.allModeNames_) {
       const obj = this.allModes_[mode];
       if (await obj.isSupported(deviceId)) {

@@ -71,12 +71,15 @@ junit_binary("password_check_junit_tests") {
 
   deps = [
     ":public_ui_java",
+    "internal:internal_factory_java",
     "internal:internal_java",
     "internal:public_ui_factory_java",
     "//base:base_java",
     "//base:base_junit_test_support",
+    "//chrome/browser/flags:java",
     "//chrome/browser/password_check/android:password_check_java_enums",
     "//chrome/browser/password_check/android:public_java",
+    "//chrome/test/android:chrome_java_test_support",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//ui/android:ui_full_java",

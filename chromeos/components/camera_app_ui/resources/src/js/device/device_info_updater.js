@@ -39,7 +39,7 @@ export class DeviceInfoUpdater {
 
     /**
      * Listeners to be called after new camera information is available.
-     * @type {!Array<function(!DeviceInfoUpdater): Promise>}
+     * @type {!Array<function(!DeviceInfoUpdater): !Promise>}
      * @private
      */
     this.deviceChangeListeners_ = [];
@@ -75,7 +75,7 @@ export class DeviceInfoUpdater {
     /**
      * Camera3DeviceInfo of all available video devices. Is null on HALv1 device
      * without mojo api support.
-     * @type {!Promise<?Array<Camera3DeviceInfo>>}
+     * @type {!Promise<?Array<!Camera3DeviceInfo>>}
      * @private
      */
     this.camera3DevicesInfo_ = this.queryMojoDevicesInfo_();
@@ -143,7 +143,7 @@ export class DeviceInfoUpdater {
   /**
    * Enumerates all available devices and gets their MediaDeviceInfo.
    * @return {!Promise<!Array<!MediaDeviceInfo>>}
-   * @throws {Error}
+   * @throws {!Error}
    * @private
    */
   async enumerateDevices_() {
@@ -167,7 +167,7 @@ export class DeviceInfoUpdater {
    * @return {!Promise<?Array<!Camera3DeviceInfo>>} Camera3DeviceInfo
    *     of available devices. Maybe null on HALv1 devices without supporting
    *     private mojo api.
-   * @throws {Error} Thrown when camera unplugging happens between enumerating
+   * @throws {!Error} Thrown when camera unplugging happens between enumerating
    *     devices and querying mojo APIs with current device info results.
    * @private
    */
@@ -191,7 +191,7 @@ export class DeviceInfoUpdater {
    * Requests to lock update of device information. This function is preserved
    * for device information reader to lock the update capability so as to ensure
    * getting consistent data between all information providers.
-   * @param {function(): Promise} callback Called after
+   * @param {function(): !Promise} callback Called after
    *     update capability is locked. Getting information from all providers in
    *     callback are guaranteed to be consistent.
    */
@@ -246,7 +246,7 @@ export class DeviceInfoUpdater {
    * @param {string} deviceId Device id of the video device.
    * @return {!Promise<!{photo: !ResolutionList, video: !ResolutionList}>}
    *     Supported photo and video resolutions.
-   * @throws {Error} May fail on HALv1 device without capability of querying
+   * @throws {!Error} May fail on HALv1 device without capability of querying
    *     supported resolutions.
    */
   async getDeviceResolutions(deviceId) {

@@ -538,7 +538,7 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
   // shown.
   if (show_virtual_keyboard || reply_to_request ||
       text_input_type_ != new_type || text_input_mode_ != new_mode ||
-      text_input_info_ != new_info ||
+      text_input_info_ != new_info || !new_info.ime_text_spans.empty() ||
       can_compose_inline_ != new_can_compose_inline ||
       always_hide_ime_ != always_hide_ime || vk_policy_ != new_vk_policy ||
       (new_vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL &&
@@ -552,6 +552,10 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params->flags = new_info.flags;
     params->vk_policy = new_vk_policy;
     params->last_vk_visibility_request = last_vk_visibility_request;
+    if (!new_info.ime_text_spans.empty()) {
+      params->ime_text_spans_info =
+          frame_widget->GetImeTextSpansInfo(new_info.ime_text_spans);
+    }
     if (frame_widget) {
       frame_widget->GetEditContextBoundsInWindow(
           &params->edit_context_control_bounds,

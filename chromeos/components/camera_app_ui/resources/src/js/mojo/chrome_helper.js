@@ -44,10 +44,10 @@ export class ChromeHelper {
 
   /**
    * Starts monitor monitoring system screen state of device.
-   * @param {function(chromeosCamera.mojom.ScreenState)} onChange Callback
+   * @param {function(!chromeosCamera.mojom.ScreenState)} onChange Callback
    *     called each time when device screen state changes with parameter of
    *     newly changed value.
-   * @return {!Promise<chromeosCamera.mojom.ScreenState>} Resolved to initial
+   * @return {!Promise<!chromeosCamera.mojom.ScreenState>} Resolved to initial
    *     system screen state.
    */
   async initScreenStateMonitor(onChange) {
@@ -88,7 +88,7 @@ export class ChromeHelper {
   /**
    * Checks return value from |handleCameraResult|.
    * @param {string} caller Caller identifier.
-   * @param {Promise<{isSuccess: boolean}>|null} value
+   * @param {!Promise<{isSuccess: boolean}>|null} value
    * @return {!Promise}
    */
   async checkReturn_(caller, value) {

@@ -668,6 +668,10 @@ std::string RenderFrameDevToolsAgentHost::GetOpenerId() {
   return opener ? opener->devtools_frame_token().ToString() : std::string();
 }
 
+bool RenderFrameDevToolsAgentHost::CanAccessOpener() {
+  return (frame_tree_node_ && frame_tree_node_->opener());
+}
+
 std::string RenderFrameDevToolsAgentHost::GetType() {
   if (web_contents() &&
       static_cast<WebContentsImpl*>(web_contents())->IsPortal()) {

@@ -174,6 +174,61 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 
 namespace WTF {
 
+namespace internal {
+
+// ConcurrentBucket is a wrapper for HashTable buckets for concurrent marking.
+// It is used to provide a snapshot view of the bucket key and guarantee
+// that the same key is used for checking empty/deleted buckets and tracing.
+template <typename T>
+class ConcurrentBucket {
+  using KeyExtractionCallback = void (*)(const T&, void*);
+
+ public:
+  using BucketType = T;
+
+  ConcurrentBucket(const T& t, KeyExtractionCallback extract_key) {
+    extract_key(t, &buf_);
+  }
+
+  // for HashTable that don't use KeyValuePair (i.e. *HashSets), the key
+  // and the value are the same.
+  const T* key() const { return reinterpret_cast<const T*>(&buf_); }
+  const T* value() const { return key(); }
+  const T* bucket() const { return key(); }
+
+ private:
+  // Alignment is needed for atomic accesses to |buf_| and to assure |buf_|
+  // can be accessed the same as objects of type T
+  alignas(std::max(alignof(T), sizeof(size_t))) char buf_[sizeof(T)];
+};
+
+template <typename Key, typename Value>
+class ConcurrentBucket<KeyValuePair<Key, Value>> {
+  using KeyExtractionCallback = void (*)(const KeyValuePair<Key, Value>&,
+                                         void*);
+
+ public:
+  using BucketType = ConcurrentBucket;
+
+  ConcurrentBucket(const KeyValuePair<Key, Value>& pair,
+                   KeyExtractionCallback extract_key)
+      : value_(&pair.value) {
+    extract_key(pair, &buf_);
+  }
+
+  const Key* key() const { return reinterpret_cast<const Key*>(&buf_); }
+  const Value* value() const { return value_; }
+  const ConcurrentBucket* bucket() const { return this; }
+
+ private:
+  // Alignment is needed for atomic accesses to |buf_| and to assure |buf_|
+  // can be accessed the same as objects of type Key
+  alignas(std::max(alignof(Key), sizeof(size_t))) char buf_[sizeof(Key)];
+  const Value* value_;
+};
+
+}  // namespace internal
+
 // This trace method is for tracing a HashTableBacking either through regular
 // tracing (via the relevant TraceTraits) or when finding a HashTableBacking
 // through conservative stack scanning (which will treat all references in the
@@ -182,6 +237,7 @@ template <WTF::WeakHandlingFlag WeakHandling, typename Table>
 struct TraceHashTableBackingInCollectionTrait {
   using Value = typename Table::ValueType;
   using Traits = typename Table::ValueTraits;
+  using Extractor = typename Table::ExtractorType;
 
   static void Trace(blink::Visitor* visitor, const void* self) {
     static_assert(IsTraceableInCollectionTrait<Traits>::value ||
@@ -199,15 +255,17 @@ struct TraceHashTableBackingInCollectionTrait {
       // IsEmptyOrDeletedBucket (check performed on a local copy instead
       // of directly on the bucket).
       if (is_concurrent) {
-        if (!HashTableHelper<Value, typename Table::ExtractorType,
-                             typename Table::KeyTraitsType>::
-                IsEmptyOrDeletedBucketSafe(array[i])) {
-          blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
-              visitor, &array[i]);
+        internal::ConcurrentBucket<Value> concurrent_bucket(
+            array[i], Extractor::ExtractSafe);
+        if (!HashTableHelper<Value, Extractor, typename Table::KeyTraitsType>::
+                IsEmptyOrDeletedBucketForKey(*concurrent_bucket.key())) {
+          blink::TraceCollectionIfEnabled<
+              WeakHandling,
+              typename internal::ConcurrentBucket<Value>::BucketType,
+              Traits>::Trace(visitor, concurrent_bucket.bucket());
         }
       } else {
-        if (!HashTableHelper<Value, typename Table::ExtractorType,
-                             typename Table::KeyTraitsType>::
+        if (!HashTableHelper<Value, Extractor, typename Table::KeyTraitsType>::
                 IsEmptyOrDeletedBucket(array[i])) {
           blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
               visitor, &array[i]);
@@ -237,12 +295,15 @@ struct TraceInCollectionTrait<kWeakHandling,
   }
 };
 
-// Trait for strong treatment of KeyValuePair. This is used to handle regular
-// KVP but also for strongification of otherwise weakly handled KVPs.
-template <typename Key, typename Value, typename Traits>
-struct TraceInCollectionTrait<kNoWeakHandling,
-                              KeyValuePair<Key, Value>,
-                              Traits> {
+// This trace method is for tracing a HashTableBacking either through regular
+// tracing (via the relevant TraceTraits) or when finding a HashTableBacking
+// through conservative stack scanning (which will treat all references in the
+// backing strongly).
+template <WTF::WeakHandlingFlag WeakHandling,
+          typename Key,
+          typename Value,
+          typename Traits>
+struct TraceKeyValuePairInCollectionTrait {
   using EphemeronHelper =
       blink::EphemeronKeyValuePair<Key,
                                    Value,
@@ -250,15 +311,17 @@ struct TraceInCollectionTrait<kNoWeakHandling,
                                    typename Traits::ValueTraits>;
 
   static void Trace(blink::Visitor* visitor,
-                    const KeyValuePair<Key, Value>& self) {
-    TraceImpl::Trace(visitor, self);
+                    const Key* key,
+                    const Value* value) {
+    TraceImpl::Trace(visitor, key, value);
   }
 
  private:
   struct TraceImplEphemerons {
     // Strongification of ephemerons, i.e., Weak/Strong and Strong/Weak.
     static void Trace(blink::Visitor* visitor,
-                      const KeyValuePair<Key, Value>& self) {
+                      const Key* key,
+                      const Value* value) {
       // Strongification of ephemerons, i.e., Weak/Strong and Strong/Weak.
       // The helper ensures that helper.key always refers to the weak part and
       // helper.value always refers to the dependent part.
@@ -266,12 +329,16 @@ struct TraceInCollectionTrait<kNoWeakHandling,
       // users to override visitation behavior. An example is creating a heap
       // snapshot, where it is useful to annotate values as being kept alive
       // from keys rather than the table.
-      EphemeronHelper helper(&self.key, &self.value);
-      // Strongify the weak part.
-      blink::TraceCollectionIfEnabled<
-          kNoWeakHandling, typename EphemeronHelper::KeyType,
-          typename EphemeronHelper::KeyTraits>::Trace(visitor, helper.key);
-      // Strongify the dependent part.
+      EphemeronHelper helper(key, value);
+      if (WeakHandling == kNoWeakHandling) {
+        // Strongify the weak part.
+        blink::TraceCollectionIfEnabled<
+            kNoWeakHandling, typename EphemeronHelper::KeyType,
+            typename EphemeronHelper::KeyTraits>::Trace(visitor, helper.key);
+      }
+      // The following passes on kNoWeakHandling for tracing value as the value
+      // callback is only invoked to keep value alive iff key is alive,
+      // following ephemeron semantics.
       visitor->TraceEphemeron(
           *helper.key, helper.value,
           blink::TraceCollectionIfEnabled<
@@ -282,15 +349,16 @@ struct TraceInCollectionTrait<kNoWeakHandling,
 
   struct TraceImplDefault {
     static void Trace(blink::Visitor* visitor,
-                      const KeyValuePair<Key, Value>& self) {
+                      const Key* key,
+                      const Value* value) {
       // Strongification of non-ephemeron KVP, i.e., Strong/Strong or Weak/Weak.
       // Order does not matter here.
       blink::TraceCollectionIfEnabled<
           kNoWeakHandling, Key, typename Traits::KeyTraits>::Trace(visitor,
-                                                                   &self.key);
+                                                                   key);
       blink::TraceCollectionIfEnabled<
-          kNoWeakHandling, Value,
-          typename Traits::ValueTraits>::Trace(visitor, &self.value);
+          kNoWeakHandling, Value, typename Traits::ValueTraits>::Trace(visitor,
+                                                                       value);
     }
   };
 
@@ -301,14 +369,22 @@ struct TraceInCollectionTrait<kNoWeakHandling,
       TraceImplDefault>::type;
 };
 
+// Trait for strong treatment of KeyValuePair. This is used to handle regular
+// KVP but also for strongification of otherwise weakly handled KVPs.
+template <typename Key, typename Value, typename Traits>
+struct TraceInCollectionTrait<kNoWeakHandling,
+                              KeyValuePair<Key, Value>,
+                              Traits> {
+  static void Trace(blink::Visitor* visitor,
+                    const KeyValuePair<Key, Value>& self) {
+    TraceKeyValuePairInCollectionTrait<kNoWeakHandling, Key, Value,
+                                       Traits>::Trace(visitor, &self.key,
+                                                      &self.value);
+  }
+};
+
 template <typename Key, typename Value, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
-  using EphemeronHelper =
-      blink::EphemeronKeyValuePair<Key,
-                                   Value,
-                                   typename Traits::KeyTraits,
-                                   typename Traits::ValueTraits>;
-
   static bool IsAlive(const blink::LivenessBroker& info,
                       const KeyValuePair<Key, Value>& self) {
     // Needed for Weak/Weak, Strong/Weak (reverse ephemeron), and Weak/Strong
@@ -324,15 +400,37 @@ struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
 
   static void Trace(blink::Visitor* visitor,
                     const KeyValuePair<Key, Value>& self) {
-    EphemeronHelper helper(&self.key, &self.value);
-    // The following passes on kNoWeakHandling for tracing value as the value
-    // callback is only invoked to keep value alive iff key is alive, following
-    // ephemeron semantics.
-    visitor->TraceEphemeron(
-        *helper.key, helper.value,
-        blink::TraceCollectionIfEnabled<
-            kNoWeakHandling, typename EphemeronHelper::ValueType,
-            typename EphemeronHelper::ValueTraits>::Trace);
+    TraceKeyValuePairInCollectionTrait<kWeakHandling, Key, Value,
+                                       Traits>::Trace(visitor, &self.key,
+                                                      &self.value);
+  }
+};
+
+template <typename Key, typename Value, typename Traits>
+struct TraceInCollectionTrait<
+    kNoWeakHandling,
+    internal::ConcurrentBucket<KeyValuePair<Key, Value>>,
+    Traits> {
+  static void Trace(
+      blink::Visitor* visitor,
+      const internal::ConcurrentBucket<KeyValuePair<Key, Value>>& self) {
+    TraceKeyValuePairInCollectionTrait<kNoWeakHandling, Key, Value,
+                                       Traits>::Trace(visitor, self.key(),
+                                                      self.value());
+  }
+};
+
+template <typename Key, typename Value, typename Traits>
+struct TraceInCollectionTrait<
+    kWeakHandling,
+    internal::ConcurrentBucket<KeyValuePair<Key, Value>>,
+    Traits> {
+  static void Trace(
+      blink::Visitor* visitor,
+      const internal::ConcurrentBucket<KeyValuePair<Key, Value>>& self) {
+    TraceKeyValuePairInCollectionTrait<kWeakHandling, Key, Value,
+                                       Traits>::Trace(visitor, self.key(),
+                                                      self.value());
   }
 };
 

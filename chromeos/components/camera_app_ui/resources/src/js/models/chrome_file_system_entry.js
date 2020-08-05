@@ -138,8 +138,8 @@ export class ChromeDirectoryEntry extends ChromeFileSystemEntry {
 
     /**
      * @type {{
-     *   getFile: function(string, Object): !Promise,
-     *   getDirectory: function(string, Object): !Promise,
+     *   getFile: function(string, !Object): !Promise,
+     *   getDirectory: function(string, !Object): !Promise,
      * }}
      * @private
      */

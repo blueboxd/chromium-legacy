@@ -29,6 +29,15 @@ class FamilyLinkNoticeView {
 
   // Unbinds the screen from the view.
   virtual void Unbind() = 0;
+
+  // Set if account is a new gaia account user just created.
+  virtual void SetIsNewGaiaAccount(bool value) = 0;
+
+  // Set email to be displayed.
+  virtual void SetDisplayEmail(const std::string& value) = 0;
+
+  // Set enterprise domain to be displayed.
+  virtual void SetDomain(const std::string& value) = 0;
 };
 
 class FamilyLinkNoticeScreenHandler : public FamilyLinkNoticeView,
@@ -48,6 +57,9 @@ class FamilyLinkNoticeScreenHandler : public FamilyLinkNoticeView,
   void Show() override;
   void Bind(FamilyLinkNoticeScreen* screen) override;
   void Unbind() override;
+  void SetIsNewGaiaAccount(bool value) override;
+  void SetDisplayEmail(const std::string& value) override;
+  void SetDomain(const std::string& value) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

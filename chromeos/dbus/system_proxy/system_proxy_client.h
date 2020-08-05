@@ -23,12 +23,14 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
  public:
   using SetAuthenticationDetailsCallback = base::OnceCallback<void(
       const system_proxy::SetAuthenticationDetailsResponse& response)>;
-  using ShutDownDaemonCallback =
-      base::OnceCallback<void(const system_proxy::ShutDownResponse& response)>;
   using WorkerActiveCallback = base::RepeatingCallback<void(
       const system_proxy::WorkerActiveSignalDetails& details)>;
   using AuthenticationRequiredCallback = base::RepeatingCallback<void(
       const system_proxy::AuthenticationRequiredDetails& details)>;
+  using ClearUserCredentialsCallback = base::OnceCallback<void(
+      const system_proxy::ClearUserCredentialsResponse& response)>;
+  using ShutDownProcessCallback =
+      base::OnceCallback<void(const system_proxy::ShutDownResponse& response)>;
 
   // Interface with testing functionality. Accessed through GetTestInterface(),
   // only implemented in the fake implementation.
@@ -36,8 +38,10 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
    public:
     // Returns how many times |SetAuthenticationDetails| was called.
     virtual int GetSetAuthenticationDetailsCallCount() const = 0;
-    // Returns how many times |ShutDownDaemon| was called.
+    // Returns how many times |ShutDownProcess| was called.
     virtual int GetShutDownCallCount() const = 0;
+    // Returns how many times |ClearUserCredentials| was called.
+    virtual int GetClearUserCredentialsCount() const = 0;
     // Returns the content of the last request sent to the System-proxy service
     // to set authentication details.
     virtual system_proxy::SetAuthenticationDetailsRequest
@@ -75,9 +79,15 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
       const system_proxy::SetAuthenticationDetailsRequest& request,
       SetAuthenticationDetailsCallback callback) = 0;
 
-  // When receiving a shut-down call, System-proxy will schedule a shut-down
-  // task and reply. |callback| is called when the daemon starts to shut-down.
-  virtual void ShutDownDaemon(ShutDownDaemonCallback callback) = 0;
+  virtual void ClearUserCredentials(
+      const system_proxy::ClearUserCredentialsRequest& request,
+      ClearUserCredentialsCallback callback) = 0;
+
+  // When receiving a shut down call, System-proxy will schedule a shut down
+  // task and reply. |callback| is called when the daemon or one of the
+  // processes starts to shut down.
+  virtual void ShutDownProcess(const system_proxy::ShutDownRequest& request,
+                               ShutDownProcessCallback callback) = 0;
 
   // Returns an interface for testing (fake only), or returns nullptr.
   virtual TestInterface* GetTestInterface() = 0;

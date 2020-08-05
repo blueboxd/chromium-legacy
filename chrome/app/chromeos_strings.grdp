@@ -817,6 +817,26 @@
     Please retry. If you see this error again please contact your support representative.
   </message>
 
+  <!-- Strings for family link notice screen -->
+  <message name="IDS_LOGIN_FAMILY_LINK_NOTICE_SCREEN_TITLE" desc="Title of the screen which tells user they can add parental control later.">
+    Add parental controls after setup
+  </message>
+  <message name="IDS_LOGIN_FAMILY_LINK_NOTICE_SCREEN_NEW_ACCOUNT_SUBTITLE" desc="Title of the screen which tells user they can add parental control later after they create a new account for their child.">
+    For older children, you can add parental controls once you finish setup. You'll find information on parental controls in the Explore app.
+  </message>
+  <message name="IDS_LOGIN_FAMILY_LINK_NOTICE_SCREEN_EXISTING_ACCOUNT_SUBTITLE" desc="Title of the screen which tells user they can add parental control later after they sign in with an existing account for their child.">
+    You child's account isn't set up for Family Link parental controls. You can add parental controls once you finish setup. You'll find information on parental controls in the Explore app.
+  </message>
+  <message name="IDS_LOGIN_FAMILY_LINK_NOTICE_SCREEN_NOT_ELIGIBLE_TITLE" desc="Title of the screen which tells user the account is not eligible for parental controls.">
+    This account isn't eligible for parental controls
+  </message>
+  <message name="IDS_LOGIN_FAMILY_LINK_NOTICE_SCREEN_NOT_ELIGIBLE_SUBTITLE" desc="Subtitle of the screen which tells user the account is not eligible for parental controls.">
+    <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> is already being managed by <ph name="DOMAIN">$2<ex>google.com</ex></ph>. To use parental controls with a different Google Account, sign out after setup, then select "Add person" on the sign-in screen.
+  </message>
+  <message name="IDS_LOGIN_FAMILY_LINK_NOTICE_SCREEN_CONTINUE_BUTTON" desc="Continue button on family link notice screen.">
+    Continue
+  </message>
+
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
     You're signed in!
   </message>

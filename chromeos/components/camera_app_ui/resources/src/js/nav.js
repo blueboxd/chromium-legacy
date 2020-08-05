@@ -88,7 +88,7 @@ function isShown(index) {
  * Shows the view indexed in the stacked views and activates the view only if
  * it becomes the topmost visible view.
  * @param {number} index Index of the view.
- * @return {View} View shown.
+ * @return {!View} View shown.
  */
 function show(index) {
   const view = allViews[index];
@@ -138,7 +138,7 @@ function hide(index) {
 
 /**
  * Finds the view by its name in the stacked views.
- * @param {ViewName} name View name.
+ * @param {!ViewName} name View name.
  * @return {number} Index of the view found; otherwise, -1.
  */
 function findIndex(name) {
@@ -148,7 +148,7 @@ function findIndex(name) {
 /**
  * Opens a navigation session of the view; shows the view before entering it and
  * hides the view after leaving it for the ended session.
- * @param {ViewName} name View name.
+ * @param {!ViewName} name View name.
  * @param {...*} args Optional rest parameters for entering the view.
  * @return {!Promise<*>} Promise for the operation or result.
  */
@@ -161,7 +161,7 @@ export function open(name, ...args) {
 
 /**
  * Closes the current navigation session of the view by leaving it.
- * @param {ViewName} name View name.
+ * @param {!ViewName} name View name.
  * @param {*=} condition Optional condition for leaving the view.
  * @return {boolean} Whether successfully leaving the view or not.
  */
@@ -172,7 +172,7 @@ export function close(name, condition) {
 
 /**
  * Handles key pressed event.
- * @param {Event} event Key press event.
+ * @param {!Event} event Key press event.
  */
 export function onKeyPressed(event) {
   const key = util.getShortcutIdentifier(event);

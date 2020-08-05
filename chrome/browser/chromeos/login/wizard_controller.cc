@@ -1821,14 +1821,10 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
 void WizardController::PrepareFirstRunPrefs() {
   // Showoff starts in parallel to OOBE onboarding. We need to store the prefs
   // early to make sure showoff has the correct data when launched.
-
-  // TODO(crbug.com/1101318): check difference between profile->IsChild(),
-  // user_manager->GetActiveUser()->IsChild() and
-  // user_manager->GetActiveUser()->GetType()
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
   bool shouldShowParentalControl =
-      wizard_context_->sign_in_as_child && !profile->IsChild();
+      wizard_context_->sign_in_as_child && !profile->IsChild() &&
+      !profile->GetProfilePolicyConnector()->IsManaged();
   profile->GetPrefs()->SetBoolean(prefs::kHelpAppShouldShowParentalControl,
                                   shouldShowParentalControl);
 }

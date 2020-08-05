@@ -13,6 +13,31 @@
     padding-inline-start: 9px;
   }
 
+  :host(:focus) {
+    border-color: rgb(95, 99, 104);
+    outline: none;
+  }
+
+  :host([is-selected]) {
+    border-color: rgb(66, 133, 244);
+  }
+
+  :host([is-selected]) > #done {
+    display: flex;
+  }
+
+  :host([is-selected]) > #name {
+    color: rgb(26, 115, 232);
+  }
+
+  #done {
+    color: rgb(26, 115, 232);
+    display: none;
+    flex-shrink: 0;
+    height: 17px;
+    width: 17px;
+  }
+
   #icon {
     --nearby-device-icon-size: 15px;
     flex-shrink: 0;
@@ -36,3 +61,4 @@
 <nearby-device-icon id="icon" share-target="[[shareTarget]]">
 </nearby-device-icon>
 <div id="name">[[shareTarget.name]]</div>
+<iron-icon id="done" icon="nearby-share:done"></iron-icon>

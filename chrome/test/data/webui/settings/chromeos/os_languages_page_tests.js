@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {LanguagesBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {CrSettingsPrefs, Router} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {getFakeLanguagePrefs} from '../fake_language_settings_private.m.js'
+// #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
+// #import {TestLanguagesBrowserProxy} from './test_os_languages_browser_proxy.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {fakeDataBind} from '../../test_util.m.js';
+// clang-format on
+
 cr.define('os_languages_page_tests', function() {
   /** @enum {string} */
   const TestNames = {
@@ -128,7 +140,7 @@ cr.define('os_languages_page_tests', function() {
        */
       function assertRestartButtonActiveState(shouldBeActive) {
         const activeElement = getActiveElement();
-        isRestartButtonActive =
+        const isRestartButtonActive =
             activeElement && (activeElement.id === 'restartButton');
         assertEquals(isRestartButtonActive, shouldBeActive);
       }
@@ -329,5 +341,6 @@ cr.define('os_languages_page_tests', function() {
     });
   });
 
+  // #cr_define_end
   return {TestNames: TestNames};
 });

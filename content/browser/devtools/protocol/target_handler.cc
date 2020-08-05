@@ -85,6 +85,7 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
           .SetUrl(host->GetURL().spec())
           .SetType(host->GetType())
           .SetAttached(host->IsAttached())
+          .SetCanAccessOpener(host->CanAccessOpener())
           .Build();
   if (!host->GetOpenerId().empty())
     target_info->SetOpenerId(host->GetOpenerId());

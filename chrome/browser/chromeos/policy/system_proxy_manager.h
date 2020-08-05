@@ -50,13 +50,21 @@ class SystemProxyManager {
   std::string SystemServicesProxyPacString() const;
   void StartObservingPrimaryProfilePrefs(Profile* profile);
   void StopObservingPrimaryProfilePrefs();
+  // If System-proxy is enabled, it will send a request via D-Bus to clear the
+  // user's proxy credentials cached by the local proxy workers. System-proxy
+  // requests proxy credentials from the browser by sending an
+  // |AuthenticationRequired| D-Bus signal.
+  void ClearUserCredentials();
 
+  void SetSystemProxyEnabledForTest(bool enabled);
   void SetSystemServicesProxyUrlForTest(const std::string& local_proxy_url);
 
  private:
   void OnSetAuthenticationDetails(
       const system_proxy::SetAuthenticationDetailsResponse& response);
-  void OnDaemonShutDown(const system_proxy::ShutDownResponse& response);
+  void OnShutDownProcess(const system_proxy::ShutDownResponse& response);
+  void OnClearUserCredentials(
+      const system_proxy::ClearUserCredentialsResponse& response);
 
   void OnKerberosEnabledChanged();
   void OnKerberosAccountChanged();

@@ -12,7 +12,7 @@ import {View} from './view.js';
  */
 export class Dialog extends View {
   /**
-   * @param {ViewName} name View name of the dialog.
+   * @param {!ViewName} name View name of the dialog.
    */
   constructor(name) {
     super(name, true);

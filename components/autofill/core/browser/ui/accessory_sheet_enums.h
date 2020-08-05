@@ -37,6 +37,7 @@ enum class AccessoryAction {
   MANAGE_ADDRESSES = 4,
   GENERATE_PASSWORD_MANUAL = 5,
   TOGGLE_SAVE_PASSWORDS = 6,
+  USE_OTHER_PASSWORD = 7,
   COUNT,
 };
 

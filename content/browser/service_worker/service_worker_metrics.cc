@@ -122,6 +122,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_PERIODIC_SYNC";
     case ServiceWorkerMetrics::EventType::CONTENT_DELETE:
       return "_CONTENT_DELETE";
+    case ServiceWorkerMetrics::EventType::PUSH_SUBSCRIPTION_CHANGE:
+      return "_PUSH_SUBSCRIPTION_CHANGE";
   }
   return "_UNKNOWN";
 }
@@ -180,6 +182,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Periodic Sync";
     case EventType::CONTENT_DELETE:
       return "Content Delete";
+    case EventType::PUSH_SUBSCRIPTION_CHANGE:
+      return "Push Subscription Change";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -416,7 +420,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::CONTENT_DELETE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ContentDeleteEvent.Time", time);
       break;
-
+    case EventType::PUSH_SUBSCRIPTION_CHANGE:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.PushSubscriptionChangeEvent.Time", time);
+      break;
     case EventType::NAVIGATION_HINT:
     // The navigation hint should not be sent as an event.
     case EventType::UNKNOWN:

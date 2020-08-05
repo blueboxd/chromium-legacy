@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -32,6 +33,9 @@ InspectorCSSCascade::InspectorCSSCascade(Element* element,
 
   matched_rules_ = style_resolver.PseudoCSSRulesForElement(
       element_, element_pseudo_id, StyleResolver::kAllCSSRules);
+
+  if (element_pseudo_id)
+    return;
 
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kAfterLastInternalPseudoId;
@@ -56,9 +60,7 @@ InspectorCSSCascade::InspectorCSSCascade(Element* element,
   }
 
   // Parent rules.
-  // TODO (alexrudenko): Use the flat-tree parent (FlatTreeTraversal::Parent)
-  // (not ParentOrShadowHostElement).
-  Element* parent_element = element_->ParentOrShadowHostElement();
+  Element* parent_element = FlatTreeTraversal::ParentElement(*element);
   while (parent_element) {
     RuleIndexList* parent_matched_rules = style_resolver.CssRulesForElement(
         parent_element, StyleResolver::kAllCSSRules);
@@ -68,7 +70,7 @@ InspectorCSSCascade::InspectorCSSCascade(Element* element,
     match->matched_rules = parent_matched_rules;
     match->pseudo_id = kPseudoIdNone;
     parent_rules_.push_back(match);
-    parent_element = parent_element->ParentOrShadowHostElement();
+    parent_element = FlatTreeTraversal::ParentElement(*parent_element);
   }
 }
 

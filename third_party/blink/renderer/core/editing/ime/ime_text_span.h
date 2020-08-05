@@ -84,6 +84,8 @@ class CORE_EXPORT ImeTextSpan {
   bool InterimCharSelection() const { return interim_char_selection_; }
   const Vector<String>& Suggestions() const { return suggestions_; }
 
+  ui::ImeTextSpan ToUiImeTextSpan();
+
  private:
   Type type_;
   unsigned start_offset_;

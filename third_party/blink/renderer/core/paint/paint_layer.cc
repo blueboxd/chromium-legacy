@@ -3465,7 +3465,6 @@ void PaintLayer::SetSelfNeedsRepaint() {
 }
 
 void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
-
   PaintLayer* layer = this;
   while (true) {
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -3499,8 +3498,16 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
       container = owner->EnclosingLayer();
     }
 
-    if (container->descendant_needs_repaint_)
+    // If the container already needs descendants repaint, break out of the
+    // loop. Also, if the layer doesn't need painting itself (which means we're
+    // propagating a bit from its children) and it blocks child painting via
+    // display lock, then stop propagating the dirty bit.
+    if (container->descendant_needs_repaint_ ||
+        (!layer->SelfNeedsRepaint() &&
+         layer->GetLayoutObject().PaintBlockedByDisplayLock(
+             DisplayLockLifecycleTarget::kChildren))) {
       break;
+    }
 
     container->descendant_needs_repaint_ = true;
     layer = container;
@@ -3508,9 +3515,16 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
 }
 
 void PaintLayer::ClearNeedsRepaintRecursively() {
+  self_needs_repaint_ = false;
+
+  // Don't clear dirty bits in a display-locked subtree.
+  if (GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren)) {
+    return;
+  }
+
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->ClearNeedsRepaintRecursively();
-  self_needs_repaint_ = false;
   descendant_needs_repaint_ = false;
 }
 

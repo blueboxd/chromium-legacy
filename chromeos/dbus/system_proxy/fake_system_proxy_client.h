@@ -24,10 +24,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   void SetAuthenticationDetails(
       const system_proxy::SetAuthenticationDetailsRequest& request,
       SetAuthenticationDetailsCallback callback) override;
-  void ShutDownDaemon(ShutDownDaemonCallback callback) override;
   void SetWorkerActiveSignalCallback(WorkerActiveCallback callback) override;
   void SetAuthenticationRequiredSignalCallback(
       AuthenticationRequiredCallback callback) override;
+  void ClearUserCredentials(
+      const system_proxy::ClearUserCredentialsRequest& request,
+      ClearUserCredentialsCallback callback) override;
+  void ShutDownProcess(const system_proxy::ShutDownRequest& request,
+                       ShutDownProcessCallback callback) override;
+
   void ConnectToWorkerSignals() override;
 
   SystemProxyClient::TestInterface* GetTestInterface() override;
@@ -35,6 +40,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   // SystemProxyClient::TestInterface implementation.
   int GetSetAuthenticationDetailsCallCount() const override;
   int GetShutDownCallCount() const override;
+  int GetClearUserCredentialsCount() const override;
   system_proxy::SetAuthenticationDetailsRequest
   GetLastAuthenticationDetailsRequest() const override;
   void SendAuthenticationRequiredSignal(
@@ -44,6 +50,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   system_proxy::SetAuthenticationDetailsRequest last_set_auth_details_request_;
   int set_credentials_call_count_ = 0;
   int shut_down_call_count_ = 0;
+  int clear_user_credentials_call_count_ = 0;
   bool connect_to_worker_signals_called_ = false;
   // Signal callbacks.
   SystemProxyClient::WorkerActiveCallback worker_active_callback_;

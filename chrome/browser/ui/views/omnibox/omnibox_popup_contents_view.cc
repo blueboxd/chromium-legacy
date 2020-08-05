@@ -268,7 +268,10 @@ void OmniboxPopupContentsView::OnSelectionChanged(
     return;
   }
 
-  if (old_selection.line != OmniboxPopupModel::kNoMatch) {
+  // Do not invalidate the same line twice, in order to avoid redundant
+  // accessibility events.
+  if (old_selection.line != OmniboxPopupModel::kNoMatch &&
+      old_selection.line != new_selection.line) {
     InvalidateLine(old_selection.line);
   }
 
@@ -465,10 +468,15 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 
 void OmniboxPopupContentsView::FireAXEventsForNewActiveDescendant(
     View* descendant_view) {
-  if (descendant_view)
+  if (descendant_view) {
     descendant_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
                                               true);
-  NotifyAccessibilityEvent(ax::mojom::Event::kActiveDescendantChanged, true);
+  }
+  // Selected children changed is fired on the popup.
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
+  // Active descendant changed is fired on the focused text field.
+  omnibox_view_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kActiveDescendantChanged, true);
 }
 
 void OmniboxPopupContentsView::OnWidgetBoundsChanged(

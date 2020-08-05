@@ -372,9 +372,6 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
       NGFragment(writing_mode_, result->PhysicalFragment()).InlineSize(),
       legend_margins, Style(), BorderScrollbarPadding().inline_start,
       ChildAvailableSize().inline_size);
-
-  // NOTE: For painting purposes, this must be kept in sync with:
-  // NGFieldsetPainter::PaintFieldsetDecorationBackground
   LogicalOffset legend_offset = {legend_inline_start, block_offset};
 
   container_builder_.AddResult(*result, legend_offset);

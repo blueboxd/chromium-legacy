@@ -566,6 +566,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       return should_prioritize_loading_with_compositing_;
     }
 
+    bool& should_freeze_compositor_task_queue() {
+      return should_freeze_compositor_task_queue_;
+    }
+    bool should_freeze_compositor_task_queue() const {
+      return should_freeze_compositor_task_queue_;
+    }
+
     base::sequence_manager::TaskQueue::QueuePriority& compositor_priority() {
       return compositor_priority_;
     }
@@ -591,6 +598,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
              frozen_when_backgrounded_ == other.frozen_when_backgrounded_ &&
              should_prioritize_loading_with_compositing_ ==
                  other.should_prioritize_loading_with_compositing_ &&
+             should_freeze_compositor_task_queue_ ==
+                 other.should_freeze_compositor_task_queue_ &&
              compositor_priority_ == other.compositor_priority_ &&
              find_in_page_priority_ == other.find_in_page_priority_ &&
              use_case_ == other.use_case_;
@@ -603,6 +612,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool should_disable_throttling_;
     bool frozen_when_backgrounded_;
     bool should_prioritize_loading_with_compositing_;
+    bool should_freeze_compositor_task_queue_{false};
 
     // Priority of task queues belonging to the compositor class (Check
     // MainThread::QueueClass).
@@ -796,6 +806,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void AsValueIntoLocked(base::trace_event::TracedValue*,
                          base::TimeTicks optional_now) const;
+
+  bool AllPagesFrozen() const;
 
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member

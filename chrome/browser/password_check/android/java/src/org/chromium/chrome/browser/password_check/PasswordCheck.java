@@ -16,21 +16,31 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     interface Observer {
         /**
          * Gets invoked when the compromised credentials are fetched from the disk.
-         * After this call, {@link getCompromisedCredentialsCount} returns a valid value.
+         * After this call, {@link #getCompromisedCredentialsCount} returns a valid value.
          */
         void onCompromisedCredentialsFetchCompleted();
 
         /**
          * Gets invoked when the saved passwords are fetched from the disk.
-         * After this call, {@link getSavedPasswordsCount} returns a valid value.
+         * After this call, {@link #getSavedPasswordsCount} returns a valid value.
          */
         void onSavedPasswordsFetchCompleted();
 
         /**
          * Gets invoked once the password check stops running.
-         * @param status A {@link CheckStatus} enum value.
+         * @param status A {@link PasswordCheckUIStatus} enum value.
          */
         void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status);
+
+        /**
+         * Invoked whenever a running check finds another compromised credential.
+         * @param originUrl The origin of the newly found compromised credential.
+         * @param username The username of the newly found compromised credential.
+         * @param password The password of the newly found compromised credential.
+         * @param hasScript True iff a script can be applied to the newly found credential.
+         */
+        void onCompromisedCredentialFound(
+                String originUrl, String username, String password, boolean hasScript);
     }
 
     /**
@@ -48,9 +58,9 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     /**
      * Adds a new observer to the list of observers
      * @param obs An {@link Observer} implementation instance.
-     * @param callImmediatelyIfReady Invokes {@link onCompromisedCredentialsFetchCompleted} and
-     *   {@link onSavedPasswordsFetchCompleted} on the observer if the corresponding data is already
-     *   fetched when this is true.
+     * @param callImmediatelyIfReady Invokes {@link Observer#onCompromisedCredentialsFetchCompleted}
+     *   and {@link Observer#onSavedPasswordsFetchCompleted} on the observer if the corresponding
+     *   data is already fetched when this is true.
      */
     void addObserver(Observer obs, boolean callImmediatelyIfReady);
 
@@ -62,13 +72,21 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
 
     /**
      * @return The latest available number of compromised passwords. If this is invoked before
-     * {@link onCompromisedCredentialsFetchCompleted}, the returned value is likely invalid.
+     * {@link Observer#onCompromisedCredentialsFetchCompleted}, the returned value is likely
+     * invalid.
      */
     int getCompromisedCredentialsCount();
 
     /**
+     * @return The latest available compromised passwords. If this is invoked before
+     * {@link Observer#onCompromisedCredentialsFetchCompleted}, the returned array is likely
+     * incomplete.
+     */
+    CompromisedCredential[] getCompromisedCredentials();
+
+    /**
      * @return The latest available number of all saved passwords. If this is invoked before
-     * {@link onSavedPasswordsFetchCompleted}, the returned value is likely invalid.
+     * {@link Observer#onSavedPasswordsFetchCompleted}, the returned value is likely invalid.
      */
     int getSavedPasswordsCount();
 

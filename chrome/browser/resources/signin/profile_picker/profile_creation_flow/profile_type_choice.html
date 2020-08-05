@@ -34,6 +34,19 @@
     width: 100%;
   }
 
+  #bannerContainer > img {
+    --avatar-size: 100px;
+    border: 2px solid var(--md-background-color);
+    border-radius: 50%;
+    bottom: calc(var(--avatar-size)/-2);
+    height: var(--avatar-size);
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    width: var(--avatar-size);
+  }
+
   #notNowButton {
     background: none;
     border: none;
@@ -65,6 +78,7 @@
         on-click="onTapBack_" aria-label="$i18n{backButtonLabel}">
     </cr-icon-button>
     <div id="banner"></div>
+    <img src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
 </div>
 <div class="title-container">
   <h2>$i18n{profileTypeChoiceTitle}</h2>

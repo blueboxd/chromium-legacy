@@ -6,10 +6,12 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_options.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/scoped_scheduler_overrider.h"
 
 namespace blink {
@@ -38,7 +40,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   }
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override {
-    return nullptr;
+    return task_runner_;
   }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
@@ -83,9 +85,15 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   void RunIdleTask() { std::move(idle_task_).Run(base::TimeTicks()); }
   bool HasIdleTask() const { return !!idle_task_; }
 
+  void AdvanceTimeAndRun(base::TimeDelta delta) {
+    task_runner_->AdvanceTimeAndRun(delta);
+  }
+
  private:
   bool should_yield_;
   Thread::IdleTask idle_task_;
+  scoped_refptr<scheduler::FakeTaskRunner> task_runner_ =
+      base::MakeRefCounted<scheduler::FakeTaskRunner>();
 
   DISALLOW_COPY_AND_ASSIGN(MockScriptedIdleTaskControllerScheduler);
 };
@@ -144,6 +152,38 @@ TEST_F(ScriptedIdleTaskControllerTest, DontRunCallbackWhenAskedToYield) {
 
   // The idle task should have been reposted.
   EXPECT_TRUE(scheduler.HasIdleTask());
+}
+
+TEST_F(ScriptedIdleTaskControllerTest, RunCallbacksAsyncWhenUnpaused) {
+  MockScriptedIdleTaskControllerScheduler scheduler(ShouldYield::YIELD);
+  ScopedSchedulerOverrider scheduler_overrider(&scheduler);
+  ScriptedIdleTaskController* controller =
+      ScriptedIdleTaskController::Create(execution_context_);
+
+  // Register an idle task with a deadline.
+  Persistent<MockIdleTask> idle_task(MakeGarbageCollected<MockIdleTask>());
+  IdleRequestOptions* options = IdleRequestOptions::Create();
+  options->setTimeout(1);
+  int id = controller->RegisterCallback(idle_task, options);
+  EXPECT_NE(0, id);
+
+  // Hitting the deadline while the frame is paused shouldn't cause any tasks to
+  // run.
+  controller->ContextLifecycleStateChanged(mojom::FrameLifecycleState::kPaused);
+  EXPECT_CALL(*idle_task, invoke(testing::_)).Times(0);
+  scheduler.AdvanceTimeAndRun(base::TimeDelta::FromMilliseconds(1));
+  testing::Mock::VerifyAndClearExpectations(idle_task);
+
+  // Even if we unpause, no tasks should run immediately.
+  EXPECT_CALL(*idle_task, invoke(testing::_)).Times(0);
+  controller->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kRunning);
+  testing::Mock::VerifyAndClearExpectations(idle_task);
+
+  // Idle callback should have been scheduled as an asynchronous task.
+  EXPECT_CALL(*idle_task, invoke(testing::_)).Times(1);
+  scheduler.AdvanceTimeAndRun(base::TimeDelta::FromMilliseconds(0));
+  testing::Mock::VerifyAndClearExpectations(idle_task);
 }
 
 }  // namespace blink

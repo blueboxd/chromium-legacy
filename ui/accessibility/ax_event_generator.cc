@@ -47,6 +47,19 @@ void RemoveEvent(std::set<AXEventGenerator::EventParams>* node_events,
   }
 }
 
+// If a node toggled its ignored state, don't also fire children-changed because
+// platforms likely will do that in response to ignored-changed.
+// Suppress name- and description-changed because those can be emitted as a side
+// effect of calculating alternative text values for a newly-displayed object.
+// Ditto for text attributes such as foreground and background colors.
+void RemoveEventsDueToIgnoredChanged(
+    std::set<AXEventGenerator::EventParams>* node_events) {
+  RemoveEvent(node_events, AXEventGenerator::Event::CHILDREN_CHANGED);
+  RemoveEvent(node_events, AXEventGenerator::Event::DESCRIPTION_CHANGED);
+  RemoveEvent(node_events, AXEventGenerator::Event::NAME_CHANGED);
+  RemoveEvent(node_events, AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED);
+}
+
 }  // namespace
 
 AXEventGenerator::EventParams::EventParams(
@@ -665,7 +678,51 @@ bool AXEventGenerator::ShouldFireLoadEvents(AXNode* node) {
          data.relative_bounds.bounds.height();
 }
 
+void AXEventGenerator::TrimEventsDueToAncestorIgnoredChanged(
+    AXNode* node,
+    std::map<AXNode*, bool>& ancestor_ignored_changed_map) {
+  DCHECK(node);
+
+  // Recursively compute and cache ancestor ignored changed results in
+  // |ancestor_ignored_changed_map|, if |node|'s ancestors have become ignored
+  // and the ancestor's ignored changed results have not been cached.
+  if (node->parent() &&
+      !base::Contains(ancestor_ignored_changed_map, node->parent())) {
+    TrimEventsDueToAncestorIgnoredChanged(node->parent(),
+                                          ancestor_ignored_changed_map);
+  }
+
+  // If an ancestor of |node| changed to ignored state, update the corresponding
+  // entry in the map for |node| based on the ancestor result (i.e. if an
+  // ancestor changed to ignored state, set the entry in the map to true for the
+  // current node). If |node|'s state changed to ignored as well, we want to
+  // remove its IGNORED_CHANGED event.
+  const auto& map_iter = ancestor_ignored_changed_map.find(node->parent());
+  const auto& events_iter = tree_events_.find(node);
+  if (map_iter != ancestor_ignored_changed_map.end() && map_iter->second) {
+    ancestor_ignored_changed_map.insert(std::make_pair(node, true));
+    if (node->IsIgnored() && events_iter != tree_events_.end()) {
+      RemoveEvent(&(events_iter->second), Event::IGNORED_CHANGED);
+      RemoveEventsDueToIgnoredChanged(&(events_iter->second));
+    }
+    return;
+  }
+
+  // If ignored changed results are not cached, calculate the corresponding
+  // entry for |node| in the map using the ignored states and events of |node|.
+  if (events_iter != tree_events_.end() &&
+      HasEvent(events_iter->second, Event::IGNORED_CHANGED) &&
+      node->IsIgnored()) {
+    ancestor_ignored_changed_map.insert(std::make_pair(node, true));
+    return;
+  }
+
+  ancestor_ignored_changed_map.insert(std::make_pair(node, false));
+}
+
 void AXEventGenerator::PostprocessEvents() {
+  std::map<AXNode*, bool> ancestor_ignored_changed_map;
+
   auto iter = tree_events_.begin();
   while (iter != tree_events_.end()) {
     AXNode* node = iter->first;
@@ -678,17 +735,13 @@ void AXEventGenerator::PostprocessEvents() {
       RemoveEvent(&node_events, Event::LIVE_REGION_CHANGED);
     }
 
-    // If a node toggled its ignored state, don't also fire children-changed
-    // because platforms likely will do that in response to ignored-changed.
-    // Suppress name- and description-changed because those can be emitted
-    // as a side effect of calculating alternative text values for a newly-
-    // displayed object. Ditto for text attributes such as foreground and
-    // background colors.
     if (HasEvent(node_events, Event::IGNORED_CHANGED)) {
-      RemoveEvent(&node_events, Event::CHILDREN_CHANGED);
-      RemoveEvent(&node_events, Event::DESCRIPTION_CHANGED);
-      RemoveEvent(&node_events, Event::NAME_CHANGED);
-      RemoveEvent(&node_events, Event::TEXT_ATTRIBUTE_CHANGED);
+      // If a node toggled its ignored state from show to hide, we only want to
+      // fire IGNORED_CHANGED event on the top most ancestor where this ignored
+      // state change takes place and suppress all the descendants's
+      // IGNORED_CHANGED events.
+      TrimEventsDueToAncestorIgnoredChanged(node, ancestor_ignored_changed_map);
+      RemoveEventsDueToIgnoredChanged(&node_events);
     }
 
     // When the selected option in an expanded select element changes, the

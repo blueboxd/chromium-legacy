@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/files/scoped_temp_dir.h"
+#include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "components/search_engines/template_url_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -158,6 +159,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         ios::TemplateURLServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
     template_url_service->Load();
+
+    ClipboardRecentContent::SetInstance(
+        std::make_unique<FakeClipboardRecentContent>());
 
     container_ = [[BrowserContainerViewController alloc] init];
     bvc_ = [[BrowserViewController alloc] initWithBrowser:browser_.get()

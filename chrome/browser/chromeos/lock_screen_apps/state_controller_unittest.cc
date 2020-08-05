@@ -38,6 +38,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/arc/arc_service_manager.h"
@@ -383,6 +384,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   ~LockScreenAppStateTest() override = default;
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
+
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
     command_line_->GetProcessCommandLine()->InitFromArgv({""});
     SetUpCommandLine(command_line_->GetProcessCommandLine());
@@ -433,18 +438,19 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    extensions::ExtensionSystem::Get(profile())->Shutdown();
-
     state_controller_->RemoveObserver(&observer_);
     state_controller_->Shutdown();
-    chromeos::NoteTakingHelper::Shutdown();
-
-    session_manager_.reset();
+    focus_cycler_delegate_.reset();
     app_manager_ = nullptr;
     lock_screen_profile_creator_ = nullptr;
+    extensions::ExtensionSystem::Get(profile())->Shutdown();
+    chromeos::NoteTakingHelper::Shutdown();
+    arc_session_manager_.reset();
+    session_manager_.reset();
     app_window_.reset();
     BrowserWithTestWindowTest::TearDown();
-    focus_cycler_delegate_.reset();
+    command_line_.reset();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   TestingProfile* CreateProfile() override {

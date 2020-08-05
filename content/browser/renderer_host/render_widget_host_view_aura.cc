@@ -1468,14 +1468,44 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
 
 #if defined(OS_CHROMEOS)
 gfx::Range RenderWidgetHostViewAura::GetAutocorrectRange() const {
-  // TODO(crbug.com/1108170): Implement this function, since we need this
-  // for autocorrect on websites to work.
-  return gfx::Range();
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
+    return gfx::Range();
+
+  const std::vector<ui::mojom::ImeTextSpanInfoPtr>& ime_text_spans_info =
+      text_input_manager_->GetTextInputState()->ime_text_spans_info;
+
+  unsigned autocorrect_span_found = 0;
+  gfx::Range range;
+  for (const auto& ime_text_span_info : ime_text_spans_info) {
+    if (ime_text_span_info->span.type == ui::ImeTextSpan::Type::kAutocorrect) {
+      range = gfx::Range(ime_text_span_info->span.start_offset,
+                         ime_text_span_info->span.end_offset);
+      autocorrect_span_found++;
+    }
+  }
+  // Assuming there is only one autocorrect span at any point in time.
+  DCHECK_LE(autocorrect_span_found, 1u);
+  return range;
 }
+
 gfx::Rect RenderWidgetHostViewAura::GetAutocorrectCharacterBounds() const {
-  // TODO(crbug.com/1108170): Implement this function, since we need this
-  // for autocorrect on websites to work.
-  return gfx::Rect();
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
+    return gfx::Rect();
+
+  const std::vector<ui::mojom::ImeTextSpanInfoPtr>& ime_text_spans_info =
+      text_input_manager_->GetTextInputState()->ime_text_spans_info;
+
+  unsigned autocorrect_span_found = 0;
+  gfx::Rect bounds;
+  for (const auto& ime_text_span_info : ime_text_spans_info) {
+    if (ime_text_span_info->span.type == ui::ImeTextSpan::Type::kAutocorrect) {
+      bounds = ConvertRectToScreen(ime_text_span_info->bounds);
+      autocorrect_span_found++;
+    }
+  }
+  // Assuming there is only one autocorrect span at any point in time.
+  DCHECK_LE(autocorrect_span_found, 1u);
+  return bounds;
 }
 
 bool RenderWidgetHostViewAura::SetAutocorrectRange(

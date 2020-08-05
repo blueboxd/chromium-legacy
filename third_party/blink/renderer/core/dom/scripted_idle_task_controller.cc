@@ -241,12 +241,19 @@ void ScriptedIdleTaskController::ContextUnpaused() {
   DCHECK(paused_);
   paused_ = false;
 
-  // Run any pending timeouts.
-  Vector<CallbackId> pending_timeouts;
-  pending_timeouts_.swap(pending_timeouts);
-  for (auto& id : pending_timeouts)
-    RunCallback(id, base::TimeTicks::Now(),
-                IdleDeadline::CallbackType::kCalledByTimeout);
+  // Run any pending timeouts as separate tasks, since it's not allowed to
+  // execute script from lifecycle callbacks.
+  for (auto& id : pending_timeouts_) {
+    scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper =
+        internal::IdleRequestCallbackWrapper::Create(id, this);
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kIdleTask)
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&internal::IdleRequestCallbackWrapper::TimeoutFired,
+                      callback_wrapper));
+  }
+  pending_timeouts_.clear();
 
   // Repost idle tasks for any remaining callbacks.
   for (auto& idle_task : idle_tasks_) {

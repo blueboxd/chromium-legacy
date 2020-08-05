@@ -7,6 +7,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://nearby/nearby_discovery_page.js';
 
 import {setDiscoveryManagerForTesting} from 'chrome://nearby/discovery_manager.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 
@@ -23,18 +24,59 @@ suite('DiscoveryPageTest', function() {
   let nextId = 1;
 
   /**
+   * Compares two unguessable tokens.
+   * @param {!mojoBase.mojom.UnguessableToken} a
+   * @param {!mojoBase.mojom.UnguessableToken} b
+   */
+  function assertTokensEqual(a, b) {
+    assertEquals(a.high, b.high);
+    assertEquals(a.low, b.low);
+  }
+
+  /**
+   * Compares two share targets.
+   * @param {?nearbyShare.mojom.ShareTarget} a
+   * @param {?nearbyShare.mojom.ShareTarget} b
+   */
+  function assertShareTargetsEqual(a, b) {
+    assertTrue(!!a);
+    assertTrue(!!b);
+    assertTokensEqual(a.id, b.id);
+  }
+
+  /**
+   * Returns a list of visible share target elements. The not([hidden]) selector
+   * is needed for iron-list as it reuses components but hides them when not in
+   * use.
+   * @return {!Array<!NearbyDiscoveryPageElement>}
+   */
+  function getShareTargetElements() {
+    // Make sure the iron-list had time to render its elements.
+    flush();
+    return [...discoveryPageElement.$$('#deviceList')
+                .querySelectorAll('nearby-device:not([hidden])')];
+  }
+
+  /**
    * Get the list of device names that are currently shown.
    * @return {!Array<string>}
    */
   function getDeviceNames() {
-    /** @type {!Array<string>} */
-    const deviceNames = [];
-    for (const device of discoveryPageElement.$$('#device-list').children) {
-      if (device.is === 'nearby-device') {
-        deviceNames.push(device.$$('#name').textContent);
-      }
+    return getShareTargetElements().map(
+        (device) => device.$$('#name').textContent);
+  }
+
+  /**
+   * Clicks on device with |index| and returns if that succeeded.
+   * @return {boolean}
+   */
+  function clickOnDevice(index) {
+    const devices = getShareTargetElements();
+    if (index >= devices.length) {
+      return false;
     }
-    return deviceNames;
+    devices[index].click();
+    return true;
   }
 
   /**
@@ -68,6 +110,10 @@ suite('DiscoveryPageTest', function() {
     discoveryPageElement = /** @type {!NearbyDiscoveryPageElement} */ (
         document.createElement('nearby-discovery-page'));
     document.body.appendChild(discoveryPageElement);
+
+    // TODO(knollr): Remove this once prototyping is done.
+    /** @suppress {visibility} */
+    discoveryPageElement.shareTargets_ = [];
   });
 
   teardown(function() {
@@ -79,19 +125,15 @@ suite('DiscoveryPageTest', function() {
   });
 
   test('selects share target with success', async function() {
-    // TODO(knollr): Remove this once prototyping is done.
-    /** @suppress {visibility} */
-    discoveryPageElement.shareTargets_ = [];
-
     const created = await setupShareTarget();
+    discoveryPageElement.selectedShareTarget = created;
     discoveryPageElement.$$('#next-button').click();
     const selectedId = await discoveryManager.whenCalled('selectShareTarget');
-    assertEquals(created.id.high, selectedId.high);
-    assertEquals(created.id.low, selectedId.low);
+    assertTokensEqual(created.id, selectedId);
   });
 
   test('selects share target with error', async function() {
-    await setupShareTarget();
+    discoveryPageElement.selectedShareTarget = await setupShareTarget();
     discoveryManager.selectShareTargetResult.result =
         nearbyShare.mojom.SelectShareTargetResult.kError;
 
@@ -100,7 +142,7 @@ suite('DiscoveryPageTest', function() {
   });
 
   test('selects share target with confirmation', async function() {
-    await setupShareTarget();
+    discoveryPageElement.selectedShareTarget = await setupShareTarget();
     discoveryManager.selectShareTargetResult.token = 'test token';
     discoveryManager.selectShareTargetResult.confirmationManager =
         new FakeConfirmationManagerRemote();
@@ -167,11 +209,64 @@ suite('DiscoveryPageTest', function() {
     listener.onShareTargetDiscovered(shareTarget);
     await listener.$.flushForTesting();
 
-    const expectedDeviceCount = getDeviceNames().length;
+    const expectedDeviceCount = getShareTargetElements().length;
 
     listener.onShareTargetDiscovered(shareTarget);
     await listener.$.flushForTesting();
 
-    assertEquals(expectedDeviceCount, getDeviceNames().length);
+    assertEquals(expectedDeviceCount, getShareTargetElements().length);
   });
+
+  test('selects device on click', async function() {
+    /** @type {!nearbyShare.mojom.ShareTargetListenerRemote} */
+    const listener = await discoveryManager.whenCalled('startDiscovery');
+
+    // Setup 3 targets to select from.
+    const targets = [
+      createShareTarget('Device 1'),
+      createShareTarget('Device 2'),
+      createShareTarget('Device 3'),
+    ];
+    targets.forEach((target) => listener.onShareTargetDiscovered(target));
+    await listener.$.flushForTesting();
+
+    assertEquals(null, discoveryPageElement.selectedShareTarget);
+
+    // Click on fist share target and expect it to be selected.
+    assertTrue(clickOnDevice(0));
+    assertShareTargetsEqual(
+        targets[0], discoveryPageElement.selectedShareTarget);
+
+    // Click on last share target and expect it to be selected.
+    assertTrue(clickOnDevice(2));
+    assertShareTargetsEqual(
+        targets[2], discoveryPageElement.selectedShareTarget);
+  });
+
+  test('loosing selected device disables next button', async function() {
+    /** @type {!nearbyShare.mojom.ShareTargetListenerRemote} */
+    const listener = await discoveryManager.whenCalled('startDiscovery');
+
+    // Setup 3 targets and select the second one.
+    const targets = [
+      createShareTarget('Device 1'),
+      createShareTarget('Device 2'),
+      createShareTarget('Device 3'),
+    ];
+    targets.forEach((target) => listener.onShareTargetDiscovered(target));
+    await listener.$.flushForTesting();
+
+    assertTrue(clickOnDevice(1));
+    assertFalse(discoveryPageElement.$$('#next-button').disabled);
+
+    // Loose the second device.
+    listener.onShareTargetLost(targets[1]);
+    await listener.$.flushForTesting();
+
+    // Loosing the selected device should clear the selected device and disable
+    // the next button.
+    assertEquals(null, discoveryPageElement.selectedShareTarget);
+    assertTrue(discoveryPageElement.$$('#next-button').disabled);
+  });
+
 });

@@ -271,19 +271,19 @@ class PLATFORM_EXPORT FontMatchingMetrics {
           LocalFontLookupResult,
           LocalFontLookupKeyHash,
           LocalFontLookupKeyHashTraits>
-      font_lookups;
+      font_lookups_;
   HashMap<GenericFontLookupKey,
           AtomicString,
           GenericFontLookupKeyHash,
           GenericFontLookupKeyHashTraits>
-      generic_font_lookups;
+      generic_font_lookups_;
 
   ukm::UkmRecorder* const ukm_recorder_;
   const ukm::SourceId source_id_;
 
   // Records when the first font lookup occurred since the last call to
   // PublishIdentifiablityMetrics(), if any.
-  base::Optional<base::Time> time_of_earliest_unpublished_font_lookup;
+  base::Optional<base::Time> time_of_earliest_unpublished_font_lookup_;
 };
 
 }  // namespace blink

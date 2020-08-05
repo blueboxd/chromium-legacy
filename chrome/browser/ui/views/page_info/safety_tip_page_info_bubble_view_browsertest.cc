@@ -1047,7 +1047,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // Tests that UKM data gets properly recorded when safety tip heuristics get
 // triggered.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
-                       HeuristicsUkmRecorded) {
+                       DISABLED_HeuristicsUkmRecorded) {
   const std::vector<const char*> kSensitiveKeywords = {"test"};
 
   ReputationService* rep_service = ReputationService::Get(browser()->profile());

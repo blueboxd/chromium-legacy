@@ -112,16 +112,6 @@ This test verifies the position and size of the highlight rectangles overlayed o
         358,
         "Z"
       ],
-      "positiveRowLineNumberOffsets": [
-        0,
-        32.5,
-        65
-      ],
-      "positiveColumnLineNumberOffsets": [
-        0,
-        62.5,
-        275
-      ],
       "positiveRowLineNumberPositions": [
         {
           "x": 173,
@@ -149,14 +139,6 @@ This test verifies the position and size of the highlight rectangles overlayed o
           "x": 173,
           "y": 133
         }
-      ],
-      "negativeRowLineNumberOffsets": [
-        0
-      ],
-      "negativeColumnLineNumberOffsets": [
-        0,
-        62.5,
-        275
       ],
       "negativeRowLineNumberPositions": [
         {
@@ -326,16 +308,6 @@ This test verifies the position and size of the highlight rectangles overlayed o
         1158,
         "Z"
       ],
-      "positiveRowLineNumberOffsets": [
-        0,
-        110,
-        220
-      ],
-      "positiveColumnLineNumberOffsets": [
-        0,
-        75,
-        1300
-      ],
       "positiveRowLineNumberPositions": [
         {
           "x": 108,
@@ -363,14 +335,6 @@ This test verifies the position and size of the highlight rectangles overlayed o
           "x": 108,
           "y": -92
         }
-      ],
-      "negativeRowLineNumberOffsets": [
-        0
-      ],
-      "negativeColumnLineNumberOffsets": [
-        0,
-        75,
-        1300
       ],
       "negativeRowLineNumberPositions": [
         {

@@ -59,9 +59,8 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   did_init_ = true;
   DCHECK(GetActivityLogTaskRunner()->RunsTasksInCurrentSequence());
   db_.set_histogram_tag("Activity");
-  db_.set_error_callback(
-      base::Bind(&ActivityDatabase::DatabaseErrorCallback,
-                 base::Unretained(this)));
+  db_.set_error_callback(base::BindRepeating(
+      &ActivityDatabase::DatabaseErrorCallback, base::Unretained(this)));
   db_.set_page_size(4096);
   db_.set_cache_size(32);
 

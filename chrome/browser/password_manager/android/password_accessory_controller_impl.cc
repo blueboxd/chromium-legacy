@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
+#include "chrome/browser/password_manager/android/all_passwords_bottom_sheet_controller.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller.h"
 #include "chrome/browser/password_manager/android/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
@@ -197,6 +198,18 @@ bool PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
 
 void PasswordAccessoryControllerImpl::OnOptionSelected(
     autofill::AccessoryAction selected_action) {
+  if (selected_action == autofill::AccessoryAction::USE_OTHER_PASSWORD) {
+    password_manager::ContentPasswordManagerDriverFactory* factory =
+        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+            web_contents_);
+    password_manager::ContentPasswordManagerDriver* driver =
+        factory->GetDriverForFrame(web_contents_->GetFocusedFrame());
+    AllPasswordsBottomSheetController* controller =
+        AllPasswordsBottomSheetController::Create(
+            driver, password_client_->GetProfilePasswordStore());
+    controller->Show();
+    return;
+  }
   if (selected_action == autofill::AccessoryAction::MANAGE_PASSWORDS) {
     password_manager_launcher::ShowPasswordSettings(
         web_contents_,
@@ -261,6 +274,15 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
       info_to_add.push_back(
           TranslateCredentials(is_password_field, origin, credential));
     }
+  }
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kFillingPasswordsFromAnyOrigin)) {
+    base::string16 use_other_password_title = l10n_util::GetStringUTF16(
+        IDS_PASSWORD_MANAGER_ACCESSORY_USE_OTHER_PASSWORD);
+    footer_commands_to_add.push_back(
+        FooterCommand(use_other_password_title,
+                      autofill::AccessoryAction::USE_OTHER_PASSWORD));
   }
 
   if (is_password_field && is_manual_generation_available) {

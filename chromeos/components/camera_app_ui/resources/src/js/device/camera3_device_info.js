@@ -75,7 +75,7 @@ export class Camera3DeviceInfo {
    *     operator.
    * @param {!MediaDeviceInfo} deviceInfo
    * @return {!Promise<!Camera3DeviceInfo>}
-   * @throws {Error} Thrown when the device operation is not supported.
+   * @throws {!Error} Thrown when the device operation is not supported.
    */
   static async create(deviceInfo) {
     const deviceId = deviceInfo.deviceId;

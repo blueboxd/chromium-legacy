@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -94,27 +95,40 @@ void TraverseAndAppendChildren(
   }
 }
 
+syncer::UniquePosition ComputeUniquePositionForTrackedBookmarkNode(
+    const SyncedBookmarkTracker* bookmark_tracker,
+    const bookmarks::BookmarkNode* bookmark_node) {
+  DCHECK(bookmark_tracker);
+
+  const SyncedBookmarkTracker::Entity* child_entity =
+      bookmark_tracker->GetEntityForBookmarkNode(bookmark_node);
+  DCHECK(child_entity);
+  // TODO(crbug.com/1113139): precompute UniquePosition to prevent its
+  // calculation on each remote update.
+  return syncer::UniquePosition::FromProto(
+      child_entity->metadata()->unique_position());
+}
+
 size_t ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
                              const sync_pb::UniquePosition& unique_position,
                              const SyncedBookmarkTracker* bookmark_tracker) {
-  // TODO(crbug.com/1084150): remove after investigations are completed.
-  TRACE_EVENT0("sync", "ComputeChildNodeIndex");
+  DCHECK(parent);
+  DCHECK(bookmark_tracker);
 
   const syncer::UniquePosition position =
       syncer::UniquePosition::FromProto(unique_position);
-  for (size_t i = 0; i < parent->children().size(); ++i) {
-    const bookmarks::BookmarkNode* child = parent->children()[i].get();
-    const SyncedBookmarkTracker::Entity* child_entity =
-        bookmark_tracker->GetEntityForBookmarkNode(child);
-    DCHECK(child_entity);
-    const syncer::UniquePosition child_position =
-        syncer::UniquePosition::FromProto(
-            child_entity->metadata()->unique_position());
-    if (position.LessThan(child_position)) {
-      return i;
-    }
-  }
-  return parent->children().size();
+
+  auto iter = std::partition_point(
+      parent->children().begin(), parent->children().end(),
+      [bookmark_tracker,
+       position](const std::unique_ptr<bookmarks::BookmarkNode>& child) {
+        // Return true for all |parent|'s children whose position is less than
+        // |position|.
+        return !position.LessThan(ComputeUniquePositionForTrackedBookmarkNode(
+            bookmark_tracker, child.get()));
+      });
+
+  return iter - parent->children().begin();
 }
 
 void ApplyRemoteUpdate(
@@ -426,6 +440,14 @@ std::vector<const syncer::UpdateResponseData*>
 BookmarkRemoteUpdatesHandler::ReorderUpdatesForTest(
     const syncer::UpdateResponseDataList* updates) {
   return ReorderUpdates(updates);
+}
+
+// static
+size_t BookmarkRemoteUpdatesHandler::ComputeChildNodeIndexForTest(
+    const bookmarks::BookmarkNode* parent,
+    const sync_pb::UniquePosition& unique_position,
+    const SyncedBookmarkTracker* bookmark_tracker) {
+  return ComputeChildNodeIndex(parent, unique_position, bookmark_tracker);
 }
 
 // static

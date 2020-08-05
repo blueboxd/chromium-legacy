@@ -68,9 +68,9 @@ const WindowState = {
 /**
  * Callbacks called when specific window events happened.
  * @typedef {{
- *   onActive: function(CCAWindow),
- *   onSuspended: function(CCAWindow),
- *   onClosed: function(CCAWindow),
+ *   onActive: function(!CCAWindow),
+ *   onSuspended: function(!CCAWindow),
+ *   onClosed: function(!CCAWindow),
  * }}
  */
 let WindowEventCallbacks;  // eslint-disable-line no-unused-vars
@@ -103,7 +103,7 @@ class CCAWindow {
    * @param {?WindowTestEventCallbacks} testingCallbacks
    * @param {?PerfLogger} perfLogger The logger for perf events. If it
    *     is null, we will create a new one for the window.
-   * @param {Intent=} intent Intent to be handled by the app window.
+   * @param {?Intent=} intent Intent to be handled by the app window.
    *     Set to null for app window not launching from intent.
    */
   constructor(callbacks, testingCallbacks, perfLogger, intent = null) {
@@ -150,7 +150,7 @@ class CCAWindow {
 
   /**
    * Gets state of the window.
-   * @return {WindowState}
+   * @return {!WindowState}
    */
   get state() {
     return this.state_;
@@ -538,7 +538,7 @@ class Background {
 
 /**
  * Handles connection from the test extension used in Tast.
- * @param {Port} port The port that used to do two-way communication.
+ * @param {!Port} port The port that used to do two-way communication.
  */
 function handleExternalConnectionFromTest(port) {
   if (port.sender.origin !== TEST_API_ORIGIN) {

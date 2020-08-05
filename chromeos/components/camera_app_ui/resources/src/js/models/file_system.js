@@ -210,7 +210,7 @@ export async function saveBlob(blob, name) {
 /**
  * Creates a file for saving video recording result.
  * @return {!Promise<!AbstractFileEntry>} Newly created video file.
- * @throws {Error} If failed to create video file.
+ * @throws {!Error} If failed to create video file.
  */
 export async function createVideoFile() {
   assert(externalDir !== null);
@@ -229,7 +229,7 @@ const PRIVATE_TEMPFILE_NAME = 'video-intent.mkv';
 
 /**
  * @return {!Promise<!AbstractFileEntry>} Newly created temporary file.
- * @throws {Error} If failed to create video temp file.
+ * @throws {!Error} If failed to create video temp file.
  */
 export async function createPrivateTempVideoFile() {
   // TODO(inker): Handles running out of space case.

@@ -99,6 +99,8 @@ class WebViewClient {
 
   virtual void OnPageVisibilityChanged(mojom::PageVisibilityState visibility) {}
 
+  virtual void OnPageFrozenChanged(bool frozen) {}
+
   // UI ------------------------------------------------------------------
 
   // Called when hovering over an anchor with the given URL.

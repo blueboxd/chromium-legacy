@@ -22,6 +22,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObserver {
     private final PasswordCheckFragmentView mFragmentView;
+    private final PasswordCheckMediator mMediator = new PasswordCheckMediator();
     private PropertyModel mModel;
 
     /**
@@ -60,9 +61,8 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         // In the rare case of a restarted activity, don't recreate the model and mediator.
         if (mModel == null) {
             mModel = PasswordCheckProperties.createDefaultModel();
-            PasswordCheckMediator mediator = new PasswordCheckMediator();
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mFragmentView);
-            mediator.initialize(mModel, PasswordCheckFactory.getOrCreate());
+            mMediator.initialize(mModel, PasswordCheckFactory.getOrCreate());
         }
     }
 
@@ -81,6 +81,7 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
 
     @Override
     public void destroy() {
+        mMediator.destroy();
         PasswordCheckFactory.destroy();
     }
 

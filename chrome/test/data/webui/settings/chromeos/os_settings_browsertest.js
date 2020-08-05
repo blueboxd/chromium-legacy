@@ -1355,10 +1355,10 @@ var OSSettingsLanguagesPageTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'fake_input_method_private.js',
       BROWSER_SETTINGS_PATH + 'fake_language_settings_private.js',
-      BROWSER_SETTINGS_PATH + 'test_languages_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
       BROWSER_SETTINGS_PATH + '../test_util.js',
       'os_languages_page_tests.js',
+      'test_os_languages_browser_proxy.js',
     ]);
   }
 };

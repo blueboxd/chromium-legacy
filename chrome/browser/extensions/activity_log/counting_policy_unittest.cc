@@ -112,7 +112,7 @@ class CountingPolicyTest : public testing::Test {
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
     base::CancelableClosure timeout(
-        base::Bind(&CountingPolicyTest::TimeoutCallback));
+        base::BindRepeating(&CountingPolicyTest::TimeoutCallback));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 

@@ -230,18 +230,23 @@ void OmniboxResultView::OnSelectionStateChanged() {
     // any cached values get updated prior to the selection change.
     EmitTextChangedAccessiblityEvent();
 
-    // Send accessibility event on the popup box that its selection has changed.
-    EmitSelectedChildrenChangedAccessibilityEvent();
+    auto selection_state = popup_contents_view_->model()->selection().state;
 
     // The text is also accessible via text/value change events in the omnibox
     // but this selection event allows the screen reader to get more details
     // about the list and the user's position within it.
-    popup_contents_view_->FireAXEventsForNewActiveDescendant(this);
+    // Limit which selection states fire the events, in order to avoid duplicate
+    // events. Specifically, OmniboxPopupContentsView::ProvideButtonFocusHint()
+    // already fires the correct events when the user tabs to an attached button
+    // in the current row.
+    if (selection_state == OmniboxPopupModel::FOCUSED_BUTTON_HEADER ||
+        selection_state == OmniboxPopupModel::NORMAL) {
+      popup_contents_view_->FireAXEventsForNewActiveDescendant(this);
+    }
 
     // TODO(orinj): Eventually the deep digging in this class should get
     //  replaced with a single local point of access to all selection state.
-    ShowKeyword(popup_contents_view_->model()->selection().state ==
-                OmniboxPopupModel::KEYWORD_MODE);
+    ShowKeyword(selection_state == OmniboxPopupModel::KEYWORD_MODE);
   } else {
     ShowKeyword(false);
   }
@@ -495,11 +500,6 @@ void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
     accessible_name_ = current_name;
   }
-}
-
-void OmniboxResultView::EmitSelectedChildrenChangedAccessibilityEvent() {
-  popup_contents_view_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kSelectedChildrenChanged, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

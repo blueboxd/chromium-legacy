@@ -202,7 +202,10 @@ void CredentialManagerImpl::SendPasswordForm(
             ? CredentialType::CREDENTIAL_TYPE_PASSWORD
             : CredentialType::CREDENTIAL_TYPE_FEDERATED;
     info = CredentialInfo(*form, type_to_return);
-    if (PasswordStore* store = GetProfilePasswordStore()) {
+    PasswordStore* store = form->IsUsingAccountStore()
+                               ? GetAccountPasswordStore()
+                               : GetProfilePasswordStore();
+    if (store) {
       if (form->skip_zero_click && IsZeroClickAllowed()) {
         autofill::PasswordForm update_form = *form;
         update_form.skip_zero_click = false;

@@ -668,14 +668,12 @@ struct HashTableHelper {
   static bool IsDeletedBucket(const Key& key) {
     return KeyTraits::IsDeletedValue(key);
   }
-  static bool IsEmptyOrDeletedBucket(const Value& value) {
-    const Key& key = Extractor::Extract(value);
+  static bool IsEmptyOrDeletedBucketForKey(const Key& key) {
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }
-  static bool IsEmptyOrDeletedBucketSafe(const Value& value) {
-    alignas(std::max(alignof(Key), sizeof(size_t))) char buf[sizeof(Key)];
-    const Key& key = Extractor::ExtractSafe(value, &buf);
-    return IsEmptyBucket(key) || IsDeletedBucket(key);
+  static bool IsEmptyOrDeletedBucket(const Value& value) {
+    const Key& key = Extractor::Extract(value);
+    return IsEmptyOrDeletedBucketForKey(key);
   }
 };
 

@@ -213,6 +213,7 @@ source_set("unit_tests") {
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/omnibox/browser:test_support",
+    "//components/open_from_clipboard:test_support",
     "//components/prefs:test_support",
     "//components/search_engines",
     "//components/sessions",

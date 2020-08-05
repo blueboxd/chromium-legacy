@@ -218,6 +218,10 @@ std::string DevToolsAgentHostImpl::GetOpenerId() {
   return std::string();
 }
 
+bool DevToolsAgentHostImpl::CanAccessOpener() {
+  return false;
+}
+
 std::string DevToolsAgentHostImpl::GetDescription() {
   return std::string();
 }

@@ -1612,6 +1612,28 @@ void WebFrameWidgetBase::AddImeTextSpansToExistingText(
   focused_frame->AddImeTextSpansToExistingText(ime_text_spans, start, end);
 }
 
+Vector<ui::mojom::blink::ImeTextSpanInfoPtr>
+WebFrameWidgetBase::GetImeTextSpansInfo(
+    const WebVector<ui::ImeTextSpan>& ime_text_spans) {
+  auto* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame)
+    return Vector<ui::mojom::blink::ImeTextSpanInfoPtr>();
+
+  Vector<ui::mojom::blink::ImeTextSpanInfoPtr> ime_text_spans_info;
+
+  for (const auto& ime_text_span : ime_text_spans) {
+    WebRect webrect;
+    unsigned length = ime_text_span.end_offset - ime_text_span.start_offset;
+    focused_frame->FirstRectForCharacterRange(ime_text_span.start_offset,
+                                              length, webrect);
+    Client()->ConvertViewportToWindow(&webrect);
+
+    ime_text_spans_info.push_back(ui::mojom::blink::ImeTextSpanInfo::New(
+        ime_text_span, gfx::Rect(webrect)));
+  }
+  return ime_text_spans_info;
+}
+
 void WebFrameWidgetBase::ClearImeTextSpansByType(uint32_t start,
                                                  uint32_t end,
                                                  ui::ImeTextSpan::Type type) {

@@ -58,7 +58,6 @@ struct UnionTraits<{{dataview_type}}, {{union_type}}> {
         return {{dataview_type}}::Tag::{{name|upper}};
 {%-    endfor %}
       default:
-        NOTREACHED();
         return static_cast<{{dataview_type}}::Tag>(0);
     }
   }{{"\n"}}

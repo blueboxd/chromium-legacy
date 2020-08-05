@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -23,6 +24,7 @@
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
+#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -329,6 +331,15 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     request.set_handle(
         plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
             ->seneschal_server_handle());
+  } else if (vm_name == arc::kArcVmName) {
+    const auto& vm_info = arc::ArcSessionManager::Get()->GetVmInfo();
+    if (!vm_info) {
+      LOG(WARNING) << "ARCVM not running, cannot share paths";
+      std::move(callback).Run(base::FilePath(), false,
+                              "ARCVM not running, cannot share paths");
+      return;
+    }
+    request.set_handle(vm_info->seneschal_server_handle());
   } else {
     // Restart VM if not currently running.
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
@@ -366,6 +377,14 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
     request.set_handle(
         plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
             ->seneschal_server_handle());
+  } else if (vm_name == arc::kArcVmName) {
+    const auto& vm_info = arc::ArcSessionManager::Get()->GetVmInfo();
+    if (!vm_info) {
+      LOG(WARNING) << "ARCVM not running, cannot unshare paths";
+      std::move(callback).Run(true, "ARCVM not running, cannot unshare paths");
+      return;
+    }
+    request.set_handle(vm_info->seneschal_server_handle());
   } else {
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
     base::Optional<crostini::VmInfo> vm_info =

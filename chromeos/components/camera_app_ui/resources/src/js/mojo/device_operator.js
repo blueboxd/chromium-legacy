@@ -17,7 +17,7 @@ import {
  *     from which to parse the data according to its type.
  * @return {!Array<number>} An array containing elements whose types correspond
  *     to the format of input |tag|.
- * @throws {Error} if entry type is not supported.
+ * @throws {!Error} if entry type is not supported.
  */
 export function parseMetadata(entry) {
   const {buffer} = Uint8Array.from(entry.data);
@@ -88,7 +88,7 @@ export class DeviceOperator {
   constructor() {
     /**
      * An interface remote that is used to construct the mojo interface.
-     * @type {cros.mojom.CameraAppDeviceProviderRemote}
+     * @type {!cros.mojom.CameraAppDeviceProviderRemote}
      * @private
      */
     this.deviceProvider_ = cros.mojom.CameraAppDeviceProvider.getRemote();
@@ -110,7 +110,7 @@ export class DeviceOperator {
    * @param {string} deviceId The id of target camera device.
    * @return {!Promise<!cros.mojom.CameraAppDeviceRemote>} Corresponding device
    *     remote.
-   * @throws {Error} Thrown when given device id is invalid.
+   * @throws {!Error} Thrown when given device id is invalid.
    */
   async getDevice_(deviceId) {
     const {device, status} =
@@ -129,7 +129,7 @@ export class DeviceOperator {
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<!ResolutionList>} Promise of supported resolutions.
-   * @throws {Error} Thrown when fail to parse the metadata or the device
+   * @throws {!Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
   async getPhotoResolutions(deviceId) {
@@ -166,9 +166,9 @@ export class DeviceOperator {
    * Gets supported video configurations for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<VideoConfig>>} Promise of supported video
+   * @return {!Promise<!Array<!VideoConfig>>} Promise of supported video
    *     configurations.
-   * @throws {Error} Thrown when fail to parse the metadata or the device
+   * @throws {!Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
   async getVideoConfigs(deviceId) {
@@ -210,7 +210,7 @@ export class DeviceOperator {
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<!Facing>} Promise of device facing.
-   * @throws {Error} Thrown when the device operation is not supported.
+   * @throws {!Error} Thrown when the device operation is not supported.
    */
   async getCameraFacing(deviceId) {
     const device = await this.getDevice_(deviceId);
@@ -233,7 +233,7 @@ export class DeviceOperator {
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<!FpsRangeList>} Promise of supported fps ranges.
    *     Each range is represented as [min, max].
-   * @throws {Error} Thrown when fail to parse the metadata or the device
+   * @throws {!Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
   async getSupportedFpsRanges(deviceId) {
@@ -266,14 +266,14 @@ export class DeviceOperator {
    * Sets the stream configurations for target device.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @param {MediaStreamConstraints} constraints The constraints including fps
+   * @param {!MediaStreamConstraints} constraints The constraints including fps
    *     range and the resolution. If frame rate range negotiation is needed,
    *     the caller should either set exact field or set both min and max fields
    *     for frame rate property.
    * @param {{stillCaptureResolution: (!Resolution|undefined)}=} optConfig
    *     Optional configurations for streams.
-   * @throws {Error} Thrown when the input contains invalid values or the device
-   *     operation is not supported.
+   * @throws {!Error} Thrown when the input contains invalid values or the
+   *     device operation is not supported.
    */
   async setStreamConfig(deviceId, constraints, optConfig = {}) {
     let /** number */ minFrameRate = 0;
@@ -333,7 +333,7 @@ export class DeviceOperator {
    * Sets the intent for the upcoming capture session.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @param {cros.mojom.CaptureIntent} captureIntent The purpose of this
+   * @param {!cros.mojom.CaptureIntent} captureIntent The purpose of this
    *     capture, to help the camera device decide optimal configurations.
    * @return {!Promise} Promise for the operation.
    */
@@ -347,14 +347,14 @@ export class DeviceOperator {
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<boolean>} Promise of the boolean result.
-   * @throws {Error} Thrown when the device operation is not supported.
+   * @throws {!Error} Thrown when the device operation is not supported.
    */
   async isPortraitModeSupported(deviceId) {
     // TODO(wtlee): Change to portrait mode tag.
     // This should be 0x80000000 but mojo interface will convert the tag to
     // int32.
     const portraitModeTag =
-        /** @type{cros.mojom.CameraMetadataTag} */ (-0x80000000);
+        /** @type{!cros.mojom.CameraMetadataTag} */ (-0x80000000);
 
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
@@ -366,13 +366,13 @@ export class DeviceOperator {
   /**
    * Adds a metadata observer to Camera App Device through Mojo IPC.
    * @param {string} deviceId The id for target camera device.
-   * @param {function(cros.mojom.CameraMetadata)} callback Callback that
+   * @param {function(!cros.mojom.CameraMetadata)} callback Callback that
    *     handles the metadata.
-   * @param {cros.mojom.StreamType} streamType Stream type which the observer
+   * @param {!cros.mojom.StreamType} streamType Stream type which the observer
    *     gets the metadata from.
    * @return {!Promise<number>} id for the added observer. Can be used later
    *     to identify and remove the inserted observer.
-   * @throws {Error} if fails to construct device connection.
+   * @throws {!Error} if fails to construct device connection.
    */
   async addMetadataObserver(deviceId, callback, streamType) {
     const observerCallbackRouter =
@@ -392,7 +392,7 @@ export class DeviceOperator {
    * @param {!number} observerId The id for the metadata observer to be removed.
    * @return {!Promise<boolean>} Promise for the result. It will be resolved
    *     with a boolean indicating whether the removal is successful or not.
-   * @throws {Error} if fails to construct device connection.
+   * @throws {!Error} if fails to construct device connection.
    */
   async removeMetadataObserver(deviceId, observerId) {
     const device = await this.getDevice_(deviceId);
@@ -410,7 +410,7 @@ export class DeviceOperator {
    * @param {string} deviceId The id for target camera device.
    * @param {function()} callback Callback to trigger on shutter done.
    * @return {!Promise<number>} Id for the added observer.
-   * @throws {Error} if fails to construct device connection.
+   * @throws {!Error} if fails to construct device connection.
    */
   async addShutterObserver(deviceId, callback) {
     const observerCallbackRouter =
@@ -428,7 +428,7 @@ export class DeviceOperator {
    * @param {string} deviceId The id of target camera device.
    * @param {!number} observerId The id of the observer to be removed.
    * @return {!Promise<boolean>} True when the observer is successfully removed.
-   * @throws {Error} if fails to construct device connection.
+   * @throws {!Error} if fails to construct device connection.
    */
   async removeShutterObserver(deviceId, observerId) {
     const device = await this.getDevice_(deviceId);
@@ -445,8 +445,8 @@ export class DeviceOperator {
    *     that would be applied on the result.
    * @return {!Promise<!media.mojom.Blob>} The captured
    *     result with given effect.
-   * @throws {Error} Thrown when the reprocess is failed or the device operation
-   *     is not supported.
+   * @throws {!Error} Thrown when the reprocess is failed or the device
+   *     operation is not supported.
    */
   async setReprocessOption(deviceId, effect) {
     const device = await this.getDevice_(deviceId);

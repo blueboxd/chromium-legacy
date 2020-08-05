@@ -125,7 +125,7 @@ export const ViewName = {
 /**
  * @typedef {{
  *   hasError: (boolean|undefined),
- *   resolution: (Resolution|undefined),
+ *   resolution: (!Resolution|undefined),
  * }}
  */
 export let PerfInformation;
@@ -149,7 +149,7 @@ export let FpsRange;
 
 /**
  * A list of resolutions.
- * @typedef {Array<!Resolution>}
+ * @typedef {!Array<!Resolution>}
  */
 export let ResolutionList;
 
@@ -157,12 +157,12 @@ export let ResolutionList;
  * Map of all available resolution to its maximal supported capture fps. The key
  * of the map is the resolution and the corresponding value is the maximal
  * capture fps under that resolution.
- * @typedef {Object<(!Resolution|string), number>}
+ * @typedef {!Object<(!Resolution|string), number>}
  */
 export let MaxFpsInfo;
 
 /**
  * List of supported capture fps ranges.
- * @typedef {Array<!FpsRange>}
+ * @typedef {!Array<!FpsRange>}
  */
 export let FpsRangeList;

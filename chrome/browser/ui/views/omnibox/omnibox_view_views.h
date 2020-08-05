@@ -348,7 +348,8 @@ class OmniboxViewViews : public OmniboxView,
   void ClearAccessibilityLabel();
 
   void SetAccessibilityLabel(const base::string16& display_text,
-                             const AutocompleteMatch& match) override;
+                             const AutocompleteMatch& match,
+                             bool notify_text_changed) override;
 
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.

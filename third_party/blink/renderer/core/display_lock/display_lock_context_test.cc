@@ -2131,6 +2131,138 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
 }
 
 TEST_F(DisplayLockContextRenderingTest,
+       PaintDirtyBitsNotPropagatedAcrossBoundary) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .locked { content-visibility: hidden; }
+    div { contain: paint; }
+    </style>
+    <div id=parent>
+      <div id=lockable>
+        <div id=child>
+          <div id=grandchild></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* parent = GetDocument().getElementById("parent");
+  auto* lockable = GetDocument().getElementById("lockable");
+  auto* child = GetDocument().getElementById("child");
+  auto* grandchild = GetDocument().getElementById("grandchild");
+
+  auto* parent_box = ToLayoutBoxModelObject(parent->GetLayoutObject());
+  auto* lockable_box = ToLayoutBoxModelObject(lockable->GetLayoutObject());
+  auto* child_box = ToLayoutBoxModelObject(child->GetLayoutObject());
+  auto* grandchild_box = ToLayoutBoxModelObject(grandchild->GetLayoutObject());
+
+  ASSERT_TRUE(parent_box);
+  ASSERT_TRUE(lockable_box);
+  ASSERT_TRUE(child_box);
+  ASSERT_TRUE(grandchild_box);
+
+  ASSERT_TRUE(parent_box->HasSelfPaintingLayer());
+  ASSERT_TRUE(lockable_box->HasSelfPaintingLayer());
+  ASSERT_TRUE(child_box->HasSelfPaintingLayer());
+  ASSERT_TRUE(grandchild_box->HasSelfPaintingLayer());
+
+  auto* parent_layer = parent_box->Layer();
+  auto* lockable_layer = lockable_box->Layer();
+  auto* child_layer = child_box->Layer();
+  auto* grandchild_layer = grandchild_box->Layer();
+
+  EXPECT_FALSE(parent_layer->SelfOrDescendantNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->SelfOrDescendantNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfOrDescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->SelfOrDescendantNeedsRepaint());
+
+  lockable->classList().Add("locked");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  // Lockable layer needs repainting after locking.
+  EXPECT_FALSE(parent_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(lockable_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->SelfNeedsRepaint());
+
+  // Breadcrumbs are set from the lockable layer.
+  EXPECT_TRUE(parent_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(child_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->DescendantNeedsRepaint());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Everything is clean.
+  EXPECT_FALSE(parent_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->SelfNeedsRepaint());
+
+  // Breadcrumbs are clean as well.
+  EXPECT_FALSE(parent_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(child_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->DescendantNeedsRepaint());
+
+  grandchild_layer->SetNeedsRepaint();
+
+  // Grandchild needs repaint, so everything else should be clean.
+  EXPECT_FALSE(parent_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(grandchild_layer->SelfNeedsRepaint());
+
+  // Breadcrumbs are set from the lockable layer but are stopped at the locked
+  // boundary.
+  EXPECT_FALSE(parent_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(lockable_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(child_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->DescendantNeedsRepaint());
+
+  // Updating the lifecycle does not clean the dirty bits.
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(parent_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(grandchild_layer->SelfNeedsRepaint());
+
+  EXPECT_FALSE(parent_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(lockable_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(child_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->DescendantNeedsRepaint());
+
+  // Unlocking causes lockable to repaint itself.
+  lockable->classList().Remove("locked");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  EXPECT_FALSE(parent_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(lockable_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(grandchild_layer->SelfNeedsRepaint());
+
+  EXPECT_TRUE(parent_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(lockable_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(child_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->DescendantNeedsRepaint());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Everything should be clean.
+  EXPECT_FALSE(parent_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->SelfNeedsRepaint());
+
+  // Breadcrumbs are clean as well.
+  EXPECT_FALSE(parent_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(lockable_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(child_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(grandchild_layer->DescendantNeedsRepaint());
+}
+
+TEST_F(DisplayLockContextRenderingTest,
        NestedLockDoesNotInvalidateOnHideOrShow) {
   SetHtmlInnerHTML(R"HTML(
     <style>

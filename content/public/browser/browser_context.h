@@ -25,6 +25,7 @@
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
 
 #if !defined(OS_ANDROID)
@@ -66,10 +67,6 @@ class VariationsClient;
 }  // namespace variations
 
 namespace content {
-
-namespace mojom {
-enum class PushDeliveryStatus;
-}
 
 class BackgroundFetchDelegate;
 class BackgroundSyncController;
@@ -195,6 +192,17 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       int64_t service_worker_registration_id,
       const std::string& message_id,
       base::Optional<std::string> payload,
+      base::OnceCallback<void(blink::mojom::PushDeliveryStatus)> callback);
+
+  // Fires a push subscription change event to the Service Worker identified by
+  // |origin| and |service_worker_registration_id| with |new_subscription| and
+  // |old_subscription| as event information.
+  static void FirePushSubscriptionChangeEvent(
+      BrowserContext* browser_context,
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      blink::mojom::PushSubscriptionPtr new_subscription,
+      blink::mojom::PushSubscriptionPtr old_subscription,
       base::OnceCallback<void(blink::mojom::PushDeliveryStatus)> callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);

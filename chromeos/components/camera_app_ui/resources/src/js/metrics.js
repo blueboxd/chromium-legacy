@@ -33,7 +33,7 @@ let ready = null;
 /**
  * Send the event to GA backend.
  * @param {!ga.Fields} event The event to send.
- * @param {Map<number, Object>=} dimen Optional object contains dimension
+ * @param {?Map<number, !Object>=} dimen Optional object contains dimension
  *     information.
  */
 async function sendEvent(event, dimen = null) {
@@ -193,7 +193,7 @@ export class CaptureEventParam {
     this.resolution;
 
     /**
-     * @type {(IntentResultType|undefined)}
+     * @type {!IntentResultType|undefined}
      */
     this.intentResult;
 
@@ -204,13 +204,13 @@ export class CaptureEventParam {
 
     /**
      * Whether the event is for video snapshot.
-     * @type {(boolean|undefined)}
+     * @type {boolean|undefined}
      */
     this.isVideoSnapshot;
 
     /**
      * Whether the video have ever paused and resumed in the recording.
-     * @type {(boolean|undefined)}
+     * @type {boolean|undefined}
      */
     this.everPaused;
   }
@@ -230,8 +230,8 @@ export function sendCaptureEvent({
   everPaused = false,
 }) {
   /**
-   * @param {!Array<state.StateUnion>} states
-   * @param {state.StateUnion=} cond
+   * @param {!Array<!state.StateUnion>} states
+   * @param {!state.StateUnion=} cond
    * @param {boolean=} strict
    * @return {string}
    */

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_ACCESS_CONTEXT_AUDIT_SERVICE_H_
 #define CHROME_BROWSER_BROWSING_DATA_ACCESS_CONTEXT_AUDIT_SERVICE_H_
 
+#include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
@@ -46,6 +47,11 @@ class AccessContextAuditService : public KeyedService,
   // |callback|.
   void GetAllAccessRecords(AccessContextRecordsCallback callback);
 
+  // Called on completion of GetAllAccessRecords.
+  void CompleteGetAllAccessRecordsInternal(
+      AccessContextRecordsCallback callback,
+      std::vector<AccessContextAuditDatabase::AccessRecord> records);
+
   // KeyedService:
   void Shutdown() override;
 
@@ -63,7 +69,7 @@ class AccessContextAuditService : public KeyedService,
   // Override internal task runner with provided task runner. Must be called
   // before Init().
   void SetTaskRunnerForTesting(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::UpdateableSequencedTaskRunner> task_runner);
 
  private:
   friend class AccessContextAuditServiceTest;
@@ -73,7 +79,9 @@ class AccessContextAuditService : public KeyedService,
   void ClearSessionOnlyRecords();
 
   scoped_refptr<AccessContextAuditDatabase> database_;
-  scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
+  scoped_refptr<base::UpdateableSequencedTaskRunner> database_task_runner_;
+
+  int user_visible_tasks_in_progress = 0;
 
   base::Clock* clock_;
   Profile* profile_;
@@ -83,6 +91,7 @@ class AccessContextAuditService : public KeyedService,
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_observer_{this};
 
+  base::WeakPtrFactory<AccessContextAuditService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccessContextAuditService);
 };
 

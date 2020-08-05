@@ -80,7 +80,7 @@ void FontMatchingMetrics::ReportFontLookupByUniqueOrFamilyName(
   uint64_t hash = GetHashForFontData(resulting_font_data);
   LocalFontLookupKey key(name, font_description.GetFontSelectionRequest());
   LocalFontLookupResult result{hash, check_type, is_loading_fallback};
-  font_lookups.insert(key, result);
+  font_lookups_.insert(key, result);
 }
 
 void FontMatchingMetrics::ReportFontLookupByFallbackCharacter(
@@ -94,7 +94,7 @@ void FontMatchingMetrics::ReportFontLookupByFallbackCharacter(
                          font_description.GetFontSelectionRequest());
   LocalFontLookupResult result{hash, check_type,
                                false /* is_loading_fallback */};
-  font_lookups.insert(key, result);
+  font_lookups_.insert(key, result);
 }
 
 void FontMatchingMetrics::ReportLastResortFallbackFontLookup(
@@ -106,7 +106,7 @@ void FontMatchingMetrics::ReportLastResortFallbackFontLookup(
   LocalFontLookupKey key(font_description.GetFontSelectionRequest());
   LocalFontLookupResult result{hash, check_type,
                                false /* is_loading_fallback */};
-  font_lookups.insert(key, result);
+  font_lookups_.insert(key, result);
 }
 
 void FontMatchingMetrics::ReportFontFamilyLookupByGenericFamily(
@@ -117,11 +117,11 @@ void FontMatchingMetrics::ReportFontFamilyLookupByGenericFamily(
   OnFontLookup();
   GenericFontLookupKey key(generic_font_family_name, script,
                            generic_family_type);
-  generic_font_lookups.insert(key, resulting_font_name);
+  generic_font_lookups_.insert(key, resulting_font_name);
 }
 
 void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
-  for (const auto& entry : font_lookups) {
+  for (const auto& entry : font_lookups_) {
     const LocalFontLookupKey& key = entry.key;
     const LocalFontLookupResult& result = entry.value;
 
@@ -138,9 +138,9 @@ void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
              output_digest)
         .Record(ukm_recorder_);
   }
-  font_lookups.clear();
+  font_lookups_.clear();
 
-  for (const auto& entry : generic_font_lookups) {
+  for (const auto& entry : generic_font_lookups_) {
     const GenericFontLookupKey& key = entry.key;
     const AtomicString& result = entry.value;
 
@@ -157,7 +157,7 @@ void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
              output_digest)
         .Record(ukm_recorder_);
   }
-  generic_font_lookups.clear();
+  generic_font_lookups_.clear();
 }
 
 void FontMatchingMetrics::PublishUkmMetrics() {
@@ -184,15 +184,15 @@ void FontMatchingMetrics::PublishUkmMetrics() {
 }
 
 void FontMatchingMetrics::OnFontLookup() {
-  if (!time_of_earliest_unpublished_font_lookup) {
-    time_of_earliest_unpublished_font_lookup = base::Time::Now();
+  if (!time_of_earliest_unpublished_font_lookup_) {
+    time_of_earliest_unpublished_font_lookup_ = base::Time::Now();
     return;
   }
 
-  if (base::Time::Now() - *time_of_earliest_unpublished_font_lookup >=
+  if (base::Time::Now() - *time_of_earliest_unpublished_font_lookup_ >=
       base::TimeDelta::FromMinutes(1)) {
     PublishIdentifiabilityMetrics();
-    time_of_earliest_unpublished_font_lookup = base::Time::Now();
+    time_of_earliest_unpublished_font_lookup_ = base::Time::Now();
   }
 }
 

@@ -450,6 +450,7 @@ source_set("eg2_tests") {
     "//components/version_info:version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/util:multiwindow_util",
     "//ios/chrome/test:eg_test_support+eg2",

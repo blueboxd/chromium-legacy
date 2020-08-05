@@ -50,6 +50,9 @@ export class ManageProfilesBrowserProxy {
    * suggested theme info, once it has been retrieved.
    */
   getNewProfileSuggestedThemeInfo() {}
+
+  /** Loads Google sign in page.*/
+  loadSignInProfileCreationFlow() {}
 }
 
 /** @implements {ManageProfilesBrowserProxy} */
@@ -72,6 +75,11 @@ export class ManageProfilesBrowserProxyImpl {
   /** @override */
   getNewProfileSuggestedThemeInfo() {
     return sendWithPromise('getNewProfileSuggestedThemeInfo');
+  }
+
+  /** @override */
+  loadSignInProfileCreationFlow() {
+    chrome.send('loadSignInProfileCreationFlow');
   }
 }
 

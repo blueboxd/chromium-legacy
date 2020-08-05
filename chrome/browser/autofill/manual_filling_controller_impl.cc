@@ -297,6 +297,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
   switch (action) {
     case AccessoryAction::GENERATE_PASSWORD_MANUAL:
     case AccessoryAction::MANAGE_PASSWORDS:
+    case AccessoryAction::USE_OTHER_PASSWORD:
     case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
     case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
       return GetPasswordController();

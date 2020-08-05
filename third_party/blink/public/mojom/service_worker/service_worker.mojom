@@ -133,10 +133,11 @@ enum FetchHandlerExistence {
   DOES_NOT_EXIST,
 };
 
-// The number of seconds for which a 'push' event should be allowed to run.
-// This is not in the spec but for a Chrome-specific timeout. Each
-// event dispatched to service workers has a 5 minute timeout in the Chrome
-// implementation, but this makes the timeout for push events shorter.
+// The number of seconds for which a 'push' and the 'pushsubsciptionchange'
+// event should be allowed to run. This is not in the spec but for a
+// Chrome-specific timeout. Each event dispatched to service workers has a 5
+// minute timeout in the Chrome implementation, but this makes the timeout for
+// push events shorter.
 const int32 kPushEventTimeoutSeconds = 90;
 
 // The default number of seconds for idle timeouts. A service worker requests

@@ -71,6 +71,12 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 // icon (in iPad multitasking).
 @property(nonatomic, assign) BOOL shareButtonEnabled;
 
+// Stores whether the clipboard currently stores copied content.
+@property(nonatomic, assign) BOOL hasCopiedContent;
+// Stores the current content type in the clipboard. This is only valid if
+// |hasCopiedContent| is YES.
+@property(nonatomic, assign) ClipboardContentType copiedContentType;
+
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
 - (void)startVoiceSearch;
@@ -128,7 +134,8 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 - (void)setDispatcher:(id<ActivityServiceCommands,
                           BrowserCommands,
                           ApplicationCommands,
-                          LoadQueryCommands>)dispatcher {
+                          LoadQueryCommands,
+                          OmniboxCommands>)dispatcher {
   _dispatcher = dispatcher;
 }
 
@@ -195,6 +202,41 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
   AddSameConstraints(self.locationBarSteadyView, self.view);
 
   [self switchToEditing:NO];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  [self updateCachedClipboardState];
+
+  [NSNotificationCenter.defaultCenter
+      addObserver:self
+         selector:@selector(pasteboardDidChange:)
+             name:UIPasteboardChangedNotification
+           object:nil];
+
+  // The pasteboard changed notification doesn't fire if the clipboard changes
+  // while the app is in the background, so update the state whenever the app
+  // becomes active.
+  [NSNotificationCenter.defaultCenter
+      addObserver:self
+         selector:@selector(applicationDidBecomeActive:)
+             name:UIApplicationDidBecomeActiveNotification
+           object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+
+  [NSNotificationCenter.defaultCenter
+      removeObserver:self
+                name:UIPasteboardChangedNotification
+              object:nil];
+
+  [NSNotificationCenter.defaultCenter
+      removeObserver:self
+                name:UIApplicationDidBecomeActiveNotification
+              object:nil];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -442,6 +484,40 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
   RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
 }
 
+- (void)pasteboardDidChange:(NSNotification*)notification {
+  [self updateCachedClipboardState];
+}
+
+- (void)applicationDidBecomeActive:(NSNotification*)notification {
+  [self updateCachedClipboardState];
+}
+
+- (void)updateCachedClipboardState {
+  self.hasCopiedContent = NO;
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
+  std::set<ClipboardContentType> desired_types;
+  desired_types.insert(ClipboardContentType::URL);
+  desired_types.insert(ClipboardContentType::Text);
+  desired_types.insert(ClipboardContentType::Image);
+  __weak __typeof(self) weakSelf = self;
+  clipboardRecentContent->HasRecentContentFromClipboard(
+      desired_types,
+      base::BindOnce(^(std::set<ClipboardContentType> matched_types) {
+        weakSelf.hasCopiedContent = !matched_types.empty();
+        if (weakSelf.searchByImageEnabled &&
+            matched_types.find(ClipboardContentType::Image) !=
+                matched_types.end()) {
+          weakSelf.copiedContentType = ClipboardContentType::Image;
+        } else if (matched_types.find(ClipboardContentType::URL) !=
+                   matched_types.end()) {
+          weakSelf.copiedContentType = ClipboardContentType::URL;
+        } else if (matched_types.find(ClipboardContentType::Text) !=
+                   matched_types.end()) {
+          weakSelf.copiedContentType = ClipboardContentType::Text;
+        }
+      }));
+}
 
 #pragma mark - UIMenu
 
@@ -462,8 +538,9 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 
     [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
     [menu setMenuVisible:YES animated:YES];
-    // When we present the menu manually, it doesn't get focused by Voiceover.
-    // This notification forces voiceover to select the presented menu.
+    // When the menu is manually presented, it doesn't get focused by
+    // Voiceover. This notification forces voiceover to select the
+    // presented menu.
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
                                     menu);
   }
@@ -478,16 +555,16 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
   if (action == @selector(searchCopiedImage:) ||
       action == @selector(visitCopiedLink:) ||
       action == @selector(searchCopiedText:)) {
-    ClipboardRecentContent* clipboardRecentContent =
-        ClipboardRecentContent::GetInstance();
-    if (self.searchByImageEnabled &&
-        clipboardRecentContent->HasRecentImageFromClipboard()) {
+    if (!self.hasCopiedContent) {
+      return NO;
+    }
+    if (self.copiedContentType == ClipboardContentType::Image) {
       return action == @selector(searchCopiedImage:);
     }
-    if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {
+    if (self.copiedContentType == ClipboardContentType::URL) {
       return action == @selector(visitCopiedLink:);
     }
-    if (clipboardRecentContent->GetRecentTextFromClipboard().has_value()) {
+    if (self.copiedContentType == ClipboardContentType::Text) {
       return action == @selector(searchCopiedText:);
     }
     return NO;
@@ -502,39 +579,47 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 - (void)searchCopiedImage:(id)sender {
   RecordAction(
       UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
-  if (ClipboardRecentContent::GetInstance()->HasRecentImageFromClipboard()) {
-    ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
-        base::BindOnce(^(base::Optional<gfx::Image> optionalImage) {
-          UIImage* image = optionalImage.value().ToUIImage();
+  ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
+      base::BindOnce(^(base::Optional<gfx::Image> optionalImage) {
+        if (!optionalImage) {
+          return;
+        }
+        UIImage* image = optionalImage.value().ToUIImage();
+        dispatch_async(dispatch_get_main_queue(), ^{
           [self.dispatcher searchByImage:image];
-        }));
-  }
+          [self.dispatcher cancelOmniboxEdit];
+        });
+      }));
 }
 
 - (void)visitCopiedLink:(id)sender {
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
-  [self pasteAndGo:sender];
+  ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
+      base::BindOnce(^(base::Optional<GURL> optionalURL) {
+        NSString* url;
+        if (optionalURL) {
+          url = base::SysUTF8ToNSString(optionalURL.value().spec());
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [self.dispatcher loadQuery:url immediately:YES];
+          [self.dispatcher cancelOmniboxEdit];
+        });
+      }));
 }
 
 - (void)searchCopiedText:(id)sender {
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
-  [self pasteAndGo:sender];
-}
-
-// Both actions are performed the same, but need to be enabled differently,
-// so we need two different selectors.
-- (void)pasteAndGo:(id)sender {
-  NSString* query;
-  ClipboardRecentContent* clipboardRecentContent =
-      ClipboardRecentContent::GetInstance();
-  if (base::Optional<GURL> optionalUrl =
-          clipboardRecentContent->GetRecentURLFromClipboard()) {
-    query = base::SysUTF8ToNSString(optionalUrl.value().spec());
-  } else if (base::Optional<base::string16> optionalText =
-                 clipboardRecentContent->GetRecentTextFromClipboard()) {
-    query = base::SysUTF16ToNSString(optionalText.value());
-  }
-  [self.dispatcher loadQuery:query immediately:YES];
+  ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(
+      base::BindOnce(^(base::Optional<base::string16> optionalText) {
+        NSString* query;
+        if (optionalText) {
+          query = base::SysUTF16ToNSString(optionalText.value());
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [self.dispatcher loadQuery:query immediately:YES];
+          [self.dispatcher cancelOmniboxEdit];
+        });
+      }));
 }
 
 @end

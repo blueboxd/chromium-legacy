@@ -30,7 +30,7 @@ namespace extensions {
 
 namespace {
 
-using CreateMessageFunction = base::Callback<IPC::Message*(bool)>;
+using CreateMessageFunction = base::RepeatingCallback<IPC::Message*(bool)>;
 
 // Creates a new IPC message for updating tab-specific permissions.
 IPC::Message* CreateUpdateMessage(const GURL& visible_url,
@@ -177,8 +177,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
       // We update all extension render views with the new tab permissions, and
       // also the tab itself.
       CreateMessageFunction update_message =
-          base::Bind(&CreateUpdateMessage, navigation_entry->GetURL(),
-                     extension->id(), new_hosts.Clone(), tab_id_);
+          base::BindRepeating(&CreateUpdateMessage, navigation_entry->GetURL(),
+                              extension->id(), new_hosts.Clone(), tab_id_);
       SendMessageToProcesses(
           process_manager->GetRenderFrameHostsForExtension(extension->id()),
           web_contents()->GetMainFrame()->GetProcess(), update_message);
@@ -253,7 +253,7 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
   }
 
   CreateMessageFunction clear_message =
-      base::Bind(&CreateClearMessage, extension_ids, tab_id_);
+      base::BindRepeating(&CreateClearMessage, extension_ids, tab_id_);
   SendMessageToProcesses(
       frame_hosts, web_contents()->GetMainFrame()->GetProcess(), clear_message);
 

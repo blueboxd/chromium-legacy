@@ -280,7 +280,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsUnfilteredBluetoothDevicesEnabled();
 // device is not in tablet mode.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldOobeUseTabletModeFirstRun();
 
-// Returns true if device policy MinimumChromeVersionEnforced should assume that
+// Returns true if device policy DeviceMinimumVersion should assume that
 // Auto Update Expiration is reached. This should only be used for testing.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsAueReachedForUpdateRequiredForTest();

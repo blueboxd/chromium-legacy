@@ -776,7 +776,8 @@ class Generator(generator.Generator):
       yield _AddSingleValue('Integer', cpp_parameter_name)
       return
     if kind in [mojom.UINT32, mojom.INT64, mojom.UINT64]:
-      yield _AddSingleValue('String', 'std::to_string(%s)' % cpp_parameter_name)
+      yield _AddSingleValue('String',
+                            'base::NumberToString(%s)' % cpp_parameter_name)
       return
     if mojom.IsFloatKind(kind) or mojom.IsDoubleKind(kind):
       yield _AddSingleValue('Double', cpp_parameter_name)
@@ -834,8 +835,12 @@ class Generator(generator.Generator):
           loop_body=loop_body)):
         yield line
       return
-    yield _AddSingleValue(
-        'String', ' "<value of type %s>"' % self._GetCppWrapperParamType(kind))
+
+    def _TraceEventToString(cpp_parameter_name=cpp_parameter_name, kind=kind):
+      return 'base::trace_event::ValueToString(%s, "<value of type %s>")' % (
+          cpp_parameter_name, self._GetCppWrapperParamType(kind))
+
+    yield _AddSingleValue('String', _TraceEventToString())
 
   def _GetCppWrapperType(self,
                          kind,

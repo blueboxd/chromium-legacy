@@ -62,7 +62,7 @@ export class Camera extends View {
    * @param {!DeviceInfoUpdater} infoUpdater
    * @param {!PhotoConstraintsPreferrer} photoPreferrer
    * @param {!VideoConstraintsPreferrer} videoPreferrer
-   * @param {Mode} defaultMode
+   * @param {!Mode} defaultMode
    * @param {!PerfLogger} perfLogger
    */
   constructor(
@@ -132,7 +132,7 @@ export class Camera extends View {
 
     /**
      * Modes for the camera.
-     * @type {Modes}
+     * @type {!Modes}
      * @private
      */
     this.modes_ = new Modes(
@@ -320,7 +320,7 @@ export class Camera extends View {
 
   /**
    * Begins to take photo or recording with the current options, e.g. timer.
-   * @param {metrics.ShutterType} shutterType The shutter is triggered by which
+   * @param {!metrics.ShutterType} shutterType The shutter is triggered by which
    *     shutter type.
    * @return {?Promise} Promise resolved when take action completes. Returns
    *     null if CCA can't start take action.

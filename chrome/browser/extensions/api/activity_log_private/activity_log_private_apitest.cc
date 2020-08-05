@@ -70,8 +70,8 @@ class ActivityLogApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
   ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(true);
 
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&ActivityLogApiTest::HandleRequest, base::Unretained(this)));
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &ActivityLogApiTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   const Extension* friend_extension = LoadExtensionIncognito(

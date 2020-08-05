@@ -6,6 +6,7 @@ Attached to the new page: {
         targetInfo : {
             attached : true
             browserContextId : <string>
+            canAccessOpener : false
             targetId : <string>
             title : 
             type : page

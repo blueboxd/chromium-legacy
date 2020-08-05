@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
+// #import {waitAfterNextRender} from '../../test_util.m.js';
+// clang-format on
+
 /**
  * @fileoverview Suite of tests for the OS Settings input method options page.
  */

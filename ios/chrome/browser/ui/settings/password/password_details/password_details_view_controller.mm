@@ -415,6 +415,19 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   [self reloadData];
 }
 
+- (BOOL)isItemAtIndexPathTextEditCell:(NSIndexPath*)cellPath {
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:cellPath];
+  switch (static_cast<ItemType>(itemType)) {
+    case ItemTypePassword:
+      return YES;
+    case ItemTypeWebsite:
+    case ItemTypeUsername:
+    case ItemTypeChangePasswordButton:
+    case ItemTypeChangePasswordRecommendation:
+      return NO;
+  }
+}
+
 #pragma mark - Actions
 
 // Called when the user tapped on the show/hide button near password.

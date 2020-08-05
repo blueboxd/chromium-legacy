@@ -4,11 +4,11 @@
 
 #include "chrome/browser/browsing_data/access_context_audit_service.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -28,10 +28,13 @@ bool AccessContextAuditService::Init(
 
   // Tests may have provided a task runner already.
   if (!database_task_runner_) {
-    database_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-        {base::MayBlock(), base::WithBaseSyncPrimitives(),
-         base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    // Task runner is set to block shutdown as content settings are checked on
+    // service shutdown and records which should not be persisted are removed.
+    database_task_runner_ =
+        base::ThreadPool::CreateUpdateableSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+             base::ThreadPolicy::PREFER_BACKGROUND,
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   }
 
   if (!database_task_runner_->PostTask(
@@ -81,10 +84,25 @@ void AccessContextAuditService::RecordStorageAPIAccess(
 
 void AccessContextAuditService::GetAllAccessRecords(
     AccessContextRecordsCallback callback) {
+  if (!user_visible_tasks_in_progress++)
+    database_task_runner_->UpdatePriority(base::TaskPriority::USER_VISIBLE);
+
   database_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&AccessContextAuditDatabase::GetAllRecords, database_),
-      std::move(callback));
+      base::BindOnce(
+          &AccessContextAuditService::CompleteGetAllAccessRecordsInternal,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AccessContextAuditService::CompleteGetAllAccessRecordsInternal(
+    AccessContextRecordsCallback callback,
+    std::vector<AccessContextAuditDatabase::AccessRecord> records) {
+  DCHECK_GT(user_visible_tasks_in_progress, 0);
+  if (!--user_visible_tasks_in_progress)
+    database_task_runner_->UpdatePriority(base::TaskPriority::BEST_EFFORT);
+
+  std::move(callback).Run(std::move(records));
 }
 
 void AccessContextAuditService::Shutdown() {
@@ -161,7 +179,7 @@ void AccessContextAuditService::SetClockForTesting(base::Clock* clock) {
 }
 
 void AccessContextAuditService::SetTaskRunnerForTesting(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::UpdateableSequencedTaskRunner> task_runner) {
   DCHECK(!database_task_runner_);
   database_task_runner_ = std::move(task_runner);
 }

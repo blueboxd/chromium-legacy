@@ -346,6 +346,21 @@ void BrowserContext::DeliverPushMessage(
 }
 
 // static
+void BrowserContext::FirePushSubscriptionChangeEvent(
+    BrowserContext* browser_context,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    blink::mojom::PushSubscriptionPtr new_subscription,
+    blink::mojom::PushSubscriptionPtr old_subscription,
+    base::OnceCallback<void(blink::mojom::PushDeliveryStatus)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PushMessagingRouter::FireSubscriptionChangeEvent(
+      browser_context, origin, service_worker_registration_id,
+      std::move(new_subscription), std::move(old_subscription),
+      std::move(callback));
+}
+
+// static
 void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   TRACE_EVENT1("shutdown", "BrowserContext::NotifyWillBeDestroyed",
                "browser_context", browser_context);

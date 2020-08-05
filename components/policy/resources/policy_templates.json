@@ -15327,7 +15327,7 @@
     {
       'name': 'DeviceMinimumVersion',
       'owners': ['snijhara@google.com'],
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:86-'],
       'device_only': True,
       'type': 'dict',
       'schema': {
@@ -15388,7 +15388,7 @@
 
       When this policy is set to a non-empty list:
       If none of the entries has a <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> greater than the current version of the device, then no restrictions are applied and the already existing restrictions are revoked.
-      If at least one of the entries has a <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> greater than the current version, the strongest entry is chosen whose version is greater and closest to the current version.
+      If at least one of the entries has a <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> greater than the current version, the entry whose version is greater and closest to the current version is chosen.
       In case of conflict, preference is given to the entry with lower <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> or <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph> and the policy is applied using that entry.
 
       If the current version becomes obsolete during user session and the current network limits auto updates, an on-screen notification is shown to update the device within the <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> shown in the notification.
@@ -15411,7 +15411,7 @@
     {
       'name': 'DeviceMinimumVersionAueMessage',
       'owners': ['snijhara@google.com', 'marcgrimme@chromium.org'],
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:86-'],
       'device_only': True,
       'type': 'string',
       'schema': { 'type': 'string' },

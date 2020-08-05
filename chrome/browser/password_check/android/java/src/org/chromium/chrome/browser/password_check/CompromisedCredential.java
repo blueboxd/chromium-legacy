@@ -58,6 +58,14 @@ public class CompromisedCredential {
     }
 
     @Override
+    public String toString() {
+        return "CompromisedCredential{"
+                + "username='" + mUsername + '\'' + ", password='" + mPassword + '\''
+                + ", originUrl='" + mOriginUrl + '\'' + ", phished=" + mPhished
+                + ", hasScript=" + mHasScript + '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(mUsername, mPassword, mOriginUrl, mPhished, mHasScript);
     }

@@ -223,7 +223,7 @@ export class App {
 
   /**
    * Handles pressed keys.
-   * @param {Event} event Key press event.
+   * @param {!Event} event Key press event.
    * @private
    */
   onKeyPressed_(event) {

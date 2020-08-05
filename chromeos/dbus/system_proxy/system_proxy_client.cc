@@ -67,8 +67,17 @@ class SystemProxyClientImpl : public SystemProxyClient {
                                request, std::move(callback));
   }
 
-  void ShutDownDaemon(ShutDownDaemonCallback callback) override {
-    CallProtoMethod(system_proxy::kShutDownMethod, std::move(callback));
+  void ClearUserCredentials(
+      const system_proxy::ClearUserCredentialsRequest& request,
+      ClearUserCredentialsCallback callback) override {
+    CallProtoMethodWithRequest(system_proxy::kClearUserCredentialsMethod,
+                               request, std::move(callback));
+  }
+
+  void ShutDownProcess(const system_proxy::ShutDownRequest& request,
+                       ShutDownProcessCallback callback) override {
+    CallProtoMethodWithRequest(system_proxy::kShutDownProcessMethod, request,
+                               std::move(callback));
   }
 
   void SetWorkerActiveSignalCallback(WorkerActiveCallback callback) override {

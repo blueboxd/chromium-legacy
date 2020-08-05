@@ -1302,7 +1302,7 @@ TEST_P(CredentialManagerImplTest,
   EXPECT_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, credential_1->type);
 }
 
-TEST_P(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
+TEST_P(CredentialManagerImplTest, ResetSkipZeroClickInProfileStoreAfterPrompt) {
   // Turn on the global zero-click flag, and add two credentials in separate
   // origins, both set to skip zero-click.
   client_->set_zero_click_enabled(true);
@@ -1349,6 +1349,92 @@ TEST_P(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
   EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
   EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
   EXPECT_TRUE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
+}
+
+TEST_P(CredentialManagerImplTest, ResetSkipZeroClickInAccountStoreAfterPrompt) {
+  // This test is relevant only for account store users.
+  if (!GetParam())
+    return;
+  DCHECK(account_store_);
+  // This is simplified version of the test above that tests against the account
+  // store.
+  // Turn on the global zero-click flag, and add the credential for
+  // |kTestWebOrigin| and set to skip zero-click.
+  client_->set_zero_click_enabled(true);
+  form_.skip_zero_click = true;
+  account_store_->AddLogin(form_);
+
+  // Trigger a request which should return the credential found in |form_|, and
+  // wait for it to process.
+  // Check that the form in the database has been updated. `OnRequestCredential`
+  // generates a call to prompt the user to choose a credential.
+  // MockPasswordManagerClient mocks a user choice, and when users choose a
+  // credential (and have the global zero-click flag enabled), we make sure that
+  // they'll be logged in again next time.
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr)
+      .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
+
+  bool called = false;
+  CredentialManagerError error;
+  base::Optional<CredentialInfo> credential;
+  CallGet(CredentialMediationRequirement::kOptional, true, /*federations=*/{},
+          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
+
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = account_store_->stored_passwords();
+  ASSERT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+}
+
+TEST_P(CredentialManagerImplTest,
+       ResetSkipZeroClickInAccountStoreAfterPromptIfExistsInBothStores) {
+  // This test is relevant only for account store users.
+  if (!GetParam())
+    return;
+  DCHECK(account_store_);
+  // This is simplified version of the test above that tests against both the
+  // profile the account stores. When the same credential is stored in both
+  // stores, we favor the one in the account.
+
+  // Turn on the global zero-click flag, and add the credential for
+  // |kTestWebOrigin| , both set to skip zero-click on both stores.
+  client_->set_zero_click_enabled(true);
+  form_.skip_zero_click = true;
+  account_store_->AddLogin(form_);
+  store_->AddLogin(form_);
+
+  // Trigger a request which should return the credential found in |form_|, and
+  // wait for it to process.
+  // Check that the form in the database has been updated. `OnRequestCredential`
+  // generates a call to prompt the user to choose a credential.
+  // MockPasswordManagerClient mocks a user choice, and when users choose a
+  // credential (and have the global zero-click flag enabled), we make sure that
+  // they'll be logged in again next time.
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr)
+      .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
+
+  bool called = false;
+  CredentialManagerError error;
+  base::Optional<CredentialInfo> credential;
+  CallGet(CredentialMediationRequirement::kOptional, true, /*federations=*/{},
+          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
+
+  RunAllPendingTasks();
+
+  // Only the one in the account store is affected.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  ASSERT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+
+  passwords = account_store_->stored_passwords();
+  ASSERT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_P(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {

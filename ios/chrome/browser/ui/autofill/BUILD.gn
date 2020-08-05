@@ -169,7 +169,9 @@ source_set("eg2_tests") {
     "//base/test:test_support",
     "//components/autofill/ios/browser:autofill_test_bundle_data",
     "//components/strings:components_strings_grit",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/metrics:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
@@ -178,6 +180,7 @@ source_set("eg2_tests") {
     "//net:test_support",
     "//services/network/public/cpp",
     "//testing/gtest",
+    "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
 }

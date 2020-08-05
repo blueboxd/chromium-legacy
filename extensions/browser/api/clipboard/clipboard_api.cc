@@ -67,8 +67,10 @@ ExtensionFunction::ResponseAction ClipboardSetImageDataFunction::Run() {
   ExtensionsAPIClient::Get()->SaveImageDataToClipboard(
       std::vector<char>(params->image_data.begin(), params->image_data.end()),
       params->type, std::move(*params->additional_items),
-      base::Bind(&ClipboardSetImageDataFunction::OnSaveImageDataSuccess, this),
-      base::Bind(&ClipboardSetImageDataFunction::OnSaveImageDataError, this));
+      base::BindOnce(&ClipboardSetImageDataFunction::OnSaveImageDataSuccess,
+                     this),
+      base::BindOnce(&ClipboardSetImageDataFunction::OnSaveImageDataError,
+                     this));
   return RespondLater();
 }
 

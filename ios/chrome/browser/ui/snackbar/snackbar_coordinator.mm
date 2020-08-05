@@ -49,4 +49,25 @@
   [[MDCSnackbarManager defaultManager] showMessage:message];
 }
 
+- (void)showSnackbarWithMessage:(NSString*)messageText
+                     buttonText:(NSString*)buttonText
+                  messageAction:(void (^)(void))messageAction
+               completionAction:(void (^)(BOOL))completionAction {
+  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
+  action.handler = messageAction;
+  action.title = buttonText;
+  action.accessibilityLabel = buttonText;
+  MDCSnackbarMessage* message =
+      [MDCSnackbarMessage messageWithText:messageText];
+  message.action = action;
+  message.completionHandler = completionAction;
+
+  NamedGuide* bottomToolbarGuide =
+      [NamedGuide guideWithName:kSecondaryToolbarGuide
+                           view:self.baseViewController.view];
+  CGRect bottomToolbarFrame = bottomToolbarGuide.constrainedView.frame;
+  [self showSnackbarMessage:message
+               bottomOffset:bottomToolbarFrame.size.height];
+}
+
 @end

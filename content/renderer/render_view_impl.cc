@@ -1560,6 +1560,16 @@ void RenderViewImpl::OnPageVisibilityChanged(PageVisibilityState visibility) {
     observer.OnPageVisibilityChanged(visibility);
 }
 
+void RenderViewImpl::OnPageFrozenChanged(bool frozen) {
+  if (frozen) {
+    // Make sure browser has the latest info before the page is frozen. If the
+    // page goes into the back-forward cache it could be evicted and some of the
+    // updates lost.
+    nav_state_sync_timer_.Stop();
+    SendFrameStateUpdates();
+  }
+}
+
 bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }

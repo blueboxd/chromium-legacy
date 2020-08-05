@@ -207,16 +207,6 @@ paddedGrid{
         358,
         "Z"
       ],
-      "positiveRowLineNumberOffsets": [
-        0,
-        32.5,
-        65
-      ],
-      "positiveColumnLineNumberOffsets": [
-        0,
-        62.5,
-        275
-      ],
       "positiveRowLineNumberPositions": [
         {
           "x": 173,
@@ -244,14 +234,6 @@ paddedGrid{
           "x": 173,
           "y": 133
         }
-      ],
-      "negativeRowLineNumberOffsets": [
-        0
-      ],
-      "negativeColumnLineNumberOffsets": [
-        0,
-        62.5,
-        275
       ],
       "negativeRowLineNumberPositions": [
         {
@@ -508,16 +490,6 @@ nestedGrid{
         1058,
         "Z"
       ],
-      "positiveRowLineNumberOffsets": [
-        0,
-        25,
-        50
-      ],
-      "positiveColumnLineNumberOffsets": [
-        0,
-        50,
-        250
-      ],
       "positiveRowLineNumberPositions": [
         {
           "x": 228,
@@ -545,14 +517,6 @@ nestedGrid{
           "x": 228,
           "y": 858
         }
-      ],
-      "negativeRowLineNumberOffsets": [
-        0
-      ],
-      "negativeColumnLineNumberOffsets": [
-        0,
-        50,
-        250
       ],
       "negativeRowLineNumberPositions": [
         {

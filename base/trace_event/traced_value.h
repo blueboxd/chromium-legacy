@@ -231,14 +231,6 @@ class BASE_EXPORT TracedValueJSON : public TracedValue {
   std::string ToFormattedJSON() const;
 };
 
-// Return std::string representation given by |value|'s ostream operator<<.
-template <typename T>
-std::string ValueToString(const T& value) {
-  std::stringstream ss;
-  ss << value;
-  return ss.str();
-}
-
 }  // namespace trace_event
 }  // namespace base
 

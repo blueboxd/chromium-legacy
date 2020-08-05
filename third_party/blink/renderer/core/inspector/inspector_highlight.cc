@@ -560,77 +560,6 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
   return number_positions;
 }
 
-// Deprecated in favor of BuildGridPositiveLineNumberPositions; it will be
-// removed once the frontend is updated.
-std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberOffsets(
-    LayoutGrid* layout_grid,
-    const Vector<LayoutUnit>& trackPositions,
-    const LayoutUnit& grid_gap,
-    GridTrackSizingDirection direction,
-    float scale) {
-  std::unique_ptr<protocol::ListValue> number_offsets =
-      protocol::ListValue::create();
-
-  // Find index of the first explicit Grid Line.
-  size_t firstExplicitIndex =
-      layout_grid->ExplicitGridStartForDirection(direction);
-
-  LayoutUnit firstOffset = trackPositions.front();
-
-  // Go line by line, calculating the offset to fall in the middel of gaps
-  // if needed.
-  for (size_t i = firstExplicitIndex; i < trackPositions.size(); ++i) {
-    float gapOffset = grid_gap / 2;
-    // No need for a gap offset if there is no gap, or the first line is
-    // explicit, or this is the last line.
-    if (grid_gap == 0 || i == 0 || i == trackPositions.size() - 1) {
-      gapOffset = 0;
-    }
-
-    number_offsets->pushValue(protocol::FundamentalValue::create(
-        (trackPositions.at(i) - gapOffset - firstOffset) * scale));
-  }
-
-  return number_offsets;
-}
-
-// Deprecated in favor of BuildGridNegativeLineNumberPositions; it will be
-// removed once the frontend is updated.
-std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberOffsets(
-    LayoutGrid* layout_grid,
-    const Vector<LayoutUnit>& trackPositions,
-    const LayoutUnit& grid_gap,
-    GridTrackSizingDirection direction,
-    float scale) {
-  std::unique_ptr<protocol::ListValue> number_offsets =
-      protocol::ListValue::create();
-
-  // This is the number of tracks from the start of the grid, to the end of the
-  // explicit grid (including any leading implicit tracks).
-  size_t explicit_grid_end_track_count =
-      layout_grid->ExplicitGridEndForDirection(direction);
-
-  LayoutUnit firstOffset = trackPositions.front();
-
-  // Always start negative numbers at the first line.
-  number_offsets->pushValue(protocol::FundamentalValue::create(0));
-
-  // Then go line by line, calculating the offset to fall in the middle of gaps
-  // if needed.
-  for (size_t i = 1; i <= explicit_grid_end_track_count; i++) {
-    float gapOffset = grid_gap / 2;
-    if (grid_gap == 0 || (i == explicit_grid_end_track_count &&
-                          i == trackPositions.size() - 1)) {
-      gapOffset = 0;
-    }
-
-    number_offsets->pushValue(protocol::FundamentalValue::create(
-        (trackPositions.at(i) - gapOffset - firstOffset) * scale));
-  }
-
-  return number_offsets;
-}
-
 std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
     LayoutGrid* layout_grid,
     float scale) {
@@ -688,7 +617,6 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       direction == kForColumns ? layout_grid->StyleRef().NamedGridColumnLines()
                                : layout_grid->StyleRef().NamedGridRowLines();
   LayoutUnit gap = layout_grid->GridGap(direction);
-  LayoutUnit first_offset = tracks.front();
   const Vector<LayoutUnit>& alt_positions = direction == kForRows
                                                 ? layout_grid->ColumnPositions()
                                                 : layout_grid->RowPositions();
@@ -713,10 +641,6 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
           LocalToAbsolutePoint(layout_grid, line_name_pos, scale));
 
       line->setString("name", name);
-      // TODO (alexrudenko): offset should be removed once the frontend starts
-      // using absolute positions.
-      line->setValue("offset", protocol::FundamentalValue::create(
-                                   (main_axis_pos - first_offset) * scale));
 
       lines->pushValue(std::move(line));
     }
@@ -750,7 +674,7 @@ Vector<String> GetAuthoredGridTrackSizes(const CSSValue* value,
   if (!value)
     return result;
 
-  // TODO (alexrudenko): this would not handle track sizes defined using CSS
+  // TODO(alexrudenko): this would not handle track sizes defined using CSS
   // variables.
   const CSSValueList* value_list = DynamicTo<CSSValueList>(value);
 
@@ -821,7 +745,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     Element* element = DynamicTo<Element>(node);
     DCHECK(element);
     InspectorCSSCascade cascade(element, kPseudoIdNone);
-    // TODO (alexrudenko): caching might be required. Currently, the style
+    // TODO(alexrudenko): caching might be required. Currently, the style
     // resolver is used only for grid layouts when show_track_sizes is on.
     Vector<String> column_authored_values = GetAuthoredGridTrackSizes(
         cascade.GetCascadedProperty(CSSPropertyID::kGridTemplateColumns),
@@ -898,15 +822,6 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
 
   // Positive Row and column Line positions
   if (grid_highlight_config.show_positive_line_numbers) {
-    // TODO (alexrudenko): offsets should be removed once the frontend is using
-    // positions.
-    grid_info->setValue("positiveRowLineNumberOffsets",
-                        BuildGridPositiveLineNumberOffsets(
-                            layout_grid, rows, row_gap, kForRows, scale));
-    grid_info->setValue(
-        "positiveColumnLineNumberOffsets",
-        BuildGridPositiveLineNumberOffsets(layout_grid, columns, column_gap,
-                                           kForColumns, scale));
     grid_info->setValue("positiveRowLineNumberPositions",
                         BuildGridPositiveLineNumberPositions(
                             layout_grid, rows, row_gap, kForRows, scale));
@@ -918,16 +833,6 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
 
   // Negative Row and column Line positions
   if (grid_highlight_config.show_negative_line_numbers) {
-    // TODO (alexrudenko): offsets should be removed once the frontend is using
-    // positions.
-    grid_info->setValue("negativeRowLineNumberOffsets",
-                        BuildGridNegativeLineNumberOffsets(
-                            layout_grid, rows, row_gap, kForRows, scale));
-    grid_info->setValue(
-        "negativeColumnLineNumberOffsets",
-        BuildGridNegativeLineNumberOffsets(layout_grid, columns, column_gap,
-                                           kForColumns, scale));
-
     grid_info->setValue("negativeRowLineNumberPositions",
                         BuildGridNegativeLineNumberPositions(
                             layout_grid, rows, row_gap, kForRows, scale));

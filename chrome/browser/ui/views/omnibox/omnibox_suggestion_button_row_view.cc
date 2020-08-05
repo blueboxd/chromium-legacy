@@ -29,10 +29,21 @@
 class OmniboxSuggestionRowButton : public views::MdTextButton {
  public:
   OmniboxSuggestionRowButton(views::ButtonListener* listener,
-                             const base::string16& text)
-      : MdTextButton(listener, CONTEXT_OMNIBOX_PRIMARY) {
+                             const base::string16& text,
+                             const gfx::VectorIcon& icon,
+                             const views::FocusRing::ViewPredicate& predicate)
+      : MdTextButton(listener, CONTEXT_OMNIBOX_PRIMARY), icon_(icon) {
     SetText(text);
+    views::InstallPillHighlightPathGenerator(this);
+    SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
+        DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
+    SetCustomPadding(ChromeLayoutProvider::Get()->GetInsetsMetric(
+        INSETS_OMNIBOX_PILL_BUTTON));
+    SetCornerRadius(GetInsets().height() +
+                    GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
+
     set_ink_drop_highlight_opacity(CalculateInkDropHighlightOpacity());
+    focus_ring()->SetHasFocusPredicate(predicate);
   }
 
   OmniboxSuggestionRowButton(const OmniboxSuggestionRowButton&) = delete;
@@ -45,6 +56,8 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     return color_utils::GetColorWithMaxContrast(background()->get_color());
   }
 
+  void OnStyleRefresh() { focus_ring()->SchedulePaint(); }
+
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     // MdTextButton uses custom colors when creating ink drop highlight.
@@ -53,7 +66,19 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     return views::InkDropHostView::CreateInkDropHighlight();
   }
 
+  void OnThemeChanged() override {
+    MdTextButton::OnThemeChanged();
+    SkColor color =
+        GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_ICON,
+                        OmniboxPartState::NORMAL);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(
+                 icon_, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), color));
+  }
+
  private:
+  const gfx::VectorIcon& icon_;
+
   float CalculateInkDropHighlightOpacity() {
     // Ink drop highlight opacity is result of mixing a layer with hovered
     // opacity and a layer with selected opacity. OmniboxPartState::SELECTED
@@ -70,19 +95,13 @@ namespace {
 
 OmniboxSuggestionRowButton* CreatePillButton(
     OmniboxSuggestionButtonRowView* button_row,
-    const char* message) {
+    const char* message,
+    const gfx::VectorIcon& icon,
+    const views::FocusRing::ViewPredicate& predicate) {
   OmniboxSuggestionRowButton* button =
       button_row->AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
-          button_row, base::ASCIIToUTF16(message)));
+          button_row, base::ASCIIToUTF16(message), icon, predicate));
   button->SetVisible(false);
-  button->SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
-  button->SetCustomPadding(
-      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX_PILL_BUTTON));
-  button->SetCornerRadius(button->GetInsets().height() +
-                          GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
-  views::HighlightPathGenerator::Install(
-      button, std::make_unique<views::PillHighlightPathGenerator>());
   return button;
 }
 
@@ -105,11 +124,6 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
           gfx::Insets(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
                              views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
-  // TODO(orinj): Use the real translated string table values here instead.
-  keyword_button_ = CreatePillButton(this, "Keyword search");
-  pedal_button_ = CreatePillButton(this, "Pedal");
-  tab_switch_button_ = CreatePillButton(this, "Switch to this tab");
-
   const auto make_predicate = [=](auto state) {
     return [=](View* view) {
       return view->GetVisible() &&
@@ -117,14 +131,16 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
                  OmniboxPopupModel::Selection(model_index_, state);
     };
   };
-  keyword_button_focus_ring_ = views::FocusRing::Install(keyword_button_);
-  keyword_button_focus_ring_->SetHasFocusPredicate(
+
+  // TODO(orinj): Use the real translated string table values here instead.
+  keyword_button_ = CreatePillButton(
+      this, "Keyword search", vector_icons::kSearchIcon,
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
-  pedal_button_focus_ring_ = views::FocusRing::Install(pedal_button_);
-  pedal_button_focus_ring_->SetHasFocusPredicate(
-      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
-  tab_switch_button_focus_ring_ = views::FocusRing::Install(tab_switch_button_);
-  tab_switch_button_focus_ring_->SetHasFocusPredicate(
+  pedal_button_ =
+      CreatePillButton(this, "Pedal", omnibox::kProductIcon,
+                       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
+  tab_switch_button_ = CreatePillButton(
+      this, "Switch to this tab", omnibox::kSwitchIcon,
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
 }
 
@@ -163,26 +179,9 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
 }
 
 void OmniboxSuggestionButtonRowView::OnStyleRefresh() {
-  keyword_button_focus_ring_->SchedulePaint();
-  pedal_button_focus_ring_->SchedulePaint();
-  tab_switch_button_focus_ring_->SchedulePaint();
-}
-
-void OmniboxSuggestionButtonRowView::OnThemeChanged() {
-  View::OnThemeChanged();
-  SkColor color = GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_ICON,
-                                  OmniboxPartState::NORMAL);
-  const int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-
-  keyword_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kSearchIcon, icon_size, color));
-  pedal_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(omnibox::kProductIcon, icon_size, color));
-  tab_switch_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(omnibox::kSwitchIcon, icon_size, color));
+  keyword_button_->OnStyleRefresh();
+  pedal_button_->OnStyleRefresh();
+  tab_switch_button_->OnStyleRefresh();
 }
 
 void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
@@ -229,7 +228,7 @@ const AutocompleteMatch& OmniboxSuggestionButtonRowView::match() const {
 }
 
 void OmniboxSuggestionButtonRowView::SetPillButtonVisibility(
-    views::MdTextButton* button,
+    OmniboxSuggestionRowButton* button,
     OmniboxPopupModel::LineState state) {
   button->SetVisible(model()->IsControlPresentOnMatch(
       OmniboxPopupModel::Selection(model_index_, state)));

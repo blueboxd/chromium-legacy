@@ -160,13 +160,17 @@
   return [self.tableView indexPathForCell:_currentEditingCell];
 }
 
+- (BOOL)isItemAtIndexPathTextEditCell:(NSIndexPath*)cellPath {
+  return YES;
+}
+
 - (void)moveToAnotherCellWithOffset:(NSInteger)offset {
   NSIndexPath* cellPath = [self indexPathForCurrentTextField];
   DCHECK(cellPath);
   NSIndexPath* nextCellPath = [self indexForCellPathWithOffset:offset
                                                       fromPath:cellPath];
 
-  if (!nextCellPath) {
+  if (!nextCellPath || ![self isItemAtIndexPathTextEditCell:nextCellPath]) {
     [[_currentEditingCell textField] resignFirstResponder];
   } else {
     TableViewTextEditCell* nextCell =

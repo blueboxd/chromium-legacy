@@ -2447,13 +2447,13 @@ void WebViewImpl::SetPageLifecycleState(
     Scheduler()->SetPageBackForwardCached(state->is_in_back_forward_cache);
   }
   if (freezing_page)
-    Scheduler()->SetPageFrozen(true);
+    SetPageFrozen(true);
   if (storing_in_bfcache)
     HookBackForwardCacheEviction(true);
   if (restoring_from_bfcache)
     HookBackForwardCacheEviction(false);
   if (resuming_page)
-    Scheduler()->SetPageFrozen(false);
+    SetPageFrozen(false);
   if (restoring_from_bfcache) {
     DispatchPageshow(navigation_start.value());
     Scheduler()->SetPageBackForwardCached(state->is_in_back_forward_cache);
@@ -3456,6 +3456,7 @@ LocalFrame* WebViewImpl::FocusedLocalFrameAvailableForIme() const {
 
 void WebViewImpl::SetPageFrozen(bool frozen) {
   Scheduler()->SetPageFrozen(frozen);
+  AsView().client->OnPageFrozenChanged(frozen);
 }
 
 WebFrameWidget* WebViewImpl::MainFrameWidget() {

@@ -1,5 +1,5 @@
 AXWebArea AXRoleDescription='HTML content'
-++AXGroup AXRoleDescription='article'
+++AXGroup AXDescription='First' AXRoleDescription='article'
 ++++AXStaticText AXRoleDescription='text' AXValue='First'
-++AXGroup AXRoleDescription='article'
+++AXGroup AXDescription='Second' AXRoleDescription='article'
 ++++AXStaticText AXRoleDescription='text' AXValue='Second'

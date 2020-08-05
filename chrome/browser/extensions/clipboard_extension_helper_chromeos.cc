@@ -85,8 +85,8 @@ void ClipboardExtensionHelper::DecodeAndSaveImageData(
     const std::vector<char>& data,
     clipboard::ImageType type,
     AdditionalDataItemList additional_items,
-    const base::Closure& success_callback,
-    const base::Callback<void(const std::string&)>& error_callback) {
+    base::OnceClosure success_callback,
+    base::OnceCallback<void(const std::string&)> error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If there is a previous image decoding request still running, cancel it
@@ -99,8 +99,8 @@ void ClipboardExtensionHelper::DecodeAndSaveImageData(
   // Cache additonal items.
   additonal_items_ = std::move(additional_items);
 
-  image_save_success_callback_ = success_callback;
-  image_save_error_callback_ = error_callback;
+  image_save_success_callback_ = std::move(success_callback);
+  image_save_error_callback_ = std::move(error_callback);
   clipboard_image_data_decoder_->Start(data, type);
 }
 

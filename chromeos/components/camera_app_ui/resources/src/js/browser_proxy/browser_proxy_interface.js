@@ -56,7 +56,7 @@ export class BrowserProxy {
 
   /**
    * @param {string} name
-   * @param {Array<string>|string=} substitutions
+   * @param {!Array<string>|string=} substitutions
    * @return {string}
    * @abstract
    */
@@ -101,7 +101,7 @@ export class BrowserProxy {
   addOnMessageExternalListener(listener) {}
 
   /**
-   * @param {function(Port)} listener
+   * @param {function(!Port)} listener
    * @abstract
    */
   addOnConnectExternalListener(listener) {}

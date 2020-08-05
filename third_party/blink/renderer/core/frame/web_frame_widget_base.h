@@ -178,6 +178,8 @@ class CORE_EXPORT WebFrameWidgetBase
       uint32_t start,
       uint32_t end,
       const Vector<ui::ImeTextSpan>& ime_text_spans) override;
+  Vector<ui::mojom::blink::ImeTextSpanInfoPtr> GetImeTextSpansInfo(
+      const WebVector<ui::ImeTextSpan>& ime_text_spans) override;
   void ClearImeTextSpansByType(uint32_t start,
                                uint32_t end,
                                ui::ImeTextSpan::Type type) override;

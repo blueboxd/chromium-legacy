@@ -14,10 +14,13 @@
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/family_link_notice_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/stub_authenticator_builder.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 
 namespace chromeos {
@@ -48,21 +51,22 @@ class FamilyLinkNoticeScreenTest : public OobeBaseTest {
     OobeBaseTest::SetUpOnMainThread();
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // Child users require a user policy, set up an empty one so the user can
-    // get through login.
-    ASSERT_TRUE(user_policy_mixin_.RequestPolicyUpdate());
-    OobeBaseTest::SetUpInProcessBrowserTestFixture();
-  }
-
   void LoginAsRegularUser() {
     login_manager_mixin_.LoginAsNewRegularUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
   }
 
-  void LoginAsChildUser() {
-    login_manager_mixin_.LoginAsNewChildUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  void ExpectHelpAppPrefValue(bool expected) {
+    WizardController::default_controller()->PrepareFirstRunPrefs();
+    bool value = ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+        prefs::kHelpAppShouldShowParentalControl);
+    EXPECT_EQ(value, expected);
+  }
+
+  void ClickContinueButtonOnFamilyLinkScreen() {
+    test::OobeJS().ExpectVisiblePath(kFamilyLinkDialog);
+    test::OobeJS().ExpectVisiblePath(kContinueButton);
+    test::OobeJS().TapOnPath(kContinueButton);
   }
 
   void WaitForScreenExit() {
@@ -74,6 +78,9 @@ class FamilyLinkNoticeScreenTest : public OobeBaseTest {
   }
 
   base::Optional<FamilyLinkNoticeScreen::Result> screen_result_;
+
+ protected:
+  LoginManagerMixin login_manager_mixin_{&mixin_host_, {}, &fake_gaia_};
 
  private:
   void HandleScreenExit(FamilyLinkNoticeScreen::Result result) {
@@ -90,12 +97,6 @@ class FamilyLinkNoticeScreenTest : public OobeBaseTest {
   FamilyLinkNoticeScreen::ScreenExitCallback original_callback_;
 
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
-  LoginManagerMixin login_manager_mixin_{&mixin_host_, {}, &fake_gaia_};
-  LocalPolicyTestServerMixin policy_server_mixin_{&mixin_host_};
-  UserPolicyMixin user_policy_mixin_{
-      &mixin_host_,
-      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId),
-      &policy_server_mixin_};
 
   base::test::ScopedFeatureList feature_list_;
 };
@@ -109,6 +110,7 @@ IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenTest, RegularAccount) {
   LoginAsRegularUser();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), FamilyLinkNoticeScreen::Result::SKIPPED);
+  ExpectHelpAppPrefValue(false);
 }
 
 // Verify user should see family link notice screen when selecting to sign in
@@ -119,27 +121,49 @@ IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenTest, NonSupervisedChildAccount) {
       ->sign_in_as_child = true;
   LoginAsRegularUser();
   OobeScreenWaiter(FamilyLinkNoticeView::kScreenId).Wait();
-  test::OobeJS().ExpectVisiblePath(kFamilyLinkDialog);
-  test::OobeJS().ExpectVisiblePath(kContinueButton);
-  test::OobeJS().TapOnPath(kContinueButton);
+  ClickContinueButtonOnFamilyLinkScreen();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), FamilyLinkNoticeScreen::Result::DONE);
+  ExpectHelpAppPrefValue(true);
 }
+
+class FamilyLinkNoticeScreenChildTest : public FamilyLinkNoticeScreenTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    // Child users require a user policy, set up an empty one so the user can
+    // get through login.
+    ASSERT_TRUE(user_policy_mixin_.RequestPolicyUpdate());
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void LoginAsChildUser() {
+    login_manager_mixin_.LoginAsNewChildUser();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  }
+
+ private:
+  LocalPolicyTestServerMixin policy_server_mixin_{&mixin_host_};
+  UserPolicyMixin user_policy_mixin_{
+      &mixin_host_,
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId),
+      &policy_server_mixin_};
+};
 
 // Verify child account user should not see family link notice screen after log
 // in.
-IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenTest, ChildAccount) {
+IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenChildTest, ChildAccount) {
   WizardController::default_controller()
       ->get_wizard_context_for_testing()
       ->sign_in_as_child = true;
   LoginAsChildUser();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), FamilyLinkNoticeScreen::Result::SKIPPED);
+  ExpectHelpAppPrefValue(false);
 }
 
 // Verify child account user should not see family link notice screen after log
 // in if not selecting sign in as child.
-IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenTest,
+IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenChildTest,
                        ChildAccountSignInAsRegular) {
   WizardController::default_controller()
       ->get_wizard_context_for_testing()
@@ -147,6 +171,33 @@ IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenTest,
   LoginAsChildUser();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), FamilyLinkNoticeScreen::Result::SKIPPED);
+  ExpectHelpAppPrefValue(false);
+}
+
+class FamilyLinkNoticeScreenManagedTest : public FamilyLinkNoticeScreenTest {
+ public:
+  void LoginAsManagedUser() {
+    user_policy_mixin_.RequestPolicyUpdate();
+    login_manager_mixin_.LoginWithDefaultContext(test_user_);
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  }
+
+ private:
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId("user@example.com", "1111")};
+  UserPolicyMixin user_policy_mixin_{&mixin_host_, test_user_.account_id};
+};
+
+IN_PROC_BROWSER_TEST_F(FamilyLinkNoticeScreenManagedTest, ManagedAccount) {
+  WizardController::default_controller()
+      ->get_wizard_context_for_testing()
+      ->sign_in_as_child = true;
+  LoginAsManagedUser();
+  OobeScreenWaiter(FamilyLinkNoticeView::kScreenId).Wait();
+  ClickContinueButtonOnFamilyLinkScreen();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), FamilyLinkNoticeScreen::Result::DONE);
+  ExpectHelpAppPrefValue(false);
 }
 
 }  // namespace chromeos

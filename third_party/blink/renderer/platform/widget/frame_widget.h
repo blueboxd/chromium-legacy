@@ -14,6 +14,7 @@
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h"
 
 namespace cc {
@@ -123,6 +124,10 @@ class PLATFORM_EXPORT FrameWidget
       Vector<gfx::Rect>* bounds) = 0;
 
   virtual gfx::Range CompositionRange() = 0;
+  // Returns ime_text_spans and corresponding window coordinates for the list
+  // of given spans.
+  virtual Vector<ui::mojom::blink::ImeTextSpanInfoPtr> GetImeTextSpansInfo(
+      const WebVector<ui::ImeTextSpan>& ime_text_spans) = 0;
   virtual WebTextInputInfo TextInputInfo() = 0;
   virtual ui::mojom::blink::VirtualKeyboardVisibilityRequest
   GetLastVirtualKeyboardVisibilityRequest() = 0;

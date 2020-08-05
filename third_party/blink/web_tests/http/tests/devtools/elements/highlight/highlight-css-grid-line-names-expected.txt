@@ -301,19 +301,6 @@ grid-with-line-names{
         830,
         "Z"
       ],
-      "positiveRowLineNumberOffsets": [
-        0,
-        205,
-        415,
-        625,
-        830
-      ],
-      "positiveColumnLineNumberOffsets": [
-        0,
-        105,
-        615,
-        640
-      ],
       "positiveRowLineNumberPositions": [
         {
           "x": 0,
@@ -353,19 +340,6 @@ grid-with-line-names{
           "x": 640,
           "y": 0
         }
-      ],
-      "negativeRowLineNumberOffsets": [
-        0,
-        205,
-        415,
-        625,
-        830
-      ],
-      "negativeColumnLineNumberOffsets": [
-        0,
-        105,
-        615,
-        640
       ],
       "negativeRowLineNumberPositions": [
         {
@@ -412,82 +386,69 @@ grid-with-line-names{
         {
           "x": 0,
           "y": 205,
-          "name": "article",
-          "offset": 205
+          "name": "article"
         },
         {
           "x": 0,
           "y": 0,
-          "name": "header",
-          "offset": 0
+          "name": "header"
         },
         {
           "x": 0,
           "y": 205,
-          "name": "main",
-          "offset": 205
+          "name": "main"
         },
         {
           "x": 0,
           "y": 830,
-          "name": "end",
-          "offset": 830
+          "name": "end"
         },
         {
           "x": 0,
           "y": 205,
-          "name": "section",
-          "offset": 205
+          "name": "section"
         },
         {
           "x": 0,
           "y": 415,
-          "name": "section",
-          "offset": 415
+          "name": "section"
         },
         {
           "x": 0,
           "y": 625,
-          "name": "section",
-          "offset": 625
+          "name": "section"
         },
         {
           "x": 0,
           "y": 205,
-          "name": "images",
-          "offset": 205
+          "name": "images"
         }
       ],
       "columnLineNameOffsets": [
         {
           "x": 105,
           "y": 0,
-          "name": "header",
-          "offset": 105
+          "name": "header"
         },
         {
           "x": 105,
           "y": 0,
-          "name": "content-start",
-          "offset": 105
+          "name": "content-start"
         },
         {
           "x": 640,
           "y": 0,
-          "name": "fullpage-end",
-          "offset": 640
+          "name": "fullpage-end"
         },
         {
           "x": 0,
           "y": 0,
-          "name": "fullpage-start",
-          "offset": 0
+          "name": "fullpage-start"
         },
         {
           "x": 615,
           "y": 0,
-          "name": "content-end",
-          "offset": 615
+          "name": "content-end"
         }
       ],
       "gridBorder": [

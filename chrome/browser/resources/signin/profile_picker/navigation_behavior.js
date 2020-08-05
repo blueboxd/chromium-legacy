@@ -84,14 +84,7 @@ window.addEventListener('popstate', notifyObservers);
  */
 export function navigateTo(route) {
   assert([Routes.MAIN, Routes.NEW_PROFILE].includes(route));
-  history.pushState(
-      {
-        route: route,
-        step: computeStep(route),
-        isFirst: false,
-      },
-      '', route === Routes.MAIN ? '/' : `/${route}`);
-  notifyObservers();
+  navigateToStep(route, computeStep(route));
 }
 
 /**
@@ -113,7 +106,14 @@ export function navigateToPreviousRoute() {
  * @param {string} step
  */
 export function navigateToStep(route, step) {
-  // TODO(crbug.com/1063856): Add implementation.
+  history.pushState(
+      {
+        route: route,
+        step: step,
+        isFirst: false,
+      },
+      '', route === Routes.MAIN ? '/' : `/${route}`);
+  notifyObservers();
 }
 
 /** @polymerBehavior */

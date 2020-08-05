@@ -52,26 +52,7 @@ const base::Feature kInfobarUIRebootOnlyiOS13{"InfobarUIRebootOnlyiOS13",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsInfobarUIRebootEnabled() {
-  // Enable Messages to 100% in Dev, Canary and Beta.
-  switch (GetChannel()) {
-    case version_info::Channel::BETA:
-    case version_info::Channel::DEV:
-    case version_info::Channel::CANARY:
-      return YES;
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::STABLE:
-      break;
-  }
-
-  if (base::FeatureList::IsEnabled(kInfobarUIRebootOnlyiOS13)) {
-    if (@available(iOS 13, *)) {
-      return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
-    } else {
-      return NO;
-    }
-  } else {
-    return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
-  }
+  return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
 }
 
 bool IsInfobarOverlayUIEnabled() {

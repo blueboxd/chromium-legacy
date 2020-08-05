@@ -10,6 +10,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import './nearby_device.js';
 import './nearby_preview.js';
 import './nearby_share_target_types.mojom-lite.js';
@@ -90,10 +91,11 @@ Polymer({
   /** @private {Array<number>} */
   listenerIds_: null,
 
-  /**
-   * @type {Map<!string,!nearbyShare.mojom.ShareTarget>}
-   */
+  /** @private {Map<!string,!nearbyShare.mojom.ShareTarget>} */
   shareTargetMap_: null,
+
+  /** @private {?nearbyShare.mojom.ShareTarget} */
+  lastSelectedShareTarget_: null,
 
   /** @override */
   attached() {
@@ -158,6 +160,7 @@ Polymer({
           (target) => tokensEqual(target.id, shareTarget.id));
       assert(index !== -1);
       this.splice('shareTargets_', index, 1, shareTarget);
+      this.updateSelectedShareTarget_(shareTarget.id, shareTarget);
     }
     this.shareTargetMap_.set(shareTargetId, shareTarget);
   },
@@ -172,14 +175,15 @@ Polymer({
     assert(index !== -1);
     this.splice('shareTargets_', index, 1);
     this.shareTargetMap_.delete(tokenToString(shareTarget.id));
+    this.updateSelectedShareTarget_(shareTarget.id, /*shareTarget=*/ null);
   },
 
   /** @private */
   onNextTap_() {
-    // TODO(knollr): Allow user to select share target and remove this.
-    this.selectedShareTarget = this.shareTargets_[0];
+    if (!this.selectedShareTarget) {
+      return;
+    }
 
-    assert(this.selectedShareTarget);
     getDiscoveryManager()
         .selectShareTarget(this.selectedShareTarget.id)
         .then(response => {
@@ -198,4 +202,37 @@ Polymer({
           }
         });
   },
+
+  /** @private */
+  onSelectedShareTargetChanged_() {
+    // <iron-list> causes |this.$.deviceList.selectedItem| to be null if tapped
+    // a second time. Manually reselect the last item to preserve selection.
+    if (!this.$.deviceList.selectedItem && this.lastSelectedShareTarget_) {
+      this.$.deviceList.selectItem(this.lastSelectedShareTarget_);
+    }
+    this.lastSelectedShareTarget_ = this.$.deviceList.selectedItem;
+  },
+
+  /**
+   * @param {!nearbyShare.mojom.ShareTarget} shareTarget
+   * @return {boolean}
+   * @private
+   */
+  isShareTargetSelected_(shareTarget) {
+    return this.selectedShareTarget === shareTarget;
+  },
+
+  /**
+   * Updates the selected share tagrget to |shareTarget| if its id matches |id|.
+   * @param {!mojoBase.mojom.UnguessableToken} id
+   * @param {?nearbyShare.mojom.ShareTarget} shareTarget
+   * @private
+   */
+  updateSelectedShareTarget_(id, shareTarget) {
+    if (this.selectedShareTarget &&
+        tokensEqual(this.selectedShareTarget.id, id)) {
+      this.lastSelectedShareTarget_ = shareTarget;
+      this.selectedShareTarget = shareTarget;
+    }
+  }
 });

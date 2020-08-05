@@ -1534,6 +1534,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   new_policy.find_in_page_priority() =
       find_in_page_budget_pool_controller_->CurrentTaskPriority();
 
+  new_policy.should_freeze_compositor_task_queue() = AllPagesFrozen();
+
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.
   CreateTraceEventObjectSnapshotLocked();
@@ -1565,8 +1567,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     }
   }
 
-  DCHECK(compositor_task_queue_->IsQueueEnabled());
-
   Policy old_policy = main_thread_only().current_policy;
   main_thread_only().current_policy = new_policy;
 
@@ -1596,6 +1596,8 @@ void MainThreadSchedulerImpl::UpdateStateForAllTaskQueues(
                          current_policy.GetQueuePolicy(queue_class),
                          should_update_priorities);
   }
+  compositor_task_queue_enabled_voter_->SetVoteToEnable(
+      !current_policy.should_freeze_compositor_task_queue());
 }
 
 void MainThreadSchedulerImpl::UpdateTaskQueueState(
@@ -2412,11 +2414,13 @@ void MainThreadSchedulerImpl::AddPageScheduler(
     memory_purge_manager_.OnPageCreated(
         page_scheduler->GetPageLifecycleState());
   }
+
   base::AutoLock lock(any_thread_lock_);
   any_thread().waiting_for_any_main_frame_contentful_paint =
       IsAnyMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
       IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void MainThreadSchedulerImpl::RemovePageScheduler(
@@ -2428,11 +2432,13 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
     memory_purge_manager_.OnPageDestroyed(
         page_scheduler->GetPageLifecycleState());
   }
+
   base::AutoLock lock(any_thread_lock_);
   any_thread().waiting_for_any_main_frame_contentful_paint =
       IsAnyMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
       IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void MainThreadSchedulerImpl::OnFrameAdded(
@@ -2453,10 +2459,12 @@ void MainThreadSchedulerImpl::OnFrameRemoved(
 
 void MainThreadSchedulerImpl::OnPageFrozen() {
   memory_purge_manager_.OnPageFrozen();
+  UpdatePolicy();
 }
 
 void MainThreadSchedulerImpl::OnPageResumed() {
   memory_purge_manager_.OnPageResumed();
+  UpdatePolicy();
 }
 
 void MainThreadSchedulerImpl::BroadcastIntervention(const String& message) {
@@ -2800,6 +2808,16 @@ void MainThreadSchedulerImpl::DispatchOnTaskCompletionCallbacks() {
     std::move(closure).Run();
   }
   main_thread_only().on_task_completion_callbacks.clear();
+}
+
+bool MainThreadSchedulerImpl::AllPagesFrozen() const {
+  if (main_thread_only().page_schedulers.IsEmpty())
+    return false;
+  for (const auto* scheduler : main_thread_only().page_schedulers) {
+    if (!scheduler->IsFrozen())
+      return false;
+  }
+  return true;
 }
 
 // static

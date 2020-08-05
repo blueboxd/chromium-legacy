@@ -237,6 +237,10 @@ class CORE_EXPORT InputMethodController final
       TypingCommand::TextCompositionType composition_type);
   void DispatchCompositionEndEvent(LocalFrame& frame, const String& text);
 
+  // Gets ime text spans of interest at the cursor position.
+  WebVector<ui::ImeTextSpan> GetImeTextSpansAroundPosition(
+      unsigned position) const;
+
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,

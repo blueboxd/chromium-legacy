@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/content_settings/core/common/content_settings.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -34,9 +35,12 @@ const char kTestURL[] =
 
 // Returns matcher for Blocked Popup infobar.
 id<GREYMatcher> PopupBlocker() {
-  NSString* blockerText = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_IOS_POPUPS_BLOCKED_MOBILE, base::UTF8ToUTF16("1")));
-  return grey_accessibilityLabel(blockerText);
+  return grey_allOf(
+      grey_accessibilityID(kInfobarBannerViewIdentifier),
+      grey_accessibilityLabel(
+          base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+              IDS_IOS_POPUPS_BLOCKED_MOBILE, base::UTF8ToUTF16("1")))),
+      nil);
 }
 
 }  // namespace

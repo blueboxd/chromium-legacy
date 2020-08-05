@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
@@ -86,33 +87,6 @@ std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
       base::DoNothing());
 }
 
-base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {
-  DCHECK(temp_dir);
-  if (!temp_dir->CreateUniqueTempDir()) {
-    // Fallback logic in case we fail to create unique temporary directory.
-    LOG(ERROR) << "Failed to create unique temporary directory.";
-    base::FilePath system_tmp_dir;
-    bool success = base::PathService::Get(base::DIR_TEMP, &system_tmp_dir);
-
-    // We're severely screwed if we can't get the system temporary
-    // directory. Die now to avoid writing to the filesystem root
-    // or other bad places.
-    CHECK(success);
-
-    base::FilePath fallback_dir(
-        system_tmp_dir.Append(FILE_PATH_LITERAL("TestChromeBrowserStatePath")));
-    base::DeletePathRecursively(fallback_dir);
-    base::CreateDirectory(fallback_dir);
-    if (!temp_dir->Set(fallback_dir)) {
-      // That shouldn't happen, but if it does, try to recover.
-      LOG(ERROR) << "Failed to use a fallback temporary directory.";
-
-      // We're screwed if this fails, see CHECK above.
-      CHECK(temp_dir->Set(system_tmp_dir));
-    }
-  }
-  return temp_dir->GetPath();
-}
 }  // namespace
 
 TestChromeBrowserState::TestChromeBrowserState(
@@ -160,12 +134,6 @@ TestChromeBrowserState::~TestChromeBrowserState() {
 
   BrowserStateDependencyManager::GetInstance()->DestroyBrowserStateServices(
       this);
-  // The destructor of temp_dir_ will perform IO, so it needs to be deleted
-  // here while |allow_bocking| is still in scope. Keeps the same logic as
-  // ScopedTempDir::~ScopedTempDir().
-  if (temp_dir_.IsValid()) {
-    ignore_result(temp_dir_.Delete());
-  }
 }
 
 void TestChromeBrowserState::Init() {
@@ -178,7 +146,7 @@ void TestChromeBrowserState::Init() {
          web::WebThread::CurrentlyOn(web::WebThread::UI));
 
   if (state_path_.empty())
-    state_path_ = CreateTempBrowserStateDir(&temp_dir_);
+    state_path_ = base::CreateUniqueTempDirectoryScopedToTest();
 
   if (IsOffTheRecord())
     state_path_ = state_path_.Append(FILE_PATH_LITERAL("OTR"));

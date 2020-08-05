@@ -16,6 +16,7 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/translate/translate_app_interface.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_constants.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view_constants.h"
@@ -349,6 +350,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that different language signals are detected correcty.
 - (void)testLanguageDetection {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   const GURL URL =
       web::test::HttpServer::MakeUrl("http://scenarioLanguageDetection");
   std::map<GURL, std::string> responses;
@@ -367,6 +371,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that hidden text is not considered during detection.
 - (void)testLanguageDetectionIgnoreHiddenText {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://scenarioLanguageDetectionIgnoreHiddenText");
   std::map<GURL, std::string> responses;
@@ -386,6 +393,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that language detection is not performed when the page specifies that
 // it should not be translated.
 - (void)testLanguageDetectionNoTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -412,6 +422,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that history.pushState triggers a new detection.
 - (void)testLanguageDetectionWithPushState {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://scenarioLanguageDetectionPushState");
   std::map<GURL, std::string> responses;
@@ -445,6 +458,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that language detection is performed on hash changes.
 - (void)testLanguageDetectionWithHashChange {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Generate a page with French text and a button that changes the text to
   // English and triggers a hash change.
   std::string html = base::StringPrintf(
@@ -480,6 +496,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that language in http content is detected.
 - (void)testLanguageDetectionHttpContentLanguage {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -517,6 +536,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that language in http content is detected when navigating to a link.
 - (void)testLanguageDetectionHttpContentLanguageBehindLink {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -536,6 +558,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that language detection still happens when a very large quantity of
 // text is present on the page.
 - (void)testLanguageDetectionLargePage {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Generate very large page.
   std::string html = "<html lang='fr'><body>";
   NSUInteger targetSize = 1024 * 1024;  // More than 1 MB of page content.
@@ -560,6 +585,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that language detection is not performed when translate is disabled.
 - (void)testLanguageDetectionDisabled {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://scenarioLanguageDetectionDisabled");
   std::map<GURL, std::string> responses;
@@ -587,6 +615,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the infobar hides/shows as the browser enters/exits the fullscreen
 // mode as well as it can be dimissed.
 - (void)testInfobarShowHideDismiss {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -629,6 +660,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that the infobar's popup menu can be dimissed.
 - (void)testInfobarDismissPopupMenu {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -662,6 +696,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the page can be translated and that translation can be reverted
 // using the source and the target language tabs.
 - (void)testInfobarTranslateRevert {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -677,6 +714,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the page can be translated and that translation can be reverted
 // using the source and the target language tabs in incognito mode.
 - (void)testInfobarTranslateRevertIncognito {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -699,6 +739,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Translates the page and reverts the translation using the language tabs.
 - (void)translateThenRevert {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   [self assertTranslateInfobarIsVisible];
 
   // Make sure the page is not translated.
@@ -735,6 +778,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that translation occurs automatically on second navigation to an
 // already translated page.
 - (void)testInfobarAutoTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -773,6 +819,9 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that the source and the target languages can be changed.
 - (void)testInfobarChangeLanguages {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -869,6 +918,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the "Always Translate" options can be toggled and the prefs are
 // updated accordingly.
 - (void)testInfobarAlwaysTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -978,6 +1030,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that "Always Translate" is automatically triggered after a minimum
 // number of translate attempts by the user.
 - (void)testInfobarAutoAlwaysTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1028,6 +1083,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that "Always Translate" is automatically triggered only for a maximum
 // number of times if refused by the user.
 - (void)testInfobarAutoAlwaysTranslateMaxTries {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1084,6 +1142,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the "Never Translate ..." options dismisses the infobar and
 // updates the prefs accordingly.
 - (void)testInfobarNeverTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1157,6 +1218,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that "Never Translate ..." is automatically triggered after a minimum
 // number of translate infobar dismissals by the user.
 - (void)testInfobarAutoNeverTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1210,6 +1274,9 @@ void TestResponseProvider::GetLanguageResponse(
 // maximum number of times if refused by the user.
 // TODO(crbug.com/945118): Re-enable when fixed.
 - (void)DISABLED_testInfobarAutoNeverTranslateMaxTries {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1274,6 +1341,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the "Never Translate this site" option dismisses the infobar and
 // updates the prefs accordingly.
 - (void)testInfobarNeverTranslateSite {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1349,6 +1419,9 @@ void TestResponseProvider::GetLanguageResponse(
 // the page when tapped. If the page is already translated the infobar should
 // appear in "after translate" state.
 - (void)testTranslateManualTrigger {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1430,6 +1503,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Translate infobar even if user has previously selected not to translate the
 // the source language.
 - (void)testTranslateManualTriggerNeverTranslate {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1481,6 +1557,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Translate infobar even if user has previously selected not to translate the
 // the site.
 - (void)testTranslateManualTriggerNeverTranslateSite {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1530,6 +1609,9 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the "Translate..." button in the tools menu is disabled if
 // translate is not available.
 - (void)testTranslateManualTriggerNotEnabled {
+  if (IsInfobarUIRebootEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Test.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

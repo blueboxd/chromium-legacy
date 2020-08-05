@@ -40,6 +40,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
       scoped_refptr<base::RefCountedMemory> data) override;
   std::string GetParentId() override;
   std::string GetOpenerId() override;
+  bool CanAccessOpener() override;
   std::string GetDescription() override;
   GURL GetFaviconURL() override;
   std::string GetFrontendURL() override;

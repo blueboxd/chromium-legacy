@@ -15,11 +15,6 @@
 namespace base {
 namespace trace_event {
 
-TEST(TraceEventArgumentTest, ValueToString) {
-  std::string zero = ValueToString(0);
-  EXPECT_EQ("0", zero);
-}
-
 TEST(TraceEventArgumentTest, InitializerListCreatedFlatDictionary) {
   std::string json;
   TracedValue::Build({{"bool_var", true},

@@ -36,7 +36,7 @@ let EnterOptions;
  */
 export class View {
   /**
-   * @param {ViewName} name Unique name of view which should be same as its DOM
+   * @param {!ViewName} name Unique name of view which should be same as its DOM
    *     element id.
    * @param {boolean=} dismissByEsc Enable dismissible by Esc-key.
    * @param {boolean=} dismissByBkgndClick Enable dismissible by
@@ -44,7 +44,7 @@ export class View {
    */
   constructor(name, dismissByEsc = false, dismissByBkgndClick = false) {
     /**
-     * @const {ViewName}
+     * @const {!ViewName}
      */
     this.name = name;
 
@@ -119,14 +119,14 @@ export class View {
 
   /**
    * Hook of the subclass for entering the view.
-   * @param {EnterOptions=} options Optional rest parameters for
+   * @param {!EnterOptions=} options Optional rest parameters for
    *     entering the view.
    */
   entering(options) {}
 
   /**
    * Enters the view.
-   * @param {EnterOptions=} options Optional rest parameters for
+   * @param {!EnterOptions=} options Optional rest parameters for
    *     entering the view.
    * @return {!Promise<*>} Promise for the navigation session.
    */

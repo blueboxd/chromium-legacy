@@ -108,6 +108,7 @@ CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithDefaultSiteInstances;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithStrictSiteInstances;
+CONTENT_EXPORT extern const base::Feature kPushSubscriptionChangeEvent;
 CONTENT_EXPORT extern const base::Feature kReducedReferrerGranularity;
 CONTENT_EXPORT extern const base::Feature
     kRelaxIsolatedWorldCorsInFileUrlLoaderFactory;

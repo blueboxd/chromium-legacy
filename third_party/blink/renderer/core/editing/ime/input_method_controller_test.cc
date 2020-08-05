@@ -205,6 +205,31 @@ TEST_F(InputMethodControllerTest, AddImeTextSpansToExistingText) {
                 ->GetSuggestionType());
 }
 
+TEST_F(InputMethodControllerTest, GetImeTextSpansAroundPosition) {
+  InsertHTMLElement("<div id='sample' contenteditable>hello world</div>",
+                    "sample");
+  ImeTextSpan span1 = ImeTextSpan(ImeTextSpan::Type::kAutocorrect, 0, 5,
+                                  Color(255, 0, 0), ImeTextSpanThickness::kThin,
+                                  ImeTextSpanUnderlineStyle::kSolid, 0, 0);
+  ImeTextSpan span2 = ImeTextSpan(ImeTextSpan::Type::kComposition, 1, 3,
+                                  Color(255, 0, 0), ImeTextSpanThickness::kThin,
+                                  ImeTextSpanUnderlineStyle::kSolid, 0, 0);
+  ImeTextSpan span3 = ImeTextSpan(
+      ImeTextSpan::Type::kMisspellingSuggestion, 1, 3, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0);
+
+  Controller().AddImeTextSpansToExistingText({span1, span2, span3}, 0, 5);
+  Controller().SetEditableSelectionOffsets(PlainTextRange(1, 1));
+
+  const WebVector<ui::ImeTextSpan>& ime_text_spans =
+      Controller().TextInputInfo().ime_text_spans;
+
+  EXPECT_EQ(1u, ime_text_spans.size());
+  EXPECT_EQ(0u, ime_text_spans[0].start_offset);
+  EXPECT_EQ(5u, ime_text_spans[0].end_offset);
+  EXPECT_EQ(ui::ImeTextSpan::Type::kAutocorrect, ime_text_spans[0].type);
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
   // "trophy" = U+1F3C6 = 0xF0 0x9F 0x8F 0x86 (UTF8).
   Element* div = InsertHTMLElement(

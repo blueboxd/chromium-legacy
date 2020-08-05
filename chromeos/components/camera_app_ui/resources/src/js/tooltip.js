@@ -68,8 +68,8 @@ function show(element) {
 
 /**
  * Sets up tooltips for elements.
- * @param {!NodeList<Element>} elements Elements whose tooltips to be shown.
- * @return {!NodeList<Element>} Elements whose tooltips have been set up.
+ * @param {!NodeList<!Element>} elements Elements whose tooltips to be shown.
+ * @return {!NodeList<!Element>} Elements whose tooltips have been set up.
  */
 export function setup(elements) {
   wrapper = assertInstanceof(document.querySelector('#tooltip'), HTMLElement);

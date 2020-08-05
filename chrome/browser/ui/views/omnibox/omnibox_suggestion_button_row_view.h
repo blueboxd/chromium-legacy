@@ -32,9 +32,6 @@ class OmniboxSuggestionButtonRowView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::View:
-  void OnThemeChanged() override;
-
  private:
   // Get the popup model from the view.
   const OmniboxPopupModel* model() const;
@@ -42,7 +39,7 @@ class OmniboxSuggestionButtonRowView : public views::View,
   // Digs into the model with index to get the match for owning result view.
   const AutocompleteMatch& match() const;
 
-  void SetPillButtonVisibility(views::MdTextButton* button,
+  void SetPillButtonVisibility(OmniboxSuggestionRowButton* button,
                                OmniboxPopupModel::LineState state);
 
   OmniboxPopupContentsView* const popup_contents_view_;
@@ -51,9 +48,6 @@ class OmniboxSuggestionButtonRowView : public views::View,
   OmniboxSuggestionRowButton* keyword_button_ = nullptr;
   OmniboxSuggestionRowButton* pedal_button_ = nullptr;
   OmniboxSuggestionRowButton* tab_switch_button_ = nullptr;
-  views::FocusRing* keyword_button_focus_ring_ = nullptr;
-  views::FocusRing* pedal_button_focus_ring_ = nullptr;
-  views::FocusRing* tab_switch_button_focus_ring_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionButtonRowView);
 };

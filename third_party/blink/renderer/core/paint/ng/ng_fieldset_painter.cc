@@ -5,9 +5,8 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_fieldset_painter.h"
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fieldset_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/fieldset_paint_info.h"
@@ -58,8 +57,7 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
   PhysicalRect legend_border_box;
   if (legend) {
     legend_border_box.size = (*legend)->Size();
-
-    // Recalculate the legend offset without the relative position offset.
+    // Unapply relative position of the legend.
     // Note that legend->Offset() is the offset after applying
     // position:relative, but the fieldset border painting needs to avoid
     // the legend position with static position.
@@ -69,27 +67,22 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     // >   not be painted behind the rectangle defined as follows, using the
     // >   writing mode of the fieldset: ...
     // >    ... at its static position (ignoring transforms), ...
+    //
+    // The following logic produces wrong results for block direction offsets.
+    // However we don't need them.
     const WritingDirectionMode writing_direction = style.GetWritingDirection();
-    const auto writing_mode = writing_direction.GetWritingMode();
-    const NGBoxStrut border_padding =
-        (fragment.Borders() + fragment.Padding())
-            .ConvertToLogical(writing_direction.GetWritingMode(),
-                              writing_direction.Direction());
-    const LayoutUnit fieldset_content_inline_size =
-        fieldset_size.ConvertToLogical(writing_mode).inline_size -
-        border_padding.InlineSum();
-    const NGBoxStrut legend_margins = ComputeMarginsFor(
-        (*legend)->Style(), fieldset_content_inline_size.ClampNegativeToZero(),
-        writing_direction.GetWritingMode(), writing_direction.Direction());
-
-    const LogicalOffset offset = {
-        NGFieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
-            (*legend)->Style(),
-            legend_border_box.size.ConvertToLogical(writing_mode).inline_size,
-            legend_margins, style, border_padding.inline_start,
-            fieldset_content_inline_size),
-        legend_margins.block_start};
-    legend_border_box.offset = offset.ConvertToPhysical(
+    const LogicalSize logical_fieldset_content_size =
+        (fieldset_size - PhysicalSize(fieldset_borders.Size()) -
+         PhysicalSize(fragment.Padding().HorizontalSum(),
+                      fragment.Padding().VerticalSum()))
+            .ConvertToLogical(writing_direction.GetWritingMode());
+    LogicalOffset relative_offset = ComputeRelativeOffset(
+        (*legend)->Style(), writing_direction, logical_fieldset_content_size);
+    LogicalOffset legend_logical_offset =
+        legend->Offset().ConvertToLogical(writing_direction, fieldset_size,
+                                          (*legend)->Size()) -
+        relative_offset;
+    legend_border_box.offset = legend_logical_offset.ConvertToPhysical(
         writing_direction, fieldset_size, legend_border_box.size);
   }
   FieldsetPaintInfo fieldset_paint_info(style, fieldset_size, fieldset_borders,

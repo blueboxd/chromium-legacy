@@ -92,7 +92,6 @@ class OmniboxResultView : public views::View,
 
   // Helper to emit accessibility events (may only emit if conditions are met).
   void EmitTextChangedAccessiblityEvent();
-  void EmitSelectedChildrenChangedAccessibilityEvent();
 
   // views::View:
   void Layout() override;

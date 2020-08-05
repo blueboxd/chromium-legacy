@@ -102,6 +102,19 @@ ui::mojom::ImeTextSpanUnderlineStyle ConvertUiUnderlineToUnderline(
   return ui::mojom::ImeTextSpanUnderlineStyle::kNone;
 }
 
+ui::ImeTextSpan::Type ConvertImeTextSpanTypeToUiType(ImeTextSpan::Type type) {
+  switch (type) {
+    case ImeTextSpan::Type::kAutocorrect:
+      return ui::ImeTextSpan::Type::kAutocorrect;
+    case ImeTextSpan::Type::kComposition:
+      return ui::ImeTextSpan::Type::kComposition;
+    case ImeTextSpan::Type::kMisspellingSuggestion:
+      return ui::ImeTextSpan::Type::kMisspellingSuggestion;
+    case ImeTextSpan::Type::kSuggestion:
+      return ui::ImeTextSpan::Type::kSuggestion;
+  }
+}
+
 }  // namespace
 
 ImeTextSpan::ImeTextSpan(const ui::ImeTextSpan& ime_text_span)
@@ -118,4 +131,10 @@ ImeTextSpan::ImeTextSpan(const ui::ImeTextSpan& ime_text_span)
                   ime_text_span.interim_char_selection,
                   ConvertStdVectorOfStdStringsToVectorOfStrings(
                       ime_text_span.suggestions)) {}
+
+ui::ImeTextSpan ImeTextSpan::ToUiImeTextSpan() {
+  return ui::ImeTextSpan(ConvertImeTextSpanTypeToUiType(GetType()),
+                         StartOffset(), EndOffset());
+}
+
 }  // namespace blink

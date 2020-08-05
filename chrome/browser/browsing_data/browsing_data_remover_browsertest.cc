@@ -96,6 +96,14 @@
 #include "chrome/browser/media/library_cdm_test_helper.h"
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
+#include "chromeos/dbus/system_proxy/system_proxy_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
 
@@ -1494,6 +1502,26 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
     EXPECT_FALSE(HasDataForType(type));
   }
 }
+
+#if defined(OS_CHROMEOS)
+// Test that removing passwords, when System-proxy is enabled on Chrome OS,
+// sends a request to System-proxy to clear the cached user credentials.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       SystemProxyClearsUserCredentials) {
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetSystemProxyManager()
+      ->SetSystemProxyEnabledForTest(true);
+  EXPECT_EQ(0, chromeos::SystemProxyClient::Get()
+                   ->GetTestInterface()
+                   ->GetClearUserCredentialsCount());
+  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS);
+
+  EXPECT_EQ(1, chromeos::SystemProxyClient::Get()
+                   ->GetTestInterface()
+                   ->GetClearUserCredentialsCount());
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Some storage backend use a different code path for full deletions and
 // partial deletions, so we need to test both.

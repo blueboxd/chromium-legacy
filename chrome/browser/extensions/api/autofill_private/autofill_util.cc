@@ -200,7 +200,8 @@ AddressEntryList GenerateAddressList(
 CountryEntryList GenerateCountryList(
     const autofill::PersonalDataManager& personal_data) {
   autofill::CountryComboboxModel model;
-  model.SetCountries(personal_data, base::Callback<bool(const std::string&)>(),
+  model.SetCountries(personal_data,
+                     base::RepeatingCallback<bool(const std::string&)>(),
                      g_browser_process->GetApplicationLocale());
   const std::vector<std::unique_ptr<autofill::AutofillCountry>>& countries =
       model.countries();

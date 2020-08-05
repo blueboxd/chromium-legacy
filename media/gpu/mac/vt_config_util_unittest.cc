@@ -268,7 +268,7 @@ TEST(VTConfigUtil, GetImageBufferColorSpace_GAMMA28) {
   EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
 }
 
-TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_PQ) {
+TEST(VTConfigUtil, DISABLED_GetImageBufferColorSpace_BT2020_PQ) {
   auto cs = VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                             VideoColorSpace::TransferID::SMPTEST2084,
                             VideoColorSpace::MatrixID::BT2020_NCL,
@@ -278,7 +278,7 @@ TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_PQ) {
   EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
 }
 
-TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_HLG) {
+TEST(VTConfigUtil, DISABLED_GetImageBufferColorSpace_BT2020_HLG) {
   auto cs = VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                             VideoColorSpace::TransferID::ARIB_STD_B67,
                             VideoColorSpace::MatrixID::BT2020_NCL,

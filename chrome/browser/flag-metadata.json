@@ -1203,6 +1203,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "enable-autofill-password-reauth-ios",
+    "owners": [ "javierrobles", "bling-flags" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-autofill-refresh-style",
     "owners": [ "tmartino@chromium.org" ],
     "expiry_milestone": 78

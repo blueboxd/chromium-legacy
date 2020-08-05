@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/language/core/browser/pref_names.h"
@@ -29,6 +30,9 @@ class AssistantStateClientTest : public ChromeAshTestBase {
   ~AssistantStateClientTest() override = default;
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     ChromeAshTestBase::SetUp();
 
     // Setup test profile.
@@ -57,6 +61,7 @@ class AssistantStateClientTest : public ChromeAshTestBase {
     arc_session_manager_->Shutdown();
     arc_session_manager_.reset();
     ChromeAshTestBase::TearDown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   AssistantStateClient* assistant_state_client() {

@@ -35,6 +35,10 @@ class WizardContext {
   // Indicates that user selects to sign in or create a new account for a child.
   bool sign_in_as_child = false;
 
+  // Indicates whether user creates a new gaia account when set up the device
+  // for a child.
+  bool is_child_gaia_account_new = false;
+
   // Whether the enrollment screen should be skipped when enrollment isn't
   // mandatory so that the normal gaia login is shown. Set by WizardController
   // SkipToLoginForTesting and checked on EnrollmentScreen::MaybeSkip

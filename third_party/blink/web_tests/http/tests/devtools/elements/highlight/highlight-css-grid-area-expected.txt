@@ -208,16 +208,6 @@ grid-with-areas{
         601,
         "Z"
       ],
-      "positiveRowLineNumberOffsets": [
-        0,
-        300.5,
-        601
-      ],
-      "positiveColumnLineNumberOffsets": [
-        0,
-        200.5,
-        401
-      ],
       "positiveRowLineNumberPositions": [
         {
           "x": 0,
@@ -245,16 +235,6 @@ grid-with-areas{
           "x": 401,
           "y": 0
         }
-      ],
-      "negativeRowLineNumberOffsets": [
-        0,
-        300.5,
-        601
-      ],
-      "negativeColumnLineNumberOffsets": [
-        0,
-        200.5,
-        401
       ],
       "negativeRowLineNumberPositions": [
         {

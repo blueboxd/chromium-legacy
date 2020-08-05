@@ -124,6 +124,7 @@ source_set("eg2_tests") {
     "//components/translate/core/common:common",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/translate:legacy_translate_constants",
     "//ios/chrome/browser/ui/translate:translate_ui_constants",

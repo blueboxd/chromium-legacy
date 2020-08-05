@@ -51,7 +51,6 @@ class ExtensionActiveTabTest : public ExtensionApiTest {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionActiveTabTest);
 };
 
@@ -251,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
     // Sanity check the last committed url on the |file_iframe|.
     content::RenderFrameHost* file_iframe = content::FrameMatchingPredicate(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Bind(&content::FrameMatchesName, "file_iframe"));
+        base::BindRepeating(&content::FrameMatchesName, "file_iframe"));
     bool is_file_url = file_iframe->GetLastCommittedURL() == GURL("file:///");
     EXPECT_EQ(allowed, is_file_url)
         << "Unexpected committed url: "

@@ -98,13 +98,23 @@ class TestAXEventObserver : public views::AXEventObserver {
       return;
     ui::AXNodeData node_data;
     view->GetAccessibleNodeData(&node_data);
+    ax::mojom::Role role = node_data.role;
     if (event_type == ax::mojom::Event::kTextChanged &&
-        node_data.role == ax::mojom::Role::kListBoxOption)
+        role == ax::mojom::Role::kListBoxOption) {
       text_changed_on_listboxoption_count_++;
-    else if (event_type == ax::mojom::Event::kSelectedChildrenChanged)
+    } else if (event_type == ax::mojom::Event::kSelectedChildrenChanged &&
+               role == ax::mojom::Role::kListBox) {
       selected_children_changed_count_++;
-    else if (event_type == ax::mojom::Event::kActiveDescendantChanged)
+    } else if (event_type == ax::mojom::Event::kSelection &&
+               role == ax::mojom::Role::kListBoxOption) {
+      selection_changed_count_++;
+    } else if (event_type == ax::mojom::Event::kValueChanged &&
+               role == ax::mojom::Role::kTextField) {
+      value_changed_count_++;
+    } else if (event_type == ax::mojom::Event::kActiveDescendantChanged &&
+               role == ax::mojom::Role::kTextField) {
       active_descendant_changed_count_++;
+    }
   }
 
   int text_changed_on_listboxoption_count() {
@@ -113,6 +123,8 @@ class TestAXEventObserver : public views::AXEventObserver {
   int selected_children_changed_count() {
     return selected_children_changed_count_;
   }
+  int selection_changed_count() { return selection_changed_count_; }
+  int value_changed_count() { return value_changed_count_; }
   int active_descendant_changed_count() {
     return active_descendant_changed_count_;
   }
@@ -120,6 +132,8 @@ class TestAXEventObserver : public views::AXEventObserver {
  private:
   int text_changed_on_listboxoption_count_ = 0;
   int selected_children_changed_count_ = 0;
+  int selection_changed_count_ = 0;
+  int value_changed_count_ = 0;
   int active_descendant_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
@@ -365,8 +379,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(color_before_focus, omnibox_view()->GetBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
-                       EmitTextChangedAccessibilityEvent) {
+IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
   // Creation and population of the popup should not result in a text/name
   // change accessibility event.
   TestAXEventObserver observer;
@@ -389,15 +402,62 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   edit_model()->StartAutocomplete(false, false);
   popup_view()->UpdatePopupAppearance();
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
+  EXPECT_EQ(observer.selected_children_changed_count(), 1);
+  EXPECT_EQ(observer.selection_changed_count(), 1);
+  EXPECT_EQ(observer.active_descendant_changed_count(), 1);
+  EXPECT_EQ(observer.value_changed_count(), 2);
 
   // Each time the selection changes, we should have a text/name change event.
   // This makes it possible for screen readers to have the updated match content
   // when they are notified the selection changed.
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 1);
+  EXPECT_EQ(observer.selected_children_changed_count(), 2);
+  EXPECT_EQ(observer.selection_changed_count(), 2);
+  EXPECT_EQ(observer.active_descendant_changed_count(), 2);
+  EXPECT_EQ(observer.value_changed_count(), 3);
 
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(2));
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 2);
+  EXPECT_EQ(observer.selected_children_changed_count(), 3);
+  EXPECT_EQ(observer.selection_changed_count(), 3);
+  EXPECT_EQ(observer.active_descendant_changed_count(), 3);
+  EXPECT_EQ(observer.value_changed_count(), 4);
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+                       EmitAccessibilityEventsOnButtonFocusHint) {
+  TestAXEventObserver observer;
+  CreatePopupForTestQuery();
+  ACMatches matches;
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  AutocompleteController* controller = popup_model()->autocomplete_controller();
+  match.contents = base::ASCIIToUTF16("https://foobar.com");
+  match.has_tab_match = true;
+  matches.push_back(match);
+  controller->result_.AppendMatches(controller->input_, matches);
+  popup_view()->UpdatePopupAppearance();
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
+  EXPECT_EQ(observer.selected_children_changed_count(), 2);
+  EXPECT_EQ(observer.selection_changed_count(), 2);
+  EXPECT_EQ(observer.active_descendant_changed_count(), 2);
+  EXPECT_EQ(observer.value_changed_count(), 2);
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
+      1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
+  EXPECT_EQ(observer.selected_children_changed_count(), 3);
+  EXPECT_EQ(observer.selection_changed_count(), 3);
+  EXPECT_EQ(observer.active_descendant_changed_count(), 3);
+  EXPECT_EQ(observer.value_changed_count(), 3);
+
+  popup_view()->model()->SetSelection(
+      OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
+  EXPECT_EQ(observer.selected_children_changed_count(), 4);
+  EXPECT_EQ(observer.selection_changed_count(), 4);
+  EXPECT_EQ(observer.active_descendant_changed_count(), 4);
+  EXPECT_EQ(observer.value_changed_count(), 4);
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
@@ -434,16 +494,22 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   // Lets check that arrowing up and down emits the event.
   TestAXEventObserver observer;
   EXPECT_EQ(observer.selected_children_changed_count(), 0);
+  EXPECT_EQ(observer.selection_changed_count(), 0);
+  EXPECT_EQ(observer.value_changed_count(), 0);
   EXPECT_EQ(observer.active_descendant_changed_count(), 0);
 
   // This is equiverlent of the user arrowing down in the omnibox.
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
   EXPECT_EQ(observer.selected_children_changed_count(), 1);
+  EXPECT_EQ(observer.selection_changed_count(), 1);
+  EXPECT_EQ(observer.value_changed_count(), 1);
   EXPECT_EQ(observer.active_descendant_changed_count(), 1);
 
   // This is equivalent of the user arrowing up in the omnibox.
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(0));
   EXPECT_EQ(observer.selected_children_changed_count(), 2);
+  EXPECT_EQ(observer.selection_changed_count(), 2);
+  EXPECT_EQ(observer.value_changed_count(), 2);
   EXPECT_EQ(observer.active_descendant_changed_count(), 2);
 
   // TODO(accessibility) Test that closing the popup fires an activedescendant

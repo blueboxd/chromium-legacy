@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/recording_task_time_observer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "v8/include/v8.h"
@@ -3385,6 +3386,51 @@ TEST_F(MainThreadSchedulerImplTest, PauseTimersForAndroidWebView) {
   EXPECT_THAT(run_order, testing::ElementsAre("T1"));
 }
 #endif  // defined(OS_ANDROID)
+
+TEST_F(MainThreadSchedulerImplTest, FreezesCompositorQueueWhenAllPagesFrozen) {
+  main_frame_scheduler_.reset();
+  page_scheduler_.reset();
+
+  std::unique_ptr<PageScheduler> sched_1 =
+      scheduler_->CreatePageScheduler(nullptr);
+  sched_1->SetPageVisible(false);
+  std::unique_ptr<PageScheduler> sched_2 =
+      scheduler_->CreatePageScheduler(nullptr);
+  sched_2->SetPageVisible(false);
+
+  Vector<String> run_order;
+
+  sched_1->SetPageVisible(false);
+  sched_1->SetPageFrozen(true);
+  PostTestTasks(&run_order, "D1 C1");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1"));
+
+  run_order.clear();
+  sched_2->SetPageFrozen(true);
+  PostTestTasks(&run_order, "D2 C2");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("D2"));
+
+  run_order.clear();
+  std::unique_ptr<PageScheduler> sched_3 =
+      scheduler_->CreatePageScheduler(nullptr);
+  sched_3->SetPageVisible(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("C2"));
+
+  run_order.clear();
+  PostTestTasks(&run_order, "D3 C3");
+  sched_3.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("D3"));
+
+  run_order.clear();
+  sched_1.reset();
+  sched_2.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("C3"));
+}
 
 class MainThreadSchedulerImplWithInitalVirtualTimeTest
     : public MainThreadSchedulerImplTest {

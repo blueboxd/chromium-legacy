@@ -25,7 +25,7 @@ export const PerfEvent = {
 };
 
 /**
- * @typedef {function(PerfEvent, number, !Object=)}
+ * @typedef {function(!PerfEvent, number, !Object=)}
  */
 let PerfEventListener;  // eslint-disable-line no-unused-vars
 
@@ -39,14 +39,14 @@ export class PerfLogger {
   constructor() {
     /**
      * Map to store events starting timestamp.
-     * @type {!Map<PerfEvent, number>}
+     * @type {!Map<!PerfEvent, number>}
      * @private
      */
     this.startTimeMap_ = new Map();
 
     /**
      * Set of the listeners for perf events.
-     * @type {!Set<PerfEventListener>}
+     * @type {!Set<!PerfEventListener>}
      */
     this.listeners_ = new Set();
 
@@ -76,7 +76,7 @@ export class PerfLogger {
 
   /**
    * Starts the measurement for given event.
-   * @param {PerfEvent} event Target event.
+   * @param {!PerfEvent} event Target event.
    */
   start(event) {
     if (this.startTimeMap_.has(event)) {
@@ -90,8 +90,8 @@ export class PerfLogger {
 
   /**
    * Stops the measurement for given event and returns the measurement result.
-   * @param {PerfEvent} event Target event.
-   * @param {PerfInformation=} perfInfo Optional information of this event
+   * @param {!PerfEvent} event Target event.
+   * @param {!PerfInformation=} perfInfo Optional information of this event
    *     for performance measurement.
    */
   stop(event, perfInfo = {}) {
@@ -122,7 +122,7 @@ export class PerfLogger {
 
   /**
    * Stops the measurement of launch-related events.
-   * @param {PerfInformation=} perfInfo Optional information of this event
+   * @param {!PerfInformation=} perfInfo Optional information of this event
    *     for performance measurement.
    */
   stopLaunch(perfInfo) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+
 /**
  * @fileoverview constants related to input method options.
  */
@@ -10,7 +12,7 @@ cr.define('settings.input_method_util', function() {
    * The prefix string shared by all first party input method ID.
    * @private @const
    */
-  const FIRST_PARTY_INPUT_METHOD_ID_PREFIX =
+  /* #export */ const FIRST_PARTY_INPUT_METHOD_ID_PREFIX =
       '_comp_ime_jkghodnilhceideoidjikpgommlajknk';
 
   /**
@@ -44,7 +46,7 @@ cr.define('settings.input_method_util', function() {
    *
    * @enum {string}
    */
-  const OptionType = {
+  /* #export */ const OptionType = {
     EDIT_USER_DICT: 'editUserDict',
     ENABLE_COMPLETION: 'enableCompletion',
     ENABLE_DOUBLE_SPACE_PERIOD: 'enableDoubleSpacePeriod',

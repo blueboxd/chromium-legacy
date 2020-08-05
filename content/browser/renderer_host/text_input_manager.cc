@@ -48,7 +48,7 @@ TextInputManager::~TextInputManager() {
 
   // Unregister all the remaining views.
   std::vector<RenderWidgetHostViewBase*> views;
-  for (auto pair : text_input_state_map_)
+  for (auto const& pair : text_input_state_map_)
     views.push_back(pair.first);
 
   for (auto* view : views)
@@ -62,7 +62,11 @@ RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
 }
 
 const ui::mojom::TextInputState* TextInputManager::GetTextInputState() const {
-  return !!active_view_ ? &text_input_state_map_.at(active_view_) : nullptr;
+  if (!active_view_) {
+    return nullptr;
+  }
+
+  return text_input_state_map_.at(active_view_).get();
 }
 
 const TextInputManager::SelectionRegion* TextInputManager::GetSelectionRegion(
@@ -112,10 +116,15 @@ void TextInputManager::UpdateTextInputState(
 
   // Since |view| is registered, we already have a previous value for its
   // TextInputState.
-  bool changed = ShouldUpdateTextInputState(text_input_state_map_[view],
+  bool changed = ShouldUpdateTextInputState(*text_input_state_map_[view],
                                             text_input_state);
-
-  text_input_state_map_[view] = text_input_state;
+  text_input_state_map_[view] = text_input_state.Clone();
+  for (const auto& ime_text_span_info :
+       text_input_state_map_[view]->ime_text_spans_info) {
+    const gfx::Rect& bounds = ime_text_span_info->bounds;
+    ime_text_span_info->bounds = gfx::Rect(
+        view->TransformPointToRootCoordSpace(bounds.origin()), bounds.size());
+  }
 
   // If |view| is different from |active_view| and its |TextInputState.type| is
   // not NONE, |active_view_| should change to |view|.
@@ -129,7 +138,7 @@ void TextInputManager::UpdateTextInputState(
       // RenderWidget's IPC might arrive sooner and we reach here. To make the
       // IME behavior identical to the non-OOPIF case, we have to manually reset
       // the state for |active_view_|.
-      text_input_state_map_[active_view_].type = ui::TEXT_INPUT_TYPE_NONE;
+      text_input_state_map_[active_view_]->type = ui::TEXT_INPUT_TYPE_NONE;
       RenderWidgetHostViewBase* active_view = active_view_;
       active_view_ = nullptr;
       NotifyObserversAboutInputStateUpdate(active_view, true);
@@ -256,8 +265,7 @@ void TextInputManager::SelectionChanged(RenderWidgetHostViewBase* view,
 
 void TextInputManager::Register(RenderWidgetHostViewBase* view) {
   DCHECK(!IsRegistered(view));
-
-  text_input_state_map_[view] = ui::mojom::TextInputState();
+  text_input_state_map_[view] = ui::mojom::TextInputState::New();
   selection_region_map_[view] = SelectionRegion();
   composition_range_info_map_[view] = CompositionRangeInfo();
   text_selection_map_[view] = TextSelection();
@@ -301,7 +309,7 @@ size_t TextInputManager::GetRegisteredViewsCountForTesting() {
 ui::TextInputType TextInputManager::GetTextInputTypeForViewForTesting(
     RenderWidgetHostViewBase* view) {
   DCHECK(IsRegistered(view));
-  return text_input_state_map_[view].type;
+  return text_input_state_map_[view]->type;
 }
 
 const gfx::Range* TextInputManager::GetCompositionRangeForTesting() const {

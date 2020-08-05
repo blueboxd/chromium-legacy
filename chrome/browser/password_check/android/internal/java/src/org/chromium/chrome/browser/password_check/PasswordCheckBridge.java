@@ -24,8 +24,10 @@ class PasswordCheckBridge {
          * @param originUrl Origin of the compromised credential.
          * @param username Username for the compromised credential.
          * @param password Password of the compromised credential.
+         * @param hasScript True iff a script can be applied to the compromised credential.
          */
-        void onCompromisedCredentialFound(String originUrl, String username, String password);
+        void onCompromisedCredentialFound(
+                String originUrl, String username, String password, boolean hasScript);
 
         /**
          * Called when the compromised credentials found in a previous check are read from disk.
@@ -54,8 +56,10 @@ class PasswordCheckBridge {
     }
 
     // TODO(crbug.com/1102025): Add call from native.
-    void onCompromisedCredentialFound(String originUrl, String username, String password) {
-        mPasswordCheckObserver.onCompromisedCredentialFound(originUrl, username, password);
+    void onCompromisedCredentialFound(
+            String originUrl, String username, String password, boolean hasScript) {
+        mPasswordCheckObserver.onCompromisedCredentialFound(
+                originUrl, username, password, hasScript);
     }
 
     // TODO(crbug.com/1102025): Add call from native.

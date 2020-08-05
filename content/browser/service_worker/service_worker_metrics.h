@@ -101,8 +101,9 @@ class ServiceWorkerMetrics {
     BACKGROUND_FETCH_SUCCESS = 32,
     PERIODIC_SYNC = 33,
     CONTENT_DELETE = 34,
+    PUSH_SUBSCRIPTION_CHANGE = 35,
     // Add new events to record here.
-    kMaxValue = CONTENT_DELETE,
+    kMaxValue = PUSH_SUBSCRIPTION_CHANGE,
   };
 
   // Used for UMA. Append only.

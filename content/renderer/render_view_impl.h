@@ -235,6 +235,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
   void OnPageVisibilityChanged(PageVisibilityState visibility) override;
+  void OnPageFrozenChanged(bool frozen) override;
   void ZoomLevelChanged() override;
 
   // RenderView implementation -------------------------------------------------

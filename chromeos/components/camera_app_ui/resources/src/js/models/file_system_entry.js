@@ -56,7 +56,7 @@ export class AbstractFileEntry extends AbstractFileSystemEntry {
    * original entry should not be used after calling this method.
    * @param {!AbstractDirectoryEntry} dir
    * @param {string} name
-   * @return {!Promise<AbstractFileEntry>} The new file entry.
+   * @return {!Promise<!AbstractFileEntry>} The new file entry.
    * @abstract
    */
   async moveTo(dir, name) {}

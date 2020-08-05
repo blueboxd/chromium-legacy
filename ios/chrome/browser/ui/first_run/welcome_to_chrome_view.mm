@@ -341,7 +341,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   [self addSubview:self.containerView];
   [self.containerView addSubview:self.titleLabel];
   [self.containerView addSubview:self.imageView];
-  if (@available(iOS 13.0, *)) {
+  if (@available(iOS 13.5, *)) {
     [self.containerView addSubview:self.TOSTextView];
   } else {
     [self.containerView addSubview:self.legacyTOSLabel];
@@ -361,7 +361,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   [super layoutSubviews];
   [self layoutTitleLabel];
   [self layoutImageView];
-  if (@available(iOS 13.0, *)) {
+  if (@available(iOS 13.5, *)) {
     [self layoutTOSTextView];
   } else {
     [self layoutLegacyTOSLabel];
@@ -472,7 +472,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
       kOptInLabelPadding[[self heightSizeClassIdiom]];
   CGFloat optInLabelOriginX =
       base::i18n::IsRTL() ? 0.0f : optInLabelSidePadding;
-  if (@available(iOS 13.0, *)) {
+  if (@available(iOS 13.5, *)) {
     self.optInLabel.frame = AlignRectOriginAndSizeToPixels(
         CGRectMake(optInLabelOriginX,
                    CGRectGetMaxY(self.TOSTextView.frame) + optInLabelTopPadding,
@@ -554,7 +554,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   [self configureContainerView];
   [self configureTitleLabel];
   [self configureImageView];
-  if (@available(iOS 13.0, *)) {
+  if (@available(iOS 13.5, *)) {
     [self configureTOSTextView];
   } else {
     [self configureLegacyTOSLabel];

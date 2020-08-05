@@ -28,6 +28,7 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   void HandleLaunchSelectedProfile(const base::ListValue* args);
   void HandleAskOnStartupChanged(const base::ListValue* args);
   void HandleGetNewProfileSuggestedThemeInfo(const base::ListValue* args);
+  void HandleLoadSignInProfileCreationFlow(const base::ListValue* args);
 
   void OnSwitchToProfileComplete(Profile* profile,
                                  Profile::CreateStatus profile_create_status);

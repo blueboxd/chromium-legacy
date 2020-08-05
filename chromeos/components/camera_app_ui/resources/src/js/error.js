@@ -26,8 +26,8 @@ export const ErrorLevel = {
 /**
  * Error reported in testing run.
  * @typedef {{
- *   type: ErrorType,
- *   level: ErrorLevel,
+ *   type: !ErrorType,
+ *   level: !ErrorLevel,
  *   stack: string,
  *   time: number,
  * }}
@@ -152,8 +152,8 @@ const triggeredErrorSet = new Set();
 /**
  * Reports error either through test error callback in test run or to error
  * metrics in non test run.
- * @param {ErrorType} type
- * @param {ErrorLevel} level
+ * @param {!ErrorType} type
+ * @param {!ErrorLevel} level
  * @param {!Error} error
  */
 export function reportError(type, level, error) {

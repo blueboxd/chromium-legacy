@@ -2800,6 +2800,7 @@ static_library("arc_test_support") {
   deps = [
     ":chromeos",
     "//base",
+    "//dbus",
   ]
 }
 

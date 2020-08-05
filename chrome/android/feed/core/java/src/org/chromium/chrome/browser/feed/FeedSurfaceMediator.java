@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.feature_engagement.Tracker;
@@ -56,10 +57,14 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * A mediator for the {@link FeedSurfaceCoordinator} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
-                                     ContextMenuManager.TouchEnabledDelegate,
-                                     TemplateUrlServiceObserver, ListMenu.Delegate,
-                                     HomepagePromoStateListener, IdentityManager.Observer {
+@VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+public class FeedSurfaceMediator
+        implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate,
+                   TemplateUrlServiceObserver, ListMenu.Delegate, HomepagePromoStateListener,
+                   IdentityManager.Observer {
+    @VisibleForTesting
+    public static final String FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA = "FeedContentFirstLoadedTime";
+
     private static final float IPH_TRIGGER_BAR_TRANSITION_FRACTION = 1.0f;
     private static final float IPH_STREAM_MIN_SCROLL_FRACTION = 0.10f;
     private static final float IPH_FEED_HEADER_MAX_POS_FRACTION = 0.35f;
@@ -85,7 +90,17 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     private int mThumbnailWidth;
     private int mThumbnailHeight;
     private int mThumbnailScrollY;
+
+    /** Whether the Feed content is loading. */
+    private boolean mIsLoadingFeed;
+    /** Cached parameters for recording the histogram of "FeedContentFirstLoadedTime". */
+    private boolean mIsInstantStart;
+    private long mActivityCreationTimeMs;
     private long mContentFirstAvailableTimeMs;
+    // Whether missing a histogram record when onOverviewShownAtLaunch() is called. It is possible
+    // that Feed content is still loading at that time and the {@link mContentFirstAvailableTimeMs}
+    // hasn't been set yet.
+    private boolean mHasPendingUmaRecording;
 
     /**
      * @param coordinator The {@link FeedSurfaceCoordinator} that interacts with this class.
@@ -145,6 +160,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
         }
 
         if (mFeedEnabled) {
+            mIsLoadingFeed = true;
             mCoordinator.createStream();
             if (mSnapScrollHelper != null) {
                 mSnapScrollHelper.setView(mCoordinator.getStream().getView());
@@ -191,7 +207,12 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
             public void onAddFinished() {
                 if (mContentFirstAvailableTimeMs == 0) {
                     mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
+                    if (mHasPendingUmaRecording) {
+                        maybeRecordContentLoadingTime();
+                        mHasPendingUmaRecording = false;
+                    }
                 }
+                mIsLoadingFeed = false;
             }
         };
         stream.addOnContentChangedListener(mStreamContentChangedListener);
@@ -569,10 +590,6 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
         updateSectionHeader();
     }
 
-    long getContentFirstAvailableTimeMs() {
-        return mContentFirstAvailableTimeMs;
-    }
-
     /**
      * The {@link SignInPromo} for the Feed.
      * TODO(huayinz): Update content and visibility through a ModelChangeProcessor.
@@ -617,5 +634,23 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     @VisibleForTesting
     SignInPromo getSignInPromoForTesting() {
         return mSignInPromo;
+    }
+
+    void onOverviewShownAtLaunch(long activityCreationTimeMs, boolean isInstantStart) {
+        assert mActivityCreationTimeMs == 0;
+        mActivityCreationTimeMs = activityCreationTimeMs;
+        mIsInstantStart = isInstantStart;
+
+        if (!maybeRecordContentLoadingTime() && mIsLoadingFeed) {
+            mHasPendingUmaRecording = true;
+        }
+    }
+
+    private boolean maybeRecordContentLoadingTime() {
+        if (mActivityCreationTimeMs == 0 || mContentFirstAvailableTimeMs == 0) return false;
+
+        StartSurfaceConfiguration.recordHistogram(FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
+                mContentFirstAvailableTimeMs - mActivityCreationTimeMs, mIsInstantStart);
+        return true;
     }
 }

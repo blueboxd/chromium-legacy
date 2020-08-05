@@ -51,6 +51,11 @@ void ProfilePickerHandler::RegisterMessages() {
       base::BindRepeating(
           &ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "loadSignInProfileCreationFlow",
+      base::BindRepeating(
+          &ProfilePickerHandler::HandleLoadSignInProfileCreationFlow,
+          base::Unretained(this)));
 }
 
 void ProfilePickerHandler::OnJavascriptAllowed() {
@@ -129,6 +134,11 @@ void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
                     color_utils::SkColorToRgbaString(color_info.color));
 
   ResolveJavascriptCallback(callback_id, std::move(dict));
+}
+
+void ProfilePickerHandler::HandleLoadSignInProfileCreationFlow(
+    const base::ListValue* args) {
+  // TODO(crbug.com/1063856): Add implementation.
 }
 
 void ProfilePickerHandler::OnSwitchToProfileComplete(

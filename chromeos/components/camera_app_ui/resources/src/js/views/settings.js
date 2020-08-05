@@ -50,8 +50,8 @@ let DeviceSetting;
  */
 export class BaseSettings extends View {
   /**
-   * @param {ViewName} name Name of the view.
-   * @param {!Object<string, function(Event=)>=} itemHandlers Click-handlers
+   * @param {!ViewName} name Name of the view.
+   * @param {!Object<string, function(!Event=)>=} itemHandlers Click-handlers
    *     mapped by element ids.
    */
   constructor(name, itemHandlers = {}) {
@@ -60,7 +60,7 @@ export class BaseSettings extends View {
     this.root.querySelector('.menu-header button')
         .addEventListener('click', () => this.leave());
     this.root.querySelectorAll('.menu-item').forEach((element) => {
-      /** @type {function(Event=)|undefined} */
+      /** @type {function(!Event=)|undefined} */
       const handler = itemHandlers[element.id];
       if (handler) {
         element.addEventListener('click', handler);
@@ -77,7 +77,7 @@ export class BaseSettings extends View {
 
   /**
    * Opens sub-settings.
-   * @param {ViewName} name Name of settings view.
+   * @param {!ViewName} name Name of settings view.
    * @private
    */
   openSubSettings(name) {

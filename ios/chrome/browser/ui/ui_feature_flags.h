@@ -69,4 +69,7 @@ extern const base::Feature kSharedHighlightingIOS;
 // Feature flag that enables taking fullpage screenshots of a webpage.
 extern const base::Feature kEnableFullPageScreenshot;
 
+// Feature flag that enables reauth for filling passwords;
+extern const base::Feature kEnableAutofillPasswordReauthIOS;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -948,9 +948,9 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   const base::string16 long_tooltip(2000, 'W');
 
   // Create a nested layout to test corner cases.
-  LabelButton* back = new LabelButton(nullptr, base::string16());
+  LabelButton* back =
+      widget->GetContentsView()->AddChildView(std::make_unique<LabelButton>());
   back->SetBounds(10, 10, 80, 80);
-  widget->GetContentsView()->AddChildView(back);
   widget->Show();
 
   ui::test::EventGenerator event_generator(GetContext(),
@@ -962,9 +962,9 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
 
   // Create a new button for the "front", and set the tooltip, but don't add it
   // to the view hierarchy yet.
-  LabelButton* front = new LabelButton(nullptr, base::string16());
-  front->SetBounds(20, 20, 40, 40);
-  front->SetTooltipText(tooltip_front);
+  auto front_managed = std::make_unique<LabelButton>();
+  front_managed->SetBounds(20, 20, 40, 40);
+  front_managed->SetTooltipText(tooltip_front);
 
   // Changing the tooltip text shouldn't require an additional mousemove to take
   // effect.
@@ -973,7 +973,7 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
 
   // Adding a new view under the mouse should also take immediate effect.
-  back->AddChildView(front);
+  LabelButton* front = back->AddChildView(std::move(front_managed));
   EXPECT_EQ(tooltip_front, TooltipTextForWidget(widget));
 
   // A long tooltip will be wrapped by Cocoa, but the full string should appear.

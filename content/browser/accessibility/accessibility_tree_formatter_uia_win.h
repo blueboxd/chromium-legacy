@@ -100,6 +100,7 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
+  const std::string GetRunUntilEventString() override;
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_result = nullptr) override;

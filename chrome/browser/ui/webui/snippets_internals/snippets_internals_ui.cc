@@ -29,6 +29,9 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
   source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
   source->AddResourcePath("snippets_internals.mojom-lite.js",

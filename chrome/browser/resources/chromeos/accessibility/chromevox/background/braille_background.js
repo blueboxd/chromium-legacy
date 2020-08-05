@@ -116,6 +116,16 @@ BrailleBackground = class {
     return this.translatorManager_;
   }
 
+  /** @override */
+  panLeft() {
+    this.displayManager_.panLeft();
+  }
+
+  /** @override */
+  panRight() {
+    this.displayManager_.panRight();
+  }
+
   /**
    * @param {!NavBraille} newContent
    * @param {?string} newContentId

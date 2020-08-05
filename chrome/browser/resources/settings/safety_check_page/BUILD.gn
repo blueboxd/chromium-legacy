@@ -45,6 +45,7 @@ js_library("safety_check_chrome_cleaner_child") {
     "../chrome_cleanup_page:chrome_cleanup_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
@@ -63,6 +64,10 @@ js_library("safety_check_extensions_child") {
 js_library("safety_check_page") {
   deps = [
     ":safety_check_browser_proxy",
+
+    # This element is included on all platforms to ensure it's type checked (the element itself
+    # only exists in Windows).
+    ":safety_check_chrome_cleaner_child",
     ":safety_check_extensions_child",
     ":safety_check_passwords_child",
     ":safety_check_safe_browsing_child",
@@ -77,10 +82,6 @@ js_library("safety_check_page") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
-
-  if (is_win) {
-    deps += [ ":safety_check_chrome_cleaner_child" ]
-  }
 }
 
 js_library("safety_check_passwords_child") {

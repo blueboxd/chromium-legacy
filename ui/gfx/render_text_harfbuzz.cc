@@ -1514,6 +1514,11 @@ size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
   if (caret.caret_pos() == 0)
     return 0;
 
+  if (!multiline()) {
+    DCHECK_EQ(1u, GetShapedText()->lines().size());
+    return 0;
+  }
+
   size_t layout_position = TextIndexToDisplayIndex(caret.caret_pos());
   LogicalCursorDirection affinity = caret.caret_affinity();
   const internal::ShapedText* shaped_text = GetShapedText();

@@ -83,6 +83,26 @@ button:disabled,
   background-image: url(/chromevox/images/close-hover-19.png);
 }
 
+#braille-pan-left {
+  /* Draw a left-facing triangle. */
+  border-bottom: 8px solid transparent;
+  border-inline-end: 8px solid white;
+  border-top: 8px solid transparent;
+  height: 0;
+  margin: 10px;
+  width: 0;
+}
+
+#braille-pan-right {
+  /* Draw a right-facing triangle. */
+  border-bottom: 8px solid transparent;
+  border-inline-start: 8px solid white;
+  border-top: 8px solid transparent;
+  height: 0;
+  margin: 10px 0;
+  width: 0;
+}
+
 #caption {
   color: #fff;
   flex-grow: 1;

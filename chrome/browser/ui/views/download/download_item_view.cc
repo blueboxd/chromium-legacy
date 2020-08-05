@@ -315,6 +315,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   dropdown_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
   dropdown_button->set_has_ink_drop_action_on_click(false);
   dropdown_button->SetFocusForPlatform();
+  dropdown_button->SizeToPreferredSize();
   dropdown_button_ = AddChildView(std::move(dropdown_button));
 
   complete_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(2500));
@@ -335,78 +336,42 @@ void DownloadItemView::Layout() {
   View::Layout();
 
   open_button_->SetBoundsRect(GetLocalBounds());
+  dropdown_button_->SetPosition(
+      gfx::Point(width() - kEndPadding - dropdown_button_->width(),
+                 CenterY(dropdown_button_->height())));
 
-  if (is_download_warning(mode_)) {
-    gfx::Point child_origin(
-        kStartPadding + GetIcon().Size().width() + kStartPadding,
-        CenterY(warning_label_->height()));
-    warning_label_->SetPosition(child_origin);
-
-    child_origin.Offset(warning_label_->width() + kLabelPadding, 0);
-    gfx::Size button_size = GetButtonSize();
-    child_origin.set_y(CenterY(button_size.height()));
-    if (save_button_->GetVisible()) {
-      save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-      child_origin.Offset(button_size.width() + kSaveDiscardButtonPadding, 0);
-    }
-    if (discard_button_->GetVisible())
-      discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-    if (scan_button_->GetVisible())
-      scan_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-  } else if (is_mixed_content(mode_)) {
-    gfx::Point child_origin(
-        kStartPadding + GetIcon().Size().width() + kStartPadding,
-        CenterY(warning_label_->height()));
-    warning_label_->SetPosition(child_origin);
-
-    child_origin.Offset(warning_label_->width() + kLabelPadding, 0);
-    gfx::Size button_size = GetButtonSize();
-    child_origin.set_y(CenterY(button_size.height()));
-    if (save_button_->GetVisible())
-      save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-    if (discard_button_->GetVisible())
-      discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-  } else if (mode_ == Mode::kDeepScanning) {
-    gfx::Point child_origin(
-        kStartPadding + GetIcon().Size().width() + kStartPadding,
-        CenterY(deep_scanning_label_->height()));
-    deep_scanning_label_->SetPosition(child_origin);
-
-    if (open_now_button_->GetVisible()) {
-      child_origin.set_y(
-          CenterY(open_now_button_->GetPreferredSize().height()));
-      child_origin.Offset(deep_scanning_label_->width() + kLabelPadding, 0);
-      open_now_button_->SetBoundsRect(
-          gfx::Rect(child_origin, open_now_button_->GetPreferredSize()));
-    }
-  } else {
-    const int mirrored_x = GetMirroredXWithWidthInView(
-        kStartPadding + kProgressIndicatorSize + kProgressTextPadding,
-        kTextWidth);
-
+  if (mode_ == Mode::kNormal) {
+    const int text_x =
+        kStartPadding + kProgressIndicatorSize + kProgressTextPadding;
+    const int text_end = dropdown_button_->GetVisible()
+                             ? dropdown_button_->bounds().right()
+                             : (dropdown_button_->x() - kEndPadding);
+    const int text_width = text_end - text_x;
     int text_height = file_name_label_->GetLineHeight();
     if (!status_label_->GetText().empty())
       text_height += status_label_->GetLineHeight();
-    const int file_name_y = CenterY(text_height);
-    file_name_label_->SetBounds(mirrored_x, file_name_y, kTextWidth,
+
+    file_name_label_->SetBounds(text_x, CenterY(text_height), text_width,
                                 file_name_label_->GetPreferredSize().height());
+    status_label_->SetBounds(
+        text_x, file_name_label_->y() + file_name_label_->GetLineHeight(),
+        text_width, status_label_->GetPreferredSize().height());
+  } else {
+    auto* const label =
+        (mode_ == Mode::kDeepScanning) ? deep_scanning_label_ : warning_label_;
+    label->SetPosition(gfx::Point(kStartPadding * 2 + GetIcon().Size().width(),
+                                  CenterY(label->height())));
 
-    const int status_y = file_name_y + file_name_label_->GetLineHeight();
-    const bool should_expand_for_status_text =
-        (model_->GetDangerType() ==
-         download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE);
-    const gfx::Size status_size = status_label_->GetPreferredSize();
-    const int status_width =
-        should_expand_for_status_text ? status_size.width() : kTextWidth;
-    status_label_->SetBoundsRect(
-        gfx::Rect(mirrored_x, status_y, status_width, status_size.height()));
-  }
-
-  if (mode_ != Mode::kDangerous) {
-    dropdown_button_->SizeToPreferredSize();
-    dropdown_button_->SetPosition(
-        gfx::Point(width() - dropdown_button_->width() - kEndPadding,
-                   CenterY(dropdown_button_->height())));
+    const gfx::Size button_size = GetButtonSize();
+    gfx::Rect button_bounds(gfx::Point(label->bounds().right() + kLabelPadding,
+                                       CenterY(button_size.height())),
+                            button_size);
+    for (auto* button :
+         {save_button_, discard_button_, scan_button_, open_now_button_}) {
+      button->SetBoundsRect(button_bounds);
+      if (button->GetVisible())
+        button_bounds.set_x(button_bounds.right() + kSaveDiscardButtonPadding);
+    }
   }
 }
 
@@ -583,54 +548,46 @@ void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
 }
 
 gfx::Size DownloadItemView::CalculatePreferredSize() const {
-  int width = 0;
-  // We set the height to the height of two rows or text plus margins.
-  int child_height =
-      file_name_label_->GetLineHeight() + status_label_->GetLineHeight();
+  int height,
+      width = dropdown_button_->GetVisible()
+                  ? (dropdown_button_->GetPreferredSize().width() + kEndPadding)
+                  : 0;
 
-  if (has_warning_label(mode_)) {
-    // Width.
-    const gfx::Size icon_size = GetIcon().Size();
-    width = kStartPadding + icon_size.width() + kStartPadding +
-            warning_label_->width() + kLabelPadding;
-    gfx::Size button_size = GetButtonSize();
-    if (save_button_->GetVisible() && discard_button_->GetVisible())
-      width += button_size.width() + kSaveDiscardButtonPadding;
-    width += button_size.width() + kEndPadding;
-
-    // Height: make sure the button fits and the warning icon fits.
-    child_height =
-        std::max({child_height, button_size.height(), icon_size.height()});
-  } else if (mode_ == Mode::kDeepScanning) {
-    const gfx::Size icon_size = GetIcon().Size();
-    width = kStartPadding + icon_size.width() + kStartPadding +
-            deep_scanning_label_->width() + kLabelPadding;
-    if (open_now_button_->GetVisible()) {
-      width += open_now_button_->GetPreferredSize().width();
-      // Height: make sure the button fits and the warning icon fits.
-      child_height =
-          std::max({child_height, open_now_button_->GetPreferredSize().height(),
-                    icon_size.height()});
-      width += kEndPadding;
-    }
-  } else {
-    int status_width = kTextWidth;
+  if (mode_ == Mode::kNormal) {
+    int label_width =
+        std::max(file_name_label_->GetPreferredSize().width(), kTextWidth);
     if (model_->GetDangerType() ==
         download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
-      status_width =
-          std::max(status_width, status_label_->GetPreferredSize().width());
+      label_width =
+          std::max(label_width, status_label_->GetPreferredSize().width());
     }
-    width = kStartPadding + kProgressIndicatorSize + kProgressTextPadding +
-            status_width + kEndPadding;
+    width += kStartPadding + kProgressIndicatorSize + kProgressTextPadding +
+             label_width + kEndPadding;
+    height = file_name_label_->GetLineHeight() + status_label_->GetLineHeight();
+  } else {
+    auto* const label =
+        (mode_ == Mode::kDeepScanning) ? deep_scanning_label_ : warning_label_;
+    height = label->GetLineHeight() * 2;
+    const gfx::Size icon_size = GetIcon().Size();
+    width +=
+        kStartPadding * 2 + icon_size.width() + label->width() + kEndPadding;
+    height = std::max(height, icon_size.height());
+    const int visible_buttons = util::ranges::count(
+        std::array<const views::View*, 4>{save_button_, discard_button_,
+                                          scan_button_, open_now_button_},
+        true, &views::View::GetVisible);
+    if (visible_buttons > 0) {
+      const gfx::Size button_size = GetButtonSize();
+      width += kLabelPadding + button_size.width() * visible_buttons +
+               kSaveDiscardButtonPadding * (visible_buttons - 1);
+      height = std::max(height, button_size.height());
+    }
   }
-
-  if (model_->ShouldShowDropdown())
-    width += dropdown_button_->GetPreferredSize().width();
 
   // The normal height of the item which may be exceeded if text is large.
   constexpr int kDefaultDownloadItemHeight = 48;
   return gfx::Size(width, std::max(kDefaultDownloadItemHeight,
-                                   2 * kMinimumVerticalPadding + child_height));
+                                   2 * kMinimumVerticalPadding + height));
 }
 
 void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -1150,6 +1107,9 @@ std::pair<base::string16, int> DownloadItemView::GetStatusTextAndStyle() const {
 }
 
 gfx::Size DownloadItemView::GetButtonSize() const {
+  if (mode_ == Mode::kDeepScanning)
+    return open_now_button_->GetPreferredSize();
+
   gfx::Size size;
   if (discard_button_->GetVisible())
     size.SetToMax(discard_button_->GetPreferredSize());

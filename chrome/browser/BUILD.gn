@@ -1293,8 +1293,6 @@ static_library("browser") {
     "prerender/isolated/isolated_prerender_url_loader_interceptor.h",
     "prerender/isolated/prefetched_mainframe_response_container.cc",
     "prerender/isolated/prefetched_mainframe_response_container.h",
-    "prerender/prerender_link_manager.cc",
-    "prerender/prerender_link_manager.h",
     "prerender/prerender_link_manager_factory.cc",
     "prerender/prerender_link_manager_factory.h",
     "prerender/prerender_manager_factory.cc",

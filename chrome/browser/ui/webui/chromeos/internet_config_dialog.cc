@@ -150,6 +150,8 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInternetConfigDialogHost);
 
+  source->DisableTrustedTypesCSP();
+
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);
   source->UseStringsJs();

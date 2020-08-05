@@ -89,14 +89,6 @@
     --cr-icon-button-stroke-color: var(--google-grey-refresh-700);
   }
 
-  @media (prefers-color-scheme: dark) {
-    /* TODO(msalama): Dark mode mocks not ready yet.*/
-    cr-checkbox {
-      --cr-checkbox-label-color: var(--google-grey-refresh-500);
-      background-color: rgba(var(--md-background-color), .8);
-    }
-  }
-
   .footer {
     bottom: 0;
     display: flex;
@@ -105,13 +97,35 @@
     width: 100%;
   }
 
+  .footer > * {
+    background-color: rgba(255, 255, 255, .8);
+  }
+
+  #browseAsGuestButton {
+    margin-inline-start: 40px;
+  }
+
+  #browseAsGuestButton > iron-icon {
+    margin-inline-end: 8px;
+  }
+
   cr-checkbox {
     --cr-checkbox-label-color:  var(--google-grey-refresh-700);
     --cr-checkbox-label-padding-start: 8px;
-    background-color: rgba(255, 255, 255, .8);
     justify-content: flex-end;
     margin-inline-end: 40px;
     margin-inline-start: auto;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    /* TODO(msalama): Dark mode mocks not ready yet.*/
+    .footer > * {
+      background-color: rgba(0, 0, 0, .5);
+    }
+
+    cr-checkbox {
+      --cr-checkbox-label-color: var(--google-grey-refresh-500);
+    }
   }
 </style>
 
@@ -139,6 +153,10 @@
 <div id="rightBanner" class="banner"></div>
 
 <div class="footer">
+  <cr-button id="browseAsGuestButton" on-click="onLaunchGuestProfileClick_">
+    <iron-icon icon="profiles:account-circle"></iron-icon>
+    <div>$i18n{browseAsGuestButton}</div>
+  </cr-button>
   <cr-checkbox checked="{{askOnStartup_}}"
       on-change="onAskOnStartupChangedByUser_">
     $i18n{askOnStartupCheckboxText}

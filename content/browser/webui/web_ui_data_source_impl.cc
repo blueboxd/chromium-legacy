@@ -200,6 +200,16 @@ void WebUIDataSourceImpl::OverrideContentSecurityPolicy(
   csp_overrides_.insert_or_assign(directive, value);
 }
 
+void WebUIDataSourceImpl::DisableTrustedTypesCSP() {
+  // TODO(crbug.com/1098685): Trusted Type remaining WebUI
+  // This removes require-trusted-types-for and trusted-types directives
+  // from the CSP header.
+  OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::RequireTrustedTypesFor, std::string());
+  OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName::TrustedTypes,
+                                std::string());
+}
+
 void WebUIDataSourceImpl::AddFrameAncestor(const GURL& frame_ancestor) {
   // Do not allow a wildcard to be a frame ancestor or it will allow any website
   // to embed the WebUI.

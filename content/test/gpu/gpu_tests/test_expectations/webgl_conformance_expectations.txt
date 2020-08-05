@@ -154,7 +154,8 @@ crbug.com/angleproject/2914 [ vulkan passthrough ] conformance/textures/misc/tex
 crbug.com/angleproject/4931 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
 
 # Win / Intel / Vulkan / Passthrough command decoder
-crbug.com/angleproject/4922 [ win intel vulkan passthrough ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ RetryOnFailure ]
+# Technically flaky, but flake rate is too high for RetryOnFailure.
+crbug.com/angleproject/4922 [ win intel vulkan passthrough ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 
 ####################
 # Fuchsia failures     #

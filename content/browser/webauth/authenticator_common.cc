@@ -26,6 +26,7 @@
 #include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/is_uvpaa.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -518,6 +519,10 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
       base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     transports.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+  }
+
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    transports.insert(device::FidoTransportProtocol::kAndroidAccessory);
   }
 
   return transports;

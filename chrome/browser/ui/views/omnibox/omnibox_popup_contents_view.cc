@@ -237,6 +237,13 @@ OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
   return static_cast<OmniboxRowView*>(children()[i])->result_view();
 }
 
+OmniboxResultView* OmniboxPopupContentsView::GetSelectedResultView() {
+  size_t selected_line = model_->selected_line();
+  if (selected_line == OmniboxPopupModel::kNoMatch)
+    return nullptr;
+  return result_view_at(selected_line);
+}
+
 bool OmniboxPopupContentsView::InExplicitExperimentalKeywordMode() {
   return model_->edit_model()->InExplicitExperimentalKeywordMode();
 }
@@ -590,12 +597,6 @@ void OmniboxPopupContentsView::GetAccessibleNodeData(
   node_data->role = ax::mojom::Role::kListBox;
   if (IsOpen()) {
     node_data->AddState(ax::mojom::State::kExpanded);
-    OmniboxResultView* selected_result_view =
-        result_view_at(model_->selected_line());
-    if (selected_result_view)
-      node_data->AddIntAttribute(
-          ax::mojom::IntAttribute::kActivedescendantId,
-          selected_result_view->GetViewAccessibility().GetUniqueId().Get());
   } else {
     node_data->AddState(ax::mojom::State::kCollapsed);
     node_data->AddState(ax::mojom::State::kInvisible);

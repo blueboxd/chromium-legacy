@@ -307,8 +307,7 @@ ArcTracingBridge::~ArcTracingBridge() {
 }
 
 void ArcTracingBridge::GetCategories(std::set<std::string>* category_set) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+  base::AutoLock lock(categories_lock_);
   for (const auto& category : categories_) {
     category_set->insert(category.full_name);
   }
@@ -328,6 +327,7 @@ void ArcTracingBridge::OnCategoriesReady(
     const std::vector<std::string>& categories) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  base::AutoLock lock(categories_lock_);
   // There is no API in TraceLog to remove a category from the UI. As an
   // alternative, the old category that is no longer in |categories_| will be
   // ignored when calling |StartTracing|.
@@ -366,9 +366,12 @@ void ArcTracingBridge::StartTracing(const std::string& config,
   }
 
   std::vector<std::string> selected_categories;
-  for (const auto& category : categories_) {
-    if (trace_config.IsCategoryGroupEnabled(category.full_name))
-      selected_categories.push_back(category.name);
+  {
+    base::AutoLock lock(categories_lock_);
+    for (const auto& category : categories_) {
+      if (trace_config.IsCategoryGroupEnabled(category.full_name))
+        selected_categories.push_back(category.name);
+    }
   }
 
   tracing_instance->StartTracing(
@@ -448,7 +451,6 @@ ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;
 
 void ArcTracingBridge::ArcTracingAgent::GetCategories(
     std::set<std::string>* category_set) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_->GetCategories(category_set);
 }
 

@@ -115,6 +115,21 @@ class CORE_EXPORT StyleCascade {
                           CascadeOrigin,
                           CascadeResolver&);
 
+  // Returns the cascaded values [1].
+  //
+  // This is intended for use by the Inspector Agent.
+  //
+  // Calling this requires a call to Apply to have taken place first. This is
+  // because some of the cascaded values depend on computed value of other
+  // properties (see ApplyCascadeAffecting).
+  //
+  // Note that this function currently returns cascaded values from
+  // CascadeOrigin::kUserAgent, kUser and kAuthor only.
+  //
+  // [1] https://drafts.csswg.org/css-cascade/#cascaded
+  HeapHashMap<CSSPropertyName, Member<const CSSValue>> GetCascadedValues()
+      const;
+
   // The maximum number of tokens that may be produced by a var()
   // reference.
   //

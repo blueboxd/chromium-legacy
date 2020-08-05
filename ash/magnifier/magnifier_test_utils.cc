@@ -39,12 +39,10 @@ gfx::Rect GetBoundsInRoot(const gfx::Rect& bounds_in_screen,
 class TestFocusView : public views::WidgetDelegateView {
  public:
   TestFocusView()
-      : button_1_(new views::LabelButton(nullptr, {})),
-        button_2_(new views::LabelButton(nullptr, {})) {
+      : button_1_(AddChildView(std::make_unique<views::LabelButton>())),
+        button_2_(AddChildView(std::make_unique<views::LabelButton>())) {
     button_1_->SetFocusForPlatform();
     button_2_->SetFocusForPlatform();
-    AddChildView(button_1_);
-    AddChildView(button_2_);
   }
 
   ~TestFocusView() override = default;

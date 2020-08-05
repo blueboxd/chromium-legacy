@@ -10,6 +10,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -71,7 +72,15 @@ class TestThread : public PlatformThread::Delegate {
 
 }  // namespace
 
-TEST(CpuAffinityTest, SetThreadCpuAffinityMode) {
+#if defined(OS_CHROMEOS)
+// Some CrOS devices on the waterfall have asymmetric CPUs that aren't covered
+// by the test.
+#define MAYBE_SetThreadCpuAffinityMode DISABLED_SetThreadCpuAffinityMode
+#else
+#define MAYBE_SetThreadCpuAffinityMode SetThreadCpuAffinityMode
+#endif
+
+TEST(CpuAffinityTest, MAYBE_SetThreadCpuAffinityMode) {
   // This test currently only supports Nexus 5x and Pixel devices as big.LITTLE
   // devices. For other devices, we assume that the cores are symmetric. This is
   // currently the case for the devices on our waterfalls.

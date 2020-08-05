@@ -34,10 +34,10 @@
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
-#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
+#import "ios/chrome/browser/main/browser_util.h"
 #include "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/browser/screenshot/screenshot_delegate.h"
@@ -375,6 +375,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
           [self openOrReuseTabInMode:mode
                    withUrlLoadParams:params
                  tabOpenedCompletion:nil];
+        } else if (ActivityIsTabMove(activity)) {
+          NSString* tabID = GetTabIDFromActivity(activity);
+          MoveTabToBrowser(tabID, self.mainInterface.browser,
+                           /*destination_tab_index=*/0);
         } else if (!activityWithCompletion) {
           // Completion involves user interaction.
           // Only one can be triggered.

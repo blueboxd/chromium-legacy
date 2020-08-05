@@ -76,6 +76,9 @@ WebUIDataSource* CreateGpuHTMLSource() {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
 
   source->UseStringsJs();
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);

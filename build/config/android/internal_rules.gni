@@ -948,12 +948,7 @@ template("test_runner_script") {
 if (enable_java_templates) {
   template("android_lint") {
     action_with_pydeps(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "data_deps",
-                               "public_deps",
-                               "testonly",
-                             ])
+      forward_variables_from(invoker, [ "testonly" ])
       if (!defined(deps)) {
         deps = []
       }
@@ -982,6 +977,7 @@ if (enable_java_templates) {
               "${_target_label}__header",
             ]
           } else {
+            # Keep non-java deps as they may generate files used by lint.
             deps += [ _dep ]
           }
         }
@@ -999,15 +995,16 @@ if (enable_java_templates) {
         _suppressions_file = "//build/android/lint/suppressions.xml"
       }
 
-      _min_sdk_version = default_min_sdk_version
       if (defined(invoker.min_sdk_version)) {
         _min_sdk_version = invoker.min_sdk_version
+      } else {
+        _min_sdk_version = default_min_sdk_version
       }
 
       _lint_binary_path = "$lint_android_sdk_root/cmdline-tools/latest/bin/lint"
       _cache_dir = "$root_build_dir/android_lint_cache"
 
-      # Save these generated xml files in a consistent location for debugging.
+      # Save generated xml files in a consistent location for debugging.
       _lint_gen_dir = "$target_gen_dir/$target_name"
 
       script = "//build/android/gyp/lint.py"

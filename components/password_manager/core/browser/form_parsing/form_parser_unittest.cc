@@ -2522,6 +2522,53 @@ TEST(FormParserTest, InvalidURL) {
   EXPECT_FALSE(parser.Parse(form_data, FormDataParser::Mode::kSaving));
 }
 
+TEST(FormParserTest, FindUsernameInPredictions_SkipPrediction) {
+  // Searching username field should skip prediction that is less
+  // likely to be user interaction. For example, if a field has no
+  // user input while others have, the field cannot be an username
+  // field.
+
+  // Create a form containing username, email, id, password, submit.
+  const FormParsingTestCase form_desc = {
+      .fields = {
+          {.name = "username", .form_control_type = "text"},
+          {.name = "email", .form_control_type = "text"},
+          {.name = "id", .form_control_type = "text"},
+          {.name = "password", .form_control_type = "password"},
+          {.name = "submit", .form_control_type = "submit"},
+      }};
+
+  FormPredictions no_predictions;
+  ParseResultIds dummy;
+  const FormData form_data =
+      GetFormDataAndExpectation(form_desc, &no_predictions, &dummy, &dummy);
+
+  // Add all form fields in ProcessedField. A user typed only into
+  // "id" and "password" fields. So, the prediction for "email" field
+  // should be ignored despite it is more reliable than prediction for
+  // "id" field.
+  std::vector<ProcessedField> processed_fields;
+  for (const auto& form_field_data : form_data.fields)
+    processed_fields.push_back(ProcessedField{.field = &form_field_data});
+
+  processed_fields[2].interactability = Interactability::kCertain;  // id
+  processed_fields[3].interactability = Interactability::kCertain;  // password
+
+  // Add predictions for "email" and "id" fields. The "email" is in
+  // front of "id", indicating "email" is more reliable.
+  const std::vector<autofill::FieldRendererId> predictions = {
+      form_data.fields[1].unique_renderer_id,  // email
+      form_data.fields[2].unique_renderer_id,  // id
+  };
+
+  // Now search the username field. The username field is supposed to
+  // be "id", not "email".
+  const autofill::FormFieldData* field_data = FindUsernameInPredictions(
+      predictions, processed_fields, Interactability::kCertain);
+  ASSERT_TRUE(field_data);
+  EXPECT_EQ(base::UTF8ToUTF16("id"), field_data->name);
+}
+
 }  // namespace
 
 }  // namespace password_manager

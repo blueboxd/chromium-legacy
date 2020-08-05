@@ -9,8 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -33,9 +31,6 @@
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -266,15 +261,9 @@ class GuestOsSharePathTest : public testing::Test {
 
     g_browser_process->platform_part()
         ->InitializeSchedulerConfigurationManager();
-
-    // Create ArcSessionManager for ARCVM testing.
-    arc_session_manager_ = arc::CreateTestArcSessionManager(
-        std::make_unique<arc::ArcSessionRunner>(
-            base::BindRepeating(arc::FakeArcSession::Create)));
   }
 
   void TearDown() override {
-    arc_session_manager_.reset();
     g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     // Shutdown GuestOsSharePath to schedule FilePathWatchers to be destroyed,
     // then run thread bundle to ensure they are.
@@ -310,7 +299,6 @@ class GuestOsSharePathTest : public testing::Test {
   base::test::ScopedFeatureList features_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   AccountId account_id_;
-  std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
 
  private:
   std::unique_ptr<ScopedTestingLocalState> local_state_;
@@ -365,28 +353,6 @@ TEST_F(GuestOsSharePathTest, SuccessPluginVm) {
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
                      "path-to-share", Success::YES, ""));
-  run_loop()->Run();
-}
-
-// Tests that ARCVM can share path.
-TEST_F(GuestOsSharePathTest, SuccessArcvm) {
-  SetUpVolume();
-
-  // Set up VmInfo in |arc_session_manager_| to simulate a running ARCVM.
-  vm_tools::concierge::VmStartedSignal start_signal;
-  start_signal.set_name(arc::kArcVmName);
-  start_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager_->OnVmStarted(start_signal);
-
-  guest_os_share_path_->SharePath(
-      arc::kArcVmName, drivefs_.Append("root").Append("ArcvmTest"), PERSIST_NO,
-      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
-                     base::Unretained(this), arc::kArcVmName, Persist::NO,
-                     SeneschalClientCalled::YES,
-                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE,
-                     "ArcvmTest", Success::YES, ""));
-  // Also validate the seneschal server handle.
-  EXPECT_EQ(1000UL, fake_seneschal_client_->last_share_path_request().handle());
   run_loop()->Run();
 }
 
@@ -787,30 +753,6 @@ TEST_F(GuestOsSharePathTest, UnsharePathPluginVmNotRunning) {
                      base::Unretained(this), shared_path_, Persist::NO,
                      SeneschalClientCalled::NO, "", Success::YES,
                      "PluginVm not running"));
-  run_loop()->Run();
-}
-
-// Tests that it cannot unshare path when ARCVM is not running.
-TEST_F(GuestOsSharePathTest, UnsharePathArcvmNotRunning) {
-  SetUpVolume();
-  DictionaryPrefUpdate update(profile()->GetPrefs(),
-                              prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
-  base::Value vms(base::Value::Type::LIST);
-  vms.Append(base::Value(arc::kArcVmName));
-  shared_paths->SetKey(shared_path_.value(), std::move(vms));
-
-  // Remove VmInfo from |arc_session_manager_| to simulate a stopped ARCVM.
-  vm_tools::concierge::VmStoppedSignal stop_signal;
-  stop_signal.set_name(arc::kArcVmName);
-  arc_session_manager_->OnVmStopped(stop_signal);
-
-  guest_os_share_path_->UnsharePath(
-      arc::kArcVmName, shared_path_, true,
-      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
-                     base::Unretained(this), shared_path_, Persist::NO,
-                     SeneschalClientCalled::NO, "", Success::YES,
-                     "ARCVM not running, cannot unshare paths"));
   run_loop()->Run();
 }
 

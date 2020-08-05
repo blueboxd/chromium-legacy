@@ -72,7 +72,7 @@ TEST_F(SaveGeneratedPasswordActionTest, SavedPassword) {
 
   action.ProcessAction(callback_.Get());
 
-  EXPECT_FALSE(user_data_.has_additional_value(kMemoryKeyForGeneratedPassword));
+  EXPECT_TRUE(user_data_.has_additional_value(kMemoryKeyForGeneratedPassword));
 }
 
 TEST_F(SaveGeneratedPasswordActionTest, MissingMemoryKeyPreconditionFails) {

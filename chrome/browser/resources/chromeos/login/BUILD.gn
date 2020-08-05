@@ -216,6 +216,8 @@ js_library("oobe_enable_kiosk") {
 
 js_library("oobe_eula") {
   deps = [
+    ":web_view_helper",
+    "components:login_screen_behavior",
     "components:oobe_dialog",
     "components:oobe_dialog_host_behavior",
     "components:oobe_i18n_behavior",
@@ -283,4 +285,7 @@ js_library("throbber_notice") {
 }
 
 js_library("update_required_card") {
+}
+
+js_library("web_view_helper") {
 }

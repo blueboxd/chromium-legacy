@@ -66,6 +66,8 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUICameraAppHost);
 
+  source->DisableTrustedTypesCSP();
+
   // Add all settings resources.
   for (size_t i = 0; i < kChromeosCameraAppResourcesSize; i++) {
     source->AddResourcePath(kChromeosCameraAppResources[i].name,

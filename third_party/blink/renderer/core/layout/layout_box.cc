@@ -246,7 +246,7 @@ LayoutBoxRareData::LayoutBoxRareData()
       has_override_containing_block_content_logical_width_(false),
       has_override_containing_block_content_logical_height_(false),
       has_override_percentage_resolution_block_size_(false),
-      has_previous_content_box_and_overflow_rects_(false),
+      has_previous_content_box_rect_(false),
       percent_height_container_(nullptr),
       snap_container_(nullptr),
       snap_areas_(nullptr) {}
@@ -6126,19 +6126,17 @@ void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
 }
 
 void LayoutBox::ClearLayoutOverflow() {
-  if (!overflow_)
-    return;
-  overflow_->layout_overflow.reset();
-  if (!overflow_->visual_overflow)
-    overflow_.reset();
+  if (overflow_)
+    overflow_->layout_overflow.reset();
+  // overflow_ will be reset by MutableForPainting::ClearPreviousOverflowData()
+  // if we don't need it to store previous overflow data.
 }
 
 void LayoutBox::ClearVisualOverflow() {
-  if (!overflow_)
-    return;
-  overflow_->visual_overflow.reset();
-  if (!overflow_->layout_overflow)
-    overflow_.reset();
+  if (overflow_)
+    overflow_->visual_overflow.reset();
+  // overflow_ will be reset by MutableForPainting::ClearPreviousOverflowData()
+  // if we don't need it to store previous overflow data.
 }
 
 bool LayoutBox::PercentageLogicalHeightIsResolvable() const {
@@ -6749,15 +6747,42 @@ bool LayoutBox::ComputeShouldClipOverflow() const {
   return HasOverflowClip() || ShouldApplyPaintContainment() || HasControlClip();
 }
 
-void LayoutBox::MutableForPainting::SavePreviousContentBoxAndOverflowRects() {
-  auto& rare_data = GetLayoutBox().EnsureRareData();
-  rare_data.has_previous_content_box_and_overflow_rects_ = true;
-  rare_data.previous_physical_content_box_rect_ =
-      GetLayoutBox().PhysicalContentBoxRect();
-  rare_data.previous_physical_layout_overflow_rect_ =
+void LayoutBox::MutableForPainting::SavePreviousOverflowData() {
+  if (!GetLayoutBox().overflow_)
+    GetLayoutBox().overflow_ = std::make_unique<BoxOverflowModel>();
+  auto& previous_overflow = GetLayoutBox().overflow_->previous_overflow_data;
+  if (!previous_overflow)
+    previous_overflow.emplace();
+  previous_overflow->previously_had_overflow_clip =
+      GetLayoutBox().HasOverflowClip();
+  previous_overflow->previous_physical_layout_overflow_rect =
       GetLayoutBox().PhysicalLayoutOverflowRect();
-  rare_data.previous_physical_self_visual_overflow_rect_ =
+  previous_overflow->previous_physical_self_visual_overflow_rect =
       GetLayoutBox().PhysicalSelfVisualOverflowRect();
+}
+
+void LayoutBox::MutableForPainting::SetPreviousGeometryForLayoutShiftTracking(
+    const PhysicalOffset& paint_offset,
+    const LayoutSize& size,
+    bool has_overflow_clip,
+    const PhysicalRect& layout_overflow_rect) {
+  FirstFragment().SetPaintOffset(paint_offset);
+  GetLayoutBox().previous_size_ = size;
+  if (has_overflow_clip)
+    return;
+  if (PhysicalRect(PhysicalOffset(), size).Contains(layout_overflow_rect))
+    return;
+
+  if (!GetLayoutBox().overflow_)
+    GetLayoutBox().overflow_ = std::make_unique<BoxOverflowModel>();
+  auto& previous_overflow = GetLayoutBox().overflow_->previous_overflow_data;
+  if (!previous_overflow)
+    previous_overflow.emplace();
+  previous_overflow->previous_physical_layout_overflow_rect =
+      layout_overflow_rect;
+  // previous_physical_self_visual_overflow_rect doesn't matter because it is
+  // used for paint invalidation and we always do full paint invalidation on
+  // reattachment.
 }
 
 RasterEffectOutset LayoutBox::VisualRectOutsetForRasterEffects() const {

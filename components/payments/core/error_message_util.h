@@ -14,6 +14,11 @@ namespace payments {
 // not supported.
 std::string GetNotSupportedErrorMessage(const std::set<std::string>& methods);
 
+// Returns a developer-facing error message that the apps are skipped because
+// they do not support full delegation.
+std::string GetAppsSkippedForPartialDelegationErrorMessage(
+    const std::vector<std::string>& skipped_apps);
+
 }  // namespace payments
 
 #endif  // COMPONENTS_PAYMENTS_CORE_ERROR_MESSAGE_UTIL_H_

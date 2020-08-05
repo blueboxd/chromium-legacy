@@ -77,6 +77,10 @@ extern const base::Feature kSafeBrowsingSeparateNetworkContexts;
 // Controls whether the security section is shown on the settings UI on Android.
 extern const base::Feature kSafeBrowsingSecuritySectionUIAndroid;
 
+// Controls whether cookies are removed from certain communications with Safe
+// Browsing.
+extern const base::Feature kSafeBrowsingRemoveCookies;
+
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 

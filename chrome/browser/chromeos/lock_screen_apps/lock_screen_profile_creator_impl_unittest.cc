@@ -30,7 +30,6 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_session.h"
 #include "components/crx_file/id_util.h"
@@ -215,9 +214,6 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   ~LockScreenProfileCreatorImplTest() override {}
 
   void SetUp() override {
-    // Need to initialize DBusThreadManager before ArcSessionManager's
-    // constructor calls DBusThreadManager::Get().
-    chromeos::DBusThreadManager::Initialize();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         extensions::switches::kAllowlistedExtensionID,
         crx_file::id_util::GenerateId("test_app"));
@@ -243,11 +239,8 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    lock_screen_profile_creator_.reset();
-    arc_session_manager_.reset();
     chromeos::NoteTakingHelper::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   UnittestProfileManager* profile_manager() { return profile_manager_; }

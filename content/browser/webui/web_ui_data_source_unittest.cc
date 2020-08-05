@@ -295,6 +295,12 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
                 network::mojom::CSPDirectiveName::ScriptSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::StyleSrc));
+  EXPECT_EQ("require-trusted-types-for 'script';",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::RequireTrustedTypesFor));
+  EXPECT_EQ("trusted-types;",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::TrustedTypes));
 
   // Override each directive and test it updates the underlying URLDataSource.
   source()->OverrideContentSecurityPolicy(
@@ -353,6 +359,23 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   EXPECT_EQ("style-src 'self' 'unsafe-inline';",
             url_data_source->GetContentSecurityPolicy(
                 network::mojom::CSPDirectiveName::StyleSrc));
+
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::RequireTrustedTypesFor,
+      "require-trusted-types-for 'wasm';");
+  EXPECT_EQ("require-trusted-types-for 'wasm';",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::RequireTrustedTypesFor));
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes, "trusted-types test;");
+  EXPECT_EQ("trusted-types test;",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::TrustedTypes));
+  source()->DisableTrustedTypesCSP();
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::RequireTrustedTypesFor));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::TrustedTypes));
 }
 
 }  // namespace content

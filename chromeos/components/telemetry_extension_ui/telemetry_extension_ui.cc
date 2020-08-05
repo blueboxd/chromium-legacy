@@ -84,6 +84,9 @@ CreateUntrustedTelemetryExtensionDataSource() {
           chromeos::kChromeUITelemetryExtensionURL + ";");
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src 'self';");
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types telemetry-extension-static;");
 
   return untrusted_source;
 }

@@ -107,9 +107,12 @@ CupsPrintJobNotification::CupsPrintJobNotification(
 CupsPrintJobNotification::~CupsPrintJobNotification() = default;
 
 void CupsPrintJobNotification::OnPrintJobStatusUpdated() {
-  // After cancellation, ignore all updates.
-  if (cancelled_by_user_)
-    return;
+  if (!base::FeatureList::IsEnabled(features::kPrintJobManagementApp)) {
+    // After cancellation, ignore all updates.
+    if (cancelled_by_user_) {
+      return;
+    }
+  }
 
   UpdateNotification();
 }
@@ -133,6 +136,12 @@ void CupsPrintJobNotification::Click(
       chrome::ShowPrintManagementApp(
           profile_, PrintManagementAppEntryPoint::kNotification);
     }
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kPrintJobManagementApp)) {
+    // Both the "Cancel" and "Get help" buttons are hidden when the print
+    // management app is enabled.
     return;
   }
 
@@ -188,7 +197,9 @@ void CupsPrintJobNotification::UpdateNotification() {
   UpdateNotificationIcon();
   UpdateNotificationBodyMessage();
   UpdateNotificationType();
-  UpdateNotificationButtons();
+  if (!base::FeatureList::IsEnabled(features::kPrintJobManagementApp)) {
+    UpdateNotificationButtons();
+  }
 
   // |STATE_STARTED| and |STATE_PAGE_DONE| are special since if the user closes
   // the notification in the middle, which means they're not interested in the
@@ -306,6 +317,10 @@ void CupsPrintJobNotification::UpdateNotificationType() {
     case CupsPrintJob::State::STATE_SUSPENDED:
     case CupsPrintJob::State::STATE_RESUMED:
     case CupsPrintJob::State::STATE_ERROR:
+      if (base::FeatureList::IsEnabled(features::kPrintJobManagementApp)) {
+        // Do not show the progress bar if the print management app is enabled.
+        break;
+      }
       notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
       notification_->set_progress(print_job_->printed_page_number() * 100 /
                                   print_job_->total_page_number());
@@ -322,6 +337,8 @@ void CupsPrintJobNotification::UpdateNotificationType() {
 }
 
 void CupsPrintJobNotification::UpdateNotificationButtons() {
+  DCHECK(!base::FeatureList::IsEnabled(features::kPrintJobManagementApp));
+
   std::vector<message_center::ButtonInfo> buttons;
   button_commands_ = GetButtonCommands();
   for (const auto& it : button_commands_) {
@@ -335,8 +352,11 @@ void CupsPrintJobNotification::UpdateNotificationButtons() {
 
 std::vector<CupsPrintJobNotification::ButtonCommand>
 CupsPrintJobNotification::GetButtonCommands() const {
-  if (!print_job_)
+  DCHECK(!base::FeatureList::IsEnabled(features::kPrintJobManagementApp));
+
+  if (!print_job_) {
     return {};
+  }
   std::vector<CupsPrintJobNotification::ButtonCommand> commands;
   switch (print_job_->state()) {
     case CupsPrintJob::State::STATE_WAITING:
@@ -359,6 +379,8 @@ CupsPrintJobNotification::GetButtonCommands() const {
 
 base::string16 CupsPrintJobNotification::GetButtonLabel(
     ButtonCommand button) const {
+  DCHECK(!base::FeatureList::IsEnabled(features::kPrintJobManagementApp));
+
   switch (button) {
     case ButtonCommand::CANCEL_PRINTING:
       return l10n_util::GetStringUTF16(
@@ -371,6 +393,8 @@ base::string16 CupsPrintJobNotification::GetButtonLabel(
 }
 
 gfx::Image CupsPrintJobNotification::GetButtonIcon(ButtonCommand button) const {
+  DCHECK(!base::FeatureList::IsEnabled(features::kPrintJobManagementApp));
+
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   gfx::Image icon;
   switch (button) {

@@ -493,15 +493,14 @@ BrowserContext::~BrowserContext() {
     if (host->GetBrowserContext() == this) {
       rph_crash_key_value += "{";
 
-      rph_crash_key_value += " process_lock='" +
-                             policy->GetProcessLock(host->GetID()).ToString() +
-                             "'";
+      rph_crash_key_value +=
+          " pl='" + policy->GetProcessLock(host->GetID()).ToString() + "'";
 
       if (host->HostHasNotBeenUsed())
-        rph_crash_key_value += " has_not_been_used ";
+        rph_crash_key_value += " hnbu";
 
       if (RenderProcessHostImpl::IsSpareProcessForCrashReporting(host))
-        rph_crash_key_value += " is_spare";
+        rph_crash_key_value += " spr";
 
       rph_crash_key_value += " }";
     }
@@ -510,7 +509,7 @@ BrowserContext::~BrowserContext() {
     NOTREACHED() << "rph_with_bc_reference : " << rph_crash_key_value;
 
     static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "rph_with_bc_reference", base::debug::CrashKeySize::Size32);
+        "rph_with_bc_reference", base::debug::CrashKeySize::Size256);
     base::debug::ScopedCrashKeyString auto_clear(crash_key,
                                                  rph_crash_key_value);
     base::debug::DumpWithoutCrashing();

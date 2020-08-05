@@ -665,7 +665,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 || methodName.equals(MethodStrings.GOOGLE_PLAY_BILLING)) {
             if (!appSupportedDelegations.providesAll(
                         mFactoryDelegate.getParams().getPaymentOptions())) {
-                Log.e(TAG, ErrorStrings.SKIP_APP_FOR_PARTIAL_DELEGATION.replace("$1", packageName));
+                Log.e(TAG, ErrorStrings.SKIP_APP_FOR_PARTIAL_DELEGATION.replace("$", packageName));
                 return;
             }
         }

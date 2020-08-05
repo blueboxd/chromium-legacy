@@ -1237,6 +1237,22 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
   return collector.MatchedStyleRuleList();
 }
 
+HeapHashMap<CSSPropertyName, Member<const CSSValue>>
+StyleResolver::CascadedValuesForElement(Element* element, PseudoId pseudo_id) {
+  StyleResolverState state(GetDocument(), *element);
+  state.SetStyle(ComputedStyle::Create());
+
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  ElementRuleCollector collector(state.ElementContext(), selector_filter_,
+                                 cascade.MutableMatchResult(), state.Style(),
+                                 EInsideLink::kNotInsideLink);
+  collector.SetPseudoElementStyleRequest(PseudoElementStyleRequest(pseudo_id));
+  MatchAllRules(state, collector, false /* include_smil_properties */);
+
+  cascade.Apply();
+  return cascade.GetCascadedValues();
+}
+
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
     Element* element,
     PseudoId pseudo_id,

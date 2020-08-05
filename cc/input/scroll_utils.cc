@@ -4,6 +4,8 @@
 
 #include "cc/input/scroll_utils.h"
 
+#include <algorithm>
+
 #include "base/numerics/ranges.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -21,22 +23,13 @@ gfx::Vector2dF ScrollUtils::ResolveScrollPercentageToPixels(
   float delta_x = std::abs(delta.x());
   float delta_y = std::abs(delta.y());
 
-  // Resolved deltas in percent based scrolling are clamped at min by 16 pixels.
-  float min = kMinPixelDeltaForPercentBasedScroll;
-
   // Resolve and clamp horizontal scroll
-  if (delta_x > 0) {
+  if (delta_x > 0)
     delta_x = delta_x * std::min(scroller.width(), viewport.width());
-    if (delta_x < min)
-      delta_x = min;
-  }
 
   // Resolve and clamps vertical scroll.
-  if (delta_y > 0) {
+  if (delta_y > 0)
     delta_y = delta_y * std::min(scroller.height(), viewport.height());
-    if (delta_y < min)
-      delta_y = min;
-  }
 
   return gfx::Vector2dF(std::copysign(delta_x, sign_x),
                         std::copysign(delta_y, sign_y));

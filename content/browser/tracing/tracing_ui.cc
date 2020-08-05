@@ -240,6 +240,7 @@ TracingUI::TracingUI(WebUI* web_ui)
       web_ui->GetWebContents()->GetBrowserContext();
 
   WebUIDataSource* source = WebUIDataSource::Create(kChromeUITracingHost);
+  source->DisableTrustedTypesCSP();
   source->UseStringsJs();
   source->SetDefaultResource(IDR_TRACING_HTML);
   source->AddResourcePath("tracing.js", IDR_TRACING_JS);

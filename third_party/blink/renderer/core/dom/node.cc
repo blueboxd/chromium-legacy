@@ -172,7 +172,7 @@ void AppendUnsafe(StringBuilder& builder, const String& off_thread_string) {
 
 }  // namespace
 
-using ReattachHook = LayoutShiftTracker::ReattachHook;
+using ReattachHookScope = LayoutShiftTracker::ReattachHookScope;
 
 struct SameSizeAsNode : EventTarget {
   uint32_t node_flags_;
@@ -1690,7 +1690,7 @@ Node* Node::CommonAncestor(const Node& other,
 
 void Node::ReattachLayoutTree(AttachContext& context) {
   context.performing_reattach = true;
-  ReattachHook::Scope reattach_scope(*this);
+  ReattachHookScope reattach_scope(*this);
 
   DetachLayoutTree(context.performing_reattach);
   AttachLayoutTree(context);
@@ -1714,7 +1714,7 @@ void Node::AttachLayoutTree(AttachContext& context) {
     cache->UpdateCacheAfterNodeIsAttached(this);
 
   if (context.performing_reattach)
-    ReattachHook::NotifyAttach(*this);
+    ReattachHookScope::NotifyAttach(*this);
 }
 
 void Node::DetachLayoutTree(bool performing_reattach) {
@@ -1724,7 +1724,7 @@ void Node::DetachLayoutTree(bool performing_reattach) {
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
 
   if (performing_reattach)
-    ReattachHook::NotifyDetach(*this);
+    ReattachHookScope::NotifyDetach(*this);
 
   if (GetLayoutObject())
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();

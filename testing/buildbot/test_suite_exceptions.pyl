@@ -2297,7 +2297,7 @@
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
   },
-  'storage_service_unsandboxed_content_browsertests': {
+  'storage_service_content_browsertests': {
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
@@ -2314,12 +2314,12 @@
       },
     },
   },
-  'storage_service_unsandboxed_extensions_browsertests': {
+  'storage_service_extensions_browsertests': {
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
   },
-  'storage_service_unsandboxed_interactive_ui_tests': {
+  'storage_service_interactive_ui_tests': {
     'modifications': {
       'linux-chromeos-chrome': {
         # TODO(crbug.com/970649): Remove this filter.

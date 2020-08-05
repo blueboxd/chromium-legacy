@@ -447,21 +447,27 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // TODO(tommycli): We re-fetch the original match from the popup model,
   // because |match_| already has its contents and description swapped by this
   // class, and we don't want that for the bubble. We should improve this.
-  if (model_index_ < popup_contents_view_->model()->result().size()) {
-    AutocompleteMatch raw_match =
-        popup_contents_view_->model()->result().match_at(model_index_);
-    node_data->SetName(AutocompleteMatchType::ToAccessibilityLabel(
-        raw_match, raw_match.contents));
+  bool is_selected = IsMatchSelected();
+  OmniboxPopupModel* model = popup_contents_view_->model();
+  if (model_index_ < model->result().size()) {
+    AutocompleteMatch raw_match = model->result().match_at(model_index_);
+    // The selected match can have a special name, e.g. when is one or more
+    // buttons that can be tabbed to.
+    base::string16 label =
+        is_selected ? model->GetAccessibilityLabelForCurrentSelection(
+                          raw_match.contents, false)
+                    : AutocompleteMatchType::ToAccessibilityLabel(
+                          raw_match, raw_match.contents);
+    node_data->SetName(label);
   }
 
   node_data->role = ax::mojom::Role::kListBoxOption;
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                              model_index_ + 1);
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             popup_contents_view_->model()->result().size());
+                             model->result().size());
 
-  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                              IsMatchSelected());
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, is_selected);
   if (IsMouseHovered())
     node_data->AddState(ax::mojom::State::kHovered);
 }
@@ -494,8 +500,10 @@ void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
   // The omnibox results list reuses the same items, but the text displayed for
   // these items is updated as the value of omnibox changes. The displayed text
   // for a given item is exposed to screen readers as the item's name/label.
+  ui::AXNodeData node_data;
+  GetAccessibleNodeData(&node_data);
   base::string16 current_name =
-      AutocompleteMatchType::ToAccessibilityLabel(match_, match_.contents);
+      node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
   if (accessible_name_ != current_name) {
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
     accessible_name_ = current_name;

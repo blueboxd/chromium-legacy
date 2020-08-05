@@ -17,6 +17,8 @@ static_library("browser") {
     "prerender_histograms.h",
     "prerender_history.cc",
     "prerender_history.h",
+    "prerender_link_manager.cc",
+    "prerender_link_manager.h",
     "prerender_manager.cc",
     "prerender_manager.h",
     "prerender_manager_delegate.h",
@@ -35,6 +37,11 @@ static_library("browser") {
     "//ui/gfx/image/mojom:mojom_traits",
     "//url",
   ]
+
+  # TODO(crbug.com/722453): Use a dedicated build flag for GuestView.
+  if (!is_android && !is_ios && !is_fuchsia) {
+    deps += [ "//components/guest_view/browser" ]
+  }
 }
 
 source_set("unit_tests") {

@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -153,7 +154,13 @@ class GPU_GLES2_EXPORT SharedContextState
   bool support_vulkan_external_object() const {
     return support_vulkan_external_object_;
   }
-  gpu::MemoryTracker::Observer* memory_tracker() { return &memory_tracker_; }
+  gpu::MemoryTracker::Observer* memory_tracker_observer() {
+    return &memory_tracker_observer_;
+  }
+  gpu::MemoryTracker* memory_tracker() { return &memory_tracker_; }
+  gpu::MemoryTypeTracker* memory_type_tracker() {
+    return &memory_type_tracker_;
+  }
   ExternalSemaphorePool* external_semaphore_pool() {
 #if BUILDFLAG(ENABLE_VULKAN)
     return external_semaphore_pool_.get();
@@ -213,13 +220,14 @@ class GPU_GLES2_EXPORT SharedContextState
 
   // Observer which is notified when SkiaOutputSurfaceImpl takes ownership of a
   // shared image, and forward information to both histograms and task manager.
-  class GPU_GLES2_EXPORT MemoryTracker : public gpu::MemoryTracker::Observer {
+  class GPU_GLES2_EXPORT MemoryTrackerObserver
+      : public gpu::MemoryTracker::Observer {
    public:
-    explicit MemoryTracker(
+    explicit MemoryTrackerObserver(
         base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor);
-    MemoryTracker(MemoryTracker&) = delete;
-    MemoryTracker& operator=(MemoryTracker&) = delete;
-    ~MemoryTracker() override;
+    MemoryTrackerObserver(MemoryTrackerObserver&) = delete;
+    MemoryTrackerObserver& operator=(MemoryTrackerObserver&) = delete;
+    ~MemoryTrackerObserver() override;
 
     // gpu::MemoryTracker::Observer implementation:
     void OnMemoryAllocatedChange(
@@ -235,6 +243,29 @@ class GPU_GLES2_EXPORT SharedContextState
    private:
     uint64_t size_ = 0;
     base::WeakPtr<gpu::MemoryTracker::Observer> const peak_memory_monitor_;
+  };
+
+  // MemoryTracker implementation used to track SharedImages owned by
+  // SkiaOutputSurfaceImpl.
+  class MemoryTracker : public gpu::MemoryTracker {
+   public:
+    explicit MemoryTracker(gpu::MemoryTracker::Observer* observer);
+    MemoryTracker(const MemoryTracker&) = delete;
+    MemoryTracker& operator=(const MemoryTracker&) = delete;
+    ~MemoryTracker() override;
+
+    // MemoryTracker implementation:
+    void TrackMemoryAllocatedChange(int64_t delta) override;
+    uint64_t GetSize() const override;
+    uint64_t ClientTracingId() const override;
+    int ClientId() const override;
+    uint64_t ContextGroupTracingId() const override;
+
+   private:
+    gpu::CommandBufferId command_buffer_id_;
+    const uint64_t client_tracing_id_;
+    gpu::MemoryTracker::Observer* const observer_;
+    uint64_t size_ = 0;
   };
 
   ~SharedContextState() override;
@@ -263,7 +294,9 @@ class GPU_GLES2_EXPORT SharedContextState
   bool support_vulkan_external_object_ = false;
   ContextLostCallback context_lost_callback_;
   GrContextType gr_context_type_ = GrContextType::kGL;
+  MemoryTrackerObserver memory_tracker_observer_;
   MemoryTracker memory_tracker_;
+  gpu::MemoryTypeTracker memory_type_tracker_;
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;
   viz::DawnContextProvider* const dawn_context_provider_;

@@ -60,6 +60,15 @@ BaseIdentityInternalsWebUITest.prototype = {
   },
 
   /**
+   * Gets the account id displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {string} Account Id of the token.
+   */
+  getAccountId: function(tokenEntry) {
+    return tokenEntry.querySelector('.account-id').innerText;
+  },
+
+  /**
    * Gets the extension name displayed on the page for a given entry.
    * @param {Element} tokenEntry Display element holding token information.
    * @return {string} Extension Name of the token.
@@ -70,7 +79,7 @@ BaseIdentityInternalsWebUITest.prototype = {
 
   /**
    * Gets the revoke button of the token entry.
-   * @param {Element} tokenEntry Diplsy element holding token information.
+   * @param {Element} tokenEntry Display element holding token information.
    * @return {HTMLButtonElement} Revoke button belonging related to the token.
    */
   getRevokeButton: function(tokenEntry) {
@@ -138,6 +147,8 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
   expectEquals('Web Store', this.getExtensionName(tokenListEntries[0]));
   expectEquals('ahfgeienlihckogmohjhadlkjgocpleb',
                this.getExtensionId(tokenListEntries[0]));
+  expectEquals('store_account',
+               this.getAccountId(tokenListEntries[0]));
   expectEquals('store_token', this.getAccessToken(tokenListEntries[0]));
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
   expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
@@ -161,6 +172,8 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'verifyGetters', function() {
       tokenListEntries[0].querySelector('.extension-name').innerText);
   expectEquals(this.getExtensionId(tokenListEntries[0]),
       tokenListEntries[0].querySelector('.extension-id').innerText);
+  expectEquals(this.getAccountId(tokenListEntries[0]),
+      tokenListEntries[0].querySelector('.account-id').innerText);
   expectEquals(this.getAccessToken(tokenListEntries[0]),
       tokenListEntries[0].querySelector('.access-token').innerText);
   expectEquals(this.getTokenStatus(tokenListEntries[0]),
@@ -205,6 +218,8 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('', this.getExtensionName(tokenListEntries[0]));
   expectEquals('extension0',
                this.getExtensionId(tokenListEntries[0]));
+  expectEquals('account0',
+               this.getAccountId(tokenListEntries[0]));
   expectEquals('token0', this.getAccessToken(tokenListEntries[0]));
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
   expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
@@ -217,6 +232,8 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('', this.getExtensionName(tokenListEntries[1]));
   expectEquals('extension1',
                this.getExtensionId(tokenListEntries[1]));
+  expectEquals('account1',
+               this.getAccountId(tokenListEntries[1]));
   expectEquals('token1', this.getAccessToken(tokenListEntries[1]));
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[1]));
   expectLT(this.getExpirationTime(tokenListEntries[1]) - new Date(),

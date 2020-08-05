@@ -65,7 +65,7 @@ function getScrollbarButtonScrollDelta(scroller) {
 
   // All percent-based scroll clamping is made in physical pixels.
   pixel_delta = percentBasedDelta(scaleCssToPhysicalPixels(scroller_size));
-  min_delta = MIN_SCROLL_DELTA_PCT_BASED;
+
   // Note that, window.inner* matches the size of the innerViewport, and won't
   // match the VisualViewport's dimensions at the C++ code in the presence of
   // UI elements that resize it (e.g. chromeOS OSKs).
@@ -74,14 +74,11 @@ function getScrollbarButtonScrollDelta(scroller) {
   max_delta = percentBasedDelta(scaleCssToBlinkPixels({
     x: window.innerWidth, y: window.innerHeight}));
 
-  pixel_delta.x = clamp(pixel_delta.x, min_delta, max_delta.x);
-  pixel_delta.y = clamp(pixel_delta.y, min_delta, max_delta.y);
+  pixel_delta.x = Math.min(pixel_delta.x, max_delta.x);
+  pixel_delta.y = Math.min(pixel_delta.y, max_delta.y);
 
   return scalePhysicalToCssPixels(pixel_delta);
 }
-
-// The minimum amount of pixels scrolled if percent-based scrolling is enabled
-const MIN_SCROLL_DELTA_PCT_BASED = 16;
 
 // The percentage scrollbar arrows will scroll, if percent-based scrolling
 // is enabled.

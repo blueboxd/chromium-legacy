@@ -129,16 +129,14 @@ class IconLabelBubbleView::HighlightPathGenerator
 
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
                                          Delegate* delegate)
-    : LabelButton(nullptr, base::string16()),
-      delegate_(delegate),
-      separator_view_(new SeparatorView(this)) {
+    : delegate_(delegate),
+      separator_view_(AddChildView(std::make_unique<SeparatorView>(this))) {
   DCHECK(delegate_);
 
   SetFontList(font_list);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   separator_view_->SetVisible(ShouldShowSeparator());
-  AddChildView(separator_view_);
 
   set_ink_drop_visible_opacity(
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));

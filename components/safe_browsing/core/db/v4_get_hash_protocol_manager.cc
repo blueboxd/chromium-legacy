@@ -340,7 +340,7 @@ void V4GetHashProtocolManager::GetFullHashes(
                        &resource_request->headers);
 
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  if (base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts)) {
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
     resource_request->load_flags |=
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
   }

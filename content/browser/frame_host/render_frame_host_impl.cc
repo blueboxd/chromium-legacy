@@ -8099,20 +8099,18 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       !is_same_document_navigation &&
       !navigation_request->IsServedFromBackForwardCache();
 
-  if (created_new_document) {
-    // IsWaitingToCommit can be false inside DidCommitNavigationInternal only in
-    // specific circumstances listed above, and specifically for the fake
-    // initial navigations triggered by the blank window.open() and creating a
-    // blank iframe. In that case we do not want to reset the per-document
-    // states as we are not really creating a new Document and we want to
-    // preserve the states set by WebContentsCreated delegate notification
-    // (which among other things create tab helpers) or RenderFrameCreated.
-    if (!navigation_request->IsWaitingToCommit())
-      created_new_document = false;
-  }
-
   // TODO(crbug.com/936696): Remove this after we have RenderDocument.
-  if (created_new_document) {
+  // IsWaitingToCommit can be false inside DidCommitNavigationInternal only in
+  // specific circumstances listed above, and specifically for the fake
+  // initial navigations triggered by the blank window.open() and creating a
+  // blank iframe. In that case we do not want to reset the per-document
+  // states as we are not really creating a new Document and we want to
+  // preserve the states set by WebContentsCreated delegate notification
+  // (which among other things create tab helpers) or RenderFrameCreated.
+  bool navigated_to_new_document =
+      created_new_document && navigation_request->IsWaitingToCommit();
+
+  if (navigated_to_new_document) {
     TRACE_EVENT1("content", "DidCommitProvisionalLoad_StateResetForNewDocument",
                  "render_frame_host", this);
     if (navigation_request->IsInMainFrame()) {
@@ -8140,9 +8138,10 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // Keep track of the sandbox policy of the document that has just committed.
   // It will be compared with the value computed from the renderer. The latter
   // is expected to be received in DidSetFramePolicyHeaders(..).
-  active_sandbox_flags_control_ = navigation_request->SandboxFlagsToCommit();
+  base::Optional<network::mojom::WebSandboxFlags> active_sandbox_flags_control =
+      navigation_request->SandboxFlagsToCommit();
 
-  virtual_browsing_context_group_ =
+  int virtual_browsing_context_group =
       navigation_request->coop_status().virtual_browsing_context_group;
 
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
@@ -8158,19 +8157,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       navigation_request->TakeClientSecurityState();
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter =
       navigation_request->TakeCoepReporter();
-  if (coep_reporter) {
-    mojo::PendingRemote<blink::mojom::ReportingObserver> remote;
-    mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver =
-        remote.InitWithNewPipeAndPassReceiver();
-    coep_reporter->BindObserver(std::move(remote));
-    // As some tests overrides the associated frame after commit, do not
-    // call GetAssociatedLocalFrame now.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&RenderFrameHostImpl::BindReportingObserver,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
-  }
-
   std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter =
       navigation_request->TakeCoopReporter();
 
@@ -8196,6 +8182,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
   }
 
+  // TODO(arthursonzogni, altimin): By taking ownership and deleting the
+  // NavigationRequest, this line triggers the DidFinishNavigation event. There
+  // are several document's associated state assigned below when a new document
+  // is created. We might prefer to fully update the RenderFrameHost before
+  // dispatching the event.
   frame_tree_node()->navigator().DidNavigate(this, *params,
                                              std::move(navigation_request),
                                              is_same_document_navigation);
@@ -8209,12 +8200,30 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_commit_params_ = std::move(params);
   }
 
-  if (!is_same_document_navigation) {
+  // TODO(arthursonzogni): Investigate what must be done when
+  // navigation_request->IsWaitingToCommit() is false here.
+  if (created_new_document) {
     renderer_reported_scheduler_tracked_features_ = 0;
     browser_reported_scheduler_tracked_features_ = 0;
     last_committed_client_security_state_ = std::move(client_security_state);
+    active_sandbox_flags_control_ = std::move(active_sandbox_flags_control);
+    virtual_browsing_context_group_ = std::move(virtual_browsing_context_group);
     coep_reporter_ = std::move(coep_reporter);
     coop_reporter_ = std::move(coop_reporter);
+
+    if (coep_reporter_) {
+      mojo::PendingRemote<blink::mojom::ReportingObserver> remote;
+      mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver =
+          remote.InitWithNewPipeAndPassReceiver();
+      coep_reporter_->BindObserver(std::move(remote));
+      // As some tests override the associated frame after commit, do not
+      // call GetAssociatedLocalFrame now.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RenderFrameHostImpl::BindReportingObserver,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
+    }
+
   }
 
   RecordCrossOriginIsolationMetrics(this);

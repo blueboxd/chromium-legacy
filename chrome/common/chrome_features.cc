@@ -536,6 +536,11 @@ const base::Feature kOomIntervention{"OomIntervention",
 const base::Feature kParentAccessCode{"ParentAccessCode",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables usage of Parent Access Code in the login flow for reauth and add
+// user. Requires |kParentAccessCode| to be enabled.
+const base::Feature kParentAccessCodeForOnlineLogin{
+    "ParentAccessCodeForOnlineLogin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables usage of Parent Access Code to authorize change of time actions on
 // child user device. Requires |kParentAccessCode| to be enabled.
 const base::Feature kParentAccessCodeForTimeChange{
@@ -693,11 +698,6 @@ const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
 #endif
 
 #if defined(OS_CHROMEOS)
-// Enables or disables pin quick unlock.
-// TODO(https://crbug.com/935613): Remove this & the backing code.
-const base::Feature kQuickUnlockPin{"QuickUnlockPin",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether the PIN auto submit feature is enabled.
 const base::Feature kQuickUnlockPinAutosubmit{
     "QuickUnlockPinAutosubmit", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -804,6 +804,13 @@ const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
 #if defined(OS_CHROMEOS)
 const base::Feature kWebTimeLimits{"WebTimeLimits",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+bool IsParentAccessCodeForOnlineLoginEnabled() {
+  return base::FeatureList::IsEnabled(kParentAccessCode) &&
+         base::FeatureList::IsEnabled(kParentAccessCodeForOnlineLogin);
+}
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace features

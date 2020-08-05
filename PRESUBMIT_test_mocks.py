@@ -61,8 +61,6 @@ class MockInputApi(object):
   """
 
   DEFAULT_FILES_TO_SKIP = ()
-  # TODO(https://crbug.com/1098562): Remove once no longer used)
-  DEFAULT_BLACK_LIST = ()
 
   def __init__(self):
     self.canned_checks = MockCannedChecks()
@@ -95,11 +93,7 @@ class MockInputApi(object):
     return self.AffectedFiles(file_filter=file_filter)
 
   def FilterSourceFile(self, file,
-                       files_to_check=(), files_to_skip=(),
-                       # TODO(https://crbug.com/1098562): Remove once no longer used
-                       white_list=(), black_list=()):
-    files_to_check = files_to_check or white_list
-    files_to_skip = files_to_skip or black_list
+                       files_to_check=(), files_to_skip=()):
     local_path = file.LocalPath()
     found_in_files_to_check = not files_to_check
     if files_to_check:

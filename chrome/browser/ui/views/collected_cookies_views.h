@@ -51,7 +51,6 @@ class CollectedCookiesViews
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   void DeleteDelegate() override;
@@ -74,8 +73,9 @@ class CollectedCookiesViews
 
   explicit CollectedCookiesViews(content::WebContents* web_contents);
 
-  std::unique_ptr<views::View> CreateAllowedPane();
+  void OnDialogClosed();
 
+  std::unique_ptr<views::View> CreateAllowedPane();
   std::unique_ptr<views::View> CreateBlockedPane();
 
   // Creates and returns the "buttons pane", which is the view in the

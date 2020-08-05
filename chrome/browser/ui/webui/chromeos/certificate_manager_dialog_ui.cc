@@ -47,6 +47,8 @@ CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUICertificateManagerHost);
   Profile* profile = Profile::FromWebUI(web_ui);
 
+  source->DisableTrustedTypesCSP();
+
   AddCertificateManagerStrings(source);
   source->AddBoolean(
       "isGuest",

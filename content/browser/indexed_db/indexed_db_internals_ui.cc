@@ -54,6 +54,9 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
   source->UseStringsJs();
   source->AddResourcePath("indexeddb_internals.js",
                           IDR_INDEXED_DB_INTERNALS_JS);

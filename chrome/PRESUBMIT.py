@@ -36,9 +36,9 @@ EXCLUDE = (
 
 def _CheckChangeLintsClean(input_api, output_api):
   """Makes sure that the chrome/ code is cpplint clean."""
-  black_list = input_api.DEFAULT_BLACK_LIST + EXCLUDE
+  files_to_skip = input_api.DEFAULT_FILES_TO_SKIP + EXCLUDE
   sources = lambda x: input_api.FilterSourceFile(
-    x, white_list=INCLUDE_CPP_FILES_ONLY, black_list=black_list)
+    x, files_to_check=INCLUDE_CPP_FILES_ONLY, files_to_skip=files_to_skip)
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, sources)
 
@@ -80,7 +80,7 @@ def _CheckNoOSIOSMacrosInChrome(input_api, output_api):
   ios_macros = []
   def SourceFilter(affected_file):
     return input_api.FilterSourceFile(affected_file, INCLUDE_SOURCE_FILES_ONLY,
-                                      input_api.DEFAULT_BLACK_LIST)
+                                      input_api.DEFAULT_FILES_TO_SKIP)
   for f in input_api.AffectedSourceFiles(SourceFilter):
     ios_macros.extend(_CheckNoOSIOSMacrosInChromeFile(input_api, f))
 

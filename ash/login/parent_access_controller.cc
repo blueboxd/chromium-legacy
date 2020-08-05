@@ -23,6 +23,7 @@ constexpr int kParentAccessCodePinLength = 6;
 base::string16 GetTitle(ParentAccessRequestReason reason) {
   int title_id;
   switch (reason) {
+    case ParentAccessRequestReason::kOnlineLogin:
     case ParentAccessRequestReason::kUnlockTimeLimits:
       title_id = IDS_ASH_LOGIN_PARENT_ACCESS_TITLE;
       break;
@@ -39,6 +40,7 @@ base::string16 GetTitle(ParentAccessRequestReason reason) {
 base::string16 GetDescription(ParentAccessRequestReason reason) {
   int description_id;
   switch (reason) {
+    case ParentAccessRequestReason::kOnlineLogin:
     case ParentAccessRequestReason::kUnlockTimeLimits:
       description_id = IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION;
       break;
@@ -71,8 +73,16 @@ void RecordParentAccessAction(ParentAccessController::UMAAction action) {
                             action);
 }
 
-void RecordParentAccessUsage(ParentAccessRequestReason reason) {
+void RecordParentAccessUsage(const AccountId& child_account_id,
+                             ParentAccessRequestReason reason) {
   switch (reason) {
+    case ParentAccessRequestReason::kOnlineLogin:
+      UMA_HISTOGRAM_ENUMERATION(
+          ParentAccessController::kUMAParentAccessCodeUsage,
+          child_account_id.empty()
+              ? ParentAccessController::UMAUsage::kAddUserLoginScreen
+              : ParentAccessController::UMAUsage::kReauhLoginScreen);
+      return;
     case ParentAccessRequestReason::kUnlockTimeLimits: {
       UMA_HISTOGRAM_ENUMERATION(
           ParentAccessController::kUMAParentAccessCodeUsage,
@@ -160,7 +170,7 @@ bool ParentAccessController::ShowWidget(
   request.description = GetDescription(reason);
   request.accessible_title = GetAccessibleTitle();
   PinRequestWidget::Show(std::move(request), this);
-  RecordParentAccessUsage(reason);
+  RecordParentAccessUsage(account_id_, reason);
   return true;
 }
 

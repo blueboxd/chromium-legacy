@@ -208,4 +208,8 @@ void AccessibilityNotificationWaiter::RenderFrameHostChanged(
   ListenToFrame(static_cast<RenderFrameHostImpl*>(new_host));
 }
 
+void AccessibilityNotificationWaiter::Quit() {
+  loop_runner_->Quit();
+}
+
 }  // namespace content

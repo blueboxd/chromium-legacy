@@ -41,7 +41,6 @@
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1159,51 +1158,47 @@ INSTANTIATE_TEST_SUITE_P(
     SafetyCheckHandlerChromeCleanerIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::kInitial,
-        SafetyCheckHandler::ChromeCleanerStatus::kInitial,
-        base::UTF8ToUTF16("No harmful software found"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
-INSTANTIATE_TEST_SUITE_P(
-    CheckChromeCleaner_ReporterFoundNothing,
-    SafetyCheckHandlerChromeCleanerIdleTest,
-    ::testing::Values(std::make_tuple(
-        safe_browsing::ChromeCleanerController::IdleReason::
-            kReporterFoundNothing,
-        SafetyCheckHandler::ChromeCleanerStatus::kReporterFoundNothing,
-        base::UTF8ToUTF16("No harmful software found"))));
+INSTANTIATE_TEST_SUITE_P(CheckChromeCleaner_ReporterFoundNothing,
+                         SafetyCheckHandlerChromeCleanerIdleTest,
+                         ::testing::Values(std::make_tuple(
+                             safe_browsing::ChromeCleanerController::
+                                 IdleReason::kReporterFoundNothing,
+                             SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+                             base::UTF8ToUTF16(""))));
 
 INSTANTIATE_TEST_SUITE_P(
     CheckChromeCleaner_ReporterFailed,
     SafetyCheckHandlerChromeCleanerIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::kReporterFailed,
-        SafetyCheckHandler::ChromeCleanerStatus::kReporterFailed,
-        base::UTF8ToUTF16("An error occurred while Browser was checking the "
-                          "device software"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
-INSTANTIATE_TEST_SUITE_P(
-    CheckChromeCleaner_ScanningFoundNothing,
-    SafetyCheckHandlerChromeCleanerIdleTest,
-    ::testing::Values(std::make_tuple(
-        safe_browsing::ChromeCleanerController::IdleReason::
-            kScanningFoundNothing,
-        SafetyCheckHandler::ChromeCleanerStatus::kScanningFoundNothing,
-        base::UTF8ToUTF16("No harmful software found"))));
+INSTANTIATE_TEST_SUITE_P(CheckChromeCleaner_ScanningFoundNothing,
+                         SafetyCheckHandlerChromeCleanerIdleTest,
+                         ::testing::Values(std::make_tuple(
+                             safe_browsing::ChromeCleanerController::
+                                 IdleReason::kScanningFoundNothing,
+                             SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+                             base::UTF8ToUTF16(""))));
 
 INSTANTIATE_TEST_SUITE_P(
     CheckChromeCleaner_ScanningFailed,
     SafetyCheckHandlerChromeCleanerIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::kScanningFailed,
-        SafetyCheckHandler::ChromeCleanerStatus::kScanningFailed,
-        base::UTF8ToUTF16("An error occurred while Browser was checking the "
-                          "device software"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
 INSTANTIATE_TEST_SUITE_P(
     CheckChromeCleaner_ConnectionLost,
     SafetyCheckHandlerChromeCleanerIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::kConnectionLost,
-        SafetyCheckHandler::ChromeCleanerStatus::kConnectionLost,
+        SafetyCheckHandler::ChromeCleanerStatus::kInfected,
         base::UTF8ToUTF16("Browser found harmful software on your computer"))));
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1212,7 +1207,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::
             kUserDeclinedCleanup,
-        SafetyCheckHandler::ChromeCleanerStatus::kUserDeclinedCleanup,
+        SafetyCheckHandler::ChromeCleanerStatus::kInfected,
         base::UTF8ToUTF16("Browser found harmful software on your computer"))));
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1220,27 +1215,24 @@ INSTANTIATE_TEST_SUITE_P(
     SafetyCheckHandlerChromeCleanerIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::kCleaningFailed,
-        SafetyCheckHandler::ChromeCleanerStatus::kCleaningFailed,
-        base::UTF8ToUTF16("An error occurred while Browser was checking the "
-                          "device software"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
 INSTANTIATE_TEST_SUITE_P(
     CheckChromeCleaner_CleaningSucceed,
     SafetyCheckHandlerChromeCleanerIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::IdleReason::kCleaningSucceeded,
-        SafetyCheckHandler::ChromeCleanerStatus::kCleaningSucceeded,
-        base::UTF8ToUTF16("No harmful software found"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
-INSTANTIATE_TEST_SUITE_P(
-    CheckChromeCleaner_CleanerDownloadFailed,
-    SafetyCheckHandlerChromeCleanerIdleTest,
-    ::testing::Values(std::make_tuple(
-        safe_browsing::ChromeCleanerController::IdleReason::
-            kCleanerDownloadFailed,
-        SafetyCheckHandler::ChromeCleanerStatus::kCleanerDownloadFailed,
-        base::UTF8ToUTF16("An error occurred while Browser was checking the "
-                          "device software"))));
+INSTANTIATE_TEST_SUITE_P(CheckChromeCleaner_CleanerDownloadFailed,
+                         SafetyCheckHandlerChromeCleanerIdleTest,
+                         ::testing::Values(std::make_tuple(
+                             safe_browsing::ChromeCleanerController::
+                                 IdleReason::kCleanerDownloadFailed,
+                             SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+                             base::UTF8ToUTF16(""))));
 
 class SafetyCheckHandlerChromeCleanerNonIdleTest
     : public SafetyCheckHandlerTest,
@@ -1279,16 +1271,16 @@ INSTANTIATE_TEST_SUITE_P(
     SafetyCheckHandlerChromeCleanerNonIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::State::kReporterRunning,
-        SafetyCheckHandler::ChromeCleanerStatus::kReporterRunning,
-        base::UTF8ToUTF16("No harmful software found"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
 INSTANTIATE_TEST_SUITE_P(
     CheckChromeCleaner_Scanning,
     SafetyCheckHandlerChromeCleanerNonIdleTest,
     ::testing::Values(std::make_tuple(
         safe_browsing::ChromeCleanerController::State::kScanning,
-        SafetyCheckHandler::ChromeCleanerStatus::kScanning,
-        base::UTF8ToUTF16("No harmful software found"))));
+        SafetyCheckHandler::ChromeCleanerStatus::kHidden,
+        base::UTF8ToUTF16(""))));
 
 INSTANTIATE_TEST_SUITE_P(
     CheckChromeCleaner_Infected,
@@ -1316,12 +1308,9 @@ TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_DisabledByAdmin) {
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(
           kChromeCleaner,
-          static_cast<int>(
-              SafetyCheckHandler::ChromeCleanerStatus::kDisabledByAdmin));
+          static_cast<int>(SafetyCheckHandler::ChromeCleanerStatus::kHidden));
   ASSERT_TRUE(event);
-  VerifyDisplayString(
-      event,
-      "Your administrator has disabled Browser's check for harmful software");
+  VerifyDisplayString(event, "");
 }
 #endif
 
@@ -1471,10 +1460,16 @@ TEST_F(SafetyCheckHandlerTest, CheckSafetyCheckCompletedWebUiEvents) {
   // Mock safety check invocation.
   safety_check_->PerformSafetyCheck();
 
-  // Password mocks need to be triggered with a non-checking state to fire.
-  // All other mocks fire automatically when invoked.
+  // Set the password check mock response.
   test_leak_service_->set_state_and_notify(
       password_manager::BulkLeakCheckService::State::kSignedOut);
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Set the Chrome cleaner mock response.
+  safe_browsing::ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  safe_browsing::ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::State::kInfected);
+#endif
 
   // Check that the parent update is sent after all children checks completed.
   const base::DictionaryValue* event_parent =

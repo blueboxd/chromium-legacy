@@ -127,6 +127,19 @@ bool IsRevert(const CSSValue& value) {
           To<CSSCustomPropertyDeclaration>(value).IsRevert());
 }
 
+bool IsInterpolation(CascadePriority priority) {
+  switch (priority.GetOrigin()) {
+    case CascadeOrigin::kAnimation:
+    case CascadeOrigin::kTransition:
+      return true;
+    case CascadeOrigin::kNone:
+    case CascadeOrigin::kUserAgent:
+    case CascadeOrigin::kUser:
+    case CascadeOrigin::kAuthor:
+      return false;
+  }
+}
+
 }  // namespace
 
 MatchResult& StyleCascade::MutableMatchResult() {
@@ -208,6 +221,38 @@ const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
     return nullptr;
 
   return resolved;
+}
+
+HeapHashMap<CSSPropertyName, Member<const CSSValue>>
+StyleCascade::GetCascadedValues() const {
+  DCHECK(!needs_match_result_analyze_);
+  DCHECK(!needs_interpolations_analyze_);
+  DCHECK_GE(generation_, 0);
+
+  HeapHashMap<CSSPropertyName, Member<const CSSValue>> result;
+
+  for (CSSPropertyID id : map_.NativeBitset()) {
+    CSSPropertyName name(id);
+    CascadePriority priority = map_.At(name);
+    DCHECK(priority.HasOrigin());
+    if (IsInterpolation(priority))
+      continue;
+    const CSSValue* cascaded = ValueAt(match_result_, priority.GetPosition());
+    DCHECK(cascaded);
+    result.Set(name, cascaded);
+  }
+
+  for (const auto& entry : map_.GetCustomMap()) {
+    CascadePriority priority = entry.value;
+    DCHECK(priority.HasOrigin());
+    if (IsInterpolation(priority))
+      continue;
+    const CSSValue* cascaded = ValueAt(match_result_, priority.GetPosition());
+    DCHECK(cascaded);
+    result.Set(entry.key, cascaded);
+  }
+
+  return result;
 }
 
 void StyleCascade::AnalyzeIfNeeded() {

@@ -24,6 +24,8 @@ EnumTraits<blink::mojom::AuthenticatorTransport,
       return blink::mojom::AuthenticatorTransport::CABLE;
     case ::device::FidoTransportProtocol::kInternal:
       return blink::mojom::AuthenticatorTransport::INTERNAL;
+    case ::device::FidoTransportProtocol::kAndroidAccessory:
+      return blink::mojom::AuthenticatorTransport::CABLE;
   }
   NOTREACHED();
   return blink::mojom::AuthenticatorTransport::USB;

@@ -43,10 +43,10 @@ def _CheckNoTraceEventInclude(input_api, output_api):
     r'^#include "base/trace_event/(?!base_tracing\.h)',
   ]
 
-  white_list = [
+  files_to_check = [
     r".*\.(h|cc|mm)$",
   ]
-  black_list = [
+  files_to_skip = [
     r".*[\\/]test[\\/].*",
     r".*[\\/]trace_event[\\/].*",
     r".*[\\/]tracing[\\/].*",
@@ -56,8 +56,8 @@ def _CheckNoTraceEventInclude(input_api, output_api):
   def FilterFile(affected_file):
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=white_list,
-      black_list=black_list)
+      files_to_check=files_to_check,
+      files_to_skip=files_to_skip)
 
   locations = []
   for f in input_api.AffectedSourceFiles(FilterFile):

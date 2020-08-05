@@ -958,6 +958,12 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
           : media_session::mojom::MediaPictureInPictureState::
                 kNotInPictureInPicture;
 
+  auto shared_audio_device_id = GetSharedAudioOutputDeviceId();
+  // When the default audio device is in use, or this session's players are
+  // using different devices, the |audio_sink_id| attribute should remain unset.
+  if (shared_audio_device_id != media::AudioDeviceDescription::kDefaultDeviceId)
+    info->audio_sink_id = shared_audio_device_id;
+
   return info;
 }
 
@@ -1359,6 +1365,10 @@ void MediaSessionImpl::OnPictureInPictureAvailabilityChanged() {
   RebuildAndNotifyActionsChanged();
 }
 
+void MediaSessionImpl::OnAudioOutputSinkIdChanged() {
+  RebuildAndNotifyMediaSessionInfoChanged();
+}
+
 bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
   return routed_service_ && base::Contains(routed_service_->actions(), action);
@@ -1477,6 +1487,23 @@ bool MediaSessionImpl::IsPictureInPictureAvailable() const {
 
   auto& first = normal_players_.begin()->first;
   return first.observer->IsPictureInPictureAvailable(first.player_id);
+}
+
+std::string MediaSessionImpl::GetSharedAudioOutputDeviceId() const {
+  if (normal_players_.empty())
+    return media::AudioDeviceDescription::kDefaultDeviceId;
+
+  auto& first = normal_players_.begin()->first;
+  const auto& first_id = first.observer->GetAudioOutputSinkId(first.player_id);
+  if (std::all_of(normal_players_.cbegin(), normal_players_.cend(),
+                  [&first_id](const auto& player) {
+                    return player.first.observer->GetAudioOutputSinkId(
+                               player.first.player_id) == first_id;
+                  })) {
+    return first_id;
+  }
+
+  return media::AudioDeviceDescription::kDefaultDeviceId;
 }
 
 MediaAudioVideoState MediaSessionImpl::GetMediaAudioVideoState() {

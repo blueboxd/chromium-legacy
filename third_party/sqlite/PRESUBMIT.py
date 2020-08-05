@@ -16,7 +16,7 @@ def CheckChangeOnUpload(input_api, output_api):
             input_api,
             output_api,
             input_api.os_path.join(this_dir, 'scripts'),
-            whitelist=['.*unittest.py$'],
+            files_to_check=['.*unittest.py$'],
             env=None,
             run_on_python2=False,
             run_on_python3=True))

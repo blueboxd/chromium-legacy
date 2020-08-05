@@ -142,6 +142,7 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
   AddStringResources(source);
   source->AddBoolean(
       "diskResizingEnabled",

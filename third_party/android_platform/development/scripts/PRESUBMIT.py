@@ -16,8 +16,8 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       input_api.PresubmitLocalPath(),
-      whitelist=[r'.+_test\.py$'],
-      blacklist=[])
+      files_to_check=[r'.+_test\.py$'],
+      files_to_skip=[])
 
   output.extend(input_api.RunTests(py_tests, False))
 

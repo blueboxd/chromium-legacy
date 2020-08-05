@@ -195,14 +195,18 @@
 
 <cr-action-menu force-dark-mode>
   <button id="single-page-view-button"
-      class="dropdown-item" on-click="onSinglePageViewClick_">
+      class="dropdown-item" on-click="onSinglePageViewClick_"
+      role="radio"
+      aria-checked="[[getSinglePageAriaChecked_(twoUpViewEnabled_)]]">
     <span class="check-container">
       <iron-icon icon="pdf:check" hidden="[[twoUpViewEnabled_]]"></iron-icon>
     </span>
     $i18n{twoUpViewDisable}
   </button>
   <button id="two-page-view-button"
-      class="dropdown-item" on-click="onTwoPageViewClick_">
+      class="dropdown-item" on-click="onTwoPageViewClick_"
+      role="radio"
+      aria-checked="[[getTwoPageViewAriaChecked_(twoUpViewEnabled_)]]">
     <span class="check-container">
       <iron-icon icon="pdf:check" hidden="[[!twoUpViewEnabled_]]"></iron-icon>
     </span>
@@ -210,7 +214,9 @@
   </button>
 
   <button id="show-annotations-button"
-      class="dropdown-item" on-click="toggleDisplayAnnotations_">
+      class="dropdown-item" on-click="toggleDisplayAnnotations_"
+      role="checkbox"
+      aria-checked="[[getShowAnnotationsAriaChecked_(displayAnnotations_)]]">
     <span class="check-container">
       <iron-icon icon="pdf:check" hidden="[[!displayAnnotations_]]"></iron-icon>
     </span>

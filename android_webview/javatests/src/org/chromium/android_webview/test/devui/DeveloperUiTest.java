@@ -48,7 +48,8 @@ import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 /**
- * UI tests for the developer UI's Activities, Fragments, etc.
+ * UI tests for general developer UI functionality. Significant subcomponents (ex. Fragments) may
+ * have their own test class.
  */
 @RunWith(AwJUnit4ClassRunner.class)
 public class DeveloperUiTest {

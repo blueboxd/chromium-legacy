@@ -249,6 +249,7 @@ class OmniboxPopupModel {
   // Never call this when the current selection is kNoMatch.
   base::string16 GetAccessibilityLabelForCurrentSelection(
       const base::string16& match_text,
+      bool include_positional_info,
       int* label_prefix_length = nullptr);
 
  private:

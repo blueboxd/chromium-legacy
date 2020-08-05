@@ -167,16 +167,22 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     case AuthenticatorAttachment::kPlatform:
       return {FidoTransportProtocol::kInternal};
     case AuthenticatorAttachment::kCrossPlatform:
-      return {FidoTransportProtocol::kUsbHumanInterfaceDevice,
-              FidoTransportProtocol::kBluetoothLowEnergy,
-              FidoTransportProtocol::kNearFieldCommunication,
-              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+      return {
+          FidoTransportProtocol::kUsbHumanInterfaceDevice,
+          FidoTransportProtocol::kBluetoothLowEnergy,
+          FidoTransportProtocol::kNearFieldCommunication,
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+          FidoTransportProtocol::kAndroidAccessory,
+      };
     case AuthenticatorAttachment::kAny:
-      return {FidoTransportProtocol::kInternal,
-              FidoTransportProtocol::kNearFieldCommunication,
-              FidoTransportProtocol::kUsbHumanInterfaceDevice,
-              FidoTransportProtocol::kBluetoothLowEnergy,
-              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+      return {
+          FidoTransportProtocol::kInternal,
+          FidoTransportProtocol::kNearFieldCommunication,
+          FidoTransportProtocol::kUsbHumanInterfaceDevice,
+          FidoTransportProtocol::kBluetoothLowEnergy,
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+          FidoTransportProtocol::kAndroidAccessory,
+      };
   }
 
   NOTREACHED();

@@ -53,6 +53,26 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
                              // message to user.
   };
 
+  // Extra control parameters to be passed when setting the auth methods.
+  struct AuthMethodsMetadata {
+    explicit AuthMethodsMetadata() {}
+    // If the virtual keyboard is visible, the pinpad is hidden.
+    bool virtual_keyboard_visible = false;
+    // Whether to show the pinpad for the password field.
+    bool show_pinpad_for_pw = false;
+    // User's pin length to use for autosubmit.
+    size_t autosubmit_pin_length = 0;
+  };
+
+  // Possible states that the input field might be in.
+  // This is determined by the current authentication methods
+  // that a user has.
+  enum class InputFieldMode {
+    DISABLED,          // Not showing any input field.
+    PASSWORD_ONLY,     // No PIN set. Password only field.
+    PIN_AND_PASSWORD,  // PIN set.
+  };
+
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
    public:
@@ -104,10 +124,13 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   ~LoginAuthUserView() override;
 
   // Set the displayed set of auth methods. |auth_methods| contains or-ed
-  // together AuthMethod values. |show_pinpad| determines whether the pin pad
-  // should be visible.
-  void SetAuthMethods(uint32_t auth_methods, bool show_pinpad);
+  // together AuthMethod values. |auth_metadata| provides additional control
+  // parameters for the view.
+  void SetAuthMethods(
+      uint32_t auth_methods,
+      AuthMethodsMetadata auth_metadata = AuthMethodsMetadata());
   AuthMethods auth_methods() const { return auth_methods_; }
+  InputFieldMode input_field_mode() const { return input_field_mode_; }
 
   // Add an easy unlock icon.
   void SetEasyUnlockIcon(EasyUnlockIconId id,
@@ -183,10 +206,24 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // starts the asynchronous authentication process against a security token.
   void AttemptAuthenticateWithChallengeResponse();
 
-  AuthMethods auth_methods_ = AUTH_NONE;
+  // Determines the mode of the input field based on the available
+  // authentication methods.
+  void UpdateInputFieldMode();
 
-  // Whether to show the pinpad. Sometimes hidden by the on screen keyboard
-  bool show_pinpad_ = false;
+  // Convenience methods to determine element visibility.
+  bool ShouldShowPinPad() const;
+  bool ShouldShowPasswordField() const;
+
+  // Convenience methods to determine UI text based on the InputFieldMode.
+  base::string16 GetPasswordViewPlaceholder() const;
+
+  // Authentication methods available and extra parameters that control the UI.
+  AuthMethods auth_methods_ = AUTH_NONE;
+  AuthMethodsMetadata auth_metadata_ = AuthMethodsMetadata();
+
+  // Controls which input field is currently being shown.
+  InputFieldMode input_field_mode_ = InputFieldMode::DISABLED;
+
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
   NonAccessibleView* password_view_container_ = nullptr;

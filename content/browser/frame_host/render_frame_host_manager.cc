@@ -3036,19 +3036,16 @@ void RenderFrameHostManager::ExecutePageBroadcastMethod(
   // separated, it might be possible/desirable to just route to the view.
   DCHECK(!frame_tree_node_->parent());
 
-  if (frame_tree_node_->parent())
-    return;
-
   // When calling a PageBroadcast Mojo method for an inner WebContents, we don't
   // want to also call it for the outer WebContent's frame as well.
   RenderFrameProxyHost* outer_delegate_proxy =
       IsMainFrameForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
   for (const auto& pair : proxy_hosts_) {
-    if (outer_delegate_proxy != pair.second.get()) {
-      if (pair.second->GetSiteInstance() == instance_to_skip)
-        continue;
-      callback.Run(pair.second->GetRenderViewHost());
-    }
+    if (outer_delegate_proxy == pair.second.get())
+      continue;
+    if (pair.second->GetSiteInstance() == instance_to_skip)
+      continue;
+    callback.Run(pair.second->GetRenderViewHost());
   }
 
   if (speculative_render_frame_host_ &&
@@ -3058,6 +3055,25 @@ void RenderFrameHostManager::ExecutePageBroadcastMethod(
 
   if (render_frame_host_->GetSiteInstance() != instance_to_skip) {
     callback.Run(render_frame_host_->render_view_host());
+  }
+}
+
+void RenderFrameHostManager::ExecuteRemoteFramesBroadcastMethod(
+    RemoteFramesBroadcastMethodCallback callback,
+    SiteInstance* instance_to_skip) {
+  DCHECK(!frame_tree_node_->parent());
+
+  // When calling a ExecuteRemoteFramesBroadcastMethod() for an inner
+  // WebContents, we don't want to also call it for the outer WebContent's
+  // frame as well.
+  RenderFrameProxyHost* outer_delegate_proxy =
+      IsMainFrameForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
+  for (const auto& pair : proxy_hosts_) {
+    if (outer_delegate_proxy == pair.second.get())
+      continue;
+    if (pair.second->GetSiteInstance() == instance_to_skip)
+      continue;
+    callback.Run(pair.second.get());
   }
 }
 

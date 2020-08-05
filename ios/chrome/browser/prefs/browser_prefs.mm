@@ -223,6 +223,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kInvalidatorSavedInvalidations);
   registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
+
+  registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 }
 
 // This method should be periodically pruned of year+ old migrations.

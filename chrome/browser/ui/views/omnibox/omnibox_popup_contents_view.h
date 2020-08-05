@@ -63,6 +63,9 @@ class OmniboxPopupContentsView : public views::View,
   // Gets the OmniboxResultView for match |i|.
   OmniboxResultView* result_view_at(size_t i);
 
+  // Currently selected OmniboxResultView, or nullptr if nothing is selected.
+  OmniboxResultView* GetSelectedResultView();
+
   // Returns whether we're in experimental keyword mode and the input gives
   // sufficient confidence that the user wants keyword mode.
   bool InExplicitExperimentalKeywordMode();

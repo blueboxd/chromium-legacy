@@ -429,7 +429,8 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     SafetyTipPageInfoBubbleViewBrowserTest,
     ::testing::Values(UIStatus::kDisabled,
-                      UIStatus::kEnabledWithDefaultFeatures,
+                      // Disabled for flakiness. https://crbug.com/1113105.
+                      // UIStatus::kEnabledWithDefaultFeatures,
                       UIStatus::kEnabledWithSuspiciousSites,
                       UIStatus::kEnabledWithAllFeatures));
 

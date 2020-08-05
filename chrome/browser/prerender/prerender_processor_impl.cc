@@ -4,7 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_processor_impl.h"
 
-#include "chrome/browser/prerender/prerender_link_manager.h"
+#include "components/prerender/browser/prerender_link_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

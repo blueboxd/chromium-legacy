@@ -67,6 +67,9 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
 
+  // Quits listening and unblocks WaitForNotification* calls.
+  void Quit();
+
  private:
   // Listen to all frames within the frame tree of this WebContents.
   void ListenToAllFrames(WebContents* web_contents);

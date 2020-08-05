@@ -122,6 +122,9 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       PseudoId,
       unsigned rules_to_include = kAllButEmptyCSSRules);
   StyleRuleList* StyleRulesForElement(Element*, unsigned rules_to_include);
+  HeapHashMap<CSSPropertyName, Member<const CSSValue>> CascadedValuesForElement(
+      Element*,
+      PseudoId);
 
   void ComputeFont(Element&, ComputedStyle*, const CSSPropertyValueSet&);
 

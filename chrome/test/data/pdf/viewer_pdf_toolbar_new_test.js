@@ -156,8 +156,12 @@ const tests = [
 
     toolbar.addEventListener('two-up-view-changed', function(e) {
       chrome.test.assertEq(false, e.detail);
+      chrome.test.assertEq(
+          'true', singlePageViewButton.getAttribute('aria-checked'));
       chrome.test.assertFalse(
           singlePageViewButton.querySelector('iron-icon').hidden);
+      chrome.test.assertEq(
+          'false', twoPageViewButton.getAttribute('aria-checked'));
       chrome.test.assertTrue(
           twoPageViewButton.querySelector('iron-icon').hidden);
       chrome.test.succeed();
@@ -174,8 +178,12 @@ const tests = [
 
     toolbar.addEventListener('two-up-view-changed', function(e) {
       chrome.test.assertEq(true, e.detail);
+      chrome.test.assertEq(
+          'true', twoPageViewButton.getAttribute('aria-checked'));
       chrome.test.assertFalse(
           twoPageViewButton.querySelector('iron-icon').hidden);
+      chrome.test.assertEq(
+          'false', singlePageViewButton.getAttribute('aria-checked'));
       chrome.test.assertTrue(
           singlePageViewButton.querySelector('iron-icon').hidden);
       chrome.test.succeed();
@@ -188,11 +196,15 @@ const tests = [
 
     const showAnnotationsButton =
         toolbar.shadowRoot.querySelector('#show-annotations-button');
+    chrome.test.assertEq(
+        'true', showAnnotationsButton.getAttribute('aria-checked'));
     chrome.test.assertFalse(
         showAnnotationsButton.querySelector('iron-icon').hidden);
 
     toolbar.addEventListener('display-annotations-changed', (e) => {
       chrome.test.assertEq(false, e.detail);
+      chrome.test.assertEq(
+          'false', showAnnotationsButton.getAttribute('aria-checked'));
       chrome.test.assertTrue(
           showAnnotationsButton.querySelector('iron-icon').hidden);
       chrome.test.succeed();

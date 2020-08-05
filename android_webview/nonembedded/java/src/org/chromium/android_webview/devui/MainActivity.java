@@ -41,10 +41,10 @@ public class MainActivity extends FragmentActivity {
     final Map<Integer, Integer> mFragmentIdMap = new HashMap<>();
 
     // Keep in sync with DeveloperUiService.java
-    private static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
-    private static final int FRAGMENT_ID_HOME = 0;
-    private static final int FRAGMENT_ID_CRASHES = 1;
-    private static final int FRAGMENT_ID_FLAGS = 2;
+    public static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
+    public static final int FRAGMENT_ID_HOME = 0;
+    public static final int FRAGMENT_ID_CRASHES = 1;
+    public static final int FRAGMENT_ID_FLAGS = 2;
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.

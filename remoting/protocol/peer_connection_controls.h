@@ -23,9 +23,14 @@ class PeerConnectionControls {
 
   // Performs an ICE restart. This causes the host to initiate a new SDP
   // offer/answer exchange, and restarts the ICE gathering/connection sequence.
-  // This can be used to re-establish a connection, or change SDP parameters,
-  // without needing to re-authenticate the user.
+  // This can be used to re-establish a connection, without needing to
+  // re-authenticate the user.
   virtual void RequestIceRestart() = 0;
+
+  // Requests a new SDP offer/answer exchange, without restarting ICE. This can
+  // be used to change SDP configuration (for example, switching to a different
+  // codec), without needing a full reconnection.
+  virtual void RequestSdpRestart() = 0;
 };
 
 }  // namespace protocol

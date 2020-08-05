@@ -64,6 +64,8 @@ SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISmbShareHost);
 
+  source->DisableTrustedTypesCSP();
+
   AddSmbSharesStrings(source);
 
   Profile* const profile = Profile::FromWebUI(web_ui);

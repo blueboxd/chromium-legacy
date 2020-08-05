@@ -29,3 +29,25 @@ annotations in code. It uses regex expressions on source files.
 
 # extractor_test.py
 Unit tests for extractor.py.
+
+# update_annotations_doc.py
+Updates the Chrome Browser Network Traffic Annotations document that presents
+all network traffic annotations specified within `summary/grouping.xml`.
+  - You can use the `hidden="true"` attribute within a group to suppress the
+    group and its nested senders and annotations from appearing in the document.
+  - You can use the `hidden="true"` attribute within the annotations in
+    `grouping.xml` to suppress them from appearing in the document.
+  - `grouping.xml` needn't be organized in alphabetical order, the script
+    automatically places them in alphabetical order.
+
+# update_annotations_doc_tests.py
+Unit tests for update_annotations_doc.py.
+
+# parser.py
+Parses the `grouping.xml` and `annotations.tsv` files to provide
+`update_annotations_doc.py` with the annotations and their relevant information,
+e.g. unique_id, data, trigger, etc. Also includes methods to parse the json
+object returned by the Google Docs API `get()` method.
+
+# parser_tests.py
+Unit tests for parser.py.

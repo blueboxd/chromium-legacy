@@ -70,6 +70,7 @@ if (breakpad_enabled) {
 
 chromium_bundle_id = "chrome.ios.herebedragons"
 chromium_handoff_id = "$ios_app_bundle_id_prefix.chrome.handoff"
+ios_move_tab_activity_type = "$ios_app_bundle_id_prefix.chrome.move-tab"
 
 if (is_chrome_branded) {
   chromium_short_name = "Chrome"

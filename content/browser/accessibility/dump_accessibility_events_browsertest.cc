@@ -93,13 +93,18 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
   void RunEventTest(const base::FilePath::CharType* file_path);
 
  private:
+  void OnEventRecorded(AccessibilityNotificationWaiter* waiter,
+                       const std::string& event) {
+    waiter->Quit();
+  }
+
   base::string16 initial_tree_;
   base::string16 final_tree_;
 };
 
 bool IsRecordingComplete(AccessibilityEventRecorder& event_recorder,
                          std::vector<std::string>& run_until) {
-  // If no @RUN-UNTIL-EVENT directives, then having any events is enough.
+  // If no @*-RUN-UNTIL-EVENT directives, then having any events is enough.
   LOG(ERROR) << "=== IsRecordingComplete#1 run_until size=" << run_until.size();
   if (run_until.empty())
     return true;
@@ -145,15 +150,26 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
     waiter.reset(new AccessibilityNotificationWaiter(
         shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kNone));
 
+    // It's possible for platform events to be received after all blink or
+    // generated events have been fired. Unblock the |waiter| when this happens.
+    event_recorder->ListenToEvents(
+        base::BindRepeating(&DumpAccessibilityEventsTest::OnEventRecorded,
+                            base::Unretained(this), waiter.get()));
+
     base::Value go_results =
         ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "go()");
     run_go_again = go_results.is_bool() && go_results.GetBool();
 
     for (;;) {
-      waiter->WaitForNotification();  // Run at least once.
+      // Wait for at least one event. This may unblock either when |waiter|
+      // observes either an ax::mojom::Event or ui::AXEventGenerator::Event, or
+      // when |event_recorder| records a platform event.
+      waiter->WaitForNotification();
       if (IsRecordingComplete(*event_recorder, run_until))
         break;
     }
+
+    event_recorder->StopListeningToEvents();
 
     // More than one accessibility event could have been generated.
     // To make sure we've received all accessibility events, add a
@@ -529,22 +545,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaHiddenDescendants) {
-  RunEventTest(FILE_PATH_LITERAL("aria-hidden-descendants.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaHiddenDescendantsAlreadyIgnored) {
-  RunEventTest(
-      FILE_PATH_LITERAL("aria-hidden-descendants-already-ignored.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsCSSDisplayDescendants) {
-  RunEventTest(FILE_PATH_LITERAL("css-display-descendants.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsCSSFlexTextUpdate) {
   RunEventTest(FILE_PATH_LITERAL("css-flex-text-update.html"));
 }
@@ -552,11 +552,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsCSSVisibility) {
   RunEventTest(FILE_PATH_LITERAL("css-visibility.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsCSSVisibilityDescendants) {
-  RunEventTest(FILE_PATH_LITERAL("css-visibility-descendants.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

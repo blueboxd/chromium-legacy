@@ -91,7 +91,7 @@
 /google_benchmark/src
 /google_toolbox_for_mac/src
 /googlemac
-/grpc/src
+/grpc
 /gvr-android-sdk/common_library.aar
 /gvr-android-sdk/test-libraries/controller_test_api.aar
 /gvr-android-sdk/libgvr_shim_static_*.a
@@ -236,7 +236,7 @@
 /webgl
 /webgl/src
 /webgpu-cts/src
-/webpagereplay/bin
+/webpagereplay
 /webrtc
 /weston/src
 /widevine/cdm/chromeos

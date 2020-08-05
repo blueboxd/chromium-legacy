@@ -40,10 +40,10 @@
               class="oobe-local-link">
             [[i18nDynamic(locale, 'oobeEulaAditionalTerms')]]
           </a>
-          <a id="installationSettings" href="#"
+          <a id="securitySettings" href="#"
               class="oobe-local-link"
-              on-tap="onInstallationSettingsClicked_">
-            [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
+              on-tap="onSecuritySettingsClicked_">
+            [[i18nDynamic(locale, 'eulaSystemSecuritySettings')]]
           </a>
           <div id="logging" class="layout horizontal">
             <cr-checkbox id="usageStats" class="layout start self-center"
@@ -53,7 +53,7 @@
                 <span id="usageStatsLabel">
                   [[i18nDynamic(locale, 'checkboxLogging')]]
                 </span>
-                <a id="learn-more" href="#"
+                <a id="learnMore" href="#"
                     on-tap="onUsageStatsHelpLinkClicked_"
                     class="oobe-local-link">
                   [[i18nDynamic(locale, 'learnMore')]]
@@ -75,9 +75,9 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="installationSettingsDialog" role="dialog" has-buttons
-      title-key="eulaSystemInstallationSettings" hidden
-      aria-label$="[[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]">
+    <oobe-dialog id="securitySettingsDialog" role="dialog" has-buttons
+      title-key="eulaSystemSecuritySettings" hidden
+      aria-label$="[[i18nDynamic(locale, 'eulaSystemSecuritySettings')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
@@ -95,7 +95,7 @@
           </div>
           <div class="layout horizontal"
               hidden="[[!isWaitingForPassword_(password)]]">
-            <div class="installation-settings-spinner throbber"></div>
+            <div class="security-settings-spinner throbber"></div>
             <div>
               [[i18nDynamic(locale, 'eulaTpmBusy')]]
             </div>
@@ -111,11 +111,11 @@
         <div class="flex"></div>
         <oobe-text-button id="settings-close-button" inverse
             class="focus-on-show"
-            text-key="eulaSystemInstallationSettingsOkButton"
-            on-tap="onInstallationSettingsCloseClicked_"></oobe-text-button>
+            text-key="eulaSystemSecuritySettingsOkButton"
+            on-tap="onSecuritySettingsCloseClicked_"></oobe-text-button>
       </div>
     </oobe-dialog>
-    <cr-dialog id="additional-tos" ignore-popstate
+    <cr-dialog id="additionalToS" ignore-popstate
         on-close="focusAdditionalTermsLink_"
         on-cancel="focusAdditionalTermsLink_">
       <div slot="title">

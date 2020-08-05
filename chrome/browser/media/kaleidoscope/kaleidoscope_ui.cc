@@ -220,6 +220,7 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::StyleSrc,
       "style-src chrome-untrusted://resources 'unsafe-inline' 'self';");
+  untrusted_source->DisableTrustedTypesCSP();
 
   // Allow workers from chrome-untrusted://kaleidoscope.
   untrusted_source->OverrideContentSecurityPolicy(
@@ -285,6 +286,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ChildSrc,
       "child-src chrome-untrusted://kaleidoscope;");
+  html_source->DisableTrustedTypesCSP();
 
   // Add a request filter to handle strings.js
   html_source->SetRequestFilter(base::BindRepeating(OnShouldHandleRequest),

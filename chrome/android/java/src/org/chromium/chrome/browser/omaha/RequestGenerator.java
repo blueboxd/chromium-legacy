@@ -45,8 +45,7 @@ public abstract class RequestGenerator {
 
     private final Context mApplicationContext;
 
-    @VisibleForTesting
-    public RequestGenerator(Context context) {
+    protected RequestGenerator(Context context) {
         mApplicationContext = context.getApplicationContext();
         UniqueIdentificationGeneratorFactory.registerGenerator(
                 SettingsSecureBasedIdentificationGenerator.GENERATOR_ID,

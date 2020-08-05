@@ -176,14 +176,14 @@ class NearbyShareDeviceDataUpdaterImplTest : public ::testing::Test {
       case UpdateDeviceRequestResult::kSuccess:
         std::move(client->update_device_requests()[0].callback)
             .Run(TestResponse());
-        return;
+        break;
       case UpdateDeviceRequestResult::kHttpFailure:
         std::move(client->update_device_requests()[0].error_callback)
             .Run(NearbyShareRequestError::kBadRequest);
-        return;
+        break;
       case UpdateDeviceRequestResult::kTimeout:
         FastForward(kTestTimeout);
-        return;
+        break;
     }
     EXPECT_EQ(num_responses + 1, responses_.size());
 

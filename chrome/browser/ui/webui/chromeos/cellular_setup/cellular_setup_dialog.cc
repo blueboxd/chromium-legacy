@@ -110,6 +110,8 @@ CellularSetupDialogUI::CellularSetupDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICellularSetupHost);
 
+  source->DisableTrustedTypesCSP();
+
   chromeos::cellular_setup::AddLocalizedStrings(source);
   source->UseStringsJs();
   source->SetDefaultResource(IDR_CELLULAR_SETUP_CELLULAR_SETUP_DIALOG_HTML);

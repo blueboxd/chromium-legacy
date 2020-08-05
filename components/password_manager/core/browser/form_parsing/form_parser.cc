@@ -45,16 +45,6 @@ constexpr char kAutocompleteNewPassword[] = "new-password";
 constexpr char kAutocompleteCreditCardPrefix[] = "cc-";
 constexpr char kAutocompleteOneTimePassword[] = "one-time-code";
 
-// The susbset of autocomplete flags related to passwords.
-enum class AutocompleteFlag {
-  kNone,
-  kUsername,
-  kCurrentPassword,
-  kNewPassword,
-  // Represents the whole family of cc-* flags + OTP flag.
-  kNonPassword
-};
-
 // The autocomplete attribute has one of the following structures:
 //   [section-*] [shipping|billing] [type_hint] field_type
 //   on | off | false
@@ -88,42 +78,6 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
   }
   return AutocompleteFlag::kNone;
 }
-
-// How likely is user interaction for a given field?
-// Note: higher numeric values should match higher likeliness to allow using the
-// standard operator< for comparison of likeliness.
-enum class Interactability {
-  // When the field is invisible.
-  kUnlikely = 0,
-  // When the field is visible/focusable.
-  kPossible = 1,
-  // When the user actually typed into the field before.
-  kCertain = 2,
-};
-
-// A wrapper around FormFieldData, carrying some additional data used during
-// parsing.
-struct ProcessedField {
-  // This points to the wrapped FormFieldData.
-  const FormFieldData* field;
-
-  // The flag derived from field->autocomplete_attribute.
-  AutocompleteFlag autocomplete_flag = AutocompleteFlag::kNone;
-
-  // True if field->form_control_type == "password".
-  bool is_password = false;
-
-  // True if field is predicted to be a password.
-  bool is_predicted_as_password = false;
-
-  // True if the server predicts that this field is not a password field.
-  bool server_hints_not_password = false;
-
-  // True if the server predicts that this field is not a username field.
-  bool server_hints_not_username = false;
-
-  Interactability interactability = Interactability::kUnlikely;
-};
 
 // Returns true if the |str| contains words related to CVC fields.
 bool StringMatchesCVC(const base::string16& str) {
@@ -909,27 +863,6 @@ std::vector<ProcessedField> ProcessFields(
   return result;
 }
 
-// Find the first element in |username_predictions| (i.e. the most reliable
-// prediction) that occurs in |processed_fields| and has interactability level
-// at least |username_max|.
-const FormFieldData* FindUsernameInPredictions(
-    const std::vector<autofill::FieldRendererId>& username_predictions,
-    const std::vector<ProcessedField>& processed_fields,
-    Interactability username_max) {
-  for (autofill::FieldRendererId predicted_id : username_predictions) {
-    auto iter = std::find_if(
-        processed_fields.begin(), processed_fields.end(),
-        [predicted_id, username_max](const ProcessedField& processed_field) {
-          return processed_field.field->unique_renderer_id == predicted_id &&
-                 MatchesInteractability(processed_field, username_max);
-        });
-    if (iter != processed_fields.end()) {
-      return iter->field;
-    }
-  }
-  return nullptr;
-}
-
 // Return true if |significant_fields| has an username field and
 // |form_predictions| has |may_use_prefilled_placeholder| == true for the
 // username field.
@@ -1101,6 +1034,24 @@ std::string GetSignonRealm(const GURL& url) {
   rep.ClearRef();
   rep.SetPathStr("");
   return url.ReplaceComponents(rep).spec();
+}
+
+const FormFieldData* FindUsernameInPredictions(
+    const std::vector<autofill::FieldRendererId>& username_predictions,
+    const std::vector<ProcessedField>& processed_fields,
+    Interactability username_max) {
+  for (autofill::FieldRendererId predicted_id : username_predictions) {
+    auto iter = std::find_if(
+        processed_fields.begin(), processed_fields.end(),
+        [predicted_id, username_max](const ProcessedField& processed_field) {
+          return processed_field.field->unique_renderer_id == predicted_id &&
+                 MatchesInteractability(processed_field, username_max);
+        });
+    if (iter != processed_fields.end()) {
+      return iter->field;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace password_manager

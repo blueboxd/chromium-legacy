@@ -78,6 +78,8 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIAccountMigrationWelcomeHost);
 
+  html_source->DisableTrustedTypesCSP();
+
   html_source->UseStringsJs();
 
   // Add localized strings.

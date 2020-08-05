@@ -85,7 +85,7 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
 }
 
 std::string It2MeDesktopEnvironment::GetCapabilities() const {
-  return protocol::kWebrtcIceRestartAction;
+  return protocol::kWebrtcIceSdpRestartAction;
 }
 
 It2MeDesktopEnvironmentFactory::It2MeDesktopEnvironmentFactory(

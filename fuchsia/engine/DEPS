@@ -3,6 +3,7 @@ include_rules = [
   "+components/version_info",
   "+components/viz/common",
   "+components/media_control",
+  "+components/on_load_script_injector",
   "+content/public/app",
   "+gpu/command_buffer/service",
   "+gpu/config/gpu_finch_features.h",

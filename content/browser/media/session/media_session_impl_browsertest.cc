@@ -2606,7 +2606,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 
   UISetAudioSink(kExampleSinkId);
   EXPECT_EQ(player_observer->received_set_audio_sink_id_calls(), 1);
-  EXPECT_EQ(player_observer->GetAudioSinkId(0), kExampleSinkId);
+  EXPECT_EQ(player_observer->GetAudioOutputSinkId(0), kExampleSinkId);
 }
 
 class MediaSessionFaviconBrowserTest : public ContentBrowserTest {

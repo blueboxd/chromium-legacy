@@ -201,6 +201,7 @@ cast_source_set("browser") {
     "//components/metrics",
     "//components/metrics:content",
     "//components/metrics:net",
+    "//components/on_load_script_injector/browser",
     "//components/variations/net",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider

@@ -2004,6 +2004,18 @@ AXObject* AXObjectCacheImpl::GetActiveAriaModalDialog() const {
   return active_aria_modal_dialog_;
 }
 
+HeapVector<Member<AXObject>>
+AXObjectCacheImpl::GetAllObjectsWithChangedBounds() {
+  VectorOf<AXObject> changed_bounds_objects;
+  changed_bounds_objects.ReserveCapacity(changed_bounds_ids_.size());
+  for (AXID changed_bounds_id : changed_bounds_ids_) {
+    if (AXObject* obj = ObjectFromAXID(changed_bounds_id))
+      changed_bounds_objects.push_back(obj);
+  }
+  changed_bounds_ids_.clear();
+  return changed_bounds_objects;
+}
+
 void AXObjectCacheImpl::HandleInitialFocus() {
   PostNotification(document_, ax::mojom::Event::kFocus);
 }
@@ -2051,6 +2063,15 @@ void AXObjectCacheImpl::HandleTextMarkerDataAdded(Node* start, Node* end) {
 
 void AXObjectCacheImpl::HandleValueChanged(Node* node) {
   PostNotification(node, ax::mojom::Event::kValueChanged);
+
+  // If it's a slider, invalidate the thumb's bounding box.
+  AXObject* ax_object = Get(node);
+  if (ax_object && ax_object->RoleValue() == ax::mojom::blink::Role::kSlider &&
+      ax_object->HasChildren() && !ax_object->NeedsToUpdateChildren() &&
+      ax_object->ChildCountIncludingIgnored() == 1) {
+    changed_bounds_ids_.insert(
+        ax_object->ChildAtIncludingIgnored(0)->AXObjectID());
+  }
 }
 
 void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutObject* menu_list,
@@ -2124,6 +2145,12 @@ void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
 
 void AXObjectCacheImpl::HandleFrameRectsChanged(Document& document) {
   MarkAXObjectDirty(Get(&document), false);
+}
+
+void AXObjectCacheImpl::InvalidateBoundingBox(
+    const LayoutObject* layout_object) {
+  if (AXObject* obj = Get(const_cast<LayoutObject*>(layout_object)))
+    changed_bounds_ids_.insert(obj->AXObjectID());
 }
 
 void AXObjectCacheImpl::HandleScrollPositionChanged(

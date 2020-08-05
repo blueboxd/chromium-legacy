@@ -13,7 +13,7 @@
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "services/tracing/public/mojom/perfetto_service.mojom-shared.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 
 namespace mojo {

@@ -12,6 +12,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/usb_internals_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
@@ -37,6 +38,9 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   webui::AddResourcePathsBulk(source, kPaths);
 
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types cr-ui-tree-js-static;");
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

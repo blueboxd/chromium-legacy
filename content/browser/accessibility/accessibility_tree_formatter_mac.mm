@@ -110,6 +110,7 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
+  const std::string GetRunUntilEventString() override;
 
   void AddProperties(const BrowserAccessibilityCocoa* node,
                      const LineIndexesMap& line_indexes_map,
@@ -815,6 +816,10 @@ const string AccessibilityTreeFormatterMac::GetDenyString() {
 
 const string AccessibilityTreeFormatterMac::GetDenyNodeString() {
   return "@MAC-DENY-NODE:";
+}
+
+const std::string AccessibilityTreeFormatterMac::GetRunUntilEventString() {
+  return "@MAC-RUN-UNTIL-EVENT:";
 }
 
 }  // namespace content

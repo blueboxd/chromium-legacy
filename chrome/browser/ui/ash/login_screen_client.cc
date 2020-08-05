@@ -157,9 +157,19 @@ void LoginScreenClient::FocusOobeDialog() {
 }
 
 void LoginScreenClient::ShowGaiaSignin(const AccountId& prefilled_account) {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
-        prefilled_account);
+  if (chromeos::parent_access::ParentAccessService::Get().IsApprovalRequired(
+          chromeos::parent_access::ParentAccessService::SupervisedAction::
+              kOnlineLogin)) {
+    // Show the client native parent access widget and processed to GAIA signin
+    // flow in |OnParentAccessValidation| when validation success.
+    ash::LoginScreen::Get()->ShowParentAccessWidget(
+        prefilled_account,
+        base::BindOnce(&LoginScreenClient::OnParentAccessValidation,
+                       weak_ptr_factory_.GetWeakPtr(), prefilled_account),
+        ash::ParentAccessRequestReason::kOnlineLogin, false /* extra_dimmer */,
+        base::Time::Now());
+  } else {
+    ShowGaiaSigninInternal(prefilled_account);
   }
 }
 
@@ -286,5 +296,20 @@ void LoginScreenClient::OnUserActivity() {
     chromeos::LoginDisplayHost::default_host()
         ->GetExistingUserController()
         ->ResetAutoLoginTimer();
+  }
+}
+
+void LoginScreenClient::OnParentAccessValidation(
+    const AccountId& prefilled_account,
+    bool success) {
+  if (success)
+    ShowGaiaSigninInternal(prefilled_account);
+}
+
+void LoginScreenClient::ShowGaiaSigninInternal(
+    const AccountId& prefilled_account) {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
+        prefilled_account);
   }
 }

@@ -47,7 +47,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -2686,17 +2685,6 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
   UpdateMainFrameLayoutSize();
 }
 
-void WebViewImpl::SetTextAutosizerPageInfo(
-    const WebTextAutosizerPageInfo& page_info) {
-  Frame* root_frame = GetPage()->MainFrame();
-  DCHECK(root_frame->IsRemoteFrame());
-  if (page_info == GetPage()->TextAutosizerPageInfo())
-    return;
-
-  GetPage()->SetTextAutosizerPageInfo(page_info);
-  TextAutosizer::UpdatePageInfoInAllFrames(root_frame);
-}
-
 void WebViewImpl::UpdateMainFrameLayoutSize() {
   if (should_auto_resize_ || !MainFrameImpl())
     return;
@@ -3168,12 +3156,10 @@ void WebViewImpl::MainFrameScrollOffsetChanged() {
 }
 
 void WebViewImpl::TextAutosizerPageInfoChanged(
-    const WebTextAutosizerPageInfo& page_info) {
+    const mojom::blink::TextAutosizerPageInfo& page_info) {
   DCHECK(MainFrameImpl());
   local_main_frame_host_remote_->TextAutosizerPageInfoChanged(
-      mojom::blink::TextAutosizerPageInfo::New(
-          page_info.main_frame_width, page_info.main_frame_layout_width,
-          page_info.device_scale_adjustment));
+      page_info.Clone());
 }
 
 void WebViewImpl::SetBackgroundColorOverride(SkColor color) {

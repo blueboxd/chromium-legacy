@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -590,12 +591,17 @@ public class FeedStreamSurfaceTest {
     @SmallTest
     public void testClearAll() {
         FeedStreamSurface.startup();
+        InOrder order = Mockito.inOrder(mFeedStreamSurfaceJniMock, mProcessScope);
         mFeedStreamSurface.surfaceOpened();
-        verify(mFeedStreamSurfaceJniMock).surfaceOpened(anyLong(), any(FeedStreamSurface.class));
+        order.verify(mFeedStreamSurfaceJniMock)
+                .surfaceOpened(anyLong(), any(FeedStreamSurface.class));
 
         FeedStreamSurface.clearAll();
-        verify(mFeedStreamSurfaceJniMock).surfaceClosed(anyLong(), any(FeedStreamSurface.class));
-        verify(mProcessScope).resetAccount();
+        order.verify(mFeedStreamSurfaceJniMock)
+                .surfaceClosed(anyLong(), any(FeedStreamSurface.class));
+        order.verify(mProcessScope).resetAccount();
+        order.verify(mFeedStreamSurfaceJniMock)
+                .surfaceOpened(anyLong(), any(FeedStreamSurface.class));
     }
 
     @Test

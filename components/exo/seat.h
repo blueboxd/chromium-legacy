@@ -107,17 +107,7 @@ class Seat : public aura::client::FocusChangeObserver,
   }
 
  private:
-  class RefCountedScopedClipboardWriter
-      : public ui::ScopedClipboardWriter,
-        public base::RefCounted<RefCountedScopedClipboardWriter> {
-   public:
-    RefCountedScopedClipboardWriter(ui::ClipboardBuffer buffer)
-        : ScopedClipboardWriter(buffer) {}
-
-   private:
-    friend class base::RefCounted<RefCountedScopedClipboardWriter>;
-    virtual ~RefCountedScopedClipboardWriter() = default;
-  };
+  class RefCountedScopedClipboardWriter;
 
   // Called when data is read from FD passed from a client.
   // |data| is read data. |source| is source of the data, or nullptr if

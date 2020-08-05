@@ -67,8 +67,11 @@ constexpr base::TimeDelta AndroidBatteryMetrics::kDrainMetricsInterval;
 AndroidBatteryMetrics::AndroidBatteryMetrics()
     : app_state_listener_(base::android::ApplicationStatusListener::New(
           base::BindRepeating(&AndroidBatteryMetrics::OnAppStateChanged,
-                              base::Unretained(this)))) {
+                              base::Unretained(this)))),
+      app_state_(base::android::ApplicationStatusListener::GetState()),
+      on_battery_power_(base::PowerMonitor::IsOnBatteryPower()) {
   base::PowerMonitor::AddObserver(this);
+  UpdateDrainMetricsEnabled();
 }
 
 AndroidBatteryMetrics::~AndroidBatteryMetrics() {

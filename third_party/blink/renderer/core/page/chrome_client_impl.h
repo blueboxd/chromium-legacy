@@ -282,7 +282,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                         bool request) override;
 
   void DidUpdateTextAutosizerPageInfo(
-      const WebTextAutosizerPageInfo& page_info) override;
+      const mojom::blink::TextAutosizerPageInfo& page_info) override;
 
   int GetLayerTreeId(LocalFrame& frame) override;
 

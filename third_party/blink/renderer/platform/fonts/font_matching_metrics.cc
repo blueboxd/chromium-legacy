@@ -117,7 +117,8 @@ void FontMatchingMetrics::ReportFontFamilyLookupByGenericFamily(
   OnFontLookup();
   GenericFontLookupKey key(generic_font_family_name, script,
                            generic_family_type);
-  generic_font_lookups_.insert(key, resulting_font_name);
+  generic_font_lookups_.insert(key,
+                               AtomicStringHash::GetHash(resulting_font_name));
 }
 
 void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
@@ -126,8 +127,7 @@ void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
     const LocalFontLookupResult& result = entry.value;
 
     uint64_t input_digest = blink::IdentifiabilityDigestHelper(
-        AtomicStringHash::GetHash(key.name), key.fallback_character,
-        key.weight.RawValue(), key.width.RawValue(), key.slope.RawValue());
+        key.name_hash, key.fallback_character, key.font_selection_request_hash);
     uint64_t output_digest = blink::IdentifiabilityDigestHelper(
         result.hash, result.check_type, result.is_loading_fallback);
 
@@ -142,13 +142,11 @@ void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
 
   for (const auto& entry : generic_font_lookups_) {
     const GenericFontLookupKey& key = entry.key;
-    const AtomicString& result = entry.value;
+    const unsigned& result = entry.value;
 
     uint64_t input_digest = blink::IdentifiabilityDigestHelper(
-        AtomicStringHash::GetHash(key.generic_font_family_name), key.script,
-        key.generic_family_type);
-    uint64_t output_digest =
-        blink::IdentifiabilityDigestHelper(AtomicStringHash::GetHash(result));
+        key.generic_font_family_name_hash, key.script, key.generic_family_type);
+    uint64_t output_digest = blink::IdentifiabilityDigestHelper(result);
 
     blink::IdentifiabilityMetricBuilder(
         base::UkmSourceId::FromInt64(source_id_))

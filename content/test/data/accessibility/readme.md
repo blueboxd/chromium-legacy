@@ -127,14 +127,15 @@ ready and all `@WAIT-FOR:` strings have been found.
 Example: `@EXECUTE-AND-WAIT-FOR: foo()`
 
 Or, you may need to write an event test that keeps dumping events until a
-specific event line. In this case, use `@RUN-UNTIL-EVENT` with a substring that
-should occur in the event log, e.g.,
-`@RUN-UNTIL-EVENT:IA2_EVENT_TEXT_CARET_MOVED`. Note that `@RUN-UNTIL-EVENT` is
-only used in dump events tests, and not used in dump tree tests.
+specific event line. In this case, use `@WIN-RUN-UNTIL-EVENT` (or similar for
+other platforms) with a substring that should occur in the event log, e.g.,
+`@WIN-RUN-UNTIL-EVENT:IA2_EVENT_TEXT_CARET_MOVED`.
+Note that `@*-RUN-UNTIL-EVENT` is only used in dump events tests, and not used
+in dump tree tests.
 
-If you add multiple `@RUN-UNTIL-EVENT` directives, the test will finish once any
-of them are satisfied. Note that any other events that come along with the last
-event will also be logged.
+If you add multiple `@*-RUN-UNTIL-EVENT` directives, the test will finish once
+any of them are satisfied. Note that any other events that come along with the
+last event will also be logged.
 
 To skip dumping a particular element, make its accessible name equal to
 `@NO_DUMP`, for example `<div aria-label="@NO_DUMP"></div>`.

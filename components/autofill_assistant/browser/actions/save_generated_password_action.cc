@@ -12,16 +12,6 @@
 
 namespace autofill_assistant {
 
-namespace {
-
-void ClearAdditionalValue(const std::string& key,
-                          UserData* user_data,
-                          UserData::FieldChange* field_change) {
-  DCHECK(user_data);
-  user_data->additional_values_.erase(key);
-}
-}  // namespace
-
 SaveGeneratedPasswordAction::SaveGeneratedPasswordAction(
     ActionDelegate* delegate,
     const ActionProto& proto)
@@ -64,9 +54,6 @@ void SaveGeneratedPasswordAction::InternalProcessAction(
   }
 
   delegate_->GetWebsiteLoginManager()->CommitGeneratedPassword();
-
-  delegate_->WriteUserData(
-      base::BindOnce(&ClearAdditionalValue, save_password.memory_key()));
 
   EndAction(ClientStatus(ACTION_APPLIED));
 }

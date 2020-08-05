@@ -118,6 +118,10 @@ class TestFilesDataSource : public content::URLDataSource {
       // Add 'unsafe-inline' to CSP to allow the inline <script> in the
       // generated HTML to run see js_test_gen_html.py.
       return "script-src chrome://resources 'self'  'unsafe-inline'; ";
+    } else if (directive ==
+                   network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+               directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+      return std::string();
     }
 
     return content::URLDataSource::GetContentSecurityPolicy(directive);

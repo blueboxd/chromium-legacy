@@ -290,7 +290,8 @@ class BindingsManagerCastBrowserTest : public content::BrowserTestBase {
     cast_web_contents_ =
         std::make_unique<CastWebContentsImpl>(web_contents_.get(), init_params);
     title_change_observer_.Observe(cast_web_contents_.get());
-    bindings_manager_ = std::make_unique<bindings::BindingsManagerCast>();
+    bindings_manager_ = std::make_unique<bindings::BindingsManagerCast>(
+        cast_web_contents_.get());
   }
 
   void PostRunTestOnMainThread() override {
@@ -344,9 +345,6 @@ IN_PROC_BROWSER_TEST_F(BindingsManagerCastBrowserTest, EndToEnd) {
   auto test_binding_backend =
       std::make_unique<TestBindingBackend>(bindings_manager_.get());
   // TestBindingBackend test_binding_backend(bindings_manager_.get());
-
-  // Attach BindingsManager to the page.
-  bindings_manager_->AttachToPage(cast_web_contents_.get());
 
   // Load test page.
   constexpr char kTestPageTitle[] = "bindings";

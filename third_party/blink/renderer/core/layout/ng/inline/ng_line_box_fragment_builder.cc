@@ -31,7 +31,6 @@ void NGLineBoxFragmentBuilder::Reset() {
 
   break_appeal_ = kBreakAppealPerfect;
   has_floating_descendants_for_paint_ = false;
-  has_orthogonal_flow_roots_ = false;
   has_descendant_that_depends_on_percentage_block_size_ = false;
   has_block_fragmentation_ = false;
 }

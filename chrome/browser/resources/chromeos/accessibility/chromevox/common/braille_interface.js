@@ -48,4 +48,14 @@ BrailleInterface = class {
    * @return {!BrailleDisplayState} The current display state.
    */
   getDisplayState() {}
+
+  /**
+   * Requests the braille display pan left.
+   */
+  panLeft() {}
+
+  /**
+   * Requests the braille display pan right.
+   */
+  panRight() {}
 };

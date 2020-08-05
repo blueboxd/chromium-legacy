@@ -6,6 +6,7 @@
 
 #include "base/notreached.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/fido/aoa/android_accessory_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
@@ -71,6 +72,12 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
 #else
       return nullptr;
 #endif
+    case FidoTransportProtocol::kAndroidAccessory:
+      if (usb_device_manager_) {
+        return std::make_unique<AndroidAccessoryDiscovery>(
+            std::move(usb_device_manager_.value()));
+      }
+      return nullptr;
   }
   NOTREACHED() << "Unhandled transport type";
   return nullptr;
@@ -81,6 +88,11 @@ void FidoDiscoveryFactory::set_cable_data(
     base::Optional<QRGeneratorKey> qr_generator_key) {
   cable_data_ = std::move(cable_data);
   qr_generator_key_ = std::move(qr_generator_key);
+}
+
+void FidoDiscoveryFactory::set_usb_device_manager(
+    mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager) {
+  usb_device_manager_.emplace(std::move(usb_device_manager));
 }
 
 void FidoDiscoveryFactory::set_cable_pairing_callback(

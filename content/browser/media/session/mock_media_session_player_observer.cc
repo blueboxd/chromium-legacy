@@ -115,10 +115,10 @@ double MockMediaSessionPlayerObserver::GetVolumeMultiplier(size_t player_id) {
   return players_[player_id].volume_multiplier_;
 }
 
-const std::string& MockMediaSessionPlayerObserver::GetAudioSinkId(
-    size_t player_id) {
+void MockMediaSessionPlayerObserver::SetAudioSinkId(size_t player_id,
+                                                    std::string sink_id) {
   EXPECT_GT(players_.size(), player_id);
-  return players_[player_id].audio_sink_id_;
+  players_[player_id].audio_sink_id_ = std::move(sink_id);
 }
 
 void MockMediaSessionPlayerObserver::SetPlaying(size_t player_id,
@@ -170,13 +170,16 @@ bool MockMediaSessionPlayerObserver::HasVideo(int player_id) const {
   return false;
 }
 
-MockMediaSessionPlayerObserver::MockPlayer::MockPlayer(
-    bool is_playing,
-    double volume_multiplier,
-    const std::string& audio_sink_id)
-    : is_playing_(is_playing),
-      volume_multiplier_(volume_multiplier),
-      audio_sink_id_(audio_sink_id) {}
+std::string MockMediaSessionPlayerObserver::GetAudioOutputSinkId(
+    int player_id) const {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  return players_.at(player_id).audio_sink_id_;
+}
+
+MockMediaSessionPlayerObserver::MockPlayer::MockPlayer(bool is_playing,
+                                                       double volume_multiplier)
+    : is_playing_(is_playing), volume_multiplier_(volume_multiplier) {}
 
 MockMediaSessionPlayerObserver::MockPlayer::~MockPlayer() = default;
 

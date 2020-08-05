@@ -10,10 +10,24 @@
 #include "base/debug/elf_reader.h"
 #include "build/build_config.h"
 
+// arm64 has execute-only memory (XOM) protecting code pages from being read.
+// PosixModule reads executable pages in order to extract module info. This may
+// result in a crash if the module is mapped as XOM so the code is disabled on
+// that arch. See https://crbug.com/957801.
+#if defined(OS_ANDROID) && !defined(ARCH_CPU_ARM64)
+extern "C" {
+// &__executable_start is the start address of the current module.
+extern const char __executable_start;
+// &__etext is the end addesss of the code segment in the current module.
+extern const char _etext;
+}
+#endif  // defined(OS_ANDROID) && !defined(ARCH_CPU_ARM64)
+
 namespace base {
 
 namespace {
 
+#if !defined(ARCH_CPU_ARM64)
 // Returns the unique build ID for a module loaded at |module_addr|. Returns the
 // empty string if the function fails to get the build ID.
 //
@@ -55,23 +69,26 @@ size_t GetLastExecutableOffset(const void* module_addr) {
   return max_offset;
 }
 
-FilePath GetDebugBasenameForModule(const Dl_info& dl_info) {
+FilePath GetDebugBasenameForModule(const void* base_address, const char* file) {
 #if defined(OS_ANDROID)
   // Preferentially identify the library using its soname on Android. Libraries
   // mapped directly from apks have the apk filename in |dl_info.dli_fname|, and
   // this doesn't distinguish the particular library.
-  Optional<StringPiece> library_name =
-      debug::ReadElfLibraryName(dl_info.dli_fbase);
+  Optional<StringPiece> library_name = debug::ReadElfLibraryName(base_address);
   if (library_name)
     return FilePath(*library_name);
-#endif
+#endif  // defined(OS_ANDROID)
 
-  return FilePath(dl_info.dli_fname).BaseName();
+  return FilePath(file).BaseName();
 }
+#endif  // !defined(ARCH_CPU_ARM64)
 
 class PosixModule : public ModuleCache::Module {
  public:
-  PosixModule(const Dl_info& dl_info);
+  PosixModule(uintptr_t base_address,
+              const std::string& build_id,
+              const FilePath& debug_basename,
+              size_t size);
 
   PosixModule(const PosixModule&) = delete;
   PosixModule& operator=(const PosixModule&) = delete;
@@ -90,11 +107,14 @@ class PosixModule : public ModuleCache::Module {
   size_t size_;
 };
 
-PosixModule::PosixModule(const Dl_info& dl_info)
-    : base_address_(reinterpret_cast<uintptr_t>(dl_info.dli_fbase)),
-      id_(GetUniqueBuildId(dl_info.dli_fbase)),
-      debug_basename_(GetDebugBasenameForModule(dl_info)),
-      size_(GetLastExecutableOffset(dl_info.dli_fbase)) {}
+PosixModule::PosixModule(uintptr_t base_address,
+                         const std::string& build_id,
+                         const FilePath& debug_basename,
+                         size_t size)
+    : base_address_(base_address),
+      id_(build_id),
+      debug_basename_(debug_basename),
+      size_(size) {}
 
 }  // namespace
 
@@ -109,10 +129,31 @@ std::unique_ptr<const ModuleCache::Module> ModuleCache::CreateModuleForAddress(
   return nullptr;
 #else
   Dl_info info;
-  if (!dladdr(reinterpret_cast<const void*>(address), &info))
+  if (!dladdr(reinterpret_cast<const void*>(address), &info)) {
+#if defined(OS_ANDROID)
+    // dladdr doesn't know about the Chrome module in Android targets using the
+    // crazy linker. Explicitly check against the module's extents in that case.
+    if (address >= reinterpret_cast<uintptr_t>(&__executable_start) &&
+        address < reinterpret_cast<uintptr_t>(&_etext)) {
+      const void* const base_address =
+          reinterpret_cast<const void*>(&__executable_start);
+      return std::make_unique<PosixModule>(
+          reinterpret_cast<uintptr_t>(&__executable_start),
+          GetUniqueBuildId(base_address),
+          // Extract the soname from the module. It is expected to exist, but if
+          // it doesn't use an empty string.
+          GetDebugBasenameForModule(base_address, /* file = */ ""),
+          GetLastExecutableOffset(base_address));
+    }
+#endif
     return nullptr;
+  }
 
-  return std::make_unique<PosixModule>(info);
+  return std::make_unique<PosixModule>(
+      reinterpret_cast<uintptr_t>(info.dli_fbase),
+      GetUniqueBuildId(info.dli_fbase),
+      GetDebugBasenameForModule(info.dli_fbase, info.dli_fname),
+      GetLastExecutableOffset(info.dli_fbase));
 #endif
 }
 

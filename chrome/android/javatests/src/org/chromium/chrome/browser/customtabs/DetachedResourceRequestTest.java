@@ -318,8 +318,11 @@ public class DetachedResourceRequestTest {
      */
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY)
-    public void testSafeBrowsingMainResource() throws Exception {
+    @DisableFeatures({ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY,
+            ChromeFeatureList.SAFE_BROWSING_DELAYED_WARNINGS})
+
+    public void
+    testSafeBrowsingMainResource() throws Exception {
         testSafeBrowsingMainResource(true /* afterNative */, false /* splitCacheEnabled */);
     }
 
@@ -330,6 +333,7 @@ public class DetachedResourceRequestTest {
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY)
+    @DisableFeatures(ChromeFeatureList.SAFE_BROWSING_DELAYED_WARNINGS)
     public void testSafeBrowsingMainResourceWithSplitCache() throws Exception {
         testSafeBrowsingMainResource(true /* afterNative */, true /* splitCacheEnabled */);
     }
@@ -340,6 +344,7 @@ public class DetachedResourceRequestTest {
      */
     @Test
     @SmallTest
+    @DisableFeatures({ChromeFeatureList.SAFE_BROWSING_DELAYED_WARNINGS})
     public void testSafeBrowsingSubresource() throws Exception {
         testSafeBrowsingSubresource(true);
     }
@@ -350,8 +355,10 @@ public class DetachedResourceRequestTest {
      */
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY)
-    public void testSafeBrowsingMainResourceBeforeNative() throws Exception {
+    @DisableFeatures({ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY,
+            ChromeFeatureList.SAFE_BROWSING_DELAYED_WARNINGS})
+    public void
+    testSafeBrowsingMainResourceBeforeNative() throws Exception {
         testSafeBrowsingMainResource(false /* afterNative */, false /* splitCacheEnabled */);
     }
 
@@ -361,6 +368,7 @@ public class DetachedResourceRequestTest {
      */
     @Test
     @SmallTest
+    @Features.DisableFeatures({ChromeFeatureList.SAFE_BROWSING_DELAYED_WARNINGS})
     public void testSafeBrowsingSubresourceBeforeNative() throws Exception {
         testSafeBrowsingSubresource(false);
     }

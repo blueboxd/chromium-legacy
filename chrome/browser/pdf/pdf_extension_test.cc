@@ -877,12 +877,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Title) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, WhitespaceTitle) {
   RunTestsInJsModule("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
-#if defined(OS_WIN)
-#define MAYBE_PageChange DISABLED_PageChange
-#else
-#define MAYBE_PageChange PageChange
-#endif
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, MAYBE_PageChange) {
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 

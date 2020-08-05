@@ -161,7 +161,10 @@ void MediaSessionController::OnPictureInPictureAvailabilityChanged(
 }
 
 void MediaSessionController::OnAudioOutputSinkChanged(
-    const std::string& raw_device_id) {}
+    const std::string& raw_device_id) {
+  audio_output_sink_id_ = raw_device_id;
+  media_session_->OnAudioOutputSinkIdChanged();
+}
 
 bool MediaSessionController::IsMediaSessionNeeded() const {
   if (!is_playback_in_progress_)
@@ -209,6 +212,11 @@ bool MediaSessionController::AddOrRemovePlayer() {
 bool MediaSessionController::HasVideo(int player_id) const {
   DCHECK_EQ(player_id_, player_id);
   return has_video_ && has_audio_;
+}
+
+std::string MediaSessionController::GetAudioOutputSinkId(int player_id) const {
+  DCHECK_EQ(player_id_, player_id);
+  return audio_output_sink_id_;
 }
 
 }  // namespace content

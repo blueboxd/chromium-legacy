@@ -298,6 +298,7 @@ BUILDERS = {
             },
         ],
         'dimension': {
+            'cpu': 'x86',
             'os': 'Ubuntu-16.04',
             'pool': 'chrome.tests',
         },
@@ -352,6 +353,7 @@ BUILDERS = {
             },
         ],
         'dimension': {
+            'cpu': 'x86',
             'os': 'Ubuntu-16.04',
             'pool': 'chrome.tests',
         },

@@ -28,8 +28,7 @@ class PepperPlayerDelegate : public MediaSessionPlayerObserver {
   void OnResume(int player_id) override;
   void OnSeekForward(int player_id, base::TimeDelta seek_time) override;
   void OnSeekBackward(int player_id, base::TimeDelta seek_time) override;
-  void OnSetVolumeMultiplier(int player_id,
-                             double volume_multiplier) override;
+  void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
   void OnEnterPictureInPicture(int player_id) override;
   void OnExitPictureInPicture(int player_id) override;
   void OnSetAudioSinkId(int player_id,
@@ -39,6 +38,7 @@ class PepperPlayerDelegate : public MediaSessionPlayerObserver {
   bool IsPictureInPictureAvailable(int player_id) const override;
   RenderFrameHost* render_frame_host() const override;
   bool HasVideo(int player_id) const override;
+  std::string GetAudioOutputSinkId(int player_id) const override;
 
  private:
   void SetVolume(int player_id, double volume);

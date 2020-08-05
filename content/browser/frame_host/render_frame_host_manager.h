@@ -49,6 +49,9 @@ class TestWebContents;
 using PageBroadcastMethodCallback =
     base::RepeatingCallback<void(RenderViewHostImpl*)>;
 
+using RemoteFramesBroadcastMethodCallback =
+    base::RepeatingCallback<void(RenderFrameProxyHost*)>;
+
 // Manages RenderFrameHosts for a FrameTreeNode. It maintains a
 // current_frame_host() which is the content currently visible to the user. When
 // a frame is told to navigate to a different web site (as determined by
@@ -447,10 +450,18 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Executes a PageBroadcast Mojo method to every RenderView in the FrameTree.
   // This should only be called in the top-level RenderFrameHostManager.
-  // The |callback| is called synchronously and the git |instance_to_skip| won't
+  // The |callback| is called synchronously and the |instance_to_skip| won't
   // be referenced after this method returns.
   void ExecutePageBroadcastMethod(PageBroadcastMethodCallback callback,
                                   SiteInstance* instance_to_skip = nullptr);
+
+  // Executes a RemoteMainFrame Mojo method to every instance in |proxy_hosts|.
+  // This should only be called in the top-level RenderFrameHostManager.
+  // The |callback| is called synchronously and the |instance_to_skip| won't
+  // be referenced after this method returns.
+  void ExecuteRemoteFramesBroadcastMethod(
+      RemoteFramesBroadcastMethodCallback callback,
+      SiteInstance* instance_to_skip = nullptr);
 
   // Returns a const reference to the map of proxy hosts. The keys are
   // SiteInstance IDs, the values are RenderFrameProxyHosts.

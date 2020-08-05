@@ -211,6 +211,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -236,6 +237,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -261,6 +263,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -286,6 +289,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -311,6 +315,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -336,6 +341,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -361,6 +367,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -663,6 +670,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -688,6 +696,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -713,6 +722,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -738,6 +748,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -763,6 +774,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -788,6 +800,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -813,6 +826,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }
@@ -838,6 +852,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-16.04",
               "pool": "chrome.tests"
             }

@@ -181,6 +181,30 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
     // </if>
   }
 
+  /**
+   * @param {boolean} checked
+   * @return {string}
+   */
+  getSinglePageAriaChecked_(checked) {
+    return checked ? 'false' : 'true';
+  }
+
+  /**
+   * @param {boolean} checked
+   * @return {string}
+   */
+  getTwoPageViewAriaChecked_(checked) {
+    return checked ? 'true' : 'false';
+  }
+
+  /**
+   * @param {boolean} checked
+   * @return {string}
+   */
+  getShowAnnotationsAriaChecked_(checked) {
+    return checked ? 'true' : 'false';
+  }
+
   /** @private */
   onSinglePageViewClick_() {
     this.twoUpViewEnabled_ = false;

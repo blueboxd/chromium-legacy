@@ -365,7 +365,6 @@ public class IntentUtils {
      * Creates a temporary copy of the extra Bundle, which is required as
      * Intent#getBinderExtra() doesn't exist, but Bundle.getBinder() does.
      */
-    @VisibleForTesting
     public static IBinder safeGetBinderExtra(Intent intent, String name) {
         if (!intent.hasExtra(name)) return null;
         Bundle extras = intent.getExtras();
@@ -381,7 +380,6 @@ public class IntentUtils {
      * @param name Key.
      * @param binder Binder object.
      */
-    @VisibleForTesting
     public static void safePutBinderExtra(Intent intent, String name, IBinder binder) {
         if (intent == null) return;
         Bundle bundle = new Bundle();

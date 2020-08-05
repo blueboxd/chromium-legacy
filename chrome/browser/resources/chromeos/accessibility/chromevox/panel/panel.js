@@ -88,6 +88,18 @@ Panel = class {
     Panel.brailleTableElement_ = $('braille-table');
     Panel.brailleTableElement2_ = $('braille-table2');
 
+    /** @private {Element} */
+    Panel.braillePanLeft_ = $('braille-pan-left');
+    Panel.braillePanLeft_.addEventListener('click', () => {
+      chrome.extension.getBackgroundPage()['ChromeVox'].braille.panLeft();
+    }, false);
+
+    /** @private {Element} */
+    Panel.braillePanRight_ = $('braille-pan-right');
+    Panel.braillePanRight_.addEventListener('click', () => {
+      chrome.extension.getBackgroundPage()['ChromeVox'].braille.panRight();
+    }, false);
+
     /** @type {Panel.Mode} @private */
     Panel.mode_ = Panel.Mode.COLLAPSED;
 

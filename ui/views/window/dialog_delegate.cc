@@ -213,16 +213,6 @@ void DialogDelegate::WindowWillClose() {
   if (new_callback_present)
     return;
 
-  // Old-style close behavior: if the only button was Ok, call Accept();
-  // otherwise call Cancel(). Note that in this case the window is already going
-  // to close, so the return values of Accept()/Cancel(), which normally say
-  // whether the window should close, are ignored.
-  int buttons = GetDialogButtons();
-  if (buttons == ui::DIALOG_BUTTON_OK)
-    Accept();
-  else
-    Cancel();
-
   // This is set here instead of before the invocations of Accept()/Cancel() so
   // that those methods can DCHECK that !already_started_close_. Otherwise,
   // client code could (eg) call Accept() from inside the cancel callback, which

@@ -173,7 +173,7 @@ Try tapping the mic to ask me anything.
 
       <!-- Pop-up enterprise management. -->
       <message name="IDS_ASH_LOGIN_ENTERPRISE_MANAGED_POP_UP" desc="Text shown in the management pop-up when user clicks on status tray enterprise management.">
-        This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>. Administrators may remotely configure and monitor the device.
+        This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>. Administrators may remotely configure the device.
       </message>
 
       <!-- Status tray enterprise management. -->

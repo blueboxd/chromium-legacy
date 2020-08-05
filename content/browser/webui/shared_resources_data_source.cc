@@ -408,6 +408,13 @@ std::string SharedResourcesDataSource::GetContentSecurityPolicy(
     network::mojom::CSPDirectiveName directive) {
   if (directive == network::mojom::CSPDirectiveName::WorkerSrc) {
     return "worker-src blob: 'self';";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    // TODO(crbug.com/1098690): Trusted Type Polymer
+    // This removes require-trusted-types-for and trusted-types directives
+    // from the CSP header.
+    return std::string();
   }
 
   return content::URLDataSource::GetContentSecurityPolicy(directive);

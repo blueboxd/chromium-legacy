@@ -7751,6 +7751,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Using native notifications"/>
 </enum>
 
+<enum name="BooleanNavigated">
+  <int value="0" label="Navigation did not occur"/>
+  <int value="1" label="Navigation occurred"/>
+</enum>
+
 <enum name="BooleanNavPreloadFinishedFirst">
   <int value="0" label="Worker preparation finished first"/>
   <int value="1" label="Navigation preload response arrived first"/>
@@ -28634,6 +28639,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3362" label="HtmlClipboardApiRead"/>
   <int value="3363" label="HtmlClipboardApiWrite"/>
   <int value="3364" label="CSSSystemColorComputeToSelf"/>
+  <int value="3365" label="ConversionAPIAll"/>
+  <int value="3366" label="ImpressionRegistration"/>
+  <int value="3367" label="ConversionRegistration"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -53404,6 +53412,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Time change on login screen"/>
   <int value="2" label="Time change user session"/>
   <int value="3" label="Timezone change"/>
+  <int value="4" label="Add user"/>
+  <int value="5" label="Reauthentication"/>
 </enum>
 
 <enum name="ParentFrameKnown">

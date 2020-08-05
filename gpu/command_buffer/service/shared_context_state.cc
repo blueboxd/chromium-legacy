@@ -78,15 +78,15 @@ void SharedContextState::compileError(const char* shader, const char* errors) {
   }
 }
 
-SharedContextState::MemoryTracker::MemoryTracker(
+SharedContextState::MemoryTrackerObserver::MemoryTrackerObserver(
     base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor)
     : peak_memory_monitor_(peak_memory_monitor) {}
 
-SharedContextState::MemoryTracker::~MemoryTracker() {
+SharedContextState::MemoryTrackerObserver::~MemoryTrackerObserver() {
   DCHECK(!size_);
 }
 
-void SharedContextState::MemoryTracker::OnMemoryAllocatedChange(
+void SharedContextState::MemoryTrackerObserver::OnMemoryAllocatedChange(
     CommandBufferId id,
     uint64_t old_size,
     uint64_t new_size,
@@ -98,6 +98,45 @@ void SharedContextState::MemoryTracker::OnMemoryAllocatedChange(
     peak_memory_monitor_->OnMemoryAllocatedChange(id, old_size, new_size,
                                                   source);
   }
+}
+
+base::AtomicSequenceNumber g_next_command_buffer_id;
+
+SharedContextState::MemoryTracker::MemoryTracker(Observer* observer)
+    : command_buffer_id_(gpu::CommandBufferId::FromUnsafeValue(
+          g_next_command_buffer_id.GetNext() + 1)),
+      client_tracing_id_(base::trace_event::MemoryDumpManager::GetInstance()
+                             ->GetTracingProcessId()),
+      observer_(observer) {}
+
+SharedContextState::MemoryTracker::~MemoryTracker() {
+  DCHECK(!size_);
+}
+
+void SharedContextState::MemoryTracker::TrackMemoryAllocatedChange(
+    int64_t delta) {
+  DCHECK(delta >= 0 || size_ >= static_cast<uint64_t>(-delta));
+  uint64_t old_size = size_;
+  size_ += delta;
+  DCHECK(observer_);
+  observer_->OnMemoryAllocatedChange(command_buffer_id_, old_size, size_,
+                                     gpu::GpuPeakMemoryAllocationSource::SKIA);
+}
+
+uint64_t SharedContextState::MemoryTracker::GetSize() const {
+  return size_;
+}
+
+uint64_t SharedContextState::MemoryTracker::ClientTracingId() const {
+  return client_tracing_id_;
+}
+
+int SharedContextState::MemoryTracker::ClientId() const {
+  return gpu::ChannelIdFromCommandBufferId(command_buffer_id_);
+}
+
+uint64_t SharedContextState::MemoryTracker::ContextGroupTracingId() const {
+  return command_buffer_id_.GetUnsafeValue();
 }
 
 SharedContextState::SharedContextState(
@@ -114,7 +153,9 @@ SharedContextState::SharedContextState(
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
       context_lost_callback_(std::move(context_lost_callback)),
       gr_context_type_(gr_context_type),
-      memory_tracker_(peak_memory_monitor),
+      memory_tracker_observer_(peak_memory_monitor),
+      memory_tracker_(&memory_tracker_observer_),
+      memory_type_tracker_(&memory_tracker_),
       vk_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
       dawn_context_provider_(dawn_context_provider),
@@ -172,7 +213,6 @@ SharedContextState::SharedContextState(
   // Initialize the scratch buffer to some small initial size.
   scratch_deserialization_buffer_.resize(
       kInitialScratchDeserializationBufferSize);
-
 }
 
 SharedContextState::~SharedContextState() {
@@ -195,8 +235,8 @@ SharedContextState::~SharedContextState() {
   DCHECK(!owned_gr_context_ || owned_gr_context_->unique());
 
   // GPU memory allocations except skia_gr_cache_size_ tracked by this
-  // memory_tracker_ should have been released.
-  DCHECK_EQ(skia_gr_cache_size_, memory_tracker_.GetMemoryUsage());
+  // memory_tracker_observer_ should have been released.
+  DCHECK_EQ(skia_gr_cache_size_, memory_tracker_observer_.GetMemoryUsage());
   // gr_context_ and all resources owned by it will be released soon, so set it
   // to null, and UpdateSkiaOwnedMemorySize() will update skia memory usage to
   // 0, to ensure that PeakGpuMemoryMonitor sees 0 allocated memory.
@@ -511,6 +551,9 @@ bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
   return context_->IsCurrent(surface);
 }
 
+// TODO(https://crbug.com/1110357): Account for memory tracked by
+// memory_tracker_ and memory_type_tracker_ (e.g. SharedImages allocated in
+// SkiaOutputSurfaceImplOnGpu::CopyOutput).
 bool SharedContextState::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -574,13 +617,13 @@ void SharedContextState::PurgeMemory(
 
 uint64_t SharedContextState::GetMemoryUsage() {
   UpdateSkiaOwnedMemorySize();
-  return memory_tracker_.GetMemoryUsage();
+  return memory_tracker_observer_.GetMemoryUsage();
 }
 
 void SharedContextState::UpdateSkiaOwnedMemorySize() {
   if (!gr_context_) {
-    memory_tracker_.OnMemoryAllocatedChange(CommandBufferId(),
-                                            skia_gr_cache_size_, 0u);
+    memory_tracker_observer_.OnMemoryAllocatedChange(CommandBufferId(),
+                                                     skia_gr_cache_size_, 0u);
     skia_gr_cache_size_ = 0u;
     return;
   }
@@ -589,7 +632,7 @@ void SharedContextState::UpdateSkiaOwnedMemorySize() {
   // Skia does not have a CommandBufferId. PeakMemoryMonitor currently does not
   // use CommandBufferId to identify source, so use zero here to separate
   // prevent confusion.
-  memory_tracker_.OnMemoryAllocatedChange(
+  memory_tracker_observer_.OnMemoryAllocatedChange(
       CommandBufferId(), skia_gr_cache_size_, static_cast<uint64_t>(new_size));
   skia_gr_cache_size_ = static_cast<uint64_t>(new_size);
 }

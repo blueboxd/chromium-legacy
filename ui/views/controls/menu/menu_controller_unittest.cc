@@ -2479,14 +2479,14 @@ TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
   container_view->AddChildView(new Label());
 
   // Add two focusable buttons (buttons in menus are always focusable).
-  Button* const button1 = new LabelButton(nullptr, base::string16());
+  Button* const button1 =
+      container_view->AddChildView(std::make_unique<LabelButton>());
   button1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   button1->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
-  container_view->AddChildView(button1);
-  Button* const button2 = new LabelButton(nullptr, base::string16());
+  Button* const button2 =
+      container_view->AddChildView(std::make_unique<LabelButton>());
   button2->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
   button2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  container_view->AddChildView(button2);
 
   OpenMenu(menu_item());
 

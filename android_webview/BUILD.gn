@@ -59,6 +59,7 @@ if (enable_webview_bundles) {
   standalone_system_webview_apk_tmpl("system_webview_base_bundle_module") {
     target_type = "android_app_bundle_module"
     is_base_module = true
+    bundle_target = ":system_webview_bundle"
 
     if (_verify_android_configuration) {
       expected_android_manifest =
@@ -101,6 +102,7 @@ if (android_64bit_target_cpu) {
       target_type = "android_app_bundle_module"
       include_64_bit_webview = false
       is_base_module = true
+      bundle_target = ":system_webview_32_bundle"
     }
 
     system_webview_bundle("system_webview_32_bundle") {
@@ -145,6 +147,7 @@ if (enable_webview_bundles) {
   trichrome_webview_tmpl("trichrome_webview_base_bundle_module") {
     target_type = "android_app_bundle_module"
     is_base_module = true
+    bundle_target = ":trichrome_webview_bundle"
 
     if (_verify_android_configuration) {
       expected_android_manifest =
@@ -225,6 +228,7 @@ if (android_64bit_target_cpu) {
     trichrome_webview_64_32_tmpl("trichrome_webview_64_32_base_bundle_module") {
       target_type = "android_app_bundle_module"
       is_base_module = true
+      bundle_target = ":trichrome_webview_64_32_bundle"
     }
 
     system_webview_bundle("trichrome_webview_64_32_bundle") {
@@ -238,6 +242,7 @@ if (android_64bit_target_cpu) {
     trichrome_webview_32_64_tmpl("trichrome_webview_32_64_base_bundle_module") {
       target_type = "android_app_bundle_module"
       is_base_module = true
+      bundle_target = ":trichrome_webview_32_64_bundle"
     }
 
     system_webview_bundle("trichrome_webview_32_64_bundle") {
@@ -275,6 +280,7 @@ if (android_64bit_target_cpu) {
     trichrome_webview_32_tmpl("trichrome_webview_32_base_bundle_module") {
       target_type = "android_app_bundle_module"
       is_base_module = true
+      bundle_target = ":trichrome_webview_32_bundle"
     }
 
     system_webview_bundle("trichrome_webview_32_bundle") {

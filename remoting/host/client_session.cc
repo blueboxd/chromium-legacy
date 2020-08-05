@@ -310,6 +310,10 @@ void ClientSession::ControlPeerConnection(
   if (parameters.request_ice_restart()) {
     connection_->peer_connection_controls()->RequestIceRestart();
   }
+
+  if (parameters.request_sdp_restart()) {
+    connection_->peer_connection_controls()->RequestSdpRestart();
+  }
 }
 
 void ClientSession::OnConnectionAuthenticating() {

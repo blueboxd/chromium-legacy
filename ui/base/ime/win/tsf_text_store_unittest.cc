@@ -2561,6 +2561,7 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   void SetCompositionText4(const ui::CompositionText& composition) {
     EXPECT_EQ(L"c", composition.text);
     ASSERT_EQ(1u, composition.ime_text_spans.size());
+    ASSERT_EQ(gfx::Range(1, 1), composition.selection);
   }
 
   void InsertText4(const base::string16& text) { EXPECT_EQ(L"c", text); }

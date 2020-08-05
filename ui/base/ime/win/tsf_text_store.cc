@@ -1392,6 +1392,8 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
       CompositionText composition_text;
       composition_text.text = new_committed_string;
       composition_text.ime_text_spans = spans;
+      composition_text.selection.set_start(new_committed_string.size());
+      composition_text.selection.set_end(new_committed_string.size());
       text_input_client_->SetCompositionText(composition_text);
     }
     text_input_client_->InsertText(new_committed_string);

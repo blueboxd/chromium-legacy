@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.banners;
 import android.app.PendingIntent;
 import android.content.Intent;
 
-import androidx.annotation.VisibleForTesting;
-
 /**
  * Stores information about a particular app.
  */
@@ -30,7 +28,6 @@ public class AppData {
      * @param siteUrl     URL for the site requesting the banner.
      * @param packageName Name of the package associated with the app.
      */
-    @VisibleForTesting
     public AppData(String siteUrl, String packageName) {
         mSiteUrl = siteUrl;
         mPackageName = packageName;
@@ -110,7 +107,6 @@ public class AppData {
      * @param detailsIntent     Intent to fire to launch the details page for the app
      * @param installIntent     Intent to fire to trigger the purchase/install process.
      */
-    @VisibleForTesting
     public void setPackageInfo(String title, String imageUrl, float rating,
             String installButtonText, PendingIntent detailsIntent, Intent installIntent) {
         mTitle = title;

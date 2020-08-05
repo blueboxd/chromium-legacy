@@ -92,4 +92,9 @@ Polymer({
   onAddProfileClick_() {
     navigateTo(Routes.NEW_PROFILE);
   },
+
+  /** @private */
+  onLaunchGuestProfileClick_() {
+    this.manageProfilesBrowserProxy_.launchGuestProfile();
+  },
 });

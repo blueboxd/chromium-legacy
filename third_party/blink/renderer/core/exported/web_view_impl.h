@@ -94,7 +94,11 @@ class WebSettingsImpl;
 class WebViewClient;
 class WebFrameWidgetBase;
 
-struct WebTextAutosizerPageInfo;
+namespace mojom {
+namespace blink {
+class TextAutosizerPageInfo;
+}
+}  // namespace mojom
 
 using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
 
@@ -202,7 +206,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebFrameWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
-  void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
 
   // Overrides the page's background and base background color. You
   // can use this to enforce a transparent background, which is useful if you
@@ -305,7 +308,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidChangeContentsSize();
   void PageScaleFactorChanged();
   void MainFrameScrollOffsetChanged();
-  void TextAutosizerPageInfoChanged(const WebTextAutosizerPageInfo& page_info);
+  void TextAutosizerPageInfoChanged(
+      const mojom::blink::TextAutosizerPageInfo& page_info);
 
   bool ShouldAutoResize() const { return should_auto_resize_; }
 

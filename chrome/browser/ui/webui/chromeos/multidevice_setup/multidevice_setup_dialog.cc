@@ -112,6 +112,8 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMultiDeviceSetupHost);
 
+  source->DisableTrustedTypesCSP();
+
   chromeos::multidevice_setup::AddLocalizedStrings(source);
   source->UseStringsJs();
   source->SetDefaultResource(

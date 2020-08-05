@@ -718,7 +718,7 @@
         # Uncommenting this argument will bypass all interactions with Skia
         # Gold in any tests that use it. This is meant as a temporary
         # emergency stop in case of a Gold outage that's affecting the bots.
-        '--bypass-skia-gold-functionality',
+        # '--bypass-skia-gold-functionality',
       ],
       'precommit_args': [
         '--gerrit-issue=${patch_issue}',
@@ -846,8 +846,8 @@
   'win10_nvidia_quadro_p400_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-26.21.14.3102',
-        'os': 'Windows-10',
+        'gpu': '10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148',
+        'os': 'Windows-10|Windows-10-18363',
         'pool': 'chromium.tests.gpu',
       },
     },
@@ -859,8 +859,8 @@
     'swarming': {
       'dimension_sets': [
         {
-          'gpu': '10de:1cb3-26.21.14.3102',
-          'os': 'Windows-10',
+          'gpu': '10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148',
+          'os': 'Windows-10|Windows-10-18363',
           'pool': 'chromium.tests.gpu',
         },
       ],

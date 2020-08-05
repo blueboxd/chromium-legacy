@@ -23,6 +23,9 @@ DownloadInternalsUI::DownloadInternalsUI(content::WebUI* web_ui)
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
 
   // Required resources.
   html_source->UseStringsJs();

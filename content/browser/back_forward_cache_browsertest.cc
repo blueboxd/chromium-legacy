@@ -6449,4 +6449,60 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                 FROM_HERE);
 }
 
+// RenderFrameHostImpl::coep_reporter() must be preserved when doing a back
+// navigation using the BackForwardCache.
+// Regression test for https://crbug.com/1102285.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoepReporter) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  GURL url_a(https_server()->GetURL("a.com",
+                                    "/set-header?"
+                                    "Cross-Origin-Embedder-Policy-Report-Only: "
+                                    "same-origin; report-to%3d\"a\""));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to a document that set RenderFrameHostImpl::coep_reporter().
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_TRUE(rfh_a->coep_reporter());
+
+  // Navigate away and back using the BackForwardCache. The
+  // RenderFrameHostImpl::coep_reporter() must still be there.
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  EXPECT_TRUE(rfh_a->coep_reporter());
+}
+
+// RenderFrameHostImpl::coop_reporter() must be preserved when doing a back
+// navigation using the BackForwardCache.
+// Regression test for https://crbug.com/1102285.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoopReporter) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  GURL url_a(https_server()->GetURL("a.com",
+                                    "/set-header?"
+                                    "Cross-Origin-Opener-Policy-Report-Only: "
+                                    "same-origin; report-to%3d\"a\""));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to a document that set RenderFrameHostImpl::coop_reporter().
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_TRUE(rfh_a->coop_reporter());
+
+  // Navigate away and back using the BackForwardCache. The
+  // RenderFrameHostImpl::coop_reporter() must still be there.
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  EXPECT_TRUE(rfh_a->coop_reporter());
+}
+
 }  // namespace content

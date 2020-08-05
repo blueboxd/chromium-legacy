@@ -2068,17 +2068,17 @@ if (!v8_named_constructor->IsUndefined()) {
 """
 
     pattern = """\
-v8::Local<v8::Function> v8_function;
+v8::Local<v8::Value> v8_value;
 if (!bindings::CreateNamedConstructorFunction(
          ${script_state},
          {callback},
          "{func_name}",
          {func_length},
          {v8_bridge}::GetWrapperTypeInfo())
-     .ToLocal(&v8_function)) {
+     .ToLocal(&v8_value)) {
   return;
 }
-bindings::V8SetReturnValue(${info}, v8_function);
+bindings::V8SetReturnValue(${info}, v8_value);
 """
     create_named_constructor_function = _format(
         pattern,
@@ -2088,7 +2088,7 @@ bindings::V8SetReturnValue(${info}, v8_function);
         v8_bridge=named_ctor_v8_bridge)
 
     return_value_cache_update_value = """\
-v8_private_named_constructor.Set(${v8_receiver}, v8_function);
+v8_private_named_constructor.Set(${v8_receiver}, v8_value);
 """
 
     body.extend([

@@ -339,6 +339,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
+  source->DisableTrustedTypesCSP();
 
   // Only add a filter when runing as test.
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||

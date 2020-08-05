@@ -17,6 +17,7 @@
 #include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/cable/fido_cable_discovery.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -189,7 +190,9 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
       FidoTransportProtocol::kNearFieldCommunication,
       FidoTransportProtocol::kUsbHumanInterfaceDevice,
       FidoTransportProtocol::kBluetoothLowEnergy,
-      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+      FidoTransportProtocol::kAndroidAccessory,
+  };
 
   const auto& allowed_list = request.allow_list;
   if (allowed_list.empty()) {
@@ -198,10 +201,15 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
 
   base::flat_set<FidoTransportProtocol> transports;
   for (const auto& credential : allowed_list) {
-    if (credential.transports().empty())
+    if (credential.transports().empty()) {
       return kAllTransports;
+    }
     transports.insert(credential.transports().begin(),
                       credential.transports().end());
+  }
+
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    transports.insert(device::FidoTransportProtocol::kAndroidAccessory);
   }
 
   return transports;

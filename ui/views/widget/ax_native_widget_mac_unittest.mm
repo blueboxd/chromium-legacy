@@ -81,7 +81,7 @@ class FlexibleRoleTestView : public View {
 
 class TestLabelButton : public LabelButton {
  public:
-  TestLabelButton() : LabelButton(nullptr, base::string16()) {
+  TestLabelButton() {
     // Make sure the label doesn't cover the hit test co-ordinates.
     label()->SetSize(gfx::Size(1, 1));
   }

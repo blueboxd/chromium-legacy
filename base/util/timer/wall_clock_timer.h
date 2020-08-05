@@ -27,8 +27,9 @@ namespace util {
 //
 // Comparison with OneShotTimer: WallClockTimer runs |user_task_| after |delay_|
 // expires according to usual time, while OneShotTimer runs |user_task_| after
-// |delay_| expires according to TimeTicks which freezes when power suspends
-// (desktop falls asleep).
+// |delay_| expires according to TimeTicks which may freeze on some platforms
+// when power suspends (desktop falls asleep). On platforms where TimeTicks
+// don't freeze, the WallClockTimer has the same behavior as OneShotTimer.
 //
 // The API is not thread safe. All methods must be called from the same
 // sequence (not necessarily the construction sequence), except for the

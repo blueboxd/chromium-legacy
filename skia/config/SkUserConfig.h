@@ -231,9 +231,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 // Staging for https://review.skia.org/302290
 #define SK_IMAGE_MAKE_COLOR_TYPE_AND_SPACE_USE_SOURCE_CONTEXT
 
-// Staging for https://review.skia.org/304003
-#define SK_IMAGE_MAKE_WITH_FILTER_LEGACY_API
-
 // Staging for https://review.skia.org/305102
 #define SK_IMAGE_MAKE_FROM_TEXTURE_LEGACY_API
 

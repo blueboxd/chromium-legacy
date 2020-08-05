@@ -24,6 +24,9 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate cr-ui-tree-js-static;");
 
   source->UseStringsJs();
 

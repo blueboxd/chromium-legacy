@@ -254,7 +254,7 @@
         errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="weblayer/browser/java/org/chromium/weblayer_private/BrowserViewController.java"
-            line="294"
+            line="285"
             column="53"/>
     </issue>
 
@@ -331,7 +331,7 @@
         errorLine2="                       ~~">
         <location
             file="chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/CriticalPersistedTabData.java"
-            line="219"
+            line="220"
             column="24"/>
     </issue>
 
@@ -342,7 +342,7 @@
         errorLine2="                                                ~~">
         <location
             file="chrome/browser/download/android/java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelper.java"
-            line="117"
+            line="123"
             column="49"/>
     </issue>
 
@@ -388,17 +388,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/ntp/RecentTabsRowAdapter.java"
             line="459"
             column="20"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
-        message="Must be one of: ApplicationState.UNKNOWN, ApplicationState.HAS_RUNNING_ACTIVITIES, ApplicationState.HAS_PAUSED_ACTIVITIES, ApplicationState.HAS_STOPPED_ACTIVITIES, ApplicationState.HAS_DESTROYED_ACTIVITIES"
-        errorLine1="        onApplicationStateChange(0 /* unused */);"
-        errorLine2="                                 ~">
-        <location
-            file="net/android/java/src/org/chromium/net/RegistrationPolicyApplicationStatus.java"
-            line="21"
-            column="34"/>
     </issue>
 
     <issue
@@ -496,7 +485,7 @@
         errorLine2="                                                                            ~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/tab/TabUma.java"
-            line="272"
+            line="273"
             column="77"/>
     </issue>
 
@@ -705,7 +694,7 @@
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinder.java"
-            line="588"
+            line="604"
             column="55"/>
     </issue>
 
@@ -828,39 +817,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerTextNewLayout.java"
             line="47"
             column="69"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    ThreadUtils.postOnUiThreadDelayed(this, RETRY_DELAY_MS);"
-        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="base/android/java/src/org/chromium/base/ApiCompatibilityUtils.java"
-            line="393"
-            column="33"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        if (sAppDetailsDelegate != null) sAppDetailsDelegate.destroy();"
-        errorLine2="                                                             ~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java"
-            line="69"
-            column="62"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        sAppDetailsDelegate.getAppDetailsAsynchronously("
-        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java"
-            line="104"
-            column="29"/>
     </issue>
 
     <issue
@@ -1046,7 +1002,7 @@
         errorLine2="                          ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="238"
+            line="237"
             column="27"/>
     </issue>
 
@@ -1057,7 +1013,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="239"
+            line="238"
             column="31"/>
     </issue>
 
@@ -1068,7 +1024,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="240"
+            line="239"
             column="31"/>
     </issue>
 
@@ -1079,7 +1035,7 @@
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="470"
+            line="469"
             column="30"/>
     </issue>
 
@@ -1090,7 +1046,7 @@
         errorLine2="                                                ~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="562"
+            line="558"
             column="49"/>
     </issue>
 
@@ -1101,7 +1057,7 @@
         errorLine2="                                       ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="563"
+            line="559"
             column="40"/>
     </issue>
 
@@ -1112,7 +1068,7 @@
         errorLine2="                                                                  ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="578"
+            line="574"
             column="67"/>
     </issue>
 
@@ -1123,7 +1079,7 @@
         errorLine2="                        ~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="616"
+            line="612"
             column="25"/>
     </issue>
 
@@ -1134,7 +1090,7 @@
         errorLine2="                                                                        ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="633"
+            line="629"
             column="73"/>
     </issue>
 
@@ -1145,7 +1101,7 @@
         errorLine2="                                                                      ~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="654"
+            line="650"
             column="71"/>
     </issue>
 
@@ -1156,7 +1112,7 @@
         errorLine2="                                                   ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="672"
+            line="668"
             column="52"/>
     </issue>
 
@@ -1167,7 +1123,7 @@
         errorLine2="                       ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="692"
+            line="687"
             column="24"/>
     </issue>
 
@@ -1178,7 +1134,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="693"
+            line="688"
             column="31"/>
     </issue>
 
@@ -1189,7 +1145,7 @@
         errorLine2="                              ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="694"
+            line="689"
             column="31"/>
     </issue>
 
@@ -1200,18 +1156,18 @@
         errorLine2="                                                                     ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="703"
+            line="698"
             column="70"/>
     </issue>
 
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="                verifiedIndex, suggestion.hashCode(), elapsedTimeSinceInputChange);"
+        errorLine1="                verifiedIndex, suggestion.hashCode(), getElapsedTimeSinceInputChange());"
         errorLine2="                                          ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="711"
+            line="703"
             column="43"/>
     </issue>
 
@@ -1222,7 +1178,7 @@
         errorLine2="                                               ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="713"
+            line="705"
             column="48"/>
     </issue>
 
@@ -1233,7 +1189,7 @@
         errorLine2="                           ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="736"
+            line="728"
             column="28"/>
     </issue>
 
@@ -1244,7 +1200,7 @@
         errorLine2="                                                        ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="854"
+            line="846"
             column="57"/>
     </issue>
 
@@ -1255,7 +1211,7 @@
         errorLine2="                                    ~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="941"
+            line="933"
             column="37"/>
     </issue>
 
@@ -1266,7 +1222,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="942"
+            line="934"
             column="31"/>
     </issue>
 
@@ -1277,7 +1233,7 @@
         errorLine2="                                   ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="963"
+            line="955"
             column="36"/>
     </issue>
 
@@ -1288,7 +1244,7 @@
         errorLine2="                       ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="978"
+            line="970"
             column="24"/>
     </issue>
 
@@ -1299,7 +1255,7 @@
         errorLine2="                               ~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="980"
+            line="972"
             column="32"/>
     </issue>
 
@@ -1310,7 +1266,7 @@
         errorLine2="                                                                ~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="980"
+            line="972"
             column="65"/>
     </issue>
 
@@ -1321,7 +1277,7 @@
         errorLine2="                                                                                  ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="1160"
+            line="1150"
             column="83"/>
     </issue>
 
@@ -1332,73 +1288,7 @@
         errorLine2="                           ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="1161"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable&lt;String>() {"
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="181"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                final AutofillProfile address = new AutofillProfile("
-        errorLine2="                                                ^">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="188"
-            column="49"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable&lt;String>() {"
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="213"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                final CreditCard card = new CreditCard("
-        errorLine2="                                        ^">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="216"
-            column="41"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable&lt;List&lt;AutofillProfile>>() {"
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="319"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable&lt;List&lt;CreditCard>>() {"
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="340"
+            line="1151"
             column="28"/>
     </issue>
 
@@ -3154,116 +3044,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="            mClientManager.setShouldGetPageLoadMetricsForSession(session, true);"
-        errorLine2="            ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="228"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        IntentUtils.safePutBinderExtra(tempIntent, CustomTabsIntent.EXTRA_SESSION, sessionBinder);"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="246"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                mClientManager.setHideDomainForSession(session, hidden);"
-        errorLine2="                ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="280"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                mClientManager.setSpeculateLoadOnCellularForSession(session, prerender);"
-        errorLine2="                ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="287"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                mClientManager.setSendNavigationInfoForSession(session, true);"
-        errorLine2="                ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="293"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                mClientManager.setSendBottomBarScrollingStateForSessionn(session, true);"
-        errorLine2="                ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="301"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                setIgnoreUrlFragmentsForSession(session, value);"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="314"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                mClientManager.setAllowParallelRequestForSession(session, true);"
-        errorLine2="                ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="391"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                if (success) mClientManager.setAllowResourcePrefetchForSession(session, true);"
-        errorLine2="                             ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="402"
-            column="30"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        int uid = mClientManager.getUidForSession(session);"
-        errorLine2="                  ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="863"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        DownloadManagerService.getDownloadManagerService().onDownloadFailed(downloadItem, reason);"
         errorLine2="                                                           ~~~~~~~~~~~~~~~~">
         <location
@@ -3275,55 +3055,11 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="            mOfflinePageUrl = offlinePage.getUrl();"
-        errorLine2="            ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="108"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            mOfflinePageUrl = offlinePage.getUrl();"
-        errorLine2="                                          ~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="108"
-            column="43"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            long pageCreationTimeMs = offlinePage.getCreationTimeMs();"
-        errorLine2="                                                  ~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="117"
-            column="51"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                Date creationDate = new Date(offlinePage.getCreationTimeMs());"
-        errorLine2="                                                         ~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="119"
-            column="58"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        mOverviewListLayout = (OverviewListLayout) mLayoutManager.getOverviewListLayout();"
         errorLine2="                                                                  ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java"
-            line="816"
+            line="823"
             column="67"/>
     </issue>
 
@@ -3545,17 +3281,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/customtabs/content/DefaultCustomTabIntentHandlingStrategy.java"
             line="98"
             column="33"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return ThreadUtils.runOnUiThreadBlockingNoException("
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="base/android/java/src/org/chromium/base/task/DefaultTaskExecutor.java"
-            line="66"
-            column="28"/>
     </issue>
 
     <issue
@@ -3946,39 +3671,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        int scrollTo = mSnapScrollHelper.calculateSnapPosition(initialScroll);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSurfaceMediator.java"
-            line="511"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        assert scrollTo == mSnapScrollHelper.calculateSnapPosition(scrollTo);"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSurfaceMediator.java"
-            line="514"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        ThreadUtils.postOnUiThreadDelayed(this, TIMEOUT_MS);"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/feedback/FeedbackCollector.java"
-            line="74"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        setKeyboardDelegate(new ActivityKeyboardVisibilityDelegate(getActivity()));"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~">
         <location
@@ -3996,72 +3688,6 @@
             file="weblayer/browser/java/org/chromium/weblayer_private/FragmentWindowAndroid.java"
             line="38"
             column="9"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable&lt;Boolean>() {"
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/icing/GSAContextHelper.java"
-            line="100"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            singleOfflinePage.putParcelable(FETCHED_URI_KEY, Uri.parse(page.getUrl()));"
-        errorLine2="                                                                            ~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/GetAllPagesV1Handler.java"
-            line="80"
-            column="77"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            singleOfflinePage.putLong(DOWNLOAD_TIMESTAMP_KEY, page.getCreationTimeMs());"
-        errorLine2="                                                                   ~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/GetAllPagesV1Handler.java"
-            line="81"
-            column="68"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            singleOfflinePage.putLong(LAST_ACCESSED_TIMESTAMP_KEY, page.getLastAccessTimeMs());"
-        errorLine2="                                                                        ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/GetAllPagesV1Handler.java"
-            line="82"
-            column="73"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            singleOfflinePage.putCharSequence(TITLE_KEY, page.getTitle());"
-        errorLine2="                                                              ~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/GetAllPagesV1Handler.java"
-            line="83"
-            column="63"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            if (item.getUrl().equals(mTab.getUrlString())) {"
-        errorLine2="                     ~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/GetPagesByNamespaceForLivePageSharingCallback.java"
-            line="36"
-            column="22"/>
     </issue>
 
     <issue
@@ -4364,17 +3990,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        ThreadUtils.postOnUiThreadDelayed(mThrottlingIntervalTask, mThrottlingIntervalMs);"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="base/android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java"
-            line="227"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        save();"
         errorLine2="        ~~~~">
         <location
@@ -4436,127 +4051,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java"
             line="902"
             column="39"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        String offlinePath = offlinePage.getFilePath();"
-        errorLine2="                                         ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="440"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                offlinePageBridge.isTemporaryNamespace(offlinePage.getClientId().getNamespace());"
-        errorLine2="                                                                   ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="443"
-            column="68"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        String offlinePath = offlinePage.getFilePath();"
-        errorLine2="                                         ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="461"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        String offlinePath = offlinePage.getFilePath();"
-        errorLine2="                                         ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="496"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                offlinePage.getOfflineId(), publishPageCallback);"
-        errorLine2="                            ~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="539"
-            column="29"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        final String pageUrl = page.getUrl();"
-        errorLine2="                                    ~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="560"
-            column="37"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        final String pageTitle = page.getTitle();"
-        errorLine2="                                      ~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="561"
-            column="39"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        final File offlinePageFile = new File(page.getFilePath());"
-        errorLine2="                                                   ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="562"
-            column="52"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        sharePage(window, pageUrl, pageTitle, page.getFilePath(), offlinePageFile, shareCallback);"
-        errorLine2="                                                   ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="563"
-            column="52"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), transitionTypeForReload);"
-        errorLine2="                                                             ~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="784"
-            column="62"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                if (page.getClientId().getNamespace().equals(OfflinePageBridge.LAST_N_NAMESPACE)) {"
-        errorLine2="                         ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java"
-            line="887"
-            column="26"/>
     </issue>
 
     <issue
@@ -4645,72 +4139,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksReader.java"
             line="102"
             column="36"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                            logEntry.getAutofilledValue(), logEntry.getProfileFullName());"
-        errorLine2="                                     ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/policy/providers/PartnerProvider.java"
-            line="78"
-            column="38"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                            logEntry.getAutofilledValue(), logEntry.getProfileFullName());"
-        errorLine2="                                                                    ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/policy/providers/PartnerProvider.java"
-            line="78"
-            column="69"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        AutofillLogger.setLogger(autofillLogger);"
-        errorLine2="                       ~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/policy/providers/PartnerProvider.java"
-            line="82"
-            column="24"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            terminateIncognitoSession();"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/policy/providers/PartnerProvider.java"
-            line="106"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                        IntentUtils.safePutBinderExtra("
-        errorLine2="                                    ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/sync/ui/PassphraseDialogFragment.java"
-            line="221"
-            column="37"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                        IntentUtils.safePutBinderExtra("
-        errorLine2="                                    ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/sync/ui/PassphraseTypeDialogFragment.java"
-            line="208"
-            column="37"/>
     </issue>
 
     <issue
@@ -4980,232 +4408,12 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="public class PhoneskyDetailsDelegate extends AppDetailsDelegate"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/banner/PhoneskyDetailsDelegate.java"
-            line="42"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                observer.onAppDetailsRetrieved(data);"
-        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/banner/PhoneskyDetailsDelegate.java"
-            line="104"
-            column="26"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        AppData data = new AppData(url, packageName);"
-        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/banner/PhoneskyDetailsDelegate.java"
-            line="155"
-            column="24"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        data.setPackageInfo(title, imageUrl, rating, installText, detailsIntent, purchaseIntent);"
-        errorLine2="             ~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/banner/PhoneskyDetailsDelegate.java"
-            line="156"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        return getBrowserStartupController().isRunningInServiceManagerMode();"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTask.java"
             line="120"
             column="16"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java"
-            line="172"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/init/ProcessInitializationHandlerInternal.java"
-            line="44"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        LocationUtils.setFactory(() -> new LocationUtilsInternal(mExternalAuthUtils));"
-        errorLine2="                      ~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/init/ProcessInitializationHandlerInternal.java"
-            line="51"
-            column="23"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            page = new OfflinePageItem(mPage.getUrl(), mPage.getOfflineId(),"
-        errorLine2="                                             ~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="39"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            page = new OfflinePageItem(mPage.getUrl(), mPage.getOfflineId(),"
-        errorLine2="                                                             ~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="39"
-            column="62"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getClientId().getNamespace(), mPage.getClientId().getId(),"
-        errorLine2="                          ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="40"
-            column="27"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getClientId().getNamespace(), mPage.getClientId().getId(),"
-        errorLine2="                                                              ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="40"
-            column="63"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getTitle(), newFilePath, mPage.getFileSize(), mPage.getCreationTimeMs(),"
-        errorLine2="                          ~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="41"
-            column="27"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getTitle(), newFilePath, mPage.getFileSize(), mPage.getCreationTimeMs(),"
-        errorLine2="                                                         ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="41"
-            column="58"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getTitle(), newFilePath, mPage.getFileSize(), mPage.getCreationTimeMs(),"
-        errorLine2="                                                                              ~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="41"
-            column="79"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getAccessCount(), mPage.getLastAccessTimeMs(), mPage.getRequestOrigin());"
-        errorLine2="                          ~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="42"
-            column="27"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getAccessCount(), mPage.getLastAccessTimeMs(), mPage.getRequestOrigin());"
-        errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="42"
-            column="51"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mPage.getAccessCount(), mPage.getLastAccessTimeMs(), mPage.getRequestOrigin());"
-        errorLine2="                                                                               ~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java"
-            line="42"
-            column="80"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        requestCoordinatorBridge.getRequestsInQueue(new Callback&lt;SavePageRequest[]&gt;() {"
-        errorLine2="                                 ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/QueryPagesV1Handler.java"
-            line="94"
-            column="34"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            ClientId clientId = page.getClientId();"
-        errorLine2="                                     ~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/QueryPagesV1Handler.java"
-            line="128"
-            column="38"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            singleUriResult.putParcelable(FETCHED_URI_KEY, Uri.parse(page.getUrl()));"
-        errorLine2="                                                                          ~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/QueryPagesV1Handler.java"
-            line="141"
-            column="75"/>
     </issue>
 
     <issue
@@ -5233,34 +4441,12 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        requestCoordinatorBridge.getRequestsInQueue(queuedRequests -> {"
-        errorLine2="                                 ~~~~~~~~~~~~~~~~~~">
+        errorLine1="                new SettingsSecureBasedIdentificationGenerator(getContext()), false);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/RemovePagesV1Handler.java"
-            line="76"
-            column="34"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        requestCoordinatorBridge.getRequestsInQueue(queuedRequests -> {"
-        errorLine2="                                 ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/org/chromium/chrome/browser/offlinepages/RemovePagesV2Handler.java"
-            line="74"
-            column="34"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        super(context);"
-        errorLine2="        ~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/omaha/RequestGeneratorImpl.java"
-            line="36"
-            column="9"/>
+            file="chrome/android/java/src/org/chromium/chrome/browser/omaha/RequestGenerator.java"
+            line="52"
+            column="17"/>
     </issue>
 
     <issue
@@ -5303,7 +4489,7 @@
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetPropertyModelBuilder.java"
-            line="202"
+            line="203"
             column="25"/>
     </issue>
 
@@ -5448,17 +4634,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutHelper.java"
             line="802"
             column="31"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                &amp;&amp; TextUtils.equals(item.getClientId().getNamespace(),"
-        errorLine2="                                         ~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/suggestions/SuggestionsOfflineModelObserver.java"
-            line="129"
-            column="42"/>
     </issue>
 
     <issue
@@ -5644,7 +4819,7 @@
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="content/public/android/java/src/org/chromium/content/browser/input/ThreadedInputConnectionProxyView.java"
-            line="94"
+            line="95"
             column="22"/>
     </issue>
 
@@ -5655,7 +4830,7 @@
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="content/public/android/java/src/org/chromium/content/browser/input/ThreadedInputConnectionProxyView.java"
-            line="96"
+            line="97"
             column="22"/>
     </issue>
 
@@ -5668,17 +4843,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/suggestions/tile/TileGridViewHolder.java"
             line="34"
             column="73"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            tile.setOfflinePageOfflineId(item == null ? null : item.getOfflineId());"
-        errorLine2="                                                                    ~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/suggestions/tile/TileGroup.java"
-            line="614"
-            column="69"/>
     </issue>
 
     <issue
@@ -6449,50 +5613,6 @@
             file="components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java"
             line="236"
             column="18"/>
-    </issue>
-
-    <issue
-        id="SupportAnnotationUsage"
-        message="This annotation does not apply for type org.chromium.base.Callback&lt;java.lang.Integer>; expected int or long"
-        errorLine1="            @LocationSettingsDialogOutcome Callback&lt;Integer> callback) {"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="96"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="SupportAnnotationUsage"
-        message="This annotation does not apply for type org.chromium.base.Callback&lt;java.lang.Integer>; expected int or long"
-        errorLine1="        @LocationSettingsDialogOutcome"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="123"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="SupportAnnotationUsage"
-        message="This annotation does not apply for type org.chromium.base.Callback&lt;java.lang.Integer>; expected int or long"
-        errorLine1="                WindowAndroid window, @LocationSettingsDialogOutcome Callback&lt;Integer> callback,"
-        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="129"
-            column="39"/>
-    </issue>
-
-    <issue
-        id="SupportAnnotationUsage"
-        message="This annotation does not apply for type org.chromium.base.Callback&lt;java.lang.Integer>; expected int or long"
-        errorLine1="                WindowAndroid window, @LocationSettingsDialogOutcome Callback&lt;Integer> callback,"
-        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="143"
-            column="39"/>
     </issue>
 
     <issue

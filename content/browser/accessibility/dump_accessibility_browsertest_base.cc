@@ -171,7 +171,7 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& no_load_expected_str = "@NO-LOAD-EXPECTED:";
     const std::string& wait_str = "@WAIT-FOR:";
     const std::string& execute_str = "@EXECUTE-AND-WAIT-FOR:";
-    const std::string& until_str = "@RUN-UNTIL-EVENT:";
+    const std::string& until_str = formatter_->GetRunUntilEventString();
     const std::string& default_action_on_str = "@DEFAULT-ACTION-ON:";
     if (base::StartsWith(line, allow_empty_str, base::CompareCase::SENSITIVE)) {
       property_filters_.push_back(

@@ -1,10 +1,13 @@
-<settings-safety-check-child
-    id="safetyCheckChild"
-    icon-status="[[getIconStatus_(status_)]]"
-    label="$i18n{safetyCheckChromeCleanerPrimaryLabel}"
-    sub-label="[[displayString_]]"
-    button-label="[[getButtonLabel_(status_)]]"
-    button-aria-label="[[getButtonAriaLabel_(status_)]]"
-    button-class="[[getButtonClass_(status_)]]"
-    on-button-click="onButtonClick_">
-</settings-safety-check-child>
+<template is="dom-if" if="[[showChild_(status_)]]"
+    restamp>
+  <settings-safety-check-child
+      id="safetyCheckChild"
+      icon-status="[[getIconStatus_(status_)]]"
+      label="$i18n{safetyCheckChromeCleanerPrimaryLabel}"
+      sub-label="[[displayString_]]"
+      button-label="[[getButtonLabel_(status_)]]"
+      button-aria-label="[[getButtonAriaLabel_(status_)]]"
+      button-class="[[getButtonClass_(status_)]]"
+      on-button-click="onButtonClick_">
+  </settings-safety-check-child>
+</template>

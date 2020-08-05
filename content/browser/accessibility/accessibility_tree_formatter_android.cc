@@ -89,6 +89,7 @@ class AccessibilityTreeFormatterAndroid
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
+  const std::string GetRunUntilEventString() override;
 
   void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
                                        base::DictionaryValue* dict) const;
@@ -322,6 +323,10 @@ const std::string AccessibilityTreeFormatterAndroid::GetDenyString() {
 
 const std::string AccessibilityTreeFormatterAndroid::GetDenyNodeString() {
   return "@ANDROID-DENY-NODE:";
+}
+
+const std::string AccessibilityTreeFormatterAndroid::GetRunUntilEventString() {
+  return "@ANDROID-RUN-UNTIL-EVENT:";
 }
 
 }  // namespace content

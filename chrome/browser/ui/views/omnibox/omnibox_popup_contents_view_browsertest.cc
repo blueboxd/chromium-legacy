@@ -32,6 +32,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/ax_event_observer.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -39,6 +40,10 @@
 #endif
 
 namespace {
+
+bool contains(std::string str, std::string substr) {
+  return str.find(substr) != std::string::npos;
+}
 
 // A View that positions itself over another View to intercept clicks.
 class ClickTrackingOverlayView : public views::View {
@@ -108,9 +113,13 @@ class TestAXEventObserver : public views::AXEventObserver {
     } else if (event_type == ax::mojom::Event::kSelection &&
                role == ax::mojom::Role::kListBoxOption) {
       selection_changed_count_++;
+      selected_option_name_ =
+          node_data.GetStringAttribute(ax::mojom::StringAttribute::kName);
     } else if (event_type == ax::mojom::Event::kValueChanged &&
                role == ax::mojom::Role::kTextField) {
       value_changed_count_++;
+      omnibox_value_ =
+          node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue);
     } else if (event_type == ax::mojom::Event::kActiveDescendantChanged &&
                role == ax::mojom::Role::kTextField) {
       active_descendant_changed_count_++;
@@ -129,12 +138,17 @@ class TestAXEventObserver : public views::AXEventObserver {
     return active_descendant_changed_count_;
   }
 
+  std::string omnibox_value() { return omnibox_value_; }
+  std::string selected_option_name() { return selected_option_name_; }
+
  private:
   int text_changed_on_listboxoption_count_ = 0;
   int selected_children_changed_count_ = 0;
   int selection_changed_count_ = 0;
   int value_changed_count_ = 0;
   int active_descendant_changed_count_ = 0;
+  std::string omnibox_value_;
+  std::string selected_option_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
@@ -389,8 +403,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
                           AutocompleteMatchType::HISTORY_TITLE);
   AutocompleteController* controller = popup_model()->autocomplete_controller();
   match.contents = base::ASCIIToUTF16("https://foobar.com");
+  match.description = base::ASCIIToUTF16("FooBarCom");
   matches.push_back(match);
   match.contents = base::ASCIIToUTF16("https://foobarbaz.com");
+  match.description = base::ASCIIToUTF16("FooBarBazCom");
   matches.push_back(match);
   controller->result_.AppendMatches(controller->input_, matches);
   popup_view()->UpdatePopupAppearance();
@@ -416,6 +432,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
   EXPECT_EQ(observer.selection_changed_count(), 2);
   EXPECT_EQ(observer.active_descendant_changed_count(), 2);
   EXPECT_EQ(observer.value_changed_count(), 3);
+  EXPECT_TRUE(contains(observer.omnibox_value(), "2 of 3"));
+  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 3"));
+  EXPECT_TRUE(contains(observer.selected_option_name(), "foobar.com"));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "FooBarCom"));
+  EXPECT_TRUE(contains(observer.selected_option_name(), "FooBarCom"));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "location from history"));
+  EXPECT_TRUE(
+      contains(observer.selected_option_name(), "location from history"));
 
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(2));
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 2);
@@ -423,6 +447,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
   EXPECT_EQ(observer.selection_changed_count(), 3);
   EXPECT_EQ(observer.active_descendant_changed_count(), 3);
   EXPECT_EQ(observer.value_changed_count(), 4);
+  EXPECT_TRUE(contains(observer.omnibox_value(), "3 of 3"));
+  EXPECT_FALSE(contains(observer.selected_option_name(), "3 of 3"));
+  EXPECT_TRUE(contains(observer.selected_option_name(), "foobarbaz.com"));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "FooBarBazCom"));
+  EXPECT_TRUE(contains(observer.selected_option_name(), "FooBarBazCom"));
+
+  // Check that active descendant on textbox matches the selected result view.
+  ui::AXNodeData ax_node_data_omnibox;
+  omnibox_view()->GetAccessibleNodeData(&ax_node_data_omnibox);
+  OmniboxResultView* selected_result_view = GetResultViewAt(2);
+  EXPECT_EQ(ax_node_data_omnibox.GetIntAttribute(
+                ax::mojom::IntAttribute::kActivedescendantId),
+            selected_result_view->GetViewAccessibility().GetUniqueId().Get());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
@@ -434,6 +471,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
                           AutocompleteMatchType::HISTORY_TITLE);
   AutocompleteController* controller = popup_model()->autocomplete_controller();
   match.contents = base::ASCIIToUTF16("https://foobar.com");
+  match.description = base::ASCIIToUTF16("The Foo Of All Bars");
   match.has_tab_match = true;
   matches.push_back(match);
   controller->result_.AppendMatches(controller->input_, matches);
@@ -444,20 +482,40 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(observer.selection_changed_count(), 2);
   EXPECT_EQ(observer.active_descendant_changed_count(), 2);
   EXPECT_EQ(observer.value_changed_count(), 2);
+  EXPECT_TRUE(contains(observer.omnibox_value(), "The Foo Of All Bars"));
+  EXPECT_TRUE(contains(observer.selected_option_name(), "foobar.com"));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "press Tab then Enter"));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "2 of 2"));
+  EXPECT_TRUE(
+      contains(observer.selected_option_name(), "press Tab then Enter"));
+  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 2"));
 
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
       1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "The Foo Of All Bars"));
   EXPECT_EQ(observer.selected_children_changed_count(), 3);
   EXPECT_EQ(observer.selection_changed_count(), 3);
   EXPECT_EQ(observer.active_descendant_changed_count(), 3);
   EXPECT_EQ(observer.value_changed_count(), 3);
+  EXPECT_TRUE(contains(observer.omnibox_value(), "press Enter to switch"));
+  EXPECT_FALSE(contains(observer.omnibox_value(), "2 of 2"));
+  EXPECT_TRUE(
+      contains(observer.selected_option_name(), "press Enter to switch"));
+  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 2"));
 
   popup_view()->model()->SetSelection(
       OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "The Foo Of All Bars"));
+  EXPECT_TRUE(contains(observer.selected_option_name(), "foobar.com"));
   EXPECT_EQ(observer.selected_children_changed_count(), 4);
   EXPECT_EQ(observer.selection_changed_count(), 4);
   EXPECT_EQ(observer.active_descendant_changed_count(), 4);
   EXPECT_EQ(observer.value_changed_count(), 4);
+  EXPECT_TRUE(contains(observer.omnibox_value(), "press Tab then Enter"));
+  EXPECT_TRUE(contains(observer.omnibox_value(), "2 of 2"));
+  EXPECT_TRUE(
+      contains(observer.selected_option_name(), "press Tab then Enter"));
+  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 2"));
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
@@ -524,8 +582,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
       popup_node_data_while_open.HasState(ax::mojom::State::kCollapsed));
   EXPECT_FALSE(
       popup_node_data_while_open.HasState(ax::mojom::State::kInvisible));
-  EXPECT_TRUE(popup_node_data_while_open.HasIntAttribute(
-      ax::mojom::IntAttribute::kActivedescendantId));
   EXPECT_TRUE(popup_node_data_while_open.HasIntAttribute(
       ax::mojom::IntAttribute::kPopupForId));
 }

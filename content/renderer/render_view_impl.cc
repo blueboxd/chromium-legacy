@@ -106,7 +106,6 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -1161,8 +1160,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
-    IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
-                        OnTextAutosizerPageInfoChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetRendererPrefs, OnSetRendererPrefs)
 
     // Adding a new message? Add platform independent ones first, then put the
@@ -1676,20 +1673,6 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 void RenderViewImpl::SetPageFrozen(bool frozen) {
   if (GetWebView())
     GetWebView()->SetPageFrozen(frozen);
-}
-
-// This function receives TextAutosizerPageInfo from the main frame's renderer
-// and makes it available to other renderers with frames on the same page.
-void RenderViewImpl::OnTextAutosizerPageInfoChanged(
-    const blink::WebTextAutosizerPageInfo& page_info) {
-  // Only propagate the remote page info if our main frame is remote. It's
-  // possible a main frame renderer may receive this message, as SendPageMessage
-  // in RenderFrameHostManager may send to a speculative RenderFrameHost that
-  // corresponds to a local main frame. Since a local main frame will generate
-  // these values for itself, we shouldn't override them with values from
-  // another renderer.
-  if (!GetWebView()->MainFrame()->IsWebLocalFrame())
-    GetWebView()->SetTextAutosizerPageInfo(page_info);
 }
 
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -229,6 +230,13 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
 
+// TODO(crbug.com/1112536): With RTL UI, the URL is sometimes off by one pixel
+// of the right edge. Investigate if this is expected, otherwise replace this
+// with equality checks in tests that use it. Checks |a| is within 1 of |b|.
+void CheckEqualsWithMarginOne(int a, int b) {
+  EXPECT_LE(std::abs(a - b), 1);
+}
+
 }  // namespace
 
 // OmniboxViewViewsTest -------------------------------------------------------
@@ -236,10 +244,11 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
 // Base class that ensures ScopedFeatureList is initialized first.
 class OmniboxViewViewsTestBase : public ChromeViewsTestBase {
  public:
-  OmniboxViewViewsTestBase(
-      const std::vector<base::Feature>& enabled_features,
-      const std::vector<base::Feature>& disabled_features) {
+  OmniboxViewViewsTestBase(const std::vector<base::Feature>& enabled_features,
+                           const std::vector<base::Feature>& disabled_features,
+                           bool is_rtl_ui_test = false) {
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    base::i18n::SetRTLForTesting(is_rtl_ui_test);
   }
 
  protected:
@@ -263,7 +272,8 @@ const base::string16 kSimplifiedDomainDisplayUrlScheme =
 class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
  public:
   OmniboxViewViewsTest(const std::vector<base::Feature>& enabled_features,
-                       const std::vector<base::Feature>& disabled_features);
+                       const std::vector<base::Feature>& disabled_features,
+                       bool is_rtl_ui_test = false);
 
   OmniboxViewViewsTest()
       : OmniboxViewViewsTest(std::vector<base::Feature>(),
@@ -342,8 +352,11 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 
 OmniboxViewViewsTest::OmniboxViewViewsTest(
     const std::vector<base::Feature>& enabled_features,
-    const std::vector<base::Feature>& disabled_features)
-    : OmniboxViewViewsTestBase(enabled_features, disabled_features),
+    const std::vector<base::Feature>& disabled_features,
+    bool is_rtl_ui_test)
+    : OmniboxViewViewsTestBase(enabled_features,
+                               disabled_features,
+                               is_rtl_ui_test),
       command_updater_(nullptr),
       omnibox_edit_controller_(&command_updater_, &location_bar_model_) {}
 
@@ -829,6 +842,30 @@ TEST_F(OmniboxViewViewsTest, OverflowingAutocompleteText) {
   omnibox_textfield()->OnBlur();
   EXPECT_EQ(render_text->GetUpdatedDisplayOffset().x(), 0);
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
+}
+
+TEST_F(OmniboxViewViewsTest, ElideAnimationDoesntStartIfNoVisibleChange) {
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  OmniboxViewViews::ElideAnimation elide_animation(omnibox_view(), render_text);
+  // Before any animation runs, the elide from rectangle is considered to be
+  // render_text's DisplayRect, so set it manually to be the current URL length.
+  gfx::Rect full_url_bounds;
+  for (auto rect : render_text->GetSubstringBounds(
+           gfx::Range(0, omnibox_view()->GetOmniboxTextLength()))) {
+    full_url_bounds.Union(rect);
+  }
+  render_text->SetDisplayRect(full_url_bounds);
+  // Start the animation, and have it animate to the current state.
+  elide_animation.Start(
+      gfx::Range(0,
+                 omnibox_view()->GetOmniboxTextLength()), /* elide_to_bounds */
+      0,                                                  /* delay_ms */
+      {gfx::Range(0, 0)}, /* ranges_surrounding_simplified_domain */
+      SK_ColorBLACK,      /* starting_color */
+      SK_ColorBLACK);     /* ending_color */
+  // Animation shouldn't have been started.
+  EXPECT_FALSE(elide_animation.IsAnimating());
 }
 
 class OmniboxViewViewsClipboardTest
@@ -1451,8 +1488,15 @@ void ExpectElidedToSimplifiedDomain(TestingOmniboxView* view,
     // is because GetSubstringBounds() rounds outward, so the width of
     // |subdomain_and_scheme_rect| could slightly overlap
     // |registrable_domain_rect|.
-    EXPECT_EQ(registrable_domain_rect.x() - subdomain_and_scheme_rect.x(),
-              -1 * render_text->GetUpdatedDisplayOffset().x());
+    // In the RTL UI case, the offset instead has to push the path offscreen to
+    // the right, so we check offset equals the width of the path rectangle.
+    if (base::i18n::IsRTL()) {
+      CheckEqualsWithMarginOne(path_rect.width(),
+                               render_text->GetUpdatedDisplayOffset().x());
+    } else {
+      EXPECT_EQ(registrable_domain_rect.x() - subdomain_and_scheme_rect.x(),
+                -1 * render_text->GetUpdatedDisplayOffset().x());
+    }
     // The scheme and subdomain should be transparent.
     EXPECT_EQ(SK_ColorTRANSPARENT, view->GetLatestColorForRange(gfx::Range(
                                        0, scheme.size() + subdomain.size())));
@@ -1470,8 +1514,15 @@ void ExpectElidedToSimplifiedDomain(TestingOmniboxView* view,
     // text starts at the subdomain. As above, it's important to compute the
     // expected offset with x() values instead of width()s, since the width()s
     // of different adjacent substring bounds could overlap.
-    EXPECT_EQ(hostname_rect.x() - subdomain_and_scheme_rect.x(),
-              -1 * render_text->GetUpdatedDisplayOffset().x());
+    // In the RTL UI case, the offset instead has to push the path offscreen to
+    // the right, so we check offset equals the width of the path rectangle.
+    if (base::i18n::IsRTL()) {
+      CheckEqualsWithMarginOne(path_rect.width(),
+                               render_text->GetUpdatedDisplayOffset().x());
+    } else {
+      EXPECT_EQ(hostname_rect.x() - subdomain_and_scheme_rect.x(),
+                -1 * render_text->GetUpdatedDisplayOffset().x());
+    }
     // The scheme should be transparent.
     EXPECT_EQ(SK_ColorTRANSPARENT,
               view->GetLatestColorForRange(gfx::Range(0, scheme.size())));
@@ -1493,8 +1544,14 @@ void ExpectUnelidedFromSimplifiedDomain(gfx::RenderText* render_text,
   }
   EXPECT_TRUE(render_text->display_rect().Contains(unelided_rect));
   // |display_url| should be at the leading edge of |render_text|'s display
-  // rect.
-  EXPECT_EQ(unelided_rect.x(), render_text->display_rect().x());
+  // rect for LTR UI, or at the rightmost side of the omnibox for RTL UI.
+  if (base::i18n::IsRTL()) {
+    CheckEqualsWithMarginOne(
+        unelided_rect.x(),
+        render_text->display_rect().right() - unelided_rect.width());
+  } else {
+    EXPECT_EQ(unelided_rect.x(), render_text->display_rect().x());
+  }
 }
 
 // Returns true if |render_text|'s current display rect and offset display at
@@ -1548,17 +1605,18 @@ TEST_F(OmniboxViewViewsNoSimplifiedDomainTest, UrlNotSimplifiedByDefault) {
 
 class OmniboxViewViewsRevealOnHoverTest
     : public OmniboxViewViewsTest,
-      public ::testing::WithParamInterface<bool> {
+      public ::testing::WithParamInterface<std::pair<bool, bool>> {
  public:
   OmniboxViewViewsRevealOnHoverTest()
       : OmniboxViewViewsTest(
-            GetParam()
+            GetParam().first
                 ? std::vector<base::Feature>(
                       {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
                        omnibox::kElideToRegistrableDomain})
                 : std::vector<base::Feature>(
                       {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
-            {}) {}
+            {},
+            GetParam().second) {}
 
   OmniboxViewViewsRevealOnHoverTest(const OmniboxViewViewsRevealOnHoverTest&) =
       delete;
@@ -1566,12 +1624,15 @@ class OmniboxViewViewsRevealOnHoverTest
       const OmniboxViewViewsRevealOnHoverTest&) = delete;
 
  protected:
-  bool ShouldElideToRegistrableDomain() { return GetParam(); }
+  bool ShouldElideToRegistrableDomain() { return GetParam().first; }
 };
 
 INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsRevealOnHoverTest,
                          OmniboxViewViewsRevealOnHoverTest,
-                         ::testing::Values(true, false));
+                         ::testing::ValuesIn({std::make_pair(true, false),
+                                              std::make_pair(false, false),
+                                              std::make_pair(true, true),
+                                              std::make_pair(false, true)}));
 
 // Tests the field trial variation that shows a simplified domain by default and
 // reveals the unsimplified URL on hover.
@@ -1644,11 +1705,11 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
 
 class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
     : public OmniboxViewViewsTest,
-      public ::testing::WithParamInterface<bool> {
+      public ::testing::WithParamInterface<std::pair<bool, bool>> {
  public:
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest()
       : OmniboxViewViewsTest(
-            GetParam()
+            GetParam().first
                 ? std::vector<base::Feature>(
                       {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
                        omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
@@ -1657,7 +1718,8 @@ class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
                       {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
                        omnibox::
                            kHideSteadyStateUrlPathQueryAndRefOnInteraction}),
-            {}) {}
+            {},
+            GetParam().second) {}
 
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest(
       const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
@@ -1665,12 +1727,15 @@ class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
       const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
 
  protected:
-  bool ShouldElideToRegistrableDomain() { return GetParam(); }
+  bool ShouldElideToRegistrableDomain() { return GetParam().first; }
 };
 
 INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
                          OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
-                         ::testing::Values(true, false));
+                         ::testing::ValuesIn({std::make_pair(true, false),
+                                              std::make_pair(false, false),
+                                              std::make_pair(true, true),
+                                              std::make_pair(false, true)}));
 
 // Tests the field trial variation that shows the simplified domain when the
 // user interacts with the page and brings back the URL when the user hovers
@@ -1959,30 +2024,34 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
 class OmniboxViewViewsHideOnInteractionTest
     : public OmniboxViewViewsTest,
-      public ::testing::WithParamInterface<bool> {
+      public ::testing::WithParamInterface<std::pair<bool, bool>> {
  public:
   OmniboxViewViewsHideOnInteractionTest()
       : OmniboxViewViewsTest(
-            GetParam()
+            GetParam().first
                 ? std::vector<base::Feature>(
                       {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
                        omnibox::kElideToRegistrableDomain})
                 : std::vector<base::Feature>(
                       {omnibox::
                            kHideSteadyStateUrlPathQueryAndRefOnInteraction}),
-            {}) {}
+            {},
+            GetParam().second) {}
   OmniboxViewViewsHideOnInteractionTest(
       const OmniboxViewViewsHideOnInteractionTest&) = delete;
   OmniboxViewViewsHideOnInteractionTest& operator=(
       const OmniboxViewViewsHideOnInteractionTest&) = delete;
 
  protected:
-  bool ShouldElideToRegistrableDomain() { return GetParam(); }
+  bool ShouldElideToRegistrableDomain() { return GetParam().first; }
 };
 
 INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsHideOnInteractionTest,
                          OmniboxViewViewsHideOnInteractionTest,
-                         ::testing::Values(true, false));
+                         ::testing::ValuesIn({std::make_pair(true, false),
+                                              std::make_pair(false, false),
+                                              std::make_pair(true, true),
+                                              std::make_pair(false, true)}));
 
 // Tests the the "Always Show Full URLs" option works with the field trial
 // variation that shows a simplified domain when the user interacts with the
@@ -2042,11 +2111,11 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, AlwaysShowFullURLs) {
 // and the hide-on-interaction variation when the parameter is true.
 class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
     : public OmniboxViewViewsTest,
-      public ::testing::WithParamInterface<bool> {
+      public ::testing::WithParamInterface<std::pair<bool, bool>> {
  public:
   OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest()
       : OmniboxViewViewsTest(
-            GetParam()
+            GetParam().first
                 ? std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
                        omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
@@ -2055,7 +2124,8 @@ class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
                 : std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
                        omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
-            {omnibox::kElideToRegistrableDomain}) {}
+            {omnibox::kElideToRegistrableDomain},
+            GetParam().second) {}
 
   OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest(
       const OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest&) =
@@ -2065,13 +2135,16 @@ class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
       delete;
 
  protected:
-  bool IsHideOnInteractionEnabled() { return GetParam(); }
+  bool IsHideOnInteractionEnabled() { return GetParam().first; }
 };
 
 INSTANTIATE_TEST_SUITE_P(
     OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
     OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
-    ::testing::Values(true, false));
+    ::testing::ValuesIn({std::make_pair(true, false),
+                         std::make_pair(false, false),
+                         std::make_pair(true, true),
+                         std::make_pair(false, true)}));
 
 // Tests that unsetting the "Always show full URLs" option begins showing/hiding
 // the full URL appropriately when simplified domain field trials are enabled.
@@ -2141,6 +2214,11 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
       omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
   ASSERT_TRUE(elide_animation);
   EXPECT_TRUE(elide_animation->IsAnimating());
+  // Advance the animation, so the visible URL changes.
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
   elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2463,6 +2541,11 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest,
 
 // Tests that gradient mask is set correctly.
 TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
+  if (base::i18n::IsRTL()) {
+    // TODO(crbug.com/1101472): Re-enable this test once gradient mask is
+    // implemented for RTL UI.
+    return;
+  }
   SetUpSimplifiedDomainTest();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
@@ -2493,7 +2576,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
   }
   // If we are eliding from the left, the other side gradient should also be
   // full size at this point, otherwise it should be 0.
-  if (GetParam()) {
+  if (ShouldElideToRegistrableDomain()) {
     EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(),
               max_gradient_width);
   } else {

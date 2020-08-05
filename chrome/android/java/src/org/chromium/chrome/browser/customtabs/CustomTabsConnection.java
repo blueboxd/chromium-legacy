@@ -198,7 +198,7 @@ public class CustomTabsConnection {
 
     private final HiddenTabHolder mHiddenTabHolder = new HiddenTabHolder();
     protected final SessionDataHolder mSessionDataHolder;
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     final ClientManager mClientManager;
     protected final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
@@ -1082,7 +1082,6 @@ public class CustomTabsConnection {
         return ExternalAuthUtils.getInstance().isGoogleSigned(packageName);
     }
 
-    @VisibleForTesting
     void setIgnoreUrlFragmentsForSession(CustomTabsSessionToken session, boolean value) {
         mClientManager.setIgnoreFragmentsForSession(session, value);
     }

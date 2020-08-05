@@ -423,6 +423,11 @@ base::Optional<WebImpression> HTMLAnchorElement::GetImpressionForNavigation()
       expiry = base::TimeDelta::FromMilliseconds(expiry_milliseconds);
   }
 
+  UseCounter::Count(GetExecutionContext(),
+                    mojom::blink::WebFeature::kConversionAPIAll);
+  UseCounter::Count(GetExecutionContext(),
+                    mojom::blink::WebFeature::kImpressionRegistration);
+
   return WebImpression{conversion_destination, reporting_origin,
                        impression_data, expiry};
 }

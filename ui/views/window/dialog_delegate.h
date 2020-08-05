@@ -119,19 +119,16 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
 
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
-  // this is called when the user presses the "Cancel" button.
-  // It can also be called on a close action if |Close| has not been
-  // overridden. This function should return true if the window can be closed
-  // after it returns, or false if it must remain open. By default, return true
-  // without doing anything.
+  // this is called when the user presses the "Cancel" button.  This function
+  // should return true if the window can be closed after it returns, or false
+  // if it must remain open. By default, return true without doing anything.
   // DEPRECATED: use |SetCancelCallback| instead.
   virtual bool Cancel();
 
-  // For Dialog boxes, this is called when the user presses the "OK" button,
-  // or the Enter key. It can also be called on a close action if |Close|
-  // has not been overridden. This function should return true if the window
-  // can be closed after it returns, or false if it must remain open. By
-  // default, return true without doing anything.
+  // For Dialog boxes, this is called when the user presses the "OK" button, or
+  // the Enter key. This function should return true if the window can be closed
+  // after it returns, or false if it must remain open. By default, return true
+  // without doing anything.
   // DEPRECATED: use |SetAcceptCallback| instead.
   virtual bool Accept();
 

@@ -109,6 +109,8 @@ SmbCredentialsDialogUI::SmbCredentialsDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISmbCredentialsHost);
 
+  source->DisableTrustedTypesCSP();
+
   AddSmbCredentialsDialogStrings(source);
 
   source->UseStringsJs();

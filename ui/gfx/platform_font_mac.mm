@@ -91,31 +91,53 @@ Font::Weight GetFontWeightFromNSFont(NSFont* font) {
   DCHECK(font);
 
   // Map CoreText weights in a manner similar to ct_weight_to_fontstyle() from
-  // SkFontHost_mac.cpp, but adjust for MEDIUM so that the San Francisco's
-  // custom MEDIUM weight can be picked out. San Francisco has weights:
-  // [0.23, 0.23, 0.3, 0.4, 0.56, 0.62, 0.62, ...] (no thin weights).
-  // See PlatformFontMacTest.FontWeightAPIConsistency for details.
-  // Note that the table Skia uses is also determined by experiment.
+  // SkFontHost_mac.cpp, but adjusted for the weights actually used by the
+  // system fonts. See PlatformFontMacTest.FontWeightAPIConsistency for details.
+  // Use ranges for paranoia.
   constexpr struct {
-    CGFloat ct_weight;
+    // A range of CoreText weights.
+    CGFloat weight_lower;
+    CGFloat weight_upper;
     Font::Weight gfx_weight;
   } weight_map[] = {
-      // Missing: Apple "ultralight".
-      {-0.70, Font::Weight::THIN},
-      {-0.50, Font::Weight::EXTRA_LIGHT},
-      {-0.23, Font::Weight::LIGHT},
-      {0.00, Font::Weight::NORMAL},
-      {0.23, Font::Weight::MEDIUM},  // Note: adjusted from 0.20 vs Skia.
-      // Missing: Apple "demibold".
-      {0.30, Font::Weight::SEMIBOLD},
-      {0.40, Font::Weight::BOLD},
-      {0.60, Font::Weight::EXTRA_BOLD},
-      // Missing: Apple "heavyface".
-      // Values will be capped to BLACK (this entry is here for consistency).
-      {0.80, Font::Weight::BLACK},
-      // Missing: Apple "ultrablack".
-      // Missing: Apple "extrablack".
+      // NSFontWeight constants introduced in 10.11:
+      //   NSFontWeightUltraLight: -0.80
+      //   NSFontWeightThin: -0.60
+      //   NSFontWeightLight: -0.40
+      //   NSFontWeightRegular: 0.0
+      //   NSFontWeightMedium: 0.23
+      //   NSFontWeightSemibold: 0.30
+      //   NSFontWeightBold: 0.40
+      //   NSFontWeightHeavy: 0.56
+      //   NSFontWeightBlack: 0.62
+      //
+      // Actual system font weights:
+      //   10.10:
+      //     .HelveticaNeueDeskInterface-Regular: 0.0
+      //     .HelveticaNeueDeskInterface-MediumP4: 0.23
+      //     .HelveticaNeueDeskInterface-Bold: 0.4
+      //     .HelveticaNeueDeskInterface-Heavy: 0.62
+      //   10.11-:
+      //     .AppleSystemUIFontUltraLight: -0.80 (10.12-)
+      //     .AppleSystemUIFontLight: -0.40 (10.12-)
+      //     .AppleSystemUIFont: 0 (10.11-)
+      //     .AppleSystemUIFontMedium: 0.23 (10.12-)
+      //     .AppleSystemUIFontDemi: 0.30 (10.12-)
+      //     .AppleSystemUIFontBold: 0.40 (10.11)
+      //     .AppleSystemUIFontEmphasized: 0.40 (10.12-)
+      //     .AppleSystemUIFontHeavy: 0.56 (10.11-)
+      //     .AppleSystemUIFontBlack: 0.62 (10.11-)
+      {-1000, -0.70, Font::Weight::THIN},         // NSFontWeightUltraLight
+      {-0.70, -0.45, Font::Weight::EXTRA_LIGHT},  // NSFontWeightThin
+      {-0.45, -0.10, Font::Weight::LIGHT},        // NSFontWeightLight
+      {-0.10, 0.10, Font::Weight::NORMAL},        // NSFontWeightRegular
+      {0.10, 0.27, Font::Weight::MEDIUM},         // NSFontWeightMedium
+      {0.27, 0.35, Font::Weight::SEMIBOLD},       // NSFontWeightSemibold
+      {0.35, 0.50, Font::Weight::BOLD},           // NSFontWeightBold
+      {0.50, 0.60, Font::Weight::EXTRA_BOLD},     // NSFontWeightHeavy
+      {0.60, 1000, Font::Weight::BLACK},          // NSFontWeightBlack
   };
+
   base::ScopedCFTypeRef<CFDictionaryRef> traits(
       CTFontCopyTraits(base::mac::NSToCFCast(font)));
   DCHECK(traits);
@@ -125,20 +147,18 @@ Font::Weight GetFontWeightFromNSFont(NSFont* font) {
   if (!cf_weight)
     return Font::Weight::NORMAL;
 
-  // Documentation is vague about what sized floating point type should be used.
-  // However, numeric_limits::epsilon() for 64-bit types is too small to match
-  // the above table, so use 32-bit float. Do not check for the success of
-  // CFNumberGetValue(). CFNumberGetValue() returns false for *any* loss of
-  // value, and a float is used here deliberately to coarsen the accuracy.
-  // There's no guarantee that any particular value for the kCTFontWeightTrait
-  // will be able to be accurately represented with a float.
-  float weight_value;
-  CFNumberGetValue(cf_weight, kCFNumberFloatType, &weight_value);
+  // The value of kCTFontWeightTrait empirically is a kCFNumberFloat64Type
+  // (double) on all tested versions of macOS. However, that doesn't really
+  // matter as only the first two decimal digits need to be tested. Do not check
+  // for the success of CFNumberGetValue() as it returns false for any loss of
+  // value and all that is needed here is two digits of accuracy.
+  CGFloat weight;
+  CFNumberGetValue(cf_weight, kCFNumberCGFloatType, &weight);
   for (const auto& item : weight_map) {
-    if (weight_value - item.ct_weight <= std::numeric_limits<float>::epsilon())
+    if (item.weight_lower <= weight && weight <= item.weight_upper)
       return item.gfx_weight;
   }
-  return Font::Weight::BLACK;
+  return Font::Weight::INVALID;
 }
 
 // Returns an autoreleased NSFont created with the passed-in specifications.

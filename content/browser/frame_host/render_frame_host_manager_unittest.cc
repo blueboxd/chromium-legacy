@@ -3204,8 +3204,16 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_FALSE(proxy_observer.IsLoading(proxy_to_child));
 }
 
-// Tests that a BeginNavigation IPC from a no longer active RFH is ignored.
-TEST_P(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
+// Tests that a BeginNavigation IPC from a no longer active RFH in pending
+// deletion state is ignored.
+TEST_P(RenderFrameHostManagerTest,
+       BeginNavigationIgnoredWhenInPendingDeletion) {
+  // When a page enters the BackForwardCache, the RenderFrameHost is not
+  // deleted and is in BackForwardCache instead of being in pending deletion.
+  // Disabling to consider this scenario.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   const GURL kUrl1("http://www.google.com");
   const GURL kUrl2("http://www.chromium.org");
   const GURL kUrl3("http://foo.com");
@@ -3224,10 +3232,66 @@ TEST_P(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
   navigation_to_kUrl2->Commit();
   EXPECT_NE(initial_rfh, main_test_rfh());
   ASSERT_FALSE(delete_observer.deleted());
+  EXPECT_NE(initial_rfh->lifecycle_state(),
+            RenderFrameHostImpl::LifecycleState::kActive);
   EXPECT_TRUE(initial_rfh->IsPendingDeletion());
 
   // The initial RFH receives a BeginNavigation IPC. The navigation should not
   // start.
+  auto navigation_to_kUrl3 =
+      NavigationSimulator::CreateRendererInitiated(kUrl3, initial_rfh);
+  navigation_to_kUrl3->Start();
+  EXPECT_FALSE(main_test_rfh()->frame_tree_node()->navigation_request());
+}
+
+// Run tests with BackForwardCache.
+class RenderFrameHostManagerTestWithBackForwardCache
+    : public RenderFrameHostManagerTest {
+ public:
+  RenderFrameHostManagerTestWithBackForwardCache() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {
+              {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+              {"service_worker_supported", "true"},
+          }}},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that a BeginNavigation IPC from a no longer active RFH in
+// BackForwardCache is ignored. This test is a copy of
+// "RenderFrameHostManagerTest.BeginNavigationIgnoredWhenInPendingDeletion" with
+// BackForwardCache consideration.
+TEST_P(RenderFrameHostManagerTestWithBackForwardCache,
+       BeginNavigationIgnoredWhenInBackForwardCache) {
+  const GURL kUrl1("http://www.google.com");
+  const GURL kUrl2("http://www.chromium.org");
+  const GURL kUrl3("http://foo.com");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  TestRenderFrameHost* initial_rfh = main_test_rfh();
+  RenderViewHostDeletedObserver delete_observer(
+      initial_rfh->GetRenderViewHost());
+
+  // Navigate cross-site but don't simulate the swap out ACK. The initial RFH
+  // should be in BackForwardCache.
+  auto navigation_to_kUrl2 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
+  navigation_to_kUrl2->set_drop_unload_ack(true);
+  navigation_to_kUrl2->Commit();
+  EXPECT_NE(initial_rfh, main_test_rfh());
+  ASSERT_FALSE(delete_observer.deleted());
+  EXPECT_NE(initial_rfh->lifecycle_state(),
+            RenderFrameHostImpl::LifecycleState::kActive);
+  EXPECT_TRUE(initial_rfh->IsInBackForwardCache());
+
+  // The initial RFH receives a BeginNavigation IPC. The navigation should not
+  // start as initial RFH is not active.
   auto navigation_to_kUrl3 =
       NavigationSimulator::CreateRendererInitiated(kUrl3, initial_rfh);
   navigation_to_kUrl3->Start();
@@ -3634,5 +3698,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerAdTaggingSignalTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
-
+INSTANTIATE_TEST_SUITE_P(All,
+                         RenderFrameHostManagerTestWithBackForwardCache,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace content

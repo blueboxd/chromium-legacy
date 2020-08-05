@@ -149,7 +149,7 @@ def _CompareApiDumpForFiles(input_api, output_api, aidl_files):
 
 def CheckChangeOnUpload(input_api, output_api):
   filter_lambda = lambda x: input_api.FilterSourceFile(
-      x, white_list=[r'.*\.aidl$' ])
+      x, files_to_check=[r'.*\.aidl$' ])
   aidl_files = []
   for f in input_api.AffectedFiles(include_deletes=False,
                                    file_filter=filter_lambda):

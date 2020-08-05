@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/throttle_observer.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -30,17 +29,13 @@ namespace arc {
 class ArcInstanceThrottleTest : public testing::Test {
  public:
   ArcInstanceThrottleTest()
-      : disable_cpu_restriction_counter_(0),
+      : arc_service_manager_(std::make_unique<ArcServiceManager>()),
+        arc_session_manager_(
+            CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
+                base::BindRepeating(FakeArcSession::Create)))),
+        testing_profile_(std::make_unique<TestingProfile>()),
+        disable_cpu_restriction_counter_(0),
         enable_cpu_restriction_counter_(0) {
-    // Need to initialize DBusThreadManager before ArcSessionManager's
-    // constructor calls DBusThreadManager::Get().
-    chromeos::DBusThreadManager::Initialize();
-    arc_service_manager_ = std::make_unique<ArcServiceManager>();
-    arc_session_manager_ =
-        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
-            base::BindRepeating(FakeArcSession::Create)));
-    testing_profile_ = std::make_unique<TestingProfile>();
-
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
 
@@ -51,13 +46,6 @@ class ArcInstanceThrottleTest : public testing::Test {
             testing_profile_.get());
     arc_instance_throttle_->set_delegate_for_testing(
         std::make_unique<TestDelegateImpl>(this));
-  }
-
-  ~ArcInstanceThrottleTest() override {
-    testing_profile_.reset();
-    arc_session_manager_.reset();
-    arc_service_manager_.reset();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:

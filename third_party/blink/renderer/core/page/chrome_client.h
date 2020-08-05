@@ -101,11 +101,16 @@ class WebViewImpl;
 
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
-struct WebTextAutosizerPageInfo;
 struct ViewportDescription;
 struct ScreenInfo;
 struct WebWindowFeatures;
 struct WebRect;
+
+namespace mojom {
+namespace blink {
+class TextAutosizerPageInfo;
+}
+}  // namespace mojom
 
 using CompositorElementId = cc::ElementId;
 
@@ -499,8 +504,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void Trace(Visitor*) const;
 
-  virtual void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {
-  }
+  virtual void DidUpdateTextAutosizerPageInfo(
+      const mojom::blink::TextAutosizerPageInfo&) {}
 
   virtual void DocumentDetached(Document&) {}
 

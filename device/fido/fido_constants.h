@@ -356,6 +356,12 @@ constexpr uint8_t kP1CheckOnly = 0x07;
 constexpr uint8_t kP1IndividualAttestation = 0x80;
 constexpr size_t kMaxKeyHandleLength = 255;
 
+// kCableOverAOAVersion is a magic value that is sent as the "version" in an
+// Android AOA[1] configuration to identity a security-key request.
+//
+// [1] https://source.android.com/devices/accessories/aoa
+constexpr char kCableOverAOAVersion[] = "12eba9f901039b36";
+
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
 

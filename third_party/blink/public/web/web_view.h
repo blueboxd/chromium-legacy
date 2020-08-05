@@ -70,7 +70,6 @@ class WebWidget;
 struct DeviceEmulationParams;
 struct WebRect;
 struct WebSize;
-struct WebTextAutosizerPageInfo;
 struct WebWindowFeatures;
 
 class WebView {
@@ -459,10 +458,6 @@ class WebView {
   virtual WebFrameWidget* MainFrameWidget() = 0;
 
   // Portals --------------------------------------------------------------
-
-  // Use to transfer TextAutosizer state from the local main frame renderer to
-  // remote main frame renderers.
-  virtual void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {}
 
  protected:
   ~WebView() = default;

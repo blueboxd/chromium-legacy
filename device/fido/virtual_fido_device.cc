@@ -470,6 +470,9 @@ VirtualFidoDevice::GenerateAttestationCertificate(
     case FidoTransportProtocol::kInternal:
       transport_bit = 4;
       break;
+    case FidoTransportProtocol::kAndroidAccessory:
+      transport_bit = 1;
+      break;
   }
   const uint8_t kTransportTypesContents[] = {
       3,                            // BIT STRING

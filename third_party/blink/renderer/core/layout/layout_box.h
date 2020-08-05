@@ -81,7 +81,7 @@ struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
   bool has_override_percentage_resolution_block_size_ : 1;
-  bool has_previous_content_box_and_overflow_rects_ : 1;
+  bool has_previous_content_box_rect_ : 1;
 
   LayoutUnit override_containing_block_content_logical_width_;
   LayoutUnit override_containing_block_content_logical_height_;
@@ -105,12 +105,10 @@ struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
     return *snap_areas_;
   }
 
-  // Used by BoxPaintInvalidator. Stores the previous content box size and
-  // layout overflow rect after the last paint invalidation. They are valid if
-  // has_previous_content_box_rect_and_overflow_rects_ is true.
+  // Used by BoxPaintInvalidator. Stores the previous content rect after the
+  // last paint invalidation. It's valid if has_previous_content_box_rect_ is
+  // true.
   PhysicalRect previous_physical_content_box_rect_;
-  PhysicalRect previous_physical_layout_overflow_rect_;
-  PhysicalRect previous_physical_self_visual_overflow_rect_;
 
   PhysicalRect partial_invalidation_rect_;
 
@@ -1611,13 +1609,31 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     void SavePreviousSize() {
       GetLayoutBox().previous_size_ = GetLayoutBox().Size();
     }
-    void SavePreviousContentBoxAndOverflowRects();
-    void ClearPreviousContentBoxAndOverflowRects() {
-      if (!GetLayoutBox().rare_data_)
-        return;
-      GetLayoutBox().rare_data_->has_previous_content_box_and_overflow_rects_ =
-          false;
+    void SavePreviousOverflowData();
+    void ClearPreviousOverflowData() {
+      DCHECK(!GetLayoutBox().HasVisualOverflow());
+      DCHECK(!GetLayoutBox().HasLayoutOverflow());
+      GetLayoutBox().overflow_.reset();
     }
+    void SavePreviousContentBoxRect() {
+      auto& rare_data = GetLayoutBox().EnsureRareData();
+      rare_data.has_previous_content_box_rect_ = true;
+      rare_data.previous_physical_content_box_rect_ =
+          GetLayoutBox().PhysicalContentBoxRect();
+    }
+    void ClearPreviousContentBoxRect() {
+      if (auto* rare_data = GetLayoutBox().rare_data_.Get())
+        rare_data->has_previous_content_box_rect_ = false;
+    }
+
+    // Called from LayoutShiftTracker when we attach this LayoutBox to a node
+    // for which we saved these values when the node was detached from its
+    // original LayoutBox.
+    void SetPreviousGeometryForLayoutShiftTracking(
+        const PhysicalOffset& paint_offset,
+        const LayoutSize& size,
+        bool has_overflow_clip,
+        const PhysicalRect& layout_overflow_rect);
 
    protected:
     friend class LayoutBox;
@@ -1634,21 +1650,24 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutSize PreviousSize() const { return previous_size_; }
   PhysicalRect PreviousPhysicalContentBoxRect() const {
-    return rare_data_ &&
-                   rare_data_->has_previous_content_box_and_overflow_rects_
+    return rare_data_ && rare_data_->has_previous_content_box_rect_
                ? rare_data_->previous_physical_content_box_rect_
                : PhysicalRect(PhysicalOffset(), PreviousSize());
   }
+  bool PreviouslyHadOverflowClip() const {
+    return overflow_ && overflow_->previous_overflow_data &&
+           overflow_->previous_overflow_data->previously_had_overflow_clip;
+  }
   PhysicalRect PreviousPhysicalLayoutOverflowRect() const {
-    return rare_data_ &&
-                   rare_data_->has_previous_content_box_and_overflow_rects_
-               ? rare_data_->previous_physical_layout_overflow_rect_
+    return overflow_ && overflow_->previous_overflow_data
+               ? overflow_->previous_overflow_data
+                     ->previous_physical_layout_overflow_rect
                : PhysicalRect(PhysicalOffset(), PreviousSize());
   }
   PhysicalRect PreviousPhysicalSelfVisualOverflowRect() const {
-    return rare_data_ &&
-                   rare_data_->has_previous_content_box_and_overflow_rects_
-               ? rare_data_->previous_physical_self_visual_overflow_rect_
+    return overflow_ && overflow_->previous_overflow_data
+               ? overflow_->previous_overflow_data
+                     ->previous_physical_self_visual_overflow_rect
                : PhysicalRect(PhysicalOffset(), PreviousSize());
   }
 

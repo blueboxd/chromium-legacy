@@ -25,6 +25,11 @@ class ComboBoxNode extends NodeWrapper {
   }
 
   /** @override */
+  isGroup() {
+    return false;
+  }
+
+  /** @override */
   performAction(action) {
     // The box of options that typically pops up with combo boxes is not
     // currently given a location in the automation tree, so we work around that

@@ -96,6 +96,7 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
                           IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
+  source->DisableTrustedTypesCSP();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // Do not zoom for Assistant opt-in web contents.

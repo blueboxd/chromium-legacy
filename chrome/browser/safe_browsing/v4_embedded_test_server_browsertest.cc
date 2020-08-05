@@ -169,21 +169,19 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
   EXPECT_FALSE(IsShowingInterstitial(contents));
 }
 
-class V4EmbeddedTestServerWithSeparateNetworkContexts
+class V4EmbeddedTestServerWithoutCookies
     : public V4EmbeddedTestServerBrowserTest {
  public:
-  V4EmbeddedTestServerWithSeparateNetworkContexts() {
+  V4EmbeddedTestServerWithoutCookies() {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures(
-        {kSafeBrowsingSeparateNetworkContexts}, {});
+    scoped_feature_list_.InitWithFeatures({kSafeBrowsingRemoveCookies}, {});
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerWithSeparateNetworkContexts,
-                       DoesNotSaveCookies) {
+IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerWithoutCookies, DoesNotSaveCookies) {
   ASSERT_TRUE(secure_embedded_test_server_->InitializeAndListen());
   const char kMalwarePage[] = "/safe_browsing/malware.html";
   const GURL bad_url = secure_embedded_test_server_->GetURL(kMalwarePage);

@@ -1224,7 +1224,7 @@ WebAutofillClient* ChromeClientImpl::AutofillClientFromFrame(
 }
 
 void ChromeClientImpl::DidUpdateTextAutosizerPageInfo(
-    const WebTextAutosizerPageInfo& page_info) {
+    const mojom::blink::TextAutosizerPageInfo& page_info) {
   web_view_->TextAutosizerPageInfoChanged(page_info);
 }
 

@@ -248,6 +248,7 @@ class ASH_EXPORT LockContentsView
     bool force_online_sign_in = false;
     bool disable_auth = false;
     bool show_pin_pad_for_password = false;
+    size_t autosubmit_pin_length = 0;
     base::Optional<EasyUnlockIconOptions> easy_unlock_state;
     FingerprintState fingerprint_state;
 

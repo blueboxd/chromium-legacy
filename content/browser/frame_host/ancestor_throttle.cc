@@ -188,24 +188,24 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     return NavigationThrottle::PROCEED;
   }
 
-  if (EvaluateXFrameOptions(logging) == CheckResult::BLOCK) {
-    return NavigationThrottle::BLOCK_RESPONSE;
-  }
-
-  // X-Frame-Option is checked on both redirect and final responses. However,
-  // CSP:Frame-ancestor is checked only for the final response.
-  if (!is_response_check)
-    return NavigationThrottle::PROCEED;
-
   const std::vector<network::mojom::ContentSecurityPolicyPtr>&
       content_security_policies =
           request->response()->parsed_headers->content_security_policy;
 
-  if (EvaluateFrameAncestors(content_security_policies) == CheckResult::BLOCK)
+  // CSP: frame-ancestors is checked only for the final response.
+  if (is_response_check &&
+      EvaluateFrameAncestors(content_security_policies) == CheckResult::BLOCK) {
+    return NavigationThrottle::BLOCK_RESPONSE;
+  }
+
+  if (EvaluateXFrameOptions(logging) == CheckResult::BLOCK)
     return NavigationThrottle::BLOCK_RESPONSE;
 
-  if (EvaluateCSPEmbeddedEnforcement() == CheckResult::BLOCK)
+  // CSPEE is checked only for the final response.
+  if (is_response_check &&
+      EvaluateCSPEmbeddedEnforcement() == CheckResult::BLOCK) {
     return NavigationThrottle::BLOCK_RESPONSE;
+  }
 
   return NavigationThrottle::PROCEED;
 }

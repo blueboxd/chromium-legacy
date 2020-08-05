@@ -336,6 +336,26 @@ def VerifyVersionOfBuiltClangMatchesVERSION():
     sys.exit(1)
 
 
+def VerifyZlibSupport():
+  """Check that clang was built with zlib support enabled."""
+  clang = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
+  test_file = '/dev/null'
+  if sys.platform == 'win32':
+    clang += '-cl.exe'
+    test_file = 'nul'
+
+  print('Checking for zlib support')
+  clang_out = subprocess.check_output([
+      clang, '--driver-mode=gcc', '-target', 'x86_64-unknown-linux-gnu', '-gz',
+      '-c', '-###', '-x', 'c', test_file ],
+      stderr=subprocess.STDOUT, universal_newlines=True)
+  if (re.search(r'--compress-debug-sections', clang_out)):
+    print('OK')
+  else:
+    print(('Failed to detect zlib support!\n\n(driver output: %s)') % clang_out)
+    sys.exit(1)
+
+
 def CopyLibstdcpp(args, build_dir):
   if not args.gcc_toolchain:
     return
@@ -878,6 +898,7 @@ def main():
     RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
 
   VerifyVersionOfBuiltClangMatchesVERSION()
+  VerifyZlibSupport()
 
   if sys.platform == 'win32':
     platform = 'windows'

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -718,6 +719,19 @@ void RemoteFrame::SetOpener(Frame* opener_frame) {
     }
     web_frame->SetOpener(opener_web_frame);
   }
+}
+
+void RemoteFrame::UpdateTextAutosizerPageInfo(
+    mojom::blink::TextAutosizerPageInfoPtr mojo_remote_page_info) {
+  // Only propagate the remote page info if our main frame is remote.
+  DCHECK(IsMainFrame());
+  Frame* root_frame = GetPage()->MainFrame();
+  DCHECK(root_frame->IsRemoteFrame());
+  if (*mojo_remote_page_info == GetPage()->TextAutosizerPageInfo())
+    return;
+
+  GetPage()->SetTextAutosizerPageInfo(*mojo_remote_page_info);
+  TextAutosizer::UpdatePageInfoInAllFrames(root_frame);
 }
 
 void RemoteFrame::WasAttachedAsRemoteMainFrame() {

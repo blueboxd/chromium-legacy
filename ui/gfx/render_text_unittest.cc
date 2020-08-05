@@ -2898,6 +2898,22 @@ TEST_F(RenderTextTest, MoveCursor_UpDown_Cache) {
                                         &expected_range);
 }
 
+TEST_F(RenderTextTest, MoveCursorWithNewline) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("a\r\nb"));
+  render_text->SetMultiline(false);
+  EXPECT_EQ(1U, render_text->GetNumLines());
+
+  EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(SelectionModel(1, CURSOR_BACKWARD), render_text->selection_model());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(SelectionModel(3, CURSOR_BACKWARD), render_text->selection_model());
+
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(SelectionModel(4, CURSOR_FORWARD), render_text->selection_model());
+}
+
 TEST_F(RenderTextTest, GetTextDirectionInvalidation) {
   RenderText* render_text = GetRenderText();
   ASSERT_EQ(render_text->directionality_mode(), DIRECTIONALITY_FROM_TEXT);
@@ -4537,6 +4553,49 @@ TEST_F(RenderTextTest, LineSizeMultiline) {
   EXPECT_FLOAT_EQ(
       expected_line3_size,
       render_text->GetLineSizeF(SelectionModel(10, CURSOR_FORWARD)).width());
+}
+
+TEST_F(RenderTextTest, TextPosition) {
+  // Set a fractional glyph size to trigger floating rounding logic.
+  // This test sets a fixed fractional width and height for glyphs to ensure
+  // that computations are fixed (i.e. not font or system dependent).
+  const float kGlyphWidth = 5.4;
+  const float kGlyphHeight = 9.2;
+  SetGlyphWidth(kGlyphWidth);
+  SetGlyphHeight(kGlyphHeight);
+
+  const int kGlyphCount = 3;
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16(std::string(kGlyphCount, 'x')));
+  render_text->SetDisplayRect(Rect(1, 1, 25, 12));
+  render_text->SetCursorEnabled(false);
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+
+  // Content width is 16.2px. Extra space inside display rect is 8.8px
+  // (i.e. 25px - 16.2px) which is used for alignment.
+  const float expected_content_width = kGlyphCount * kGlyphWidth;
+  EXPECT_FLOAT_EQ(expected_content_width, render_text->GetContentWidthF());
+  EXPECT_FLOAT_EQ(expected_content_width, render_text->TotalLineWidth());
+
+  render_text->SetHorizontalAlignment(ALIGN_LEFT);
+  EXPECT_EQ(1, render_text->GetLineOffset(0).x());
+
+  EXPECT_EQ(Rect(1, 1, 6, 10), GetSubstringBoundsUnion(Range(0, 1)));
+  EXPECT_EQ(Rect(6, 1, 6, 10), GetSubstringBoundsUnion(Range(1, 2)));
+  EXPECT_EQ(Rect(11, 1, 7, 10), GetSubstringBoundsUnion(Range(2, 3)));
+
+  render_text->SetHorizontalAlignment(ALIGN_CENTER);
+  EXPECT_EQ(5, render_text->GetLineOffset(0).x());
+  EXPECT_EQ(Rect(5, 1, 6, 10), GetSubstringBoundsUnion(Range(0, 1)));
+  EXPECT_EQ(Rect(10, 1, 6, 10), GetSubstringBoundsUnion(Range(1, 2)));
+  EXPECT_EQ(Rect(15, 1, 7, 10), GetSubstringBoundsUnion(Range(2, 3)));
+
+  render_text->SetHorizontalAlignment(ALIGN_RIGHT);
+  EXPECT_EQ(9, render_text->GetLineOffset(0).x());
+  EXPECT_EQ(Rect(9, 1, 6, 10), GetSubstringBoundsUnion(Range(0, 1)));
+  EXPECT_EQ(Rect(14, 1, 6, 10), GetSubstringBoundsUnion(Range(1, 2)));
+  EXPECT_EQ(Rect(19, 1, 7, 10), GetSubstringBoundsUnion(Range(2, 3)));
 }
 
 TEST_F(RenderTextTest, SetFontList) {

@@ -38,9 +38,8 @@ class AndroidBatteryMetrics : public base::PowerObserver {
       base::TimeDelta::FromSeconds(30);
 
   std::unique_ptr<base::android::ApplicationStatusListener> app_state_listener_;
-  base::android::ApplicationState app_state_ =
-      base::android::APPLICATION_STATE_UNKNOWN;
-  bool on_battery_power_ = false;
+  base::android::ApplicationState app_state_;
+  bool on_battery_power_;
   int last_remaining_capacity_uah_ = 0;
   base::RepeatingTimer drain_metrics_timer_;
   int skipped_timers_ = 0;

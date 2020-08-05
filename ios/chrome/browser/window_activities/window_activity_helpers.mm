@@ -9,15 +9,16 @@
 #endif
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#include "ios/chrome/browser/window_activities/move_tab_activity_type_buildflags.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "net/base/mac/url_conversions.h"
 
 // Activity types.
 NSString* const kLoadURLActivityType = @"org.chromium.load.url";
 NSString* const kLoadIncognitoURLActivityType = @"org.chromium.load.otr-url";
-NSString* const kMoveTabActivityType = @"org.chromium.move-tab";
 
 // User info keys.
 NSString* const kURLKey = @"LoadParams_URL";
@@ -69,8 +70,10 @@ NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
 }
 
 NSUserActivity* ActivityToMoveTab(NSString* tab_id) {
+  NSString* moveTabActivityType =
+      base::SysUTF8ToNSString(BUILDFLAG(IOS_MOVE_TAB_ACTIVITY_TYPE));
   NSUserActivity* activity =
-      [[NSUserActivity alloc] initWithActivityType:kMoveTabActivityType];
+      [[NSUserActivity alloc] initWithActivityType:moveTabActivityType];
   [activity addUserInfoEntriesFromDictionary:@{kTabIdentifierKey : tab_id}];
   return activity;
 }
@@ -81,7 +84,9 @@ bool ActivityIsURLLoad(NSUserActivity* activity) {
 }
 
 bool ActivityIsTabMove(NSUserActivity* activity) {
-  return [activity.activityType isEqualToString:kMoveTabActivityType];
+  NSString* moveTabActivityType =
+      base::SysUTF8ToNSString(BUILDFLAG(IOS_MOVE_TAB_ACTIVITY_TYPE));
+  return [activity.activityType isEqualToString:moveTabActivityType];
 }
 
 UrlLoadParams LoadParamsFromActivity(NSUserActivity* activity) {
@@ -113,4 +118,10 @@ WindowActivityOrigin OriginOfActivity(NSUserActivity* activity) {
   NSNumber* origin = activity.userInfo[kOriginKey];
   return origin ? static_cast<WindowActivityOrigin>(origin.intValue)
                 : WindowActivityUnknownOrigin;
+}
+
+NSString* GetTabIDFromActivity(NSUserActivity* activity) {
+  if (!ActivityIsTabMove(activity))
+    return nil;
+  return activity.userInfo[kTabIdentifierKey];
 }

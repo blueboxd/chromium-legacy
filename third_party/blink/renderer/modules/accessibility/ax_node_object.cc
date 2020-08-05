@@ -198,8 +198,7 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
     if (IsDetached())
       return;
 
-    AXObjectCache().PostNotification(GetNode(),
-                                     ax::mojom::blink::Event::kValueChanged);
+    AXObjectCache().HandleValueChanged(GetNode());
     return;
   }
 

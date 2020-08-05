@@ -150,6 +150,9 @@ std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicy(
   } else if (directive == network::mojom::CSPDirectiveName::ImgSrc) {
     return "img-src chrome://extension-icon chrome://app-icon chrome://theme "
            "chrome://resources data:;";
+  } else if (directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    return "trusted-types apps-page-js cr-ui-bubble-js-static "
+           "parse-html-subset;";
   }
 
   return content::URLDataSource::GetContentSecurityPolicy(directive);

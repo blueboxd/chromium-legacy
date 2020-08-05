@@ -15,6 +15,8 @@ ChromeURLDisabledUI::ChromeURLDisabledUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIAppDisabledHost);
 
+  html_source->DisableTrustedTypesCSP();
+
   html_source->UseStringsJs();
 
   html_source->AddLocalizedString("disabledPageHeader",

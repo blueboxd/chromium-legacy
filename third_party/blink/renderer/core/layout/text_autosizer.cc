@@ -599,7 +599,7 @@ void TextAutosizer::UpdatePageInfoInAllFrames(Frame* main_frame) {
       // called UpdateWebTextAutosizerPageInfoIfNecessary().
       if (frame->IsMainFrame()) {
         const PageInfo& page_info = text_autosizer->page_info_;
-        const WebTextAutosizerPageInfo& old_page_info =
+        const mojom::blink::TextAutosizerPageInfo& old_page_info =
             document->GetPage()->TextAutosizerPageInfo();
         if (page_info.shared_info_ != old_page_info) {
           document->GetPage()->GetChromeClient().DidUpdateTextAutosizerPageInfo(

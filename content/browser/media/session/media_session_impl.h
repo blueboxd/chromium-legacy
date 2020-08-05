@@ -272,6 +272,10 @@ class MediaSessionImpl : public MediaSession,
 
   void OnPictureInPictureAvailabilityChanged();
 
+  // Called when any of the normal players have switched to a different audio
+  // output device.
+  void OnAudioOutputSinkIdChanged();
+
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
 
@@ -387,6 +391,11 @@ class MediaSessionImpl : public MediaSession,
   void RebuildAndNotifyMetadataChanged();
 
   bool IsPictureInPictureAvailable() const;
+
+  // Returns the device ID for the audio output device being used by all of the
+  // normal players. If the players are not all using the same audio output
+  // device, the id of the default device will be returned.
+  std::string GetSharedAudioOutputDeviceId() const;
 
   // Called when a MediaSessionAction is received. The action will be forwarded
   // to blink::MediaSession corresponding to the current routed service.

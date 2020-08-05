@@ -676,6 +676,27 @@
             ]
         }
     ],
+    "AutofillEnableCardNicknameManagementAndUpstream": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableCardNicknameManagement",
+                        "AutofillEnableCardNicknameUpstream"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableSurfacingServerCardNickname": [
         {
             "platforms": [
@@ -2237,6 +2258,25 @@
                     "name": "Enabled",
                     "disable_features": [
                         "UseGles2ForOopR"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DisableLatencyRecoveryDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DisabledImplDisabledMain",
+                    "disable_features": [
+                        "ImplLatencyRecovery",
+                        "MainLatencyRecovery"
                     ]
                 }
             ]
@@ -6118,6 +6158,28 @@
                 },
                 {
                     "name": "Control"
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingDelayedWarnings": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "mouse": "true"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingDelayedWarnings"
+                    ]
                 }
             ]
         }

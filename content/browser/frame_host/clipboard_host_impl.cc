@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/clipboard_host_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -332,8 +333,15 @@ void ClipboardHostImpl::WriteImage(const SkBitmap& bitmap) {
 }
 
 void ClipboardHostImpl::CommitWrite() {
-  clipboard_writer_.reset(
-      new ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste));
+  std::unique_ptr<ui::ClipboardDataEndpoint> data_src;
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_frame_pid_, render_frame_routing_id_);
+  if (render_frame_host) {
+    data_src = std::make_unique<ui::ClipboardDataEndpoint>(
+        render_frame_host->GetLastCommittedURL());
+  }
+  clipboard_writer_ = std::make_unique<ui::ScopedClipboardWriter>(
+      ui::ClipboardBuffer::kCopyPaste, std::move(data_src));
 }
 
 void ClipboardHostImpl::PerformPasteIfAllowed(

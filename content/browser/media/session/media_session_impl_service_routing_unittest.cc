@@ -72,6 +72,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 
   bool HasVideo(int player_id) const override { return has_video_; }
 
+  std::string GetAudioOutputSinkId(int player_id) const override { return ""; }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }

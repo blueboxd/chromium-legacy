@@ -56,6 +56,9 @@ content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
     const base::DictionaryValue& localized_strings) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdUserManagerHost);
+
+  source->DisableTrustedTypesCSP();
+
   source->AddLocalizedStrings(localized_strings);
   source->AddBoolean("profileShortcutsEnabled",
                      ProfileShortcutManager::IsFeatureEnabled());

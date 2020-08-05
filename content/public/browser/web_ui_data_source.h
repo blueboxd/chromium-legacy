@@ -118,6 +118,9 @@ class WebUIDataSource {
       network::mojom::CSPDirectiveName directive,
       const std::string& value) = 0;
 
+  // Removes directives related to Trusted Types from the CSP header.
+  virtual void DisableTrustedTypesCSP() = 0;
+
   // This method is deprecated and AddFrameAncestors should be used instead.
   virtual void DisableDenyXFrameOptions() = 0;
   virtual void AddFrameAncestor(const GURL& frame_ancestor) = 0;

@@ -18,4 +18,38 @@ mojom("mojom") {
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "proxy_resolver.mojom.HostResolveOperation"
+          cpp = "::net::ProxyResolveDnsOperation"
+        },
+
+        {
+          mojom = "proxy_resolver.mojom.ProxyInfo"
+          cpp = "::net::ProxyInfo"
+        },
+
+        {
+          mojom = "proxy_resolver.mojom.ProxyServer"
+          cpp = "::net::ProxyServer"
+        },
+
+        {
+          mojom = "proxy_resolver.mojom.ProxyServer::Scheme"
+          cpp = "::net::ProxyScheme"
+        },
+      ]
+      traits_headers = [
+        "//services/proxy_resolver/public/cpp/mojo_host_mojom_traits.h",
+        "//services/proxy_resolver/public/cpp/proxy_resolver_mojom_traits.h",
+      ]
+      traits_sources = [
+        "//services/proxy_resolver/public/cpp/mojo_host_mojom_traits.cc",
+        "//services/proxy_resolver/public/cpp/proxy_resolver_mojom_traits.cc",
+      ]
+    },
+  ]
 }

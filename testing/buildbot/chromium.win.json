@@ -1775,8 +1775,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter",
           "--browser-ui-tests-verify-pixels",
           "--enable-pixel-output-in-tests",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -2041,7 +2040,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "storage_service_unsandboxed_content_browsertests",
+        "name": "storage_service_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2280,7 +2279,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "storage_service_unsandboxed_extensions_browsertests",
+        "name": "storage_service_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2556,7 +2555,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "storage_service_unsandboxed_interactive_ui_tests",
+        "name": "storage_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3241,8 +3240,7 @@
       },
       {
         "args": [
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [],

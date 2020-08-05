@@ -251,7 +251,7 @@ ExecutionContext* ExecutionContextFromV8Wrappable(const DOMParser* parser) {
   return parser->GetWindow();
 }
 
-v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
+v8::MaybeLocal<v8::Value> CreateNamedConstructorFunction(
     ScriptState* script_state,
     v8::FunctionCallback callback,
     const char* func_name,
@@ -261,6 +261,10 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
   const DOMWrapperWorld& world = script_state->World();
   V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
   const void* callback_key = reinterpret_cast<const void*>(callback);
+
+  if (!script_state->ContextIsValid()) {
+    return v8::Undefined(isolate);
+  }
 
   // Named constructors are not interface objcets (despite that they're
   // pretending so), but we reuse the cache of interface objects, which just
@@ -286,7 +290,7 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
   V8PerContextData* per_context_data = V8PerContextData::From(context);
   v8::Local<v8::Function> function;
   if (!function_template->GetFunction(context).ToLocal(&function)) {
-    return v8::MaybeLocal<v8::Function>();
+    return v8::MaybeLocal<v8::Value>();
   }
   v8::Local<v8::Object> prototype_object =
       per_context_data->PrototypeForType(wrapper_type_info);
@@ -297,7 +301,7 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
                static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum |
                                                   v8::DontDelete))
            .To(&did_define)) {
-    return v8::MaybeLocal<v8::Function>();
+    return v8::MaybeLocal<v8::Value>();
   }
   CHECK(did_define);
   return function;

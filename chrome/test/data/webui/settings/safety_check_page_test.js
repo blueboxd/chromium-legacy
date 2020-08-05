@@ -232,8 +232,7 @@ suite('SafetyCheckPageUiTests', function() {
         SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD);
     fireSafetyCheckExtensionsEvent(
         SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS);
-    fireSafetyCheckChromeCleanerEvent(
-        SafetyCheckChromeCleanerStatus.REPORTER_FOUND_NOTHING);
+    fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.INFECTED);
     fireSafetyCheckParentEvent(SafetyCheckParentStatus.AFTER);
 
     flush();

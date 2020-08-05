@@ -1,6 +1,7 @@
 include_rules = [
   "+components/content_settings/core",
   "+components/google/core/common",
+  "+components/guest_view/browser",
   "+components/keyed_service/core",
   "+content/public/browser",
   "+content/public/common",

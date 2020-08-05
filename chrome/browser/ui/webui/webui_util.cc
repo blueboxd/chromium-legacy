@@ -19,6 +19,8 @@ void SetupPolymer3Defaults(content::WebUIDataSource* source) {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  // TODO(crbug.com/1098690): Trusted Type Polymer
+  source->DisableTrustedTypesCSP();
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);

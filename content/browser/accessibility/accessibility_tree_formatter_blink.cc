@@ -632,4 +632,8 @@ const std::string AccessibilityTreeFormatterBlink::GetDenyNodeString() {
   return "@BLINK-DENY-NODE:";
 }
 
+const std::string AccessibilityTreeFormatterBlink::GetRunUntilEventString() {
+  return "@BLINK-RUN-UNTIL-EVENT:";
+}
+
 }  // namespace content

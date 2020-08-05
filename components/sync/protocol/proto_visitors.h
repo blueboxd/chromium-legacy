@@ -10,6 +10,7 @@
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
+#include "components/sync/protocol/autofill_offer_specifics.pb.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/dictionary_specifics.pb.h"
@@ -134,6 +135,33 @@ VISIT_PROTO_FIELDS(const sync_pb::ArcPackageSpecifics& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillCullingFlags& proto) {
   VISIT(enabled);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::AutofillOfferSpecifics& proto) {
+  VISIT(id);
+  VISIT(offer_details_deep_link_clank);
+  VISIT(merchant_domain);
+  VISIT(merchant_app_package);
+  VISIT(offer_expiry_date);
+  VISIT(card_linked_offer_data);
+  VISIT(percentage_reward);
+  VISIT(fixed_amount_reward);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::AutofillOfferSpecifics::CardLinkedOfferData& proto) {
+  VISIT_REP(instrument_id);
+  VISIT_REP(legacy_instrument_id);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::AutofillOfferSpecifics::PercentageReward& proto) {
+  VISIT(percentage);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::AutofillOfferSpecifics::FixedAmountReward& proto) {
+  VISIT(amount);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {

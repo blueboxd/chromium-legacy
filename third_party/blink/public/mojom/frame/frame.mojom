@@ -116,7 +116,7 @@ enum PluginActionType {
 const uint16 kMaxTitleChars = 4096; // 4 * 1024;
 
 struct TextAutosizerPageInfo {
-  // LocalFrame width in density-independent pixels.
+  // Frame width in density-independent pixels.
   int32 main_frame_width;
 
   // Layout width in CSS pixels.
@@ -906,6 +906,9 @@ interface LocalMainFrame {
 //
 // This interface will only be provided when the RemoteFrame is a main frame.
 interface RemoteMainFrame {
+  // Makes the TextAutosizerPageInfo received from a local main frame available
+  // to remote main frame renderers.
+  UpdateTextAutosizerPageInfo(blink.mojom.TextAutosizerPageInfo page_info);
 };
 
 // Implemented in Browser, this interface defines local-main-frame-specific

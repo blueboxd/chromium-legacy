@@ -177,6 +177,7 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"setTimeTitle", IDS_SET_TIME_TITLE},

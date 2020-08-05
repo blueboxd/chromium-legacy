@@ -154,16 +154,22 @@ base::Value NetLogQuicAckFrameParams(const quic::QuicAckFrame* frame) {
               NetLogNumberValue(frame->ack_delay_time.ToMicroseconds()));
 
   base::Value missing(base::Value::Type::LIST);
+  quic::QuicPacketNumber smallest_observed;
   if (!frame->packets.Empty()) {
     // V34 and above express acked packets, but only print
     // missing packets, because it's typically a shorter list.
-    for (quic::QuicPacketNumber packet = frame->packets.Min();
+    smallest_observed = frame->packets.Min();
+    for (quic::QuicPacketNumber packet = smallest_observed;
          packet < frame->largest_acked; ++packet) {
       if (!frame->packets.Contains(packet)) {
         missing.Append(NetLogNumberValue(packet.ToUint64()));
       }
     }
+  } else {
+    smallest_observed = frame->largest_acked;
   }
+  dict.SetKey("smallest_observed",
+              NetLogNumberValue(smallest_observed.ToUint64()));
   dict.SetKey("missing_packets", std::move(missing));
 
   base::Value received(base::Value::Type::LIST);

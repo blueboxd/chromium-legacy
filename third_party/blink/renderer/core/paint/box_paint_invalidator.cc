@@ -374,21 +374,10 @@ void BoxPaintInvalidator::InvalidatePaint() {
   SavePreviousBoxGeometriesIfNeeded();
 }
 
-bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRectOrOverflowRects() {
-  // The LayoutView depends on the document element's layout overflow rect (see:
-  // ComputeViewBackgroundInvalidation) and needs to invalidate before the
-  // document element invalidates. There are few document elements so the
-  // previous layout overflow rect is always saved, rather than duplicating the
-  // logic save-if-needed logic for this special case.
-  if (box_.IsDocumentElement())
-    return true;
-
+bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRect() {
   // Replaced elements are clipped to the content box thus we need to check
   // for its size.
   if (box_.IsLayoutReplaced())
-    return true;
-
-  if (box_.HasSelfVisualOverflow())
     return true;
 
   const ComputedStyle& style = box_.StyleRef();
@@ -399,8 +388,22 @@ bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRectOrOverflowRects() {
        style.MaskLayers().AnyLayerUsesContentBox()) &&
       box_.ContentSize() != box_.Size())
     return true;
+
+  return false;
+}
+
+bool BoxPaintInvalidator::NeedsToSavePreviousOverflowData() {
+  if (box_.HasVisualOverflow() || box_.HasLayoutOverflow())
+    return true;
+
+  // If we don't have layout overflow, the layout overflow rect is the padding
+  // box rect, and we need to save it if the background depends on it.
+  // We also need to save the rect for the document element because the
+  // LayoutView may depend on the document element's layout overflow rect
+  // (see: ComputeViewBackgroundInvalidation).
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
-       BackgroundPaintsOntoScrollingContentsLayer()) &&
+       BackgroundPaintsOntoScrollingContentsLayer() ||
+       box_.IsDocumentElement()) &&
       box_.LayoutOverflowRect() != box_.BorderBoxRect())
     return true;
 
@@ -408,13 +411,18 @@ bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRectOrOverflowRects() {
 }
 
 void BoxPaintInvalidator::SavePreviousBoxGeometriesIfNeeded() {
-  box_.GetMutableForPainting().SavePreviousSize();
+  auto mutable_box = box_.GetMutableForPainting();
+  mutable_box.SavePreviousSize();
 
-  if (NeedsToSavePreviousContentBoxRectOrOverflowRects()) {
-    box_.GetMutableForPainting().SavePreviousContentBoxAndOverflowRects();
-  } else {
-    box_.GetMutableForPainting().ClearPreviousContentBoxAndOverflowRects();
-  }
+  if (NeedsToSavePreviousOverflowData())
+    mutable_box.SavePreviousOverflowData();
+  else
+    mutable_box.ClearPreviousOverflowData();
+
+  if (NeedsToSavePreviousContentBoxRect())
+    mutable_box.SavePreviousContentBoxRect();
+  else
+    mutable_box.ClearPreviousContentBoxRect();
 }
 
 }  // namespace blink

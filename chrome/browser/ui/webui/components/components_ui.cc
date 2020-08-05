@@ -44,6 +44,9 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate parse-html-subset;");
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"componentsTitle", IDS_COMPONENTS_TITLE},

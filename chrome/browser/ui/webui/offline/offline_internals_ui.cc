@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
@@ -21,6 +22,9 @@ OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOfflineInternalsHost);
 
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types parse-html-subset;");
   // Required resources.
   html_source->UseStringsJs();
   html_source->AddResourcePath("offline_internals.css",

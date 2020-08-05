@@ -127,11 +127,13 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -1077,70 +1079,85 @@ class TextAutosizerPageInfoInterceptor
   base::Optional<float> target_device_scale_adjustment_;
 };
 
-class OutgoingTextAutosizerPageInfoIPCWatcher {
+// TODO(tonikitoo): Move to fake_remote_frame.h|cc in case it is useful
+// for other tests.
+class FakeRemoteMainFrame : public blink::mojom::RemoteMainFrame {
  public:
-  OutgoingTextAutosizerPageInfoIPCWatcher(
-      RenderProcessHostImpl* rph,
-      base::Optional<int> target_width,
-      base::Optional<float> target_device_scale_adjustment)
-      : rph_(rph),
-        outgoing_message_seen_(false),
-        target_width_(target_width),
-        target_device_scale_adjustment_(target_device_scale_adjustment) {
-    rph_->SetIpcSendWatcherForTesting(
-        base::BindRepeating(&OutgoingTextAutosizerPageInfoIPCWatcher::OnMessage,
+  FakeRemoteMainFrame() = default;
+  ~FakeRemoteMainFrame() override = default;
+
+  void Init(blink::AssociatedInterfaceProvider* provider) {
+    provider->OverrideBinderForTesting(
+        blink::mojom::RemoteMainFrame::Name_,
+        base::BindRepeating(&FakeRemoteMainFrame::BindFrameHostReceiver,
                             base::Unretained(this)));
   }
-  ~OutgoingTextAutosizerPageInfoIPCWatcher() {
-    rph_->SetIpcSendWatcherForTesting(
-        base::RepeatingCallback<void(const IPC::Message& msg)>());
+
+  // blink::mojom::RemoteMainFrame overrides:
+  void UpdateTextAutosizerPageInfo(
+      blink::mojom::TextAutosizerPageInfoPtr page_info) override {}
+
+ private:
+  void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<blink::mojom::RemoteMainFrame>(
+            std::move(handle)));
   }
 
-  void WaitForIPC() {
-    if (outgoing_message_seen_)
-      return;
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
+  mojo::AssociatedReceiver<blink::mojom::RemoteMainFrame> receiver_{this};
+};
+
+// This class intercepts RenderFrameProxyHost creations, and overrides their
+// respective blink::mojom::RemoteMainFrame instances, so that it can watch for
+// text autosizer page info updates.
+class UpdateTextAutosizerInfoProxyObserver {
+ public:
+  UpdateTextAutosizerInfoProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        base::BindRepeating(&UpdateTextAutosizerInfoProxyObserver::
+                                RenderFrameProxyHostCreatedCallback,
+                            base::Unretained(this)));
+  }
+  ~UpdateTextAutosizerInfoProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        RenderFrameProxyHost::CreatedCallback());
   }
 
-  const blink::WebTextAutosizerPageInfo& GetTextAutosizerPageInfo() {
-    return remote_page_info_;
+  const blink::mojom::TextAutosizerPageInfo& TextAutosizerPageInfo(
+      RenderFrameProxyHost* proxy) {
+    return remote_frames_[proxy]->page_info();
   }
 
  private:
-  void OnMessage(const IPC::Message& message) {
-    IPC_BEGIN_MESSAGE_MAP(OutgoingTextAutosizerPageInfoIPCWatcher, message)
-      IPC_MESSAGE_HANDLER(
-          PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
-          ProcessMessage)
-    IPC_END_MESSAGE_MAP()
-  }
-
-  void ProcessMessage(const blink::WebTextAutosizerPageInfo& remote_page_info) {
-    if ((target_width_ && remote_page_info.main_frame_width != target_width_) ||
-        (target_device_scale_adjustment_ &&
-         remote_page_info.device_scale_adjustment !=
-             target_device_scale_adjustment_)) {
-      return;
+  class Remote : public FakeRemoteMainFrame {
+   public:
+    explicit Remote(RenderFrameProxyHost* proxy) {
+      Init(proxy->GetRemoteAssociatedInterfacesTesting());
     }
-    outgoing_message_seen_ = true;
-    remote_page_info_ = remote_page_info;
-    if (run_loop_)
-      run_loop_->Quit();
+    void UpdateTextAutosizerPageInfo(
+        blink::mojom::TextAutosizerPageInfoPtr page_info) override {
+      page_info_ = *page_info;
+    }
+    const blink::mojom::TextAutosizerPageInfo& page_info() {
+      return page_info_;
+    }
+
+   private:
+    blink::mojom::TextAutosizerPageInfo page_info_;
+  };
+
+  void RenderFrameProxyHostCreatedCallback(RenderFrameProxyHost* proxy_host) {
+    remote_frames_[proxy_host] = std::make_unique<Remote>(proxy_host);
   }
 
-  RenderProcessHostImpl* rph_;
-  bool outgoing_message_seen_;
-  base::Optional<int> target_width_;
-  base::Optional<float> target_device_scale_adjustment_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-  blink::WebTextAutosizerPageInfo remote_page_info_;
+  std::map<RenderFrameProxyHost*, std::unique_ptr<Remote>> remote_frames_;
 };
 
 // Make sure that when a relevant feature of the main frame changes, e.g. the
 // frame width, that the browser is notified.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
+  UpdateTextAutosizerInfoProxyObserver update_text_autosizer_info_observer;
+
   WebPreferences prefs = web_contents()->GetOrCreateWebPreferences();
   prefs.text_autosizing_enabled = true;
 
@@ -1152,23 +1169,19 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* b_child = root->child_at(0);
-  auto* child_rph = static_cast<RenderProcessHostImpl*>(
-      b_child->current_frame_host()->GetProcess());
 
   blink::mojom::TextAutosizerPageInfo received_page_info;
   auto interceptor = std::make_unique<TextAutosizerPageInfoInterceptor>(
       web_contents()->GetMainFrame());
 #if defined(OS_ANDROID)
   prefs.device_scale_adjustment += 0.05f;
-  OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
-      child_rph, base::Optional<int>(), prefs.device_scale_adjustment);
   // Change the device scale adjustment to trigger a RemotePageInfo update.
   web_contents()->SetWebPreferences(prefs);
   // Make sure we receive a ViewHostMsg from the main frame's renderer.
   interceptor->WaitForPageInfo(base::Optional<int>(),
                                prefs.device_scale_adjustment);
   // Make sure the correct page message is sent to the child.
-  ipc_watcher.WaitForIPC();
+  base::RunLoop().RunUntilIdle();
   received_page_info = interceptor->GetTextAutosizerPageInfo();
   EXPECT_EQ(prefs.device_scale_adjustment,
             received_page_info.device_scale_adjustment);
@@ -1180,13 +1193,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   gfx::Rect new_bounds(
       old_bounds.origin(),
       gfx::Size(old_bounds.width() - 20, old_bounds.height() - 20));
-  OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
-      child_rph, new_bounds.width(), base::Optional<float>());
+
   view->SetBounds(new_bounds);
   // Make sure we receive a ViewHostMsg from the main frame's renderer.
   interceptor->WaitForPageInfo(new_bounds.width(), base::Optional<float>());
   // Make sure the correct page message is sent to the child.
-  ipc_watcher.WaitForIPC();
+  base::RunLoop().RunUntilIdle();
   received_page_info = interceptor->GetTextAutosizerPageInfo();
   EXPECT_EQ(new_bounds.width(), received_page_info.main_frame_width);
 #endif  // defined(OS_ANDROID)
@@ -1206,8 +1218,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   ASSERT_TRUE(c_rph);
   ASSERT_NE(c_rph, root->current_frame_host()->GetProcess());
   ASSERT_NE(c_rph, b_child->current_frame_host()->GetProcess());
-  OutgoingTextAutosizerPageInfoIPCWatcher c_ipc_watcher(
-      c_rph, base::Optional<int>(), base::Optional<float>());
 
   // Create the subframe now.
   std::string create_frame_script = base::StringPrintf(
@@ -1219,16 +1229,21 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   ASSERT_EQ(2U, root->child_count());
 
   // Ensure IPC is sent.
-  c_ipc_watcher.WaitForIPC();
-  // TODO(hferreiro): use the comparison operator when
-  // PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames is migrated to
-  // Mojo.
+  base::RunLoop().RunUntilIdle();
+  blink::mojom::TextAutosizerPageInfo page_info_sent_to_remote_main_frames =
+      update_text_autosizer_info_observer.TextAutosizerPageInfo(
+          web_contents()
+              ->GetRenderManager()
+              ->GetAllProxyHostsForTesting()
+              .begin()
+              ->second.get());
+
   EXPECT_EQ(received_page_info.main_frame_width,
-            c_ipc_watcher.GetTextAutosizerPageInfo().main_frame_width);
+            page_info_sent_to_remote_main_frames.main_frame_width);
   EXPECT_EQ(received_page_info.main_frame_layout_width,
-            c_ipc_watcher.GetTextAutosizerPageInfo().main_frame_layout_width);
+            page_info_sent_to_remote_main_frames.main_frame_layout_width);
   EXPECT_EQ(received_page_info.device_scale_adjustment,
-            c_ipc_watcher.GetTextAutosizerPageInfo().device_scale_adjustment);
+            page_info_sent_to_remote_main_frames.device_scale_adjustment);
 }
 
 // Ensure that navigating subframes in --site-per-process mode works and the

@@ -71,4 +71,7 @@ UrlLoadParams LoadParamsFromActivity(NSUserActivity* activity);
 // Returns the recorded origin for the given activity.
 WindowActivityOrigin OriginOfActivity(NSUserActivity* activity);
 
+// Returns the tab identifier from the given activity.
+NSString* GetTabIDFromActivity(NSUserActivity* activity);
+
 #endif  // IOS_CHROME_BROWSER_WINDOW_ACTIVITIES_WINDOW_ACTIVITY_HELPERS_H_

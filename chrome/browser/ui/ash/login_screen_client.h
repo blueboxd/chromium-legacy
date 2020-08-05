@@ -121,6 +121,13 @@ class LoginScreenClient : public ash::LoginScreenClient {
       const std::string& locale,
       std::unique_ptr<base::ListValue> keyboard_layouts);
 
+  void ShowGaiaSigninInternal(const AccountId& prefilled_account);
+
+  // Called when the parent access code was validated with result equals
+  // |success|.
+  void OnParentAccessValidation(const AccountId& prefilled_account,
+                                bool success);
+
   Delegate* delegate_ = nullptr;
 
   // Captures authentication related user metrics for login screen.

@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -225,11 +226,20 @@ void OmniboxViewViews::ElideAnimation::Start(
   elide_to_rect_.set_y(elide_from_rect_.y());
   elide_to_rect_.set_height(elide_from_rect_.height());
 
+  // There is nothing to animate in this case, so return without starting.
+  if (elide_from_rect_ == elide_to_rect_ && starting_color_ == ending_color_)
+    return;
+
   starting_display_offset_ = render_text_->GetUpdatedDisplayOffset().x();
   // Shift the text to where |elide_to_bounds| starts, relative to the current
   // display rect.
-  ending_display_offset_ =
-      starting_display_offset_ - (elide_to_rect_.x() - elide_from_rect_.x());
+  if (base::i18n::IsRTL()) {
+    ending_display_offset_ = starting_display_offset_ +
+                             elide_from_rect_.right() - elide_to_rect_.right();
+  } else {
+    ending_display_offset_ =
+        starting_display_offset_ - (elide_to_rect_.x() - elide_from_rect_.x());
+  }
 
   animation_->Start();
 }
@@ -278,8 +288,10 @@ void OmniboxViewViews::ElideAnimation::AnimationProgressed(
       animation->GetCurrentValue(), elide_from_rect_, elide_to_rect_);
   DCHECK_EQ(bounds.y(), old_bounds.y());
   DCHECK_EQ(bounds.height(), old_bounds.height());
-  gfx::Rect shifted_bounds(old_bounds.x(), old_bounds.y(), bounds.width(),
-                           old_bounds.height());
+  gfx::Rect shifted_bounds(base::i18n::IsRTL()
+                               ? old_bounds.right() - bounds.width()
+                               : old_bounds.x(),
+                           old_bounds.y(), bounds.width(), old_bounds.height());
   render_text_->SetDisplayRect(shifted_bounds);
   current_offset_ = gfx::Tween::IntValueBetween(animation->GetCurrentValue(),
                                                 starting_display_offset_,
@@ -288,6 +300,13 @@ void OmniboxViewViews::ElideAnimation::AnimationProgressed(
 
   for (const auto& range : ranges_surrounding_simplified_domain_) {
     view_->ApplyColor(GetCurrentColor(), range);
+  }
+
+  // TODO(crbug.com/1101472): The smoothing gradient mask is not yet implemented
+  // correctly for RTL UI.
+  if (base::i18n::IsRTL()) {
+    view_->SchedulePaint();
+    return;
   }
 
   // The gradient mask should be a fixed width, except if that width would
@@ -986,7 +1005,7 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
   } else {
     friendly_suggestion_text_ =
         model()->popup_model()->GetAccessibilityLabelForCurrentSelection(
-            display_text, &friendly_suggestion_text_prefix_length_);
+            display_text, true, &friendly_suggestion_text_prefix_length_);
   }
 
   if (notify_text_changed)
@@ -1556,6 +1575,13 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
         popup_view_->GetViewAccessibility().GetUniqueId().Get();
     node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
                                    {popup_view_id});
+    OmniboxResultView* selected_result_view =
+        popup_view_->GetSelectedResultView();
+    if (selected_result_view) {
+      node_data->AddIntAttribute(
+          ax::mojom::IntAttribute::kActivedescendantId,
+          selected_result_view->GetViewAccessibility().GetUniqueId().Get());
+    }
   }
 
   base::string16::size_type entry_start;
@@ -2483,22 +2509,37 @@ void OmniboxViewViews::ElideURL() {
   }
 
   // |simplified_domain_rect| gives us the current bounds of the simplified
-  // domain substring. We shift it to the leftmost edge of the omnibox (as
-  // determined by the x position of the current display rect), and then scroll
-  // to where the simplified domain begins, so that the simplified domain
-  // appears at the leftmost edge.
+  // domain substring. We shift it to the leftmost (rightmost if UI is RTL) edge
+  // of the omnibox (as determined by the x position of the current display
+  // rect), and then scroll to where the simplified domain begins, so that the
+  // simplified domain appears at the leftmost/rightmost edge.
   gfx::Rect old_bounds = GetRenderText()->display_rect();
+  int shifted_simplified_domain_x_pos;
+  // The x position of the elided domain will depend on whether the UI is LTR or
+  // RTL.
+  if (base::i18n::IsRTL()) {
+    shifted_simplified_domain_x_pos =
+        old_bounds.right() - simplified_domain_rect.width();
+  } else {
+    shifted_simplified_domain_x_pos = old_bounds.x();
+  }
   // Use |old_bounds| for y and height values because the URL should never shift
   // vertically while eliding to/from simplified domain.
-  gfx::Rect shifted_simplified_domain_rect(old_bounds.x(), old_bounds.y(),
-                                           simplified_domain_rect.width(),
-                                           old_bounds.height());
+  gfx::Rect shifted_simplified_domain_rect(
+      shifted_simplified_domain_x_pos, old_bounds.y(),
+      simplified_domain_rect.width(), old_bounds.height());
   GetRenderText()->SetDisplayRect(shifted_simplified_domain_rect);
   // Scroll the text to where the simplified domain begins, relative to the
-  // leftmost edge of the current display rect.
-  GetRenderText()->SetDisplayOffset(
-      GetRenderText()->GetUpdatedDisplayOffset().x() -
-      (simplified_domain_rect.x() - old_bounds.x()));
+  // leftmost (rightmost if UI is RTL) edge of the current display rect.
+  if (base::i18n::IsRTL()) {
+    GetRenderText()->SetDisplayOffset(
+        GetRenderText()->GetUpdatedDisplayOffset().x() + old_bounds.right() -
+        simplified_domain_rect.right());
+  } else {
+    GetRenderText()->SetDisplayOffset(
+        GetRenderText()->GetUpdatedDisplayOffset().x() -
+        (simplified_domain_rect.x() - old_bounds.x()));
+  }
 
   // GetSubstringBounds() rounds outward internally, so there may be small
   // portions of text still showing. Set the ranges surrounding the simplified

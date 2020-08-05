@@ -118,6 +118,9 @@ const base::Feature kSafeBrowsingAvailableOnIOS{
 const base::Feature kSafeBrowsingSeparateNetworkContexts{
     "SafeBrowsingSeparateNetworkContexts", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSafeBrowsingRemoveCookies{
+    "SafeBrowsingRemoveCookies", base::FEATURE_DISABLED_BY_DEFAULT};
+
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 

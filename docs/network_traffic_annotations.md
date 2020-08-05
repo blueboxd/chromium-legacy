@@ -289,7 +289,7 @@ change list. These checks include:
   `tools/traffic_annotation/summary/grouping.xml`. When adding a new annotation,
   it must also be included in `grouping.xml` for reporting purposes (please
   refer to the **Annotations Review**).
-  
+
 
 ### Presubmit tests
 To perform tests prior to submit, one can use the `traffic_annotation_auditor`
@@ -324,7 +324,7 @@ one is updated, or deleted, this file should also be updated. To update the
 as specified in presubmit tests. But if it is not possible to do so (e.g., if
 you are changing the code from an unsupported platform or you don’t have a
 compiled build directory), the code can be submitted to the trybot and the test
-on trybot will tell you the required modifications. 
+on trybot will tell you the required modifications.
 
 In order to help make external reports easier, annotation unique ids should be
 mentioned in `tools/traffic_annotation/summary/grouping.xml`. Once a new

@@ -36,6 +36,7 @@ class AccessibilityTreeFormatterAuraLinux
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
+  const std::string GetRunUntilEventString() override;
 
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
@@ -745,6 +746,11 @@ const std::string AccessibilityTreeFormatterAuraLinux::GetDenyString() {
 
 const std::string AccessibilityTreeFormatterAuraLinux::GetDenyNodeString() {
   return "@AURALINUX-DENY-NODE:";
+}
+
+const std::string
+AccessibilityTreeFormatterAuraLinux::GetRunUntilEventString() {
+  return "@AURALINUX-RUN-UNTIL-EVENT:";
 }
 
 }  // namespace content

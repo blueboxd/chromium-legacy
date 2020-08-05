@@ -20,9 +20,6 @@ class NodeWrapper extends SAChildNode {
     /** @private {?SARootNode} */
     this.parent_ = parent;
 
-    /** @private {boolean} */
-    this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
-
     /** @private {RepeatedEventHandler} */
     this.locationChangedHandler_;
   }
@@ -105,7 +102,7 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   isGroup() {
-    return this.isGroup_;
+    return SwitchAccessPredicate.isGroup(this.baseNode_, this.parent_);
   }
 
   /** @override */

@@ -74,6 +74,8 @@ class CORE_EXPORT CascadeMap {
 
   using CustomMap = HashMap<CSSPropertyName, CascadePriority>;
 
+  const CustomMap& GetCustomMap() const { return custom_properties_; }
+
  private:
   uint64_t high_priority_ = 0;
   bool has_important_ = false;

@@ -143,8 +143,12 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<MockFidoDevice> pending_mock_platform_device_;
   TestMakeCredentialRequestCallback cb_;
-  base::flat_set<FidoTransportProtocol> supported_transports_ =
-      GetAllTransportProtocols();
+  base::flat_set<FidoTransportProtocol> supported_transports_ = {
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+      FidoTransportProtocol::kNearFieldCommunication,
+      FidoTransportProtocol::kInternal,
+  };
 };
 
 TEST_F(FidoMakeCredentialHandlerTest, TransportAvailabilityInfo) {

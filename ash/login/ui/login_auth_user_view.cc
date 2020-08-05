@@ -745,8 +745,8 @@ struct LoginAuthUserView::AnimationState {
     non_pin_y_start_in_screen = view->GetBoundsInScreen().y();
     pin_start_in_screen = view->pin_view_->GetBoundsInScreen().origin();
 
-    had_pinpad = view->show_pinpad_;
-    had_password = view->HasAuthMethod(LoginAuthUserView::AUTH_PASSWORD);
+    had_pinpad = view->ShouldShowPinPad();
+    had_password = view->ShouldShowPasswordField();
     had_fingerprint = view->HasAuthMethod(LoginAuthUserView::AUTH_FINGERPRINT);
   }
 
@@ -978,21 +978,23 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
-  SetAuthMethods(auth_methods_, false /*show_pinpad*/);
+  SetAuthMethods(auth_methods_);
   user_view_->UpdateForUser(user, false /*animate*/);
 }
 
 LoginAuthUserView::~LoginAuthUserView() = default;
 
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
-                                       bool show_pinpad) {
-  show_pinpad_ = show_pinpad;
+                                       AuthMethodsMetadata auth_metadata) {
   bool had_password = HasAuthMethod(AUTH_PASSWORD);
 
+  // Apply changes and determine the new state of input fields.
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
-  bool has_password = HasAuthMethod(AUTH_PASSWORD);
-  bool has_pin = HasAuthMethod(AUTH_PIN);
-  bool has_tap = HasAuthMethod(AUTH_TAP);
+  auth_metadata_ = auth_metadata;
+  UpdateInputFieldMode();
+
+  bool has_password = ShouldShowPasswordField();
+  bool has_pinpad = ShouldShowPinPad();
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
   bool has_challenge_response = HasAuthMethod(AUTH_CHALLENGE_RESPONSE);
@@ -1008,10 +1010,10 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Adjust the PIN keyboard visibility before the password textfield's one, so
   // that when both are about to be hidden the focus doesn't jump to the "1"
   // keyboard button, causing unexpected accessibility effects.
-  pin_view_->SetVisible(show_pinpad);
+  pin_view_->SetVisible(has_pinpad);
 
   password_view_->SetEnabled(has_password);
-  password_view_->SetEnabledOnEmptyPassword(has_tap);
+  password_view_->SetEnabledOnEmptyPassword(HasAuthMethod(AUTH_TAP));
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
@@ -1021,31 +1023,20 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
     password_view_->RequestFocus();
 
   fingerprint_view_->SetVisible(has_fingerprint);
-  fingerprint_view_->SetCanUsePin(has_pin);
+  fingerprint_view_->SetCanUsePin(HasAuthMethod(AUTH_PIN));
   challenge_response_view_->SetVisible(has_challenge_response);
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
-  if (has_fingerprint && !show_pinpad) {
+  if (has_fingerprint && !has_pinpad) {
     padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
-  } else if (has_challenge_response && !show_pinpad) {
+  } else if (has_challenge_response && !has_pinpad) {
     padding_view_height =
         kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
   }
   padding_below_password_view_->SetPreferredSize(
       gfx::Size(kNonEmptyWidthDp, padding_view_height));
 
-  // Note: |has_tap| must have higher priority than |has_pin| when
-  // determining the placeholder.
-  if (has_tap) {
-    password_view_->SetPlaceholderText(
-        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER));
-  } else if (has_pin) {
-    password_view_->SetPlaceholderText(
-        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
-  } else {
-    password_view_->SetPlaceholderText(
-        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER));
-  }
+  password_view_->SetPlaceholderText(GetPasswordViewPlaceholder());
   const std::string& user_display_email =
       current_user().basic_user_info.display_email;
   password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
@@ -1055,8 +1046,8 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
   // on it will not do anything (such as swapping users).
-  user_view_->SetForceOpaque(has_password || hide_auth);
-  user_view_->SetTapEnabled(!has_password);
+  user_view_->SetForceOpaque(HasAuthMethod(AUTH_PASSWORD) || hide_auth);
+  user_view_->SetTapEnabled(!HasAuthMethod(AUTH_PASSWORD));
   // Tapping the user view will trigger the online sign-in flow when
   // |force_online_sign_in| is true.
   if (force_online_sign_in)
@@ -1105,8 +1096,9 @@ void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
 void LoginAuthUserView::ApplyAnimationPostLayout() {
   DCHECK(cached_animation_state_);
 
-  bool has_password = HasAuthMethod(AUTH_PASSWORD);
-  bool has_pinpad = show_pinpad_;
+  bool has_password = ShouldShowPasswordField();
+  bool had_password = cached_animation_state_->had_password;
+  bool has_pinpad = ShouldShowPinPad();
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
 
   ////////
@@ -1139,12 +1131,12 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
   ////////
   // Fade the password view if it is being hidden or shown.
 
-  if (cached_animation_state_->had_password != has_password) {
+  if (had_password != has_password) {
     float opacity_start = 0, opacity_end = 1;
     if (!has_password)
       std::swap(opacity_start, opacity_end);
 
-    if (cached_animation_state_->had_password)
+    if (had_password)
       password_view_->SetVisible(true);
 
     password_view_->layer()->SetOpacity(opacity_start);
@@ -1155,7 +1147,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
           login_constants::kChangeUserAnimationDurationMs));
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
-      if (cached_animation_state_->had_password && !has_password) {
+      if (had_password && !has_password) {
         settings.AddObserver(
             new ClearPasswordAndHideAnimationObserver(password_view_));
       }
@@ -1359,6 +1351,51 @@ void LoginAuthUserView::AttemptAuthenticateWithChallengeResponse() {
           current_user().basic_user_info.account_id,
           base::BindOnce(&LoginAuthUserView::OnChallengeResponseAuthComplete,
                          weak_factory_.GetWeakPtr()));
+}
+
+void LoginAuthUserView::UpdateInputFieldMode() {
+  if (!HasAuthMethod(AUTH_PASSWORD)) {
+    input_field_mode_ = InputFieldMode::DISABLED;
+    return;
+  }
+  if (!HasAuthMethod(AUTH_PIN)) {
+    input_field_mode_ = InputFieldMode::PASSWORD_ONLY;
+    return;
+  }
+
+  input_field_mode_ = InputFieldMode::PIN_AND_PASSWORD;
+  return;
+}
+
+bool LoginAuthUserView::ShouldShowPinPad() const {
+  if (auth_metadata_.virtual_keyboard_visible)
+    return false;
+  switch (input_field_mode_) {
+    case InputFieldMode::DISABLED:
+      return false;
+    case InputFieldMode::PASSWORD_ONLY:
+      return auth_metadata_.show_pinpad_for_pw;
+    case InputFieldMode::PIN_AND_PASSWORD:
+      return true;
+  }
+}
+
+bool LoginAuthUserView::ShouldShowPasswordField() const {
+  return input_field_mode_ == InputFieldMode::PASSWORD_ONLY ||
+         input_field_mode_ == InputFieldMode::PIN_AND_PASSWORD;
+}
+
+base::string16 LoginAuthUserView::GetPasswordViewPlaceholder() const {
+  // Note: |AUTH_TAP| must have higher priority than |AUTH_PIN| when
+  // determining the placeholder.
+  if (HasAuthMethod(AUTH_TAP))
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER);
+  if (input_field_mode_ == InputFieldMode::PIN_AND_PASSWORD)
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER);
+
+  return l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER);
 }
 
 }  // namespace ash

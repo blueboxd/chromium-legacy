@@ -26,6 +26,7 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
  private:
   void HandleMainViewInitialize(const base::ListValue* args);
   void HandleLaunchSelectedProfile(const base::ListValue* args);
+  void HandleLaunchGuestProfile(const base::ListValue* args);
   void HandleAskOnStartupChanged(const base::ListValue* args);
   void HandleGetNewProfileSuggestedThemeInfo(const base::ListValue* args);
   void HandleLoadSignInProfileCreationFlow(const base::ListValue* args);

@@ -303,7 +303,8 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
             }
         };
 
-        new Thread(inflateTask).start();
+        // Run inflation task on UI thread due to threading issues in M85. See crbug.com/1112352
+        inflateTask.run();
     }
 
     private void onLayoutInflated(ViewGroup mainView) {

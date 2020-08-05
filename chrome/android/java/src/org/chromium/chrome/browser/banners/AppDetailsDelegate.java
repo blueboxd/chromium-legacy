@@ -4,12 +4,9 @@
 
 package org.chromium.chrome.browser.banners;
 
-import androidx.annotation.VisibleForTesting;
-
 /**
  * Fetches data about the given app.
  */
-@VisibleForTesting
 public abstract class AppDetailsDelegate {
     /**
      * Class to inform when the app's details have been retrieved.
@@ -19,7 +16,6 @@ public abstract class AppDetailsDelegate {
          * Called when the task has finished.
          * @param data Data about the requested package.  Will be null if retrieval failed.
          */
-        @VisibleForTesting
         public void onAppDetailsRetrieved(AppData data);
     }
 

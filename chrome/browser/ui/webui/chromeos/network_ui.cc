@@ -467,6 +467,9 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
+
+  html->DisableTrustedTypesCSP();
+
   html->AddLocalizedStrings(localized_strings);
   network_health::AddLocalizedStrings(html);
 

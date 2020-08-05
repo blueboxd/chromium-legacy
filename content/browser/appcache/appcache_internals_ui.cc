@@ -365,6 +365,7 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->DisableTrustedTypesCSP();
 
   source->UseStringsJs();
   source->AddResourcePath("appcache_internals.js", IDR_APPCACHE_INTERNALS_JS);

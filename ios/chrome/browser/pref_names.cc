@@ -148,4 +148,6 @@ const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
 // zoom level (i.e. 1 means no change, 100%).
 const char kIosUserZoomMultipliers[] = "ios.user_zoom_multipliers";
 
+const char kPrintingEnabled[] = "printing.enabled";
+
 }  // namespace prefs

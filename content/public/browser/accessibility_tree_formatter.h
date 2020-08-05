@@ -186,6 +186,17 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
   virtual const std::string GetAllowString() = 0;
   virtual const std::string GetDenyString() = 0;
   virtual const std::string GetDenyNodeString() = 0;
+
+  // A string that indicates event recording should continue at least until a
+  // specific event has been received.
+  // Overridden by each platform subclass.
+  // Example win value:
+  //   GetRunUntilEventString() -> "@WIN-RUN-UNTIL-EVENT"
+  // Example html:
+  // <!--
+  // @WIN-RUN-UNTIL-EVENT:IA2_EVENT_TEXT_CARET_MOVED
+  // -->
+  virtual const std::string GetRunUntilEventString() = 0;
 };
 
 }  // namespace content

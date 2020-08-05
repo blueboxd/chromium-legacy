@@ -138,8 +138,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -179,8 +178,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1620,8 +1618,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1660,8 +1657,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1950,8 +1946,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1990,8 +1985,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2276,8 +2270,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2315,8 +2308,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2838,8 +2830,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2868,8 +2860,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2898,8 +2890,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2928,8 +2920,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2949,8 +2941,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2968,8 +2959,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2989,8 +2980,7 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_cr_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3008,8 +2998,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3039,8 +3029,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3069,8 +3059,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3101,8 +3091,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3133,8 +3123,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-26.21.14.3102",
-              "os": "Windows-10",
+              "gpu": "10de:1cb3-26.21.14.3102|10de:1cb3-27.21.14.5148",
+              "os": "Windows-10|Windows-10-18363",
               "pool": "chromium.tests.gpu"
             }
           ],

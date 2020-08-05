@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 using content::WebContents;
 
@@ -29,6 +30,9 @@ content::WebUIDataSource* CreateQuotaInternalsHTMLSource() {
   source->AddResourcePath(
       "message_dispatcher.js", IDR_QUOTA_INTERNALS_MESSAGE_DISPATCHER_JS);
   source->SetDefaultResource(IDR_QUOTA_INTERNALS_MAIN_HTML);
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types cr-ui-tree-js-static;");
   return source;
 }
 

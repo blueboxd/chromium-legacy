@@ -35,7 +35,9 @@ class ASH_EXPORT ParentAccessController : PinRequestView::Delegate {
     kTimeChangeLoginScreen = 1,
     kTimeChangeInSession = 2,
     kTimezoneChange = 3,
-    kMaxValue = kTimezoneChange,
+    kAddUserLoginScreen = 4,
+    kReauhLoginScreen = 5,
+    kMaxValue = kReauhLoginScreen,
   };
 
   // Histogram to log actions that originated in parent access dialog.

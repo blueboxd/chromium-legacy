@@ -338,6 +338,13 @@ RenderFrameProxyHost::GetAssociatedRemoteFrame() {
   return remote_frame_;
 }
 
+const mojo::AssociatedRemote<blink::mojom::RemoteMainFrame>&
+RenderFrameProxyHost::GetAssociatedRemoteMainFrame() {
+  if (!remote_main_frame_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&remote_main_frame_);
+  return remote_main_frame_;
+}
+
 const mojo::AssociatedRemote<content::mojom::RenderFrameProxy>&
 RenderFrameProxyHost::GetAssociatedRenderFrameProxy() {
   if (!render_frame_proxy_)

@@ -1193,9 +1193,6 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW" desc="Text for a button that allows users to review safety check findings, such as compromised passwords or blocklisted extensions.">
     Review
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_ERROR_DETAILS" desc="Accessibility text for a button that allows users to review error details.">
-    Review error details
-  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>
@@ -1261,9 +1258,6 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_BUTTON_ARIA_LABEL" desc="Accessiblity text for the button that allows users to review and remove harmful software found on their computer.">
     Review device software
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_MORE_BUTTON_ARIA_LABEL" desc="Accessiblity text for the button that leads users to the Chrome cleaner page, which explains details about the device softrware check.">
-    Show details of the device software check
   </message>
 
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">

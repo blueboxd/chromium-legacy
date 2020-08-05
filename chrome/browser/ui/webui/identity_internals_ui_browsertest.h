@@ -22,8 +22,9 @@ class IdentityInternalsUIBrowserTest : public WebUIBrowserTest {
   void SetupTokenCacheWithStoreApp();
 
  private:
-  void AddTokenToCache(const std::string token_id,
-                       const std::string extension_id,
+  void AddTokenToCache(const std::string& token_id,
+                       const std::string& extension_id,
+                       const std::string& account_id,
                        const std::vector<std::string>& scopes,
                        int time_to_live);
 

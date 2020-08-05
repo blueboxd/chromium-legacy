@@ -133,6 +133,7 @@ template("chrome_ios_eg2_test_app_host") {
       "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
       "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
       "CHROMIUM_BUNDLE_ID=gtest.$target_name",
+      "IOS_MOVE_TAB_ACTIVITY_TYPE=$ios_move_tab_activity_type",
     ]
   }
 }

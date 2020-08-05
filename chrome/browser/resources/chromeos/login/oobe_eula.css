@@ -17,7 +17,7 @@ a {
   height: 300px;
 }
 
-#installationSettings,
+#securitySettings,
 #logging {
   font-size: 13px;
   min-height: unset;
@@ -28,7 +28,7 @@ a {
 }
 
 #additionalTerms,
-#installationSettings,
+#securitySettings,
 #logging {
   margin-top: 16px;
 }
@@ -65,6 +65,6 @@ cr-checkbox {
   user-select: text;
 }
 
-.installation-settings-spinner {
+.security-settings-spinner {
   margin-inline-end: 5px;
 }

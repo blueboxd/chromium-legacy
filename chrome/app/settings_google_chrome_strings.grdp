@@ -159,12 +159,6 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_INFECTED" desc="This text describes that Chrome found harmful software on the computer.">
     Chrome found harmful software on your computer
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_ERROR" desc="This text describes that Chrome can't check for unwanted software due to an error.">
-    An error occurred while Chrome was checking the device software
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_DISABLED_BY_ADMIN" desc="This text describes that Chrome can't check for unwanted software because an administrator disabled the feature.">
-    Your administrator has disabled Chrome's check for harmful software
-  </message>
 
   <!-- People Page -->
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITH_COUNTS_SINGULAR" desc="Warning message displayed in the Sign out of Chrome dialog that indicates profile browsing data will be removed from the device.">

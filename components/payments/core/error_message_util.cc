@@ -9,27 +9,46 @@
 
 #include "base/check.h"
 #include "base/strings/string_util.h"
+#include "components/payments/core/error_strings.h"
 #include "components/payments/core/native_error_strings.h"
 
 namespace payments {
+
+namespace {
+
+template <class Collection>
+std::string concatNamesWithQuotesAndCommma(const Collection& names) {
+  std::vector<std::string> with_quotes(names.size());
+  std::transform(
+      names.begin(), names.end(), with_quotes.begin(),
+      [](const std::string& method_name) { return "\"" + method_name + "\""; });
+  std::string result = base::JoinString(with_quotes, ", ");
+  return result;
+}
+
+}  // namespace
 
 std::string GetNotSupportedErrorMessage(const std::set<std::string>& methods) {
   if (methods.empty())
     return errors::kGenericPaymentMethodNotSupportedMessage;
 
-  std::vector<std::string> with_quotes(methods.size());
-  std::transform(
-      methods.begin(), methods.end(), with_quotes.begin(),
-      [](const std::string& method_name) { return "\"" + method_name + "\""; });
-
   std::string output;
   bool replaced = base::ReplaceChars(
-      with_quotes.size() == 1
-          ? errors::kSinglePaymentMethodNotSupportedFormat
-          : errors::kMultiplePaymentMethodsNotSupportedFormat,
-      "$", base::JoinString(with_quotes, ", "), &output);
+      methods.size() == 1 ? errors::kSinglePaymentMethodNotSupportedFormat
+                          : errors::kMultiplePaymentMethodsNotSupportedFormat,
+      "$", concatNamesWithQuotesAndCommma(methods), &output);
   DCHECK(replaced);
   return output;
 }
 
+std::string GetAppsSkippedForPartialDelegationErrorMessage(
+    const std::vector<std::string>& skipped_app_names) {
+  std::string output;
+  bool replaced = base::ReplaceChars(
+      errors::kSkipAppForPartialDelegation, "$",
+      concatNamesWithQuotesAndCommma(skipped_app_names), &output);
+
+  DCHECK(replaced);
+  return output;
+}
 }  // namespace payments

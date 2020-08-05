@@ -986,15 +986,11 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   if (!root.UpdateLayoutAndCheckValidity())
     return;
 
-  // Do a breadth-first explore of the whole blink AX tree.
-  base::queue<WebAXObject> objs_to_explore;
-  objs_to_explore.push(root);
-  while (objs_to_explore.size()) {
-    WebAXObject obj = objs_to_explore.front();
-    objs_to_explore.pop();
-
+  blink::WebVector<WebAXObject> changed_bounds_objects;
+  root.GetAllObjectsWithChangedBounds(changed_bounds_objects);
+  for (const WebAXObject& obj : changed_bounds_objects) {
     // See if we had a previous location. If not, this whole subtree must
-    // be new, so don't continue to explore this branch.
+    // be new, so no need to update.
     int id = obj.AxID();
     if (!tree_source_->HasCachedBoundingBox(id))
       continue;
@@ -1007,12 +1003,6 @@ void RenderAccessibilityImpl::SendLocationChanges() {
 
     // Save the new location.
     tree_source_->SetCachedBoundingBox(id, new_location);
-
-    // Explore children of this object.
-    std::vector<WebAXObject> children;
-    tree_source_->GetChildren(obj, &children);
-    for (WebAXObject& child : children)
-      objs_to_explore.push(child);
   }
 
   // Ensure that the number of cached bounding boxes doesn't exceed the

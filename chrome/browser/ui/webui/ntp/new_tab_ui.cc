@@ -205,6 +205,13 @@ std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicy(
            "chrome-search://theme chrome://theme data:;";
   } else if (directive == network::mojom::CSPDirectiveName::ChildSrc) {
     return "child-src chrome-search://most-visited;";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    // TODO(crbug.com/1098687): Trusted Type New Tab Page
+    // This removes require-trusted-types-for and trusted-types directives
+    // from the CSP header.
+    return std::string();
   }
 
   return content::URLDataSource::GetContentSecurityPolicy(directive);

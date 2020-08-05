@@ -1402,6 +1402,7 @@ SelectionModel RenderText::EdgeSelectionModel(
 SelectionModel RenderText::LineSelectionModel(size_t line_index,
                                               VisualCursorDirection direction) {
   DCHECK(direction == CURSOR_LEFT || direction == CURSOR_RIGHT);
+  DCHECK_LT(line_index, GetShapedText()->lines().size());
   const internal::Line& line = GetShapedText()->lines()[line_index];
   if (line.segments.empty()) {
     // Only the last line can be empty.

@@ -89,8 +89,7 @@ void EulaScreenHandler::DeclareLocalizedValues(
   builder->Add("back", IDS_EULA_BACK_BUTTON);
   builder->Add("next", IDS_EULA_NEXT_BUTTON);
   builder->Add("acceptAgreement", IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON);
-  builder->Add("eulaSystemInstallationSettings",
-               IDS_EULA_SYSTEM_SECURITY_SETTING);
+  builder->Add("eulaSystemSecuritySettings", IDS_EULA_SYSTEM_SECURITY_SETTING);
 
   builder->Add("eulaTpmDesc", IDS_EULA_SECURE_MODULE_DESCRIPTION);
   builder->Add("eulaTpmKeyDesc", IDS_EULA_SECURE_MODULE_KEY_DESCRIPTION);
@@ -100,7 +99,7 @@ void EulaScreenHandler::DeclareLocalizedValues(
   ::login::GetSecureModuleUsed(base::BindOnce(
       &EulaScreenHandler::UpdateLocalizedValues, weak_factory_.GetWeakPtr()));
 
-  builder->Add("eulaSystemInstallationSettingsOkButton", IDS_OK);
+  builder->Add("eulaSystemSecuritySettingsOkButton", IDS_OK);
   builder->Add("termsOfServiceLoading", IDS_TERMS_OF_SERVICE_SCREEN_LOADING);
 #if BUILDFLAG(ENABLE_RLZ)
   builder->AddF("eulaRlzDesc",
@@ -122,14 +121,6 @@ void EulaScreenHandler::DeclareLocalizedValues(
   builder->Add("oobeEulaIframeLabel", IDS_OOBE_EULA_IFRAME_LABEL);
   builder->Add("oobeEulaAcceptAndContinueButtonText",
                IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT);
-}
-
-void EulaScreenHandler::DeclareJSCallbacks() {
-  AddCallback("eulaOnLearnMore", &EulaScreenHandler::HandleOnLearnMore);
-  AddCallback("eulaOnInstallationSettingsPopupOpened",
-              &EulaScreenHandler::HandleOnInstallationSettingsPopupOpened);
-  AddCallback("EulaScreen.usageStatsEnabled",
-              &EulaScreenHandler::HandleUsageStatsEnabled);
 }
 
 void EulaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -154,23 +145,18 @@ void EulaScreenHandler::Initialize() {
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
   CallJS("login.EulaScreen.setTpmPassword", tpm_password);
+  CallJS("login.EulaScreen.showSecuritySettingsDialog");
 }
 
-void EulaScreenHandler::HandleOnLearnMore() {
+void EulaScreenHandler::ShowStatsUsageLearnMore() {
   if (!help_app_.get())
     help_app_ = new HelpAppLauncher(
         LoginDisplayHost::default_host()->GetNativeWindow());
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
 }
 
-void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened() {
-  if (screen_)
-    screen_->InitiatePasswordFetch();
-}
-
-void EulaScreenHandler::HandleUsageStatsEnabled(bool enabled) {
-  if (screen_)
-    screen_->SetUsageStatsEnabled(enabled);
+void EulaScreenHandler::ShowAdditionalTosDialog() {
+  CallJS("login.EulaScreen.showAdditionalTosDialog");
 }
 
 void EulaScreenHandler::UpdateLocalizedValues(

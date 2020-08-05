@@ -43,7 +43,9 @@ class ParentAccessService {
     // the settings page (in-session) and the tray bubble (out-session).
     kUpdateClock,
     // Change timezone from the settings page.
-    kUpdateTimezone
+    kUpdateTimezone,
+    // Online login with Gaia.
+    kOnlineLogin
   };
 
   // Registers preferences.

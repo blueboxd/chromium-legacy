@@ -48,6 +48,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void DisableContentSecurityPolicy() override;
   void OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName directive,
                                      const std::string& value) override;
+  void DisableTrustedTypesCSP() override;
   void DisableDenyXFrameOptions() override;
   void EnableReplaceI18nInJS() override;
   std::string GetSource() override;

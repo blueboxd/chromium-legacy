@@ -4,6 +4,8 @@
 
 #include "components/exo/seat.h"
 
+#include <memory>
+
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #endif  // defined(OS_CHROMEOS)
@@ -24,7 +26,9 @@
 #include "components/exo/wm_helper.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -108,8 +112,7 @@ void Seat::SetSelection(DataSource* source) {
   }
   selection_source_ = std::make_unique<ScopedDataSource>(source, this);
   scoped_refptr<RefCountedScopedClipboardWriter> writer =
-      base::MakeRefCounted<RefCountedScopedClipboardWriter>(
-          ui::ClipboardBuffer::kCopyPaste);
+      base::MakeRefCounted<RefCountedScopedClipboardWriter>();
 
   base::RepeatingClosure data_read_callback = base::BarrierClosure(
       kMaxClipboardDataTypes,
@@ -127,6 +130,20 @@ void Seat::SetSelection(DataSource* source) {
                      data_read_callback),
       data_read_callback);
 }
+
+class Seat::RefCountedScopedClipboardWriter
+    : public ui::ScopedClipboardWriter,
+      public base::RefCounted<RefCountedScopedClipboardWriter> {
+ public:
+  explicit RefCountedScopedClipboardWriter()
+      : ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste,
+                              std::make_unique<ui::ClipboardDataEndpoint>(
+                                  ui::EndpointType::kVm)) {}
+
+ private:
+  friend class base::RefCounted<RefCountedScopedClipboardWriter>;
+  virtual ~RefCountedScopedClipboardWriter() = default;
+};
 
 void Seat::OnTextRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                       base::OnceClosure callback,

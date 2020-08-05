@@ -133,6 +133,7 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInternetDetailDialogHost);
+  source->DisableTrustedTypesCSP();
   source->AddBoolean("showTechnologyBadge",
                      !ash::features::IsSeparateNetworkIconsEnabled());
   AddInternetStrings(source);

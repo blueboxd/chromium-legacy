@@ -595,11 +595,12 @@ TEST_F(MenuRunnerImplTest, FocusOnMenuClose) {
       new internal::MenuRunnerImpl(menu_item_view());
 
   // Create test button that has focus.
+  auto button_managed = std::make_unique<LabelButton>();
+  button_managed->SetID(1);
+  button_managed->SetSize(gfx::Size(20, 20));
   LabelButton* button =
-      new LabelButton(nullptr, base::string16(), style::CONTEXT_BUTTON);
-  button->SetID(1);
-  button->SetSize(gfx::Size(20, 20));
-  owner()->GetRootView()->AddChildView(button);
+      owner()->GetRootView()->AddChildView(std::move(button_managed));
+
   button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   button->GetWidget()->widget_delegate()->SetCanActivate(true);
   button->GetWidget()->Activate();

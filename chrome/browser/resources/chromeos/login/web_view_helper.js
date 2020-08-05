@@ -13,9 +13,10 @@ class WebViewHelper {
    * The content is loaded via XHR and is sent to web view via data url so that
    * it is properly sandboxed.
    *
-   * @param {!WebView} webView web view element to host the content.
+   * @param {!Object} webView is a WebView element to host the content.
    * @param {string} url URL to load the content from.
-   * @param {!ContentType} contentType type of the content to load.
+   * @param {!WebViewHelper.ContentType} contentType type of the content to
+   *     load.
    */
   static loadUrlContentToWebView(webView, url, contentType) {
     assert(webView.tagName === 'WEBVIEW');
@@ -59,7 +60,8 @@ class WebViewHelper {
         onError();
         return;
       }
-      setContents(xhr.response);
+      let contents = /** @type {string} */ (xhr.response);
+      setContents(contents);
     };
 
     try {

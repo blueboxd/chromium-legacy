@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/media_session/public/cpp/media_session_mojom_traits.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using media_session::mojom::MediaImageBitmap;

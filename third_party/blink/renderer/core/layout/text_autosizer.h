@@ -34,7 +34,7 @@
 #include <unicode/uchar.h>
 #include <memory>
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -54,6 +54,18 @@ class LayoutText;
 class LocalFrame;
 class Page;
 class SubtreeLayoutScope;
+
+inline bool operator==(const mojom::blink::TextAutosizerPageInfo& lhs,
+                       const mojom::blink::TextAutosizerPageInfo& rhs) {
+  return lhs.main_frame_width == rhs.main_frame_width &&
+         lhs.main_frame_layout_width == rhs.main_frame_layout_width &&
+         lhs.device_scale_adjustment == rhs.device_scale_adjustment;
+}
+
+inline bool operator!=(const mojom::blink::TextAutosizerPageInfo& lhs,
+                       const mojom::blink::TextAutosizerPageInfo& rhs) {
+  return !(lhs == rhs);
+}
 
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/TextAutosizer
@@ -282,7 +294,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
     DISALLOW_NEW();
     PageInfo() = default;
 
-    WebTextAutosizerPageInfo shared_info_;
+    mojom::blink::TextAutosizerPageInfo shared_info_;
     float accessibility_font_scale_factor_;
     bool page_needs_autosizing_;
     bool has_autosized_;

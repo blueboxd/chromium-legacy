@@ -8,6 +8,7 @@ sync_protocol_bases = [
   "app_specifics",
   "app_list_specifics",
   "arc_package_specifics",
+  "autofill_offer_specifics",
   "autofill_specifics",
   "bookmark_model_metadata",
   "bookmark_specifics",

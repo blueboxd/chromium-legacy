@@ -113,7 +113,7 @@ BinaryUploadService::BinaryUploadService(Profile* profile)
       binary_fcm_service_(BinaryFCMService::Create(profile)),
       profile_(profile),
       weakptr_factory_(this) {
-  DCHECK(base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts));
+  DCHECK(base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies));
 }
 
 BinaryUploadService::BinaryUploadService(

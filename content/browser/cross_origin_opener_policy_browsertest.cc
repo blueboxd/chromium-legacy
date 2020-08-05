@@ -1759,7 +1759,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
 // Navigates in between two pages from a different browsing context group. Then
 // use the history API to navigate back and forth. Check their virtual browsing
 // context group isn't restored.
-// The goal is to spot differences when the BackForwardCache is enabled.
+// The goal is to spot differences when the BackForwardCache is enabled. See
+// https://crbug.com/1109648.
 IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, HistoryNavigation) {
   GURL url_a = https_server()->GetURL(
       "a.com",
@@ -1778,24 +1779,32 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, HistoryNavigation) {
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   int group_2 = VirtualBrowsingContextGroup(web_contents());
 
-  EXPECT_TRUE(ExecJs(web_contents(), "history.back()"));
+  web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   int group_3 = VirtualBrowsingContextGroup(web_contents());
 
-  EXPECT_TRUE(ExecJs(web_contents(), "history.forward()"));
+  web_contents()->GetController().GoForward();
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   int group_4 = VirtualBrowsingContextGroup(web_contents());
 
+  // No matter whether the BackForwardCache is enabled or not, the navigation in
+  // between the two URLs must always cross a virtual browsing context group.
   EXPECT_NE(group_1, group_2);
-  EXPECT_NE(group_1, group_3);
-  EXPECT_NE(group_1, group_4);
   EXPECT_NE(group_2, group_3);
-  EXPECT_NE(group_2, group_4);
+  EXPECT_NE(group_3, group_4);
+  EXPECT_NE(group_1, group_4);
+
+  // TODO(https://crbug.com/1112256) During history navigation, the virtual
+  // browsing context group must be restored whenever the SiteInstance is
+  // restored. Currently, the SiteInstance is restored, but the virtual browsing
+  // context group is new.
+
   if (IsBackForwardCacheEnabled()) {
-    // TODO(https://crbug.com.com/1109648): This must not happen. Fix this.
-    EXPECT_EQ(group_3, group_4);
+    EXPECT_EQ(group_1, group_3);
+    EXPECT_EQ(group_2, group_4);
   } else {
-    EXPECT_NE(group_3, group_4);
+    EXPECT_NE(group_1, group_3);
+    EXPECT_NE(group_2, group_4);
   }
 }
 

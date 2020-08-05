@@ -145,6 +145,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // without producing any layout or other notifications.
   virtual void HandleFrameRectsChanged(Document&) = 0;
 
+  // Called when a layout object's bounding box may have changed.
+  virtual void InvalidateBoundingBox(const LayoutObject*) = 0;
+
   virtual const AtomicString& ComputedRoleForNode(Node*) = 0;
   virtual String ComputedNameForNode(Node*) = 0;
 

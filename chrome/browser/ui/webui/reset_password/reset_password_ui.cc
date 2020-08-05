@@ -113,6 +113,7 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
       password_type_(GetPasswordType(web_ui->GetWebContents())) {
   std::unique_ptr<content::WebUIDataSource> html_source(
       content::WebUIDataSource::Create(chrome::kChromeUIResetPasswordHost));
+  html_source->DisableTrustedTypesCSP();
   html_source->AddResourcePath("reset_password.js", IDR_RESET_PASSWORD_JS);
   html_source->AddResourcePath("reset_password.mojom-lite.js",
                                IDR_RESET_PASSWORD_MOJOM_LITE_JS);

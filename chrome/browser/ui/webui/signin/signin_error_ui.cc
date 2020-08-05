@@ -66,6 +66,7 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninErrorHost);
+  source->DisableTrustedTypesCSP();
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   source->SetDefaultResource(IDR_SIGNIN_ERROR_HTML);

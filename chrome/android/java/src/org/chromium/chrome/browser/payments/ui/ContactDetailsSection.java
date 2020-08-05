@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.ContactEditor;
-import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.Section;
 
@@ -138,7 +137,7 @@ public class ContactDetailsSection extends SectionInformation {
             if (isNewSuggestion) uniqueContacts.add(contact);
 
             // Limit the number of suggestions.
-            if (uniqueContacts.size() == PaymentRequestImpl.SUGGESTIONS_LIMIT) break;
+            if (uniqueContacts.size() == PaymentUIsManager.SUGGESTIONS_LIMIT) break;
         }
 
         // Automatically select the first address if it is complete.

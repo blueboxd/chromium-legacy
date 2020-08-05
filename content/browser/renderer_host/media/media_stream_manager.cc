@@ -70,6 +70,7 @@
 #include "media/capture/video/video_capture_system_impl.h"
 #include "media/mojo/mojom/display_media_information.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -429,8 +430,6 @@ void FinalizeGetMediaDeviceIDForHMAC(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::OnceCallback<void(const base::Optional<std::string>&)> callback,
     const MediaDeviceEnumeration& enumeration) {
-  DCHECK(type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
-         type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
   for (const auto& device : enumeration[type]) {
     if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
             salt, security_origin, source_id, device.device_id)) {
@@ -2492,8 +2491,21 @@ void MediaStreamManager::GetMediaDeviceIDForHMAC(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_type == MediaStreamType::DEVICE_AUDIO_CAPTURE ||
          stream_type == MediaStreamType::DEVICE_VIDEO_CAPTURE);
-  MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
   blink::MediaDeviceType device_type = ConvertToMediaDeviceType(stream_type);
+  MediaStreamManager::GetMediaDeviceIDForHMAC(
+      device_type, std::move(salt), std::move(security_origin),
+      std::move(hmac_device_id), std::move(task_runner), std::move(callback));
+}
+
+void MediaStreamManager::GetMediaDeviceIDForHMAC(
+    blink::MediaDeviceType device_type,
+    std::string salt,
+    url::Origin security_origin,
+    std::string hmac_device_id,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
   MediaDevicesManager::BoolDeviceTypes requested_types;
   requested_types[device_type] = true;
   msm->media_devices_manager()->EnumerateDevices(

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
@@ -67,6 +68,8 @@ class CONTENT_EXPORT AccessibilityEventRecorder {
   void ListenToEvents(AccessibilityEventCallback callback) {
     callback_ = std::move(callback);
   }
+
+  void StopListeningToEvents() { callback_ = base::NullCallback(); }
 
   // Called to ensure the event recorder has finished recording async events.
   virtual void FlushAsyncEvents() {}

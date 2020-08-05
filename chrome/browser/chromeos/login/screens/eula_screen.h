@@ -81,6 +81,8 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
 
   // TpmPasswordFetcherDelegate implementation:
   void OnPasswordFetched(const std::string& tpm_password) override;
+  void ShowStatsUsageLearnMore();
+  void ShowAdditionalTosDialog();
 
   // URL of the OEM EULA page (on disk).
   GURL oem_eula_page_;

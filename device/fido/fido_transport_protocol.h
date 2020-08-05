@@ -25,7 +25,8 @@ enum class FidoTransportProtocol : uint8_t {
   kBluetoothLowEnergy = 2,
   kCloudAssistedBluetoothLowEnergy = 3,
   kInternal = 4,
-  kMaxValue = kInternal,
+  kAndroidAccessory = 5,
+  kMaxValue = kAndroidAccessory,
 };
 
 // String representation of above FidoTransportProtocol enum.
@@ -34,9 +35,6 @@ extern const char kNearFieldCommunication[];
 extern const char kBluetoothLowEnergy[];
 extern const char kCloudAssistedBluetoothLowEnergy[];
 extern const char kInternal[];
-
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::flat_set<FidoTransportProtocol> GetAllTransportProtocols();
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<FidoTransportProtocol> ConvertToFidoTransportProtocol(

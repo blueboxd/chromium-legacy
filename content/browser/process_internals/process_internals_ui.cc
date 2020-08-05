@@ -21,6 +21,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace content {
 
@@ -39,6 +40,9 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
   source->AddResourcePath("process_internals.mojom-lite.js",
                           IDR_PROCESS_INTERNALS_MOJO_JS);
   source->SetDefaultResource(IDR_PROCESS_INTERNALS_HTML);
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types cr-ui-tree-js-static;");
 
   WebUIDataSource::Add(web_contents()->GetBrowserContext(), source);
 }

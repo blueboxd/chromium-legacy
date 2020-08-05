@@ -215,6 +215,7 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
 
   source->AddResourcePath("discards.js", IDR_DISCARDS_JS);
 

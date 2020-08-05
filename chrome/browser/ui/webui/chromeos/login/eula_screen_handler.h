@@ -26,7 +26,7 @@ class HelpAppLauncher;
 // dtor.
 class EulaView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"eula"};
+  constexpr static StaticOobeScreenId kScreenId{"oobe-eula-md"};
 
   virtual ~EulaView() {}
 
@@ -35,6 +35,8 @@ class EulaView {
   virtual void Bind(EulaScreen* screen) = 0;
   virtual void Unbind() = 0;
   virtual void OnPasswordFetched(const std::string& tpm_password) = 0;
+  virtual void ShowStatsUsageLearnMore() = 0;
+  virtual void ShowAdditionalTosDialog() = 0;
 };
 
 // WebUI implementation of EulaScreenView. It is used to interact
@@ -53,20 +55,16 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   void Bind(EulaScreen* screen) override;
   void Unbind() override;
   void OnPasswordFetched(const std::string& tpm_password) override;
+  void ShowStatsUsageLearnMore() override;
+  void ShowAdditionalTosDialog() override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void DeclareJSCallbacks() override;
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
  private:
-  // JS messages handlers.
-  void HandleOnLearnMore();
-  void HandleOnInstallationSettingsPopupOpened();
-  void HandleUsageStatsEnabled(bool enabled);
-
   // Determines the online URL to use.
   std::string GetEulaOnlineUrl();
   std::string GetAdditionalToSUrl();
@@ -76,11 +74,11 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   EulaScreen* screen_ = nullptr;
   CoreOobeView* core_oobe_view_ = nullptr;
 
-  // Help application used for help dialogs.
-  scoped_refptr<HelpAppLauncher> help_app_;
-
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
+
+  // Help application used for help dialogs.
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   base::WeakPtrFactory<EulaScreenHandler> weak_factory_{this};
 

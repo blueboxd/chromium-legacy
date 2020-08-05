@@ -149,7 +149,17 @@ void EulaScreen::OnUserAction(const std::string& action_id) {
     return;
   }
   RecordUserAction(action_id);
-  if (action_id == kUserActionAcceptButtonClicked) {
+  if (action_id == kUserActionShowStatsUsageLearnMore) {
+    ShowStatsUsageLearnMore();
+  } else if (action_id == kUserActionShowAdditionalTos) {
+    ShowAdditionalTosDialog();
+  } else if (action_id == kUserActionShowSecuritySettings) {
+    InitiatePasswordFetch();
+  } else if (action_id == kUserActionSelectStatsUsage) {
+    SetUsageStatsEnabled(true);
+  } else if (action_id == kUserActionUnselectStatsUsage) {
+    SetUsageStatsEnabled(false);
+  } else if (action_id == kUserActionAcceptButtonClicked) {
     exit_callback_.Run(g_usage_statistics_reporting_enabled
                            ? Result::ACCEPTED_WITH_USAGE_STATS_REPORTING
                            : Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
@@ -170,6 +180,16 @@ void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {
   tpm_password_ = tpm_password;
   if (view_)
     view_->OnPasswordFetched(tpm_password_);
+}
+
+void EulaScreen::ShowStatsUsageLearnMore() {
+  if (view_)
+    view_->ShowStatsUsageLearnMore();
+}
+
+void EulaScreen::ShowAdditionalTosDialog() {
+  if (view_)
+    view_->ShowAdditionalTosDialog();
 }
 
 }  // namespace chromeos

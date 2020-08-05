@@ -450,9 +450,10 @@ void HTMLDocumentParser::DeferredPumpTokenizerIfPossible() {
   // (e.g. fast/parser/iframe-onload-document-close-with-external-script.html).
   DCHECK(task_runner_state_->GetState() ==
              HTMLDocumentParserState::DeferredParserState::kNotScheduled ||
-         (!IsStopped() && !IsDetached()))
-      << "Document should be attached (" << !IsDetached()
-      << ") and not stopped (" << !IsStopped() << ")";
+         !IsStopped());
+  DCHECK(task_runner_state_->GetState() ==
+             HTMLDocumentParserState::DeferredParserState::kNotScheduled ||
+         !IsDetached());
   TRACE_EVENT2("blink", "HTMLDocumentParser::DeferredPumpTokenizerIfPossible",
                "parser", (void*)this, "state",
                task_runner_state_->GetStateAsString());

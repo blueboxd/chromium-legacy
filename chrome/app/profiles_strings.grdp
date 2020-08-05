@@ -667,6 +667,9 @@
     <message name="IDS_PROFILE_PICKER_ASK_ON_STARTUP" desc="Text for the checkbox on the profile picker main view">
       Ask on startup
     </message>
+    <message name="IDS_PROFILE_PICKER_BROWSE_AS_GUEST_BUTTON" desc="Text for the profile picker main view button that launches guest session.">
+      Browse as Guest
+    </message>
     <message name="IDS_PROFILE_PICKER_BACK_BUTTON_LABEL" desc="Label for a button that navigates user to the previous page">
       Back
     </message>

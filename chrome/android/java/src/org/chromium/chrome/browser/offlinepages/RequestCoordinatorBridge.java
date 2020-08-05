@@ -51,8 +51,7 @@ public class RequestCoordinatorBridge {
      *
      * @return A list of {@link SavePageRequest} representing all the queued requests.
      */
-    @VisibleForTesting
-    public void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
+    void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
         RequestCoordinatorBridgeJni.get().getRequestsInQueue(mProfile, callback);
     }
 

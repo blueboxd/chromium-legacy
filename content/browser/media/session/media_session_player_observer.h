@@ -59,6 +59,10 @@ class MediaSessionPlayerObserver {
   // Returns true if the |player_id| has video tracks.
   virtual bool HasVideo(int player_id) const = 0;
 
+  // Returns the id of the audio output device used by |player_id|. Returns the
+  // empty string if unavailable.
+  virtual std::string GetAudioOutputSinkId(int player_id) const = 0;
+
   // Returns the RenderFrameHost this player observer belongs to. Returns
   // nullptr if unavailable.
   virtual RenderFrameHost* render_frame_host() const = 0;

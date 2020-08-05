@@ -67,18 +67,20 @@ void InstallableTaskQueue::ResetWithError(InstallableStatusCode code) {
   std::deque<InstallableTask> paused_tasks = std::move(paused_tasks_);
   // Some callbacks might be already invalidated on certain resets, so we must
   // check for that.
+  // Manifest is assumed to be non-null, so we create an empty one here.
+  blink::Manifest manifest;
   for (InstallableTask& task : tasks) {
     if (task.callback) {
       std::move(task.callback)
-          .Run(InstallableData({code}, GURL(), nullptr, GURL(), nullptr, false,
-                               GURL(), nullptr, false, false));
+          .Run(InstallableData({code}, GURL(), &manifest, GURL(), nullptr,
+                               false, GURL(), nullptr, false, false));
     }
   }
   for (InstallableTask& task : paused_tasks) {
     if (task.callback) {
       std::move(task.callback)
-          .Run(InstallableData({code}, GURL(), nullptr, GURL(), nullptr, false,
-                               GURL(), nullptr, false, false));
+          .Run(InstallableData({code}, GURL(), &manifest, GURL(), nullptr,
+                               false, GURL(), nullptr, false, false));
     }
   }
 }

@@ -16,6 +16,8 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "components/arc/mojom/tracing.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -120,7 +122,8 @@ class ArcTracingBridge : public KeyedService,
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // List of available categories.
-  std::vector<Category> categories_;
+  base::Lock categories_lock_;
+  std::vector<Category> categories_ GUARDED_BY(categories_lock_);
 
   ArcTracingAgent agent_;
 

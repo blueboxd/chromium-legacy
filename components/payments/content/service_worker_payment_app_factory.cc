@@ -10,9 +10,11 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/service_worker_payment_app.h"
 #include "components/payments/content/service_worker_payment_app_finder.h"
+#include "components/payments/core/error_message_util.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
 #include "content/public/browser/stored_payment_app.h"
@@ -38,7 +40,7 @@ class ServiceWorkerPaymentAppCreator {
   ServiceWorkerPaymentAppCreator(
       ServiceWorkerPaymentAppFactory* owner,
       base::WeakPtr<PaymentAppFactory::Delegate> delegate)
-      : owner_(owner), delegate_(delegate) {}
+      : owner_(owner), delegate_(delegate), log_(delegate->GetWebContents()) {}
 
   ~ServiceWorkerPaymentAppCreator() {}
 
@@ -56,7 +58,7 @@ class ServiceWorkerPaymentAppCreator {
 
     base::RepeatingClosure show_processing_spinner = base::BindRepeating(
         &PaymentAppFactory::Delegate::ShowProcessingSpinner, delegate_);
-
+    std::vector<std::string> skipped_app_names;
     for (auto& installed_app : apps) {
       std::vector<std::string> enabled_methods =
           installed_app.second->enabled_methods;
@@ -67,7 +69,7 @@ class ServiceWorkerPaymentAppCreator {
       if (ShouldSkipAppForPartialDelegation(
               installed_app.second->supported_delegations, delegate_,
               has_app_store_billing_method)) {
-        // TODO(crbug.com/1100656): give the developer an error message.
+        skipped_app_names.emplace_back(installed_app.second->name);
         continue;
       }
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
@@ -89,7 +91,7 @@ class ServiceWorkerPaymentAppCreator {
       if (ShouldSkipAppForPartialDelegation(
               installable_app.second->supported_delegations, delegate_,
               is_app_store_billing_method)) {
-        // TODO(crbug.com/1100656): give the developer an error message.
+        skipped_app_names.emplace_back(installable_app.second->name);
         continue;
       }
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
@@ -105,8 +107,20 @@ class ServiceWorkerPaymentAppCreator {
       number_of_pending_sw_payment_apps_++;
     }
 
-    if (number_of_pending_sw_payment_apps_ == 0U)
+    if (!skipped_app_names.empty()) {
+      std::string warning_message =
+          GetAppsSkippedForPartialDelegationErrorMessage(skipped_app_names);
+      log_.Warn(warning_message);
+    }
+
+    if (number_of_pending_sw_payment_apps_ == 0U) {
+      if (error_message.empty() && !skipped_app_names.empty()) {
+        std::string new_error_message =
+            GetAppsSkippedForPartialDelegationErrorMessage(skipped_app_names);
+        delegate_->OnPaymentAppCreationError(new_error_message);
+      }
       FinishAndCleanup();
+    }
   }
 
   bool ShouldSkipAppForPartialDelegation(
@@ -150,6 +164,7 @@ class ServiceWorkerPaymentAppCreator {
   ServiceWorkerPaymentAppFactory* owner_;
   base::WeakPtr<PaymentAppFactory::Delegate> delegate_;
   std::map<PaymentApp*, std::unique_ptr<PaymentApp>> available_apps_;
+  DeveloperConsoleLogger log_;
   int number_of_pending_sw_payment_apps_ = 0;
 
   base::WeakPtrFactory<ServiceWorkerPaymentAppCreator> weak_ptr_factory_{this};

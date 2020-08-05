@@ -23,6 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_OVERFLOW_MODEL_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
@@ -233,6 +234,15 @@ class BoxVisualOverflowModel {
 struct BoxOverflowModel {
   base::Optional<BoxLayoutOverflowModel> layout_overflow;
   base::Optional<BoxVisualOverflowModel> visual_overflow;
+
+  // Used by BoxPaintInvalidator. Stores the previous overflow data after the
+  // last paint invalidation.
+  struct PreviousOverflowData {
+    bool previously_had_overflow_clip = false;
+    PhysicalRect previous_physical_layout_overflow_rect;
+    PhysicalRect previous_physical_self_visual_overflow_rect;
+  };
+  base::Optional<PreviousOverflowData> previous_overflow_data;
 
   USING_FAST_MALLOC(BoxOverflowModel);
 };

@@ -377,6 +377,7 @@ ios_app_bundle("chrome") {
     "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
     "CHROMIUM_URL_CHANNEL_SCHEME=$url_channel_scheme",
     "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
+    "IOS_MOVE_TAB_ACTIVITY_TYPE=$ios_move_tab_activity_type",
   ]
 
   if (ios_encryption_export_compliance_code != "") {

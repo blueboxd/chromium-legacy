@@ -83,6 +83,10 @@ std::string TestDataSource::GetContentSecurityPolicy(
     return "script-src chrome://* 'self';";
   } else if (directive == network::mojom::CSPDirectiveName::WorkerSrc) {
     return "worker-src blob: 'self';";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    return std::string();
   }
 
   return content::URLDataSource::GetContentSecurityPolicy(directive);

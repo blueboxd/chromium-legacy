@@ -4,16 +4,24 @@
 
 source_set("policy") {
   sources = [
+    "browser_dm_token_storage_ios.h",
+    "browser_dm_token_storage_ios.mm",
     "browser_policy_connector_ios.h",
     "browser_policy_connector_ios.mm",
     "browser_state_policy_connector.h",
     "browser_state_policy_connector.mm",
     "browser_state_policy_connector_factory.h",
     "browser_state_policy_connector_factory.mm",
+    "chrome_browser_cloud_management_controller_ios.h",
+    "chrome_browser_cloud_management_controller_ios.mm",
     "configuration_policy_handler_list_factory.h",
     "configuration_policy_handler_list_factory.mm",
+    "device_management_service_configuration_ios.h",
+    "device_management_service_configuration_ios.mm",
     "policy_conversions_client_ios.h",
     "policy_conversions_client_ios.mm",
+    "reporting/reporting_delegate_factory_ios.h",
+    "reporting/reporting_delegate_factory_ios.mm",
     "schema_registry_factory.h",
     "schema_registry_factory.mm",
   ]
@@ -33,6 +41,7 @@ source_set("policy") {
     "//components/translate/core/browser:translate_pref_names",
     "//components/variations",
     "//components/variations/service",
+    "//components/version_info:version_info",
     "//ios/chrome/browser",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",

@@ -382,10 +382,10 @@ BrailleDisplayManager = class {
   onKeyEvent_(event) {
     switch (event.command) {
       case BrailleKeyCommand.PAN_LEFT:
-        this.panLeft_();
+        this.panLeft();
         break;
       case BrailleKeyCommand.PAN_RIGHT:
-        this.panRight_();
+        this.panRight();
         break;
       case BrailleKeyCommand.ROUTING:
         event.displayPosition = this.brailleToTextPosition_(
@@ -403,9 +403,8 @@ BrailleDisplayManager = class {
    * Shift the display by one full display size and refresh the content.
    * Sends the appropriate command if the display is already at the leftmost
    * position.
-   * @private
    */
-  panLeft_() {
+  panLeft() {
     if (this.panStrategy_.previous()) {
       this.refresh_();
     } else {
@@ -418,9 +417,8 @@ BrailleDisplayManager = class {
    * Shifts the display position to the right by one full display size and
    * refreshes the content.  Sends the appropriate command if the display is
    * already at its rightmost position.
-   * @private
    */
-  panRight_() {
+  panRight() {
     if (this.panStrategy_.next()) {
       this.refresh_();
     } else {

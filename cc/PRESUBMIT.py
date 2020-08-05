@@ -21,7 +21,8 @@ def CheckChangeLintsClean(input_api, output_api):
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
 
-def CheckAsserts(input_api, output_api, allowlist=CC_SOURCE_FILES, denylist=None):
+def CheckAsserts(input_api, output_api, allowlist=CC_SOURCE_FILES,
+                 denylist=None):
   denylist = tuple(denylist or input_api.DEFAULT_FILES_TO_SKIP)
   source_file_filter = lambda x: input_api.FilterSourceFile(x, allowlist,
       denylist)

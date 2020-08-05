@@ -88,6 +88,7 @@ std::unique_ptr<FidoDiscoveryBase> FakeFidoDiscoveryFactory::Create(
     case FidoTransportProtocol::kNearFieldCommunication:
       return std::move(next_nfc_discovery_);
     case FidoTransportProtocol::kBluetoothLowEnergy:
+    case FidoTransportProtocol::kAndroidAccessory:
       return nullptr;
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
       return std::move(next_cable_discovery_);

@@ -280,20 +280,6 @@ base::string16 CollectedCookiesViews::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_DIALOG_TITLE);
 }
 
-bool CollectedCookiesViews::Accept() {
-  // If the user closes our parent tab while we're still open, this method will
-  // (eventually) be called in response to a WebContentsDestroyed() call from
-  // the WebContentsImpl to its observers.  But since the InfoBarService is also
-  // torn down in response to WebContentsDestroyed(), it may already be null.
-  // Since the tab is going away anyway, we can just omit showing an infobar,
-  // which prevents any attempt to access a null InfoBarService.
-  if (status_changed_ && !web_contents_->IsBeingDestroyed()) {
-    CollectedCookiesInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents_));
-  }
-  return true;
-}
-
 ui::ModalType CollectedCookiesViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
@@ -367,6 +353,11 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
       SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
+  SetAcceptCallback(base::BindOnce(&CollectedCookiesViews::OnDialogClosed,
+                                   base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&CollectedCookiesViews::OnDialogClosed,
+                                  base::Unretained(this)));
+
   // Add margin above the content. The left, right, and bottom margins are added
   // by the content itself.
   SetBorder(views::CreateEmptyBorder(
@@ -412,6 +403,19 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
 
   EnableControls();
   ShowCookieInfo();
+}
+
+void CollectedCookiesViews::OnDialogClosed() {
+  // If the user closes our parent tab while we're still open, this method will
+  // (eventually) be called in response to a WebContentsDestroyed() call from
+  // the WebContentsImpl to its observers.  But since the InfoBarService is also
+  // torn down in response to WebContentsDestroyed(), it may already be null.
+  // Since the tab is going away anyway, we can just omit showing an infobar,
+  // which prevents any attempt to access a null InfoBarService.
+  if (status_changed_ && !web_contents_->IsBeingDestroyed()) {
+    CollectedCookiesInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents_));
+  }
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {

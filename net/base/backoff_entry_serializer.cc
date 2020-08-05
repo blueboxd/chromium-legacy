@@ -4,6 +4,7 @@
 
 #include "net/base/backoff_entry_serializer.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
@@ -15,6 +16,15 @@ namespace {
 // Increment this number when changing the serialization format, to avoid old
 // serialized values loaded from disk etc being misinterpreted.
 const int kSerializationFormatVersion = 1;
+
+// This max defines how many times we are willing to call
+// |BackoffEntry::InformOfRequest| in |DeserializeFromValue|.
+//
+// This value is meant to large enough that the computed backoff duration can
+// still be saturated. Given that the duration is an int64 and assuming 1.01 as
+// a conservative lower bound for BackoffEntry::Policy::multiply_factor,
+// ceil(log(2**63-1, 1.01)) = 4389.
+const int kMaxFailureCount = 4389;
 }  // namespace
 
 namespace net {
@@ -57,8 +67,11 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
   }
 
   int failure_count;
-  if (!serialized_list->GetInteger(1, &failure_count) || failure_count < 0)
+  if (!serialized_list->GetInteger(1, &failure_count) || failure_count < 0) {
     return nullptr;
+  }
+  failure_count = std::min(failure_count, kMaxFailureCount);
+
   double original_backoff_duration_double;
   if (!serialized_list->GetDouble(2, &original_backoff_duration_double))
     return nullptr;

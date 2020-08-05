@@ -124,6 +124,9 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel",
     goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(
+        experiment_percentage = 2,
+    ),
 )
 
 try_.chromium_android_builder(
@@ -155,7 +158,9 @@ try_.chromium_android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
-    tryjob = try_.job(),
+    # TODO(crbug.com/1111436): Enable on CQ once the maintenance for
+    # Pixel 2 devices are finished.
+    #tryjob = try_.job(),
 )
 
 try_.chromium_android_builder(

@@ -27,6 +27,8 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
       "closeDialog", base::BindRepeating(&WebDialogUI::CloseDialog,
                                          weak_factory_.GetWeakPtr()));
 
+  html_source->DisableTrustedTypesCSP();
+
   html_source->UseStringsJs();
 
   // Add localized strings.

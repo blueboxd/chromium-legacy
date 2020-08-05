@@ -21,10 +21,9 @@ const double kDuckVolume = 0.2f;
 
 const int PepperPlayerDelegate::kPlayerId = 0;
 
-PepperPlayerDelegate::PepperPlayerDelegate(
-    RenderFrameHost* render_frame_host, int32_t pp_instance)
-    : render_frame_host_(render_frame_host),
-      pp_instance_(pp_instance) {}
+PepperPlayerDelegate::PepperPlayerDelegate(RenderFrameHost* render_frame_host,
+                                           int32_t pp_instance)
+    : render_frame_host_(render_frame_host), pp_instance_(pp_instance) {}
 
 PepperPlayerDelegate::~PepperPlayerDelegate() = default;
 
@@ -102,6 +101,11 @@ void PepperPlayerDelegate::SetVolume(int player_id, double volume) {
 bool PepperPlayerDelegate::HasVideo(int player_id) const {
   // We don't actually know whether a pepper player has both audio/video.
   return true;
+}
+
+std::string PepperPlayerDelegate::GetAudioOutputSinkId(int player_id) const {
+  // This operation is not supported for pepper players.
+  return "";
 }
 
 }  // namespace content

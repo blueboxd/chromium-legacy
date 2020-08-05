@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "components/on_load_script_injector/browser/on_load_script_injector_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -69,10 +70,8 @@ class CastWebContentsImpl : public CastWebContents,
   void BlockMediaLoading(bool blocked) override;
   void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
-  void AddBeforeLoadJavaScript(base::StringPiece id,
-                               const std::vector<std::string>& origins,
-                               base::StringPiece script) override;
-  void RemoveBeforeLoadJavaScript(base::StringPiece id) override;
+  on_load_script_injector::OnLoadScriptInjectorHost* script_injector() override;
+  void InjectScriptsIntoMainFrame() override;
   void PostMessageToMainFrame(
       const std::string& target_origin,
       const std::string& data,
@@ -136,22 +135,6 @@ class CastWebContentsImpl : public CastWebContents,
       content::WebContentsObserver::MediaStoppedReason reason) override;
 
  private:
-  struct OriginScopedScript {
-    OriginScopedScript();
-    OriginScopedScript(const std::vector<std::string>& origins,
-                       std::string script);
-    OriginScopedScript& operator=(OriginScopedScript&& other);
-    ~OriginScopedScript();
-
-    const std::vector<std::string>& origins() const { return origins_; }
-    const std::string script() const { return script_; }
-
-    std::vector<std::string> origins_;
-    std::string script_;
-
-    DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
-  };
-
   void OnPageLoading();
   void OnPageLoaded();
   void UpdatePageState();
@@ -192,8 +175,7 @@ class CastWebContentsImpl : public CastWebContents,
   bool notifying_;
   int last_error_;
 
-  std::map<std::string, OriginScopedScript> before_load_scripts_;
-  std::vector<std::string> before_load_scripts_order_;
+  on_load_script_injector::OnLoadScriptInjectorHost script_injector_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

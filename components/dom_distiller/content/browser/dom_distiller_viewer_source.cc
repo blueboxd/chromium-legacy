@@ -294,6 +294,12 @@ std::string DomDistillerViewerSource::GetContentSecurityPolicy(
     return "style-src 'self' https://fonts.googleapis.com;";
   } else if (directive == network::mojom::CSPDirectiveName::ChildSrc) {
     return "child-src *;";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    // This removes require-trusted-types-for and trusted-types directives
+    // from the CSP header.
+    return std::string();
   }
 
   return content::URLDataSource::GetContentSecurityPolicy(directive);

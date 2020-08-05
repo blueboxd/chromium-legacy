@@ -4,11 +4,11 @@
 
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 
-#include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prerender/browser/prerender_link_manager.h"
 #include "components/prerender/browser/prerender_manager.h"
 
 namespace prerender {

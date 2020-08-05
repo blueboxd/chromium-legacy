@@ -36,9 +36,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Creates a LabelButton with ButtonPressed() events sent to |listener| and
   // label |text|. |button_context| is a value from views::style::TextContext
   // and determines the appearance of |text|.
-  LabelButton(ButtonListener* listener,
-              const base::string16& text,
-              int button_context = style::CONTEXT_BUTTON);
+  explicit LabelButton(ButtonListener* listener = nullptr,
+                       const base::string16& text = base::string16(),
+                       int button_context = style::CONTEXT_BUTTON);
   ~LabelButton() override;
 
   // Gets or sets the image shown for the specified button state.

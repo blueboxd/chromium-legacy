@@ -113,8 +113,7 @@ bool IsPinEnabled(PrefService* pref_service) {
   if (user && user->GetType() == user_manager::UserType::USER_TYPE_SUPERVISED)
     return false;
 
-  // Enable quick unlock only if the switch is present.
-  return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
+  return true;
 }
 
 // Returns fingerprint location depending on the commandline switch.

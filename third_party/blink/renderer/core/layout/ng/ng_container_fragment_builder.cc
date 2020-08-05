@@ -89,13 +89,6 @@ void NGContainerFragmentBuilder::PropagateChildData(
     }
   }
 
-  // For the |has_orthogonal_flow_roots_| flag, we don't care about the type of
-  // child (OOF-positioned, etc), it is for *any* descendant.
-  if (child.HasOrthogonalFlowRoots() ||
-      !IsParallelWritingMode(child.Style().GetWritingMode(),
-                             Style().GetWritingMode()))
-    has_orthogonal_flow_roots_ = true;
-
   // We only need to report if inflow or floating elements depend on the
   // percentage resolution block-size. OOF-positioned children resolve their
   // percentages against the "final" size of their parent.

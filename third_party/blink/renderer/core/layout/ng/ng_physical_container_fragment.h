@@ -135,9 +135,6 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return has_adjoining_object_descendants_;
   }
 
-  // TODO(ikilpatrick): Remove this flag as its not used anymore.
-  bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
-
   // Returns true if we aren't able to re-use this fragment if the
   // |NGConstraintSpace::PercentageResolutionBlockSize| changes.
   bool DependsOnPercentageBlockSize() const {

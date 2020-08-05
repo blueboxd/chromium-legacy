@@ -15,10 +15,14 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_loader_ios.h"
+#include "ios/chrome/browser/policy/chrome_browser_cloud_management_controller_ios.h"
+#include "ios/chrome/browser/policy/device_management_service_configuration_ios.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,7 +39,11 @@ using policy::PolicyLoaderIOS;
 
 BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
     const HandlerListFactory& handler_list_factory)
-    : BrowserPolicyConnector(handler_list_factory) {}
+    : BrowserPolicyConnector(handler_list_factory) {
+  chrome_browser_cloud_management_controller_ = std::make_unique<
+      policy::ChromeBrowserCloudManagementController>(
+      std::make_unique<policy::ChromeBrowserCloudManagementControllerIOS>());
+}
 
 BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 
@@ -48,7 +56,16 @@ ConfigurationPolicyProvider* BrowserPolicyConnectorIOS::GetPlatformProvider() {
 void BrowserPolicyConnectorIOS::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  InitInternal(local_state, /*device_management_service=*/nullptr);
+  std::unique_ptr<policy::DeviceManagementService::Configuration> configuration(
+      new policy::DeviceManagementServiceConfigurationIOS(
+          BrowserPolicyConnector::GetDeviceManagementUrl(),
+          BrowserPolicyConnector::GetRealtimeReportingUrl()));
+  std::unique_ptr<policy::DeviceManagementService> device_management_service(
+      new policy::DeviceManagementService(std::move(configuration)));
+  device_management_service->ScheduleInitialization(
+      kServiceInitializationStartupDelay);
+
+  InitInternal(local_state, std::move(device_management_service));
 }
 
 bool BrowserPolicyConnectorIOS::IsEnterpriseManaged() const {
@@ -57,7 +74,16 @@ bool BrowserPolicyConnectorIOS::IsEnterpriseManaged() const {
 }
 
 bool BrowserPolicyConnectorIOS::HasMachineLevelPolicies() {
-  return ProviderHasPolicies(GetPlatformProvider());
+  return ProviderHasPolicies(GetPlatformProvider()) ||
+         ProviderHasPolicies(machine_level_user_cloud_policy_manager_);
+}
+
+void BrowserPolicyConnectorIOS::Shutdown() {
+  // Reset the controller before calling base class so that
+  // shutdown occurs in correct sequence.
+  chrome_browser_cloud_management_controller_.reset();
+
+  BrowserPolicyConnector::Shutdown();
 }
 
 std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
@@ -71,6 +97,17 @@ BrowserPolicyConnectorIOS::CreatePolicyProviders() {
     // PlatformProvider should be before all other providers (highest priority).
     providers.insert(providers.begin(), std::move(platform_provider));
   }
+
+  std::unique_ptr<policy::MachineLevelUserCloudPolicyManager>
+      machine_level_user_cloud_policy_manager =
+          chrome_browser_cloud_management_controller_->CreatePolicyManager(
+              platform_provider_);
+  if (machine_level_user_cloud_policy_manager) {
+    machine_level_user_cloud_policy_manager_ =
+        machine_level_user_cloud_policy_manager.get();
+    providers.push_back(std::move(machine_level_user_cloud_policy_manager));
+  }
+
   return providers;
 }
 

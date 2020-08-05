@@ -1502,6 +1502,20 @@ void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
   bounds_in_container = WebFloatRect(bounds);
 }
 
+void WebAXObject::GetAllObjectsWithChangedBounds(
+    WebVector<WebAXObject>& out_changed_bounds_objects) const {
+  if (IsDetached())
+    return;
+
+  HeapVector<Member<AXObject>> changed_bounds_objects =
+      private_->AXObjectCache().GetAllObjectsWithChangedBounds();
+
+  out_changed_bounds_objects.reserve(changed_bounds_objects.size());
+  out_changed_bounds_objects.resize(changed_bounds_objects.size());
+  std::copy(changed_bounds_objects.begin(), changed_bounds_objects.end(),
+            out_changed_bounds_objects.begin());
+}
+
 bool WebAXObject::ScrollToMakeVisible() const {
   if (IsDetached())
     return false;

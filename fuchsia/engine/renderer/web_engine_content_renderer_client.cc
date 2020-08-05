@@ -9,10 +9,10 @@
 #include "base/macros.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/media_control/renderer/media_playback_options.h"
+#include "components/on_load_script_injector/renderer/on_load_script_injector.h"
 #include "content/public/renderer/render_frame.h"
 #include "fuchsia/engine/common/cast_streaming.h"
 #include "fuchsia/engine/renderer/cast_streaming_demuxer.h"
-#include "fuchsia/engine/renderer/on_load_script_injector.h"
 #include "fuchsia/engine/renderer/web_engine_url_loader_throttle_provider.h"
 #include "fuchsia/engine/switches.h"
 #include "media/base/eme_constants.h"
@@ -130,7 +130,7 @@ void WebEngineContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   // Add WebEngine services to the new RenderFrame.
   // The objects' lifetimes are bound to the RenderFrame's lifetime.
-  new OnLoadScriptInjector(render_frame);
+  new on_load_script_injector::OnLoadScriptInjector(render_frame);
 
   int render_frame_id = render_frame->GetRoutingID();
 

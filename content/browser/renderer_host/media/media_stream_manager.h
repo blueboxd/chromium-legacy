@@ -320,6 +320,16 @@ class CONTENT_EXPORT MediaStreamManager
       std::string hmac_device_id,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::OnceCallback<void(const base::Optional<std::string>&)> callback);
+  // Overload that allows for a blink::MediaDeviceType to be specified instead
+  // of a blink::mojom::MediaStreamType. This allows for getting the raw device
+  // ID from the HMAC of an audio output device.
+  static void GetMediaDeviceIDForHMAC(
+      blink::MediaDeviceType device_type,
+      std::string salt,
+      url::Origin security_origin,
+      std::string hmac_device_id,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::OnceCallback<void(const base::Optional<std::string>&)> callback);
 
   // Returns true if the renderer process identified with |render_process_id|
   // is allowed to access |origin|.

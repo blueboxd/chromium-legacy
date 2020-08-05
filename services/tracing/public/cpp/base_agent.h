@@ -19,6 +19,7 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent {
  public:
   virtual ~BaseAgent();
 
+  // May be called on any thread.
   virtual void GetCategories(std::set<std::string>* category_set);
 
  protected:

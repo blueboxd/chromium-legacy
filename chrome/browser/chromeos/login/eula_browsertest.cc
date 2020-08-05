@@ -75,14 +75,13 @@ const test::UIPath kAcceptEulaButton = {"oobe-eula-md", "acceptButton"};
 const test::UIPath kEulaTPMPassword = {"oobe-eula-md", "eula-password"};
 const test::UIPath kUsageStats = {"oobe-eula-md", "usageStats"};
 const test::UIPath kAdditionalTermsLink = {"oobe-eula-md", "additionalTerms"};
-const test::UIPath kAdditionalTermsDialog = {"oobe-eula-md", "additional-tos"};
+const test::UIPath kAdditionalTermsDialog = {"oobe-eula-md", "additionalToS"};
 const test::UIPath kAdditionalTermsClose = {"oobe-eula-md",
                                             "close-additional-tos"};
-const test::UIPath kInstallationSettingsLink = {"oobe-eula-md",
-                                                "installationSettings"};
-const test::UIPath kInstallationSettingsDialog = {"oobe-eula-md",
-                                                  "installationSettingsDialog"};
-const test::UIPath kLearnMoreLink = {"oobe-eula-md", "learn-more"};
+const test::UIPath kSecuritySettingsLink = {"oobe-eula-md", "securitySettings"};
+const test::UIPath kSecuritySettingsDialog = {"oobe-eula-md",
+                                              "securitySettingsDialog"};
+const test::UIPath kLearnMoreLink = {"oobe-eula-md", "learnMore"};
 
 // Helper class to wait until the WebCotnents finishes loading.
 class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
@@ -320,8 +319,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
   base::HistogramTester histogram_tester;
   ShowEulaScreen();
 
-  test::OobeJS().TapLinkOnPath(kInstallationSettingsLink);
-  test::OobeJS().ExpectVisiblePath(kInstallationSettingsDialog);
+  test::OobeJS().TapLinkOnPath(kSecuritySettingsLink);
+  test::OobeJS().ExpectVisiblePath(kSecuritySettingsDialog);
 
   test::OobeJS()
       .CreateWaiter(

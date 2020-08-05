@@ -62,6 +62,7 @@ source_set("unit_tests") {
     "//components/sync/driver:driver",
     "//components/ui_metrics",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/download",

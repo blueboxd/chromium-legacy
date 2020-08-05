@@ -23,6 +23,7 @@ include_rules = [
   "+components/media_control/mojom",
   "+components/network_hints",
   "+components/network_session_configurator/common",
+  "+components/on_load_script_injector/browser",
   "+components/policy/core/browser",
   "+components/prefs",
   "+components/pref_registry",

@@ -13,8 +13,7 @@
 namespace ash {
 
 BottomStatusIndicator::BottomStatusIndicator(TappedCallback on_tapped_callback)
-    : LabelButton(this, base::string16()),
-      on_tapped_callback_(std::move(on_tapped_callback)) {
+    : LabelButton(this), on_tapped_callback_(std::move(on_tapped_callback)) {
   label()->SetAutoColorReadabilityEnabled(false);
   label()->SetFontList(
       views::Label::GetDefaultFontList().DeriveWithSizeDelta(1));

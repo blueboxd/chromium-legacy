@@ -71,6 +71,9 @@ constexpr gfx::Size kHeadlessWindowSize = {1, 1};
 // Simulated screen bounds to use when testing the SemanticsManager.
 constexpr gfx::Size kSemanticsTestingWindowSize = {720, 640};
 
+// A special value which matches all origins when specified in an origin list.
+constexpr char kWildcardOrigin[] = "*";
+
 // Used for attaching popup-related metadata to a WebContents.
 constexpr char kPopupCreationInfo[] = "popup-creation-info";
 class PopupFrameCreationInfoUserData : public base::SupportsUserData::Data {
@@ -96,12 +99,11 @@ bool FrameFocusRules::SupportsChildActivation(const aura::Window*) const {
   return true;
 }
 
-bool IsOriginAllowed(const GURL& url,
-                     const std::vector<std::string>& allowed_origins) {
-  constexpr const char kWildcard[] = "*";
-
+// TODO(crbug.com/1113289): Use OnLoadScriptInjectorHost's origin matching code.
+bool IsUrlMatchedByOriginList(const GURL& url,
+                              const std::vector<std::string>& allowed_origins) {
   for (const std::string& origin : allowed_origins) {
-    if (origin == kWildcard)
+    if (origin == kWildcardOrigin)
       return true;
 
     GURL origin_url(origin);
@@ -114,9 +116,6 @@ bool IsOriginAllowed(const GURL& url,
 
     if (origin_url != url.GetOrigin())
       continue;
-
-    // TODO(crbug.com/893236): Add handling for nonstandard origins
-    // (e.g. data: URIs).
 
     return true;
   }
@@ -279,22 +278,6 @@ zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
   return zx::unowned_channel(binding_.channel());
 }
 
-FrameImpl::OriginScopedScript::OriginScopedScript() = default;
-
-FrameImpl::OriginScopedScript::OriginScopedScript(
-    std::vector<std::string> origins,
-    base::ReadOnlySharedMemoryRegion script)
-    : origins_(std::move(origins)), script_(std::move(script)) {}
-
-FrameImpl::OriginScopedScript& FrameImpl::OriginScopedScript::operator=(
-    FrameImpl::OriginScopedScript&& other) {
-  origins_ = std::move(other.origins_);
-  script_ = std::move(other.script_);
-  return *this;
-}
-
-FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
-
 aura::Window* FrameImpl::root_window() const {
   return window_tree_host_->window();
 }
@@ -310,7 +293,10 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
     return;
   }
 
-  if (!IsOriginAllowed(web_contents_->GetLastCommittedURL(), origins)) {
+  // Prevents script injection into the wrong document if the renderer recently
+  // navigated to a different origin.
+  if (!IsUrlMatchedByOriginList(web_contents_->GetLastCommittedURL(),
+                                origins)) {
     result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
     callback(std::move(result));
     return;
@@ -528,30 +514,6 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
   return true;
 }
 
-void FrameImpl::MaybeInjectBeforeLoadScripts(
-    content::NavigationHandle* navigation_handle) {
-  if (before_load_scripts_.empty())
-    return;
-
-  mojo::AssociatedRemote<mojom::OnLoadScriptInjector>
-      before_load_script_injector;
-  navigation_handle->GetRenderFrameHost()
-      ->GetRemoteAssociatedInterfaces()
-      ->GetInterface(&before_load_script_injector);
-
-  // Provision the renderer's ScriptInjector with the scripts scoped to this
-  // page's origin.
-  before_load_script_injector->ClearOnLoadScripts();
-  for (uint64_t script_id : before_load_scripts_order_) {
-    const OriginScopedScript& script = before_load_scripts_[script_id];
-    if (IsOriginAllowed(navigation_handle->GetURL(), script.origins())) {
-      // TODO(crbug.com/1060846): Stop using handle<shared_buffer>.
-      before_load_script_injector->AddOnLoadScript(
-          mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));
-    }
-  }
-}
-
 void FrameImpl::MaybeStartCastStreaming(
     content::NavigationHandle* navigation_handle) {
   if (!IsCastStreamingEnabled() || !cast_streaming_session_client_)
@@ -651,6 +613,8 @@ void FrameImpl::AddBeforeLoadJavaScript(
     std::vector<std::string> origins,
     fuchsia::mem::Buffer script,
     AddBeforeLoadJavaScriptCallback callback) {
+  constexpr char kWildcardOrigin[] = "*";
+
   fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result;
   if (!context_->IsJavaScriptInjectionAllowed()) {
     result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
@@ -658,52 +622,41 @@ void FrameImpl::AddBeforeLoadJavaScript(
     return;
   }
 
-  // Convert the script to UTF8 and store it as a shared memory buffer, so that
-  // it can be efficiently shared with multiple renderer processes.
-  base::string16 script_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
-    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
+  std::string script_as_string;
+  if (!cr_fuchsia::StringFromMemBuffer(script, &script_as_string)) {
+    LOG(ERROR) << "Couldn't read script from buffer.";
+    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
     callback(std::move(result));
     return;
   }
 
-  // Create a read-only VMO from |script|.
-  fuchsia::mem::Buffer script_buffer =
-      cr_fuchsia::MemBufferFromString16(script_utf16, "cr-before-load-js");
+  // TODO(crbug.com/1108607): Only allow wildcards to be specified standalone.
+  if (std::any_of(origins.begin(), origins.end(),
+                  [kWildcardOrigin](base::StringPiece origin) {
+                    return origin == kWildcardOrigin;
+                  })) {
+    script_injector_.AddScriptForAllOrigins(id, script_as_string);
+  } else {
+    std::vector<url::Origin> origins_converted;
+    for (const std::string& origin : origins) {
+      url::Origin origin_parsed = url::Origin::Create(GURL(origin));
+      if (origin_parsed.opaque()) {
+        result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
+        callback(std::move(result));
+        return;
+      }
+      origins_converted.push_back(origin_parsed);
+    }
 
-  // Wrap the VMO into a read-only shared-memory container that Mojo can work
-  // with.
-  base::subtle::PlatformSharedMemoryRegion script_region =
-      base::subtle::PlatformSharedMemoryRegion::Take(
-          std::move(script_buffer.vmo),
-          base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
-          script_buffer.size, base::UnguessableToken::Create());
-  script_region.ConvertToReadOnly();
-  auto script_region_mojo =
-      base::ReadOnlySharedMemoryRegion::Deserialize(std::move(script_region));
-
-  // If there is no script with the identifier |id|, then create a place for it
-  // at the end of the injection sequence.
-  if (before_load_scripts_.find(id) == before_load_scripts_.end())
-    before_load_scripts_order_.push_back(id);
-
-  before_load_scripts_[id] =
-      OriginScopedScript(origins, std::move(script_region_mojo));
+    script_injector_.AddScript(id, origins_converted, script_as_string);
+  }
 
   result.set_response(fuchsia::web::Frame_AddBeforeLoadJavaScript_Response());
   callback(std::move(result));
 }
 
 void FrameImpl::RemoveBeforeLoadJavaScript(uint64_t id) {
-  before_load_scripts_.erase(id);
-
-  for (auto script_id_iter = before_load_scripts_order_.begin();
-       script_id_iter != before_load_scripts_order_.end(); ++script_id_iter) {
-    if (*script_id_iter == id) {
-      before_load_scripts_order_.erase(script_id_iter);
-      return;
-    }
-  }
+  script_injector_.RemoveScript(id);
 }
 
 void FrameImpl::PostMessage(std::string origin,
@@ -711,8 +664,6 @@ void FrameImpl::PostMessage(std::string origin,
                             PostMessageCallback callback) {
   if (MaybeHandleCastStreamingMessage(&origin, &message, &callback))
     return;
-
-  constexpr char kWildcardOrigin[] = "*";
 
   fuchsia::web::Frame_PostMessage_Result result;
   if (origin.empty()) {
@@ -1082,7 +1033,9 @@ void FrameImpl::ReadyToCommitNavigation(
     return;
   }
 
-  MaybeInjectBeforeLoadScripts(navigation_handle);
+  script_injector_.InjectScriptsForURL(navigation_handle->GetURL(),
+                                       navigation_handle->GetRenderFrameHost());
+
   MaybeStartCastStreaming(navigation_handle);
 }
 

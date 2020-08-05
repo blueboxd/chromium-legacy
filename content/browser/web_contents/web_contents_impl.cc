@@ -5358,10 +5358,18 @@ void WebContentsImpl::OnTextAutosizerPageInfoChanged(
       page_info->main_frame_layout_width;
   text_autosizer_page_info_.device_scale_adjustment =
       page_info->device_scale_adjustment;
-  frame_tree_.root()->render_manager()->SendPageMessage(
-      new PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames(
-          MSG_ROUTING_NONE, text_autosizer_page_info_),
-      source->GetSiteInstance());
+
+  auto remote_frames_broadcast_callback = base::BindRepeating(
+      [](const blink::mojom::TextAutosizerPageInfo& page_info,
+         RenderFrameProxyHost* proxy_host) {
+        DCHECK(proxy_host);
+        proxy_host->GetAssociatedRemoteMainFrame()->UpdateTextAutosizerPageInfo(
+            page_info.Clone());
+      },
+      text_autosizer_page_info_);
+
+  frame_tree_.root()->render_manager()->ExecuteRemoteFramesBroadcastMethod(
+      std::move(remote_frames_broadcast_callback), source->GetSiteInstance());
 }
 
 void WebContentsImpl::EnumerateDirectory(
@@ -7043,9 +7051,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   // this state themselves from up-to-date values, so we shouldn't override it
   // with the cached values.
   if (!render_view_host->GetMainFrame()) {
-    render_view_host->Send(
-        new PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames(
-            render_view_host->GetRoutingID(), text_autosizer_page_info_));
+    auto* proxy_host = GetRenderManager()->GetRenderFrameProxyHost(
+        render_view_host->GetSiteInstance());
+    proxy_host->GetAssociatedRemoteMainFrame()->UpdateTextAutosizerPageInfo(
+        text_autosizer_page_info_.Clone());
   }
 
   if (proxy_routing_id == MSG_ROUTING_NONE && node_.outer_web_contents())

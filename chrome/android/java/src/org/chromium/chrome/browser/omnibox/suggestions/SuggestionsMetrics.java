@@ -92,4 +92,15 @@ class SuggestionsMetrics {
     static final void recordSuggestionViewReused(boolean reused) {
         RecordHistogram.recordBooleanHistogram("Android.Omnibox.SuggestionView.Reused", reused);
     }
+
+    /**
+     * Record whether the interaction with the Omnibox resulted with a navigation (true) or user
+     * leaving the omnibox and suggestions list.
+     *
+     * @param focusResultedInNavigation Whether the user completed interaction with navigation.
+     */
+    static final void recordOmniboxFocusResultedInNavigation(boolean focusResultedInNavigation) {
+        RecordHistogram.recordBooleanHistogram(
+                "Omnibox.FocusResultedInNavigation", focusResultedInNavigation);
+    }
 }

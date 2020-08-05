@@ -62,6 +62,10 @@ class MediaPlayerAction;
 }
 }
 
+namespace ui {
+class ClipboardDataEndpoint;
+}
+
 class RenderViewContextMenu : public RenderViewContextMenuBase {
  public:
   RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
@@ -138,7 +142,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   static base::string16 FormatURLForClipboard(const GURL& url);
 
   // Writes the specified text/url to the system clipboard.
-  static void WriteURLToClipboard(const GURL& url);
+  void WriteURLToClipboard(const GURL& url);
 
   // RenderViewContextMenuBase:
   void InitMenu() override;
@@ -194,6 +198,8 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendClickToCallItem();
   void AppendSharedClipboardItem();
   void AppendQRCodeGeneratorItem(bool for_image, bool draw_icon);
+
+  std::unique_ptr<ui::ClipboardDataEndpoint> CreateDataEndpoint();
 
   // Command enabled query functions.
   bool IsReloadEnabled() const;

@@ -201,6 +201,8 @@ void AddSupervisionUI::SetUpResources() {
     DCHECK(supervision_url_.DomainIs("google.com"));
   }
 
+  source->DisableTrustedTypesCSP();
+
   // Forward data to the WebUI.
   source->AddResourcePath("post_message_api.js",
                           IDR_ADD_SUPERVISION_POST_MESSAGE_API_JS);

@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_position.h"
 
@@ -58,6 +59,7 @@ class CONTENT_EXPORT MediaSessionController
       int player_id) const override;
   bool IsPictureInPictureAvailable(int player_id) const override;
   bool HasVideo(int player_id) const override;
+  std::string GetAudioOutputSinkId(int player_id) const override;
 
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
@@ -103,6 +105,8 @@ class CONTENT_EXPORT MediaSessionController
   bool has_audio_ = false;
   bool has_video_ = false;
   bool is_picture_in_picture_available_ = false;
+  std::string audio_output_sink_id_ =
+      media::AudioDeviceDescription::kDefaultDeviceId;
   media::MediaContentType media_content_type_ =
       media::MediaContentType::Persistent;
 

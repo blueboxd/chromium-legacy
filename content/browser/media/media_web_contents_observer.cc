@@ -7,9 +7,13 @@
 #include <memory>
 #include <tuple>
 
+#include "base/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/media/audible_metrics.h"
 #include "content/browser/media/audio_stream_monitor.h"
+#include "content/browser/media/media_devices_util.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/render_frame_host.h"
@@ -18,6 +22,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/media_session/public/cpp/media_position.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -381,10 +386,49 @@ void MediaWebContentsObserver::OnAudioOutputSinkChanged(
     RenderFrameHost* render_frame_host,
     int delegate_id,
     std::string hashed_device_id) {
-  // TODO(1111432): Translate |hashed_device_id| into a raw device id before
-  // passing to controllers manager.
-  session_controllers_manager_.OnAudioOutputSinkChanged(
-      MediaPlayerId(render_frame_host, delegate_id), hashed_device_id);
+  auto salt_and_origin = content::GetMediaDeviceSaltAndOrigin(
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
+
+  auto callback_on_io_thread = base::BindOnce(
+      [](const std::string& salt, const url::Origin& origin,
+         const std::string& hashed_device_id,
+         base::OnceCallback<void(const base::Optional<std::string>&)>
+             callback) {
+        MediaStreamManager::GetMediaDeviceIDForHMAC(
+            blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, salt,
+            std::move(origin), hashed_device_id,
+            base::SequencedTaskRunnerHandle::Get(), std::move(callback));
+      },
+      salt_and_origin.device_id_salt, std::move(salt_and_origin.origin),
+      hashed_device_id,
+      base::BindOnce(&MediaWebContentsObserver::OnAudioOutputDeviceIdTranslated,
+                     weak_ptr_factory_.GetWeakPtr(), render_frame_host,
+                     delegate_id));
+
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, std::move(callback_on_io_thread));
+}
+
+void MediaWebContentsObserver::OnAudioOutputDeviceIdTranslated(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    const base::Optional<std::string>& raw_device_id) {
+  if (!raw_device_id.has_value())
+    return;
+
+  auto callback_on_ui_thread = base::BindOnce(
+      [](MediaSessionControllersManager* controllers_manager,
+         RenderFrameHost* render_frame_host, int delegate_id,
+         const std::string& raw_device_id) {
+        controllers_manager->OnAudioOutputSinkChanged(
+            MediaPlayerId(render_frame_host, delegate_id), raw_device_id);
+      },
+      session_controllers_manager(), render_frame_host, delegate_id,
+      raw_device_id.value());
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, std::move(callback_on_ui_thread));
 }
 
 void MediaWebContentsObserver::OnBufferUnderflow(

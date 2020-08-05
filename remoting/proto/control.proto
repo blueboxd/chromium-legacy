@@ -175,7 +175,7 @@ message TransportInfo {
   optional string protocol = 1;
 }
 
-// Next ID: 4
+// Next ID: 5
 message PeerConnectionParameters {
   // Sets preferred minimum and maximum bitrates. Unset fields means no
   // preference on the bitrate. Clients might need to keep track of existing
@@ -185,7 +185,12 @@ message PeerConnectionParameters {
 
   // Requests an ICE restart. This causes the host to initiate a new SDP
   // offer/answer exchange, and restarts the ICE gathering/connection sequence.
-  // This can be used to re-establish a connection, or change SDP parameters,
-  // without needing to re-authenticate the user.
+  // This can be used to re-establish a connection, without needing to
+  // re-authenticate the user.
   optional bool request_ice_restart = 3;
+
+  // Requests the host to initiate a new SDP offer/answer exchange, without
+  // restarting ICE. This can be used to change SDP configuration (for example,
+  // switching to a different codec), without needing a full reconnection.
+  optional bool request_sdp_restart = 4;
 }

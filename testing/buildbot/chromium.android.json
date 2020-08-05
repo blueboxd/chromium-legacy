@@ -2793,8 +2793,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -2849,8 +2848,7 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -6368,8 +6366,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -9663,8 +9660,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -9718,8 +9714,7 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -13182,7 +13177,6 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality",
           "--timeout-scale",
           "2.0"
         ],
@@ -15635,8 +15629,7 @@
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -15923,8 +15916,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "experiment_percentage": 0,
         "merge": {
@@ -16031,8 +16023,7 @@
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -17452,8 +17443,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -17507,8 +17497,7 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -22145,8 +22134,7 @@
           "--gtest_filter=TabTest.testTabContext",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -25886,8 +25874,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -33098,8 +33085,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -35976,8 +35962,7 @@
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -41032,7 +41017,6 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
           "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality",
           "--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter"
         ],
@@ -41102,7 +41086,6 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
           "--git-revision=${got_revision}",
-          "--bypass-skia-gold-functionality",
           "--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter"
         ],

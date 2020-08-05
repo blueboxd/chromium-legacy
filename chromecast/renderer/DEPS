@@ -6,6 +6,7 @@ include_rules = [
   "+components/media_control/renderer",
   "+components/media_control/mojom",
   "+components/network_hints/renderer",
+  "+components/on_load_script_injector/renderer",
   "+components/version_info",
   "+content/public/common",
   "+content/public/renderer",

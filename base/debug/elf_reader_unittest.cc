@@ -11,7 +11,6 @@
 #include "base/debug/test_elf_image_builder.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/native_library.h"
-#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -161,10 +160,6 @@ TEST_P(ElfReaderTest, GetRelocationOffset) {
 
     case TestElfImageBuilder::NON_RELOCATABLE:
       EXPECT_EQ(0u, GetRelocationOffset(image.elf_start()));
-      break;
-
-    default:
-      NOTREACHED();
       break;
   }
 }

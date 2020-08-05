@@ -26,6 +26,8 @@ class WebView;
 
 namespace weblayer {
 class ErrorPageDelegate;
+class FaviconFetcher;
+class FaviconFetcherDelegate;
 class FullscreenDelegate;
 class GoogleAccountsDelegate;
 class NavigationController;
@@ -107,6 +109,17 @@ class Tab {
   // Removes the WebMessageHostFactory registered under |js_object_name|.
   virtual void RemoveWebMessageHostFactory(
       const base::string16& js_object_name) = 0;
+
+  // Creates a FaviconFetcher that notifies a FaviconFetcherDelegate when
+  // the favicon changes.
+  // A page may provide any number of favicons. The preferred image size
+  // used depends upon the platform. If a previously cached icon is available,
+  // it is used, otherwise the icon is downloaded.
+  // |delegate| may be called multiple times for the same navigation. This
+  // happens when the page dynamically updates the favicon, but may also happen
+  // if a cached icon is determined to be out of date.
+  virtual std::unique_ptr<FaviconFetcher> CreateFaviconFetcher(
+      FaviconFetcherDelegate* delegate) = 0;
 
 #if !defined(OS_ANDROID)
   // TODO: this isn't a stable API, so use it now for expediency in the C++ API,

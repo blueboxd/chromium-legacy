@@ -100,8 +100,8 @@ class LabelButtonTest : public test::WidgetTest {
     // The test code below is not prepared to handle dark mode.
     test_widget_->GetNativeTheme()->set_use_dark_colors(false);
 
-    button_ = new TestLabelButton;
-    test_widget_->GetContentsView()->AddChildView(button_);
+    button_ = test_widget_->GetContentsView()->AddChildView(
+        std::make_unique<TestLabelButton>());
 
     // Establish the expected text colors for testing changes due to state.
     themed_normal_text_color_ = button_->GetNativeTheme()->GetSystemColor(

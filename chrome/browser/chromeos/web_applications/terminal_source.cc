@@ -163,6 +163,13 @@ std::string TerminalSource::GetContentSecurityPolicy(
       return "media-src data:;";
     case network::mojom::CSPDirectiveName::StyleSrc:
       return "style-src * 'unsafe-inline'; font-src *;";
+    case network::mojom::CSPDirectiveName::RequireTrustedTypesFor:
+      FALLTHROUGH;
+    case network::mojom::CSPDirectiveName::TrustedTypes:
+      // TODO(crbug.com/1098685): Trusted Type remaining WebUI
+      // This removes require-trusted-types-for and trusted-types directives
+      // from the CSP header.
+      return std::string();
     default:
       return content::URLDataSource::GetContentSecurityPolicy(directive);
   }

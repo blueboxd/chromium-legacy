@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -46,6 +47,10 @@ content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
       {"certFieldVal", IDS_CERT_DETAILS_CERTIFICATE_FIELD_VALUE_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kStrings);
+
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types cr-ui-tree-js-static;");
 
   html_source->UseStringsJs();
 

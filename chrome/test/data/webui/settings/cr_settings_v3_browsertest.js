@@ -302,30 +302,6 @@ TEST_F('CrSettingsPasswordsCheckV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var CrSettingsSafetyCheckPageBrandedWindowsV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'features::kSafetyCheckChromeCleanerChild',
-      ],
-    };
-  }
-};
-
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-TEST_F('CrSettingsSafetyCheckPageBrandedWindowsV3Test', 'All', function() {
-  mocha.run();
-});
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-
-// eslint-disable-next-line no-var
 var CrSettingsSafetyCheckPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
@@ -347,10 +323,20 @@ TEST_F('CrSettingsSafetyCheckPageV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var CrSettingsSafetyCheckChromeCleanerV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsSafetyCheckChromeCleanerV3Test =
+    class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/safety_check_chrome_cleaner_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'features::kSafetyCheckChromeCleanerChild',
+      ],
+    };
   }
 };
 

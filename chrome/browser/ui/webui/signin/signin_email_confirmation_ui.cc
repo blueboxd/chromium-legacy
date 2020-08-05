@@ -23,6 +23,7 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUISigninEmailConfirmationHost);
+  source->DisableTrustedTypesCSP();
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   source->SetDefaultResource(IDR_SIGNIN_EMAIL_CONFIRMATION_HTML);

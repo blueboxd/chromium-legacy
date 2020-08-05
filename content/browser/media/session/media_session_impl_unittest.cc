@@ -30,9 +30,9 @@ using ::testing::_;
 namespace content {
 
 using media_session::mojom::AudioFocusType;
+using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionInfo;
 using media_session::mojom::MediaSessionInfoPtr;
-using media_session::mojom::MediaPlaybackState;
 using media_session::test::MockMediaSessionMojoObserver;
 using media_session::test::TestAudioFocusObserver;
 
@@ -549,7 +549,6 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
     observer->WaitForGainedEvent();
   }
 
-
   {
     MockMediaSessionMojoObserver observer(*media_session_1);
     observer.WaitForState(MediaSessionInfo::SessionState::kDucking);
@@ -693,6 +692,32 @@ TEST_F(MediaSessionImplTest, SessionInfoPictureInPicture) {
       media_session::test::GetMediaSessionInfoSync(GetMediaSession())
           ->picture_in_picture_state,
       media_session::mojom::MediaPictureInPictureState::kNotInPictureInPicture);
+}
+
+TEST_F(MediaSessionImplTest, SessionInfoAudioSink) {
+  // When the session is created it should be using the default audio device.
+  // When the default audio device is in use, the |audio_sink_id| attribute
+  // should be unset.
+  EXPECT_FALSE(media_session::test::GetMediaSessionInfoSync(GetMediaSession())
+                   ->audio_sink_id.has_value());
+  int player1 = player_observer_->StartNewPlayer();
+  int player2 = player_observer_->StartNewPlayer();
+  GetMediaSession()->AddPlayer(player_observer_.get(), player1,
+                               media::MediaContentType::Persistent);
+  GetMediaSession()->AddPlayer(player_observer_.get(), player2,
+                               media::MediaContentType::Persistent);
+  player_observer_->SetAudioSinkId(player1, "1");
+  player_observer_->SetAudioSinkId(player2, "1");
+
+  auto info = media_session::test::GetMediaSessionInfoSync(GetMediaSession());
+  ASSERT_TRUE(info->audio_sink_id.has_value());
+  EXPECT_EQ(info->audio_sink_id.value(), "1");
+
+  // If multiple audio devices are being used the audio sink id attribute should
+  // be unset.
+  player_observer_->SetAudioSinkId(player2, "2");
+  info = media_session::test::GetMediaSessionInfoSync(GetMediaSession());
+  EXPECT_FALSE(info->audio_sink_id.has_value());
 }
 
 }  // namespace content

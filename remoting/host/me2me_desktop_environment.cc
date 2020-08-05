@@ -65,7 +65,7 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
   capabilities += protocol::kRateLimitResizeRequests;
 
   capabilities += " ";
-  capabilities += protocol::kWebrtcIceRestartAction;
+  capabilities += protocol::kWebrtcIceSdpRestartAction;
 
   if (InputInjector::SupportsTouchEvents()) {
     capabilities += " ";

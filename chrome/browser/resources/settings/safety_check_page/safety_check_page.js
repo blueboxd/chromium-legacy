@@ -25,7 +25,6 @@ import './safety_check_updates_child.js';
 import './safety_check_chrome_cleaner_child.js';
 // </if>
 
-import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
@@ -181,14 +180,5 @@ Polymer({
    */
   shouldShowChildren_: function() {
     return this.parentStatus_ !== SafetyCheckParentStatus.BEFORE;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  showChromeCleanerChild_: function() {
-    return loadTimeData.valueExists('safetyCheckChromeCleanerChildEnabled') &&
-        loadTimeData.getBoolean('safetyCheckChromeCleanerChildEnabled');
   },
 });

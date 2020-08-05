@@ -13,8 +13,6 @@ import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -153,7 +151,6 @@ public class LocationUtils {
      * Call this to use a different subclass of LocationUtils throughout the program.
      * This can be used by embedders in addition to tests.
      */
-    @VisibleForTesting
     public static void setFactory(Factory factory) {
         sFactory = factory;
         sInstance = null;

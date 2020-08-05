@@ -106,6 +106,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                       IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL);
   }
 
+  source->DisableTrustedTypesCSP();
+
   base::DictionaryValue strings;
   webui::SetLoadTimeDataDefaults(
       g_browser_process->GetApplicationLocale(), &strings);

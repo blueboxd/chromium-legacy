@@ -17,7 +17,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -44,12 +43,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::PageVisibilityState,
 IPC_STRUCT_TRAITS_BEGIN(viz::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(start)
   IPC_STRUCT_TRAITS_MEMBER(end)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebTextAutosizerPageInfo)
-  IPC_STRUCT_TRAITS_MEMBER(main_frame_width)
-  IPC_STRUCT_TRAITS_MEMBER(main_frame_layout_width)
-  IPC_STRUCT_TRAITS_MEMBER(device_scale_adjustment)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_

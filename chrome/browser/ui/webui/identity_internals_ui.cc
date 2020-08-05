@@ -211,6 +211,7 @@ IdentityInternalsUIMessageHandler::GetInfoForToken(
     const extensions::IdentityTokenCacheValue& token_cache_value) {
   auto token_data = std::make_unique<base::DictionaryValue>();
   token_data->SetString("extensionId", token_cache_key.extension_id);
+  token_data->SetString("accountId", token_cache_key.account_id.ToString());
   token_data->SetString("extensionName", GetExtensionName(token_cache_key));
   token_data->Set("scopes", GetScopes(token_cache_key));
   token_data->SetString("status", GetStatus(token_cache_value));

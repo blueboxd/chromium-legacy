@@ -467,7 +467,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         NotifyJobDone(job);
         break;
       case State::STATE_ERROR:
-        NotifyJobUpdated(job);
+        NotifyJobFailed(job);
         break;
     }
   }

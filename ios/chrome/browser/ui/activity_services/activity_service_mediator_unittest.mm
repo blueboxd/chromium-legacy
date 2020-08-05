@@ -6,8 +6,10 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/copy_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
@@ -56,6 +58,9 @@ class ActivityServiceMediatorTest : public PlatformTest {
         qrGenerationHandler:mocked_qr_generation_handler_
                 prefService:pref_service_.get()
               bookmarkModel:nil];
+
+    pref_service_->registry()->RegisterBooleanPref(prefs::kPrintingEnabled,
+                                                   true);
   }
 
   void VerifyTypes(NSArray* activities, NSArray* expected_types) {
@@ -265,4 +270,33 @@ TEST_F(ActivityServiceMediatorTest, ShareCancelled) {
   const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
   int cancelAction = 1;
   histograms_tester_.ExpectBucketCount(histogramName, cancelAction, 1);
+}
+
+TEST_F(ActivityServiceMediatorTest, PrintPrefDisabled) {
+  pref_service_->SetUserPref(prefs::kPrintingEnabled,
+                             std::make_unique<base::Value>(false));
+
+  ShareToData* data =
+      [[ShareToData alloc] initWithShareURL:GURL("http://example.com")
+                                 visibleURL:GURL("http://example.com")
+                                      title:@"baz"
+                            isOriginalTitle:YES
+                            isPagePrintable:YES
+                           isPageSearchable:YES
+                           canSendTabToSelf:YES
+                                  userAgent:web::UserAgentType::MOBILE
+                         thumbnailGenerator:mocked_thumbnail_generator_];
+
+  NSArray* activities = [mediator_ applicationActivitiesForData:data];
+
+  // Verify activities' types.
+  VerifyTypes(activities, @[
+    [CopyActivity class], [SendTabToSelfActivity class],
+    [ReadingListActivity class], [BookmarkActivity class],
+    [GenerateQrCodeActivity class], [FindInPageActivity class],
+    [RequestDesktopOrMobileSiteActivity class]
+  ]);
+
+  // Verify activities' size.
+  EXPECT_EQ(7U, [activities count]);
 }

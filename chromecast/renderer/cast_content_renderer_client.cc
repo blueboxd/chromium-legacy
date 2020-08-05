@@ -22,10 +22,10 @@
 #include "chromecast/renderer/js_channel_bindings.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
-#include "chromecast/renderer/on_load_script_injector.h"
 #include "chromecast/renderer/queryable_data_bindings.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
+#include "components/on_load_script_injector/renderer/on_load_script_injector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -187,8 +187,8 @@ void CastContentRendererClient::RenderFrameCreated(
   }
 
   // Add script injection support to the RenderFrame, used by Cast platform
-  // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.
-  new OnLoadScriptInjector(render_frame);
+  // APIs. The injector's lifetime is bound to the RenderFrame's lifetime.
+  new on_load_script_injector::OnLoadScriptInjector(render_frame);
 
   if (!app_media_capabilities_observer_receiver_.is_bound()) {
     mojo::Remote<mojom::ApplicationMediaCapabilities> app_media_capabilities;

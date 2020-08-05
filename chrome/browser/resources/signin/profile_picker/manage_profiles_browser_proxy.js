@@ -37,6 +37,9 @@ export class ManageProfilesBrowserProxy {
    */
   launchSelectedProfile(profilePath) {}
 
+  /** Launches Guest profile. */
+  launchGuestProfile() {}
+
   /**
    * Inform native the user's choice on whether to show the profile picker
    * on startup or not.
@@ -65,6 +68,11 @@ export class ManageProfilesBrowserProxyImpl {
   /** @override */
   launchSelectedProfile(profilePath) {
     chrome.send('launchSelectedProfile', [profilePath]);
+  }
+
+  /** @override */
+  launchGuestProfile() {
+    chrome.send('launchGuestProfile');
   }
 
   /** @override */

@@ -69,6 +69,10 @@ component("fido") {
   # Android implementation of FIDO is delegated to GMSCore.
   if (!is_android) {
     sources += [
+      "aoa/android_accessory_device.cc",
+      "aoa/android_accessory_device.h",
+      "aoa/android_accessory_discovery.cc",
+      "aoa/android_accessory_discovery.h",
       "attestation_object.cc",
       "attestation_object.h",
       "attestation_statement.cc",
@@ -183,7 +187,9 @@ component("fido") {
 
     deps += [
       "//services/device/public/cpp/hid",
+      "//services/device/public/cpp/usb",
       "//services/device/public/mojom",
+      "//services/device/public/mojom:usb",
     ]
   }
 

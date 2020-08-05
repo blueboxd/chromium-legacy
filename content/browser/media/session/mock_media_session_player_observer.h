@@ -10,6 +10,7 @@
 
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
+#include "media/audio/audio_device_description.h"
 #include "services/media_session/public/cpp/media_position.h"
 
 namespace content {
@@ -37,6 +38,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   bool IsPictureInPictureAvailable(int player_id) const override;
   RenderFrameHost* render_frame_host() const override;
   bool HasVideo(int player_id) const override;
+  std::string GetAudioOutputSinkId(int player_id) const override;
 
   // Simulate that a new player started.
   // Returns the player_id.
@@ -48,8 +50,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   // Returns the volume multiplier of |player_id|.
   double GetVolumeMultiplier(size_t player_id);
 
-  // Returns the sink id being used for the audio output of |player_id|
-  const std::string& GetAudioSinkId(size_t player_id);
+  // Changes the audio output sink id of |player_id|.
+  void SetAudioSinkId(size_t player_id, std::string sink_id);
 
   // Simulate a play state change for |player_id|.
   void SetPlaying(size_t player_id, bool playing);
@@ -70,8 +72,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   struct MockPlayer {
    public:
     explicit MockPlayer(bool is_playing = true,
-                        double volume_multiplier = 1.0f,
-                        const std::string& audio_sink_id = "");
+                        double volume_multiplier = 1.0f);
     ~MockPlayer();
     MockPlayer(const MockPlayer&);
 
@@ -79,7 +80,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     double volume_multiplier_;
     base::Optional<media_session::MediaPosition> position_;
     bool is_in_picture_in_picture_;
-    std::string audio_sink_id_;
+    std::string audio_sink_id_ =
+        media::AudioDeviceDescription::kDefaultDeviceId;
   };
 
   // Basic representation of the players. The position in the vector is the

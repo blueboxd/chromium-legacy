@@ -184,9 +184,9 @@ void Blur::Run(double sigma_x,
       SkIRect subset;
       SkIPoint offset;
       sk_sp<SkImage> blur_image = content_surfaces.back()->makeImageSnapshot();
-      sk_sp<SkImage> blurred_image =
-          blur_image->makeWithFilter(blur_filter.get(), blur_image->bounds(),
-                                     blur_image->bounds(), &subset, &offset);
+      sk_sp<SkImage> blurred_image = blur_image->makeWithFilter(
+          gr_context_.get(), blur_filter.get(), blur_image->bounds(),
+          blur_image->bounds(), &subset, &offset);
       SkCanvas* canvas = buffer->sk_surface->getCanvas();
       canvas->save();
       SkSize size = SkSize::Make(size_.width(), size_.height());

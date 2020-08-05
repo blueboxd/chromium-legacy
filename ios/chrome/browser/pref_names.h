@@ -29,6 +29,7 @@ extern const char kIosSettingsPromoAlreadySeen[];
 extern const char kIosSettingsSigninPromoDisplayedCount[];
 extern const char kLastSessionExitedCleanly[];
 extern const char kMetricsReportingWifiOnly[];
+extern const char kPrintingEnabled[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kSearchSuggestEnabled[];
 

@@ -49,7 +49,6 @@ public final class UniqueIdentificationGeneratorFactory {
      * @param force         if set to true, will override any existing generator for this type. Else
      *                      discards calls where a generator exists.
      */
-    @VisibleForTesting
     public static void registerGenerator(String generatorType, UniqueIdentificationGenerator gen,
                                          boolean force) {
         synchronized (LOCK) {

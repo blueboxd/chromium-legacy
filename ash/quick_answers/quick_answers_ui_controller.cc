@@ -36,7 +36,14 @@ void QuickAnswersUiController::CreateQuickAnswersView(
     const gfx::Rect& bounds,
     const std::string& title,
     const std::string& query) {
-  DCHECK(!quick_answers_view_);
+  // Currently there are timing issues that causes the quick answers view is not
+  // dismissed. TODO(updowndota): Remove the special handling after the root
+  // cause is found.
+  if (quick_answers_view_) {
+    LOG(ERROR) << "Quick answers view not dismissed.";
+    CloseQuickAnswersView();
+  }
+
   DCHECK(!user_consent_view_);
   SetActiveQuery(query);
   quick_answers_view_ = new QuickAnswersView(bounds, title, this);

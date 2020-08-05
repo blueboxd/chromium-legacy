@@ -28,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/fido/features.h"
@@ -323,6 +324,11 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     auto paired_phones = GetCablePairings();
     have_paired_phones = !paired_phones.empty();
     pairings.insert(pairings.end(), paired_phones.begin(), paired_phones.end());
+
+    mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager;
+    content::GetDeviceService().BindUsbDeviceManager(
+        usb_device_manager.BindNewPipeAndPassReceiver());
+    discovery_factory()->set_usb_device_manager(std::move(usb_device_manager));
   }
 
   if (pairings.empty() && !qr_generator_key) {

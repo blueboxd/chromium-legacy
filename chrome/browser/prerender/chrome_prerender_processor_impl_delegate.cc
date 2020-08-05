@@ -4,8 +4,8 @@
 
 #include "chrome/browser/prerender/chrome_prerender_processor_impl_delegate.h"
 
-#include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
+#include "components/prerender/browser/prerender_link_manager.h"
 #include "content/public/browser/browser_context.h"
 
 namespace prerender {

@@ -1287,6 +1287,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrossSiteIframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            TwoSubframesCreatePopupsSimultaneously);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, TextAutosizerPageInfo);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            TwoSubframesCreatePopupMenuWidgetsSimultaneously);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessAccessibilityBrowserTest,
@@ -2065,7 +2066,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Stores information from the main frame's renderer that needs to be shared
   // with OOPIF renderers.
-  blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
+  blink::mojom::TextAutosizerPageInfo text_autosizer_page_info_;
 
   // Observe native theme for changes to dark mode, and preferred color scheme.
   // Used to notify the renderer of preferred color scheme changes.

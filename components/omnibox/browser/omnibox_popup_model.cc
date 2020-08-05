@@ -588,6 +588,7 @@ bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
 
 base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
     const base::string16& match_text,
+    bool include_positional_info,
     int* label_prefix_length) {
   size_t line = selection_.line;
   DCHECK_NE(line, kNoMatch)
@@ -636,10 +637,14 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
       break;
   }
 
+  if (selection_.IsButtonFocused())
+    include_positional_info = false;
+
+  size_t total_matches = include_positional_info ? result().size() : 0;
+
   // If there's a button focused, we don't want the "n of m" message announced.
-  size_t total_matches = selection_.IsButtonFocused() ? 0 : result().size();
   return AutocompleteMatchType::ToAccessibilityLabel(
-      match, match_text, selection_.line, total_matches, additional_message_id,
+      match, match_text, line, total_matches, additional_message_id,
       label_prefix_length);
 }
 

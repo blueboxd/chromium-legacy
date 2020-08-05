@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -154,6 +155,7 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -771,7 +773,8 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   if (url.is_empty() || !url.is_valid())
     return;
 
-  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste,
+                                CreateDataEndpoint());
   scw.WriteText(FormatURLForClipboard(url));
 }
 
@@ -2665,6 +2668,16 @@ void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
   }
 }
 
+std::unique_ptr<ui::ClipboardDataEndpoint>
+RenderViewContextMenu::CreateDataEndpoint() {
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (render_frame_host) {
+    return std::make_unique<ui::ClipboardDataEndpoint>(
+        render_frame_host->GetLastCommittedURL());
+  }
+  return nullptr;
+}
+
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {
   if (!media_router::MediaRouterEnabled(browser_context_))
     return false;
@@ -2838,7 +2851,8 @@ void RenderViewContextMenu::ExecExitFullscreen() {
 }
 
 void RenderViewContextMenu::ExecCopyLinkText() {
-  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste,
+                                CreateDataEndpoint());
   scw.WriteText(params_.link_text);
 }
 

@@ -16,6 +16,8 @@
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 
 #if defined(OS_MAC)
 #include "device/fido/mac/authenticator_config.h"
@@ -43,6 +45,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   // set_cable_data configures caBLE obtained via a WebAuthn extension.
   void set_cable_data(std::vector<CableDiscoveryData> cable_data,
                       base::Optional<QRGeneratorKey> qr_generator_key);
+
+  void set_usb_device_manager(mojo::Remote<device::mojom::UsbDeviceManager>);
 
   // set_cable_pairing_callback installs a repeating callback that will be
   // called when a QR handshake results in a phone wishing to pair with this
@@ -78,6 +82,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #if defined(OS_MAC)
   base::Optional<fido::mac::AuthenticatorConfig> mac_touch_id_config_;
 #endif  // defined(OS_MAC)
+  base::Optional<mojo::Remote<device::mojom::UsbDeviceManager>>
+      usb_device_manager_;
   base::Optional<std::vector<CableDiscoveryData>> cable_data_;
   base::Optional<QRGeneratorKey> qr_generator_key_;
   base::Optional<

@@ -27,12 +27,20 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
+#endif
+
 // Settings page UI handler that checks four areas of browser safety:
 // browser updates, password leaks, malicious extensions, and unwanted
 // software.
 class SafetyCheckHandler
     : public settings::SettingsPageUIHandler,
       public password_manager::BulkLeakCheckServiceInterface::Observer,
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      public safe_browsing::ChromeCleanerController::Observer,
+#endif
       public safety_check::SafetyCheck::SafetyCheckHandlerInterface {
  public:
   // The following enum represent the state of the safety check parent
@@ -89,25 +97,12 @@ class SafetyCheckHandler
     kMaxValue = kBlocklistedReenabledAllByAdmin,
   };
   enum class ChromeCleanerStatus {
-    kChecking = 0,
-    kInitial = 1,
-    kReporterFoundNothing = 2,
-    kReporterFailed = 3,
-    kScanningFoundNothing = 4,
-    kScanningFailed = 5,
-    kConnectionLost = 6,
-    kUserDeclinedCleanup = 7,
-    kCleaningFailed = 8,
-    kCleaningSucceeded = 9,
-    kCleanerDownloadFailed = 10,
-    kReporterRunning = 11,
-    kScanning = 12,
-    kInfected = 13,
-    kCleaning = 14,
-    kRebootRequired = 15,
-    kDisabledByAdmin = 16,
+    kHidden = 0,
+    kChecking = 1,
+    kInfected = 2,
+    kRebootRequired = 3,
     // New enum values must go above here.
-    kMaxValue = kDisabledByAdmin,
+    kMaxValue = kRebootRequired,
   };
 
   SafetyCheckHandler();
@@ -259,6 +254,22 @@ class SafetyCheckHandler
   void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
                         password_manager::IsLeaked is_leaked) override;
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // safe_browsing::ChromeCleanerController::Observer overrides.
+  void OnIdle(
+      safe_browsing::ChromeCleanerController::IdleReason idle_reason) override;
+  void OnReporterRunning() override;
+  void OnScanning() override;
+  void OnInfected(bool is_powered_by_partner,
+                  const safe_browsing::ChromeCleanerScannerResults&
+                      scanner_results) override;
+  void OnCleaning(bool is_powered_by_partner,
+                  const safe_browsing::ChromeCleanerScannerResults&
+                      scanner_results) override;
+  void OnRebootRequired() override;
+  void OnRebootFailed() override;
+#endif
+
   // SettingsPageUIHandler implementation.
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
@@ -281,8 +292,7 @@ class SafetyCheckHandler
   PasswordsStatus passwords_status_ = PasswordsStatus::kChecking;
   SafeBrowsingStatus safe_browsing_status_ = SafeBrowsingStatus::kChecking;
   ExtensionsStatus extensions_status_ = ExtensionsStatus::kChecking;
-  ChromeCleanerStatus chrome_cleaner_status_ = ChromeCleanerStatus::kChecking;
-
+  ChromeCleanerStatus chrome_cleaner_status_ = ChromeCleanerStatus::kHidden;
   // System time when safety check completed.
   base::Time safety_check_completion_time_;
 

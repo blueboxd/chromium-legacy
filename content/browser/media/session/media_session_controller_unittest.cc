@@ -11,6 +11,7 @@
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "media/audio/audio_device_description.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -277,6 +278,17 @@ TEST_F(MediaSessionControllerTest, PictureInPictureAvailability) {
   controller_->OnPictureInPictureAvailabilityChanged(true);
   EXPECT_TRUE(controller_->IsPictureInPictureAvailable(
       controller_->get_player_id_for_testing()));
+}
+
+TEST_F(MediaSessionControllerTest, AudioOutputSinkIdChange) {
+  EXPECT_EQ(controller_->GetAudioOutputSinkId(
+                controller_->get_player_id_for_testing()),
+            media::AudioDeviceDescription::kDefaultDeviceId);
+
+  controller_->OnAudioOutputSinkChanged("1");
+  EXPECT_EQ(controller_->GetAudioOutputSinkId(
+                controller_->get_player_id_for_testing()),
+            "1");
 }
 
 TEST_F(MediaSessionControllerTest, AddPlayerWhenUnmuted) {

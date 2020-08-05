@@ -43,6 +43,10 @@ void ProfilePickerHandler::RegisterMessages() {
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchSelectedProfile,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "launchGuestProfile",
+      base::BindRepeating(&ProfilePickerHandler::HandleLaunchGuestProfile,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "askOnStartupChanged",
       base::BindRepeating(&ProfilePickerHandler::HandleAskOnStartupChanged,
                           base::Unretained(this)));
@@ -103,6 +107,15 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
 
   profiles::SwitchToProfile(
       *profile_path, /*always_create=*/false,
+      base::Bind(&ProfilePickerHandler::OnSwitchToProfileComplete,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ProfilePickerHandler::HandleLaunchGuestProfile(
+    const base::ListValue* args) {
+  // TODO(crbug.com/1063856): Add check |IsGuestModeEnabled| once policy
+  // checking has been added to the UI.
+  profiles::SwitchToGuestProfile(
       base::Bind(&ProfilePickerHandler::OnSwitchToProfileComplete,
                  weak_factory_.GetWeakPtr()));
 }

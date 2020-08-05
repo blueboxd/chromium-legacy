@@ -301,7 +301,7 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/chromeos/',
   '^chrome/browser/component_updater/',
   '^chrome/browser/custom_handlers/protocol_handler_registry.cc',
-  '^chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.cc',
+  '^chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.cc', # pylint: disable=line-too-long
   '^chrome/browser/devtools/',
   '^chrome/browser/download/',
   '^chrome/browser/extensions/',
@@ -313,12 +313,12 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/media/',
   '^chrome/browser/metrics/',
   '^chrome/browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
-  '^chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl_unittest.cc',
+  '^chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl_unittest.cc', # pylint: disable=line-too-long
   '^chrome/browser/net/',
   '^chrome/browser/notifications/',
   '^chrome/browser/ntp_tiles/ntp_tiles_browsertest.cc',
   '^chrome/browser/offline_pages/',
-  '^chrome/browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer_browsertest.cc',
+  '^chrome/browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer_browsertest.cc', # pylint: disable=line-too-long
   '^chrome/browser/password_manager/',
   '^chrome/browser/payments/payment_manifest_parser_browsertest.cc',
   '^chrome/browser/pdf/pdf_extension_test.cc',
@@ -1492,6 +1492,8 @@ def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
   name_pattern = r'ForTest(s|ing)?'
   # Describes an occurrence of "ForTest*" inside a // comment.
   comment_re = input_api.re.compile(r'//.*%s' % name_pattern)
+  # Describes @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+  annotation_re = input_api.re.compile(r'@VisibleForTesting\(otherwise')
   # Catch calls.
   inclusion_re = input_api.re.compile(r'(%s)\s*\(' % name_pattern)
   # Ignore definitions. (Comments are ignored separately.)
@@ -1516,6 +1518,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
         continue
       if (inclusion_re.search(line) and
           not comment_re.search(line) and
+          not annotation_re.search(line) and
           not exclusion_re.search(line)):
         problems.append(
           '%s:%d\n    %s' % (local_path, line_number, line.strip()))

@@ -81,6 +81,7 @@ _TARGETS_REQUIRE_ASH_CHROME = [
 
     # regex patters.
     '.*_browsertests',
+    '.*interactive_ui_tests'
 ]
 
 def _GetAshChromeDirPath(version):

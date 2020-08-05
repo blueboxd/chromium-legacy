@@ -34,6 +34,8 @@ cr.define('identity_internals', function() {
           'Extension Name', this.data_.extensionName, 'extension-name'));
       tbody.appendChild(this.createEntry_(
           'Extension Id', this.data_.extensionId, 'extension-id'));
+      tbody.appendChild(this.createEntry_(
+          'Account Id', this.data_.accountId, 'account-id'));
       tbody.appendChild(
           this.createEntry_('Token Status', this.data_.status, 'token-status'));
       tbody.appendChild(this.createEntry_(

@@ -27,6 +27,9 @@ content::WebUIDataSource* CreateConflictsUIHTMLSource() {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
 
   source->AddResourcePath("conflicts.js", IDR_ABOUT_CONFLICTS_JS);
   source->SetDefaultResource(IDR_ABOUT_CONFLICTS_HTML);

@@ -57,9 +57,14 @@ class ParentAccessControllerTest : public LoginTestBase {
 
   void StartParentAccess(ParentAccessRequestReason reason =
                              ParentAccessRequestReason::kUnlockTimeLimits) {
+    StartParentAccess(account_id_, reason);
+  }
+
+  void StartParentAccess(const AccountId& account_id,
+                         ParentAccessRequestReason reason) {
     validation_time_ = base::Time::Now();
     controller_->ShowWidget(
-        account_id_,
+        account_id,
         base::BindOnce(&ParentAccessControllerTest::OnFinished,
                        base::Unretained(this)),
         reason, false, validation_time_);
@@ -182,9 +187,29 @@ TEST_F(ParentAccessControllerTest, ParentAccessUMARecording) {
   ExpectUMAActionReported(ParentAccessController::UMAAction::kCanceledByUser, 5,
                           5);
 
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  StartParentAccess(ParentAccessRequestReason::kOnlineLogin);
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessController::kUMAParentAccessCodeUsage,
+      ParentAccessController::UMAUsage::kReauhLoginScreen, 1);
+  SimulateButtonPress(PinRequestView::TestApi(view_).back_button());
+  ExpectUMAActionReported(ParentAccessController::UMAAction::kCanceledByUser, 6,
+                          6);
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  StartParentAccess(EmptyAccountId(), ParentAccessRequestReason::kOnlineLogin);
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessController::kUMAParentAccessCodeUsage,
+      ParentAccessController::UMAUsage::kAddUserLoginScreen, 1);
+  SimulateButtonPress(PinRequestView::TestApi(view_).back_button());
+  ExpectUMAActionReported(ParentAccessController::UMAAction::kCanceledByUser, 7,
+                          7);
+
   histogram_tester_.ExpectTotalCount(
-      ParentAccessController::kUMAParentAccessCodeUsage, 5);
-  EXPECT_EQ(5, back_action_);
+      ParentAccessController::kUMAParentAccessCodeUsage, 7);
+  EXPECT_EQ(7, back_action_);
 }
 
 // Tests successful parent access validation flow.

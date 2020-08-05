@@ -23,6 +23,9 @@ content::WebUIDataSource* CreateInvalidationsHTMLSource() {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
   source->AddResourcePath("about_invalidations.js", IDR_ABOUT_INVALIDATIONS_JS);
   source->SetDefaultResource(IDR_ABOUT_INVALIDATIONS_HTML);
   return source;

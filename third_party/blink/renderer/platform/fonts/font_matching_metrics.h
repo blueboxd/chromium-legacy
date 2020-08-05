@@ -23,31 +23,24 @@ class UkmRecorder;
 namespace blink {
 
 struct LocalFontLookupKey {
-  AtomicString name{g_empty_atom};
+  unsigned name_hash{0};
   UChar32 fallback_character{-1};
-  FontSelectionValue weight;
-  FontSelectionValue width;
-  FontSelectionValue slope;
+  unsigned font_selection_request_hash{0};
   bool is_deleted_value_{false};
 
   LocalFontLookupKey() = default;
-  LocalFontLookupKey(AtomicString name,
+  LocalFontLookupKey(const AtomicString& name,
                      FontSelectionRequest font_selection_request)
-      : weight(font_selection_request.weight),
-        width(font_selection_request.width),
-        slope(font_selection_request.slope) {}
+      : name_hash(AtomicStringHash::GetHash(name)),
+        font_selection_request_hash(font_selection_request.GetHash()) {}
 
   LocalFontLookupKey(UChar32 fallback_character,
                      FontSelectionRequest font_selection_request)
       : fallback_character(fallback_character),
-        weight(font_selection_request.weight),
-        width(font_selection_request.width),
-        slope(font_selection_request.slope) {}
+        font_selection_request_hash(font_selection_request.GetHash()) {}
 
   explicit LocalFontLookupKey(FontSelectionRequest font_selection_request)
-      : weight(font_selection_request.weight),
-        width(font_selection_request.width),
-        slope(font_selection_request.slope) {}
+      : font_selection_request_hash(font_selection_request.GetHash()) {}
 
   explicit LocalFontLookupKey(WTF::HashTableDeletedValueType)
       : is_deleted_value_(true) {}
@@ -55,21 +48,18 @@ struct LocalFontLookupKey {
   bool IsHashTableDeletedValue() const { return is_deleted_value_; }
 
   bool operator==(const LocalFontLookupKey& other) const {
-    return name == other.name &&
+    return name_hash == other.name_hash &&
            fallback_character == other.fallback_character &&
-           weight == other.weight && width == other.width &&
-           slope == other.slope && is_deleted_value_ == other.is_deleted_value_;
+           font_selection_request_hash == other.font_selection_request_hash &&
+           is_deleted_value_ == other.is_deleted_value_;
   }
 };
 
 struct LocalFontLookupKeyHash {
   STATIC_ONLY(LocalFontLookupKeyHash);
   static unsigned GetHash(const LocalFontLookupKey& key) {
-    unsigned hash_codes[6] = {AtomicStringHash::GetHash(key.name),
-                              key.fallback_character,
-                              key.weight.RawValue(),
-                              key.width.RawValue(),
-                              key.slope.RawValue(),
+    unsigned hash_codes[4] = {key.name_hash, key.fallback_character,
+                              key.font_selection_request_hash,
                               key.is_deleted_value_};
     return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
@@ -104,16 +94,17 @@ struct LocalFontLookupResult {
 };
 
 struct GenericFontLookupKey {
-  AtomicString generic_font_family_name;
+  unsigned generic_font_family_name_hash;
   UScriptCode script{UScriptCode::USCRIPT_INVALID_CODE};
   FontDescription::GenericFamilyType generic_family_type;
   bool is_deleted_value_{false};
 
   GenericFontLookupKey() = default;
-  GenericFontLookupKey(AtomicString generic_font_family_name,
+  GenericFontLookupKey(const AtomicString& generic_font_family_name,
                        UScriptCode script,
                        FontDescription::GenericFamilyType generic_family_type)
-      : generic_font_family_name(generic_font_family_name),
+      : generic_font_family_name_hash(
+            AtomicStringHash::GetHash(generic_font_family_name)),
         script(script),
         generic_family_type(generic_family_type) {}
 
@@ -123,7 +114,8 @@ struct GenericFontLookupKey {
   bool IsHashTableDeletedValue() const { return is_deleted_value_; }
 
   bool operator==(const GenericFontLookupKey& other) const {
-    return generic_font_family_name == other.generic_font_family_name &&
+    return generic_font_family_name_hash ==
+               other.generic_font_family_name_hash &&
            script == other.script &&
            generic_family_type == other.generic_family_type &&
            is_deleted_value_ == other.is_deleted_value_;
@@ -133,9 +125,8 @@ struct GenericFontLookupKey {
 struct GenericFontLookupKeyHash {
   STATIC_ONLY(GenericFontLookupKeyHash);
   static unsigned GetHash(const GenericFontLookupKey& key) {
-    unsigned hash_codes[4] = {
-        AtomicStringHash::GetHash(key.generic_font_family_name), key.script,
-        key.generic_family_type, key.is_deleted_value_};
+    unsigned hash_codes[4] = {key.generic_font_family_name_hash, key.script,
+                              key.generic_family_type, key.is_deleted_value_};
     return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
   static bool Equal(const GenericFontLookupKey& a,
@@ -273,7 +264,7 @@ class PLATFORM_EXPORT FontMatchingMetrics {
           LocalFontLookupKeyHashTraits>
       font_lookups_;
   HashMap<GenericFontLookupKey,
-          AtomicString,
+          unsigned,
           GenericFontLookupKeyHash,
           GenericFontLookupKeyHashTraits>
       generic_font_lookups_;

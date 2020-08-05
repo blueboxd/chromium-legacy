@@ -27,6 +27,10 @@ namespace blink {
 class AssociatedInterfaceProvider;
 }  // namespace blink
 
+namespace on_load_script_injector {
+class OnLoadScriptInjectorHost;
+}  // namespace on_load_script_injector
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -332,29 +336,13 @@ class CastWebContents {
   // Page Communication
   // ===========================================================================
 
-  // Executes a UTF-8 encoded |script| for every subsequent page load where
-  // the frame's URL has an origin reflected in |origins|. The script is
-  // executed early, prior to the execution of the document's scripts.
-  //
-  // Scripts are identified by a string-based client-managed |id|. Any
-  // script previously injected using the same |id| will be replaced.
-  //
-  // The order in which multiple bindings are executed is the same as the
-  // order in which the bindings were Added. If a script is added which
-  // clobbers an existing script of the same |id|, the previous script's
-  // precedence in the injection order will be preserved.
-  // |script| and |id| must be non-empty string.
-  //
-  // At least one |origins| entry must be specified.
-  // If a wildcard "*" is specified in |origins|, then the script will be
-  // evaluated for all documents.
-  virtual void AddBeforeLoadJavaScript(base::StringPiece id,
-                                       const std::vector<std::string>& origins,
-                                       base::StringPiece script) = 0;
+  // Returns the script injector instance, which injects scripts at page load
+  // time.
+  virtual on_load_script_injector::OnLoadScriptInjectorHost*
+  script_injector() = 0;
 
-  // Removes a previously added JavaScript snippet identified by |id|.
-  // This is a no-op if there is no JavaScript snippet identified by |id|.
-  virtual void RemoveBeforeLoadJavaScript(base::StringPiece id) = 0;
+  // Injects on-load scripts into the WebContents' main frame.
+  virtual void InjectScriptsIntoMainFrame() = 0;
 
   // Posts a message to the frame's onMessage handler.
   //

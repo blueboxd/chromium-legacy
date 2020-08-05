@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ChromeCleanupProxy, ChromeCleanupProxyImpl} from 'chrome://settings/lazy_load.js';
@@ -53,6 +54,7 @@ function assertSafetyCheckChild({
   managedIcon
 }) {
   const safetyCheckChild = page.$$('#safetyCheckChild');
+  assertTrue(!!safetyCheckChild);
   assertTrue(safetyCheckChild.iconStatus === iconStatus);
   assertTrue(safetyCheckChild.label === label);
   assertTrue(safetyCheckChild.subLabel === testDisplayString);
@@ -73,8 +75,14 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
 
-  /** @type {!SettingsSafetyCheckExtensionsChildElement} */
+  /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */
   let page;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      safetyCheckChromeCleanerChildEnabled: true,
+    });
+  });
 
   setup(function() {
     chromeCleanupBrowserProxy = TestBrowserProxy.fromClass(ChromeCleanupProxy);
@@ -86,7 +94,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
-    page = /** @type {!SettingsSafetyCheckExtensionsChildElement} */ (
+    page = /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */ (
         document.createElement('settings-safety-check-chrome-cleaner-child'));
     document.body.appendChild(page);
     flush();
@@ -105,6 +113,13 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     assertEquals(routes.CHROME_CLEANUP, Router.getInstance().getCurrentRoute());
   }
 
+  test('chromeCleanerHiddenUiTest', function() {
+    fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.HIDDEN);
+    flush();
+    // There is no Chrome cleaner child in safety check.
+    assertFalse(!!page.$$('#safetyCheckChild'));
+  });
+
   test('chromeCleanerCheckingUiTest', function() {
     fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.CHECKING);
     flush();
@@ -115,103 +130,18 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     });
   });
 
-  test('chromeCleanerSafeStatesUiTest', function() {
-    for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
-      switch (state) {
-        case SafetyCheckChromeCleanerStatus.INITIAL:
-        case SafetyCheckChromeCleanerStatus.REPORTER_FOUND_NOTHING:
-        case SafetyCheckChromeCleanerStatus.SCANNING_FOUND_NOTHING:
-        case SafetyCheckChromeCleanerStatus.CLEANING_SUCCEEDED:
-        case SafetyCheckChromeCleanerStatus.REPORTER_RUNNING:
-        case SafetyCheckChromeCleanerStatus.SCANNING:
-          fireSafetyCheckChromeCleanerEvent(state);
-          flush();
-          assertSafetyCheckChild({
-            page: page,
-            iconStatus: SafetyCheckIconStatus.SAFE,
-            label: 'Device software',
-            buttonLabel: 'More',
-            buttonAriaLabel: 'Show details of the device software check',
-          });
-          expectChromeCleanerRouteButtonClickActions();
-          break;
-        default:
-          // Not covered by this test.
-          break;
-      }
-    }
-  });
-
-  test('chromeCleanerErrorStates', function() {
-    for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
-      switch (state) {
-        case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
-        case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
-        case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
-        case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
-          fireSafetyCheckChromeCleanerEvent(state);
-          flush();
-          assertSafetyCheckChild({
-            page: page,
-            iconStatus: SafetyCheckIconStatus.INFO,
-            label: 'Device software',
-            buttonLabel: 'Details',
-            buttonAriaLabel: 'Review error details',
-          });
-          expectChromeCleanerRouteButtonClickActions();
-          break;
-        default:
-          // Not covered by this test.
-          break;
-      }
-    }
-  });
-
-  test('chromeCleanerInfoWithDefaultButtonStatesUiTest', function() {
-    for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
-      switch (state) {
-        case SafetyCheckChromeCleanerStatus.CLEANING:
-          fireSafetyCheckChromeCleanerEvent(state);
-          flush();
-          assertSafetyCheckChild({
-            page: page,
-            iconStatus: SafetyCheckIconStatus.INFO,
-            label: 'Device software',
-            buttonLabel: 'Review',
-            buttonAriaLabel: 'Review device software',
-          });
-          expectChromeCleanerRouteButtonClickActions();
-          break;
-        default:
-          // Not covered by this test.
-          break;
-      }
-    }
-  });
-
-  test('chromeCleanerWarningStatesUiTest', function() {
-    for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
-      switch (state) {
-        case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
-        case SafetyCheckChromeCleanerStatus.INFECTED:
-        case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
-          fireSafetyCheckChromeCleanerEvent(state);
-          flush();
-          assertSafetyCheckChild({
-            page: page,
-            iconStatus: SafetyCheckIconStatus.WARNING,
-            label: 'Device software',
-            buttonLabel: 'Review',
-            buttonAriaLabel: 'Review device software',
-            buttonClass: 'action-button',
-          });
-          expectChromeCleanerRouteButtonClickActions();
-          break;
-        default:
-          // Not covered by this test.
-          break;
-      }
-    }
+  test('chromeCleanerInfectedTest', function() {
+    fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.INFECTED);
+    flush();
+    assertSafetyCheckChild({
+      page: page,
+      iconStatus: SafetyCheckIconStatus.WARNING,
+      label: 'Device software',
+      buttonLabel: 'Review',
+      buttonAriaLabel: 'Review device software',
+      buttonClass: 'action-button',
+    });
+    expectChromeCleanerRouteButtonClickActions();
   });
 
   test('chromeCleanerRebootRequiredUiTest', function() {
@@ -232,15 +162,34 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     // Ensure the browser proxy call is done.
     return chromeCleanupBrowserProxy.whenCalled('restartComputer');
   });
+});
 
-  test('chromeCleanerDisabledByAdminUiTest', function() {
-    fireSafetyCheckChromeCleanerEvent(
-        SafetyCheckChromeCleanerStatus.DISABLED_BY_ADMIN);
-    flush();
-    assertSafetyCheckChild({
-      page: page,
-      iconStatus: SafetyCheckIconStatus.INFO,
-      label: 'Device software',
+suite('SafetyCheckChromeCleanerFlagDisabledTests', function() {
+  /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */
+  let page;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      safetyCheckChromeCleanerChildEnabled: false,
     });
+  });
+
+  setup(function() {
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */ (
+        document.createElement('settings-safety-check-chrome-cleaner-child'));
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+  });
+
+  test('testChromeCleanerNotPresent', function() {
+    fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.INFECTED);
+    flush();
+    // The UI is not visible.
+    assertFalse(!!page.$$('#safetyCheckChild'));
   });
 });

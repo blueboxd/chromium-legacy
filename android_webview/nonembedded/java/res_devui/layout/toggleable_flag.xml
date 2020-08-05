@@ -10,7 +10,6 @@
     android:id="@+id/toggleable_flag"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="15dp"
     android:orientation="vertical">
 
     <!-- A compound drawable will be populated at runtime, but it's OK to configure drawablePadding now. -->
@@ -22,8 +21,8 @@
         android:textStyle="bold"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:drawablePadding="4dp"
-        android:paddingBottom="2dp"
-        android:paddingTop="2dp" />
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"/>
 
     <TextView
         android:id="@+id/flag_description"

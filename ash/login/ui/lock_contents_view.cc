@@ -55,6 +55,7 @@
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -932,6 +933,8 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
   }
 
   state->show_pin = enabled;
+  state->autosubmit_pin_length =
+      user_manager::known_user::GetUserPinLength(user);
 
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
@@ -1773,7 +1776,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
       UserState* state = FindStateForUser(
           view->auth_user()->current_user().basic_user_info.account_id);
       uint32_t to_update_auth;
-      bool show_pinpad = false;
+      LoginAuthUserView::AuthMethodsMetadata auth_metadata;
       if (state->force_online_sign_in) {
         to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
       } else if (state->disable_auth) {
@@ -1788,10 +1791,10 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         // visible, but the keyboard is in a different root window or the view
         // has not been added to the widget. In these cases, the keyboard does
         // not interfere with PIN entry.
-        const bool is_keyboard_visible_for_view =
+        auth_metadata.virtual_keyboard_visible =
             GetKeyboardControllerForView() ? keyboard_shown_ : false;
-        show_pinpad = !is_keyboard_visible_for_view &&
-                      (state->show_pin || state->show_pin_pad_for_password);
+        auth_metadata.show_pinpad_for_pw = state->show_pin_pad_for_password;
+        auth_metadata.autosubmit_pin_length = state->autosubmit_pin_length;
         if (state->show_pin)
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
         if (state->enable_tap_auth)
@@ -1799,7 +1802,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         if (state->fingerprint_state != FingerprintState::UNAVAILABLE)
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
       }
-      view->auth_user()->SetAuthMethods(to_update_auth, show_pinpad);
+      view->auth_user()->SetAuthMethods(to_update_auth, auth_metadata);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(true /*enabled*/, animate);
     }
@@ -1809,8 +1812,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
     if (!view)
       return;
     if (view->auth_user()) {
-      view->auth_user()->SetAuthMethods(LoginAuthUserView::AUTH_NONE,
-                                        false /*show_pinpad*/);
+      view->auth_user()->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(false /*enabled*/, animate);
     }

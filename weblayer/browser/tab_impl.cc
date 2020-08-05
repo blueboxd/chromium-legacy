@@ -54,6 +54,8 @@
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/content_browser_client_impl.h"
+#include "weblayer/browser/favicon/favicon_fetcher_impl.h"
+#include "weblayer/browser/favicon/favicon_tab_helper.h"
 #include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
@@ -260,6 +262,11 @@ TabImpl::TabImpl(ProfileImpl* profile,
   // This code path is hit when the page requests a new tab, which should
   // only be possible from the same profile.
   DCHECK_EQ(profile_->GetBrowserContext(), web_contents_->GetBrowserContext());
+
+  // FaviconTabHelper adds a WebContentsObserver. Create FaviconTabHelper
+  // before |this| observes the WebContents to ensure favicons are reset before
+  // notifying weblayer observers of changes.
+  FaviconTabHelper::CreateForWebContents(web_contents_.get());
 
   // By default renderer initiated navigations inherit the user-agent override
   // of the current NavigationEntry. For WebLayer, the user-agent override is
@@ -469,6 +476,11 @@ void TabImpl::ExecuteScriptWithUserGestureForTests(
     const base::string16& script) {
   web_contents_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
       script);
+}
+
+std::unique_ptr<FaviconFetcher> TabImpl::CreateFaviconFetcher(
+    FaviconFetcherDelegate* delegate) {
+  return std::make_unique<FaviconFetcherImpl>(web_contents_.get(), delegate);
 }
 
 #if !defined(OS_ANDROID)

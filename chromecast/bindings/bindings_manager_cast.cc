@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/bindings/grit/resources.h"
+#include "components/on_load_script_injector/browser/on_load_script_injector_host.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -25,7 +26,15 @@ const char kControlPortConnectMessage[] = "cast.master.connect";
 
 }  // namespace
 
-BindingsManagerCast::BindingsManagerCast() : cast_web_contents_(nullptr) {
+BindingsManagerCast::BindingsManagerCast(
+    chromecast::CastWebContents* cast_web_contents)
+    : cast_web_contents_(cast_web_contents) {
+  DCHECK(cast_web_contents_);
+
+  // TODO(crbug.com/1103058): Remove this when NamedMessagePortConnector is
+  // added as a Component.
+  CastWebContents::Observer::Observe(cast_web_contents_);
+
   // NamedMessagePortConnector binding will be injected into page first.
   AddBinding(kNamedMessagePortConnectorBindingsId,
              ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -36,43 +45,8 @@ BindingsManagerCast::~BindingsManagerCast() = default;
 
 void BindingsManagerCast::AddBinding(base::StringPiece binding_name,
                                      base::StringPiece binding_script) {
-  bindings_by_id_[binding_name.as_string()] = binding_script.as_string();
-}
-
-void BindingsManagerCast::AttachToPage(
-    chromecast::CastWebContents* cast_web_contents) {
-  DCHECK(!cast_web_contents_) << "AttachToPage() was called twice.";
-  DCHECK(cast_web_contents);
-
-  cast_web_contents_ = cast_web_contents;
-  CastWebContents::Observer::Observe(cast_web_contents_);
-
-  for (const auto& binding : bindings_by_id_) {
-    LOG(INFO) << "Register bindings for page. bindingId: " << binding.first;
-    cast_web_contents_->AddBeforeLoadJavaScript(
-        binding.first /* binding ID */, {"*"}, binding.second /* binding JS */);
-  }
-}
-
-void BindingsManagerCast::OnPageStateChanged(
-    CastWebContents* cast_web_contents) {
-  auto page_state = cast_web_contents->page_state();
-
-  switch (page_state) {
-    case CastWebContents::PageState::IDLE:
-    case CastWebContents::PageState::LOADING:
-    case CastWebContents::PageState::CLOSED:
-      return;
-    case CastWebContents::PageState::DESTROYED:
-    case CastWebContents::PageState::ERROR:
-      blink_port_.Reset();
-      CastWebContents::Observer::Observe(nullptr);
-      cast_web_contents_ = nullptr;
-      return;
-    case CastWebContents::PageState::LOADED:
-      OnPageLoaded();
-      return;
-  }
+  cast_web_contents_->script_injector()->AddScriptForAllOrigins(
+      binding_name.as_string(), binding_script);
 }
 
 void BindingsManagerCast::OnPageLoaded() {
@@ -96,6 +70,29 @@ void BindingsManagerCast::OnPageLoaded() {
   message_ports.push_back(std::move(port_pair.second));
   cast_web_contents_->PostMessageToMainFrame("*", kControlPortConnectMessage,
                                              std::move(message_ports));
+}
+
+void BindingsManagerCast::OnPageStateChanged(
+    CastWebContents* cast_web_contents) {
+  auto page_state = cast_web_contents->page_state();
+
+  switch (page_state) {
+    case CastWebContents::PageState::LOADING:
+      cast_web_contents_->InjectScriptsIntoMainFrame();
+      return;
+    case CastWebContents::PageState::DESTROYED:
+    case CastWebContents::PageState::ERROR:
+      blink_port_.Reset();
+      CastWebContents::Observer::Observe(nullptr);
+      cast_web_contents_ = nullptr;
+      return;
+    case CastWebContents::PageState::LOADED:
+      OnPageLoaded();
+      return;
+    case CastWebContents::PageState::IDLE:
+    case CastWebContents::PageState::CLOSED:
+      return;
+  }
 }
 
 bool BindingsManagerCast::OnMessage(blink::WebMessagePort::Message message) {

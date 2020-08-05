@@ -22,6 +22,7 @@ struct SelectFileDialogParams {
   ui::SelectFileDialog::Type type = ui::SelectFileDialog::SELECT_NONE;
   base::Optional<ui::SelectFileDialog::FileTypeInfo> file_types;
   gfx::NativeWindow owning_window = {};
+  int file_type_index = -1;
 };
 
 // A fake ui::SelectFileDialog, which will cancel the file selection instead of

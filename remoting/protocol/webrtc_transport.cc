@@ -644,6 +644,22 @@ void WebrtcTransport::RequestIceRestart() {
   RequestNegotiation();
 }
 
+void WebrtcTransport::RequestSdpRestart() {
+  if (transport_context_->role() != TransportRole::SERVER) {
+    NOTIMPLEMENTED()
+        << "SDP restart only implemented for TransportRole::SERVER";
+    return;
+  }
+
+  if (!connected_) {
+    LOG(WARNING) << "Not connected, ignoring SDP restart request.";
+    return;
+  }
+
+  VLOG(0) << "Restarting SDP due to client request.";
+  RequestNegotiation();
+}
+
 // static
 void WebrtcTransport::SetDataChannelPollingIntervalForTests(
     base::TimeDelta new_polling_interval) {

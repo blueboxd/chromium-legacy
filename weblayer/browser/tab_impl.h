@@ -224,6 +224,8 @@ class TabImpl : public Tab,
       const std::vector<std::string>& js_origins) override;
   void RemoveWebMessageHostFactory(
       const base::string16& js_object_name) override;
+  std::unique_ptr<FaviconFetcher> CreateFaviconFetcher(
+      FaviconFetcherDelegate* delegate) override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif

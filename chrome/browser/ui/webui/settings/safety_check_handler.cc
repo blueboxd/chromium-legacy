@@ -98,47 +98,46 @@ SafetyCheckHandler::ChromeCleanerStatus ConvertToChromeCleanerStatus(
     case safe_browsing::ChromeCleanerController::State::kIdle:
       switch (idle_reason) {
         case safe_browsing::ChromeCleanerController::IdleReason::kInitial:
-          return SafetyCheckHandler::ChromeCleanerStatus::kInitial;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kReporterFoundNothing:
-          return SafetyCheckHandler::ChromeCleanerStatus::kReporterFoundNothing;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kReporterFailed:
-          return SafetyCheckHandler::ChromeCleanerStatus::kReporterFailed;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kScanningFoundNothing:
-          return SafetyCheckHandler::ChromeCleanerStatus::kScanningFoundNothing;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kScanningFailed:
-          return SafetyCheckHandler::ChromeCleanerStatus::kScanningFailed;
-        case safe_browsing::ChromeCleanerController::IdleReason::
-            kConnectionLost:
-          return SafetyCheckHandler::ChromeCleanerStatus::kConnectionLost;
-        case safe_browsing::ChromeCleanerController::IdleReason::
-            kUserDeclinedCleanup:
-          return SafetyCheckHandler::ChromeCleanerStatus::kUserDeclinedCleanup;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kCleaningFailed:
-          return SafetyCheckHandler::ChromeCleanerStatus::kCleaningFailed;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kCleaningSucceeded:
-          return SafetyCheckHandler::ChromeCleanerStatus::kCleaningSucceeded;
         case safe_browsing::ChromeCleanerController::IdleReason::
             kCleanerDownloadFailed:
-          return SafetyCheckHandler::ChromeCleanerStatus::
-              kCleanerDownloadFailed;
+          return SafetyCheckHandler::ChromeCleanerStatus::kHidden;
+        case safe_browsing::ChromeCleanerController::IdleReason::
+            kConnectionLost:
+        case safe_browsing::ChromeCleanerController::IdleReason::
+            kUserDeclinedCleanup:
+          return SafetyCheckHandler::ChromeCleanerStatus::kInfected;
       }
     case safe_browsing::ChromeCleanerController::State::kReporterRunning:
-      return SafetyCheckHandler::ChromeCleanerStatus::kReporterRunning;
     case safe_browsing::ChromeCleanerController::State::kScanning:
-      return SafetyCheckHandler::ChromeCleanerStatus::kScanning;
+    case safe_browsing::ChromeCleanerController::State::kCleaning:
+      return SafetyCheckHandler::ChromeCleanerStatus::kHidden;
     case safe_browsing::ChromeCleanerController::State::kInfected:
       return SafetyCheckHandler::ChromeCleanerStatus::kInfected;
-    case safe_browsing::ChromeCleanerController::State::kCleaning:
-      return SafetyCheckHandler::ChromeCleanerStatus::kCleaning;
     case safe_browsing::ChromeCleanerController::State::kRebootRequired:
       return SafetyCheckHandler::ChromeCleanerStatus::kRebootRequired;
   }
+}
+
+SafetyCheckHandler::ChromeCleanerStatus fetchCurrentChromeCleanerStatus() {
+  if (!safe_browsing::ChromeCleanerController::GetInstance()
+           ->IsAllowedByPolicy()) {
+    return SafetyCheckHandler::ChromeCleanerStatus::kHidden;
+  }
+  return ConvertToChromeCleanerStatus(
+      safe_browsing::ChromeCleanerController::GetInstance()->state(),
+      safe_browsing::ChromeCleanerController::GetInstance()->idle_reason());
 }
 #endif
 }  // namespace
@@ -157,7 +156,16 @@ void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
   passwords_status_ = PasswordsStatus::kChecking;
   safe_browsing_status_ = SafeBrowsingStatus::kChecking;
   extensions_status_ = ExtensionsStatus::kChecking;
-  chrome_cleaner_status_ = ChromeCleanerStatus::kChecking;
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // If the Chrome cleaner status results in the child being hidden,
+  // then also hide it already in the "running" state.
+  if (fetchCurrentChromeCleanerStatus() ==
+      SafetyCheckHandler::ChromeCleanerStatus::kHidden) {
+    chrome_cleaner_status_ = SafetyCheckHandler::ChromeCleanerStatus::kHidden;
+  } else {
+    chrome_cleaner_status_ = SafetyCheckHandler::ChromeCleanerStatus::kChecking;
+  }
+#endif
 
   // Update WebUi.
   FireBasicSafetyCheckWebUiListener(kUpdatesEvent,
@@ -347,14 +355,9 @@ void SafetyCheckHandler::CheckExtensions() {
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void SafetyCheckHandler::CheckChromeCleaner() {
-  if (safe_browsing::ChromeCleanerController::GetInstance()
-          ->IsAllowedByPolicy()) {
-    OnChromeCleanerCheckResult(ConvertToChromeCleanerStatus(
-        safe_browsing::ChromeCleanerController::GetInstance()->state(),
-        safe_browsing::ChromeCleanerController::GetInstance()->idle_reason()));
-  } else {
-    OnChromeCleanerCheckResult(ChromeCleanerStatus::kDisabledByAdmin);
-  }
+  // Registering the observer immediately triggers a callback with the
+  // current state.
+  safe_browsing::ChromeCleanerController::GetInstance()->AddObserver(this);
 }
 #endif
 
@@ -597,37 +600,15 @@ base::string16 SafetyCheckHandler::GetStringForExtensions(
 base::string16 SafetyCheckHandler::GetStringForChromeCleaner(
     ChromeCleanerStatus status) {
   switch (status) {
+    case ChromeCleanerStatus::kHidden:
     case ChromeCleanerStatus::kChecking:
       return base::UTF8ToUTF16("");
-    case ChromeCleanerStatus::kInitial:
-    case ChromeCleanerStatus::kReporterFoundNothing:
-    case ChromeCleanerStatus::kScanningFoundNothing:
-    case ChromeCleanerStatus::kCleaningSucceeded:
-    case ChromeCleanerStatus::kReporterRunning:
-    case ChromeCleanerStatus::kScanning:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_TITLE_NOTHING_FOUND);
-    case ChromeCleanerStatus::kReporterFailed:
-    case ChromeCleanerStatus::kScanningFailed:
-    case ChromeCleanerStatus::kCleaningFailed:
-    case ChromeCleanerStatus::kCleanerDownloadFailed:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_ERROR);
-    case ChromeCleanerStatus::kConnectionLost:
-    case ChromeCleanerStatus::kUserDeclinedCleanup:
     case ChromeCleanerStatus::kInfected:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_INFECTED);
-    case ChromeCleanerStatus::kCleaning:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVING);
     case ChromeCleanerStatus::kRebootRequired:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_RESET_CLEANUP_TITLE_RESTART);
-    case ChromeCleanerStatus::kDisabledByAdmin:
-      return l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_DISABLED_BY_ADMIN,
-          base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL));
   }
 }
 #endif
@@ -835,6 +816,40 @@ void SafetyCheckHandler::OnCredentialDone(
                            total);
   }
 }
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void SafetyCheckHandler::OnIdle(
+    safe_browsing::ChromeCleanerController::IdleReason idle_reason) {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+
+void SafetyCheckHandler::OnReporterRunning() {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+
+void SafetyCheckHandler::OnScanning() {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+
+void SafetyCheckHandler::OnInfected(
+    bool is_powered_by_partner,
+    const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+
+void SafetyCheckHandler::OnCleaning(
+    bool is_powered_by_partner,
+    const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+
+void SafetyCheckHandler::OnRebootRequired() {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+
+void SafetyCheckHandler::OnRebootFailed() {
+  OnChromeCleanerCheckResult(fetchCurrentChromeCleanerStatus());
+}
+#endif
 
 void SafetyCheckHandler::OnJavascriptAllowed() {}
 
@@ -853,6 +868,10 @@ void SafetyCheckHandler::OnJavascriptDisallowed() {
   version_updater_.reset();
   // Stop observing safety check events.
   safety_check_.reset(nullptr);
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Remove |this| as an observer for the Chrome cleaner.
+  safe_browsing::ChromeCleanerController::GetInstance()->RemoveObserver(this);
+#endif
 }
 
 void SafetyCheckHandler::RegisterMessages() {

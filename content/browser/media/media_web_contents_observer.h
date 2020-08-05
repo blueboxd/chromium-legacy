@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_power_experiment_manager.h"
@@ -151,6 +152,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnAudioOutputSinkChanged(RenderFrameHost* render_frame_host,
                                 int delegate_id,
                                 std::string hashed_device_id);
+  void OnAudioOutputDeviceIdTranslated(
+      RenderFrameHost* render_frame_host,
+      int delegate_id,
+      const base::Optional<std::string>& raw_device_id);
   void OnBufferUnderflow(RenderFrameHost* render_frame_host, int delegate_id);
 
   device::mojom::WakeLock* GetAudioWakeLock();
@@ -190,6 +195,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
            std::unique_ptr<base::WeakPtrFactory<MediaWebContentsObserver>>>
       per_frame_factory_;
 
+  base::WeakPtrFactory<MediaWebContentsObserver> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserver);
 };
 

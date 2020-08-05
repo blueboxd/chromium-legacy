@@ -26,7 +26,7 @@ ExtensionsMenuButton::ExtensionsMenuButton(
     ExtensionsMenuItemView* parent,
     ToolbarActionViewController* controller,
     bool allow_pinning)
-    : views::LabelButton(this, base::string16(), views::style::CONTEXT_BUTTON),
+    : views::LabelButton(this),
       browser_(browser),
       parent_(parent),
       controller_(controller),

@@ -37,16 +37,11 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(void, BlockMediaLoading, (bool), (override));
   MOCK_METHOD(void, BlockMediaStarting, (bool), (override));
   MOCK_METHOD(void, EnableBackgroundVideoPlayback, (bool), (override));
-  MOCK_METHOD(void,
-              AddBeforeLoadJavaScript,
-              (base::StringPiece,
-               const std::vector<std::string>&,
-               base::StringPiece),
+  MOCK_METHOD(on_load_script_injector::OnLoadScriptInjectorHost*,
+              script_injector,
+              (),
               (override));
-  MOCK_METHOD(void,
-              RemoveBeforeLoadJavaScript,
-              (base::StringPiece),
-              (override));
+  MOCK_METHOD(void, InjectScriptsIntoMainFrame, (), (override));
   MOCK_METHOD(void,
               PostMessageToMainFrame,
               (const std::string&,

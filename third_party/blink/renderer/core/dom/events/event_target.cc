@@ -875,6 +875,11 @@ bool EventTarget::FireEventListeners(Event& event,
   bool fired_listener = false;
 
   while (i < size) {
+    // If stopImmediatePropagation has been called, we just break out
+    // immediately, without handling any more events on this target.
+    if (event.ImmediatePropagationStopped())
+      break;
+
     RegisteredEventListener registered_listener = entry[i];
 
     // Move the iterator past this event listener. This must match
@@ -892,11 +897,6 @@ bool EventTarget::FireEventListeners(Event& event,
     if (registered_listener.Once())
       removeEventListener(event.type(), listener,
                           registered_listener.Capture());
-
-    // If stopImmediatePropagation has been called, we just break out
-    // immediately, without handling any more events on this target.
-    if (event.ImmediatePropagationStopped())
-      break;
 
     event.SetHandlingPassive(EventPassiveMode(registered_listener));
 

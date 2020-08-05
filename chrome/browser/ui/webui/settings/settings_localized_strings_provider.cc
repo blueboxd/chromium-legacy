@@ -1359,8 +1359,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"safetyCheckIconWarningAriaLabel",
        IDS_SETTINGS_SAFETY_CHECK_ICON_WARNING_ARIA_LABEL},
       {"safetyCheckReview", IDS_SETTINGS_SAFETY_CHECK_REVIEW},
-      {"safetyCheckReviewErrorDetails",
-       IDS_SETTINGS_SAFETY_CHECK_REVIEW_ERROR_DETAILS},
       {"safetyCheckUpdatesPrimaryLabel",
        IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL},
       {"safetyCheckUpdatesButtonAriaLabel",
@@ -1379,8 +1377,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},
       {"safetyCheckChromeCleanerButtonAriaLabel",
        IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_BUTTON_ARIA_LABEL},
-      {"safetyCheckChromeCleanerMoreButtonAriaLabel",
-       IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_MORE_BUTTON_ARIA_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 

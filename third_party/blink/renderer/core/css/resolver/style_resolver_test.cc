@@ -698,4 +698,79 @@ TEST_F(StyleResolverTest, NestedPseudoElement) {
   // Don't crash when calculating style for nested pseudo elements.
 }
 
+TEST_F(StyleResolverTest, CascadedValuesForElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #div {
+        top: 1em;
+      }
+      div {
+        top: 10em;
+        right: 20em;
+        bottom: 30em;
+        left: 40em;
+
+        width: 50em;
+        width: 51em;
+        height: 60em !important;
+        height: 61em;
+      }
+    </style>
+    <div id=div style="bottom:300em;"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto& resolver = GetDocument().GetStyleResolver();
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+
+  auto map = resolver.CascadedValuesForElement(div, kPseudoIdNone);
+
+  CSSPropertyName top(CSSPropertyID::kTop);
+  CSSPropertyName right(CSSPropertyID::kRight);
+  CSSPropertyName bottom(CSSPropertyID::kBottom);
+  CSSPropertyName left(CSSPropertyID::kLeft);
+  CSSPropertyName width(CSSPropertyID::kWidth);
+  CSSPropertyName height(CSSPropertyID::kHeight);
+
+  ASSERT_TRUE(map.at(top));
+  ASSERT_TRUE(map.at(right));
+  ASSERT_TRUE(map.at(bottom));
+  ASSERT_TRUE(map.at(left));
+  ASSERT_TRUE(map.at(width));
+  ASSERT_TRUE(map.at(height));
+
+  EXPECT_EQ("1em", map.at(top)->CssText());
+  EXPECT_EQ("20em", map.at(right)->CssText());
+  EXPECT_EQ("300em", map.at(bottom)->CssText());
+  EXPECT_EQ("40em", map.at(left)->CssText());
+  EXPECT_EQ("51em", map.at(width)->CssText());
+  EXPECT_EQ("60em", map.at(height)->CssText());
+}
+
+TEST_F(StyleResolverTest, CascadedValuesForPseudoElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #div::before {
+        top: 1em;
+      }
+      div::before {
+        top: 10em;
+      }
+    </style>
+    <div id=div></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto& resolver = GetDocument().GetStyleResolver();
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+
+  auto map = resolver.CascadedValuesForElement(div, kPseudoIdBefore);
+
+  CSSPropertyName top(CSSPropertyID::kTop);
+  ASSERT_TRUE(map.at(top));
+  EXPECT_EQ("1em", map.at(top)->CssText());
+}
+
 }  // namespace blink

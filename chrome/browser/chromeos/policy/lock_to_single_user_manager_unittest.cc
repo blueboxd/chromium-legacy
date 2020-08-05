@@ -37,12 +37,6 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
   ~LockToSingleUserManagerTest() override = default;
 
   void SetUp() override {
-    // This setter will initialize DBusThreadManager.
-    // This is required before ArcSessionManager's constructor calls
-    // DBusThreadManager::Get().
-    auto dbus_thread_manager_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-
     arc::SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
     chromeos::LoginState::Initialize();
@@ -60,19 +54,20 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
 
     arc_service_manager_->set_browser_context(profile());
 
+    auto setter = chromeos::DBusThreadManager::GetSetterForTesting();
     fake_concierge_client_ = new chromeos::FakeConciergeClient();
-    dbus_thread_manager_setter->SetConciergeClient(
-        base::WrapUnique(fake_concierge_client_));
+    setter->SetConciergeClient(base::WrapUnique(fake_concierge_client_));
   }
 
   void TearDown() override {
+    lock_to_single_user_manager_.reset();
+
     arc_session_manager_->Shutdown();
-    arc_session_manager_.reset();
     arc_service_manager_->set_browser_context(nullptr);
-    arc_service_manager_.reset();
 
     BrowserWithTestWindowTest::TearDown();
-    lock_to_single_user_manager_.reset();
+    arc_session_manager_.reset();
+    arc_service_manager_.reset();
 
     chromeos::CryptohomeClient::Shutdown();
     chromeos::LoginState::Shutdown();

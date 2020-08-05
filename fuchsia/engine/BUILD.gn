@@ -28,7 +28,6 @@ declare_args() {
 mojom("mojom") {
   sources = [
     "cast_streaming_session.mojom",
-    "on_load_script_injector.mojom",
     "url_request_rewrite.mojom",
   ]
   public_deps = [
@@ -92,6 +91,8 @@ component("web_engine_core") {
     "//components/cdm/renderer",
     "//components/media_control/browser",
     "//components/media_control/renderer",
+    "//components/on_load_script_injector/browser",
+    "//components/on_load_script_injector/renderer",
     "//components/version_info",
     "//content/public/app",
     "//content/public/browser",
@@ -205,8 +206,6 @@ component("web_engine_core") {
     "renderer/cast_streaming_demuxer.h",
     "renderer/cast_streaming_receiver.cc",
     "renderer/cast_streaming_receiver.h",
-    "renderer/on_load_script_injector.cc",
-    "renderer/on_load_script_injector.h",
     "renderer/url_request_rules_receiver.cc",
     "renderer/url_request_rules_receiver.h",
     "renderer/web_engine_content_renderer_client.cc",

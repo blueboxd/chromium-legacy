@@ -46,7 +46,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -128,9 +127,6 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
   ArcSessionManagerInLoginScreenTest()
       : user_manager_enabler_(
             std::make_unique<chromeos::FakeChromeUserManager>()) {
-    // Need to initialize DBusThreadManager before ArcSessionManager's
-    // constructor calls DBusThreadManager::Get().
-    chromeos::DBusThreadManager::Initialize();
     chromeos::SessionManagerClient::InitializeFakeInMemory();
 
     ArcSessionManager::SetUiEnabledForTesting(false);
@@ -147,7 +143,6 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
     arc_session_manager_.reset();
     arc_service_manager_.reset();
     chromeos::SessionManagerClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -207,7 +202,6 @@ class ArcSessionManagerTestBase : public testing::Test {
   ~ArcSessionManagerTestBase() override = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     chromeos::UpstartClient::InitializeFake();
@@ -241,7 +235,6 @@ class ArcSessionManagerTestBase : public testing::Test {
     chromeos::UpstartClient::Shutdown();
     chromeos::SessionManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
@@ -986,60 +979,6 @@ TEST_F(ArcSessionManagerTest, RequestDisableDoesNotRemoveData) {
 
   // Correctly stop service.
   arc_session_manager()->Shutdown();
-}
-
-// Tests that |vm_info| is initialized with base::nullopt.
-TEST_F(ArcSessionManagerTest, GetVmInfo_InitialValue) {
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
-}
-
-// Tests that |vm_info| is updated with that from VmStartedSignal.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted) {
-  vm_tools::concierge::VmStartedSignal vm_signal;
-  vm_signal.set_name(kArcVmName);
-  vm_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager()->OnVmStarted(vm_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  ASSERT_NE(base::nullopt, vm_info);
-  EXPECT_EQ(1000UL, vm_info->seneschal_server_handle());
-}
-
-// Tests that |vm_info| remains as base::nullopt after VM stops.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStopped) {
-  vm_tools::concierge::VmStoppedSignal vm_signal;
-  vm_signal.set_name(kArcVmName);
-  arc_session_manager()->OnVmStopped(vm_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
-}
-
-// Tests that |vm_info| is reset to base::nullopt after VM starts and stops.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted_ThenStopped) {
-  vm_tools::concierge::VmStartedSignal start_signal;
-  start_signal.set_name(kArcVmName);
-  start_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager()->OnVmStarted(start_signal);
-
-  vm_tools::concierge::VmStoppedSignal stop_signal;
-  stop_signal.set_name(kArcVmName);
-  arc_session_manager()->OnVmStopped(stop_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
-}
-
-// Tests that |vm_info| is not updated with non-ARCVM VmStartedSignal.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithNonVmStarted) {
-  vm_tools::concierge::VmStartedSignal non_vm_signal;
-  non_vm_signal.set_name("non-ARCVM");
-  non_vm_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager()->OnVmStarted(non_vm_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
 }
 
 class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {

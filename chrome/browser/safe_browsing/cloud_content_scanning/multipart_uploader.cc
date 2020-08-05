@@ -86,7 +86,7 @@ void MultipartUploadRequest::SendRequest() {
   resource_request->method = "POST";
   resource_request->headers.SetHeader("X-Goog-Upload-Protocol", "multipart");
 
-  if (base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts)) {
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   }
 

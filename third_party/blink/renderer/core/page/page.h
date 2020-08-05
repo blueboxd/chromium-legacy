@@ -27,9 +27,9 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/vision_deficiency.h"
@@ -328,10 +328,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   void SetInsidePortal(bool inside_portal);
   bool InsidePortal() const;
 
-  void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo& page_info) {
+  void SetTextAutosizerPageInfo(
+      const mojom::blink::TextAutosizerPageInfo& page_info) {
     web_text_autosizer_page_info_ = page_info;
   }
-  const WebTextAutosizerPageInfo& TextAutosizerPageInfo() const {
+  const mojom::blink::TextAutosizerPageInfo& TextAutosizerPageInfo() const {
     return web_text_autosizer_page_info_;
   }
 
@@ -472,7 +473,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // Accessed by frames to determine whether to expose the PortalHost object.
   bool inside_portal_ = false;
 
-  WebTextAutosizerPageInfo web_text_autosizer_page_info_;
+  mojom::blink::TextAutosizerPageInfo web_text_autosizer_page_info_;
 
   WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 

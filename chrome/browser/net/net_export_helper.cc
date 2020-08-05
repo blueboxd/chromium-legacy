@@ -5,9 +5,9 @@
 #include "chrome/browser/net/net_export_helper.h"
 
 #include "base/values.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

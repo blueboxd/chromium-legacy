@@ -38,8 +38,6 @@ class StyleChange;
 
 enum ShouldIncludeTypingStyle { kIncludeTypingStyle, kIgnoreTypingStyle };
 
-enum class WritingDirection;
-
 class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
  public:
   enum PropertyLevel { kPropertyDefault, kForceBlockProperties };
@@ -161,7 +159,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
   HTMLElement* SplitAncestorsWithUnicodeBidi(
       Node*,
       bool before,
-      WritingDirection allowed_direction);
+      mojo_base::mojom::blink::TextDirection allowed_direction);
   void RemoveEmbeddingUpToEnclosingBlock(Node*,
                                          HTMLElement* unsplit_ancestor,
                                          EditingState*);

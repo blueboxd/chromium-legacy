@@ -620,10 +620,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
-  if (base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
-    if (url.host_piece() == chromeos::kChromeUIHelpAppHost)
-      return &NewWebUI<chromeos::HelpAppUI>;
-  }
+  if (url.host_piece() == chromeos::kChromeUIHelpAppHost)
+    return &NewWebUI<chromeos::HelpAppUI>;
   if (url.host_piece() == chrome::kChromeUIMachineLearningInternalsHost)
     return &NewWebUI<chromeos::machine_learning::MachineLearningInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)

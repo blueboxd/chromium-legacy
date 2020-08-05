@@ -920,6 +920,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentsCrostiniMounted"),
         TestCase("recentsDownloadsAndDrive"),
         TestCase("recentsDownloadsAndDriveWithOverlap"),
+        TestCase("recentsNested"),
         TestCase("recentAudioDownloads").EnableUnifiedMediaView(),
         TestCase("recentAudioDownloadsAndDrive").EnableUnifiedMediaView(),
         TestCase("recentImagesDownloads").EnableUnifiedMediaView(),

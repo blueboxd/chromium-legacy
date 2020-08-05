@@ -854,6 +854,31 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   EXPECT_EQ(test->GetFinalEmail(), email);
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, TrimPeriodAtTheEnd) {
+  USES_CONVERSION;
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // The top level domain("info" in this example) is removed and the rest is
+  // truncated to be 20 characters. However, in this example, this will result
+  // with "abcdefghijklmn_abcd." which isn't valid per Microsoft documentation.
+  // The rule says there shouldn't be a '.' at the end. Thus it needs to be
+  // removed.
+  constexpr char email[] = "abcdefghijklmn@abcd.ef.info";
+
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(email));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  ASSERT_STREQ(W2COLE(L"abcdefghijklmn_abcd"), test->GetFinalUsername());
+  EXPECT_EQ(test->GetFinalEmail(), email);
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
   USES_CONVERSION;
   // Create provider and start logon.

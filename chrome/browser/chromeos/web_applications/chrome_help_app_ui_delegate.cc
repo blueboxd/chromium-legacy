@@ -50,7 +50,6 @@ base::Optional<std::string> ChromeHelpAppUIDelegate::OpenFeedbackDialog() {
 
 void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
-  source->AddLocalizedString("getHelpName", IDS_GENIUS_APP_NAME);
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
   // Add strings that can be pulled in.
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());

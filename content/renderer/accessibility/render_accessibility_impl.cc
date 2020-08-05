@@ -227,6 +227,12 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   else
     event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
 
+  // Optionally disable AXMenuList, which makes the internal pop-up menu
+  // UI for a select element directly accessible.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableAXMenuList))
+    settings->SetUseAXMenuList(false);
+
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
     ax_context_ = std::make_unique<WebAXContext>(document);

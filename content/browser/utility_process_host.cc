@@ -18,6 +18,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_sandbox_delegate.h"
 #include "content/browser/v8_snapshot_files.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -29,10 +30,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "content/public/common/zygote/zygote_buildflags.h"
 #include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_switches.h"
-#include "sandbox/policy/features.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -45,228 +44,7 @@
 #include "components/os_crypt/os_crypt_switches.h"
 #endif
 
-#if defined(OS_WIN)
-#include "sandbox/win/src/sandbox_policy.h"
-#include "sandbox/win/src/sandbox_types.h"
-#include "services/audio/audio_sandbox_win.h"
-#include "services/network/network_sandbox_win.h"
-#endif
-
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "content/common/zygote/zygote_handle_impl_linux.h"
-#endif
-
 namespace content {
-
-// NOTE: changes to this class need to be reviewed by the security team.
-class UtilitySandboxedProcessLauncherDelegate
-    : public SandboxedProcessLauncherDelegate {
- public:
-  UtilitySandboxedProcessLauncherDelegate(
-      sandbox::policy::SandboxType sandbox_type,
-      const base::EnvironmentMap& env,
-      const base::CommandLine& cmd_line)
-      :
-#if defined(OS_POSIX)
-        env_(env),
-#endif
-        sandbox_type_(sandbox_type),
-        cmd_line_(cmd_line) {
-#if DCHECK_IS_ON()
-    bool supported_sandbox_type =
-        sandbox_type_ == sandbox::policy::SandboxType::kNoSandbox ||
-#if defined(OS_WIN)
-        sandbox_type_ ==
-            sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges ||
-        sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing ||
-        sandbox_type_ == sandbox::policy::SandboxType::kProxyResolver ||
-        sandbox_type_ == sandbox::policy::SandboxType::kPdfConversion ||
-        sandbox_type_ == sandbox::policy::SandboxType::kIconReader ||
-#endif
-        sandbox_type_ == sandbox::policy::SandboxType::kUtility ||
-        sandbox_type_ == sandbox::policy::SandboxType::kNetwork ||
-        sandbox_type_ == sandbox::policy::SandboxType::kCdm ||
-        sandbox_type_ == sandbox::policy::SandboxType::kPrintCompositor ||
-        sandbox_type_ == sandbox::policy::SandboxType::kPpapi ||
-        sandbox_type_ == sandbox::policy::SandboxType::kVideoCapture ||
-#if defined(OS_CHROMEOS)
-        sandbox_type_ == sandbox::policy::SandboxType::kIme ||
-        sandbox_type_ == sandbox::policy::SandboxType::kTts ||
-#endif  // OS_CHROMEOS
-        sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
-#if !defined(OS_MAC)
-        sandbox_type_ == sandbox::policy::SandboxType::kSharingService ||
-#endif
-        sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition;
-    DCHECK(supported_sandbox_type);
-#endif  // DCHECK_IS_ON()
-  }
-
-  ~UtilitySandboxedProcessLauncherDelegate() override = default;
-
-#if defined(OS_WIN)
-  bool GetAppContainerId(std::string* appcontainer_id) override {
-    if (sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing &&
-        base::FeatureList::IsEnabled(sandbox::policy::features::kXRSandbox)) {
-      *appcontainer_id = base::WideToUTF8(cmd_line_.GetProgram().value());
-      return true;
-    }
-    return false;
-  }
-
-  bool DisableDefaultPolicy() override {
-    switch (sandbox_type_) {
-      case sandbox::policy::SandboxType::kAudio:
-        // Default policy is disabled for audio process to allow audio drivers
-        // to read device properties (https://crbug.com/883326).
-        return true;
-      case sandbox::policy::SandboxType::kNetwork:
-        // Default policy is disabled for network process to allow incremental
-        // sandbox mitigations to be applied via experiments.
-        return true;
-      case sandbox::policy::SandboxType::kXrCompositing:
-        return base::FeatureList::IsEnabled(
-            sandbox::policy::features::kXRSandbox);
-      default:
-        return false;
-    }
-  }
-
-  bool ShouldLaunchElevated() override {
-    return sandbox_type_ ==
-           sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges;
-  }
-
-  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork)
-      return network::NetworkPreSpawnTarget(policy, cmd_line_);
-
-    if (sandbox_type_ == sandbox::policy::SandboxType::kAudio)
-      return audio::AudioPreSpawnTarget(policy);
-
-    if (sandbox_type_ == sandbox::policy::SandboxType::kProxyResolver) {
-      sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
-      flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
-      if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
-        return false;
-      return true;
-    }
-
-    if (sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition) {
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_LIMITED);
-    }
-
-    if (sandbox_type_ == sandbox::policy::SandboxType::kIconReader) {
-      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_LOCKDOWN);
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
-      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-      policy->SetLockdownDefaultDacl();
-      policy->SetAlternateDesktop(true);
-
-      sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
-      flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
-      if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
-        return false;
-
-      // Allow file read. These should match IconLoader::GroupForFilepath().
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      L"\\??\\*.exe");
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      L"\\??\\*.dll");
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      L"\\??\\*.ico");
-    }
-
-    if (sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing &&
-        base::FeatureList::IsEnabled(sandbox::policy::features::kXRSandbox)) {
-      // There were issues with some mitigations, causing an inability
-      // to load OpenVR and Oculus APIs.
-      // TODO(https://crbug.com/881919): Try to harden the XR Compositor
-      // sandbox to use mitigations and restrict the token.
-      policy->SetProcessMitigations(0);
-      policy->SetDelayedProcessMitigations(0);
-
-      std::string appcontainer_id;
-      if (!GetAppContainerId(&appcontainer_id)) {
-        return false;
-      }
-      sandbox::ResultCode result =
-          sandbox::policy::SandboxWin::AddAppContainerProfileToPolicy(
-              cmd_line_, sandbox_type_, appcontainer_id, policy);
-      if (result != sandbox::SBOX_ALL_OK) {
-        return false;
-      }
-
-      // Unprotected token/job.
-      policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
-                            sandbox::USER_UNPROTECTED);
-      sandbox::policy::SandboxWin::SetJobLevel(
-          cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
-    }
-
-    if (sandbox_type_ == sandbox::policy::SandboxType::kSharingService) {
-      auto result =
-          sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy, false);
-      if (result != sandbox::SBOX_ALL_OK)
-        return false;
-
-      auto delayed_flags = policy->GetDelayedProcessMitigations();
-      delayed_flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
-      result = policy->SetDelayedProcessMitigations(delayed_flags);
-      if (result != sandbox::SBOX_ALL_OK)
-        return false;
-    }
-
-    return true;
-  }
-#endif  // OS_WIN
-
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
-  ZygoteHandle GetZygote() override {
-    // If the sandbox has been disabled for a given type, don't use a zygote.
-    if (sandbox::policy::IsUnsandboxedSandboxType(sandbox_type_))
-      return nullptr;
-
-    // Utility processes which need specialized sandboxes fork from the
-    // unsandboxed zygote and then apply their actual sandboxes in the forked
-    // process upon startup.
-    if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork ||
-#if defined(OS_CHROMEOS)
-        sandbox_type_ == sandbox::policy::SandboxType::kIme ||
-        sandbox_type_ == sandbox::policy::SandboxType::kTts ||
-#endif  // OS_CHROMEOS
-        sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
-        sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition) {
-      return GetUnsandboxedZygote();
-    }
-
-    // All other types use the pre-sandboxed zygote.
-    return GetGenericZygote();
-  }
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
-
-#if defined(OS_POSIX)
-  base::EnvironmentMap GetEnvironment() override { return env_; }
-#endif  // OS_POSIX
-
-  sandbox::policy::SandboxType GetSandboxType() override {
-    return sandbox_type_;
-  }
-
- private:
-#if defined(OS_POSIX)
-  base::EnvironmentMap env_;
-#endif  // OS_POSIX
-  sandbox::policy::SandboxType sandbox_type_;
-  base::CommandLine cmd_line_;
-};
 
 UtilityMainThreadFactoryFunction g_utility_main_thread_factory = nullptr;
 

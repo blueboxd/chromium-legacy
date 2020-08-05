@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 import './ambient_mode_page/ambient_mode_page.m.js';
-import './os_reset_page/os_powerwash_dialog.m.js';
-import './os_reset_page/os_reset_page.m.js';
 import './localized_link/localized_link.m.js';
 import './bluetooth_page/bluetooth_page.m.js';
 import './bluetooth_page/bluetooth_subpage.m.js';

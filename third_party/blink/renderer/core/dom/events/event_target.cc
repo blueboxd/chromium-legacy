@@ -943,6 +943,12 @@ EventListenerVector* EventTarget::GetEventListeners(
   return data->event_listener_map.Find(event_type);
 }
 
+int EventTarget::NumberOfEventListeners(const AtomicString& event_type) const {
+  EventListenerVector* listeners =
+      const_cast<EventTarget*>(this)->GetEventListeners(event_type);
+  return listeners ? listeners->size() : 0;
+}
+
 Vector<AtomicString> EventTarget::EventTypes() {
   EventTargetData* d = GetEventTargetData();
   return d ? d->event_listener_map.EventTypes() : Vector<AtomicString>();

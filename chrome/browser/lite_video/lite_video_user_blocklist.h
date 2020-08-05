@@ -86,6 +86,12 @@ class LiteVideoUserBlocklist : public blocklist::OptOutBlocklist {
   void AddNavigationToBlocklist(content::NavigationHandle* navigation_handle,
                                 bool opt_out);
 
+  // Update the entry within the RebufferBlocklistType for the
+  // mainframe and subframe urls based on whether it was an opt-out or not.
+  void AddRebufferToBlocklist(const GURL& mainframe_url,
+                              base::Optional<GURL> subframe_url,
+                              bool opt_out);
+
  protected:
   // OptOutBlocklist:
   bool ShouldUseSessionPolicy(base::TimeDelta* duration,

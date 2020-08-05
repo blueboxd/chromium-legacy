@@ -144,7 +144,6 @@ void ExecuteWebTask(Profile* profile,
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->LaunchAppWithFiles(
       task.app_id, launch_container,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,

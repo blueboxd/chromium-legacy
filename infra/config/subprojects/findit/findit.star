@@ -2,51 +2,49 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load('//lib/builders.star', 'builder', 'defaults', 'goma', 'os')
+load("//lib/builders.star", "builder", "defaults", "goma", "os")
 
 luci.bucket(
-    name = 'findit',
+    name = "findit",
     acls = [
         acl.entry(
             roles = acl.BUILDBUCKET_READER,
-            groups = 'googlers',
-            users = 'findit-builder@chops-service-accounts.iam.gserviceaccount.com',
+            groups = "googlers",
+            users = "findit-builder@chops-service-accounts.iam.gserviceaccount.com",
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_TRIGGERER,
-            groups = 'findit-tryjob-access',
-            users = 'luci-scheduler@appspot.gserviceaccount.com',
+            groups = "findit-tryjob-access",
+            users = "luci-scheduler@appspot.gserviceaccount.com",
         ),
     ],
 )
 
 defaults.auto_builder_dimension.set(False)
-defaults.bucket.set('findit')
+defaults.bucket.set("findit")
 defaults.build_numbers.set(True)
 defaults.builderless.set(True)
 defaults.ssd.set(True)
 defaults.configure_kitchen.set(True)
 defaults.execution_timeout.set(8 * time.hour)
-defaults.pool.set('luci.chromium.findit')
-defaults.service_account.set('findit-builder@chops-service-accounts.iam.gserviceaccount.com')
-defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+defaults.pool.set("luci.chromium.findit")
+defaults.service_account.set("findit-builder@chops-service-accounts.iam.gserviceaccount.com")
+defaults.swarming_tags.set(["vpython:native-python-wrapper"])
 
 defaults.caches.set([
     swarming.cache(
-        name = 'win_toolchain',
-        path = 'win_toolchain',
+        name = "win_toolchain",
+        path = "win_toolchain",
     ),
 ])
 
-
 # Builders are defined in lexicographic order by name
-
 
 # Same as findit_variable, except now with a specified recipe, as this is no
 # longer overridable with Buildbucket V2
 builder(
-    name = 'findit-rerun',
-    executable = 'recipe:findit/chromium/single_revision',
+    name = "findit-rerun",
+    executable = "recipe:findit/chromium/single_revision",
     goma_backend = goma.backend.RBE_PROD,
 )
 
@@ -59,21 +57,21 @@ builder(
 #   after they have been configured to use this generic builder, as well as
 #   the findit 'mixin'.
 builder(
-    name = 'findit_variable',
+    name = "findit_variable",
     # Findit app specifies these for each build it schedules. The reason why
     # we specify them here is to pass validation of the buildbucket config.
     # Also, to illustrate the typical use case of this bucket.
-    executable = 'recipe:findit/chromium/compile',
+    executable = "recipe:findit/chromium/compile",
     goma_backend = goma.backend.RBE_PROD,
 )
 
 builder(
-    name = 'linux_chromium_bot_db_exporter',
-    executable = 'recipe:findit/chromium/export_bot_db',
+    name = "linux_chromium_bot_db_exporter",
+    executable = "recipe:findit/chromium/export_bot_db",
     os = os.LINUX_DEFAULT,
     properties = {
-        'gs_bucket': 'findit-for-me',
-        'gs_object': 'bot_db.json',
+        "gs_bucket": "findit-for-me",
+        "gs_object": "bot_db.json",
     },
-    schedule = '0 0,6,12,18 * * *',
+    schedule = "0 0,6,12,18 * * *",
 )

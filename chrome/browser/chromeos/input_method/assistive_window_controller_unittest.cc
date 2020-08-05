@@ -117,9 +117,12 @@ TEST_F(AssistiveWindowControllerTest, ConfirmedLength0SetsSuggestionViewBound) {
       ui::IMEBridge::Get()->GetAssistiveWindowHandler()->GetConfirmedLength());
 
   gfx::Rect current_bounds = suggestion_view->GetAnchorRect();
-  gfx::Rect new_bounds(current_bounds.width() + 1, current_bounds.height());
-  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds, suggestion_view->GetAnchorRect());
+  gfx::Rect new_caret_bounds(current_bounds.width() + 1,
+                             current_bounds.height());
+  Bounds bounds;
+  bounds.caret = new_caret_bounds;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(bounds);
+  EXPECT_EQ(new_caret_bounds, suggestion_view->GetAnchorRect());
 }
 
 TEST_F(AssistiveWindowControllerTest,
@@ -136,8 +139,11 @@ TEST_F(AssistiveWindowControllerTest,
       ui::IMEBridge::Get()->GetAssistiveWindowHandler()->GetConfirmedLength());
 
   gfx::Rect current_bounds = suggestion_view->GetAnchorRect();
-  gfx::Rect new_bounds(current_bounds.width() + 1, current_bounds.height());
-  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(new_bounds);
+  gfx::Rect new_caret_bounds(current_bounds.width() + 1,
+                             current_bounds.height());
+  Bounds bounds;
+  bounds.caret = new_caret_bounds;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(bounds);
   EXPECT_EQ(current_bounds, suggestion_view->GetAnchorRect());
 }
 
@@ -166,10 +172,34 @@ TEST_F(AssistiveWindowControllerTest,
       ->GetAssistiveWindowHandler()
       ->SetAssistiveWindowProperties(properties);
 
-  gfx::Rect new_bounds(current_bounds.width() + 1, current_bounds.height());
-  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds,
+  gfx::Rect new_caret_bounds(current_bounds.width() + 1,
+                             current_bounds.height());
+  Bounds bounds;
+  bounds.caret = new_caret_bounds;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(bounds);
+  EXPECT_EQ(new_caret_bounds,
             controller_->GetSuggestionWindowViewForTesting()->GetAnchorRect());
+}
+
+TEST_F(AssistiveWindowControllerTest, SetsUndoWindowAnchorRectCorrectly) {
+  gfx::Rect autocorrect_bounds(1, 1);
+  gfx::Rect caret_bounds(2, 2);
+
+  Bounds bounds;
+  bounds.caret = caret_bounds;
+  bounds.autocorrect = autocorrect_bounds;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(bounds);
+
+  AssistiveWindowProperties window;
+  window.type = ui::ime::AssistiveWindowType::kUndoWindow;
+  window.visible = true;
+  ui::IMEBridge::Get()
+      ->GetAssistiveWindowHandler()
+      ->SetAssistiveWindowProperties(window);
+
+  ASSERT_TRUE(controller_->GetUndoWindowForTesting() != nullptr);
+  EXPECT_EQ(autocorrect_bounds,
+            controller_->GetUndoWindowForTesting()->GetAnchorRect());
 }
 
 TEST_F(AssistiveWindowControllerTest,

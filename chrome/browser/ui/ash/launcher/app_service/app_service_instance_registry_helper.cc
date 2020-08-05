@@ -38,7 +38,6 @@ AppServiceInstanceRegistryHelper::AppServiceInstanceRegistryHelper(
       launcher_controller_helper_(std::make_unique<LauncherControllerHelper>(
           controller->owner()->profile())) {
   DCHECK(controller_);
-  DCHECK(proxy_);
 }
 
 AppServiceInstanceRegistryHelper::~AppServiceInstanceRegistryHelper() = default;

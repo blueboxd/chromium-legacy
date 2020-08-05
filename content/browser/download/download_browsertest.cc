@@ -4308,9 +4308,11 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
                                   parameters);
 }
 
-#if defined(OS_WIN)
-// Flaky https://crbug.com/1105429, windows probably use a large receiving
-// buffer size and cause the first slice to start at a offset > 0.
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_ANDROID)
+// Flaky https://crbug.com/1105429, https://crbug.com/1106059.
+// Windows probably use a large receiving buffer size and cause the first slice
+// to start at a offset > 0.
 #define MAYBE_MiddleSliceDelayedError DISABLED_MiddleSliceDelayedError
 #else
 #define MAYBE_MiddleSliceDelayedError MiddleSliceDelayedError

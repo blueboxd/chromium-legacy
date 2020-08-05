@@ -22,6 +22,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -45,14 +46,13 @@ constexpr uint32_t kMinAlpha = 32;
 
 bool DragImageIsNeeded() {
 #if defined(USE_OZONE)
-  return !ui::OzonePlatform::GetInstance()
-              ->GetPlatformProperties()
-              .platform_shows_drag_image;
-#elif defined(USE_X11)
-  return true;
-#else
-#error "This file must not be compiled out of Ozone or X11."
+  if (features::IsUsingOzonePlatform()) {
+    return !ui::OzonePlatform::GetInstance()
+                ->GetPlatformProperties()
+                .platform_shows_drag_image;
+  }
 #endif
+  return true;
 }
 
 // Returns true if |image| has any visible regions (defined as having a pixel

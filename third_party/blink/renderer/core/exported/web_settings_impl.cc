@@ -784,6 +784,10 @@ void WebSettingsImpl::SetAriaModalPrunesAXTree(bool enabled) {
   settings_->SetAriaModalPrunesAXTree(enabled);
 }
 
+void WebSettingsImpl::SetUseAXMenuList(bool enabled) {
+  settings_->SetUseAXMenuList(enabled);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,

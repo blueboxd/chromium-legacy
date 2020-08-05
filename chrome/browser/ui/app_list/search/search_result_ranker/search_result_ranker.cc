@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -33,8 +32,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -247,24 +244,8 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
     zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
   }
 
-  if (app_ranker_) {
-    // The Help app is being replaced with the Discover app, and we want to keep
-    // ranking consistent by swapping the app IDs. The rename is a no-op if the
-    // Help app ID doesn't exist, so it's safe to do it several times.
-    // Unfortunately we can't do this on initialization though, as the model
-    // won't have been loaded from disk. Instead, do it on the first rank.
-    // TODO(1052154): Remove this special case after M84, to give all devices
-    // time to swap IDs.
-    if (app_ranker_->is_initialized() && !have_renamed_help_app_ &&
-        base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
-      app_ranker_->RenameTarget(extension_misc::kGeniusAppId,
-                                chromeos::default_web_apps::kHelpAppId);
-      app_ranker_->SaveToDisk();
-      have_renamed_help_app_ = true;
-    }
-
+  if (app_ranker_)
     app_ranks_ = app_ranker_->Rank();
-  }
 }
 
 void SearchResultRanker::Rank(Mixer::SortedResults* results) {

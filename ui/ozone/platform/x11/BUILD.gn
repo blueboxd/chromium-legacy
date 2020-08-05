@@ -102,7 +102,6 @@ source_set("x11_unittests") {
     "//ui/events:test_support",
     "//ui/events/devices/x11",
     "//ui/events/platform/x11",
-    "//ui/events/x:unittests",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
     "//ui/ozone/common",

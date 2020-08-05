@@ -565,6 +565,12 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
   if (os_username.size() > kWindowsUsernameBufferLength - 1)
     os_username.resize(kWindowsUsernameBufferLength - 1);
 
+  // After resizing the os user name above, the last char may be a '.' which is
+  // illegal as the last character per Microsoft documentation.
+  // https://docs.microsoft.com/en-us/windows/win32/api/lmaccess/ns-lmaccess-user_info_1#remarks
+  if (os_username.size() > 0 && os_username.back() == '.')
+    os_username.resize(os_username.size() - 1);
+
   // Replace invalid characters.  While @ is not strictly invalid according to
   // MSDN docs, it causes trouble.
   for (auto& c : os_username) {

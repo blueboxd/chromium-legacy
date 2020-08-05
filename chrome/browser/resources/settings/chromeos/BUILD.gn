@@ -62,8 +62,15 @@ if (optimize_webui) {
   optimize_webui("build_polymer3") {
     host = "os-settings"
     input = rebase_path("$target_gen_dir/$unpak_folder_v3", root_build_dir)
-    js_out_files = [ "os_settings.rollup.js" ]
-    js_module_in_files = [ "chromeos/os_settings.js" ]
+    js_module_in_files = [
+      "chromeos/os_settings.js",
+      "chromeos/lazy_load.js",
+    ]
+    js_out_files = [
+      "os_settings.rollup.js",
+      "lazy_load.rollup.js",
+      "shared.rollup.js",
+    ]
 
     deps = [
       ":unpak_v3",

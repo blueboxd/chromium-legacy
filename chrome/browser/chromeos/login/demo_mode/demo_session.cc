@@ -343,8 +343,7 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
   if (!IsDeviceInDemoMode())
     return true;
   return app_id != GetScreensaverAppId() &&
-         app_id != extensions::kWebStoreAppId &&
-         app_id != extension_misc::kGeniusAppId;
+         app_id != extensions::kWebStoreAppId;
 }
 
 // static

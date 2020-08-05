@@ -224,7 +224,10 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureAvailabilityChange(
 
 void RendererWebMediaPlayerDelegate::DidAudioOutputSinkChange(
     int delegate_id,
-    const std::string& hashed_device_id) {}
+    const std::string& hashed_device_id) {
+  Send(new MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged(
+      routing_id(), delegate_id, hashed_device_id));
+}
 
 void RendererWebMediaPlayerDelegate::DidBufferUnderflow(int player_id) {
   Send(new MediaPlayerDelegateHostMsg_OnBufferUnderflow(routing_id(),

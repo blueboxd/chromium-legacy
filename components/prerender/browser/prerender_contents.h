@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
+#ifndef COMPONENTS_PRERENDER_BROWSER_PRERENDER_CONTENTS_H_
+#define COMPONENTS_PRERENDER_BROWSER_PRERENDER_CONTENTS_H_
 
 #include <stdint.h>
 
@@ -347,4 +347,4 @@ class PrerenderContents : public content::NotificationObserver,
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
+#endif  // COMPONENTS_PRERENDER_BROWSER_PRERENDER_CONTENTS_H_

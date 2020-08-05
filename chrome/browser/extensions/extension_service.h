@@ -659,8 +659,9 @@ class ExtensionService : public ExtensionServiceInterface,
   bool update_once_all_providers_are_ready_ = false;
 
   // A callback to be called when all external providers are ready and their
-  // extensions have been installed. Normally this is a null callback, but
-  // is used in external provider related tests.
+  // extensions have been installed. This happens on initial load and whenever
+  // a new entry is found. Normally this is a null callback, but is used in
+  // external provider related tests.
   // TODO(mxnguyen): Change |external_updates_finished_callback_| to
   // OnceClosure.
   base::Closure external_updates_finished_callback_;

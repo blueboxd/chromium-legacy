@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class AXObject;
 class AutoscrollController;
 class ExceptionState;
 class HTMLHRElement;
@@ -179,8 +180,9 @@ class CORE_EXPORT HTMLSelectElement final
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
 
-  // This should be called only if UsesMenuList().
+  // These should be called only if UsesMenuList().
   Element& InnerElement() const;
+  AXObject* PopupRootAXObject() const;
 
  private:
   const AtomicString& FormControlType() const override;

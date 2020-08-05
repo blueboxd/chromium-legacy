@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
@@ -79,6 +80,9 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEvent) {
     EXPECT_EQ(static_cast<int>(DomKey::CONTROL), webkit_event.dom_key);
   }
 #if defined(USE_X11)
+  // https://crbug.com/1109112): fix this.
+  if (features::IsUsingOzonePlatform())
+    return;
   const int kLocationModifiers =
       blink::WebInputEvent::kIsLeft | blink::WebInputEvent::kIsRight;
   ScopedXI2Event xev;
@@ -104,6 +108,9 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEvent) {
 
 TEST(WebInputEventTest, TestMakeWebKeyboardEventWindowsKeyCode) {
 #if defined(USE_X11)
+  // https://crbug.com/1109112): enable this.
+  if (features::IsUsingOzonePlatform())
+    return;
   ScopedXI2Event xev;
   {
     // Press left Ctrl.
@@ -213,6 +220,9 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEventKeyPadKeyCode) {
         << "}, expect: " << test_case.expected_result;
   }
 #if defined(USE_X11)
+  // https://crbug.com/1109112): fix this.
+  if (features::IsUsingOzonePlatform())
+    return;
   ScopedXI2Event xev;
   for (size_t i = 0; i < base::size(kTesCases); ++i) {
     const TestCase& test_case = kTesCases[i];

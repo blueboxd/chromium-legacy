@@ -621,14 +621,6 @@ if (!is_ios) {
       data_deps = [ "//third_party/mesa_headers" ]
     }
 
-    if (use_x11) {
-      sources += [ "devices/x11/device_data_manager_x11_unittest.cc" ]
-      deps += [
-        "//ui/events/devices/x11",
-        "//ui/events/x:unittests",
-      ]
-    }
-
     if (use_x11 || use_ozone) {
       sources += [ "devices/device_data_manager_unittest.cc" ]
     }

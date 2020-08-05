@@ -1091,5 +1091,15 @@
       initial: false,
       type: "bool",
     },
+    // The AXMenuList class provides a fake implementation of the
+    // select element pop-up menu, which is required on platforms like
+    // Mac and Android that use a native pop-up. On other platforms you
+    // can set this flag to false and expose the actual pop-up menu
+    // instead of letting AXMenuList handle it.
+    {
+      name: "useAXMenuList",
+      initial: true,
+      type: "bool",
+    },
   ],
 }

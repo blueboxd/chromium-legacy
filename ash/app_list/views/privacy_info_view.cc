@@ -87,6 +87,31 @@ void PrivacyInfoView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+void PrivacyInfoView::OnKeyEvent(ui::KeyEvent* event) {
+  switch (event->key_code()) {
+    case ui::VKEY_RETURN:
+      // TODO(crbug.com/1079169): Update this once the text view and close
+      // button can be selected separately.
+      LinkClicked();
+      break;
+    default:
+      break;
+  }
+}
+
+void PrivacyInfoView::ButtonPressed(views::Button* sender,
+                                    const ui::Event& event) {
+  if (sender == close_button_)
+    CloseButtonPressed();
+}
+
+void PrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                             const gfx::Range& range,
+                                             int event_flags) {
+  if (label == text_view_)
+    LinkClicked();
+}
+
 void PrivacyInfoView::InitLayout() {
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -169,10 +194,6 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->set_has_ink_drop_action_on_click(true);
   views::InstallCircleHighlightPathGenerator(close_button.get());
   close_button_ = AddChildView(std::move(close_button));
-}
-
-bool PrivacyInfoView::IsCloseButton(views::Button* button) const {
-  return button == close_button_;
 }
 
 }  // namespace ash

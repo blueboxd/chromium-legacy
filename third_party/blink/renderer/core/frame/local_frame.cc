@@ -91,7 +91,6 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
-#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -803,15 +802,18 @@ void LocalFrame::SetTextDirection(base::i18n::TextDirection direction) {
 
   switch (direction) {
     case base::i18n::TextDirection::UNKNOWN_DIRECTION:
-      editor.SetBaseWritingDirection(WritingDirection::kNatural);
+      editor.SetBaseWritingDirection(
+          mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION);
       break;
 
     case base::i18n::TextDirection::LEFT_TO_RIGHT:
-      editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
+      editor.SetBaseWritingDirection(
+          mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT);
       break;
 
     case base::i18n::TextDirection::RIGHT_TO_LEFT:
-      editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
+      editor.SetBaseWritingDirection(
+          mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT);
       break;
 
     default:
@@ -855,6 +857,53 @@ bool LocalFrame::BubbleLogicalScrollFromChildFrame(
 
   return GetEventHandler().BubblingScroll(direction, granularity,
                                           owner_element);
+}
+
+mojom::blink::SuddenTerminationDisablerType
+SuddenTerminationDisablerTypeForEventType(const AtomicString& event_type) {
+  if (event_type == event_type_names::kUnload) {
+    return mojom::blink::SuddenTerminationDisablerType::kUnloadHandler;
+  }
+  if (event_type == event_type_names::kBeforeunload) {
+    return mojom::blink::SuddenTerminationDisablerType::kBeforeUnloadHandler;
+  }
+  if (event_type == event_type_names::kPagehide) {
+    return mojom::blink::SuddenTerminationDisablerType::kPageHideHandler;
+  }
+  if (event_type == event_type_names::kVisibilitychange) {
+    return mojom::blink::SuddenTerminationDisablerType::
+        kVisibilityChangeHandler;
+  }
+  NOTREACHED();
+  return mojom::blink::SuddenTerminationDisablerType::kUnloadHandler;
+}
+
+void LocalFrame::UpdateSuddenTerminationStatus(
+    bool added_listener,
+    mojom::blink::SuddenTerminationDisablerType disabler_type) {
+  Platform::Current()->SuddenTerminationChanged(!added_listener);
+  GetLocalFrameHostRemote().SuddenTerminationDisablerChanged(added_listener,
+                                                             disabler_type);
+}
+
+void LocalFrame::AddedSuddenTerminationDisablerListener(
+    const EventTarget& event_target,
+    const AtomicString& event_type) {
+  if (event_target.NumberOfEventListeners(event_type) == 1) {
+    // The first handler of this type was added.
+    UpdateSuddenTerminationStatus(
+        true, SuddenTerminationDisablerTypeForEventType(event_type));
+  }
+}
+
+void LocalFrame::RemovedSuddenTerminationDisablerListener(
+    const EventTarget& event_target,
+    const AtomicString& event_type) {
+  if (event_target.NumberOfEventListeners(event_type) == 0) {
+    // The last handler of this type was removed.
+    UpdateSuddenTerminationStatus(
+        false, SuddenTerminationDisablerTypeForEventType(event_type));
+  }
 }
 
 void LocalFrame::DidFocus() {

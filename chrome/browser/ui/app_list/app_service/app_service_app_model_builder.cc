@@ -81,15 +81,9 @@ AppServiceAppModelBuilder::~AppServiceAppModelBuilder() {
 void AppServiceAppModelBuilder::BuildModel() {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (proxy) {
-    proxy->AppRegistryCache().ForEachApp(
-        [this](const apps::AppUpdate& update) { OnAppUpdate(update); });
-    Observe(&proxy->AppRegistryCache());
-  } else {
-    // TODO(crbug.com/826982): do we want apps in incognito mode? See the TODO
-    // in AppServiceProxyFactory::GetForProfile about whether
-    // apps::AppServiceProxy::Get should return nullptr for incognito profiles.
-  }
+  proxy->AppRegistryCache().ForEachApp(
+      [this](const apps::AppUpdate& update) { OnAppUpdate(update); });
+  Observe(&proxy->AppRegistryCache());
 
   if (model_updater()) {
     crostini_folder_observer_ = std::make_unique<CrostiniFolderObserver>(this);

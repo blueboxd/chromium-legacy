@@ -114,9 +114,6 @@ void CommonAppsNavigationThrottle::OnIntentPickerClosed(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  if (!proxy)
-    return;
-
   if (should_persist)
     proxy->AddPreferredApp(launch_name, url);
 
@@ -182,9 +179,6 @@ CommonAppsNavigationThrottle::FindAllAppsForUrl(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  if (!proxy)
-    return apps;
-
   std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
 
   for (const std::string& app_id : app_ids) {
@@ -227,9 +221,6 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-
-  if (!proxy)
-    return false;
 
   std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
 

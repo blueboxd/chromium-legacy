@@ -114,6 +114,10 @@ extern const char kToolbarSize[];
 // to the ExtensionsToolbarContainer.
 extern const char kPinnedExtensionsMigrationComplete[];
 
+// A preference for a list of Component extensions that have been
+// uninstalled/removed and should not be reloaded.
+extern const char kDeletedComponentExtensions[];
+
 // Properties in kExtensions dictionaries --------------------------------------
 
 // Extension-controlled preferences.

@@ -1313,8 +1313,7 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 
 void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  auto* app_service = apps::AppServiceProxyFactory::GetForProfile(profile);
-  if (!app_service || !app_service->BrowserAppLauncher())
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return;
 
   base::Optional<web_app::AppId> app_id =

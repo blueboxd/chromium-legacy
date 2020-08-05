@@ -1293,18 +1293,10 @@ static_library("browser") {
     "prerender/isolated/isolated_prerender_url_loader_interceptor.h",
     "prerender/isolated/prefetched_mainframe_response_container.cc",
     "prerender/isolated/prefetched_mainframe_response_container.h",
-    "prerender/prerender_contents.cc",
-    "prerender/prerender_contents.h",
-    "prerender/prerender_field_trial.cc",
-    "prerender/prerender_field_trial.h",
-    "prerender/prerender_handle.cc",
-    "prerender/prerender_handle.h",
     "prerender/prerender_link_manager.cc",
     "prerender/prerender_link_manager.h",
     "prerender/prerender_link_manager_factory.cc",
     "prerender/prerender_link_manager_factory.h",
-    "prerender/prerender_manager.cc",
-    "prerender/prerender_manager.h",
     "prerender/prerender_manager_factory.cc",
     "prerender/prerender_manager_factory.h",
     "prerender/prerender_processor_impl.cc",
@@ -1803,13 +1795,6 @@ static_library("browser") {
   defines = [ "ZLIB_CONST" ]
   libs = []
   ldflags = []
-
-  if (is_mac) {
-    sources += [
-      "geolocation/geolocation_system_permission_mac.h",
-      "geolocation/geolocation_system_permission_mac.mm",
-    ]
-  }
 
   allow_circular_includes_from = [
     "//chrome/browser/ui",
@@ -4389,7 +4374,6 @@ static_library("browser") {
       "Accelerate.framework",
       "AudioUnit.framework",
       "AVFoundation.framework",
-      "CoreLocation.framework",
       "DiskArbitration.framework",
       "IOKit.framework",
       "ImageCaptureCore.framework",

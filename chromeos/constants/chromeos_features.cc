@@ -239,9 +239,6 @@ const base::Feature kGesturePropertiesDBusService{
 const base::Feature kGaiaActionButtons{"GaiaActionButtons",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// The new ChromeOS Help App. https://crbug.com/1012578.
-const base::Feature kHelpAppV2{"HelpAppV2", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable the help app in the first run experience. This opens the help app
 // after the OOBE, and provides some extra functionality like a getting started
 // guide inside the app.

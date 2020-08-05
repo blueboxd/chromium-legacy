@@ -71,7 +71,6 @@ void ExtensionInstalledNotification::Click(
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
   if (proxy->AppRegistryCache().GetAppType(extension_id_) ==
       apps::mojom::AppType::kUnknown) {
     return;

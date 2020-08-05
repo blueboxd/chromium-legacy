@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 luci.console_view(
-    name = 'metadata.exporter',
-    repo = 'https://chromium.googlesource.com/chromium/src',
+    name = "metadata.exporter",
+    repo = "https://chromium.googlesource.com/chromium/src",
     entries = [
         luci.console_view_entry(
-            builder = 'ci/metadata-exporter',
+            builder = "ci/metadata-exporter",
         ),
     ],
 )

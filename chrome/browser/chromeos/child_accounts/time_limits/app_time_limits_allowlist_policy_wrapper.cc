@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_wrapper.h"
 
 #include "base/logging.h"
 #include "base/optional.h"
@@ -12,27 +12,27 @@
 namespace chromeos {
 namespace app_time {
 
-AppTimeLimitsWhitelistPolicyWrapper::AppTimeLimitsWhitelistPolicyWrapper(
+AppTimeLimitsAllowlistPolicyWrapper::AppTimeLimitsAllowlistPolicyWrapper(
     const base::Value* value)
     : value_(value) {}
 
-AppTimeLimitsWhitelistPolicyWrapper::~AppTimeLimitsWhitelistPolicyWrapper() =
+AppTimeLimitsAllowlistPolicyWrapper::~AppTimeLimitsAllowlistPolicyWrapper() =
     default;
 
 std::vector<std::string>
-AppTimeLimitsWhitelistPolicyWrapper::GetWhitelistURLList() const {
+AppTimeLimitsAllowlistPolicyWrapper::GetAllowlistURLList() const {
   std::vector<std::string> return_value;
 
   const base::Value* list = value_->FindListKey(policy::kUrlList);
   if (!list) {
-    VLOG(1) << "Invalid whitelist URL list provided.";
+    VLOG(1) << "Invalid allowlist URL list provided.";
     return return_value;
   }
 
   base::Value::ConstListView list_view = list->GetList();
   for (const base::Value& value : list_view) {
     if (!value.is_string()) {
-      VLOG(1) << "Whitelist URL is not a string.";
+      VLOG(1) << "Allowlist URL is not a string.";
       continue;
     }
     return_value.push_back(value.GetString());
@@ -40,13 +40,13 @@ AppTimeLimitsWhitelistPolicyWrapper::GetWhitelistURLList() const {
   return return_value;
 }
 
-std::vector<AppId> AppTimeLimitsWhitelistPolicyWrapper::GetWhitelistAppList()
+std::vector<AppId> AppTimeLimitsAllowlistPolicyWrapper::GetAllowlistAppList()
     const {
   std::vector<AppId> return_value;
 
   const base::Value* app_list = value_->FindListKey(policy::kAppList);
   if (!app_list) {
-    VLOG(1) << "Invalid whitelist application list.";
+    VLOG(1) << "Invalid allowlist application list.";
     return return_value;
   }
 

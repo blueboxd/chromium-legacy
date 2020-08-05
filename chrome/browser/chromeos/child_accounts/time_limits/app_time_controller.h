@@ -78,7 +78,7 @@ class AppTimeController : public SystemClockClient::Observer,
   AppTimeController& operator=(const AppTimeController&) = delete;
   ~AppTimeController() override;
 
-  bool IsExtensionWhitelisted(const std::string& extension_id) const;
+  bool IsExtensionAllowlisted(const std::string& extension_id) const;
 
   // Returns current time limit for the app identified by |app_service_id| and
   // |app_type|.Will return nullopt if there is no limit set or app is not
@@ -132,7 +132,7 @@ class AppTimeController : public SystemClockClient::Observer,
  private:
   void RegisterProfilePrefObservers(PrefService* pref_service);
   void TimeLimitsPolicyUpdated(const std::string& pref_name);
-  void TimeLimitsWhitelistPolicyUpdated(const std::string& pref_name);
+  void TimeLimitsAllowlistPolicyUpdated(const std::string& pref_name);
 
   base::Time GetNextResetTime() const;
 

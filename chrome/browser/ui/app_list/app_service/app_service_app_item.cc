@@ -81,8 +81,7 @@ void AppServiceAppItem::Activate(int event_flags) {
   // when AppService Instance feature is done.
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (!proxy)
-    return;
+
   bool is_active_app = false;
   proxy->AppRegistryCache().ForOneApp(
       id(), [&is_active_app](const apps::AppUpdate& update) {
@@ -131,26 +130,23 @@ void AppServiceAppItem::Launch(int event_flags,
                                apps::mojom::LaunchSource launch_source) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (proxy) {
-    proxy->Launch(id(), event_flags, launch_source,
-                  GetController()->GetAppListDisplayId());
-  }
+  proxy->Launch(id(), event_flags, launch_source,
+                GetController()->GetAppListDisplayId());
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (proxy) {
-    auto icon_type =
-        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-            ? apps::mojom::IconType::kStandard
-            : apps::mojom::IconType::kUncompressed;
-    proxy->LoadIcon(app_type_, id(), icon_type,
-                    ash::AppListConfig::instance().grid_icon_dimension(),
-                    allow_placeholder_icon,
-                    base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  }
+
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  proxy->LoadIcon(app_type_, id(), icon_type,
+                  ash::AppListConfig::instance().grid_icon_dimension(),
+                  allow_placeholder_icon,
+                  base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {

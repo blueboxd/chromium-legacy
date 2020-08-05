@@ -485,7 +485,6 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
   DCHECK(profile);
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   if (proxy->AppRegistryCache().GetAppType(
           extension_misc::kWallpaperManagerId) ==
       apps::mojom::AppType::kUnknown) {

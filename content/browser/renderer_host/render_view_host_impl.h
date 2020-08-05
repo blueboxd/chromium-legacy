@@ -216,6 +216,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SetIsFrozen(bool frozen);
   void OnBackForwardCacheTimeout();
 
+  PageLifecycleStateManager* GetPageLifecycleStateManager() {
+    return page_lifecycle_state_manager_.get();
+  }
+
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();

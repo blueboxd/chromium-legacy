@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class AXObject;
 class ChromeClient;
 class CSSFontSelector;
 class PagePopup;
@@ -47,6 +48,7 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
   void Hide() override;
   void DisconnectClient() override;
   void UpdateFromElement(UpdateReason) override;
+  AXObject* PopupRootAXObject() const override;
 
   // PagePopupClient functions:
   void WriteDocument(SharedBuffer*) override;

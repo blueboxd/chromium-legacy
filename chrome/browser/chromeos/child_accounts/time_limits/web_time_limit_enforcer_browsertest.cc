@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
@@ -92,19 +92,19 @@ class WebTimeLimitEnforcerThrottleTest : public MixinBasedInProcessBrowserTest {
   void TearDown() override;
   void SetUpOnMainThread() override;
   bool IsErrorPageBeingShownInWebContents(content::WebContents* tab);
-  void WhitelistUrlRegx(const std::string& host);
-  void WhitelistApp(const chromeos::app_time::AppId& app_id);
+  void AllowlistUrlRegx(const std::string& host);
+  void AllowlistApp(const chromeos::app_time::AppId& app_id);
   void BlockWeb();
   chromeos::app_time::WebTimeLimitEnforcer* GetWebTimeLimitEnforcer();
   content::WebContents* InstallAndLaunchWebApp(const GURL& url,
-                                               bool whitelisted_app);
+                                               bool allowlisted_app);
 
  private:
   void UpdatePolicy();
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  chromeos::app_time::AppTimeLimitsWhitelistPolicyBuilder builder_;
+  chromeos::app_time::AppTimeLimitsAllowlistPolicyBuilder builder_;
 
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
@@ -153,15 +153,15 @@ bool WebTimeLimitEnforcerThrottleTest::IsErrorPageBeingShownInWebContents(
   return value;
 }
 
-void WebTimeLimitEnforcerThrottleTest::WhitelistUrlRegx(
+void WebTimeLimitEnforcerThrottleTest::AllowlistUrlRegx(
     const std::string& url) {
-  builder_.AppendToWhitelistUrlList(url);
+  builder_.AppendToAllowlistUrlList(url);
   UpdatePolicy();
 }
 
-void WebTimeLimitEnforcerThrottleTest::WhitelistApp(
+void WebTimeLimitEnforcerThrottleTest::AllowlistApp(
     const chromeos::app_time::AppId& app_id) {
-  builder_.AppendToWhitelistAppList(app_id);
+  builder_.AppendToAllowlistAppList(app_id);
   UpdatePolicy();
 }
 
@@ -184,7 +184,7 @@ WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
 
 content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
     const GURL& url,
-    bool whitelisted_app) {
+    bool allowlisted_app) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->title = base::UTF8ToUTF16(url.host());
   web_app_info->description = base::UTF8ToUTF16("Web app");
@@ -194,8 +194,8 @@ content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
   web_app::AppId app_id =
       web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
 
-  if (whitelisted_app)
-    WhitelistApp(chromeos::app_time::AppId(apps::mojom::AppType::kWeb, app_id));
+  if (allowlisted_app)
+    AllowlistApp(chromeos::app_time::AppId(apps::mojom::AppType::kWeb, app_id));
   base::RunLoop().RunUntilIdle();
 
   // Add a tab to |browser()| and return the newly added WebContents.
@@ -212,7 +212,7 @@ void WebTimeLimitEnforcerThrottleTest::UpdatePolicy() {
   logged_in_user_mixin_.GetUserPolicyMixin()
       ->RequestPolicyUpdate()
       ->policy_payload()
-      ->mutable_perapptimelimitswhitelist()
+      ->mutable_perapptimelimitsallowlist()
       ->set_value(policy_value);
 
   const user_manager::UserManager* const user_manager =
@@ -292,10 +292,10 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       WhitelistedURLNotBlocked) {
+                       AllowlistedURLNotBlocked) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
-  WhitelistUrlRegx(kExampleHost);
+  AllowlistUrlRegx(kExampleHost);
 
   // Alright let's block the browser.
   BlockWeb();
@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       BlockedURLAddedToWhitelist) {
+                       BlockedURLAddedToAllowlist) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
 
@@ -329,14 +329,14 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
 
   LoadFinishedWaiter waiter(web_contents, url);
 
-  WhitelistUrlRegx(kExampleHost);
+  AllowlistUrlRegx(kExampleHost);
   waiter.Wait();
 
   EXPECT_FALSE(IsErrorPageBeingShownInWebContents(web_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       WhitelistedSchemesNotBlockedHttp) {
+                       AllowlistedSchemesNotBlockedHttp) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
 
@@ -350,16 +350,16 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   auto* web_contents = params.navigated_or_inserted_contents;
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents));
 
-  // Whitelist the http scheme and ensure that the page is not
+  // Allowlist the http scheme and ensure that the page is not
   // blocked
   LoadFinishedWaiter waiter(web_contents, url);
-  WhitelistUrlRegx("http://*");
+  AllowlistUrlRegx("http://*");
   waiter.Wait();
   EXPECT_FALSE(IsErrorPageBeingShownInWebContents(web_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       WhitelistedSchemesNotBlockedChrome) {
+                       AllowlistedSchemesNotBlockedChrome) {
   GURL url = GURL("chrome://version");
 
   BlockWeb();
@@ -372,16 +372,16 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   auto* web_contents = params.navigated_or_inserted_contents;
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents));
 
-  // Whitelist the chrome scheme and ensure that the page is not
+  // Allowlist the chrome scheme and ensure that the page is not
   // blocked.
   LoadFinishedWaiter waiter(web_contents, url);
-  WhitelistUrlRegx("chrome://*");
+  AllowlistUrlRegx("chrome://*");
   waiter.Wait();
   EXPECT_FALSE(IsErrorPageBeingShownInWebContents(web_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       WhitelistedWebAppInTabNotBlocked) {
+                       AllowlistedWebAppInTabNotBlocked) {
   GURL web_app_url1 = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/simple.html");
   GURL web_app_url2 = embedded_test_server()->GetURL(
@@ -390,9 +390,9 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
       kExampleHost3, "/supervised_user/simple.html");
 
   content::WebContents* web_contents1 =
-      InstallAndLaunchWebApp(web_app_url1, /* whitelist */ true);
+      InstallAndLaunchWebApp(web_app_url1, /* allowlist */ true);
   content::WebContents* web_contents2 =
-      InstallAndLaunchWebApp(web_app_url2, /* whitelist */ false);
+      InstallAndLaunchWebApp(web_app_url2, /* allowlist */ false);
 
   NavigateParams params(browser(), normal_url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, EnsureQueryIsCleared) {
   GURL whitelsited_url = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/simple.html");
-  WhitelistUrlRegx(kExampleHost);
+  AllowlistUrlRegx(kExampleHost);
   BlockWeb();
 
   GURL url = embedded_test_server()->GetURL(kExampleHost2,
@@ -464,5 +464,5 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, EnsureQueryIsCleared) {
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents));
 }
 
-// TODO(yilkal): Add WhitelistedSchemeNotBlocked test for  chrome://settings
+// TODO(yilkal): Add AllowlistedSchemeNotBlocked test for  chrome://settings
 // TODO(yilkal): Add test for blocked web contents without browser window.

@@ -170,7 +170,6 @@ void AppServiceWrapper::GetAppIcon(
     const {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
   const std::string app_service_id = AppServiceIdFromAppId(app_id, profile_);
   DCHECK(!app_service_id.empty());
 
@@ -298,24 +297,17 @@ void AppServiceWrapper::OnInstanceRegistryWillBeDestroyed(
 }
 
 apps::AppServiceProxy* AppServiceWrapper::GetAppProxy() {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  return proxy;
+  return apps::AppServiceProxyFactory::GetForProfile(profile_);
 }
 
 apps::AppRegistryCache& AppServiceWrapper::GetAppCache() const {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  return proxy->AppRegistryCache();
+  return apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache();
 }
 
 apps::InstanceRegistry& AppServiceWrapper::GetInstanceRegistry() const {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  return proxy->InstanceRegistry();
+  return apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->InstanceRegistry();
 }
 
 bool AppServiceWrapper::ShouldIncludeApp(const AppId& app_id) const {

@@ -86,7 +86,6 @@ void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
                                                   const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   DCHECK_NE(proxy->AppRegistryCache().GetAppType(app_id),
             apps::mojom::AppType::kUnknown);
 
@@ -107,7 +106,6 @@ void AppListControllerDelegate::UninstallApp(Profile* profile,
                                              const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->Uninstall(app_id, GetAppListWindow());
 }
 

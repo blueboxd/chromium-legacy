@@ -132,102 +132,6 @@
 
 namespace blink {
 
-static void UpdateSuddenTerminationStatus(
-    LocalDOMWindow* dom_window,
-    bool added_listener,
-    blink::mojom::SuddenTerminationDisablerType disabler_type) {
-  Platform::Current()->SuddenTerminationChanged(!added_listener);
-  if (dom_window->GetFrame()) {
-    dom_window->GetFrame()
-        ->GetLocalFrameHostRemote()
-        .SuddenTerminationDisablerChanged(added_listener, disabler_type);
-  }
-}
-
-using DOMWindowSet = HeapHashCountedSet<WeakMember<LocalDOMWindow>>;
-
-static DOMWindowSet& WindowsWithUnloadEventListeners() {
-  DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
-                      windows_with_unload_event_listeners,
-                      (MakeGarbageCollected<DOMWindowSet>()));
-  return *windows_with_unload_event_listeners;
-}
-
-static DOMWindowSet& WindowsWithBeforeUnloadEventListeners() {
-  DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
-                      windows_with_before_unload_event_listeners,
-                      (MakeGarbageCollected<DOMWindowSet>()));
-  return *windows_with_before_unload_event_listeners;
-}
-
-static void TrackUnloadEventListener(LocalDOMWindow* dom_window) {
-  DOMWindowSet& set = WindowsWithUnloadEventListeners();
-  if (set.insert(dom_window).is_new_entry) {
-    // The first unload handler was added.
-    UpdateSuddenTerminationStatus(
-        dom_window, true,
-        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
-  }
-}
-
-static void UntrackUnloadEventListener(LocalDOMWindow* dom_window) {
-  DOMWindowSet& set = WindowsWithUnloadEventListeners();
-  DOMWindowSet::iterator it = set.find(dom_window);
-  if (it == set.end())
-    return;
-  if (set.erase(it)) {
-    // The last unload handler was removed.
-    UpdateSuddenTerminationStatus(
-        dom_window, false,
-        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
-  }
-}
-
-static void UntrackAllUnloadEventListeners(LocalDOMWindow* dom_window) {
-  DOMWindowSet& set = WindowsWithUnloadEventListeners();
-  DOMWindowSet::iterator it = set.find(dom_window);
-  if (it == set.end())
-    return;
-  set.RemoveAll(it);
-  UpdateSuddenTerminationStatus(
-      dom_window, false,
-      blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
-}
-
-static void TrackBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
-  DOMWindowSet& set = WindowsWithBeforeUnloadEventListeners();
-  if (set.insert(dom_window).is_new_entry) {
-    // The first beforeunload handler was added.
-    UpdateSuddenTerminationStatus(
-        dom_window, true,
-        blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
-  }
-}
-
-static void UntrackBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
-  DOMWindowSet& set = WindowsWithBeforeUnloadEventListeners();
-  DOMWindowSet::iterator it = set.find(dom_window);
-  if (it == set.end())
-    return;
-  if (set.erase(it)) {
-    // The last beforeunload handler was removed.
-    UpdateSuddenTerminationStatus(
-        dom_window, false,
-        blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
-  }
-}
-
-static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
-  DOMWindowSet& set = WindowsWithBeforeUnloadEventListeners();
-  DOMWindowSet::iterator it = set.find(dom_window);
-  if (it == set.end())
-    return;
-  set.RemoveAll(it);
-  UpdateSuddenTerminationStatus(
-      dom_window, false,
-      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
-}
-
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
     : DOMWindow(frame),
       ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
@@ -1819,10 +1723,8 @@ void LocalDOMWindow::AddedEventListener(
 
   if (event_type == event_type_names::kUnload) {
     UseCounter::Count(document(), WebFeature::kDocumentUnloadRegistered);
-    TrackUnloadEventListener(this);
   } else if (event_type == event_type_names::kBeforeunload) {
     UseCounter::Count(document(), WebFeature::kDocumentBeforeUnloadRegistered);
-    TrackBeforeUnloadEventListener(this);
     if (GetFrame() && !GetFrame()->IsMainFrame()) {
       UseCounter::Count(document(),
                         WebFeature::kSubFrameBeforeUnloadRegistered);
@@ -1832,6 +1734,13 @@ void LocalDOMWindow::AddedEventListener(
   } else if (event_type == event_type_names::kPageshow) {
     UseCounter::Count(document(), WebFeature::kDocumentPageShowRegistered);
   }
+
+  if (!GetFrame() || (event_type != event_type_names::kUnload &&
+                      event_type != event_type_names::kBeforeunload &&
+                      event_type != event_type_names::kPagehide)) {
+    return;
+  }
+  GetFrame()->AddedSuddenTerminationDisablerListener(*this, event_type);
 }
 
 void LocalDOMWindow::RemovedEventListener(
@@ -1847,11 +1756,14 @@ void LocalDOMWindow::RemovedEventListener(
     it->DidRemoveEventListener(this, event_type);
   }
 
-  if (event_type == event_type_names::kUnload) {
-    UntrackUnloadEventListener(this);
-  } else if (event_type == event_type_names::kBeforeunload) {
-    UntrackBeforeUnloadEventListener(this);
+  // Update sudden termination disabler state if we removed a listener for
+  // unload/beforeunload/pagehide.
+  if (!GetFrame() || (event_type != event_type_names::kUnload &&
+                      event_type != event_type_names::kBeforeunload &&
+                      event_type != event_type_names::kPagehide)) {
+    return;
   }
+  GetFrame()->RemovedSuddenTerminationDisablerListener(*this, event_type);
 }
 
 void LocalDOMWindow::DispatchLoadEvent() {
@@ -1904,6 +1816,12 @@ DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,
 }
 
 void LocalDOMWindow::RemoveAllEventListeners() {
+  int previous_unload_handlers_count =
+      NumberOfEventListeners(event_type_names::kUnload);
+  int previous_before_unload_handlers_count =
+      NumberOfEventListeners(event_type_names::kBeforeunload);
+  int previous_page_hide_handlers_count =
+      NumberOfEventListeners(event_type_names::kPagehide);
   EventTarget::RemoveAllEventListeners();
 
   for (auto& it : event_listener_observers_) {
@@ -1913,8 +1831,20 @@ void LocalDOMWindow::RemoveAllEventListeners() {
   if (GetFrame())
     GetFrame()->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*this);
 
-  UntrackAllUnloadEventListeners(this);
-  UntrackAllBeforeUnloadEventListeners(this);
+  // Update sudden termination disabler state if we previously have listeners
+  // for unload/beforeunload/pagehide.
+  if (GetFrame() && previous_unload_handlers_count) {
+    GetFrame()->RemovedSuddenTerminationDisablerListener(
+        *this, event_type_names::kUnload);
+  }
+  if (GetFrame() && previous_before_unload_handlers_count) {
+    GetFrame()->RemovedSuddenTerminationDisablerListener(
+        *this, event_type_names::kBeforeunload);
+  }
+  if (GetFrame() && previous_page_hide_handlers_count) {
+    GetFrame()->RemovedSuddenTerminationDisablerListener(
+        *this, event_type_names::kPagehide);
+  }
 }
 
 void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {

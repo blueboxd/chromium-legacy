@@ -23,7 +23,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/external_testing_loader.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/web_applications/components/external_app_install_features.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -57,8 +59,26 @@ namespace extensions {
 
 namespace {
 
-const char kManifestPath[] = "/update_manifest";
-const char kAppPath[] = "/app.crx";
+struct TestServerExtension {
+  const char* update_path;
+  const char* app_id;
+  const char* app_path;
+  const char* version;
+  const char* crx_path;
+};
+
+constexpr const TestServerExtension kInAppPaymentsApp{
+    "/update_manifest", extension_misc::kInAppPaymentsSupportAppId,
+    "/dummyiap.crx", "1.0.0.4", "extensions/dummyiap.crx"};
+
+constexpr const TestServerExtension kGoodApp{
+    "/update_good", "ldnnhddmnhbkjipkidpdiheffobcpfmf", "/good.crx", "1.0.0.0",
+    "extensions/good.crx"};
+
+constexpr const TestServerExtension kTestServerExtensions[] = {
+    kInAppPaymentsApp,
+    kGoodApp,
+};
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kExternalAppId[] = "kekdneafjmhmndejhmbcadfiiofngffo";
@@ -76,8 +96,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   ExternalProviderImplTest() {}
   ~ExternalProviderImplTest() override {}
 
-  void InitServiceWithExternalProviders(
-      const base::Optional<bool> block_external = base::nullopt) {
+  void InitService() {
 #if defined(OS_CHROMEOS)
     user_manager::ScopedUserManager scoped_user_manager(
         std::make_unique<chromeos::FakeChromeUserManager>());
@@ -91,6 +110,11 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     // the webstore, ignoring the url we pass to kAppsGalleryUpdateURL, which
     // would cause the external updates to never finish install.
     profile_->GetPrefs()->SetString(prefs::kDefaultApps, "");
+  }
+
+  void InitServiceWithExternalProviders(
+      const base::Optional<bool> block_external = base::nullopt) {
+    InitService();
 
     if (block_external.has_value())
       SetExternalExtensionsBlockedByPolicy(block_external.value());
@@ -155,47 +179,59 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     test_extension_cache_.reset(new ExtensionCacheFake());
 
     extension_test_util::SetGalleryUpdateURL(
-        test_server_->GetURL(kManifestPath));
+        test_server_->GetURL(kInAppPaymentsApp.update_path));
   }
+
+  void AwaitCheckForExternalUpdates() {
+    base::RunLoop run_loop;
+    service_->set_external_updates_finished_callback_for_test(
+        run_loop.QuitWhenIdleClosure());
+    service_->CheckForExternalUpdates();
+    run_loop.Run();
+  }
+
+ protected:
+  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     GURL url = test_server_->GetURL(request.relative_url);
-    if (url.path() == kManifestPath) {
-      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_code(net::HTTP_OK);
-      response->set_content(base::StringPrintf(
-          "<?xml version='1.0' encoding='UTF-8'?>\n"
-          "<gupdate xmlns='http://www.google.com/update2/response' "
-              "protocol='2.0'>\n"
-          "  <app appid='%s'>\n"
-          "    <updatecheck codebase='%s' version='1.0' />\n"
-          "  </app>\n"
-          "</gupdate>",
-          extension_misc::kInAppPaymentsSupportAppId,
-          test_server_->GetURL(kAppPath).spec().c_str()));
-      response->set_content_type("text/xml");
-      return std::move(response);
-    }
-    if (url.path() == kAppPath) {
-      base::FilePath test_data_dir;
-      base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-      std::string contents;
-      base::ReadFileToString(
-          test_data_dir.AppendASCII("extensions/dummyiap.crx"),
-          &contents);
-      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_code(net::HTTP_OK);
-      response->set_content(contents);
-      return std::move(response);
+    for (const TestServerExtension& test_extension : kTestServerExtensions) {
+      if (url.path() == test_extension.update_path) {
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_code(net::HTTP_OK);
+        response->set_content(base::StringPrintf(
+            "<?xml version='1.0' encoding='UTF-8'?>\n"
+            "<gupdate xmlns='http://www.google.com/update2/response' "
+            "protocol='2.0'>\n"
+            "  <app appid='%s'>\n"
+            "    <updatecheck codebase='%s' version='%s' />\n"
+            "  </app>\n"
+            "</gupdate>",
+            test_extension.app_id,
+            test_server_->GetURL(test_extension.app_path).spec().c_str(),
+            test_extension.version));
+        response->set_content_type("text/xml");
+        return std::move(response);
+      }
+      if (url.path() == test_extension.app_path) {
+        base::FilePath test_data_dir;
+        base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+        std::string contents;
+        base::ReadFileToString(
+            test_data_dir.AppendASCII(test_extension.crx_path), &contents);
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_code(net::HTTP_OK);
+        response->set_content(contents);
+        return std::move(response);
+      }
     }
 
     return nullptr;
   }
 
   std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
-  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
   std::unique_ptr<ExtensionCacheFake> test_extension_cache_;
 
 #if defined(OS_CHROMEOS)
@@ -216,31 +252,20 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// https://crbug.com/1083959
-TEST_F(ExternalProviderImplTest, DISABLED_InAppPayments) {
+TEST_F(ExternalProviderImplTest, InAppPayments) {
   InitServiceWithExternalProviders();
 
-  base::RunLoop run_loop;
-  service_->set_external_updates_finished_callback_for_test(
-      run_loop.QuitWhenIdleClosure());
-  service_->CheckForExternalUpdates();
-  run_loop.Run();
+  AwaitCheckForExternalUpdates();
 
-  EXPECT_TRUE(registry()->GetInstalledExtension(
-      extension_misc::kInAppPaymentsSupportAppId));
-  EXPECT_TRUE(service_->IsExtensionEnabled(
-      extension_misc::kInAppPaymentsSupportAppId));
+  EXPECT_TRUE(registry()->GetInstalledExtension(kInAppPaymentsApp.app_id));
+  EXPECT_TRUE(service_->IsExtensionEnabled(kInAppPaymentsApp.app_id));
 }
 
 TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(true);
 
-  base::RunLoop run_loop;
-  service_->set_external_updates_finished_callback_for_test(
-      run_loop.QuitWhenIdleClosure());
-  service_->CheckForExternalUpdates();
-  run_loop.Run();
+  AwaitCheckForExternalUpdates();
 
   EXPECT_FALSE(registry()->GetInstalledExtension(kExternalAppId));
 }
@@ -249,14 +274,54 @@ TEST_F(ExternalProviderImplTest, NotBlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(false);
 
-  base::RunLoop run_loop;
-  service_->set_external_updates_finished_callback_for_test(
-      run_loop.QuitWhenIdleClosure());
-  service_->CheckForExternalUpdates();
-  run_loop.Run();
+  AwaitCheckForExternalUpdates();
 
   EXPECT_TRUE(registry()->GetInstalledExtension(kExternalAppId));
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+TEST_F(ExternalProviderImplTest, WebAppMigrationFlag) {
+  InitService();
+
+  const std::string json = base::StringPrintf(
+      R"(
+        {
+          "%s": {
+            "external_update_url": "%s",
+            "web_app_migration_flag": "TestFeature"
+          }
+        }
+      )",
+      kGoodApp.app_id,
+      test_server_->GetURL(kGoodApp.update_path).spec().c_str());
+  service_->AddProviderForTesting(std::make_unique<ExternalProviderImpl>(
+      service_,
+      base::MakeRefCounted<ExternalTestingLoader>(
+          json, base::FilePath(FILE_PATH_LITERAL("//absolute/path"))),
+      profile_.get(), Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+      Extension::NO_FLAGS));
+
+  // App is not installed, we should not install if the flag is enabled.
+  {
+    base::AutoReset<bool> testing_scope =
+        web_app::SetExternalAppInstallFeatureAlwaysEnabledForTesting();
+    AwaitCheckForExternalUpdates();
+    EXPECT_FALSE(registry()->GetInstalledExtension(kGoodApp.app_id));
+  }
+
+  // Disable the flag to install the app.
+  {
+    AwaitCheckForExternalUpdates();
+    EXPECT_TRUE(registry()->GetInstalledExtension(kGoodApp.app_id));
+  }
+
+  // App is now installed, we should not uninstall if the flag is enabled.
+  {
+    base::AutoReset<bool> testing_scope =
+        web_app::SetExternalAppInstallFeatureAlwaysEnabledForTesting();
+    AwaitCheckForExternalUpdates();
+    EXPECT_TRUE(registry()->GetInstalledExtension(kGoodApp.app_id));
+  }
+}
 
 }  // namespace extensions

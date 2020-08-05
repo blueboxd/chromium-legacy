@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/test/base/testing_profile.h"
@@ -560,6 +561,36 @@ TEST_F(PersonalInfoSuggesterTest, ClickSettingsWithUpEnter) {
 
   suggestion_handler_->VerifyButtonClicked(
       ui::ime::ButtonId::kSmartInputsSettingLink);
+}
+
+TEST_F(PersonalInfoSuggesterTest, RecordsTimeToAccept) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToAccept.PersonalInfo", 0);
+
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  EXPECT_TRUE(suggester_->Suggest(base::UTF8ToUTF16("my email is ")));
+
+  // Press "Down" to choose and accept the suggestion.
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToAccept.PersonalInfo", 1);
+}
+
+TEST_F(PersonalInfoSuggesterTest, RecordsTimeToDismiss) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToAccept.PersonalInfo", 0);
+
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  EXPECT_TRUE(suggester_->Suggest(base::UTF8ToUTF16("my email is ")));
+  // Press "Esc" to dismiss.
+  SendKeyboardEvent("Esc");
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToDismiss.PersonalInfo", 1);
 }
 
 }  // namespace chromeos

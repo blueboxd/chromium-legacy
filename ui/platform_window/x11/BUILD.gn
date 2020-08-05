@@ -52,7 +52,12 @@ jumbo_component("x11") {
 }
 
 test("x11_unittests") {
-  sources = [ "test/x11_window_unittest.cc" ]
+  sources = [
+    "test/device_data_manager_x11_unittest.cc",
+    "test/events_x_unittest.cc",
+    "test/x11_event_translation_unittest.cc",
+    "test/x11_window_unittest.cc",
+  ]
   deps = [
     ":x11",
     "//base/test:run_all_unittests",
@@ -60,6 +65,7 @@ test("x11_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base:features",
     "//ui/base/x",
     "//ui/base/x:test_support",
     "//ui/events:test_support",

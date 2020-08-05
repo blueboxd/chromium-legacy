@@ -134,6 +134,12 @@ const char* const kMigratedExtensionIds[] = {
     "dliochdbjfkdbacpmhlcpmleaejidimm"   // Google Cast (Beta)
 };
 
+// IDs of component extensions that have been obsoleted and need to be
+// uninstalled.
+const char* const kObsoleteComponentExtensionIds[] = {
+    "ljoammodoonkhnehlncldjelhidljdpi"  // Genius
+};
+
 void ReportExtensionDisabledRemotely(bool is_currently_enabled,
                                      ExtensionUpdateCheckDataKey reason) {
   // Report that the extension is newly disabled due to malware.
@@ -1273,6 +1279,8 @@ void ExtensionService::OnAllExternalProvidersReady() {
                   [](base::RepeatingClosure callback) { callback.Run(); },
                   external_updates_finished_callback_);
     updater()->CheckNow(std::move(params));
+  } else if (external_updates_finished_callback_) {
+    external_updates_finished_callback_.Run();
   }
 
   // Uninstall all the unclaimed extensions.
@@ -2349,6 +2357,16 @@ void ExtensionService::UninstallMigratedExtensions() {
   for (const std::string& extension_id : kMigratedExtensionIds) {
     if (installed_extensions->Contains(extension_id)) {
       UninstallExtension(extension_id, UNINSTALL_REASON_MIGRATED, nullptr);
+    }
+  }
+
+  for (const std::string& extension_id : kObsoleteComponentExtensionIds) {
+    auto* extension = installed_extensions->GetByID(extension_id);
+    if (extension) {
+      UninstallExtension(extension_id, UNINSTALL_REASON_COMPONENT_REMOVED,
+                         nullptr);
+      extension_prefs_->MarkObsoleteComponentExtensionAsRemoved(
+          extension->id(), extension->location());
     }
   }
 }

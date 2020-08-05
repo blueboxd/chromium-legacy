@@ -3342,6 +3342,12 @@
       'google_apis_unittests': {},
       'gpu_unittests': {},
       'gwp_asan_unittests': {},
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 3,
+        },
+        'experiment_percentage': 100,
+      },
       'ipc_tests': {},
       'jingle_unittests': {},
       'latency_unittests': {},
@@ -3388,16 +3394,16 @@
         'test': 'extensions_browsertests',
         'experiment_percentage': 100,
       },
-      # TODO(crbug.com/1104291): Re-enable this.
-      # 'storage_service_unsandboxed_interactive_ui_tests': {
-      #  'args': [
-      #    '--enable-features=StorageServiceOutOfProcess'
-      #  ],
-      #  'swarming': {
-      #    'shards': 3,
-      #  },
-      #  'test': 'interactive_ui_tests',
-      # },
+      'storage_service_unsandboxed_interactive_ui_tests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess'
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+        'test': 'interactive_ui_tests',
+        'experiment_percentage': 100,
+      },
       'storage_unittests': {},
       'sync_integration_tests': {
         'experiment_percentage': 100,
@@ -3421,12 +3427,6 @@
         'experiment_percentage': 100,
       },
       'wtf_unittests': {},
-      # TODO(crbug.com/1104291): Re-enable this.
-      # 'interactive_ui_tests': {
-      #  'swarming': {
-      #    'shards': 3,
-      #  },
-      # },
     },
 
     # END tests which run on the GPU bots

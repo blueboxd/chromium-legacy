@@ -148,6 +148,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     AddPermissionStatusListener();
   documents_.insert(&document);
   relation_cache_->Init();
+  use_ax_menu_list_ = GetSettings()->GetUseAXMenuList();
 }
 
 AXObjectCacheImpl::~AXObjectCacheImpl() {
@@ -446,9 +447,12 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   if (layout_object->IsBoxModelObject()) {
     LayoutBoxModelObject* css_box = ToLayoutBoxModelObject(layout_object);
     if (auto* select_element = DynamicTo<HTMLSelectElement>(node)) {
-      if (select_element->UsesMenuList())
-        return MakeGarbageCollected<AXMenuList>(css_box, *this);
-      return MakeGarbageCollected<AXListBox>(css_box, *this);
+      if (select_element->UsesMenuList()) {
+        if (use_ax_menu_list_)
+          return MakeGarbageCollected<AXMenuList>(css_box, *this);
+      } else {
+        return MakeGarbageCollected<AXListBox>(css_box, *this);
+      }
     }
 
     // progress bar
@@ -466,7 +470,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
 }
 
 AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
-  if (IsMenuListOption(node)) {
+  if (IsMenuListOption(node) && use_ax_menu_list_) {
     return MakeGarbageCollected<AXMenuListOption>(To<HTMLOptionElement>(node),
                                                   *this);
   }
@@ -630,6 +634,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(ax::mojom::blink::Role role) {
       obj = MakeGarbageCollected<AXSliderThumb>(*this);
       break;
     case ax::mojom::Role::kMenuListPopup:
+      DCHECK(use_ax_menu_list_);
       obj = MakeGarbageCollected<AXMenuListPopup>(*this);
       break;
     default:
@@ -2050,6 +2055,11 @@ void AXObjectCacheImpl::HandleValueChanged(Node* node) {
 
 void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutObject* menu_list,
                                                      int option_index) {
+  if (!use_ax_menu_list_) {
+    MarkAXObjectDirty(Get(menu_list), false);
+    return;
+  }
+
   auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
   if (!ax_object)
     return;
@@ -2060,6 +2070,11 @@ void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutObject* menu_list,
 }
 
 void AXObjectCacheImpl::DidShowMenuListPopup(LayoutObject* menu_list) {
+  if (!use_ax_menu_list_) {
+    MarkAXObjectDirty(Get(menu_list), false);
+    return;
+  }
+
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(menu_list->GetDocument());
 
   auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
@@ -2068,6 +2083,11 @@ void AXObjectCacheImpl::DidShowMenuListPopup(LayoutObject* menu_list) {
 }
 
 void AXObjectCacheImpl::DidHideMenuListPopup(LayoutObject* menu_list) {
+  if (!use_ax_menu_list_) {
+    MarkAXObjectDirty(Get(menu_list), false);
+    return;
+  }
+
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(menu_list->GetDocument());
 
   auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));

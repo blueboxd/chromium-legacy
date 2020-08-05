@@ -74,10 +74,10 @@ DiscardBeforeUnloadHelper::DiscardBeforeUnloadHelper(
       self_(this),
       callback_(std::move(callback)) {
   DCHECK(!callback_.is_null());
-  // NOTE: Ideally this would call NeedToFireBeforeUnloadOrUnload and entirely
-  // skip on the dispatch if there are no unload handlers installed.
-  // Unfortunately, NeedToFireBeforeUnloadOrUnload doesn't check the main
-  // frame, so this doesn't quite work. See this related bug for more
+  // NOTE: Ideally this would call NeedToFireBeforeUnloadOrUnloadEvents and
+  // entirely skip on the dispatch if there are no unload handlers installed.
+  // Unfortunately, NeedToFireBeforeUnloadOrUnloadEvents doesn't check the
+  // main frame, so this doesn't quite work. See this related bug for more
   // information: crbug.com/869956
   web_contents()->DispatchBeforeUnload(true /* auto_cancel */);
 }

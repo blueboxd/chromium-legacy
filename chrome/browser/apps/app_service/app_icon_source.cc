@@ -95,10 +95,6 @@ void AppIconSource::StartDataRequest(
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-  if (!app_service_proxy) {
-    LoadDefaultImage(std::move(callback));
-    return;
-  }
 
   const apps::mojom::AppType app_type =
       app_service_proxy->AppRegistryCache().GetAppType(app_id);

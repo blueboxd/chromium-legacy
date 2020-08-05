@@ -362,7 +362,7 @@ class PasswordManagerSyncTest : public SyncTest {
       test_signin_client_factory_;
 
   // A test server instance that runs on HTTPS (as opposed to the default
-  // |embedded_test_server()). This is necessary to simulate Gaia pages, which
+  // |embedded_test_server()|). This is necessary to simulate Gaia pages, which
   // must be on a secure (cryptographic) scheme.
   net::EmbeddedTestServer https_test_server_{
       net::EmbeddedTestServer::TYPE_HTTPS};

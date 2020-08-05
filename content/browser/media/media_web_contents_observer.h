@@ -40,7 +40,7 @@ struct MediaPosition;
 
 namespace gfx {
 class Size;
-}  // namespace size
+}  // namespace gfx
 
 namespace content {
 
@@ -148,6 +148,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnPictureInPictureAvailabilityChanged(RenderFrameHost* render_frame_host,
                                              int delegate_id,
                                              bool available);
+  void OnAudioOutputSinkChanged(RenderFrameHost* render_frame_host,
+                                int delegate_id,
+                                std::string hashed_device_id);
   void OnBufferUnderflow(RenderFrameHost* render_frame_host, int delegate_id);
 
   device::mojom::WakeLock* GetAudioWakeLock();

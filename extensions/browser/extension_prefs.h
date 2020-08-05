@@ -703,6 +703,18 @@ class ExtensionPrefs : public KeyedService {
   // TODO(devlin): Remove this once clients are migrated over, around M84.
   void MigrateToNewExternalUninstallPref();
 
+  // Returns true if the given component extension should be installed, even
+  // though it has been obsoleted. Installing it allows us to ensure it is
+  // cleaned/deleted up properly. After that cleanup is done, this will return
+  // false.
+  bool ShouldInstallObsoleteComponentExtension(const std::string& extension_id);
+
+  // Mark the given component extension as deleted. It should not be installed /
+  // loaded again after this.
+  void MarkObsoleteComponentExtensionAsRemoved(
+      const std::string& extension_id,
+      const Manifest::Location& location);
+
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();

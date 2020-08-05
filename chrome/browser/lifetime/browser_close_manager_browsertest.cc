@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   // This page has beforeunload handler already.
   EXPECT_TRUE(browser2->tab_strip_model()
                   ->GetWebContentsAt(0)
-                  ->NeedToFireBeforeUnloadOrUnload());
+                  ->NeedToFireBeforeUnloadOrUnloadEvents());
   // This page doesn't have beforeunload handler. Yet.
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, embedded_test_server()->GetURL("/title2.html"),
@@ -777,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
       browser2->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_FALSE(browser2->tab_strip_model()
                    ->GetWebContentsAt(1)
-                   ->NeedToFireBeforeUnloadOrUnload());
+                   ->NeedToFireBeforeUnloadOrUnloadEvents());
   EXPECT_EQ(2, browser2->tab_strip_model()->count());
 
   PrepareForDialog(browser2);
@@ -800,7 +800,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
       "function(event) { event.returnValue = 'Foo'; });"));
   EXPECT_TRUE(browser2->tab_strip_model()
                   ->GetWebContentsAt(1)
-                  ->NeedToFireBeforeUnloadOrUnload());
+                  ->NeedToFireBeforeUnloadOrUnloadEvents());
   // Accept closing the first tab.
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   // Just to be sure accepting a dialog doesn't have asynchronous tasks

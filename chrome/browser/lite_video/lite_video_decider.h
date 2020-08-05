@@ -70,6 +70,12 @@ class LiteVideoDecider
   void ClearBlocklist(const base::Time& delete_begin,
                       const base::Time& delete_end);
 
+  // Update |user_blocklist_| that a rebuffer event consided an opt-out on the
+  // mainframe and subframe URLs occurred.
+  void DidMediaRebuffer(const GURL& mainframe_url,
+                        base::Optional<GURL> subframe_url,
+                        bool opt_out);
+
  private:
   // The hint cache that holds LiteVideoHints that specify the parameters
   // for throttling media requests for that navigation.

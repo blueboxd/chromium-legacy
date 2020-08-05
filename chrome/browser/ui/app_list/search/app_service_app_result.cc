@@ -40,21 +40,19 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  if (proxy) {
-    proxy->AppRegistryCache().ForOneApp(
-        app_id, [this](const apps::AppUpdate& update) {
-          app_type_ = update.AppType();
-          is_platform_app_ =
-              update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
-          show_in_launcher_ =
-              update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
-        });
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [this](const apps::AppUpdate& update) {
+        app_type_ = update.AppType();
+        is_platform_app_ =
+            update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
+        show_in_launcher_ =
+            update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
+      });
 
-    constexpr bool allow_placeholder_icon = true;
-    CallLoadIcon(false, allow_placeholder_icon);
-    if (is_recommendation) {
-      CallLoadIcon(true, allow_placeholder_icon);
-    }
+  constexpr bool allow_placeholder_icon = true;
+  CallLoadIcon(false, allow_placeholder_icon);
+  if (is_recommendation) {
+    CallLoadIcon(true, allow_placeholder_icon);
   }
 
   switch (app_type_) {
@@ -155,8 +153,6 @@ void AppServiceAppResult::Launch(int event_flags,
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (!proxy)
-    return;
 
   // For Chrome apps or Web apps, if it is non-platform app, it could be
   // selecting an existing delegate for the app, so call

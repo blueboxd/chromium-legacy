@@ -1893,7 +1893,7 @@ Visibility WebContentsImpl::GetVisibility() {
   return visibility_;
 }
 
-bool WebContentsImpl::NeedToFireBeforeUnloadOrUnload() {
+bool WebContentsImpl::NeedToFireBeforeUnloadOrUnloadEvents() {
   if (!notify_disconnection_)
     return false;
 
@@ -1904,19 +1904,34 @@ bool WebContentsImpl::NeedToFireBeforeUnloadOrUnload() {
     return false;
 
   // Check whether any frame in the frame tree needs to run beforeunload or
-  // unload handlers.
+  // unload-time event handlers.
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
     RenderFrameHostImpl* rfh = node->current_frame_host();
 
-    // No need to run beforeunload/unload if the RenderFrame isn't live.
+    // No need to run beforeunload/unload-time events if the RenderFrame isn't
+    // live.
     if (!rfh->IsRenderFrameLive())
       continue;
-
-    if (rfh->GetSuddenTerminationDisablerState(
-            blink::mojom::SuddenTerminationDisablerType::
-                kBeforeUnloadHandler) ||
+    bool should_run_before_unload_handler =
         rfh->GetSuddenTerminationDisablerState(
-            blink::mojom::SuddenTerminationDisablerType::kUnloadHandler)) {
+            blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
+    bool should_run_unload_handler = rfh->GetSuddenTerminationDisablerState(
+        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
+    bool should_run_page_hide_handler = rfh->GetSuddenTerminationDisablerState(
+        blink::mojom::SuddenTerminationDisablerType::kPageHideHandler);
+    auto* rvh = static_cast<RenderViewHostImpl*>(rfh->GetRenderViewHost());
+    // If the tab is already hidden, we should not run visibilitychange
+    // handlers.
+    bool is_page_visible = rvh->GetPageLifecycleStateManager()
+                               ->CalculatePageLifecycleState()
+                               ->visibility == PageVisibilityState::kVisible;
+
+    bool should_run_visibility_change_handler =
+        is_page_visible && rfh->GetSuddenTerminationDisablerState(
+                               blink::mojom::SuddenTerminationDisablerType::
+                                   kVisibilityChangeHandler);
+    if (should_run_before_unload_handler || should_run_unload_handler ||
+        should_run_page_hide_handler || should_run_visibility_change_handler) {
       return true;
     }
   }

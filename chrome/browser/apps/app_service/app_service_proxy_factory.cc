@@ -25,17 +25,38 @@
 namespace apps {
 
 // static
+bool AppServiceProxyFactory::IsAppServiceAvailableForProfile(Profile* profile) {
+  if (!profile || profile->IsSystemProfile()) {
+    return false;
+  }
+
+  // There is no AppServiceProxy for incognito profiles as they are ephemeral
+  // and have no apps persisted inside them.
+  //
+  // A common pattern in incognito is to implicitly fall back to the associated
+  // real profile. We do not do that here to avoid unintentionally leaking a
+  // user's browsing data from incognito to an app. Clients of the App Service
+  // should explicitly decide when it is and isn't appropriate to use the
+  // associated real profile and pass that to this method.
+#if defined(OS_CHROMEOS)
+  // An exception on Chrome OS is the guest profile, which is incognito, but
+  // can have apps within it.
+  return (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+          (!profile->IsOffTheRecord() || profile->IsGuestSession()));
+#else
+  return !profile->IsOffTheRecord();
+#endif
+}
+
+// static
 AppServiceProxy* AppServiceProxyFactory::GetForProfile(Profile* profile) {
-  // TODO: decide the right behaviour in incognito (non-guest) profiles:
-  //   - return nullptr (means we need to null check the service at call sites
-  //     OR ensure it's never accessed from an incognito profile),
-  //   - return the service attached to the Profile that the incognito profile
-  //     is branched from (i.e. "inherit" the parent service),
-  //   - return a temporary service just for the incognito session (probably
-  //     the least sensible option).
-  return static_cast<AppServiceProxy*>(
+  DCHECK(IsAppServiceAvailableForProfile(profile));
+
+  auto* proxy = static_cast<AppServiceProxy*>(
       AppServiceProxyFactory::GetInstance()->GetServiceForBrowserContext(
           profile, true /* create */));
+  DCHECK_NE(nullptr, proxy);
+  return proxy;
 }
 
 // static

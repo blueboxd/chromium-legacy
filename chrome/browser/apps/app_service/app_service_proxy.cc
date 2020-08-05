@@ -529,18 +529,17 @@ std::vector<AppIdAndActivityName> AppServiceProxy::GetAppsForIntent(
         if (apps_util::IntentMatchesFilter(intent, filter)) {
           AppIdAndActivityName app_id_and_activity;
           app_id_and_activity.app_id = update.AppId();
-          if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing) &&
-              filter->activity_name.has_value()) {
-            std::string activity_name = filter->activity_name.value();
-            if (activity_name.empty()) {
-              activity_name = update.Name();
-            }
-            if (base::Contains(existing_activities, activity_name)) {
-              continue;
-            }
-            existing_activities.insert(activity_name);
-            app_id_and_activity.activity_name = activity_name;
+          std::string activity_name;
+          if (filter->activity_name && !filter->activity_name.value().empty()) {
+            activity_name = filter->activity_name.value();
+          } else {
+            activity_name = update.Name();
           }
+          if (base::Contains(existing_activities, activity_name)) {
+            continue;
+          }
+          existing_activities.insert(activity_name);
+          app_id_and_activity.activity_name = activity_name;
           app_id_and_activities.push_back(app_id_and_activity);
         }
       }

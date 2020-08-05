@@ -6,13 +6,13 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 

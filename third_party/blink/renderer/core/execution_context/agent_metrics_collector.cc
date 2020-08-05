@@ -166,7 +166,7 @@ AgentMetricsCollector::GetAgentMetricsCollectorHost() {
   if (!agent_metrics_collector_host_.is_bound()) {
     blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         agent_metrics_collector_host_.BindNewPipeAndPassReceiver(
-            ThreadScheduler::Current()->IPCTaskRunner()));
+            ThreadScheduler::Current()->DeprecatedDefaultTaskRunner()));
   }
   return agent_metrics_collector_host_.get();
 }

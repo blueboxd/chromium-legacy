@@ -137,23 +137,14 @@ class TelemetryProxy {
 
 const telemetryProxy = new TelemetryProxy();
 
-/**
- * @type { MessagePipe|null }
- */
-var untrustedMessagePipe = null;
+const untrustedMessagePipe =
+    new MessagePipe('chrome-untrusted://telemetry-extension');
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const untrustedMessagePipe =
-      new MessagePipe('chrome-untrusted://telemetry-extension');
+untrustedMessagePipe.registerHandler(
+    dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES, async () => {
+      return await getOrCreateDiagnosticsService().getAvailableRoutines();
+    });
 
-  untrustedMessagePipe.registerHandler(
-      dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES, async () => {
-        return await getOrCreateDiagnosticsService().getAvailableRoutines();
-      });
-
-  untrustedMessagePipe.registerHandler(
-      dpsl_internal.Message.PROBE_TELEMETRY_INFO,
-      (message) => telemetryProxy.handleProbeTelemetryInfo(message));
-
-  globalThis.untrustedMessagePipe = untrustedMessagePipe;
-});
+untrustedMessagePipe.registerHandler(
+    dpsl_internal.Message.PROBE_TELEMETRY_INFO,
+    (message) => telemetryProxy.handleProbeTelemetryInfo(message));

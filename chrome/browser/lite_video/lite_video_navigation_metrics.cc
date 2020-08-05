@@ -9,15 +9,18 @@ namespace lite_video {
 LiteVideoNavigationMetrics::LiteVideoNavigationMetrics(
     int64_t nav_id,
     LiteVideoDecision decision,
-    LiteVideoBlocklistReason blocklist_reason)
+    LiteVideoBlocklistReason blocklist_reason,
+    LiteVideoThrottleResult throttle_result)
     : nav_id_(nav_id),
       decision_(decision),
-      blocklist_reason_(blocklist_reason) {}
+      blocklist_reason_(blocklist_reason),
+      throttle_result_(throttle_result) {}
 
 LiteVideoNavigationMetrics::~LiteVideoNavigationMetrics() = default;
 
-LiteVideoBlocklistReason LiteVideoNavigationMetrics::blocklist_reason() const {
-  return blocklist_reason_;
+void LiteVideoNavigationMetrics::SetThrottleResult(
+    LiteVideoThrottleResult throttle_result) {
+  throttle_result_ = throttle_result;
 }
 
 }  // namespace lite_video

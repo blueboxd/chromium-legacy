@@ -13,9 +13,9 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_handle.h"
-#include "chrome/browser/prerender/prerender_manager.h"
+#include "components/prerender/browser/prerender_contents.h"
+#include "components/prerender/browser/prerender_handle.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"

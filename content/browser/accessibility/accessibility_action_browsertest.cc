@@ -19,6 +19,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -876,5 +877,49 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ClickSVG) {
                                                 "SVG link was clicked!");
 #endif  // !defined(OS_ANDROID)
 }
+
+// This test ony makes sense on platforms where the popup menu is implemented
+// internally as an HTML page in a popup, not where it's a native popup.
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_ATK)
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       OpenSelectPopupWithNoAXMenuList) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kDisableAXMenuList);
+
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <head><title>No AXMenuList</title></head>
+      <body>
+        <select>
+          <option selected>One</option>
+          <option>Two</option>
+          <option>Three</option>
+        </select>
+      </body>
+      )HTML");
+
+  BrowserAccessibility* target = FindNode(ax::mojom::Role::kPopUpButton, "One");
+  ASSERT_NE(nullptr, target);
+
+  EXPECT_EQ(0U, target->PlatformChildCount());
+  EXPECT_EQ(nullptr, FindNode(ax::mojom::Role::kListBox, ""));
+
+  // Call DoDefaultAction.
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Three");
+
+  ASSERT_EQ(1U, target->PlatformChildCount());
+  BrowserAccessibility* popup_web_area = target->PlatformGetChild(0);
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_web_area->GetRole());
+
+  BrowserAccessibility* listbox = FindNode(ax::mojom::Role::kListBox, "");
+  ASSERT_TRUE(listbox);
+  EXPECT_EQ(3U, listbox->PlatformChildCount());
+}
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_ATK)
 
 }  // namespace content

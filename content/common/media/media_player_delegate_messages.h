@@ -124,6 +124,10 @@ IPC_MESSAGE_ROUTED2(
     int /* delegate_id, distinguishes instances */,
     bool /* picture-in-picture availability */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged,
+                    int /* delegate_id, distinguishes instances */,
+                    std::string /* hashed_device_id */)
+
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnBufferUnderflow,
                     int /* delegate_id, distinguishes instances */)
 

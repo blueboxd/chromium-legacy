@@ -1,6 +1,14 @@
 include_rules = [
+  "+components/content_settings/core",
   "+components/google/core/common",
+  "+components/keyed_service/core",
   "+content/public/browser",
-  "+net/http/http_cache.h",
-  "+ui/gfx/geometry/rect.h",
+  "+content/public/common",
+  "+mojo/public",
+  "+net/http",
+  "+services/resource_coordinator/public",
+  "+services/service_manager/public",
+  "+third_party/blink/public",
+  "+ui/base",
+  "+ui/gfx",
 ]

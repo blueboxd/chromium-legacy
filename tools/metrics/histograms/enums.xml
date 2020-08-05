@@ -3399,6 +3399,7 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="App started from Kiosk Next Home"/>
   <int value="19" label="Interaction with gamepad"/>
   <int value="20" label="App started from URL in the Omnibox"/>
+  <int value="21" label="App started from sharesheet"/>
 </enum>
 
 <enum name="ArcVideoDecodeAcceleratorResult">
@@ -21352,6 +21353,8 @@ Called by update_document_policy_enum.py.-->
   <int value="759" label="NoteTakingAppsLockScreenAllowlist"/>
   <int value="760" label="CCTToSDialogEnabled"/>
   <int value="761" label="NearbyShareAllowed"/>
+  <int value="762" label="PerAppTimeLimitsAllowlist"/>
+  <int value="763" label="DeviceShowLowDiskSpaceNotification"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -39508,6 +39511,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Allowed"/>
   <int value="2" label="Not Allowed"/>
   <int value="3" label="Holdback"/>
+</enum>
+
+<enum name="LiteVideoThrottleResult">
+  <int value="0" label="None"/>
+  <int value="1" label="Throttled without stopping"/>
+  <int value="2" label="Throttled but stopped due to rebuffer"/>
 </enum>
 
 <enum name="LiveCaptionsSessionEvent">
@@ -63090,6 +63099,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="RESPONSE_READER_ERROR"/>
   <int value="6" label="META_DATA_SENDER_ERROR"/>
   <int value="7" label="NO_CONTEXT_ERROR"/>
+</enum>
+
+<enum name="ServiceWorkerInternalsLinkQuery">
+  <int value="0" label="Accessed from DevTools"/>
+  <int value="1" label="Accessed from outside DevTools"/>
 </enum>
 
 <enum name="ServiceWorkerMainResourceRequestDestination">

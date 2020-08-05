@@ -202,11 +202,20 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // widget).
   void EnableAnimationForTesting();
 
+  const ProposedLayout& starting_layout_for_testing() const {
+    return starting_layout_;
+  }
+
+  const ProposedLayout& target_layout_for_testing() const {
+    return target_layout_;
+  }
+
  protected:
   // LayoutManagerBase:
   ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const override;
   void OnInstalled(View* host) override;
+  bool OnViewAdded(View* host, View* view) override;
   void OnLayoutChanged() override;
   void LayoutImpl() override;
 

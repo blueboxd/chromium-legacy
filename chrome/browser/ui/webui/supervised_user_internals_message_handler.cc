@@ -28,7 +28,6 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
 using content::BrowserThread;
@@ -182,22 +181,12 @@ void SupervisedUserInternalsMessageHandler::HandleTryURL(
     return;
 
   SupervisedUserURLFilter* filter = GetSupervisedUserService()->GetURLFilter();
-  content::WebContents* web_contents =
-      web_ui() ? web_ui()->GetWebContents() : nullptr;
-  bool skip_manual_parent_filter = false;
-  if (web_contents) {
-    skip_manual_parent_filter =
-        filter->ShouldSkipParentManualAllowlistFiltering(
-            web_contents->GetOutermostWebContents());
-  }
-
   std::map<std::string, base::string16> allowlists =
       filter->GetMatchingWhitelistTitles(url);
   filter->GetFilteringBehaviorForURLWithAsyncChecks(
       url,
       base::BindOnce(&SupervisedUserInternalsMessageHandler::OnTryURLResult,
-                     weak_factory_.GetWeakPtr(), allowlists),
-      skip_manual_parent_filter);
+                     weak_factory_.GetWeakPtr(), allowlists));
 }
 
 void SupervisedUserInternalsMessageHandler::SendBasicInfo() {

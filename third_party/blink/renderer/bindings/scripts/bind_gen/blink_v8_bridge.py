@@ -506,14 +506,18 @@ def make_v8_to_blink_value(blink_var_name,
             ])
 
         nodes = []
-        type_info = blink_type_info(idl_type)
+        arg_type = _format(
+            "decltype(NativeValueTraits<{}>::NativeValue("
+            "std::declval<v8::Isolate*>(), "
+            "std::declval<v8::Local<v8::Value>>(), "
+            "std::declval<ExceptionState&>()))", native_value_tag(idl_type))
         default_expr = make_default_value_expr(idl_type, default_value)
         if default_expr.is_initialization_lightweight:
             nodes.append(
-                F("{} ${{{}}}{{{}}};", type_info.value_t, blink_var_name,
+                F("{} ${{{}}}{{{}}};", arg_type, blink_var_name,
                   default_expr.initializer_expr))
         else:
-            nodes.append(F("{} ${{{}}};", type_info.value_t, blink_var_name))
+            nodes.append(F("{} ${{{}}};", arg_type, blink_var_name))
         assignment = [
             F("${{{}}} = {};", blink_var_name, blink_value_expr),
             CxxUnlikelyIfNode(

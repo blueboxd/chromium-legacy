@@ -5343,6 +5343,12 @@ be describing additional metrics about the same event.
       requests throttled.
     </summary>
   </metric>
+  <metric name="ThrottlingResult" enum="LiteVideoThrottleResult">
+    <summary>
+      The result for whether media requests associated with this navigation were
+      successfully throttled or stopped due to an opt-out event.
+    </summary>
+  </metric>
   <metric name="ThrottlingStartDecision" enum="LiteVideoDecision">
     <summary>
       The decision for whether media requests associated with this frame will be

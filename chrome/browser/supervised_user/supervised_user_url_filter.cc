@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,13 +28,11 @@
 #include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
 #include "chrome/browser/supervised_user/supervised_user_blacklist.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/webui_url_constants.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -110,9 +107,6 @@ const char kFamiliesUrl[] = "http://families.google.com/";
 // Play Store terms of service path:
 const char kPlayStoreHost[] = "play.google.com";
 const char kPlayTermsPath[] = "/about/play-terms";
-
-// accounts.google.com used for login:
-const char kAccountsGoogleUrl[] = "https://accounts.google.com";
 
 // This class encapsulates all the state that is required during construction of
 // a new SupervisedUserURLFilter::Contents.
@@ -228,18 +222,6 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-// static
-bool SupervisedUserURLFilter::ShouldSkipParentManualAllowlistFiltering(
-    content::WebContents* contents) {
-  // Note that |contents| can be an inner WebContents. Get the outer most
-  // WebContents and check if it belongs to the EDUCoexistence login flow.
-  content::WebContents* outer_most_content =
-      contents->GetOutermostWebContents();
-
-  return outer_most_content->GetURL() ==
-         GURL(chrome::kChromeUIEDUCoexistenceLoginURL);
 }
 
 // static
@@ -362,12 +344,10 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   }
 #endif
 
-  // Allow navigations to whitelisted origins (currently families.google.com and
-  // accounts.google.com).
+  // Allow navigations to whitelisted origins (currently families.google.com).
   static const base::NoDestructor<base::flat_set<GURL>> kWhitelistedOrigins(
       base::flat_set<GURL>({GURL(kFamiliesUrl).GetOrigin(),
-                            GURL(kFamiliesSecureUrl).GetOrigin(),
-                            GURL(kAccountsGoogleUrl).GetOrigin()}));
+                            GURL(kFamiliesSecureUrl).GetOrigin()}));
   if (base::Contains(*kWhitelistedOrigins, effective_url.GetOrigin()))
     return ALLOW;
 
@@ -465,27 +445,17 @@ SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
 
 bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
     const GURL& url,
-    FilteringBehaviorCallback callback,
-    bool skip_manual_parent_filter) const {
-  if (!skip_manual_parent_filter) {
-    supervised_user_error_page::FilteringBehaviorReason reason =
-        supervised_user_error_page::DEFAULT;
-    FilteringBehavior behavior =
-        GetFilteringBehaviorForURL(url, false, &reason);
-    // Any non-default reason trumps the async checker.
-    // Also, if we're blocking anyway, then there's no need to check it.
-    if (reason != supervised_user_error_page::DEFAULT || behavior == BLOCK ||
-        !async_url_checker_) {
-      std::move(callback).Run(behavior, reason, false);
-      for (Observer& observer : observers_)
-        observer.OnURLChecked(url, behavior, reason, false);
-      return true;
-    }
-  }
-
-  if (!async_url_checker_) {
-    std::move(callback).Run(FilteringBehavior::ALLOW,
-                            supervised_user_error_page::DEFAULT, false);
+    FilteringBehaviorCallback callback) const {
+  supervised_user_error_page::FilteringBehaviorReason reason =
+      supervised_user_error_page::DEFAULT;
+  FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
+  // Any non-default reason trumps the async checker.
+  // Also, if we're blocking anyway, then there's no need to check it.
+  if (reason != supervised_user_error_page::DEFAULT || behavior == BLOCK ||
+      !async_url_checker_) {
+    std::move(callback).Run(behavior, reason, false);
+    for (Observer& observer : observers_)
+      observer.OnURLChecked(url, behavior, reason, false);
     return true;
   }
 
@@ -641,8 +611,11 @@ void SupervisedUserURLFilter::CheckCallback(
     const GURL& url,
     safe_search_api::Classification classification,
     bool uncertain) const {
+  DCHECK(default_behavior_ != BLOCK);
+
   FilteringBehavior behavior =
       GetBehaviorFromSafeSearchClassification(classification);
+
   std::move(callback).Run(behavior, supervised_user_error_page::ASYNC_CHECKER,
                           uncertain);
   for (Observer& observer : observers_) {

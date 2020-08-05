@@ -2847,9 +2847,6 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  if (!proxy)
-    return RespondNow(Error("App Service not available"));
-
   std::vector<api::autotest_private::App> installed_apps;
   proxy->AppRegistryCache().ForEachApp([&installed_apps](
                                            const apps::AppUpdate& update) {

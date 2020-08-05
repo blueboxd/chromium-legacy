@@ -29,28 +29,3 @@ component("x") {
     "//ui/gfx/x",
   ]
 }
-
-# XEvent translation tests are kept in a separate source_set so that both
-# ozone_x11_unittests and aura/x11 events_unittests can depend on it.
-# TODO(crbug.com/789065): Move this completely into ozone/x11 unit tests once
-# X11 migration to Ozone is complete.
-source_set("unittests") {
-  testonly = true
-  visibility = [
-    "//ui/events:events_unittests",
-    "//ui/ozone/platform/x11:x11_unittests",
-  ]
-  sources = [
-    "events_x_unittest.cc",
-    "x11_event_translation_unittest.cc",
-  ]
-  deps = [
-    "//base/test:test_support",
-    "//testing/gtest",
-    "//ui/base:features",
-    "//ui/events:test_support",
-    "//ui/events/devices/x11",
-    "//ui/events/x:x",
-    "//ui/gfx/x",
-  ]
-}

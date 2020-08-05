@@ -449,3 +449,14 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_check_encryption_level_in_fast_path,
           true)
+
+// If true, gQUIC will only consult stream_map in
+// QuicSession::GetNumActiveStreams().
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_get_stream_information_from_stream_map,
+    false)
+
+// If true, QuicSession does not keep a separate zombie_streams. Instead, all
+// streams are stored in stream_map_.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_zombie_streams, false)

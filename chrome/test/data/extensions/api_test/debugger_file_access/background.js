@@ -10,29 +10,30 @@ function checkUrlsEqual(expected, actual) {
                        new URL(actual).href);
 }
 
-function runNotAllowedTest(method, params, expectAllowed) {
-  const NOT_ALLOWED = "Not allowed";
-  chrome.tabs.create({url: 'dummy.html'}, function(tab) {
-    var debuggee = {tabId: tab.id};
-    chrome.debugger.attach(debuggee, '1.2', function() {
-      chrome.test.assertNoLastError();
-      chrome.debugger.sendCommand(debuggee, method, params, onResponse);
+let openTab;
 
-      function onResponse() {
-        var message;
-        try {
-          message = JSON.parse(chrome.runtime.lastError.message).message;
-        } catch (e) {
-        }
-        chrome.debugger.detach(debuggee, () => {
-          const allowed = message !== NOT_ALLOWED;
-          if (allowed === expectAllowed)
-            chrome.test.succeed();
-          else
-            chrome.test.fail('' + message);
-        });
+async function runNotAllowedTest(method, params, expectAllowed) {
+  const NOT_ALLOWED = "Not allowed";
+  const tab = await openTab(chrome.runtime.getURL('dummy.html'));
+  const debuggee = {tabId: tab.id};
+  chrome.debugger.attach(debuggee, '1.2', function() {
+    chrome.test.assertNoLastError();
+    chrome.debugger.sendCommand(debuggee, method, params, onResponse);
+
+    function onResponse() {
+      var message;
+      try {
+        message = JSON.parse(chrome.runtime.lastError.message).message;
+      } catch (e) {
       }
-    });
+      chrome.debugger.detach(debuggee, () => {
+        const allowed = message !== NOT_ALLOWED;
+        if (allowed === expectAllowed)
+          chrome.test.succeed();
+        else
+          chrome.test.fail('' + message);
+      });
+    }
   });
 }
 
@@ -42,7 +43,8 @@ function runNotAllowedTest(method, params, expectAllowed) {
                  });
   const fileUrl = config.testDataDirectory + '/../body1.html';
   const expectFileAccess = !!config.customArg;
-  const { openTab } = await import('/_test_resources/test_util/tabs_util.js');
+
+  ({ openTab } = await import('/_test_resources/test_util/tabs_util.js'));
 
   console.log(fileUrl);
 

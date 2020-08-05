@@ -246,6 +246,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
@@ -288,6 +292,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
@@ -347,6 +355,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(
           lite_video::LiteVideoBlocklistReason::kNavigationReload));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 
   entry = entries[1];
   ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
@@ -357,6 +369,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(
           lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
@@ -416,6 +432,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(
           lite_video::LiteVideoBlocklistReason::kNavigationForwardBack));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 
   entry = entries[1];
   ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
@@ -426,6 +446,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(
           lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
@@ -483,6 +507,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
     ukm_recorder.ExpectEntryMetric(
         entry, ukm::builders::LiteVideo::kBlocklistReasonName,
         static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::LiteVideo::kThrottlingResultName,
+        static_cast<int>(
+            lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
   }
 }
 
@@ -669,6 +697,10 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingResultName,
+      static_cast<int>(
+          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 }
 
 class LiteVideoKeyedServiceCoinflipBrowserTest

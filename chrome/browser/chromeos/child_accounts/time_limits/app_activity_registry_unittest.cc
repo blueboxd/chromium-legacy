@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_test_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
@@ -586,31 +586,31 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
             *registry_test().GetTimeLeft(kApp1));
 }
 
-TEST_F(AppActivityRegistryTest, RemoveLimitsFromWhitelistedApps) {
+TEST_F(AppActivityRegistryTest, RemoveLimitsFromAllowlistedApps) {
   // Set initial limit.
   const AppLimit limit(AppRestriction::kTimeLimit,
                        base::TimeDelta::FromMinutes(5), base::Time::Now());
   SetAppLimit(kApp1, limit);
   SetAppLimit(kApp2, limit);
 
-  AppTimeLimitsWhitelistPolicyBuilder builder;
+  AppTimeLimitsAllowlistPolicyBuilder builder;
   builder.SetUp();
-  builder.AppendToWhitelistAppList(kApp1);
+  builder.AppendToAllowlistAppList(kApp1);
 
-  AppTimeLimitsWhitelistPolicyWrapper wrapper(&builder.value());
-  registry().OnTimeLimitWhitelistChanged(wrapper);
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(&builder.value());
+  registry().OnTimeLimitAllowlistChanged(wrapper);
 
   EXPECT_FALSE(registry_test().GetAppLimit(kApp1));
   EXPECT_EQ(limit.daily_limit(), *registry().GetTimeLimit(kApp2));
   EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAlwaysAvailable);
 }
 
-TEST_F(AppActivityRegistryTest, WhitelistedAppsNoLimits) {
-  AppTimeLimitsWhitelistPolicyBuilder builder;
+TEST_F(AppActivityRegistryTest, AllowlistedAppsNoLimits) {
+  AppTimeLimitsAllowlistPolicyBuilder builder;
   builder.SetUp();
-  builder.AppendToWhitelistAppList(kApp1);
-  AppTimeLimitsWhitelistPolicyWrapper wrapper(&builder.value());
-  registry().OnTimeLimitWhitelistChanged(wrapper);
+  builder.AppendToAllowlistAppList(kApp1);
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(&builder.value());
+  registry().OnTimeLimitAllowlistChanged(wrapper);
 
   // Set initial limit.
   const AppLimit limit(AppRestriction::kTimeLimit,

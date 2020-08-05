@@ -270,7 +270,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
 
   scoped_refptr<const NGLayoutResult> result;
   scoped_refptr<const NGLayoutResult> previous_result;
-  LayoutUnit block_offset = legend_margins.block_start;
+  LayoutUnit block_offset;
   do {
     auto legend_space = CreateConstraintSpaceForLegend(
         legend, ChildAvailableSize(), percentage_size, block_offset);
@@ -296,19 +296,20 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
 
     // We have already adjusted the legend block offset, no need to adjust
     // again.
-    if (block_offset != legend_margins.block_start) {
+    if (block_offset != LayoutUnit()) {
       // If adjusting the block_offset caused the legend to break, revert back
       // to the previous result.
       if (legend_broke_) {
         result = std::move(previous_result);
-        block_offset = legend_margins.block_start;
+        block_offset = LayoutUnit();
       }
       break;
     }
 
-    LayoutUnit legend_margin_box_block_size =
-        legend_margins.block_start +
+    LayoutUnit legend_border_box_block_size =
         NGFragment(writing_mode_, physical_fragment).BlockSize();
+    LayoutUnit legend_margin_box_block_size =
+        legend_margins.block_start + legend_border_box_block_size;
 
     LayoutUnit block_end_margin = legend_margins.block_end;
     if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
@@ -317,18 +318,16 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
     }
     legend_margin_box_block_size += block_end_margin;
 
-    LayoutUnit space_left = borders_.block_start - legend_margin_box_block_size;
-
+    LayoutUnit space_left = borders_.block_start - legend_border_box_block_size;
     if (space_left > LayoutUnit()) {
       // Don't adjust the block-start offset of the legend if the legend broke.
       if (legend_break_token || legend_broke_)
         break;
 
-      // If the border is the larger one, though, it will stay put at the
-      // border-box block-start edge of the fieldset. Then it's the legend
-      // that needs to be pushed. We'll center the margin box in this case, to
-      // make sure that both margins remain within the area occupied by the
-      // border also after adjustment.
+      // https://html.spec.whatwg.org/C/#the-fieldset-and-legend-elements
+      // * The element is expected to be positioned in the block-flow direction
+      //   such that its border box is centered over the border on the
+      //   block-start side of the fieldset element.
       block_offset += space_left / 2;
       if (ConstraintSpace().HasBlockFragmentation()) {
         // Save the previous result in case adjusting the block_offset causes
@@ -336,23 +335,28 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
         previous_result = std::move(result);
         continue;
       }
-    } else {
-      // If the border is smaller, intrinsic_block_size_ should now be based on
-      // the size of the legend instead of the border.
-      intrinsic_block_size_ = legend_margin_box_block_size;
+    }
+    // If the border is smaller than the block end offset of the legend margin
+    // box, intrinsic_block_size_ should now be based on the the block end
+    // offset of the legend margin box instead of the border.
+    LayoutUnit legend_margin_end_offset = block_offset +
+                                          legend_margin_box_block_size -
+                                          legend_margins.block_start;
+    if (legend_margin_end_offset > borders_.block_start) {
+      intrinsic_block_size_ = legend_margin_end_offset;
 
       is_legend_past_border_ = true;
 
       // Don't adjust the block-start offset of the fragment border if it broke.
       if (BreakToken() || (ConstraintSpace().HasKnownFragmentainerBlockSize() &&
-                           legend_margin_box_block_size >
+                           legend_margin_end_offset >
                                ConstraintSpace().FragmentainerBlockSize()))
         break;
       // If the legend is larger than the width of the fieldset block-start
       // border, the actual padding edge of the fieldset will be moved
       // accordingly. This will be the block-start offset for the fieldset
       // contents anonymous box.
-      borders_.block_start = legend_margin_box_block_size;
+      borders_.block_start = legend_margin_end_offset;
     }
     break;
   } while (true);

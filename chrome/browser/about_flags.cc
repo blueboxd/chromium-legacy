@@ -44,7 +44,6 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
@@ -108,6 +107,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/policy/core/common/features.h"
+#include "components/prerender/browser/prerender_field_trial.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/query_tiles/switches.h"
@@ -5752,9 +5752,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
-    {"help-app", flag_descriptions::kHelpAppName,
-     flag_descriptions::kHelpAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kHelpAppV2)},
     {"help-app-release-notes", flag_descriptions::kHelpAppReleaseNotesName,
      flag_descriptions::kHelpAppReleaseNotesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppReleaseNotes)},

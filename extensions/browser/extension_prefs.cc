@@ -2234,6 +2234,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterIntegerPref(pref_names::kToolbarSize, -1);
   registry->RegisterBooleanPref(pref_names::kPinnedExtensionsMigrationComplete,
                                 false);
+  registry->RegisterListPref(pref_names::kDeletedComponentExtensions);
   registry->RegisterDictionaryPref(kExtensionsBlocklistUpdate);
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
@@ -2649,6 +2650,34 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
 
     DeleteExtensionPrefs(id);
   }
+}
+
+bool ExtensionPrefs::ShouldInstallObsoleteComponentExtension(
+    const std::string& extension_id) {
+  ListPrefUpdate update(prefs_, pref_names::kDeletedComponentExtensions);
+  base::Value* current_ids = update.Get();
+  base::Value::ListView list = current_ids->GetList();
+  auto existing_entry = std::find_if(
+      list.begin(), list.end(), [&extension_id](const base::Value& value) {
+        return value.is_string() && value.GetString() == extension_id;
+      });
+  return (existing_entry == list.end());
+}
+
+void ExtensionPrefs::MarkObsoleteComponentExtensionAsRemoved(
+    const std::string& extension_id,
+    const Manifest::Location& location) {
+  ListPrefUpdate update(prefs_, pref_names::kDeletedComponentExtensions);
+  base::Value* current_ids = update.Get();
+  base::Value::ListView list = current_ids->GetList();
+  auto existing_entry = std::find_if(
+      list.begin(), list.end(), [&extension_id](const base::Value& value) {
+        return value.is_string() && value.GetString() == extension_id;
+      });
+  // This should only be called once per extension.
+  DCHECK(existing_entry == list.end());
+  current_ids->Append(extension_id);
+  OnExtensionUninstalled(extension_id, location, false);
 }
 
 void ExtensionPrefs::ClearExternalUninstallBit(const ExtensionId& id) {

@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_activity_provider.h"
@@ -213,7 +213,7 @@ bool AppTimeController::IsAppActivityReportingEnabled() {
 void AppTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kPerAppTimeLimitsLastResetTime, 0);
   registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsPolicy);
-  registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsWhitelistPolicy);
+  registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsAllowlistPolicy);
 }
 
 AppTimeController::AppTimeController(Profile* profile)
@@ -233,7 +233,7 @@ AppTimeController::AppTimeController(Profile* profile)
 
   PrefService* pref_service = profile->GetPrefs();
   RegisterProfilePrefObservers(pref_service);
-  TimeLimitsWhitelistPolicyUpdated(prefs::kPerAppTimeLimitsWhitelistPolicy);
+  TimeLimitsAllowlistPolicyUpdated(prefs::kPerAppTimeLimitsAllowlistPolicy);
   TimeLimitsPolicyUpdated(prefs::kPerAppTimeLimitsPolicy);
 
   // Restore the last reset time. If reset time has have been crossed, triggers
@@ -287,7 +287,7 @@ AppTimeController::~AppTimeController() {
     system_clock_client->RemoveObserver(this);
 }
 
-bool AppTimeController::IsExtensionWhitelisted(
+bool AppTimeController::IsExtensionAllowlisted(
     const std::string& extension_id) const {
   return true;
 }
@@ -329,8 +329,8 @@ void AppTimeController::RegisterProfilePrefObservers(
       base::BindRepeating(&AppTimeController::TimeLimitsPolicyUpdated,
                           base::Unretained(this)));
   pref_registrar_->Add(
-      prefs::kPerAppTimeLimitsWhitelistPolicy,
-      base::BindRepeating(&AppTimeController::TimeLimitsWhitelistPolicyUpdated,
+      prefs::kPerAppTimeLimitsAllowlistPolicy,
+      base::BindRepeating(&AppTimeController::TimeLimitsAllowlistPolicyUpdated,
                           base::Unretained(this)));
 }
 
@@ -381,20 +381,20 @@ void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
   }
 }
 
-void AppTimeController::TimeLimitsWhitelistPolicyUpdated(
+void AppTimeController::TimeLimitsAllowlistPolicyUpdated(
     const std::string& pref_name) {
-  DCHECK_EQ(pref_name, prefs::kPerAppTimeLimitsWhitelistPolicy);
+  DCHECK_EQ(pref_name, prefs::kPerAppTimeLimitsAllowlistPolicy);
 
   const base::DictionaryValue* policy = pref_registrar_->prefs()->GetDictionary(
-      prefs::kPerAppTimeLimitsWhitelistPolicy);
+      prefs::kPerAppTimeLimitsAllowlistPolicy);
 
   // Figure out a way to avoid cloning
-  AppTimeLimitsWhitelistPolicyWrapper wrapper(policy);
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(policy);
 
-  app_registry_->OnTimeLimitWhitelistChanged(wrapper);
+  app_registry_->OnTimeLimitAllowlistChanged(wrapper);
 
   if (web_time_enforcer_)
-    web_time_enforcer_->OnTimeLimitWhitelistChanged(wrapper);
+    web_time_enforcer_->OnTimeLimitAllowlistChanged(wrapper);
 }
 
 void AppTimeController::ShowAppTimeLimitNotification(
@@ -443,14 +443,14 @@ void AppTimeController::OnAppInstalled(const AppId& app_id) {
   if (!WebTimeLimitEnforcer::IsEnabled() && IsWebAppOrExtension(app_id))
     return;
 
-  const base::Value* whitelist_policy = pref_registrar_->prefs()->GetDictionary(
-      prefs::kPerAppTimeLimitsWhitelistPolicy);
-  if (whitelist_policy && whitelist_policy->is_dict()) {
-    AppTimeLimitsWhitelistPolicyWrapper wrapper(whitelist_policy);
-    if (base::Contains(wrapper.GetWhitelistAppList(), app_id))
-      app_registry_->SetAppWhitelisted(app_id);
+  const base::Value* allowlist_policy = pref_registrar_->prefs()->GetDictionary(
+      prefs::kPerAppTimeLimitsAllowlistPolicy);
+  if (allowlist_policy && allowlist_policy->is_dict()) {
+    AppTimeLimitsAllowlistPolicyWrapper wrapper(allowlist_policy);
+    if (base::Contains(wrapper.GetAllowlistAppList(), app_id))
+      app_registry_->SetAppAllowlisted(app_id);
   } else {
-    LOG(WARNING) << " Invalid PerAppTimeLimitWhitelist policy";
+    LOG(WARNING) << " Invalid PerAppTimeLimitAllowlist policy";
   }
 
   const base::Value* policy =

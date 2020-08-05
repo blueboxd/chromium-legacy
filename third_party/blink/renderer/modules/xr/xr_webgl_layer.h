@@ -6,11 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_webgl_layer_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -40,11 +42,10 @@ class XRWebGLLayer final : public XRLayer {
                bool ignore_depth_values);
   ~XRWebGLLayer() override;
 
-  static XRWebGLLayer* Create(
-      XRSession*,
-      const WebGLRenderingContextOrWebGL2RenderingContext&,
-      const XRWebGLLayerInit*,
-      ExceptionState&);
+  static XRWebGLLayer* Create(XRSession*,
+                              const XRWebGLRenderingContext&,
+                              const XRWebGLLayerInit*,
+                              ExceptionState&);
 
   WebGLRenderingContextBase* context() const { return webgl_context_; }
 

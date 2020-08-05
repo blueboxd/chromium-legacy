@@ -1436,28 +1436,40 @@ namespace {
 void NavigateToDataURLAndCheckForTerminationDisabler(
     Shell* shell,
     const std::string& html,
-    bool expect_onunload,
-    bool expect_onbeforeunload) {
+    bool expect_unload,
+    bool expect_beforeunload,
+    bool expect_pagehide,
+    bool expect_visibilitychange) {
   EXPECT_TRUE(NavigateToURL(shell, GURL("data:text/html," + html)));
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
-  EXPECT_EQ(expect_onunload || expect_onbeforeunload,
-            shell->web_contents()->NeedToFireBeforeUnloadOrUnload());
-  EXPECT_EQ(expect_onunload,
+  EXPECT_EQ(expect_unload || expect_beforeunload || expect_pagehide ||
+                expect_visibilitychange,
+            shell->web_contents()->NeedToFireBeforeUnloadOrUnloadEvents());
+  EXPECT_EQ(expect_unload,
             rfh->GetSuddenTerminationDisablerState(
                 blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
   EXPECT_EQ(
-      expect_onbeforeunload,
+      expect_beforeunload,
       rfh->GetSuddenTerminationDisablerState(
           blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
+  EXPECT_EQ(expect_pagehide,
+            rfh->GetSuddenTerminationDisablerState(
+                blink::mojom::SuddenTerminationDisablerType::kPageHideHandler));
+  EXPECT_EQ(expect_visibilitychange,
+            rfh->GetSuddenTerminationDisablerState(
+                blink::mojom::SuddenTerminationDisablerType::
+                    kVisibilityChangeHandler));
 }
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        SuddenTerminationDisablerNone) {
   const std::string NO_HANDLERS_HTML = "<html><body>foo</body></html>";
-  NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
-                                                  false, false);
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), NO_HANDLERS_HTML, false /* expect_unload */,
+      false /* expect_beforeunload */, false /* expect_pagehide */,
+      false /* expect_visibilitychange */);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1472,8 +1484,10 @@ IN_PROC_BROWSER_TEST_F(
       ->GetMainFrame()
       ->GetProcess()
       ->SetSuddenTerminationAllowed(false);
-  NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
-                                                  false, false);
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), NO_HANDLERS_HTML, false /* expect_unload */,
+      false /* expect_beforeunload */, false /* expect_pagehide */,
+      false /* expect_visibilitychange */);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -1481,8 +1495,32 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const std::string UNLOAD_HTML =
       "<html><body><script>window.onunload=function(e) {}</script>"
       "</body></html>";
-  NavigateToDataURLAndCheckForTerminationDisabler(shell(), UNLOAD_HTML, true,
-                                                  false);
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), UNLOAD_HTML, true /* expect_unload */,
+      false /* expect_beforeunload */, false /* expect_pagehide */,
+      false /* expect_visibilitychange */);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerOnPagehide) {
+  const std::string PAGEHIDE_HTML =
+      "<html><body><script>window.onpagehide=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), PAGEHIDE_HTML, false /* expect_unload */,
+      false /* expect_beforeunload */, true /* expect_pagehide */,
+      false /* expect_visibilitychange */);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerOnVisibilityChange) {
+  const std::string VISIBILITYCHANGE_HTML =
+      "<html><body><script>document.onvisibilitychange=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), VISIBILITYCHANGE_HTML, false /* expect_unload */,
+      false /* expect_beforeunload */, false /* expect_pagehide */,
+      true /* expect_visibilitychange */);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -1490,18 +1528,88 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const std::string BEFORE_UNLOAD_HTML =
       "<html><body><script>window.onbeforeunload=function(e) {}</script>"
       "</body></html>";
-  NavigateToDataURLAndCheckForTerminationDisabler(shell(), BEFORE_UNLOAD_HTML,
-                                                  false, true);
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), BEFORE_UNLOAD_HTML, false /* expect_unload */,
+      true /* expect_beforeunload */, false /* expect_pagehide */,
+      false /* expect_visibilitychange */);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       SuddenTerminationDisablerOnUnloadAndBeforeUnload) {
-  const std::string UNLOAD_AND_BEFORE_UNLOAD_HTML =
+                       SuddenTerminationDisablerAllThenNavigate) {
+  const std::string ALL_HANDLERS_HTML =
       "<html><body><script>window.onunload=function(e) {};"
+      "window.onpagehide=function(e) {};"
+      "document.onvisibilitychange=function(e) {}; "
       "window.onbeforeunload=function(e) {}</script>"
       "</body></html>";
   NavigateToDataURLAndCheckForTerminationDisabler(
-      shell(), UNLOAD_AND_BEFORE_UNLOAD_HTML, true, true);
+      shell(), ALL_HANDLERS_HTML, true /* expect_unload */,
+      true /* expect_beforeunload */, true /* expect_pagehide */,
+      true /* expect_visibilitychange*/);
+  // After navigation to empty page, the values should be reset to false.
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), "", false /* expect_unload */, false /* expect_beforeunload */,
+      false /* expect_pagehide */, false /* expect_visibilitychange */);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerAllThenRemove) {
+  const std::string ALL_HANDLERS_ADDED_THEN_REMOVED_HTML =
+      "<html><body><script>"
+      "function handleEverything(e) {}"
+      "window.addEventListener('unload', handleEverything);"
+      "window.addEventListener('beforeunload', handleEverything);"
+      "window.addEventListener('pagehide', handleEverything);"
+      "document.addEventListener('visibilitychange', handleEverything);"
+      "window.removeEventListener('unload', handleEverything);"
+      "window.removeEventListener('beforeunload', handleEverything);"
+      "window.removeEventListener('pagehide', handleEverything);"
+      "document.removeEventListener('visibilitychange', handleEverything);"
+      "</script></body></html>";
+  // After the handlers were added, they got deleted, so we should treat them as
+  // non-existent in the end.
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), ALL_HANDLERS_ADDED_THEN_REMOVED_HTML, false /* expect_unload */,
+      false /* expect_beforeunload */, false /* expect_pagehide */,
+      false /* expect_visibilitychange */);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebContentsImplBrowserTest,
+    SuddenTerminationDisablerWhenTabIsHiddenOnVisibilityChange) {
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  const std::string VISIBILITYCHANGE_HTML =
+      "<html><body><script>document.onvisibilitychange=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), VISIBILITYCHANGE_HTML, false /* expect_unload */,
+      false /* expect_beforeunload */, false /* expect_pagehide */,
+      true /* expect_visibilitychange */);
+  web_contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(shell()->web_contents()->NeedToFireBeforeUnloadOrUnloadEvents());
+
+  // The visibilitychange handler won't block sudden termination if the tab is
+  // already hidden.
+  web_contents->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_TRUE(
+      static_cast<WebContentsImpl*>(shell()->web_contents())->IsHidden());
+  EXPECT_FALSE(shell()->web_contents()->NeedToFireBeforeUnloadOrUnloadEvents());
+
+  // The visibilitychange handler will block sudden termination if the tab
+  // becomes visible again.
+  web_contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(shell()->web_contents()->NeedToFireBeforeUnloadOrUnloadEvents());
+
+  // The visibilitychange handler won't block sudden termination if the tab is
+  // occluded (because we treat it as hidden), unless when occlusion is
+  // disabled, in which case we treat it the same as being visible.
+  const bool occlusion_is_disabled =
+      !base::FeatureList::IsEnabled(features::kWebContentsOcclusion) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBackgroundingOccludedWindowsForTesting);
+  web_contents->UpdateWebContentsVisibility(Visibility::OCCLUDED);
+  EXPECT_EQ(occlusion_is_disabled,
+            shell()->web_contents()->NeedToFireBeforeUnloadOrUnloadEvents());
 }
 
 class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,

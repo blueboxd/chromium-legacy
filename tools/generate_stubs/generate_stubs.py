@@ -311,8 +311,8 @@ UMBRELLA_INITIALIZER_INITIALIZE_FUNCTION_START = (
         module_opened = true;
         opened_libraries[cur_module] = handle;
       } else {
-        %(logging_function)s << "dlopen(" << dso_path->c_str() << ") failed, "
-                << "dlerror() says:\\n" << dlerror();
+        %(logging_function)s << "dlopen(" << dso_path->c_str() << ") failed.";
+        %(logging_function)s << "dlerror() says:\\n" << dlerror();
       }
     }
 

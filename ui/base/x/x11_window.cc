@@ -17,6 +17,7 @@
 #include "net/base/network_interfaces.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/wm_role_names_linux.h"
 #include "ui/base/x/x11_menu_registrar.h"
 #include "ui/base/x/x11_pointer_grab.h"
@@ -216,7 +217,6 @@ void XWindow::Init(const Configuration& config) {
   if (!activatable_ || config.override_redirect)
     req.override_redirect = x11::Bool32(true);
 
-#if !defined(USE_X11)
   // It seems like there is a difference how tests are instantiated in case of
   // non-Ozone X11 and Ozone. See more details in
   // EnableTestConfigForPlatformWindows. The reason why this must be here is
@@ -227,9 +227,8 @@ void XWindow::Init(const Configuration& config) {
   // PlatformWindow, and non-Ozone X11 uses it, we have to add this workaround
   // here. Otherwise, tests for non-Ozone X11 fail.
   // TODO(msisov): figure out usage of this for non-Ozone X11.
-  if (UseTestConfigForPlatformWindows())
+  if (features::IsUsingOzonePlatform() && UseTestConfigForPlatformWindows())
     req.override_redirect = x11::Bool32(true);
-#endif
 
   override_redirect_ = req.override_redirect.has_value();
 

@@ -1867,6 +1867,8 @@ void RenderFrameHostImpl::RenderProcessExited(
   // be sent again.
   has_before_unload_handler_ = false;
   has_unload_handler_ = false;
+  has_pagehide_handler_ = false;
+  has_visibilitychange_handler_ = false;
 
   if (IsPendingDeletion()) {
     // If the process has died, we don't need to wait for the ACK. Complete the
@@ -2115,12 +2117,13 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
     Send(new UnfreezableFrameMsg_Delete(routing_id_, intent));
 
     if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
-      // If this subframe has an unload handler (and isn't speculative), ensure
-      // that it has a chance to execute by delaying process cleanup. This will
-      // prevent the process from shutting down immediately in the case where
-      // this is the last active frame in the process. See
-      // https://crbug.com/852204.
-      if (has_unload_handler()) {
+      DCHECK_NE(lifecycle_state(), LifecycleState::kSpeculative);
+      // If this subframe has unload handlers (and isn't speculative), ensure
+      // that they have a chance to execute by delaying process cleanup. This
+      // will prevent the process from shutting down immediately in the case
+      // where this is the last active frame in the process.
+      // See https://crbug.com/852204.
+      if (has_unload_handlers()) {
         RenderProcessHostImpl* process =
             static_cast<RenderProcessHostImpl*>(GetProcess());
         process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
@@ -2133,7 +2136,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
     }
   }
 
-  LifecycleState lifecycle_state = has_unload_handler()
+  LifecycleState lifecycle_state = has_unload_handlers()
                                        ? LifecycleState::kRunningUnloadHandlers
                                        : LifecycleState::kReadyToBeDeleted;
   SetLifecycleState(lifecycle_state);
@@ -2334,6 +2337,13 @@ void RenderFrameHostImpl::DidNavigate(
     ResetFeaturePolicy();
     active_sandbox_flags_ = frame_tree_node()->active_sandbox_flags();
     document_policy_ = blink::DocumentPolicy::CreateWithHeaderPolicy({});
+
+    // Since we're changing documents, we should reset the event handler
+    // trackers.
+    has_before_unload_handler_ = false;
+    has_unload_handler_ = false;
+    has_pagehide_handler_ = false;
+    has_visibilitychange_handler_ = false;
 
     DCHECK(params.embedding_token.has_value());
     SetEmbeddingToken(params.embedding_token.value());
@@ -4286,20 +4296,37 @@ void RenderFrameHostImpl::SuddenTerminationDisablerChanged(
       DCHECK_NE(has_before_unload_handler_, present);
       has_before_unload_handler_ = present;
       break;
+    case blink::mojom::SuddenTerminationDisablerType::kPageHideHandler:
+      DCHECK_NE(has_pagehide_handler_, present);
+      has_pagehide_handler_ = present;
+      break;
     case blink::mojom::SuddenTerminationDisablerType::kUnloadHandler:
       DCHECK_NE(has_unload_handler_, present);
       has_unload_handler_ = present;
+      break;
+    case blink::mojom::SuddenTerminationDisablerType::kVisibilityChangeHandler:
+      DCHECK_NE(has_visibilitychange_handler_, present);
+      has_visibilitychange_handler_ = present;
       break;
   }
 }
 
 bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
     blink::mojom::SuddenTerminationDisablerType disabler_type) {
+  if (do_not_delete_for_testing_ &&
+      disabler_type !=
+          blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler) {
+    return true;
+  }
   switch (disabler_type) {
     case blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler:
       return has_before_unload_handler_;
+    case blink::mojom::SuddenTerminationDisablerType::kPageHideHandler:
+      return has_pagehide_handler_;
     case blink::mojom::SuddenTerminationDisablerType::kUnloadHandler:
-      return has_unload_handler();
+      return has_unload_handler_;
+    case blink::mojom::SuddenTerminationDisablerType::kVisibilityChangeHandler:
+      return has_visibilitychange_handler_;
   }
 }
 
@@ -5612,8 +5639,9 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
       local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
         LifecycleState child_lifecycle_state =
-            child->has_unload_handler() ? LifecycleState::kRunningUnloadHandlers
-                                        : LifecycleState::kReadyToBeDeleted;
+            child->has_unload_handlers()
+                ? LifecycleState::kRunningUnloadHandlers
+                : LifecycleState::kReadyToBeDeleted;
         child->SetLifecycleState(child_lifecycle_state);
       }
 

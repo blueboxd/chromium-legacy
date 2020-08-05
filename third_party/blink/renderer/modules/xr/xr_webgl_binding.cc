@@ -15,15 +15,15 @@
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 
 namespace blink {
 
-XRWebGLBinding* XRWebGLBinding::Create(
-    XRSession* session,
-    const WebGLRenderingContextOrWebGL2RenderingContext& context,
-    ExceptionState& exception_state) {
+XRWebGLBinding* XRWebGLBinding::Create(XRSession* session,
+                                       const XRWebGLRenderingContext& context,
+                                       ExceptionState& exception_state) {
   if (session->ended()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot create an XRWebGLBinding for an "

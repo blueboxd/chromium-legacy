@@ -291,9 +291,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
                     apps::IconCache::GarbageCollectionPolicy::kExplicit) {
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
-    if (proxy) {
-      Observe(&proxy->AppRegistryCache());
-    }
+    Observe(&proxy->AppRegistryCache());
 
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
@@ -313,9 +311,6 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
   void AddApps(AppSearchProvider::Apps* apps_vector) override {
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile());
-    if (!proxy) {
-      return;
-    }
     proxy->AppRegistryCache().ForEachApp([this, apps_vector](
                                              const apps::AppUpdate& update) {
       if ((update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) ||

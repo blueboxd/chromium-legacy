@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_UTILS_H_
 
 #include "device/vr/public/mojom/pose.h"
-#include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -29,7 +29,7 @@ DOMPointReadOnly* makeNormalizedQuaternion(double x,
                                            double w);
 
 WebGLRenderingContextBase* webglRenderingContextBaseFromUnion(
-    const WebGLRenderingContextOrWebGL2RenderingContext&);
+    const XRWebGLRenderingContext&);
 
 constexpr char kUnableToNormalizeZeroLength[] =
     "Unable to normalize vector of length 0.";

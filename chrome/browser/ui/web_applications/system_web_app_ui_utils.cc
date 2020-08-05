@@ -163,8 +163,11 @@ Browser* LaunchSystemWebApp(Profile* profile,
                                            params->disposition);
 
     // Navigate application window to application's |url| if necessary.
+    // Help app always navigates because its url might not match the url inside
+    // the iframe, and the iframe's url is the one that matters.
     web_contents = browser->tab_strip_model()->GetWebContentsAt(0);
-    if (!web_contents || web_contents->GetURL() != url) {
+    if (!web_contents || web_contents->GetURL() != url ||
+        app_type == SystemAppType::HELP) {
       web_contents = NavigateWebApplicationWindow(
           browser, params->app_id, url, WindowOpenDisposition::CURRENT_TAB);
     }
@@ -173,8 +176,11 @@ Browser* LaunchSystemWebApp(Profile* profile,
       browser = CreateApplicationWindow(profile, *params, url);
 
     // Navigate application window to application's |url| if necessary.
+    // Help app always navigates because its url might not match the url inside
+    // the iframe, and the iframe's url is the one that matters.
     web_contents = browser->tab_strip_model()->GetWebContentsAt(0);
-    if (!web_contents || web_contents->GetURL() != url) {
+    if (!web_contents || web_contents->GetURL() != url ||
+        app_type == SystemAppType::HELP) {
       web_contents = NavigateApplicationWindow(
           browser, *params, url, WindowOpenDisposition::CURRENT_TAB);
     }

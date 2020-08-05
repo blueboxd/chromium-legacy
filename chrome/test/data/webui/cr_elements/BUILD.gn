@@ -51,7 +51,6 @@ js_modulizer("modulize") {
 js_type_check("closure_compile") {
   is_polymer3 = true
 
-  # TODO(crbug.com/1000989): Add JS type checking for all commented out targets.
   deps = [
     ":cr_action_menu_test.m",
     ":cr_button_tests.m",
@@ -67,9 +66,7 @@ js_type_check("closure_compile") {
     ":cr_input_test.m",
     ":cr_lazy_render_tests.m",
     ":cr_link_row_tests.m",
-
-    #":cr_lottie_tests",
-
+    ":cr_lottie_tests.m",
     ":cr_policy_indicator_behavior_tests.m",
     ":cr_policy_indicator_tests.m",
     ":cr_policy_pref_indicator_tests.m",
@@ -274,6 +271,19 @@ js_library("cr_link_row_tests.m") {
     "..:chai_assert",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
     "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_lottie_tests.m") {
+  sources = [
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_lottie_tests.m.js",
+  ]
+  deps = [
+    "..:chai_assert",
+    "..:mock_controller.m",
+    "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
   extra_deps = [ ":modulize" ]

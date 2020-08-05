@@ -477,6 +477,50 @@ TEST_F(DocumentMarkerControllerTest,
   EXPECT_EQ(3u, result->EndOffset());
 }
 
+TEST_F(DocumentMarkerControllerTest, MarkersAroundPosition) {
+  SetBodyContent("<div contenteditable>123 456</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add a spelling marker on "123"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)));
+  // Add a text match marker on "123"
+  MarkerController().AddTextMatchMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)),
+      TextMatchMarker::MatchStatus::kInactive);
+  // Add a grammar marker on "456"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 4), Position(text, 7)));
+
+  // Query for spellcheck markers at the start of "123".
+  const DocumentMarkerVector& list1 = MarkerController().MarkersAroundPosition(
+      PositionInFlatTree(text, 0), DocumentMarker::MarkerTypes::Misspelling());
+
+  EXPECT_EQ(1u, list1.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, list1[0]->GetType());
+  EXPECT_EQ(0u, list1[0]->StartOffset());
+  EXPECT_EQ(3u, list1[0]->EndOffset());
+
+  // Query for spellcheck markers in the middle of "123".
+  const DocumentMarkerVector& list2 = MarkerController().MarkersAroundPosition(
+      PositionInFlatTree(text, 3), DocumentMarker::MarkerTypes::Misspelling());
+
+  EXPECT_EQ(1u, list2.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, list2[0]->GetType());
+  EXPECT_EQ(0u, list2[0]->StartOffset());
+  EXPECT_EQ(3u, list2[0]->EndOffset());
+
+  // Query for spellcheck markers at the end of "123".
+  const DocumentMarkerVector& list3 = MarkerController().MarkersAroundPosition(
+      PositionInFlatTree(text, 3), DocumentMarker::MarkerTypes::Misspelling());
+
+  EXPECT_EQ(1u, list3.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, list3[0]->GetType());
+  EXPECT_EQ(0u, list3[0]->StartOffset());
+  EXPECT_EQ(3u, list3[0]->EndOffset());
+}
+
 TEST_F(DocumentMarkerControllerTest, MarkersIntersectingRange) {
   SetBodyContent("<div contenteditable>123456789</div>");
   Element* div = GetDocument().QuerySelector("div");

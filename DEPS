@@ -171,7 +171,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:56ae79476e3caf14da59d75118408aa778637936',
+  'luci_go': 'git_revision:b022173f8069cf8001d4cf2a87ce7c5f0eae220f',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '10f019c5068f9ff070c16e3571209012c78826e3',
+  'skia_revision': 'e7b08e4876fb1877fde4deb4d676031d1c54299a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd41280a787d1594470053dfa15b3330822049612',
+  'angle_revision': '25b0de6bd00fc23973b6b23bab61c83c589f2b06',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'ac60992d41b7007e9c6c4329e5bbfc02c912f314',
+  'catapult_revision': 'd5eb7e06f156ab0204db671b369f9a8c9cbc0dd4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '580a4b1d52b65febb22c804a036d972898026b86',
+  'devtools_frontend_revision': 'a1d72d581076ad26df0f31a22df0c563ed000e7d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '0a4342793e0e31ed36e59d2eef36817c82ede555',
+  'dawn_revision': '076a4e58205dfa2bcf5e33cc8718aa4799d46735',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'dd5382a4449c31e40aafc2ec60cd80041c32bdc0',
+  'quiche_revision': '1b6221e157c76e14b4041f961f2e4c3a5f82673c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f8ccdc63a188fd977953864bab7490eac9f9852f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '23c5b63d1c68730cf0a6bb2a904dbd67f288508c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1537,7 +1537,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c6116bf6ce82d05a73126691f52c1ca1f9f4848b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4e40fda83f28a8c1872263f3f98f3f1af75a43f6',
     'condition': 'checkout_src_internal',
   },
 

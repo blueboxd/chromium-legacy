@@ -159,6 +159,31 @@ testcase.recentsDownloadsAndDriveWithOverlap = async () => {
   await verifyRecents(appId, RECENT_ENTRY_SET.concat(RECENT_ENTRY_SET));
 };
 
+testcase.recentsNested = async () => {
+  // Populate downloads with nested folder structure. |desktop| is added to
+  // ensure Recents has different files to Downloads/A/B/C
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS,
+      NESTED_ENTRY_SET.concat([ENTRIES.deeplyBurriedSmallJpeg]), []);
+
+  // Verifies file list in Recents.
+  await verifyRecents(appId, [ENTRIES.deeplyBurriedSmallJpeg]);
+
+  // Tests that selecting "Go to file location" for a file navigates to
+  // Downloads/A/B/C since the file in Recents is from Downloads/A/B/C.
+  await goToFileLocation(appId, ENTRIES.deeplyBurriedSmallJpeg.nameText);
+  await remoteCall.waitForElement(appId, `[scan-completed="C"]`);
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.deeplyBurriedSmallJpeg]));
+  await verifyBreadcrumbsPath(appId, '/My files/Downloads/A/B/C');
+
+  // Check: The directory should be highlighted in the directory tree.
+  await remoteCall.waitForElement(
+      appId,
+      '.tree-item[full-path-for-testing="/Downloads/A/B/C"] > ' +
+          '.tree-row[selected][active]');
+};
+
 testcase.recentAudioDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);

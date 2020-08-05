@@ -55,7 +55,6 @@ namespace {
 void LaunchApp(Profile* profile, std::string app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
 
   proxy->Launch(app_id, ui::EventFlags::EF_NONE,
                 apps::mojom::LaunchSource::kFromChromeInternal,
@@ -201,12 +200,7 @@ bool ShouldLaunchHelpApp(Profile* profile) {
 }
 
 void LaunchHelpApp(Profile* profile) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
-    AppLauncher::LaunchHelpAfterSWALoad(profile);
-    return;
-  }
-
-  LaunchApp(profile, extension_misc::kGeniusAppId);
+  AppLauncher::LaunchHelpAfterSWALoad(profile);
 }
 
 void LaunchTutorial() {

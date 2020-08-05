@@ -64,10 +64,10 @@ DirectoryItemTreeBaseMethods.getItemByEntry = function(entry) {
  *
  * @param {!DirectoryEntry|!FilesAppDirEntry} entry The entry to be searched
  *     for. Can be a fake.
- * @return {boolean} True if the parent item is found.
+ * @return {!Promise<boolean>} True if the parent item is found.
  * @this {(DirectoryItem|VolumeItem|DirectoryTree)}
  */
-DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
+DirectoryItemTreeBaseMethods.searchAndSelectByEntry = async function(entry) {
   for (let i = 0; i < this.items.length; i++) {
     const item = this.items[i];
     if (!item.entry) {
@@ -78,18 +78,18 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
     // When we looking for an item in team drives, recursively search inside the
     // "Google Drive" root item.
     if (util.isSharedDriveEntry(entry) && item instanceof DriveVolumeItem) {
-      item.selectByEntry(entry);
+      await item.selectByEntry(entry);
       return true;
     }
 
     if (util.isComputersEntry(entry) && item instanceof DriveVolumeItem) {
-      item.selectByEntry(entry);
+      await item.selectByEntry(entry);
       return true;
     }
 
     if (util.isDescendantEntry(item.entry, entry) ||
         util.isSameEntry(item.entry, entry)) {
-      item.selectByEntry(entry);
+      await item.selectByEntry(entry);
       return true;
     }
   }
@@ -508,10 +508,10 @@ class DirectoryItem extends TreeItem {
    *
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The entry to be searched
    *     for. Can be a fake.
-   * @return {boolean} True if the parent item is found.
+   * @return {!Promise<boolean>} True if the parent item is found.
    */
-  searchAndSelectByEntry(entry) {
-    return DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(
+  async searchAndSelectByEntry(entry) {
+    return await DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(
         this, entry);
   }
 
@@ -746,20 +746,22 @@ class DirectoryItem extends TreeItem {
    * Select the item corresponding to the given {@code entry}.
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The entry to be selected.
    *     Can be a fake.
+   * @return {!Promise<void>}
    */
-  selectByEntry(entry) {
+  async selectByEntry(entry) {
     if (util.isSameEntry(entry, this.entry)) {
       this.selected = true;
       return;
     }
 
-    if (this.searchAndSelectByEntry(entry)) {
+    if (await this.searchAndSelectByEntry(entry)) {
       return;
     }
 
     // If the entry doesn't exist, updates sub directories and tries again.
-    this.updateSubDirectories(
-        false /* recursive */, this.searchAndSelectByEntry.bind(this, entry));
+    await new Promise(
+        this.updateSubDirectories.bind(this, false /* recursive */));
+    await this.searchAndSelectByEntry(entry);
   }
 
   /**
@@ -1562,11 +1564,12 @@ class DriveVolumeItem extends VolumeItem {
    * Select the item corresponding to the given entry.
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The directory entry to be
    *     selected. Can be a fake.
+   * @return {!Promise<void>}
    * @override
    */
-  selectByEntry(entry) {
+  async selectByEntry(entry) {
     // Find the item to be selected among children.
-    this.searchAndSelectByEntry(entry);
+    await this.searchAndSelectByEntry(entry);
   }
 
   /**
@@ -2129,9 +2132,9 @@ class DirectoryTree extends cr.ui.Tree {
    *
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The entry to be searched
    *     for. Can be a fake.
-   * @return {boolean} True if the parent item is found.
+   * @return {!Promise<boolean>} True if the parent item is found.
    */
-  searchAndSelectByEntry(entry) {
+  async searchAndSelectByEntry(entry) {
     // If the |entry| is same as one of volumes or shortcuts, select it.
     for (let i = 0; i < this.items.length; i++) {
       // Skips the Drive root volume. For Drive entries, one of children of
@@ -2142,13 +2145,14 @@ class DirectoryTree extends cr.ui.Tree {
       }
 
       if (util.isSameEntry(item.entry, entry)) {
-        item.selectByEntry(entry);
+        await item.selectByEntry(entry);
         return true;
       }
     }
     // Otherwise, search whole tree.
     const found =
-        DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(this, entry);
+        await DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(
+            this, entry);
     return found;
   }
 
@@ -2189,13 +2193,14 @@ class DirectoryTree extends cr.ui.Tree {
    * Select the item corresponding to the given entry.
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The directory entry to be
    *     selected. Can be a fake.
+   * @return {!Promise<void>}
    */
-  selectByEntry(entry) {
+  async selectByEntry(entry) {
     if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry)) {
       return;
     }
 
-    if (this.searchAndSelectByEntry(entry)) {
+    if (await this.searchAndSelectByEntry(entry)) {
       return;
     }
 
@@ -2205,11 +2210,11 @@ class DirectoryTree extends cr.ui.Tree {
     if (!volumeInfo) {
       return;
     }
-    volumeInfo.resolveDisplayRoot(() => {
+    volumeInfo.resolveDisplayRoot(async () => {
       if (this.sequence_ !== currentSequence) {
         return;
       }
-      if (!this.searchAndSelectByEntry(entry)) {
+      if (!(await this.searchAndSelectByEntry(entry))) {
         this.selectedItem = null;
       }
     });
@@ -2335,8 +2340,8 @@ class DirectoryTree extends cr.ui.Tree {
    * @param {!Event} event Event.
    * @private
    */
-  onCurrentDirectoryChanged_(event) {
-    this.selectByEntry(event.newDirEntry);
+  async onCurrentDirectoryChanged_(event) {
+    await this.selectByEntry(event.newDirEntry);
 
     const selectedItem = this.selectedItem;
 

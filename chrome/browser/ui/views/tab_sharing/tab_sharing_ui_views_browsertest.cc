@@ -185,15 +185,21 @@ IN_PROC_BROWSER_TEST_F(TabSharingUIViewsBrowserTest, CloseTab) {
   AddTabs(browser(), 2);
   CreateUiAndStartSharing(browser(), 1);
 
-  // Close a tab different than the shared one and test that the UI has not
-  // changed.
+  // Close a tab different than the shared one and wait until it's actually
+  // closed, then test that the UI has not changed.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContentsDestroyedWatcher tab_2_destroyed_watcher(
+      tab_strip_model->GetWebContentsAt(2));
   tab_strip_model->CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  tab_2_destroyed_watcher.Wait();
   VerifyUi(browser(), 1);
 
-  // Close the shared tab and verify that sharing is stopped, i.e. the UI is
-  // removed.
+  // Close the shared tab and wait until it's actually closed, then verify that
+  // sharing is stopped, i.e. the UI is removed.
+  content::WebContentsDestroyedWatcher tab_1_destroyed_watcher(
+      tab_strip_model->GetWebContentsAt(1));
   tab_strip_model->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  tab_1_destroyed_watcher.Wait();
   VerifyUi(browser(), kNoSharedTabIndex, 0 /*infobar_count*/);
 }
 

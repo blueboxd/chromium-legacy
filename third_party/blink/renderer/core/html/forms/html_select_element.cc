@@ -1197,6 +1197,10 @@ Element& HTMLSelectElement::InnerElement() const {
   return select_type_->InnerElement();
 }
 
+AXObject* HTMLSelectElement::PopupRootAXObject() const {
+  return select_type_->PopupRootAXObject();
+}
+
 HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {
   return select_type_->SpatialNavigationFocusedOption();
 }

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_field_trial.h"
+#include "components/prerender/browser/prerender_field_trial.h"
 
 #include <string>
 
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/prerender/prerender_manager.h"
+#include "components/prerender/browser/prerender_manager.h"
 
 namespace prerender {
 

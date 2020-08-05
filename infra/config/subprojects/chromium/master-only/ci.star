@@ -2,127 +2,123 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load('//lib/builders.star', 'cpu', 'goma', 'os', 'xcode_cache')
-load('//lib/ci.star', 'ci')
-load('//project.star', 'settings')
+load("//lib/builders.star", "cpu", "goma", "os", "xcode_cache")
+load("//lib/ci.star", "ci")
+load("//project.star", "settings")
 
 # Execute the versioned files to define all of the per-branch entities
 # (bucket, builders, console, poller, etc.)
-exec('../versioned/m84/buckets/ci.star')
-exec('../versioned/m85/buckets/ci.star')
-
+exec("../versioned/m84/buckets/ci.star")
+exec("../versioned/m85/buckets/ci.star")
 
 ci.set_defaults(
     settings,
     add_to_console_view = True,
 )
 
-
 # *** After this point everything is trunk only ***
 
 # The chromium.clang console includes some entries for builders from the chrome project
 [luci.console_view_entry(
-    builder = 'chrome:ci/{}'.format(name),
-    console_view = 'chromium.clang',
+    builder = "chrome:ci/{}".format(name),
+    console_view = "chromium.clang",
     category = category,
     short_name = short_name,
 ) for name, category, short_name in (
-    ('ToTLinuxOfficial', 'ToT Linux', 'ofi'),
-    ('ToTMacOfficial', 'ToT Mac', 'ofi'),
-    ('ToTWin', 'ToT Windows', 'rel'),
-    ('ToTWin64', 'ToT Windows|x64', 'rel'),
-    ('ToTWinOfficial', 'ToT Windows', 'ofi'),
-    ('ToTWinThinLTO64', 'ToT Windows|x64', 'lto'),
-    ('clang-tot-device', 'iOS|internal', 'dev'),
+    ("ToTLinuxOfficial", "ToT Linux", "ofi"),
+    ("ToTMacOfficial", "ToT Mac", "ofi"),
+    ("ToTWin", "ToT Windows", "rel"),
+    ("ToTWin64", "ToT Windows|x64", "rel"),
+    ("ToTWinOfficial", "ToT Windows", "ofi"),
+    ("ToTWinThinLTO64", "ToT Windows|x64", "lto"),
+    ("clang-tot-device", "iOS|internal", "dev"),
 )]
 
 # The main console includes some entries for builders from the chrome project
 [luci.console_view_entry(
-    builder = 'chrome:ci/{}'.format(name),
-    console_view = 'main',
-    category = 'chrome',
+    builder = "chrome:ci/{}".format(name),
+    console_view = "main",
+    category = "chrome",
     short_name = short_name,
 ) for name, short_name in (
-    ('linux-chromeos-chrome', 'cro'),
-    ('linux-chrome', 'lnx'),
-    ('mac-chrome', 'mac'),
-    ('win-chrome', 'win'),
-    ('win64-chrome', 'win'),
+    ("linux-chromeos-chrome", "cro"),
+    ("linux-chrome", "lnx"),
+    ("mac-chrome", "mac"),
+    ("win-chrome", "win"),
+    ("win64-chrome", "win"),
 )]
-
 
 # Builders are sorted first lexicographically by the function used to define
 # them, then lexicographically by their name
 
-
 ci.builder(
-    name = 'android-avd-packager',
-    executable = 'recipe:android/avd_packager',
+    name = "android-avd-packager",
+    executable = "recipe:android/avd_packager",
     properties = {
-        'avd_configs': [
-            'tools/android/avd/proto/creation/generic_android23.textpb',
-            'tools/android/avd/proto/creation/generic_android28.textpb',
-            'tools/android/avd/proto/creation/generic_playstore_android28.textpb',
+        "avd_configs": [
+            "tools/android/avd/proto/creation/generic_android23.textpb",
+            "tools/android/avd/proto/creation/generic_android28.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
         ],
     },
-    schedule = '0 7 * * 0 *',
-    service_account = 'chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com',
+    schedule = "0 7 * * 0 *",
+    service_account = "chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com",
     triggered_by = [],
 )
 
 ci.builder(
-    name = 'android-sdk-packager',
-    executable = 'recipe:android/sdk_packager',
-    schedule = '0 7 * * 0 *',
-    service_account = 'chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com',
+    name = "android-sdk-packager",
+    executable = "recipe:android/sdk_packager",
+    schedule = "0 7 * * 0 *",
+    service_account = "chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com",
     triggered_by = [],
     properties = {
         # We still package part of build-tools;25.0.2 to support
         # http://bit.ly/2KNUygZ
-        'packages': [
+        "packages": [
             {
-                'sdk_package_name': 'build-tools;25.0.2',
-                'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/25.0.2.yaml'
+                "sdk_package_name": "build-tools;25.0.2",
+                "cipd_yaml": "third_party/android_sdk/cipd/build-tools/25.0.2.yaml",
             },
             {
-                'sdk_package_name': 'build-tools;29.0.2',
-                'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/29.0.2.yaml'
+                "sdk_package_name": "build-tools;29.0.2",
+                "cipd_yaml": "third_party/android_sdk/cipd/build-tools/29.0.2.yaml",
             },
             {
-                'sdk_package_name': 'build-tools;30.0.1',
-                'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/30.0.1.yaml'
+                "sdk_package_name": "build-tools;30.0.1",
+                "cipd_yaml": "third_party/android_sdk/cipd/build-tools/30.0.1.yaml",
             },
             {
-                'sdk_package_name': 'cmdline-tools;latest',
-                'cipd_yaml': 'third_party/android_sdk/cipd/cmdline-tools.yaml'
+                "sdk_package_name": "cmdline-tools;latest",
+                "cipd_yaml": "third_party/android_sdk/cipd/cmdline-tools.yaml",
             },
             {
-                'sdk_package_name': 'emulator',
-                'cipd_yaml': 'third_party/android_sdk/cipd/emulator.yaml'
+                "sdk_package_name": "emulator",
+                "cipd_yaml": "third_party/android_sdk/cipd/emulator.yaml",
             },
             {
-                'sdk_package_name': 'extras;google;gcm',
-                'cipd_yaml': 'third_party/android_sdk/cipd/extras/google/gcm.yaml'
+                "sdk_package_name": "extras;google;gcm",
+                "cipd_yaml": "third_party/android_sdk/cipd/extras/google/gcm.yaml",
             },
             {
-                'sdk_package_name': 'patcher;v4',
-                'cipd_yaml': 'third_party/android_sdk/cipd/patcher/v4.yaml'
+                "sdk_package_name": "patcher;v4",
+                "cipd_yaml": "third_party/android_sdk/cipd/patcher/v4.yaml",
             },
             {
-                'sdk_package_name': 'platforms;android-29',
-                'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-29.yaml'
+                "sdk_package_name": "platforms;android-29",
+                "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-29.yaml",
             },
             {
-                'sdk_package_name': 'platforms;android-30',
-                'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-30.yaml'
+                "sdk_package_name": "platforms;android-30",
+                "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-30.yaml",
             },
             {
-                'sdk_package_name': 'platform-tools',
-                'cipd_yaml': 'third_party/android_sdk/cipd/platform-tools.yaml'
+                "sdk_package_name": "platform-tools",
+                "cipd_yaml": "third_party/android_sdk/cipd/platform-tools.yaml",
             },
             {
-                'sdk_package_name': 'sources;android-29',
-                'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-29.yaml'
+                "sdk_package_name": "sources;android-29",
+                "cipd_yaml": "third_party/android_sdk/cipd/sources/android-29.yaml",
             },
             # Not yet available as R is not released to AOSP.
             #{
@@ -130,31 +126,30 @@ ci.builder(
             #    'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
             #},
             {
-                'sdk_package_name': 'system-images;android-29;google_apis;x86',
-                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-29/google_apis/x86.yaml'
+                "sdk_package_name": "system-images;android-29;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-29/google_apis/x86.yaml",
             },
             {
-                'sdk_package_name': 'system-images;android-29;google_apis_playstore;x86',
-                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-29/google_apis_playstore/x86.yaml'
+                "sdk_package_name": "system-images;android-29;google_apis_playstore;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-29/google_apis_playstore/x86.yaml",
             },
             {
-                'sdk_package_name': 'system-images;android-30;google_apis;x86',
-                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-30/google_apis/x86.yaml'
+                "sdk_package_name": "system-images;android-30;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-30/google_apis/x86.yaml",
             },
             {
-                'sdk_package_name': 'system-images;android-30;google_apis_playstore;x86',
-                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml'
+                "sdk_package_name": "system-images;android-30;google_apis_playstore;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml",
             },
         ],
     },
 )
 
-
 ci.android_builder(
-    name = 'Android ASAN (dbg)',
+    name = "Android ASAN (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'builder|arm',
-        short_name = 'san',
+        category = "builder|arm",
+        short_name = "san",
     ),
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
@@ -163,739 +158,732 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'Android WebView L (dbg)',
+    name = "Android WebView L (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'tester|webview',
-        short_name = 'L',
+        category = "tester|webview",
+        short_name = "L",
     ),
-    triggered_by = ['ci/Android arm Builder (dbg)'],
+    triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 
 ci.android_builder(
-    name = 'Deterministic Android',
+    name = "Deterministic Android",
     console_view_entry = ci.console_view_entry(
-        category = 'builder|det',
-        short_name = 'rel',
+        category = "builder|det",
+        short_name = "rel",
     ),
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-    notifies = ['Deterministic Android'],
+    notifies = ["Deterministic Android"],
     tree_closing = True,
 )
 
 ci.android_builder(
-    name = 'Deterministic Android (dbg)',
+    name = "Deterministic Android (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'builder|det',
-        short_name = 'dbg',
+        category = "builder|det",
+        short_name = "dbg",
     ),
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-    notifies = ['Deterministic Android'],
+    notifies = ["Deterministic Android"],
     tree_closing = True,
 )
 
 ci.android_builder(
-    name = 'Lollipop Phone Tester',
+    name = "Lollipop Phone Tester",
     console_view_entry = ci.console_view_entry(
-        category = 'tester|phone',
-        short_name = 'L',
+        category = "tester|phone",
+        short_name = "L",
     ),
     # We have limited phone capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 6 * time.hour,
-    triggered_by = ['ci/Android arm Builder (dbg)'],
+    triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 
 ci.android_builder(
-    name = 'Lollipop Tablet Tester',
+    name = "Lollipop Tablet Tester",
     console_view_entry = ci.console_view_entry(
-        category = 'tester|tablet',
-        short_name = 'L',
+        category = "tester|tablet",
+        short_name = "L",
     ),
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 20 * time.hour,
-    triggered_by = ['ci/Android arm Builder (dbg)'],
+    triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 
 ci.android_builder(
-    name = 'Marshmallow Tablet Tester',
+    name = "Marshmallow Tablet Tester",
     console_view_entry = ci.console_view_entry(
-        category = 'tester|tablet',
-        short_name = 'M',
+        category = "tester|tablet",
+        short_name = "M",
     ),
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 12 * time.hour,
-    triggered_by = ['ci/Android arm Builder (dbg)'],
+    triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 
 ci.android_builder(
-    name = 'android-arm64-proguard-rel',
+    name = "android-arm64-proguard-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'builder_tester|arm64',
-        short_name = 'M proguard',
+        category = "builder_tester|arm64",
+        short_name = "M proguard",
     ),
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 6 * time.hour,
 )
 
 ci.android_builder(
-    name = 'android-cronet-arm64-dbg',
+    name = "android-cronet-arm64-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|arm64',
-        short_name = 'dbg',
+        category = "cronet|arm64",
+        short_name = "dbg",
     ),
-    notifies = ['cronet'],
+    notifies = ["cronet"],
 )
 
 ci.android_builder(
-    name = 'android-cronet-arm64-rel',
+    name = "android-cronet-arm64-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|arm64',
-        short_name = 'rel',
+        category = "cronet|arm64",
+        short_name = "rel",
     ),
-    notifies = ['cronet'],
+    notifies = ["cronet"],
 )
 
 ci.android_builder(
-    name = 'android-cronet-asan-arm-rel',
+    name = "android-cronet-asan-arm-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|asan',
+        category = "cronet|asan",
     ),
-    notifies = ['cronet'],
+    notifies = ["cronet"],
 )
 
 # Runs on a specific machine with an attached phone
 ci.android_builder(
-    name = 'android-cronet-marshmallow-arm64-perf-rel',
+    name = "android-cronet-marshmallow-arm64-perf-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|test|perf',
-        short_name = 'm',
+        category = "cronet|test|perf",
+        short_name = "m",
     ),
     cores = None,
     cpu = None,
-    executable = 'recipe:cronet',
-    notifies = ['cronet'],
+    executable = "recipe:cronet",
+    notifies = ["cronet"],
     os = os.ANDROID,
 )
 
 ci.android_builder(
-    name = 'android-cronet-marshmallow-arm64-rel',
+    name = "android-cronet-marshmallow-arm64-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|test',
-        short_name = 'm',
+        category = "cronet|test",
+        short_name = "m",
     ),
-    notifies = ['cronet'],
-    triggered_by = ['android-cronet-arm64-rel'],
+    notifies = ["cronet"],
+    triggered_by = ["android-cronet-arm64-rel"],
 )
 
 ci.android_builder(
-    name = 'android-cronet-x86-dbg',
+    name = "android-cronet-x86-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|x86',
-        short_name = 'dbg',
+        category = "cronet|x86",
+        short_name = "dbg",
     ),
-    notifies = ['cronet'],
+    notifies = ["cronet"],
 )
 
 ci.android_builder(
-    name = 'android-cronet-x86-rel',
+    name = "android-cronet-x86-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'cronet|x86',
-        short_name = 'rel',
+        category = "cronet|x86",
+        short_name = "rel",
     ),
-    notifies = ['cronet'],
+    notifies = ["cronet"],
 )
 
 ci.android_builder(
-    name = 'android-incremental-dbg',
+    name = "android-incremental-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'tester|incremental',
-    ),
-)
-
-ci.android_builder(
-    name = 'android-pie-x86-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'builder_tester|x86',
-        short_name = 'P',
+        category = "tester|incremental",
     ),
 )
 
 ci.android_builder(
-    name = 'android-10-arm64-rel',
+    name = "android-pie-x86-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'builder_tester|arm64',
-        short_name = '10',
+        category = "builder_tester|x86",
+        short_name = "P",
     ),
 )
 
 ci.android_builder(
-    name = 'android-binary-size-generator',
-    executable = 'recipe:binary_size_generator_tot',
+    name = "android-10-arm64-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'builder|other',
-        short_name = 'size',
+        category = "builder_tester|arm64",
+        short_name = "10",
     ),
 )
 
-
-ci.android_fyi_builder(
-    name = 'android-bfcache-rel',
+ci.android_builder(
+    name = "android-binary-size-generator",
+    executable = "recipe:binary_size_generator_tot",
     console_view_entry = ci.console_view_entry(
-        category = 'android',
-    ),
-)
-
-ci.android_fyi_builder(
-    name = 'Android WebLayer P FYI (rel)',
-    console_view_entry = ci.console_view_entry(
-        category = 'weblayer',
-        short_name = 'p-rel',
+        category = "builder|other",
+        short_name = "size",
     ),
 )
 
 ci.android_fyi_builder(
-    name = 'android-weblayer-pie-x86-fyi-rel',
+    name = "android-bfcache-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'weblayer',
-        short_name = 'p-x86-rel',
+        category = "android",
     ),
 )
 
 ci.android_fyi_builder(
-    name = 'Android WebView P Blink-CORS FYI (rel)',
+    name = "Android WebLayer P FYI (rel)",
     console_view_entry = ci.console_view_entry(
-        category = 'webview',
-        short_name = 'cors',
+        category = "weblayer",
+        short_name = "p-rel",
     ),
 )
 
 ci.android_fyi_builder(
-    name = 'Android WebView P FYI (rel)',
+    name = "android-weblayer-pie-x86-fyi-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'webview',
-        short_name = 'p-rel',
+        category = "weblayer",
+        short_name = "p-x86-rel",
     ),
 )
 
 ci.android_fyi_builder(
-    name = 'android-marshmallow-x86-fyi-rel',
+    name = "Android WebView P Blink-CORS FYI (rel)",
     console_view_entry = ci.console_view_entry(
-        category = 'emulator|M|x86',
-        short_name = 'rel',
+        category = "webview",
+        short_name = "cors",
     ),
-    goma_jobs=goma.jobs.J150,
+)
+
+ci.android_fyi_builder(
+    name = "Android WebView P FYI (rel)",
+    console_view_entry = ci.console_view_entry(
+        category = "webview",
+        short_name = "p-rel",
+    ),
+)
+
+ci.android_fyi_builder(
+    name = "android-marshmallow-x86-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "emulator|M|x86",
+        short_name = "rel",
+    ),
+    goma_jobs = goma.jobs.J150,
 )
 
 # TODO(hypan): remove this once there is no associated disabled tests
 ci.android_fyi_builder(
-    name = 'android-pie-x86-fyi-rel',
+    name = "android-pie-x86-fyi-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'emulator|P|x86',
-        short_name = 'rel',
+        category = "emulator|P|x86",
+        short_name = "rel",
     ),
-    goma_jobs=goma.jobs.J150,
-    schedule = 'triggered',  # triggered manually via Scheduler UI
+    goma_jobs = goma.jobs.J150,
+    schedule = "triggered",  # triggered manually via Scheduler UI
 )
 
-
-
 ci.chromium_builder(
-    name = 'android-archive-dbg',
+    name = "android-archive-dbg",
     # Bump to 32 if needed.
     console_view_entry = ci.console_view_entry(
-        category = 'android',
-        short_name = 'dbg',
+        category = "android",
+        short_name = "dbg",
     ),
     cores = 8,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromium_builder(
-    name = 'android-archive-rel',
+    name = "android-archive-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'android',
-        short_name = 'rel',
+        category = "android",
+        short_name = "rel",
     ),
     cores = 32,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromium_builder(
-    name = 'linux-archive-dbg',
+    name = "linux-archive-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
-        short_name = 'dbg',
+        category = "linux",
+        short_name = "dbg",
     ),
     # Bump to 32 if needed.
     cores = 8,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromium_builder(
-    name = 'linux-archive-rel',
+    name = "linux-archive-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
-        short_name = 'rel',
+        category = "linux",
+        short_name = "rel",
     ),
     cores = 32,
-    main_console_view = 'main',
-    notifies = ['linux-archive-rel'],
+    main_console_view = "main",
+    notifies = ["linux-archive-rel"],
 )
 
 ci.chromium_builder(
-    name = 'mac-archive-dbg',
+    name = "mac-archive-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'dbg',
+        category = "mac",
+        short_name = "dbg",
     ),
     # Bump to 8 cores if needed.
     cores = 4,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.MAC_DEFAULT,
 )
 
 ci.chromium_builder(
-    name = 'mac-archive-rel',
+    name = "mac-archive-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'rel',
+        category = "mac",
+        short_name = "rel",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.MAC_DEFAULT,
 )
 
 ci.chromium_builder(
-    name = 'win-archive-dbg',
+    name = "win-archive-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'win|dbg',
-        short_name = '64',
+        category = "win|dbg",
+        short_name = "64",
     ),
     cores = 32,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
     tree_closing = False,
 )
 
 ci.chromium_builder(
-    name = 'win-archive-rel',
+    name = "win-archive-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'win|rel',
-        short_name = '64',
+        category = "win|rel",
+        short_name = "64",
     ),
     cores = 32,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
 )
 
 ci.chromium_builder(
-    name = 'win32-archive-dbg',
+    name = "win32-archive-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'win|dbg',
-        short_name = '32',
+        category = "win|dbg",
+        short_name = "32",
     ),
     cores = 32,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
     tree_closing = False,
 )
 
 ci.chromium_builder(
-    name = 'win32-archive-rel',
+    name = "win32-archive-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'win|rel',
-        short_name = '32',
+        category = "win|rel",
+        short_name = "32",
     ),
     cores = 32,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
 )
 
-
 ci.chromiumos_builder(
-    name = 'Linux ChromiumOS Full',
+    name = "Linux ChromiumOS Full",
     console_view_entry = ci.console_view_entry(
-        category = 'default',
-        short_name = 'ful',
+        category = "default",
+        short_name = "ful",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-amd64-generic-asan-rel',
+    name = "chromeos-amd64-generic-asan-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'simple|release|x64',
-        short_name = 'asn',
+        category = "simple|release|x64",
+        short_name = "asn",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
+    name = "chromeos-amd64-generic-cfi-thin-lto-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'simple|release|x64',
-        short_name = 'cfi',
+        category = "simple|release|x64",
+        short_name = "cfi",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-arm-generic-dbg',
+    name = "chromeos-arm-generic-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'simple|debug',
-        short_name = 'arm',
+        category = "simple|debug",
+        short_name = "arm",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-kevin-rel',
+    name = "chromeos-kevin-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'simple|release',
-        short_name = 'kvn',
+        category = "simple|release",
+        short_name = "kvn",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
-
 
 ci.clang_builder(
-    name = 'CFI Linux CF',
+    name = "CFI Linux CF",
     goma_backend = goma.backend.RBE_PROD,
     console_view_entry = ci.console_view_entry(
-        category = 'CFI|Linux',
-        short_name = 'CF',
+        category = "CFI|Linux",
+        short_name = "CF",
     ),
-    notifies = ['CFI Linux'],
+    notifies = ["CFI Linux"],
 )
 
 ci.clang_builder(
-    name = 'CFI Linux ToT',
+    name = "CFI Linux ToT",
     console_view_entry = ci.console_view_entry(
-        category = 'CFI|Linux',
-        short_name = 'ToT',
+        category = "CFI|Linux",
+        short_name = "ToT",
     ),
-    notifies = ['CFI Linux'],
+    notifies = ["CFI Linux"],
 )
 
 ci.clang_builder(
-    name = 'CrWinAsan',
+    name = "CrWinAsan",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows|Asan',
-        short_name = 'asn',
+        category = "ToT Windows|Asan",
+        short_name = "asn",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'CrWinAsan(dll)',
+    name = "CrWinAsan(dll)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows|Asan',
-        short_name = 'dll',
+        category = "ToT Windows|Asan",
+        short_name = "dll",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTAndroid',
+    name = "ToTAndroid",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'rel',
+        category = "ToT Android",
+        short_name = "rel",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTAndroid (dbg)',
+    name = "ToTAndroid (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'dbg',
+        category = "ToT Android",
+        short_name = "dbg",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTAndroid x64',
+    name = "ToTAndroid x64",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'x64',
+        category = "ToT Android",
+        short_name = "x64",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTAndroid64',
+    name = "ToTAndroid64",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'a64',
+        category = "ToT Android",
+        short_name = "a64",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTAndroidASan',
+    name = "ToTAndroidASan",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'asn',
+        category = "ToT Android",
+        short_name = "asn",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTAndroidCFI',
+    name = "ToTAndroidCFI",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'cfi',
+        category = "ToT Android",
+        short_name = "cfi",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTAndroidOfficial',
+    name = "ToTAndroidOfficial",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Android',
-        short_name = 'off',
+        category = "ToT Android",
+        short_name = "off",
     ),
 )
 
-def clang_tot_linux_builder(short_name, category='ToT Linux', **kwargs):
-  ci.clang_builder(
-      console_view_entry = ci.console_view_entry(
-          category = category,
-          short_name = short_name,
-      ),
-      notifies = [luci.notifier(
-          name = 'ToT Linux notifier',
-          on_new_status = ['FAILURE'],
-          notify_emails = ['thomasanderson@chromium.org'],
-      )],
-      **kwargs,
-  )
+def clang_tot_linux_builder(short_name, category = "ToT Linux", **kwargs):
+    ci.clang_builder(
+        console_view_entry = ci.console_view_entry(
+            category = category,
+            short_name = short_name,
+        ),
+        notifies = [luci.notifier(
+            name = "ToT Linux notifier",
+            on_new_status = ["FAILURE"],
+            notify_emails = ["thomasanderson@chromium.org"],
+        )],
+        **kwargs
+    )
 
 clang_tot_linux_builder(
-    name = 'ToTLinux',
-    short_name = 'rel',
-)
-
-clang_tot_linux_builder(
-    name = 'ToTLinux (dbg)',
-    short_name = 'dbg',
+    name = "ToTLinux",
+    short_name = "rel",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxASan',
-    short_name = 'asn',
+    name = "ToTLinux (dbg)",
+    short_name = "dbg",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxASanLibfuzzer',
+    name = "ToTLinuxASan",
+    short_name = "asn",
+)
+
+clang_tot_linux_builder(
+    name = "ToTLinuxASanLibfuzzer",
     # Requires a large disk, so has a machine specifically devoted to it
     builderless = False,
-    short_name = 'fuz',
+    short_name = "fuz",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxCoverage',
-    category = 'ToT Code Coverage',
-    short_name = 'linux',
-    executable = 'recipe:chromium_clang_coverage_tot',
+    name = "ToTLinuxCoverage",
+    category = "ToT Code Coverage",
+    short_name = "linux",
+    executable = "recipe:chromium_clang_coverage_tot",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxMSan',
-    short_name = 'msn',
+    name = "ToTLinuxMSan",
+    short_name = "msn",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxTSan',
-    short_name = 'tsn',
+    name = "ToTLinuxTSan",
+    short_name = "tsn",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxThinLTO',
-    short_name = 'lto',
+    name = "ToTLinuxThinLTO",
+    short_name = "lto",
 )
 
 clang_tot_linux_builder(
-    name = 'ToTLinuxUBSanVptr',
-    short_name = 'usn',
+    name = "ToTLinuxUBSanVptr",
+    short_name = "usn",
 )
 
 ci.clang_builder(
-    name = 'ToTWin(dbg)',
+    name = "ToTWin(dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows',
-        short_name = 'dbg',
+        category = "ToT Windows",
+        short_name = "dbg",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTWin(dll)',
+    name = "ToTWin(dll)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows',
-        short_name = 'dll',
+        category = "ToT Windows",
+        short_name = "dll",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTWin64(dbg)',
+    name = "ToTWin64(dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows|x64',
-        short_name = 'dbg',
+        category = "ToT Windows|x64",
+        short_name = "dbg",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTWin64(dll)',
+    name = "ToTWin64(dll)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows|x64',
-        short_name = 'dll',
+        category = "ToT Windows|x64",
+        short_name = "dll",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTWinASanLibfuzzer',
+    name = "ToTWinASanLibfuzzer",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows|Asan',
-        short_name = 'fuz',
+        category = "ToT Windows|Asan",
+        short_name = "fuz",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTWinCFI',
+    name = "ToTWinCFI",
     console_view_entry = ci.console_view_entry(
-        category = 'CFI|Win',
-        short_name = 'x86',
+        category = "CFI|Win",
+        short_name = "x86",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'ToTWinCFI64',
+    name = "ToTWinCFI64",
     console_view_entry = ci.console_view_entry(
-        category = 'CFI|Win',
-        short_name = 'x64',
+        category = "CFI|Win",
+        short_name = "x64",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.clang_builder(
-    name = 'UBSanVptr Linux',
+    name = "UBSanVptr Linux",
     console_view_entry = ci.console_view_entry(
-        short_name = 'usn',
+        short_name = "usn",
     ),
     goma_backend = goma.backend.RBE_PROD,
 )
 
 ci.clang_builder(
-    name = 'linux-win_cross-rel',
+    name = "linux-win_cross-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Windows',
-        short_name = 'lxw',
+        category = "ToT Windows",
+        short_name = "lxw",
     ),
 )
 
 ci.clang_builder(
-    name = 'ToTiOS',
+    name = "ToTiOS",
     caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|public',
-        short_name = 'sim',
+        category = "iOS|public",
+        short_name = "sim",
     ),
     cores = None,
     os = os.MAC_10_14,
     properties = {
-        'xcode_build_version': '11e146'
+        "xcode_build_version": "11e146",
     },
-    ssd=True
+    ssd = True,
 )
 
 ci.clang_builder(
-    name = 'ToTiOSDevice',
+    name = "ToTiOSDevice",
     caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|public',
-        short_name = 'dev',
+        category = "iOS|public",
+        short_name = "dev",
     ),
     cores = None,
     os = os.MAC_10_14,
     properties = {
-        'xcode_build_version': '11e146'
+        "xcode_build_version": "11e146",
     },
-    ssd=True
+    ssd = True,
 )
 
-
 ci.clang_mac_builder(
-    name = 'ToTMac',
+    name = "ToTMac",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Mac',
-        short_name = 'rel',
+        category = "ToT Mac",
+        short_name = "rel",
     ),
 )
 
 ci.clang_mac_builder(
-    name = 'ToTMac (dbg)',
+    name = "ToTMac (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Mac',
-        short_name = 'dbg',
+        category = "ToT Mac",
+        short_name = "dbg",
     ),
 )
 
 ci.clang_mac_builder(
-    name = 'ToTMacASan',
+    name = "ToTMacASan",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Mac',
-        short_name = 'asn',
+        category = "ToT Mac",
+        short_name = "asn",
     ),
 )
 
 ci.clang_mac_builder(
-    name = 'ToTMacCoverage',
+    name = "ToTMacCoverage",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT Code Coverage',
-        short_name = 'mac',
+        category = "ToT Code Coverage",
+        short_name = "mac",
     ),
-    executable = 'recipe:chromium_clang_coverage_tot',
+    executable = "recipe:chromium_clang_coverage_tot",
 )
-
 
 ci.dawn_builder(
-    name = 'Dawn Linux x64 Builder',
+    name = "Dawn Linux x64 Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Linux|Builder',
-        short_name = 'x64',
+        category = "ToT|Linux|Builder",
+        short_name = "x64",
     ),
 )
 
 ci.dawn_builder(
-    name = 'Dawn Linux x64 Release (Intel HD 630)',
+    name = "Dawn Linux x64 Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Linux|Intel',
-        short_name = 'x64',
+        category = "ToT|Linux|Intel",
+        short_name = "x64",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Linux x64 Builder'],
+    triggered_by = ["Dawn Linux x64 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Linux x64 Release (NVIDIA)',
+    name = "Dawn Linux x64 Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Linux|Nvidia',
-        short_name = 'x64',
+        category = "ToT|Linux|Nvidia",
+        short_name = "x64",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Linux x64 Builder'],
+    triggered_by = ["Dawn Linux x64 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Mac x64 Builder',
+    name = "Dawn Mac x64 Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Mac|Builder',
-        short_name = 'x64',
+        category = "ToT|Mac|Builder",
+        short_name = "x64",
     ),
     builderless = False,
     cores = None,
@@ -903,41 +891,41 @@ ci.dawn_builder(
 )
 
 ci.dawn_builder(
-    name = 'Dawn Mac x64 Release (AMD)',
+    name = "Dawn Mac x64 Release (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Mac|AMD',
-        short_name = 'x64',
+        category = "ToT|Mac|AMD",
+        short_name = "x64",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Mac x64 Builder'],
+    triggered_by = ["Dawn Mac x64 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Mac x64 Release (Intel)',
+    name = "Dawn Mac x64 Release (Intel)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Mac|Intel',
-        short_name = 'x64',
+        category = "ToT|Mac|Intel",
+        short_name = "x64",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Mac x64 Builder'],
+    triggered_by = ["Dawn Mac x64 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Win10 x86 Builder',
+    name = "Dawn Win10 x86 Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|Builder',
-        short_name = 'x86',
+        category = "ToT|Windows|Builder",
+        short_name = "x86",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.dawn_builder(
-    name = 'Dawn Win10 x64 Builder',
+    name = "Dawn Win10 x64 Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|Builder',
-        short_name = 'x64',
+        category = "ToT|Windows|Builder",
+        short_name = "x64",
     ),
     os = os.WINDOWS_ANY,
 )
@@ -945,63 +933,63 @@ ci.dawn_builder(
 # Note that the Win testers are all thin Linux VMs, triggering jobs on the
 # physical Win hardware in the Swarming pool, which is why they run on linux
 ci.dawn_builder(
-    name = 'Dawn Win10 x86 Release (Intel HD 630)',
+    name = "Dawn Win10 x86 Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|Intel',
-        short_name = 'x86',
+        category = "ToT|Windows|Intel",
+        short_name = "x86",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x86 Builder'],
+    triggered_by = ["Dawn Win10 x86 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Win10 x64 Release (Intel HD 630)',
+    name = "Dawn Win10 x64 Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|Intel',
-        short_name = 'x64',
+        category = "ToT|Windows|Intel",
+        short_name = "x64",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x64 Builder'],
+    triggered_by = ["Dawn Win10 x64 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Win10 x86 Release (NVIDIA)',
+    name = "Dawn Win10 x86 Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|Nvidia',
-        short_name = 'x86',
+        category = "ToT|Windows|Nvidia",
+        short_name = "x86",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x86 Builder'],
+    triggered_by = ["Dawn Win10 x86 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Win10 x64 Release (NVIDIA)',
+    name = "Dawn Win10 x64 Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|Nvidia',
-        short_name = 'x64',
+        category = "ToT|Windows|Nvidia",
+        short_name = "x64",
     ),
     cores = 2,
     os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x64 Builder'],
+    triggered_by = ["Dawn Win10 x64 Builder"],
 )
 
 ci.dawn_builder(
-    name = 'Dawn Win10 x64 ASAN Release',
+    name = "Dawn Win10 x64 ASAN Release",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT|Windows|ASAN',
-        short_name = 'x64',
+        category = "ToT|Windows|ASAN",
+        short_name = "x64",
     ),
     os = os.WINDOWS_ANY,
 )
 
 ci.fuzz_builder(
-    name = 'ASAN Debug',
+    name = "ASAN Debug",
     console_view_entry = ci.console_view_entry(
-        category = 'linux asan',
-        short_name = 'dbg',
+        category = "linux asan",
+        short_name = "dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1009,10 +997,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'ASan Debug (32-bit x86 with V8-ARM)',
+    name = "ASan Debug (32-bit x86 with V8-ARM)",
     console_view_entry = ci.console_view_entry(
-        category = 'linux asan|x64 v8-ARM',
-        short_name = 'dbg',
+        category = "linux asan|x64 v8-ARM",
+        short_name = "dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1020,10 +1008,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'ASAN Release',
+    name = "ASAN Release",
     console_view_entry = ci.console_view_entry(
-        category = 'linux asan',
-        short_name = 'rel',
+        category = "linux asan",
+        short_name = "rel",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
@@ -1031,10 +1019,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'ASan Release (32-bit x86 with V8-ARM)',
+    name = "ASan Release (32-bit x86 with V8-ARM)",
     console_view_entry = ci.console_view_entry(
-        category = 'linux asan|x64 v8-ARM',
-        short_name = 'rel',
+        category = "linux asan|x64 v8-ARM",
+        short_name = "rel",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1042,10 +1030,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'ASAN Release Media',
+    name = "ASAN Release Media",
     console_view_entry = ci.console_view_entry(
-        category = 'linux asan',
-        short_name = 'med',
+        category = "linux asan",
+        short_name = "med",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1053,22 +1041,22 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'Afl Upload Linux ASan',
+    name = "Afl Upload Linux ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'afl',
-        short_name = 'afl',
+        category = "afl",
+        short_name = "afl",
     ),
-    executable = 'recipe:chromium_afl',
+    executable = "recipe:chromium_afl",
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
 )
 
 ci.fuzz_builder(
-    name = 'ASan Release Media (32-bit x86 with V8-ARM)',
+    name = "ASan Release Media (32-bit x86 with V8-ARM)",
     console_view_entry = ci.console_view_entry(
-        category = 'linux asan|x64 v8-ARM',
-        short_name = 'med',
+        category = "linux asan|x64 v8-ARM",
+        short_name = "med",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1076,9 +1064,9 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'ChromiumOS ASAN Release',
+    name = "ChromiumOS ASAN Release",
     console_view_entry = ci.console_view_entry(
-        category = 'cros asan',
+        category = "cros asan",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 6,
@@ -1086,10 +1074,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'MSAN Release (chained origins)',
+    name = "MSAN Release (chained origins)",
     console_view_entry = ci.console_view_entry(
-        category = 'linux msan',
-        short_name = 'org',
+        category = "linux msan",
+        short_name = "org",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1097,10 +1085,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'MSAN Release (no origins)',
+    name = "MSAN Release (no origins)",
     console_view_entry = ci.console_view_entry(
-        category = 'linux msan',
-        short_name = 'rel',
+        category = "linux msan",
+        short_name = "rel",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1108,11 +1096,11 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'Mac ASAN Release',
+    name = "Mac ASAN Release",
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'mac asan',
-        short_name = 'rel',
+        category = "mac asan",
+        short_name = "rel",
     ),
     cores = 4,
     os = os.MAC_DEFAULT,
@@ -1122,11 +1110,11 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'Mac ASAN Release Media',
+    name = "Mac ASAN Release Media",
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'mac asan',
-        short_name = 'med',
+        category = "mac asan",
+        short_name = "med",
     ),
     cores = 4,
     os = os.MAC_DEFAULT,
@@ -1136,10 +1124,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'TSAN Debug',
+    name = "TSAN Debug",
     console_view_entry = ci.console_view_entry(
-        category = 'linux tsan',
-        short_name = 'dbg',
+        category = "linux tsan",
+        short_name = "dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1147,10 +1135,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'TSAN Release',
+    name = "TSAN Release",
     console_view_entry = ci.console_view_entry(
-        category = 'linux tsan',
-        short_name = 'rel',
+        category = "linux tsan",
+        short_name = "rel",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
@@ -1158,10 +1146,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'UBSan Release',
+    name = "UBSan Release",
     console_view_entry = ci.console_view_entry(
-        category = 'linux UBSan',
-        short_name = 'rel',
+        category = "linux UBSan",
+        short_name = "rel",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1169,10 +1157,10 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'UBSan vptr Release',
+    name = "UBSan vptr Release",
     console_view_entry = ci.console_view_entry(
-        category = 'linux UBSan',
-        short_name = 'vpt',
+        category = "linux UBSan",
+        short_name = "vpt",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -1180,11 +1168,11 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'Win ASan Release',
+    name = "Win ASan Release",
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'win asan',
-        short_name = 'rel',
+        category = "win asan",
+        short_name = "rel",
     ),
     os = os.WINDOWS_DEFAULT,
     triggering_policy = scheduler.greedy_batching(
@@ -1193,11 +1181,11 @@ ci.fuzz_builder(
 )
 
 ci.fuzz_builder(
-    name = 'Win ASan Release Media',
+    name = "Win ASan Release Media",
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'win asan',
-        short_name = 'med',
+        category = "win asan",
+        short_name = "med",
     ),
     os = os.WINDOWS_DEFAULT,
     triggering_policy = scheduler.greedy_batching(
@@ -1205,12 +1193,11 @@ ci.fuzz_builder(
     ),
 )
 
-
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Chrome OS ASan',
+    name = "Libfuzzer Upload Chrome OS ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'chromeos-asan',
+        category = "libfuzz",
+        short_name = "chromeos-asan",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
@@ -1218,10 +1205,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux ASan',
+    name = "Libfuzzer Upload Linux ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'linux',
+        category = "libfuzz",
+        short_name = "linux",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
@@ -1229,10 +1216,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux ASan Debug',
+    name = "Libfuzzer Upload Linux ASan Debug",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'linux-dbg',
+        category = "libfuzz",
+        short_name = "linux-dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
@@ -1240,10 +1227,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux MSan',
+    name = "Libfuzzer Upload Linux MSan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'linux-msan',
+        category = "libfuzz",
+        short_name = "linux-msan",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
@@ -1251,12 +1238,12 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux UBSan',
+    name = "Libfuzzer Upload Linux UBSan",
     # Do not use builderless for this (crbug.com/980080).
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'linux-ubsan',
+        category = "libfuzz",
+        short_name = "linux-ubsan",
     ),
     execution_timeout = 3 * time.hour + 30 * time.minute,
     triggering_policy = scheduler.greedy_batching(
@@ -1265,10 +1252,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux V8-ARM64 ASan',
+    name = "Libfuzzer Upload Linux V8-ARM64 ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'arm64',
+        category = "libfuzz",
+        short_name = "arm64",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 1,
@@ -1276,10 +1263,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux V8-ARM64 ASan Debug',
+    name = "Libfuzzer Upload Linux V8-ARM64 ASan Debug",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'arm64-dbg',
+        category = "libfuzz",
+        short_name = "arm64-dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 1,
@@ -1287,10 +1274,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux32 ASan',
+    name = "Libfuzzer Upload Linux32 ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'linux32',
+        category = "libfuzz",
+        short_name = "linux32",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
@@ -1298,10 +1285,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux32 ASan Debug',
+    name = "Libfuzzer Upload Linux32 ASan Debug",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'linux32-dbg',
+        category = "libfuzz",
+        short_name = "linux32-dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
@@ -1309,10 +1296,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux32 V8-ARM ASan',
+    name = "Libfuzzer Upload Linux32 V8-ARM ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'arm',
+        category = "libfuzz",
+        short_name = "arm",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 1,
@@ -1320,10 +1307,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Linux32 V8-ARM ASan Debug',
+    name = "Libfuzzer Upload Linux32 V8-ARM ASan Debug",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'arm-dbg',
+        category = "libfuzz",
+        short_name = "arm-dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 1,
@@ -1331,10 +1318,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Mac ASan',
+    name = "Libfuzzer Upload Mac ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'mac-asan',
+        category = "libfuzz",
+        short_name = "mac-asan",
     ),
     cores = 24,
     execution_timeout = 4 * time.hour,
@@ -1342,10 +1329,10 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fuzz_libfuzzer_builder(
-    name = 'Libfuzzer Upload Windows ASan',
+    name = "Libfuzzer Upload Windows ASan",
     console_view_entry = ci.console_view_entry(
-        category = 'libfuzz',
-        short_name = 'win-asan',
+        category = "libfuzz",
+        short_name = "win-asan",
     ),
     os = os.WINDOWS_DEFAULT,
     triggering_policy = scheduler.greedy_batching(
@@ -1353,271 +1340,270 @@ ci.fuzz_libfuzzer_builder(
     ),
 )
 
-
 ci.fyi_builder(
-    name = 'Closure Compilation Linux',
+    name = "Closure Compilation Linux",
     console_view_entry = ci.console_view_entry(
-        category = 'closure_compilation',
+        category = "closure_compilation",
     ),
-    executable = 'recipe:closure_compilation',
-    notifies = ['Closure Compilation Linux'],
+    executable = "recipe:closure_compilation",
+    notifies = ["Closure Compilation Linux"],
 )
 
 ci.fyi_builder(
-    name = 'Linux Viz',
+    name = "Linux Viz",
     console_view_entry = ci.console_view_entry(
-        category = 'viz',
-    ),
-)
-
-ci.fyi_builder(
-    name = 'Linux remote_run Builder',
-    console_view_entry = ci.console_view_entry(
-        category = 'remote_run',
+        category = "viz",
     ),
 )
 
 ci.fyi_builder(
-    name = 'Linux remote_run Tester',
+    name = "Linux remote_run Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'remote_run',
-    ),
-    triggered_by = ['Linux remote_run Builder'],
-)
-
-ci.fyi_builder(
-    name = 'Mojo Android',
-    console_view_entry = ci.console_view_entry(
-        category = 'mojo',
-        short_name = 'and',
+        category = "remote_run",
     ),
 )
 
 ci.fyi_builder(
-    name = 'Mojo ChromiumOS',
+    name = "Linux remote_run Tester",
     console_view_entry = ci.console_view_entry(
-        category = 'mojo',
-        short_name = 'cr',
+        category = "remote_run",
+    ),
+    triggered_by = ["Linux remote_run Builder"],
+)
+
+ci.fyi_builder(
+    name = "Mojo Android",
+    console_view_entry = ci.console_view_entry(
+        category = "mojo",
+        short_name = "and",
     ),
 )
 
 ci.fyi_builder(
-    name = 'Mojo Linux',
+    name = "Mojo ChromiumOS",
     console_view_entry = ci.console_view_entry(
-        category = 'mojo',
-        short_name = 'lnx',
+        category = "mojo",
+        short_name = "cr",
     ),
 )
 
 ci.fyi_builder(
-    name = 'Site Isolation Android',
+    name = "Mojo Linux",
     console_view_entry = ci.console_view_entry(
-        category = 'site_isolation',
-    ),
-    notifies = ['Site Isolation Android'],
-)
-
-ci.fyi_builder(
-    name = 'android-mojo-webview-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'mojo',
-        short_name = 'aw',
+        category = "mojo",
+        short_name = "lnx",
     ),
 )
 
 ci.fyi_builder(
-    name = 'chromeos-amd64-generic-lacros-rel',
+    name = "Site Isolation Android",
     console_view_entry = ci.console_view_entry(
-        category = 'chromeos',
+        category = "site_isolation",
+    ),
+    notifies = ["Site Isolation Android"],
+)
+
+ci.fyi_builder(
+    name = "android-mojo-webview-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "mojo",
+        short_name = "aw",
+    ),
+)
+
+ci.fyi_builder(
+    name = "chromeos-amd64-generic-lacros-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "chromeos",
     ),
     properties = {
         # The format of these properties is defined at archive/properties.proto
-        '$build/archive' : {
-            'archive_datas': [
-            {
-                'files': [
-                    'chrome',
-                    'chrome_100_percent.pak',
-                    'chrome_200_percent.pak',
-                    'crashpad_handler',
-                    'headless_lib.pak',
-                    'icudtl.dat',
-                    'nacl_helper',
-                    'nacl_irt_x86_64.nexe',
-                    'resources.pak',
-                    'snapshot_blob.bin',
-                ],
-                'dirs': ['locales', 'swiftshader'],
-                'gcs_bucket': 'chromium-lacros-fishfood',
-                'gcs_path': 'x86_64/{%position%}/lacros.zip',
-                'archive_type': 'ARCHIVE_TYPE_ZIP',
-            },
-        ],
-      },
+        "$build/archive": {
+            "archive_datas": [
+                {
+                    "files": [
+                        "chrome",
+                        "chrome_100_percent.pak",
+                        "chrome_200_percent.pak",
+                        "crashpad_handler",
+                        "headless_lib.pak",
+                        "icudtl.dat",
+                        "nacl_helper",
+                        "nacl_irt_x86_64.nexe",
+                        "resources.pak",
+                        "snapshot_blob.bin",
+                    ],
+                    "dirs": ["locales", "swiftshader"],
+                    "gcs_bucket": "chromium-lacros-fishfood",
+                    "gcs_path": "x86_64/{%position%}/lacros.zip",
+                    "archive_type": "ARCHIVE_TYPE_ZIP",
+                },
+            ],
+        },
     },
 )
 
 ci.fyi_builder(
-    name = 'fuchsia-fyi-arm64-dbg',
+    name = "fuchsia-fyi-arm64-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'fuchsia|a64',
-        short_name = 'dbg',
+        category = "fuchsia|a64",
+        short_name = "dbg",
     ),
-    notifies = ['cr-fuchsia'],
+    notifies = ["cr-fuchsia"],
 )
 
 ci.fyi_builder(
-    name = 'fuchsia-fyi-arm64-rel',
+    name = "fuchsia-fyi-arm64-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'fuchsia|a64',
-        short_name = 'rel',
+        category = "fuchsia|a64",
+        short_name = "rel",
     ),
-    notifies = ['cr-fuchsia'],
+    notifies = ["cr-fuchsia"],
 )
 
 ci.fyi_builder(
-    name = 'fuchsia-fyi-x64-dbg',
+    name = "fuchsia-fyi-x64-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'fuchsia|x64',
-        short_name = 'dbg',
+        category = "fuchsia|x64",
+        short_name = "dbg",
     ),
-    notifies = ['cr-fuchsia'],
+    notifies = ["cr-fuchsia"],
 )
 
 ci.fyi_builder(
-    name = 'fuchsia-fyi-x64-rel',
+    name = "fuchsia-fyi-x64-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'fuchsia|x64',
-        short_name = 'rel',
+        category = "fuchsia|x64",
+        short_name = "rel",
     ),
-    notifies = ['cr-fuchsia'],
+    notifies = ["cr-fuchsia"],
 )
 
 ci.fyi_builder(
-    name = 'linux-annotator-rel',
+    name = "linux-annotator-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'network|traffic|annotations',
-        short_name = 'lnx',
+        category = "network|traffic|annotations",
+        short_name = "lnx",
     ),
-    notifies = ['annotator-rel'],
+    notifies = ["annotator-rel"],
 )
 
 ci.fyi_builder(
-    name = 'linux-ash-chromium-builder-fyi-rel',
+    name = "linux-ash-chromium-builder-fyi-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'default',
-        short_name = 'lcr',
+        category = "default",
+        short_name = "lcr",
     ),
     properties = {
         # The format of these properties is defined at archive/properties.proto
-        '$build/archive' : {
-            'archive_datas': [
-            {
-                'files': [
-                    'chrome',
-                    'chrome_100_percent.pak',
-                    'chrome_200_percent.pak',
-                    'crashpad_handler',
-                    'headless_lib.pak',
-                    'icudtl.dat',
-                    'libminigbm.so',
-                    'nacl_helper',
-                    'nacl_irt_x86_64.nexe',
-                    'resources.pak',
-                    'snapshot_blob.bin',
-                ],
-                'dirs': ['locales', 'swiftshader'],
-                'gcs_bucket': 'ash-chromium-on-linux-prebuilts',
-                'gcs_path': 'x86_64/{%position%}/ash-chromium.zip',
-                'archive_type': 'ARCHIVE_TYPE_ZIP',
-            },
-        ],
-      },
+        "$build/archive": {
+            "archive_datas": [
+                {
+                    "files": [
+                        "chrome",
+                        "chrome_100_percent.pak",
+                        "chrome_200_percent.pak",
+                        "crashpad_handler",
+                        "headless_lib.pak",
+                        "icudtl.dat",
+                        "libminigbm.so",
+                        "nacl_helper",
+                        "nacl_irt_x86_64.nexe",
+                        "resources.pak",
+                        "snapshot_blob.bin",
+                    ],
+                    "dirs": ["locales", "swiftshader"],
+                    "gcs_bucket": "ash-chromium-on-linux-prebuilts",
+                    "gcs_path": "x86_64/{%position%}/ash-chromium.zip",
+                    "archive_type": "ARCHIVE_TYPE_ZIP",
+                },
+            ],
+        },
     },
 )
 
 ci.fyi_builder(
-    name = 'linux-bfcache-rel',
+    name = "linux-bfcache-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
+        category = "linux",
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-blink-animation-use-time-delta',
+    name = "linux-blink-animation-use-time-delta",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|blink',
-        short_name = 'TD',
+        category = "linux|blink",
+        short_name = "TD",
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-blink-heap-concurrent-marking-tsan-rel',
+    name = "linux-blink-heap-concurrent-marking-tsan-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|blink',
-        short_name = 'CM',
+        category = "linux|blink",
+        short_name = "CM",
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-blink-heap-verification',
+    name = "linux-blink-heap-verification",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|blink',
-        short_name = 'VF',
+        category = "linux|blink",
+        short_name = "VF",
     ),
-    notifies = ['linux-blink-heap-verification'],
+    notifies = ["linux-blink-heap-verification"],
 )
 
 ci.fyi_builder(
-    name = 'linux-chromium-tests-staging-builder',
+    name = "linux-chromium-tests-staging-builder",
     console_view_entry = ci.console_view_entry(
-        category = 'recipe|staging|linux',
-        short_name = 'bld',
-    ),
-)
-
-ci.fyi_builder(
-    name = 'linux-chromium-tests-staging-tests',
-    console_view_entry = ci.console_view_entry(
-        category = 'recipe|staging|linux',
-        short_name = 'tst',
-    ),
-    triggered_by = ['linux-chromium-tests-staging-builder'],
-)
-
-ci.fyi_builder(
-    name = 'linux-fieldtrial-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'linux',
+        category = "recipe|staging|linux",
+        short_name = "bld",
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-lacros-builder-fyi-rel',
+    name = "linux-chromium-tests-staging-tests",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
+        category = "recipe|staging|linux",
+        short_name = "tst",
+    ),
+    triggered_by = ["linux-chromium-tests-staging-builder"],
+)
+
+ci.fyi_builder(
+    name = "linux-fieldtrial-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "linux",
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-lacros-tester-fyi-rel',
+    name = "linux-lacros-builder-fyi-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
-    ),
-    triggered_by = ['linux-lacros-builder-fyi-rel'],
-)
-
-ci.fyi_builder(
-    name = 'linux-perfetto-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'linux',
+        category = "linux",
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-wpt-fyi-rel',
+    name = "linux-lacros-tester-fyi-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
+        category = "linux",
+    ),
+    triggered_by = ["linux-lacros-builder-fyi-rel"],
+)
+
+ci.fyi_builder(
+    name = "linux-perfetto-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "linux",
+    ),
+)
+
+ci.fyi_builder(
+    name = "linux-wpt-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "linux",
     ),
     experimental = True,
     goma_backend = None,
@@ -1626,149 +1612,148 @@ ci.fyi_builder(
 # This is launching & collecting entirely isolated tests.
 # OS shouldn't matter.
 ci.fyi_builder(
-    name = 'mac-osxbeta-rel',
+    name = "mac-osxbeta-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'beta',
+        category = "mac",
+        short_name = "beta",
     ),
     goma_backend = None,
     main_console_view = None,
-    triggered_by = ['ci/Mac Builder'],
+    triggered_by = ["ci/Mac Builder"],
 )
 
 ci.fyi_builder(
-    name = 'win-pixel-builder-rel',
+    name = "win-pixel-builder-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'win10',
+        category = "win10",
     ),
     os = os.WINDOWS_10,
 )
 
 ci.fyi_builder(
-    name = 'win-pixel-tester-rel',
+    name = "win-pixel-tester-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'win10',
+        category = "win10",
     ),
     os = None,
-    triggered_by = ['win-pixel-builder-rel'],
+    triggered_by = ["win-pixel-builder-rel"],
 )
 
 ci.fyi_builder(
-    name = 'linux-upload-perfetto',
+    name = "linux-upload-perfetto",
     console_view_entry = ci.console_view_entry(
-        category = 'perfetto',
-        short_name = 'lnx',
+        category = "perfetto",
+        short_name = "lnx",
     ),
     os = os.LINUX_DEFAULT,
 )
 
 ci.fyi_builder(
-    name = 'mac-upload-perfetto',
+    name = "mac-upload-perfetto",
     builderless = True,
     console_view_entry = ci.console_view_entry(
-        category = 'perfetto',
-        short_name = 'mac',
+        category = "perfetto",
+        short_name = "mac",
     ),
     os = os.MAC_DEFAULT,
-    schedule = 'with 3h interval',
+    schedule = "with 3h interval",
     triggered_by = [],
     ssd = None,
 )
 
 ci.fyi_builder(
-    name = 'win-upload-perfetto',
+    name = "win-upload-perfetto",
     builderless = True,
     console_view_entry = ci.console_view_entry(
-        category = 'perfetto',
-        short_name = 'win',
+        category = "perfetto",
+        short_name = "win",
     ),
     os = os.WINDOWS_DEFAULT,
-    schedule = 'with 3h interval',
+    schedule = "with 3h interval",
     triggered_by = [],
 )
 
 ci.fyi_celab_builder(
-    name = 'win-celab-builder-rel',
+    name = "win-celab-builder-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'celab',
+        category = "celab",
     ),
-    schedule = '0 0,6,12,18 * * *',
+    schedule = "0 0,6,12,18 * * *",
     triggered_by = [],
 )
 
 ci.fyi_celab_builder(
-    name = 'win-celab-tester-rel',
+    name = "win-celab-tester-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'celab',
+        category = "celab",
     ),
-    triggered_by = ['win-celab-builder-rel'],
+    triggered_by = ["win-celab-builder-rel"],
 )
-
 
 ci.fyi_coverage_builder(
-    name = 'android-code-coverage',
+    name = "android-code-coverage",
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'and',
+        category = "code_coverage",
+        short_name = "and",
     ),
     use_java_coverage = True,
-    schedule = 'triggered',
+    schedule = "triggered",
     triggered_by = [],
 )
 
 ci.fyi_coverage_builder(
-    name = 'android-code-coverage-native',
+    name = "android-code-coverage-native",
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'ann',
+        category = "code_coverage",
+        short_name = "ann",
     ),
     use_clang_coverage = True,
 )
 
 ci.fyi_coverage_builder(
-    name = 'ios-simulator-code-coverage',
+    name = "ios-simulator-code-coverage",
     caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'ios',
+        category = "code_coverage",
+        short_name = "ios",
     ),
     cores = None,
     os = os.MAC_10_15,
     use_clang_coverage = True,
-    coverage_exclude_sources = 'ios_test_files_and_test_utils',
-    coverage_test_types = ['overall', 'unit'],
+    coverage_exclude_sources = "ios_test_files_and_test_utils",
+    coverage_test_types = ["overall", "unit"],
     properties = {
-        'xcode_build_version': '11e146',
+        "xcode_build_version": "11e146",
     },
 )
 
 ci.fyi_coverage_builder(
-    name = 'linux-chromeos-code-coverage',
+    name = "linux-chromeos-code-coverage",
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'lcr',
+        category = "code_coverage",
+        short_name = "lcr",
     ),
     use_clang_coverage = True,
-    schedule = 'triggered',
+    schedule = "triggered",
     triggered_by = [],
 )
 
 ci.fyi_coverage_builder(
-    name = 'linux-code-coverage',
+    name = "linux-code-coverage",
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'lnx',
+        category = "code_coverage",
+        short_name = "lnx",
     ),
     use_clang_coverage = True,
     triggered_by = [],
 )
 
 ci.fyi_coverage_builder(
-    name = 'mac-code-coverage',
+    name = "mac-code-coverage",
     builderless = True,
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'mac',
+        category = "code_coverage",
+        short_name = "mac",
     ),
     cores = 24,
     os = os.MAC_ANY,
@@ -1776,266 +1761,262 @@ ci.fyi_coverage_builder(
 )
 
 ci.fyi_coverage_builder(
-    name = 'win10-code-coverage',
+    name = "win10-code-coverage",
     builderless = True,
     console_view_entry = ci.console_view_entry(
-        category = 'code_coverage',
-        short_name = 'win',
+        category = "code_coverage",
+        short_name = "win",
     ),
     os = os.WINDOWS_DEFAULT,
     use_clang_coverage = True,
 )
 
-
 ci.fyi_ios_builder(
-    name = 'ios-asan',
+    name = "ios-asan",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS',
-        short_name = 'asan',
+        category = "iOS",
+        short_name = "asan",
     ),
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e146',
+        "xcode_build_version": "11e146",
     },
 )
 
 ci.fyi_ios_builder(
-    name = 'ios-simulator-cr-recipe',
+    name = "ios-simulator-cr-recipe",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS',
-        short_name = 'chr',
+        category = "iOS",
+        short_name = "chr",
     ),
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     properties = {
-        'xcode_build_version': '11a1027',
+        "xcode_build_version": "11a1027",
     },
 )
 
 ci.fyi_ios_builder(
-    name = 'ios-simulator-multi-window',
+    name = "ios-simulator-multi-window",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS',
-        short_name = 'mwd',
+        category = "iOS",
+        short_name = "mwd",
     ),
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e146',
+        "xcode_build_version": "11e146",
     },
 )
 
 ci.fyi_ios_builder(
-    name = 'ios-webkit-tot',
+    name = "ios-webkit-tot",
     caches = [xcode_cache.x11e608cwk],
     console_view_entry = ci.console_view_entry(
-        category = 'iOS',
-        short_name = 'wk',
+        category = "iOS",
+        short_name = "wk",
     ),
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     properties = {
-        'xcode_build_version': '11e608cwk'
+        "xcode_build_version": "11e608cwk",
     },
-    schedule = '0 1-23/6 * * *',
+    schedule = "0 1-23/6 * * *",
     triggered_by = [],
 )
 
 ci.fyi_ios_builder(
-    name = 'ios13-beta-simulator',
+    name = "ios13-beta-simulator",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|iOS13',
-        short_name = 'ios13',
+        category = "iOS|iOS13",
+        short_name = "ios13",
     ),
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e146',
+        "xcode_build_version": "11e146",
     },
-    schedule = '0 0,12 * * *',
+    schedule = "0 0,12 * * *",
     triggered_by = [],
 )
 
 ci.fyi_ios_builder(
-    name = 'ios13-sdk-device',
+    name = "ios13-sdk-device",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|iOS13',
-        short_name = 'dev',
+        category = "iOS|iOS13",
+        short_name = "dev",
     ),
     caches = [xcode_cache.x11e708],
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e708',
+        "xcode_build_version": "11e708",
     },
 )
 
 ci.fyi_ios_builder(
-    name = 'ios13-sdk-simulator',
+    name = "ios13-sdk-simulator",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|iOS13',
-        short_name = 'sdk13',
+        category = "iOS|iOS13",
+        short_name = "sdk13",
     ),
     caches = [xcode_cache.x11e708],
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e708'
+        "xcode_build_version": "11e708",
     },
-    schedule = '0 6,18 * * *',
+    schedule = "0 6,18 * * *",
     triggered_by = [],
 )
 
 ci.fyi_ios_builder(
-    name = 'ios14-beta-simulator',
+    name = "ios14-beta-simulator",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|iOS14',
-        short_name = 'ios14',
+        category = "iOS|iOS14",
+        short_name = "ios14",
     ),
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e503a_xct12b1',
+        "xcode_build_version": "11e503a_xct12b1",
     },
 )
 
 ci.fyi_ios_builder(
-    name = 'ios14-sdk-simulator',
+    name = "ios14-sdk-simulator",
     console_view_entry = ci.console_view_entry(
-        category = 'iOS|iOS14',
-        short_name = 'sdk14',
+        category = "iOS|iOS14",
+        short_name = "sdk14",
     ),
     caches = [xcode_cache.x12a6163b],
-    executable = 'recipe:chromium',
+    executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '12a6163b'
-    }
+        "xcode_build_version": "12a6163b",
+    },
 )
 
-
 ci.fyi_mac_builder(
-    name = 'Mac Builder Next',
+    name = "Mac Builder Next",
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'bld',
+        category = "mac",
+        short_name = "bld",
     ),
     cores = None,
     os = None,
 )
 
 ci.fyi_mac_builder(
-    name = 'Mac deterministic',
+    name = "Mac deterministic",
     console_view_entry = ci.console_view_entry(
-        category = 'deterministic|mac',
-        short_name = 'rel',
+        category = "deterministic|mac",
+        short_name = "rel",
     ),
     cores = None,
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
 )
 
 ci.fyi_mac_builder(
-    name = 'Mac deterministic (dbg)',
+    name = "Mac deterministic (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'deterministic|mac',
-        short_name = 'dbg',
+        category = "deterministic|mac",
+        short_name = "dbg",
     ),
     cores = None,
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
 )
 
 ci.fyi_mac_builder(
-    name = 'mac-hermetic-upgrade-rel',
+    name = "mac-hermetic-upgrade-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'herm',
+        category = "mac",
+        short_name = "herm",
     ),
     cores = 8,
 )
 
 ci.fyi_mac_builder(
-    name = 'mac-mojo-rel',
+    name = "mac-mojo-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'mojo',
-        short_name = 'mac',
+        category = "mojo",
+        short_name = "mac",
     ),
     os = os.MAC_ANY,
 )
 
-
 ci.fyi_windows_builder(
-    name = 'Win10 Tests x64 1803',
+    name = "Win10 Tests x64 1803",
     console_view_entry = ci.console_view_entry(
-        category = 'win10|1803',
+        category = "win10|1803",
     ),
     goma_backend = None,
     main_console_view = None,
     os = os.WINDOWS_10,
-    triggered_by = ['ci/Win x64 Builder'],
+    triggered_by = ["ci/Win x64 Builder"],
 )
 
 ci.fyi_windows_builder(
-    name = 'Win10 Tests x64 1909',
+    name = "Win10 Tests x64 1909",
     console_view_entry = ci.console_view_entry(
-        category = 'win10|1909',
+        category = "win10|1909",
     ),
     goma_backend = None,
     main_console_view = None,
     os = os.WINDOWS_10,
-    triggered_by = ['ci/Win x64 Builder'],
+    triggered_by = ["ci/Win x64 Builder"],
 )
 
 ci.fyi_windows_builder(
-    name = 'Win 10 Fast Ring',
+    name = "Win 10 Fast Ring",
     console_view_entry = ci.console_view_entry(
-        category = 'win10',
+        category = "win10",
     ),
     os = os.WINDOWS_10,
-    notifies = ['Win 10 Fast Ring'],
+    notifies = ["Win 10 Fast Ring"],
 )
 
 ci.fyi_windows_builder(
-    name = 'win32-arm64-rel',
+    name = "win32-arm64-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'win32|arm64',
+        category = "win32|arm64",
     ),
     cpu = cpu.X86,
     goma_jobs = goma.jobs.J150,
 )
 
 ci.fyi_windows_builder(
-    name = 'win-annotator-rel',
+    name = "win-annotator-rel",
     builderless = True,
     console_view_entry = ci.console_view_entry(
-        category = 'network|traffic|annotations',
-        short_name = 'win',
+        category = "network|traffic|annotations",
+        short_name = "win",
     ),
     execution_timeout = 16 * time.hour,
-    notifies = ['annotator-rel'],
+    notifies = ["annotator-rel"],
 )
 
 ci.fyi_windows_builder(
-    name = 'Mojo Windows',
+    name = "Mojo Windows",
     console_view_entry = ci.console_view_entry(
-        category = 'mojo',
-        short_name = 'win',
+        category = "mojo",
+        short_name = "win",
     ),
 )
 
-
 ci.gpu_builder(
-    name = 'GPU Linux Builder (dbg)',
+    name = "GPU Linux Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux',
+        category = "Linux",
     ),
     tree_closing = False,
 )
 
 ci.gpu_builder(
-    name = 'GPU Mac Builder (dbg)',
+    name = "GPU Mac Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac',
+        category = "Mac",
     ),
     cores = None,
     os = os.MAC_ANY,
@@ -2043,939 +2024,932 @@ ci.gpu_builder(
 )
 
 ci.gpu_builder(
-    name = 'GPU Win x64 Builder (dbg)',
+    name = "GPU Win x64 Builder (dbg)",
     builderless = True,
     console_view_entry = ci.console_view_entry(
-        category = 'Windows',
+        category = "Windows",
     ),
     os = os.WINDOWS_ANY,
     tree_closing = False,
 )
 
-
 ci.gpu_thin_tester(
-    name = 'Linux Debug (NVIDIA)',
+    name = "Linux Debug (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux',
+        category = "Linux",
     ),
-    triggered_by = ['GPU Linux Builder (dbg)'],
+    triggered_by = ["GPU Linux Builder (dbg)"],
     tree_closing = False,
 )
 
 ci.gpu_thin_tester(
-    name = 'Mac Debug (Intel)',
+    name = "Mac Debug (Intel)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac',
+        category = "Mac",
     ),
-    triggered_by = ['GPU Mac Builder (dbg)'],
+    triggered_by = ["GPU Mac Builder (dbg)"],
     tree_closing = False,
 )
 
 ci.gpu_thin_tester(
-    name = 'Mac Retina Debug (AMD)',
+    name = "Mac Retina Debug (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac',
+        category = "Mac",
     ),
-    triggered_by = ['GPU Mac Builder (dbg)'],
+    triggered_by = ["GPU Mac Builder (dbg)"],
     tree_closing = False,
 )
 
 ci.gpu_thin_tester(
-    name = 'Win10 x64 Debug (NVIDIA)',
+    name = "Win10 x64 Debug (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows',
+        category = "Windows",
     ),
-    triggered_by = ['GPU Win x64 Builder (dbg)'],
+    triggered_by = ["GPU Win x64 Builder (dbg)"],
     tree_closing = False,
 )
-
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI 32 Vk Release (Pixel 2)',
+    name = "Android FYI 32 Vk Release (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|vk|Q32',
-        short_name = 'P2',
+        category = "Android|vk|Q32",
+        short_name = "P2",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI 32 dEQP Vk Release (Pixel 2)',
+    name = "Android FYI 32 dEQP Vk Release (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|dqp|vk|Q32',
-        short_name = 'P2',
+        category = "Android|dqp|vk|Q32",
+        short_name = "P2",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI 64 Perf (Pixel 2)',
+    name = "Android FYI 64 Perf (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|Perf|Q64',
-        short_name = 'P2',
+        category = "Android|Perf|Q64",
+        short_name = "P2",
     ),
     cores = 2,
-    triggered_by = ['GPU FYI Perf Android 64 Builder'],
+    triggered_by = ["GPU FYI Perf Android 64 Builder"],
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI 64 Vk Release (Pixel 2)',
+    name = "Android FYI 64 Vk Release (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|vk|Q64',
-        short_name = 'P2',
+        category = "Android|vk|Q64",
+        short_name = "P2",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI 64 dEQP Vk Release (Pixel 2)',
+    name = "Android FYI 64 dEQP Vk Release (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|dqp|vk|Q64',
-        short_name = 'P2',
+        category = "Android|dqp|vk|Q64",
+        short_name = "P2",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (NVIDIA Shield TV)',
+    name = "Android FYI Release (NVIDIA Shield TV)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|N64|NVDA',
-        short_name = 'STV',
+        category = "Android|N64|NVDA",
+        short_name = "STV",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (Nexus 5)',
+    name = "Android FYI Release (Nexus 5)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|L32',
-        short_name = 'N5',
+        category = "Android|L32",
+        short_name = "N5",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (Nexus 5X)',
+    name = "Android FYI Release (Nexus 5X)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|M64|QCOM',
-        short_name = 'N5X',
+        category = "Android|M64|QCOM",
+        short_name = "N5X",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (Nexus 6)',
+    name = "Android FYI Release (Nexus 6)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|L32',
-        short_name = 'N6',
+        category = "Android|L32",
+        short_name = "N6",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (Nexus 6P)',
+    name = "Android FYI Release (Nexus 6P)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|M64|QCOM',
-        short_name = 'N6P',
+        category = "Android|M64|QCOM",
+        short_name = "N6P",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (Nexus 9)',
+    name = "Android FYI Release (Nexus 9)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|M64|NVDA',
-        short_name = 'N9',
+        category = "Android|M64|NVDA",
+        short_name = "N9",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI Release (Pixel 2)',
+    name = "Android FYI Release (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|P32|QCOM',
-        short_name = 'P2',
+        category = "Android|P32|QCOM",
+        short_name = "P2",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI SkiaRenderer GL (Nexus 5X)',
+    name = "Android FYI SkiaRenderer GL (Nexus 5X)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|skgl|M64',
-        short_name = 'N5X',
+        category = "Android|skgl|M64",
+        short_name = "N5X",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI SkiaRenderer Vulkan (Pixel 2)',
+    name = "Android FYI SkiaRenderer Vulkan (Pixel 2)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|skv|P32',
-        short_name = 'P2',
+        category = "Android|skv|P32",
+        short_name = "P2",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Android FYI dEQP Release (Nexus 5X)',
+    name = "Android FYI dEQP Release (Nexus 5X)",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|dqp|M64',
-        short_name = 'N5X',
+        category = "Android|dqp|M64",
+        short_name = "N5X",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'ChromeOS FYI Release (amd64-generic)',
+    name = "ChromeOS FYI Release (amd64-generic)",
     console_view_entry = ci.console_view_entry(
-        category = 'ChromeOS|amd64|generic',
-        short_name = 'x64'
+        category = "ChromeOS|amd64|generic",
+        short_name = "x64",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'ChromeOS FYI Release (kevin)',
+    name = "ChromeOS FYI Release (kevin)",
     console_view_entry = ci.console_view_entry(
-        category = 'ChromeOS|arm|kevin',
-        short_name = 'kvn'
+        category = "ChromeOS|arm|kevin",
+        short_name = "kvn",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'GPU FYI Linux Builder',
+    name = "GPU FYI Linux Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Builder',
-        short_name = 'rel',
+        category = "Linux|Builder",
+        short_name = "rel",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'GPU FYI Linux Builder (dbg)',
+    name = "GPU FYI Linux Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Builder',
-        short_name = 'dbg',
+        category = "Linux|Builder",
+        short_name = "dbg",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'GPU FYI Linux Ozone Builder',
+    name = "GPU FYI Linux Ozone Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Builder',
-        short_name = 'ozn',
+        category = "Linux|Builder",
+        short_name = "ozn",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'GPU FYI Linux dEQP Builder',
+    name = "GPU FYI Linux dEQP Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Builder',
-        short_name = 'dqp',
+        category = "Linux|Builder",
+        short_name = "dqp",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'GPU FYI Perf Android 64 Builder',
+    name = "GPU FYI Perf Android 64 Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Android|Perf|Builder',
-        short_name = '64',
+        category = "Android|Perf|Builder",
+        short_name = "64",
     ),
 )
 
 ci.gpu_fyi_linux_builder(
-    name = 'Linux FYI GPU TSAN Release',
+    name = "Linux FYI GPU TSAN Release",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux',
-        short_name = 'tsn',
+        category = "Linux",
+        short_name = "tsn",
     ),
 )
 
 # Builder + tester.
 ci.gpu_fyi_linux_builder(
-    name = 'Linux FYI SkiaRenderer Dawn Release (Intel HD 630)',
+    name = "Linux FYI SkiaRenderer Dawn Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'skd',
-    ),
-)
-
-
-ci.gpu_fyi_mac_builder(
-    name = 'Mac FYI GPU ASAN Release',
-    console_view_entry = ci.console_view_entry(
-        category = 'Mac',
-        short_name = 'asn',
+        category = "Linux|Intel",
+        short_name = "skd",
     ),
 )
 
 ci.gpu_fyi_mac_builder(
-    name = 'GPU FYI Mac Builder',
+    name = "Mac FYI GPU ASAN Release",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Builder',
-        short_name = 'rel',
+        category = "Mac",
+        short_name = "asn",
     ),
 )
 
 ci.gpu_fyi_mac_builder(
-    name = 'GPU FYI Mac Builder (dbg)',
+    name = "GPU FYI Mac Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Builder',
-        short_name = 'dbg',
+        category = "Mac|Builder",
+        short_name = "rel",
     ),
 )
 
 ci.gpu_fyi_mac_builder(
-    name = 'GPU FYI Mac dEQP Builder',
+    name = "GPU FYI Mac Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Builder',
-        short_name = 'dqp',
+        category = "Mac|Builder",
+        short_name = "dbg",
     ),
 )
 
-
-ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Debug (NVIDIA)',
+ci.gpu_fyi_mac_builder(
+    name = "GPU FYI Mac dEQP Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Nvidia',
-        short_name = 'dbg',
+        category = "Mac|Builder",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Linux Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Experimental Release (Intel HD 630)',
+    name = "Linux FYI Debug (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'exp',
+        category = "Linux|Nvidia",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Experimental Release (NVIDIA)',
+    name = "Linux FYI Experimental Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Nvidia',
-        short_name = 'exp',
+        category = "Linux|Intel",
+        short_name = "exp",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Ozone (Intel)',
+    name = "Linux FYI Experimental Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'ozn',
+        category = "Linux|Nvidia",
+        short_name = "exp",
     ),
-    triggered_by = ['GPU FYI Linux Ozone Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Release (NVIDIA)',
+    name = "Linux FYI Ozone (Intel)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Nvidia',
-        short_name = 'rel',
+        category = "Linux|Intel",
+        short_name = "ozn",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Ozone Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Release (AMD R7 240)',
+    name = "Linux FYI Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|AMD',
-        short_name = 'rel',
+        category = "Linux|Nvidia",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Release (Intel HD 630)',
+    name = "Linux FYI Release (AMD R7 240)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'rel',
+        category = "Linux|AMD",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI Release (Intel UHD 630)',
+    name = "Linux FYI Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'uhd',
+        category = "Linux|Intel",
+        short_name = "rel",
+    ),
+    triggered_by = ["GPU FYI Linux Builder"],
+)
+
+ci.gpu_fyi_thin_tester(
+    name = "Linux FYI Release (Intel UHD 630)",
+    console_view_entry = ci.console_view_entry(
+        category = "Linux|Intel",
+        short_name = "uhd",
     ),
     # TODO(https://crbug.com/986939): Remove this increased timeout once more
     # devices are added.
     execution_timeout = 18 * time.hour,
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
+    name = "Linux FYI SkiaRenderer Vulkan (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'skv',
+        category = "Linux|Intel",
+        short_name = "skv",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
+    name = "Linux FYI SkiaRenderer Vulkan (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Nvidia',
-        short_name = 'skv',
+        category = "Linux|Nvidia",
+        short_name = "skv",
     ),
-    triggered_by = ['GPU FYI Linux Builder'],
+    triggered_by = ["GPU FYI Linux Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI dEQP Release (Intel HD 630)',
+    name = "Linux FYI dEQP Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Intel',
-        short_name = 'dqp',
+        category = "Linux|Intel",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Linux dEQP Builder'],
+    triggered_by = ["GPU FYI Linux dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Linux FYI dEQP Release (NVIDIA)',
+    name = "Linux FYI dEQP Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Linux|Nvidia',
-        short_name = 'dqp',
+        category = "Linux|Nvidia",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Linux dEQP Builder'],
+    triggered_by = ["GPU FYI Linux dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Debug (Intel)',
+    name = "Mac FYI Debug (Intel)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Intel',
-        short_name = 'dbg',
+        category = "Mac|Intel",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Mac Builder (dbg)'],
+    triggered_by = ["GPU FYI Mac Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Experimental Release (Intel)',
+    name = "Mac FYI Experimental Release (Intel)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Intel',
-        short_name = 'exp',
+        category = "Mac|Intel",
+        short_name = "exp",
     ),
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Experimental Retina Release (AMD)',
+    name = "Mac FYI Experimental Retina Release (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|AMD|Retina',
-        short_name = 'exp',
+        category = "Mac|AMD|Retina",
+        short_name = "exp",
     ),
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Experimental Retina Release (NVIDIA)',
+    name = "Mac FYI Experimental Retina Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Nvidia',
-        short_name = 'exp',
+        category = "Mac|Nvidia",
+        short_name = "exp",
     ),
     # This bot has one machine backing its tests at the moment.
     # If it gets more, this can be removed.
     # See crbug.com/853307 for more context.
     execution_timeout = 12 * time.hour,
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Release (Intel)',
+    name = "Mac FYI Release (Intel)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Intel',
-        short_name = 'rel',
+        category = "Mac|Intel",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Retina Debug (AMD)',
+    name = "Mac FYI Retina Debug (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|AMD|Retina',
-        short_name = 'dbg',
+        category = "Mac|AMD|Retina",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Mac Builder (dbg)'],
+    triggered_by = ["GPU FYI Mac Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Retina Debug (NVIDIA)',
+    name = "Mac FYI Retina Debug (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Nvidia',
-        short_name = 'dbg',
+        category = "Mac|Nvidia",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Mac Builder (dbg)'],
+    triggered_by = ["GPU FYI Mac Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Retina Release (AMD)',
+    name = "Mac FYI Retina Release (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|AMD|Retina',
-        short_name = 'rel',
+        category = "Mac|AMD|Retina",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI Retina Release (NVIDIA)',
+    name = "Mac FYI Retina Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Nvidia',
-        short_name = 'rel',
+        category = "Mac|Nvidia",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI dEQP Release AMD',
+    name = "Mac FYI dEQP Release AMD",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|AMD',
-        short_name = 'dqp',
+        category = "Mac|AMD",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Mac dEQP Builder'],
+    triggered_by = ["GPU FYI Mac dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac FYI dEQP Release Intel',
+    name = "Mac FYI dEQP Release Intel",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|Intel',
-        short_name = 'dqp',
+        category = "Mac|Intel",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Mac dEQP Builder'],
+    triggered_by = ["GPU FYI Mac dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Mac Pro FYI Release (AMD)',
+    name = "Mac Pro FYI Release (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Mac|AMD|Pro',
-        short_name = 'rel',
+        category = "Mac|AMD|Pro",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Mac Builder'],
+    triggered_by = ["GPU FYI Mac Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Debug (NVIDIA)',
+    name = "Win10 FYI x64 Debug (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'dbg',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder (dbg)'],
+    triggered_by = ["GPU FYI Win x64 Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)',
+    name = "Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia|dx12vk',
-        short_name = 'dbg',
+        category = "Windows|10|x64|Nvidia|dx12vk",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Win x64 DX12 Vulkan Builder (dbg)'],
+    triggered_by = ["GPU FYI Win x64 DX12 Vulkan Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 DX12 Vulkan Release (NVIDIA)',
+    name = "Win10 FYI x64 DX12 Vulkan Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia|dx12vk',
-        short_name = 'rel',
+        category = "Windows|10|x64|Nvidia|dx12vk",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win x64 DX12 Vulkan Builder'],
+    triggered_by = ["GPU FYI Win x64 DX12 Vulkan Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Exp Release (Intel HD 630)',
+    name = "Win10 FYI x64 Exp Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Intel',
-        short_name = 'exp',
+        category = "Windows|10|x64|Intel",
+        short_name = "exp",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Exp Release (NVIDIA)',
+    name = "Win10 FYI x64 Exp Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'exp',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "exp",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Release (AMD RX 550)',
+    name = "Win10 FYI x64 Release (AMD RX 550)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|AMD',
-        short_name = 'rel',
+        category = "Windows|10|x64|AMD",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Release (Intel HD 630)',
+    name = "Win10 FYI x64 Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Intel',
-        short_name = 'rel',
+        category = "Windows|10|x64|Intel",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Release (Intel UHD 630)',
+    name = "Win10 FYI x64 Release (Intel UHD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Intel',
-        short_name = 'uhd',
+        category = "Windows|10|x64|Intel",
+        short_name = "uhd",
     ),
     # TODO(https://crbug.com/986939): Remove this increased timeout once
     # more devices are added.
     execution_timeout = 18 * time.hour,
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)',
+    name = "Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'gtx',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "gtx",
     ),
     execution_timeout = 18 * time.hour,
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Release (NVIDIA)',
+    name = "Win10 FYI x64 Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'rel',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 Release XR Perf (NVIDIA)',
+    name = "Win10 FYI x64 Release XR Perf (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'xr',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "xr",
     ),
-    triggered_by = ['GPU FYI XR Win x64 Builder'],
+    triggered_by = ["GPU FYI XR Win x64 Builder"],
 )
 
 # Builder + tester.
 ci.gpu_fyi_windows_builder(
-    name = 'Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)',
+    name = "Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'skd',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "skd",
     ),
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 SkiaRenderer GL (NVIDIA)',
+    name = "Win10 FYI x64 SkiaRenderer GL (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'skgl',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "skgl",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 dEQP Release (Intel HD 630)',
+    name = "Win10 FYI x64 dEQP Release (Intel HD 630)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Intel',
-        short_name = 'dqp',
+        category = "Windows|10|x64|Intel",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Win x64 dEQP Builder'],
+    triggered_by = ["GPU FYI Win x64 dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x64 dEQP Release (NVIDIA)',
+    name = "Win10 FYI x64 dEQP Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x64|Nvidia',
-        short_name = 'dqp',
+        category = "Windows|10|x64|Nvidia",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Win x64 dEQP Builder'],
+    triggered_by = ["GPU FYI Win x64 dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win10 FYI x86 Release (NVIDIA)',
+    name = "Win10 FYI x86 Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|10|x86|Nvidia',
-        short_name = 'rel',
+        category = "Windows|10|x86|Nvidia",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win Builder'],
+    triggered_by = ["GPU FYI Win Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win7 FYI Debug (AMD)',
+    name = "Win7 FYI Debug (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|7|x86|AMD',
-        short_name = 'dbg',
+        category = "Windows|7|x86|AMD",
+        short_name = "dbg",
     ),
-    triggered_by = ['GPU FYI Win Builder (dbg)'],
+    triggered_by = ["GPU FYI Win Builder (dbg)"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win7 FYI Release (AMD)',
+    name = "Win7 FYI Release (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|7|x86|AMD',
-        short_name = 'rel',
+        category = "Windows|7|x86|AMD",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win Builder'],
+    triggered_by = ["GPU FYI Win Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win7 FYI Release (NVIDIA)',
+    name = "Win7 FYI Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|7|x86|Nvidia',
-        short_name = 'rel',
+        category = "Windows|7|x86|Nvidia",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win Builder'],
+    triggered_by = ["GPU FYI Win Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win7 FYI dEQP Release (AMD)',
+    name = "Win7 FYI dEQP Release (AMD)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|7|x86|AMD',
-        short_name = 'dqp',
+        category = "Windows|7|x86|AMD",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Win dEQP Builder'],
+    triggered_by = ["GPU FYI Win dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win7 FYI x64 Release (NVIDIA)',
+    name = "Win7 FYI x64 Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|7|x64|Nvidia',
-        short_name = 'rel',
+        category = "Windows|7|x64|Nvidia",
+        short_name = "rel",
     ),
-    triggered_by = ['GPU FYI Win x64 Builder'],
+    triggered_by = ["GPU FYI Win x64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
-    name = 'Win7 FYI x64 dEQP Release (NVIDIA)',
+    name = "Win7 FYI x64 dEQP Release (NVIDIA)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|7|x64|Nvidia',
-        short_name = 'dqp',
+        category = "Windows|7|x64|Nvidia",
+        short_name = "dqp",
     ),
-    triggered_by = ['GPU FYI Win x64 dEQP Builder'],
-)
-
-
-ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win Builder',
-    console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|Release',
-        short_name = 'x86',
-    ),
+    triggered_by = ["GPU FYI Win x64 dEQP Builder"],
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win Builder (dbg)',
+    name = "GPU FYI Win Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|Debug',
-        short_name = 'x86',
+        category = "Windows|Builder|Release",
+        short_name = "x86",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win dEQP Builder',
+    name = "GPU FYI Win Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|dEQP',
-        short_name = 'x86',
+        category = "Windows|Builder|Debug",
+        short_name = "x86",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win x64 Builder',
+    name = "GPU FYI Win dEQP Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|Release',
-        short_name = 'x64',
+        category = "Windows|Builder|dEQP",
+        short_name = "x86",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win x64 Builder (dbg)',
+    name = "GPU FYI Win x64 Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|Debug',
-        short_name = 'x64',
+        category = "Windows|Builder|Release",
+        short_name = "x64",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win x64 dEQP Builder',
+    name = "GPU FYI Win x64 Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|dEQP',
-        short_name = 'x64',
+        category = "Windows|Builder|Debug",
+        short_name = "x64",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win x64 DX12 Vulkan Builder',
+    name = "GPU FYI Win x64 dEQP Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|dx12vk',
-        short_name = 'rel',
+        category = "Windows|Builder|dEQP",
+        short_name = "x64",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI Win x64 DX12 Vulkan Builder (dbg)',
+    name = "GPU FYI Win x64 DX12 Vulkan Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|dx12vk',
-        short_name = 'dbg',
+        category = "Windows|Builder|dx12vk",
+        short_name = "rel",
     ),
 )
 
 ci.gpu_fyi_windows_builder(
-    name = 'GPU FYI XR Win x64 Builder',
+    name = "GPU FYI Win x64 DX12 Vulkan Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'Windows|Builder|XR',
-        short_name = 'x64',
+        category = "Windows|Builder|dx12vk",
+        short_name = "dbg",
     ),
 )
 
+ci.gpu_fyi_windows_builder(
+    name = "GPU FYI XR Win x64 Builder",
+    console_view_entry = ci.console_view_entry(
+        category = "Windows|Builder|XR",
+        short_name = "x64",
+    ),
+)
 
 ci.linux_builder(
-    name = 'Cast Audio Linux',
+    name = "Cast Audio Linux",
     console_view_entry = ci.console_view_entry(
-        category = 'cast',
-        short_name = 'aud',
+        category = "cast",
+        short_name = "aud",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     ssd = True,
 )
 
 ci.linux_builder(
-    name = 'Deterministic Fuchsia (dbg)',
+    name = "Deterministic Fuchsia (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'fuchsia|x64',
-        short_name = 'det',
+        category = "fuchsia|x64",
+        short_name = "det",
     ),
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
     goma_jobs = None,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.linux_builder(
-    name = 'Deterministic Linux',
+    name = "Deterministic Linux",
     console_view_entry = ci.console_view_entry(
-        category = 'release',
-        short_name = 'det',
+        category = "release",
+        short_name = "det",
     ),
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-    main_console_view = 'main',
+    main_console_view = "main",
     # Set tree_closing to false to disable the defaualt tree closer, which
     # filters by step name, and instead enable tree closing for any step
     # failure.
     tree_closing = False,
-    extra_notifies = ['Deterministic Linux', 'close-on-any-step-failure'],
+    extra_notifies = ["Deterministic Linux", "close-on-any-step-failure"],
 )
 
 ci.linux_builder(
-    name = 'Deterministic Linux (dbg)',
+    name = "Deterministic Linux (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'debug|builder',
-        short_name = 'det',
+        category = "debug|builder",
+        short_name = "det",
     ),
     cores = 32,
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.linux_builder(
-    name = 'Leak Detection Linux',
-    console_view = 'chromium.fyi',
+    name = "Leak Detection Linux",
+    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
-        category = 'linux',
-        short_name = 'lk',
+        category = "linux",
+        short_name = "lk",
     ),
     notifies = [],
     tree_closing = False,
 )
 
 ci.linux_builder(
-    name = 'Linux Builder (dbg)(32)',
+    name = "Linux Builder (dbg)(32)",
     console_view_entry = ci.console_view_entry(
-        category = 'debug|builder',
-        short_name = '32',
+        category = "debug|builder",
+        short_name = "32",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.linux_builder(
-    name = 'Network Service Linux',
+    name = "Network Service Linux",
     console_view_entry = ci.console_view_entry(
-        category = 'release',
-        short_name = 'nsl',
+        category = "release",
+        short_name = "nsl",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.linux_builder(
-    name = 'fuchsia-x64-dbg',
+    name = "fuchsia-x64-dbg",
     console_view_entry = ci.console_view_entry(
-        category = 'fuchsia|x64',
-        short_name = 'dbg',
+        category = "fuchsia|x64",
+        short_name = "dbg",
     ),
-    main_console_view = 'main',
-    extra_notifies = ['cr-fuchsia'],
+    main_console_view = "main",
+    extra_notifies = ["cr-fuchsia"],
 )
 
 ci.linux_builder(
-    name = 'linux-blink-cors-rel',
+    name = "linux-blink-cors-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'release',
-        short_name = 'crs',
+        category = "release",
+        short_name = "crs",
     ),
     goma_jobs = None,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.linux_builder(
-    name = 'linux-gcc-rel',
+    name = "linux-gcc-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'release',
-        short_name = 'gcc',
+        category = "release",
+        short_name = "gcc",
     ),
     goma_backend = None,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.linux_builder(
-    name = 'linux-trusty-rel',
+    name = "linux-trusty-rel",
     console_view_entry = ci.console_view_entry(
-        category = 'release',
-        short_name = 'tru',
+        category = "release",
+        short_name = "tru",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.LINUX_TRUSTY,
 )
 
 ci.linux_builder(
-    name = 'metadata-exporter',
-    executable = 'recipe:chromium_export_metadata',
-    service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
-    notifies = ['metadata-mapping'],
+    name = "metadata-exporter",
+    executable = "recipe:chromium_export_metadata",
+    service_account = "component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com",
+    notifies = ["metadata-mapping"],
     tree_closing = False,
 )
 
 ci.mac_ios_builder(
-    name = 'ios-device',
+    name = "ios-device",
     console_view_entry = ci.console_view_entry(
-        category = 'ios|default',
-        short_name = 'dev',
+        category = "ios|default",
+        short_name = "dev",
     ),
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.mac_ios_builder(
-    name = 'ios-simulator-noncq',
+    name = "ios-simulator-noncq",
     console_view_entry = ci.console_view_entry(
-        category = 'ios|default',
-        short_name = 'non',
+        category = "ios|default",
+        short_name = "non",
     ),
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
-
 ci.memory_builder(
-    name = 'Android CFI',
+    name = "Android CFI",
     # TODO(https://crbug.com/1008094) When this builder is not consistently
     # failing, remove the console_view value
-    console_view = 'chromium.android.fyi',
+    console_view = "chromium.android.fyi",
     console_view_entry = ci.console_view_entry(
-        category = 'memory',
-        short_name = 'cfi',
+        category = "memory",
+        short_name = "cfi",
     ),
     cores = 32,
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
@@ -2985,90 +2959,90 @@ ci.memory_builder(
 )
 
 ci.memory_builder(
-    name = 'Linux CFI',
+    name = "Linux CFI",
     console_view_entry = ci.console_view_entry(
-        category = 'cfi',
-        short_name = 'lnx',
+        category = "cfi",
+        short_name = "lnx",
     ),
     cores = 32,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 4 * time.hour,
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Linux Chromium OS ASan LSan Builder',
+    name = "Linux Chromium OS ASan LSan Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'cros|asan',
-        short_name = 'bld',
+        category = "cros|asan",
+        short_name = "bld",
     ),
     # TODO(crbug.com/1030593): Builds take more than 3 hours sometimes. Remove
     # once the builds are faster.
     execution_timeout = 6 * time.hour,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Linux Chromium OS ASan LSan Tests (1)',
+    name = "Linux Chromium OS ASan LSan Tests (1)",
     console_view_entry = ci.console_view_entry(
-        category = 'cros|asan',
-        short_name = 'tst',
+        category = "cros|asan",
+        short_name = "tst",
     ),
-    triggered_by = ['Linux Chromium OS ASan LSan Builder'],
-    main_console_view = 'main',
+    triggered_by = ["Linux Chromium OS ASan LSan Builder"],
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Linux ChromiumOS MSan Builder',
+    name = "Linux ChromiumOS MSan Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'cros|msan',
-        short_name = 'bld',
+        category = "cros|msan",
+        short_name = "bld",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Linux ChromiumOS MSan Tests',
+    name = "Linux ChromiumOS MSan Tests",
     console_view_entry = ci.console_view_entry(
-        category = 'cros|msan',
-        short_name = 'tst',
+        category = "cros|msan",
+        short_name = "tst",
     ),
-    triggered_by = ['Linux ChromiumOS MSan Builder'],
-    main_console_view = 'main',
+    triggered_by = ["Linux ChromiumOS MSan Builder"],
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Linux MSan Builder',
+    name = "Linux MSan Builder",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|msan',
-        short_name = 'bld',
+        category = "linux|msan",
+        short_name = "bld",
     ),
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Linux MSan Tests',
+    name = "Linux MSan Tests",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|msan',
-        short_name = 'tst',
+        category = "linux|msan",
+        short_name = "tst",
     ),
-    triggered_by = ['Linux MSan Builder'],
-    main_console_view = 'main',
+    triggered_by = ["Linux MSan Builder"],
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'Mac ASan 64 Builder',
+    name = "Mac ASan 64 Builder",
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'bld',
+        category = "mac",
+        short_name = "bld",
     ),
     goma_debug = True,  # TODO(hinoka): Remove this after debugging.
     goma_jobs = None,
     cores = None,  # Swapping between 8 and 24
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.MAC_DEFAULT,
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 2,
@@ -3076,272 +3050,268 @@ ci.memory_builder(
 )
 
 ci.memory_builder(
-    name = 'Mac ASan 64 Tests (1)',
+    name = "Mac ASan 64 Tests (1)",
     builderless = False,
     console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'tst',
+        category = "mac",
+        short_name = "tst",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.MAC_DEFAULT,
-    triggered_by = ['Mac ASan 64 Builder'],
+    triggered_by = ["Mac ASan 64 Builder"],
 )
 
 ci.memory_builder(
-    name = 'WebKit Linux ASAN',
+    name = "WebKit Linux ASAN",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|webkit',
-        short_name = 'asn',
+        category = "linux|webkit",
+        short_name = "asn",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'WebKit Linux Leak',
+    name = "WebKit Linux Leak",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|webkit',
-        short_name = 'lk',
+        category = "linux|webkit",
+        short_name = "lk",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'WebKit Linux MSAN',
+    name = "WebKit Linux MSAN",
     console_view_entry = ci.console_view_entry(
-        category = 'linux|webkit',
-        short_name = 'msn',
+        category = "linux|webkit",
+        short_name = "msn",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
 )
 
 ci.memory_builder(
-    name = 'android-asan',
+    name = "android-asan",
     console_view_entry = ci.console_view_entry(
-        category = 'android',
-        short_name = 'asn',
+        category = "android",
+        short_name = "asn",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     tree_closing = False,
 )
 
 ci.memory_builder(
-    name = 'win-asan',
+    name = "win-asan",
     console_view_entry = ci.console_view_entry(
-        category = 'win',
-        short_name = 'asn',
+        category = "win",
+        short_name = "asn",
     ),
     cores = 32,
     builderless = True,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
 )
 
-
 ci.swangle_linux_builder(
-    name = 'linux-swangle-chromium-x64',
+    name = "linux-swangle-chromium-x64",
     console_view_entry = ci.console_view_entry(
-        category = 'Chromium|Linux',
-        short_name = 'x64',
+        category = "Chromium|Linux",
+        short_name = "x64",
     ),
     pinned = False,
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-angle-x64',
+    name = "linux-swangle-tot-angle-x64",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT ANGLE|Linux',
-        short_name = 'x64',
+        category = "ToT ANGLE|Linux",
+        short_name = "x64",
     ),
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-angle-x86',
+    name = "linux-swangle-tot-angle-x86",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT ANGLE|Linux',
-        short_name = 'x86',
+        category = "ToT ANGLE|Linux",
+        short_name = "x86",
     ),
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-swiftshader-x64',
+    name = "linux-swangle-tot-swiftshader-x64",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT SwiftShader|Linux',
-        short_name = 'x64',
+        category = "ToT SwiftShader|Linux",
+        short_name = "x64",
     ),
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-swiftshader-x86',
+    name = "linux-swangle-tot-swiftshader-x86",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT SwiftShader|Linux',
-        short_name = 'x86',
+        category = "ToT SwiftShader|Linux",
+        short_name = "x86",
     ),
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-x64',
+    name = "linux-swangle-x64",
     console_view_entry = ci.console_view_entry(
-        category = 'DEPS|Linux',
-        short_name = 'x64',
+        category = "DEPS|Linux",
+        short_name = "x64",
     ),
     pinned = False,
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-x86',
+    name = "linux-swangle-x86",
     console_view_entry = ci.console_view_entry(
-        category = 'DEPS|Linux',
-        short_name = 'x86',
+        category = "DEPS|Linux",
+        short_name = "x86",
     ),
     pinned = False,
 )
-
 
 ci.swangle_mac_builder(
-    name = 'mac-swangle-chromium-x64',
+    name = "mac-swangle-chromium-x64",
     console_view_entry = ci.console_view_entry(
-        category = 'Chromium|Mac',
-        short_name = 'x64',
-    ),
-    pinned = False,
-)
-
-
-ci.swangle_windows_builder(
-    name = 'win-swangle-chromium-x86',
-    console_view_entry = ci.console_view_entry(
-        category = 'Chromium|Windows',
-        short_name = 'x86',
+        category = "Chromium|Mac",
+        short_name = "x64",
     ),
     pinned = False,
 )
 
 ci.swangle_windows_builder(
-    name = 'win-swangle-tot-angle-x64',
+    name = "win-swangle-chromium-x86",
     console_view_entry = ci.console_view_entry(
-        category = 'ToT ANGLE|Windows',
-        short_name = 'x64',
-    ),
-)
-
-ci.swangle_windows_builder(
-    name = 'win-swangle-tot-angle-x86',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT ANGLE|Windows',
-        short_name = 'x86',
-    ),
-)
-
-ci.swangle_windows_builder(
-    name = 'win-swangle-tot-swiftshader-x64',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT SwiftShader|Windows',
-        short_name = 'x64',
-    ),
-)
-
-ci.swangle_windows_builder(
-    name = 'win-swangle-tot-swiftshader-x86',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT SwiftShader|Windows',
-        short_name = 'x86',
-    ),
-)
-
-ci.swangle_windows_builder(
-    name = 'win-swangle-x64',
-    console_view_entry = ci.console_view_entry(
-        category = 'DEPS|Windows',
-        short_name = 'x64',
+        category = "Chromium|Windows",
+        short_name = "x86",
     ),
     pinned = False,
 )
 
 ci.swangle_windows_builder(
-    name = 'win-swangle-x86',
+    name = "win-swangle-tot-angle-x64",
     console_view_entry = ci.console_view_entry(
-        category = 'DEPS|Windows',
-        short_name = 'x86',
+        category = "ToT ANGLE|Windows",
+        short_name = "x64",
+    ),
+)
+
+ci.swangle_windows_builder(
+    name = "win-swangle-tot-angle-x86",
+    console_view_entry = ci.console_view_entry(
+        category = "ToT ANGLE|Windows",
+        short_name = "x86",
+    ),
+)
+
+ci.swangle_windows_builder(
+    name = "win-swangle-tot-swiftshader-x64",
+    console_view_entry = ci.console_view_entry(
+        category = "ToT SwiftShader|Windows",
+        short_name = "x64",
+    ),
+)
+
+ci.swangle_windows_builder(
+    name = "win-swangle-tot-swiftshader-x86",
+    console_view_entry = ci.console_view_entry(
+        category = "ToT SwiftShader|Windows",
+        short_name = "x86",
+    ),
+)
+
+ci.swangle_windows_builder(
+    name = "win-swangle-x64",
+    console_view_entry = ci.console_view_entry(
+        category = "DEPS|Windows",
+        short_name = "x64",
     ),
     pinned = False,
 )
 
-
-ci.win_builder(
-    name = 'WebKit Win10',
+ci.swangle_windows_builder(
+    name = "win-swangle-x86",
     console_view_entry = ci.console_view_entry(
-        category = 'misc',
-        short_name = 'wbk',
+        category = "DEPS|Windows",
+        short_name = "x86",
     ),
-    main_console_view = 'main',
-    triggered_by = ['Win Builder'],
+    pinned = False,
 )
 
 ci.win_builder(
-    name = 'Win Builder',
+    name = "WebKit Win10",
     console_view_entry = ci.console_view_entry(
-        category = 'release|builder',
-        short_name = '32',
+        category = "misc",
+        short_name = "wbk",
+    ),
+    main_console_view = "main",
+    triggered_by = ["Win Builder"],
+)
+
+ci.win_builder(
+    name = "Win Builder",
+    console_view_entry = ci.console_view_entry(
+        category = "release|builder",
+        short_name = "32",
     ),
     cores = 32,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_ANY,
 )
 
 ci.win_builder(
-    name = 'Win x64 Builder (dbg)',
+    name = "Win x64 Builder (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'debug|builder',
-        short_name = '64',
+        category = "debug|builder",
+        short_name = "64",
     ),
     cores = 32,
     builderless = True,
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_ANY,
 )
 
 ci.win_builder(
-    name = 'Win10 Tests x64 (dbg)',
+    name = "Win10 Tests x64 (dbg)",
     console_view_entry = ci.console_view_entry(
-        category = 'debug|tester',
-        short_name = '10',
+        category = "debug|tester",
+        short_name = "10",
     ),
-    main_console_view = 'main',
-    triggered_by = ['Win x64 Builder (dbg)'],
+    main_console_view = "main",
+    triggered_by = ["Win x64 Builder (dbg)"],
     # Too flaky. See crbug.com/876224 for more details.
     tree_closing = False,
 )
 
 ci.win_builder(
-    name = 'Win7 (32) Tests',
+    name = "Win7 (32) Tests",
     console_view_entry = ci.console_view_entry(
-        category = 'release|tester',
-        short_name = '32',
+        category = "release|tester",
+        short_name = "32",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_7,
-    triggered_by = ['Win Builder'],
+    triggered_by = ["Win Builder"],
 )
 
 ci.win_builder(
-    name = 'Win7 Tests (1)',
+    name = "Win7 Tests (1)",
     console_view_entry = ci.console_view_entry(
-        category = 'release|tester',
-        short_name = '32',
+        category = "release|tester",
+        short_name = "32",
     ),
-    main_console_view = 'main',
+    main_console_view = "main",
     os = os.WINDOWS_7,
-    triggered_by = ['Win Builder'],
+    triggered_by = ["Win Builder"],
 )
 
 ci.win_builder(
-    name = 'Windows deterministic',
+    name = "Windows deterministic",
     console_view_entry = ci.console_view_entry(
-        category = 'misc',
-        short_name = 'det',
+        category = "misc",
+        short_name = "det",
     ),
-    executable = 'recipe:swarming/deterministic_build',
+    executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
     goma_jobs = goma.jobs.J150,
-    main_console_view = 'main',
+    main_console_view = "main",
 )

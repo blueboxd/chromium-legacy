@@ -432,6 +432,21 @@ class CORE_EXPORT LocalFrame final
     should_send_resource_timing_info_to_parent_ = value;
   }
 
+  // Called when certain event listeners are added for the first time/last time,
+  // making it possible/not possible to terminate the frame suddenly.
+  void UpdateSuddenTerminationStatus(
+      bool added_listener,
+      mojom::blink::SuddenTerminationDisablerType disabler_type);
+
+  // Called when we added an event listener that might affect sudden termination
+  // disabling of the page.
+  void AddedSuddenTerminationDisablerListener(const EventTarget& event_target,
+                                              const AtomicString& event_type);
+  // Called when we removed event listeners that might affect sudden termination
+  // disabling of the page.
+  void RemovedSuddenTerminationDisablerListener(const EventTarget& event_target,
+                                                const AtomicString& event_type);
+
   // TODO(https://crbug.com/578349): provisional frames are a hack that should
   // be removed.
   bool IsProvisional() const;

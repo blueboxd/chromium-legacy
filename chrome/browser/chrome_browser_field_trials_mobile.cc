@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/prerender/prerender_field_trial.h"
+#include "components/prerender/browser/prerender_field_trial.h"
 #endif
 
 namespace chrome {

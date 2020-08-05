@@ -182,7 +182,7 @@ TEST_F(LiteVideoUserBlocklistTest,
        MainframeNavigationBlocklistedByRebufferBlocklist) {
   ConfigBlocklistParamsForTesting();
   GURL url("https://test.com");
-  SeedBlocklist(url.host() + "_", LiteVideoBlocklistType::kRebufferBlocklist);
+  blocklist()->AddRebufferToBlocklist(url, base::nullopt, true);
   EXPECT_EQ(CheckBlocklistForMainframeNavigation(url),
             LiteVideoBlocklistReason::kRebufferingBlocklisted);
 }
@@ -199,8 +199,7 @@ TEST_F(LiteVideoUserBlocklistTest,
   ConfigBlocklistParamsForTesting();
   GURL mainframe_url("https://test.com");
   GURL subframe_url("https://subframe.com");
-  SeedBlocklist(mainframe_url.host() + "_" + subframe_url.host(),
-                LiteVideoBlocklistType::kRebufferBlocklist);
+  blocklist()->AddRebufferToBlocklist(mainframe_url, subframe_url, true);
   EXPECT_EQ(CheckBlocklistForSubframeNavigation(mainframe_url, subframe_url),
             LiteVideoBlocklistReason::kRebufferingBlocklisted);
 }

@@ -1805,6 +1805,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
   }
+
+  if (policy.has_device_show_low_disk_space_notification()) {
+    const em::DeviceShowLowDiskSpaceNotificationProto& container(
+        policy.device_show_low_disk_space_notification());
+    if (container.has_device_show_low_disk_space_notification()) {
+      policies->Set(
+          key::kDeviceShowLowDiskSpaceNotification, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          base::Value(container.device_show_low_disk_space_notification()),
+          nullptr);
+    }
+  }
 }
 
 }  // namespace

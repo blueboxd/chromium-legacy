@@ -4,7 +4,8 @@
 
 // clang-format off
 // #import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.m.js';
-// #import {LifetimeBrowserProxy, LifetimeBrowserProxyImpl, OsResetBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {OsResetBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {LifetimeBrowserProxy, LifetimeBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {TestOsResetBrowserProxy} from './test_os_reset_browser_proxy.m.js';
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

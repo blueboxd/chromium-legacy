@@ -822,6 +822,7 @@ static_library("extensions") {
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/pref_registry",
+    "//components/prerender/browser",
     "//components/proxy_config",
     "//components/rappor",
     "//components/resources",

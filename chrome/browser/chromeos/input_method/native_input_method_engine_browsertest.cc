@@ -333,6 +333,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, NoActiveController) {
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserEmail) {
   base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToAccept.PersonalInfo", 0);
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile_);
@@ -355,6 +357,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserEmail) {
   histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Coverage",
                                       chromeos::AssistiveType::kPersonalEmail,
                                       1);
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToAccept.PersonalInfo", 0);
 
   DispatchKeyPress(ui::VKEY_DOWN, false);
   DispatchKeyPress(ui::VKEY_RETURN, false);
@@ -364,12 +368,17 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserEmail) {
   histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
                                       chromeos::AssistiveType::kPersonalEmail,
                                       1);
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToAccept.PersonalInfo", 1);
 
   SetFocus(nullptr);
 }
 
-IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DismissSuggestion) {
+IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
+                       DismissPersonalInfoSuggestion) {
   base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToDismiss.PersonalInfo", 0);
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile_);
@@ -386,6 +395,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DismissSuggestion) {
 
   helper.GetTextInputClient()->InsertText(prefix_text);
   helper.WaitForSurroundingTextChanged(prefix_text);
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToDismiss.PersonalInfo", 0);
 
   DispatchKeyPress(ui::VKEY_ESCAPE, false);
   // This down and enter should make no effect.
@@ -398,6 +409,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DismissSuggestion) {
   histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
                                       chromeos::AssistiveType::kPersonalEmail,
                                       0);
+  histogram_tester.ExpectTotalCount(
+      "InputMethod.Assistive.TimeToDismiss.PersonalInfo", 1);
 
   SetFocus(nullptr);
 }

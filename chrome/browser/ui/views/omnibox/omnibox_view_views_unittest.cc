@@ -2362,6 +2362,43 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
     ASSERT_TRUE(elide_animation);
     EXPECT_FALSE(elide_animation->IsAnimating());
   }
+
+  // On same-document main-frame fragment navigation, the URL should remain
+  // elided to the simplified domain.
+  {
+    content::MockNavigationHandle navigation;
+    navigation.set_is_same_document(true);
+    navigation.set_previous_url(GURL(kSimplifiedDomainDisplayUrl));
+    navigation.set_url(
+        GURL(kSimplifiedDomainDisplayUrl + base::ASCIIToUTF16("#foobar")));
+    omnibox_view()->DidFinishNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+        omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+        kSimplifiedDomainDisplayUrlSubdomain,
+        kSimplifiedDomainDisplayUrlHostnameAndScheme,
+        kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    ASSERT_TRUE(elide_animation);
+    EXPECT_FALSE(elide_animation->IsAnimating());
+  }
+
+  // On same-document main-frame non-fragment navigation, the URL shouldn't
+  // remain elided to the simplified domain.
+  {
+    content::MockNavigationHandle navigation;
+    navigation.set_is_same_document(true);
+    navigation.set_previous_url(GURL(kSimplifiedDomainDisplayUrl));
+    navigation.set_url(
+        GURL(kSimplifiedDomainDisplayUrl + base::ASCIIToUTF16("/foobar")));
+    omnibox_view()->DidFinishNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+        render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                                kSimplifiedDomainDisplayUrl.size())));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    EXPECT_FALSE(elide_animation);
+  }
 }
 
 // Tests that in the hide-on-interaction field trial, a same-document navigation

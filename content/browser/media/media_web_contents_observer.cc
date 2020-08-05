@@ -220,6 +220,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged,
         OnPictureInPictureAvailabilityChanged)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged,
+                        OnAudioOutputSinkChanged);
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnBufferUnderflow,
                         OnBufferUnderflow)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -373,6 +375,16 @@ void MediaWebContentsObserver::OnPictureInPictureAvailabilityChanged(
     bool available) {
   session_controllers_manager_.OnPictureInPictureAvailabilityChanged(
       MediaPlayerId(render_frame_host, delegate_id), available);
+}
+
+void MediaWebContentsObserver::OnAudioOutputSinkChanged(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    std::string hashed_device_id) {
+  // TODO(1111432): Translate |hashed_device_id| into a raw device id before
+  // passing to controllers manager.
+  session_controllers_manager_.OnAudioOutputSinkChanged(
+      MediaPlayerId(render_frame_host, delegate_id), hashed_device_id);
 }
 
 void MediaWebContentsObserver::OnBufferUnderflow(

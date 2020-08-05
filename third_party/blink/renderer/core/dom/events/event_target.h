@@ -175,6 +175,9 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   bool HasCapturingEventListeners(const AtomicString& event_type);
   bool HasJSBasedEventListeners(const AtomicString& event_type) const;
   EventListenerVector* GetEventListeners(const AtomicString& event_type);
+  // Number of event listeners for |event_type| registered at this event target.
+  int NumberOfEventListeners(const AtomicString& event_type) const;
+
   Vector<AtomicString> EventTypes();
 
   DispatchEventResult FireEventListeners(Event&);

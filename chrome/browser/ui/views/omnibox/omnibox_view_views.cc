@@ -1820,7 +1820,17 @@ void OmniboxViewViews::DidFinishNavigation(
   if (!navigation->IsInMainFrame())
     return;
 
-  if (navigation->IsSameDocument()) {
+  // Same-document navigations should be treated with the following
+  // considerations:
+  // - If the same-document navigation was triggered by a fragment navigation,
+  // the current elision/unelision state shouldn't be altered, since it always
+  // remains in the same page, keeping location.pathname
+  // - If the same-document navigation was triggered by the use of history
+  // pushState/replaceState API, we should unelide and reset state to support
+  // the same behaviour in websites that rely on same-document navigation to
+  // render different views as if it were 'normal' navigation
+  if (navigation->IsSameDocument() &&
+      navigation->GetPreviousURL().EqualsIgnoringRef(navigation->GetURL())) {
     if (!IsURLEligibleForSimplifiedDomainEliding())
       return;
 

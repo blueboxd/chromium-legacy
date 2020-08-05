@@ -137,11 +137,15 @@ void AssistiveWindowController::HideSuggestion() {
     suggestion_window_view_->GetWidget()->Close();
 }
 
-void AssistiveWindowController::SetBounds(const gfx::Rect& cursor_bounds) {
+void AssistiveWindowController::SetBounds(const Bounds& bounds) {
+  bounds_ = bounds;
+  // Sets suggestion_window_view_'s bounds here for most up-to-date cursor
+  // position. This is different from UndoWindow because UndoWindow gets cursors
+  // position before showing.
+  // TODO(crbug/1112982): Investigate getting bounds to suggester before sending
+  // show suggestion request.
   if (suggestion_window_view_ && confirmed_length_ == 0)
-    suggestion_window_view_->SetAnchorRect(cursor_bounds);
-  if (undo_window_)
-    undo_window_->SetBounds(cursor_bounds);
+    suggestion_window_view_->SetAnchorRect(bounds.caret);
 }
 
 void AssistiveWindowController::FocusStateChanged() {
@@ -205,7 +209,14 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
     case ui::ime::AssistiveWindowType::kUndoWindow:
       if (!undo_window_)
         InitUndoWindow();
-      window.visible ? undo_window_->Show() : undo_window_->Hide();
+      if (window.visible) {
+        undo_window_->SetAnchorRect(bounds_.autocorrect.IsEmpty()
+                                        ? bounds_.caret 
+                                        : bounds_.autocorrect);
+        undo_window_->Show();
+      } else {
+        undo_window_->Hide();
+      }
       break;
     case ui::ime::AssistiveWindowType::kEmojiSuggestion:
     case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:

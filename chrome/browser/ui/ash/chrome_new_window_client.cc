@@ -346,7 +346,6 @@ void ChromeNewWindowClient::OpenFileManager() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->AppRegistryCache().ForOneApp(
       file_manager::kFileManagerAppId, [proxy](const apps::AppUpdate& update) {
         if (update.Readiness() == apps::mojom::Readiness::kReady) {
@@ -480,7 +479,6 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->LaunchAppWithUrl(*app_id, event_flags, url,
                           apps::mojom::LaunchSource::kFromArc,
                           display::kInvalidDisplayId);

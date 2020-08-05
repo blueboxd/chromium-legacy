@@ -49,7 +49,8 @@ constexpr size_t kMaxShownResults = 2u;
 // be renumbered and numeric values should never be reused.
 enum class Error {
   kOk = 0,
-  kAppServiceUnavailable = 1,
+  // No longer used.
+  // kAppServiceUnavailable = 1,
   kNoSettingsIcon = 2,
   kSearchHandlerUnavailable = 3,
   kHierarchyEmpty = 4,
@@ -187,22 +188,17 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
       search_results_observer_receiver_.BindNewPipeAndPassRemote());
 
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  if (app_service_proxy_) {
-    Observe(&app_service_proxy_->AppRegistryCache());
-    auto icon_type =
-        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-            ? apps::mojom::IconType::kStandard
-            : apps::mojom::IconType::kUncompressed;
-    app_service_proxy_->LoadIcon(
-        apps::mojom::AppType::kWeb,
-        chromeos::default_web_apps::kOsSettingsAppId, icon_type,
-        ash::AppListConfig::instance().search_list_icon_dimension(),
-        /*allow_placeholder_icon=*/false,
-        base::BindOnce(&OsSettingsProvider::OnLoadIcon,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    LogError(Error::kAppServiceUnavailable);
-  }
+  Observe(&app_service_proxy_->AppRegistryCache());
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  app_service_proxy_->LoadIcon(
+      apps::mojom::AppType::kWeb, chromeos::default_web_apps::kOsSettingsAppId,
+      icon_type, ash::AppListConfig::instance().search_list_icon_dimension(),
+      /*allow_placeholder_icon=*/false,
+      base::BindOnce(&OsSettingsProvider::OnLoadIcon,
+                     weak_factory_.GetWeakPtr()));
 
   // Set parameters from Finch. Reasonable defaults are set in the header.
   accept_alternate_matches_ = base::GetFieldTrialParamByFeatureAsBool(
@@ -283,8 +279,7 @@ void OsSettingsProvider::OnSearchReturned(
 void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
   // Watch the app service for updates. On an update that marks the OS settings
   // app as ready, retrieve the icon for the app to use for search results.
-  if (app_service_proxy_ &&
-      update.AppId() == chromeos::default_web_apps::kOsSettingsAppId &&
+  if (update.AppId() == chromeos::default_web_apps::kOsSettingsAppId &&
       update.ReadinessChanged() &&
       update.Readiness() == apps::mojom::Readiness::kReady) {
     auto icon_type =

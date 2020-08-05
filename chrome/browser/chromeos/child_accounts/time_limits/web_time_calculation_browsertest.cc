@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
 #include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
@@ -64,7 +64,7 @@ class WebTimeCalculationBrowserTest : public MixinBasedInProcessBrowserTest {
   void SetUpOnMainThread() override;
   void TearDown() override;
 
-  void WhitelistUrlRegx(const std::string& url);
+  void AllowlistUrlRegx(const std::string& url);
   Browser* DetachTabToNewBrowser(Browser* browser, int tab_index);
   content::WebContents* Navigate(Browser* browser,
                                  const std::string& url_in,
@@ -79,7 +79,7 @@ class WebTimeCalculationBrowserTest : public MixinBasedInProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  chromeos::app_time::AppTimeLimitsWhitelistPolicyBuilder builder_;
+  chromeos::app_time::AppTimeLimitsAllowlistPolicyBuilder builder_;
 
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
@@ -123,8 +123,8 @@ void WebTimeCalculationBrowserTest::TearDown() {
   MixinBasedInProcessBrowserTest::TearDown();
 }
 
-void WebTimeCalculationBrowserTest::WhitelistUrlRegx(const std::string& url) {
-  builder_.AppendToWhitelistUrlList(url);
+void WebTimeCalculationBrowserTest::AllowlistUrlRegx(const std::string& url) {
+  builder_.AppendToAllowlistUrlList(url);
   UpdatePolicy();
 }
 
@@ -165,7 +165,7 @@ void WebTimeCalculationBrowserTest::UpdatePolicy() {
   logged_in_user_mixin_.GetUserPolicyMixin()
       ->RequestPolicyUpdate()
       ->policy_payload()
-      ->mutable_perapptimelimitswhitelist()
+      ->mutable_perapptimelimitsallowlist()
       ->set_value(policy_value);
 
   logged_in_user_mixin_.GetUserPolicyTestHelper()->RefreshPolicyAndWait(
@@ -173,7 +173,7 @@ void WebTimeCalculationBrowserTest::UpdatePolicy() {
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabSelectionChanges) {
-  WhitelistUrlRegx(kExampleHost1);
+  AllowlistUrlRegx(kExampleHost1);
 
   Navigate(browser(), kExampleHost1, WindowOpenDisposition::CURRENT_TAB);
 
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabSelectionChanges) {
             GetChromeAppActivityState());
 
   browser()->tab_strip_model()->ActivateTabAt(0);
-  EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActiveWhitelisted,
+  EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActiveAllowlisted,
             GetChromeAppActivityState());
 
   bool destroyed = browser()->tab_strip_model()->CloseWebContentsAt(
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabSelectionChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabDetached) {
-  WhitelistUrlRegx(kExampleHost1);
+  AllowlistUrlRegx(kExampleHost1);
 
   Navigate(browser(), kExampleHost1, WindowOpenDisposition::CURRENT_TAB);
 
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabDetached) {
 
   browser()->tab_strip_model()->ActivateTabAt(0);
 
-  EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActiveWhitelisted,
+  EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActiveAllowlisted,
             GetChromeAppActivityState());
 
   Browser* new_browser = DetachTabToNewBrowser(browser(), 1);
@@ -215,13 +215,13 @@ IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabDetached) {
   EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActive,
             GetChromeAppActivityState());
 
-  // Now we have two browser windows. One hosting a whitelisted url and the
-  // other hosting a non whitelisted url.
+  // Now we have two browser windows. One hosting a allowlisted url and the
+  // other hosting a non allowlisted url.
   EXPECT_TRUE(new_browser->tab_strip_model()->CloseWebContentsAt(
       0, TabStripModel::CloseTypes::CLOSE_USER_GESTURE));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActiveWhitelisted,
+  EXPECT_EQ(chromeos::app_time::ChromeAppActivityState::kActiveAllowlisted,
             GetChromeAppActivityState());
 
   EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
@@ -233,4 +233,4 @@ IN_PROC_BROWSER_TEST_F(WebTimeCalculationBrowserTest, TabDetached) {
 }
 
 // TODO(yilkal): Write test to check that going to a URL in the current tab of
-// the first browser will result in chrome being active or active whitelisted.
+// the first browser will result in chrome being active or active allowlisted.

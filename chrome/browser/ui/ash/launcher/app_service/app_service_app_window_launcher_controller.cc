@@ -66,7 +66,6 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
       app_service_instance_helper_(
           std::make_unique<AppServiceInstanceRegistryHelper>(this)) {
   aura::Env::GetInstance()->AddObserver(this);
-  DCHECK(proxy_);
   Observe(&proxy_->InstanceRegistry());
 
   if (arc::IsArcAllowedForProfile(owner->profile()))
@@ -93,7 +92,6 @@ AppServiceAppWindowLauncherController::
   for (auto* profile : profile_list_) {
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
-    DCHECK(proxy);
     proxy->InstanceRegistry().RemoveObserver(this);
   }
 }
@@ -116,7 +114,6 @@ AppServiceAppWindowLauncherController::ControllerForWindow(
 void AppServiceAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
   proxy_ = apps::AppServiceProxyFactory::GetForProfile(owner()->profile());
-  DCHECK(proxy_);
   // Deactivates the running app windows in InstanceRegistry for the inactive
   // user, and activates the app windows for the active user.
   for (auto* window : window_list_) {
@@ -140,7 +137,6 @@ void AppServiceAppWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
   // Each users InstanceRegister needs to be observed.
   proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy_);
   proxy_->InstanceRegistry().AddObserver(this);
   profile_list_.push_back(profile);
 

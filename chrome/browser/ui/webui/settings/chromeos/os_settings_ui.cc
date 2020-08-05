@@ -72,6 +72,10 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
     webui::SetupBundledWebUIDataSource(html_source, "chromeos/os_settings.js",
                                        IDR_OS_SETTINGS_OS_SETTINGS_ROLLUP_JS,
                                        IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML);
+    html_source->AddResourcePath("chromeos/shared.rollup.js",
+                                 IDR_OS_SETTINGS_SHARED_ROLLUP_JS);
+    html_source->AddResourcePath("chromeos/lazy_load.js",
+                                 IDR_OS_SETTINGS_LAZY_LOAD_ROLLUP_JS);
   } else {
     // Polymer2 Source files
     html_source->AddResourcePath("crisper.js", IDR_OS_SETTINGS_CRISPER_JS);

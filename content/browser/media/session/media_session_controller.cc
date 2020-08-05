@@ -160,6 +160,9 @@ void MediaSessionController::OnPictureInPictureAvailabilityChanged(
   media_session_->OnPictureInPictureAvailabilityChanged();
 }
 
+void MediaSessionController::OnAudioOutputSinkChanged(
+    const std::string& raw_device_id) {}
+
 bool MediaSessionController::IsMediaSessionNeeded() const {
   if (!is_playback_in_progress_)
     return false;

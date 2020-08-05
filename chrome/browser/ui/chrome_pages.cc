@@ -204,14 +204,8 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   // OffTheRecord profile.
   apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
       profile->GetOriginalProfile());
-  DCHECK(proxy);
-
-  const char* app_id =
-      base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)
-          ? chromeos::default_web_apps::kHelpAppId
-          : extension_misc::kGeniusAppId;
-  proxy->Launch(app_id, ui::EventFlags::EF_NONE, app_launch_source,
-                display::kDefaultDisplayId);
+  proxy->Launch(chromeos::default_web_apps::kHelpAppId, ui::EventFlags::EF_NONE,
+                app_launch_source, display::kDefaultDisplayId);
 #else
   GURL url;
   switch (source) {

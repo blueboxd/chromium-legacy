@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -55,9 +55,9 @@ void WebTimeLimitEnforcer::OnWebTimeLimitEnded() {
   ReloadAllWebContents();
 }
 
-void WebTimeLimitEnforcer::OnTimeLimitWhitelistChanged(
-    const AppTimeLimitsWhitelistPolicyWrapper& wrapper) {
-  std::vector<std::string> whitelisted_urls = wrapper.GetWhitelistURLList();
+void WebTimeLimitEnforcer::OnTimeLimitAllowlistChanged(
+    const AppTimeLimitsAllowlistPolicyWrapper& wrapper) {
+  std::vector<std::string> allowlisted_urls = wrapper.GetAllowlistURLList();
 
   // clean up |url_matcher_|;
   url_matcher_ = std::make_unique<url_matcher::URLMatcher>();
@@ -65,7 +65,7 @@ void WebTimeLimitEnforcer::OnTimeLimitWhitelistChanged(
   url_matcher::URLMatcherConditionSet::Vector condition_set_vector;
   auto* condition_factory = url_matcher_->condition_factory();
   int id = 0;
-  for (const auto& url : whitelisted_urls) {
+  for (const auto& url : allowlisted_urls) {
     url_matcher::URLMatcherCondition condition =
         condition_factory->CreateURLMatchesCondition(url);
 
@@ -82,7 +82,7 @@ void WebTimeLimitEnforcer::OnTimeLimitWhitelistChanged(
   ReloadAllWebContents();
 }
 
-bool WebTimeLimitEnforcer::IsURLWhitelisted(const GURL& url) const {
+bool WebTimeLimitEnforcer::IsURLAllowlisted(const GURL& url) const {
   // Block everything if |scheme_filter_| and |domain_matcher_| are not
   // instantiated yet.
   if (!url_matcher_)
@@ -93,7 +93,7 @@ bool WebTimeLimitEnforcer::IsURLWhitelisted(const GURL& url) const {
     effective_url = url;
 
   if (web_app::IsValidExtensionUrl(effective_url))
-    return app_time_controller_->IsExtensionWhitelisted(effective_url.host());
+    return app_time_controller_->IsExtensionAllowlisted(effective_url.host());
 
   auto matching_set_size = url_matcher_->MatchURL(effective_url).size();
   return matching_set_size > 0;

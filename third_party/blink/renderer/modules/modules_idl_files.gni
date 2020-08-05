@@ -42,6 +42,10 @@ import("//third_party/blink/renderer/config.gni")
 #     # Similar to |modules_dependency_idl_files| but limited to things that are
 #     # exposed only for testing.
 #   ]
+#
+#   modules_typedefs_enums_only_idl_files = [
+#     # IDL files that only have typedefs/enums.
+#   ]
 _idl_imports = [
   "//third_party/blink/renderer/modules/accessibility/idls.gni",
   "//third_party/blink/renderer/modules/animationworklet/idls.gni",
@@ -144,6 +148,7 @@ modules_callback_function_idl_files = []
 modules_dictionary_idl_files = []
 modules_dependency_idl_files = []
 modules_testing_dependency_idl_files = []
+modules_typedefs_enums_only_idl_files = []
 
 foreach(idl_import, _idl_imports) {
   # Avoid reassignment error by assigning to empty scope first.
@@ -187,6 +192,15 @@ foreach(idl_import, _idl_imports) {
     modules_testing_dependency_idl_files +=
         get_path_info(
             rebase_path(_imported.modules_testing_dependency_idl_files,
+                        ".",
+                        gni_dir),
+            "abspath")
+  }
+
+  if (defined(_imported.modules_typedefs_enums_only_idl_files)) {
+    modules_typedefs_enums_only_idl_files +=
+        get_path_info(
+            rebase_path(_imported.modules_typedefs_enums_only_idl_files,
                         ".",
                         gni_dir),
             "abspath")
@@ -245,7 +259,8 @@ modules_global_constructors_generated_idl_files = process_file_template(
 modules_definition_idl_files = modules_dictionary_idl_files + modules_idl_files
 
 # Static IDL files
-modules_static_interface_idl_files = modules_callback_function_idl_files
+modules_static_interface_idl_files =
+    modules_callback_function_idl_files + modules_typedefs_enums_only_idl_files
 
 modules_static_dependency_idl_files =
     modules_dependency_idl_files + modules_testing_dependency_idl_files

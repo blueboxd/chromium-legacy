@@ -52,6 +52,10 @@ AX_BASE_EXPORT bool IsExperimentalAccessibilityPlatformUIAEnabled();
 // Returns true if Switch Access point scanning is enabled.
 AX_BASE_EXPORT bool IsSwitchAccessPointScanningEnabled();
 
+// Optionally disable AXMenuList, which makes the internal pop-up menu
+// UI for a select element directly accessible.
+AX_BASE_EXPORT extern const char kDisableAXMenuList[];
+
 }  // namespace switches
 
 #endif  // UI_ACCESSIBILITY_ACCESSIBILITY_SWITCHES_H_

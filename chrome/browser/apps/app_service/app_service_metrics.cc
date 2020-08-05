@@ -178,8 +178,6 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kCalculator, launch_source);
   else if (app_id == extension_misc::kTextEditorAppId)
     RecordDefaultAppLaunch(DefaultAppName::kText, launch_source);
-  else if (app_id == extension_misc::kGeniusAppId)
-    RecordDefaultAppLaunch(DefaultAppName::kGetHelp, launch_source);
   else if (app_id == file_manager::kGalleryAppId)
     RecordDefaultAppLaunch(DefaultAppName::kGallery, launch_source);
   else if (app_id == file_manager::kVideoPlayerAppId)

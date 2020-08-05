@@ -416,12 +416,9 @@ bool DebuggerFunction::InitAgentHost(std::string* error) {
         *debuggee_.tab_id, browser_context(), include_incognito_information(),
         &web_contents);
     if (result && web_contents) {
-      // TODO(rdevlin.cronin) This should definitely be GetLastCommittedURL().
-      GURL url = web_contents->GetVisibleURL();
-
       if (!ExtensionCanAttachToURL(
-              *extension(), url, Profile::FromBrowserContext(browser_context()),
-              error)) {
+              *extension(), web_contents->GetLastCommittedURL(),
+              Profile::FromBrowserContext(browser_context()), error)) {
         return false;
       }
 

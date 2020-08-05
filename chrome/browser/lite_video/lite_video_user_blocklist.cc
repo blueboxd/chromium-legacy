@@ -139,4 +139,17 @@ void LiteVideoUserBlocklist::AddNavigationToBlocklist(
            static_cast<int>(LiteVideoBlocklistType::kNavigationBlocklist));
 }
 
+void LiteVideoUserBlocklist::AddRebufferToBlocklist(
+    const GURL& mainframe_url,
+    base::Optional<GURL> subframe_url,
+    bool opt_out) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::Optional<std::string> rebuffer_key =
+      GetRebufferBlocklistKey(mainframe_url, subframe_url);
+  if (rebuffer_key) {
+    AddEntry(*rebuffer_key, opt_out,
+             static_cast<int>(LiteVideoBlocklistType::kRebufferBlocklist));
+  }
+}
+
 }  // namespace lite_video

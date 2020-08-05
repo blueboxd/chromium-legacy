@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
+#ifndef COMPONENTS_PRERENDER_BROWSER_PRERENDER_MANAGER_H_
+#define COMPONENTS_PRERENDER_BROWSER_PRERENDER_MANAGER_H_
 
 #include <stdint.h>
 
@@ -18,9 +18,9 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prerender/browser/prerender_config.h"
+#include "components/prerender/browser/prerender_contents.h"
 #include "components/prerender/browser/prerender_histograms.h"
 #include "components/prerender/browser/prerender_manager_delegate.h"
 #include "components/prerender/common/prerender_final_status.h"
@@ -42,7 +42,7 @@ enum class NetworkPredictionStatus;
 namespace content {
 class WebContents;
 class BrowserContext;
-}
+}  // namespace content
 
 namespace gfx {
 class Rect;
@@ -560,4 +560,4 @@ class PrerenderManager : public content::RenderProcessHostObserver,
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
+#endif  // COMPONENTS_PRERENDER_BROWSER_PRERENDER_MANAGER_H_

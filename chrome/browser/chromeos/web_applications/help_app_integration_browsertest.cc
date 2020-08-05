@@ -7,35 +7,27 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
- public:
-  HelpAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures({chromeos::features::kHelpAppV2}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using HelpAppIntegrationTest = SystemWebAppIntegrationTest;
 
 // Test that the Help App installs and launches correctly. Runs some spot
 // checks on the manifest.
@@ -116,6 +108,32 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2Incognito) {
   Browser* incognito_browser = CreateIncognitoBrowser();
   EXPECT_NO_FATAL_FAILURE(
       chrome::ShowHelp(incognito_browser, chrome::HELP_SOURCE_KEYBOARD));
+}
+
+// Test that the Help App does a navigation on launch even when it was already
+// open with the same URL.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2NavigateOnRelaunch) {
+  WaitForTestSystemAppInstall();
+
+  // There should initially be a single browser window.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  Browser* browser;
+  content::WebContents* web_contents =
+      LaunchApp(web_app::SystemAppType::HELP, &browser);
+
+  // There should be two browser windows, one regular and one for the newly
+  // opened app.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  content::TestNavigationObserver navigation_observer(web_contents);
+  LaunchAppWithoutWaiting(web_app::SystemAppType::HELP);
+  // If no navigation happens, then this test will time out due to the wait.
+  navigation_observer.Wait();
+
+  // LaunchApp should navigate the existing window and not open any new windows.
+  EXPECT_EQ(browser, chrome::FindLastActive());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

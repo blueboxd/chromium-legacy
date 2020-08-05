@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -257,6 +258,14 @@ void DidGetRegistrations(
       "serviceworker.onPartitionData", ConvertToRawPtrVector(args));
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ServiceWorkerInternalsLinkQuery {
+  kDevTools = 0,
+  kOther = 1,
+  kMaxValue = kOther,
+};
+
 }  // namespace
 
 class ServiceWorkerInternalsUI::PartitionObserver
@@ -351,6 +360,14 @@ class ServiceWorkerInternalsUI::PartitionObserver
 
 ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui), next_partition_id_(0) {
+  std::string query = web_ui->GetWebContents()->GetURL().query();
+  ServiceWorkerInternalsLinkQuery query_type =
+      ServiceWorkerInternalsLinkQuery::kOther;
+  if (query == "devtools") {
+    query_type = ServiceWorkerInternalsLinkQuery::kDevTools;
+  }
+  base::UmaHistogramEnumeration("ServiceWorker.InternalsPageAccessed",
+                                query_type);
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIServiceWorkerInternalsHost);
   source->OverrideContentSecurityPolicy(

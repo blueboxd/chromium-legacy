@@ -282,7 +282,7 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
     case SystemAppType::MEDIA:
       return base::FeatureList::IsEnabled(chromeos::features::kMediaApp);
     case SystemAppType::HELP:
-      return base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2);
+      return true;
     case SystemAppType::PRINT_MANAGEMENT:
       return base::FeatureList::IsEnabled(
           chromeos::features::kPrintJobManagementApp);

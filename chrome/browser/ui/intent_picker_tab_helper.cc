@@ -103,11 +103,6 @@ void IntentPickerTabHelper::LoadAppIcon(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  if (!proxy) {
-    std::move(callback).Run(std::move(apps));
-    return;
-  }
-
   constexpr bool allow_placeholder_icon = false;
   auto icon_type =
       (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))

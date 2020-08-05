@@ -53,7 +53,8 @@ class HasBeforeUnloadHandlerTest : public InProcessBrowserTest {
     HasBeforeUnloadHandler(wc, std::move(callback));
 
     // The callback should not be invoked synchronously. In a world where
-    // NeedToFireBeforeUnloadOrUnload works properly this expectation changes.
+    // NeedToFireBeforeUnloadOrUnloadEvents works properly this expectation
+    // changes.
     ASSERT_FALSE(callback_invoked);
 
     // Run the loop until we process the callback.

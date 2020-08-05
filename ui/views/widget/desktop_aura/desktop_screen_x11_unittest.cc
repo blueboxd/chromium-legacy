@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
@@ -70,6 +71,9 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
   // Overridden from testing::Test:
   void SetUp() override {
     ViewsTestBase::SetUp();
+    // TODO(msisov): rewrite desktop screen tests for ozone and non-ozone Linux.
+    if (features::IsUsingOzonePlatform())
+      GTEST_SKIP();
     // Initialize the world to the single monitor case.
     std::vector<display::Display> displays;
     displays.emplace_back(kFirstDisplay, gfx::Rect(0, 0, 640, 480));

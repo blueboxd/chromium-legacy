@@ -245,7 +245,6 @@ void RemoveNonArcApps(Profile* profile,
                       bool flush) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   if (flush)
     proxy->FlushMojoCallsForTesting();
   proxy->AppRegistryCache().ForEachApp(
@@ -564,7 +563,6 @@ class ArcAppModelBuilderTest
   void FlushMojoCallsForAppService() {
     apps::AppServiceProxy* app_service_proxy_ =
         apps::AppServiceProxyFactory::GetForProfile(profile_.get());
-    DCHECK(app_service_proxy_);
     app_service_proxy_->FlushMojoCallsForTesting();
   }
 
@@ -2129,7 +2127,6 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   // the test result when calling AppServiceAppIconLoader to load the icon.
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_.get());
-  DCHECK(proxy);
   apps::StubIconLoader stub_icon_loader;
   apps::IconLoader* old_icon_loader =
       proxy->OverrideInnerIconLoaderForTesting(&stub_icon_loader);

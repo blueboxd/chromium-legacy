@@ -22,7 +22,6 @@ AppServiceTest::~AppServiceTest() = default;
 void AppServiceTest::SetUp(Profile* profile) {
   profile_ = profile;
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(app_service_proxy_);
   app_service_proxy_->ReInitializeForTesting(profile);
 
   // Allow async callbacks to run.
@@ -32,7 +31,6 @@ void AppServiceTest::SetUp(Profile* profile) {
 void AppServiceTest::UninstallAllApps(Profile* profile) {
   AppServiceProxy* app_service_proxy_ =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(app_service_proxy_);
   std::vector<apps::mojom::AppPtr> apps;
   app_service_proxy_->AppRegistryCache().ForEachApp(
       [&apps](const apps::AppUpdate& update) {

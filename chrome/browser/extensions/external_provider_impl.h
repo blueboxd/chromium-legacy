@@ -81,6 +81,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   static const char kKeepIfPresent[];
   static const char kSupportedLocales[];
   static const char kWasInstalledByOem[];
+  static const char kWebAppMigrationFlag[];
   static const char kMayBeUntrusted[];
   static const char kMinProfileCreatedByVersion[];
   static const char kDoNotInstallForEnterprise[];

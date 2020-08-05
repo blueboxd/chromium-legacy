@@ -31,15 +31,15 @@ class CONTENT_EXPORT PageLifecycleStateManager {
       bool is_in_back_forward_cache,
       base::Optional<base::TimeTicks> navigation_start);
 
+  // Calculates the per-page lifecycle state based on the per-tab / web contents
+  // lifecycle state saved in this instance.
+  blink::mojom::PageLifecycleStatePtr CalculatePageLifecycleState();
+
  private:
   // Send mojo message to renderer if the effective (page) lifecycle state has
   // changed.
   void SendUpdatesToRendererIfNeeded(
       base::Optional<base::TimeTicks> navigation_start);
-
-  // Calculates the per-page lifecycle state based on the per-tab / web contents
-  // lifecycle state saved in this instance.
-  blink::mojom::PageLifecycleStatePtr CalculatePageLifecycleState();
 
   void OnPageLifecycleChangedAck(
       blink::mojom::PageLifecycleStatePtr acknowledged_state);

@@ -175,6 +175,8 @@ void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
     // events that wouldn't do anything useful).
     if (new_available_size != cached_available_size_ || child_layout.visible ||
         !child_layout.bounds.IsEmpty()) {
+      const bool size_changed =
+          child_view->bounds().size() != child_layout.bounds.size();
       if (child_view->bounds() != child_layout.bounds)
         child_view->SetBoundsRect(child_layout.bounds);
       // Child layouts which are not invalid will not be laid out by the default
@@ -182,7 +184,7 @@ void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
       // constraint it's important that the child view be laid out. So we'll do
       // it here.
       // TODO(dfried): figure out a better way to handle this.
-      else if (child_layout.available_size != SizeBounds())
+      if (!size_changed && child_layout.available_size != SizeBounds())
         child_view->Layout();
     }
   }

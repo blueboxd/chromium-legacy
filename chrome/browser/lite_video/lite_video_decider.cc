@@ -171,8 +171,14 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
     return base::nullopt;
 
   // The navigation will have the LiteVideo optimization triggered so
-  // update the navigation blocklist.
+  // update the blocklist.
   user_blocklist_->AddNavigationToBlocklist(navigation_handle, false);
+
+  navigation_handle->IsInMainFrame()
+      ? DidMediaRebuffer(navigation_handle->GetURL(), base::nullopt, false)
+      : DidMediaRebuffer(
+            navigation_handle->GetWebContents()->GetLastCommittedURL(),
+            navigation_handle->GetURL(), false);
   return hint;
 }
 
@@ -208,6 +214,14 @@ void LiteVideoDecider::ClearBlocklist(const base::Time& delete_begin,
 
 void LiteVideoDecider::OnBlocklistCleared(base::Time time) {
   LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.UserBlocklist.ClearBlocklist", true);
+}
+
+void LiteVideoDecider::DidMediaRebuffer(const GURL& mainframe_url,
+                                        base::Optional<GURL> subframe_url,
+                                        bool opt_out) {
+  if (user_blocklist_)
+    user_blocklist_->AddRebufferToBlocklist(mainframe_url, subframe_url,
+                                            opt_out);
 }
 
 }  // namespace lite_video

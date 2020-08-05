@@ -6,6 +6,8 @@ package org.chromium.chrome.test.util;
 
 import android.support.test.InstrumentationRegistry;
 
+import androidx.annotation.Nullable;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -21,6 +23,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  * with the parent chromeActivity.
  */
 public class BookmarkTestRule implements TestRule {
+    @Nullable
     private BookmarkActivity mBookmarkActivity;
 
     @Override
@@ -50,6 +53,14 @@ public class BookmarkTestRule implements TestRule {
                     () -> showBookmarkManagerInternal(chromeActivity));
         }
         BookmarkTestUtil.waitForBookmarkModelLoaded();
+    }
+
+    /**
+     * Returns the bookmark activity.
+     */
+    @Nullable
+    public BookmarkActivity getBookmarkActivity() {
+        return mBookmarkActivity;
     }
 
     private void showBookmarkManagerInternal(ChromeActivity chromeActivity) {

@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -67,6 +68,17 @@ const std::vector<autofill::ServerFieldType>& GetHomeAddressTypes() {
            autofill::ServerFieldType::ADDRESS_HOME_COUNTRY}};
   return *homeAddressTypes;
 }
+
+void RecordTimeToAccept(base::TimeDelta delta) {
+  base::UmaHistogramTimes("InputMethod.Assistive.TimeToAccept.PersonalInfo",
+                          delta);
+}
+
+void RecordTimeToDismiss(base::TimeDelta delta) {
+  base::UmaHistogramTimes("InputMethod.Assistive.TimeToDismiss.PersonalInfo",
+                          delta);
+}
+
 }  // namespace
 
 TtsHandler::TtsHandler(Profile* profile) : profile_(profile) {}
@@ -332,6 +344,7 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
   if (suggestion_shown_) {
     first_shown_ = false;
   } else {
+    session_start_ = base::TimeTicks::Now();
     first_shown_ = true;
     IncrementPrefValueTilCapped(kPersonalInfoSuggesterShowSettingCount,
                                 kMaxShowSettingCount);
@@ -381,6 +394,7 @@ bool PersonalInfoSuggester::AcceptSuggestion(size_t index) {
     return false;
   }
 
+  RecordTimeToAccept(base::TimeTicks::Now() - session_start_);
   IncrementPrefValueTilCapped(kPersonalInfoSuggesterAcceptanceCount,
                               kMaxAcceptanceCount);
   suggestion_shown_ = false;
@@ -392,11 +406,13 @@ bool PersonalInfoSuggester::AcceptSuggestion(size_t index) {
 
 void PersonalInfoSuggester::DismissSuggestion() {
   std::string error;
-  suggestion_shown_ = false;
   suggestion_handler_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
+    return;
   }
+  suggestion_shown_ = false;
+  RecordTimeToDismiss(base::TimeTicks::Now() - session_start_);
 }
 
 void PersonalInfoSuggester::SetButtonHighlighted(

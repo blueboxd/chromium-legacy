@@ -22,18 +22,12 @@ SuggestedContentInfoView::SuggestedContentInfoView(
 
 SuggestedContentInfoView::~SuggestedContentInfoView() = default;
 
-void SuggestedContentInfoView::ButtonPressed(views::Button* sender,
-                                             const ui::Event& event) {
-  if (!IsCloseButton(sender))
-    return;
-
+void SuggestedContentInfoView::CloseButtonPressed() {
   view_delegate_->MarkSuggestedContentInfoDismissed();
   search_result_page_view_->OnPrivacyInfoViewCloseButtonPressed();
 }
 
-void SuggestedContentInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                      const gfx::Range& range,
-                                                      int event_flags) {
+void SuggestedContentInfoView::LinkClicked() {
   view_delegate_->MarkSuggestedContentInfoDismissed();
   constexpr char url[] = "chrome://os-settings/osPrivacy";
   NewWindowDelegate::GetInstance()->NewTabWithUrl(

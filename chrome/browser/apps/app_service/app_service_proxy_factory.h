@@ -18,6 +18,8 @@ class AppServiceProxy;
 // Singleton that owns all AppServiceProxy's and associates them with Profile.
 class AppServiceProxyFactory : public BrowserContextKeyedServiceFactory {
  public:
+  static bool IsAppServiceAvailableForProfile(Profile* profile);
+
   static AppServiceProxy* GetForProfile(Profile* profile);
 
   static AppServiceProxyFactory* GetInstance();

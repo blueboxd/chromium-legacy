@@ -133,7 +133,6 @@ void WebAppUiManagerImpl::UninstallAndReplace(
 
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile_);
-    DCHECK(proxy);
     proxy->UninstallSilently(from_app);
   }
 }

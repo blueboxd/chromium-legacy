@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -22,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,11 +58,18 @@ LowDiskNotification::~LowDiskNotification() {
 
 void LowDiskNotification::LowDiskSpace(uint64_t free_disk_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  bool show_low_disk_space_notification = true;
+  if (!chromeos::CrosSettings::Get()->GetBoolean(
+          chromeos::kDeviceShowLowDiskSpaceNotification,
+          &show_low_disk_space_notification)) {
+    DVLOG(1) << "DeviceShowLowDiskSpaceNotification not set, "
+                "defaulting to showing the notification.";
+  }
+
   // We suppress the low-space notifications when there are multiple users on an
-  // enterprise managed device. crbug.com/656788.
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged() &&
+  // enterprise managed device based on policy configuration.
+  if (!show_low_disk_space_notification &&
       user_manager::UserManager::Get()->GetUsers().size() > 1) {
     LOG(WARNING) << "Device is low on disk space, but the notification was "
                  << "suppressed on a managed device.";

@@ -1596,6 +1596,9 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+TabsRemoveFunction::TabsRemoveFunction() = default;
+TabsRemoveFunction::~TabsRemoveFunction() = default;
+
 ExtensionFunction::ResponseAction TabsRemoveFunction::Run() {
   std::unique_ptr<tabs::Remove::Params> params(
       tabs::Remove::Params::Create(*args_));
@@ -1613,7 +1616,16 @@ ExtensionFunction::ResponseAction TabsRemoveFunction::Run() {
     if (!RemoveTab(*params->tab_ids.as_integer, &error))
       return RespondNow(Error(std::move(error)));
   }
-  return RespondNow(NoArguments());
+  triggered_all_tab_removals_ = true;
+  DCHECK(!did_respond());
+  // WebContentsDestroyed will return the response in most cases, except when
+  // the last tab closed immediately (it won't return a response because
+  // |triggered_all_tab_removals_| will still be false). In this case we should
+  // return the response from here.
+  if (remaining_tabs_count_ == 0) {
+    return RespondNow(NoArguments());
+  }
+  return RespondLater();
 }
 
 bool TabsRemoveFunction::RemoveTab(int tab_id, std::string* error) {
@@ -1629,6 +1641,17 @@ bool TabsRemoveFunction::RemoveTab(int tab_id, std::string* error) {
     *error = tabs_constants::kTabStripNotEditableError;
     return false;
   }
+  // The tab might not immediately close after calling Close() below, so we
+  // should wait until WebContentsDestroyed is called before responding.
+  web_contents_destroyed_observers_.push_back(
+      std::make_unique<WebContentsDestroyedObserver>(this, contents));
+  // Ensure that we're going to keep this class alive until
+  // |remaining_tabs_count| reaches zero. This relies on WebContents::Close()
+  // always (eventually) resulting in a WebContentsDestroyed() call; otherwise,
+  // this function will never respond and may leak.
+  AddRef();
+  remaining_tabs_count_++;
+
   // There's a chance that the tab is being dragged, or we're in some other
   // nested event loop. This code path ensures that the tab is safely closed
   // under such circumstances, whereas |TabStripModel::CloseWebContentsAt()|
@@ -1636,6 +1659,40 @@ bool TabsRemoveFunction::RemoveTab(int tab_id, std::string* error) {
   contents->Close();
   return true;
 }
+
+void TabsRemoveFunction::TabDestroyed() {
+  DCHECK_GT(remaining_tabs_count_, 0);
+  // One of the tabs we wanted to remove had been destroyed.
+  remaining_tabs_count_--;
+  // If we've triggered all the tab removals we need, and this is the last tab
+  // we're waiting for and we haven't sent a response (it's possible that we've
+  // responded earlier in case of errors, etc.), send a response.
+  if (triggered_all_tab_removals_ && remaining_tabs_count_ == 0 &&
+      !did_respond()) {
+    Respond(NoArguments());
+  }
+  Release();
+}
+
+class TabsRemoveFunction::WebContentsDestroyedObserver
+    : public content::WebContentsObserver {
+ public:
+  WebContentsDestroyedObserver(extensions::TabsRemoveFunction* owner,
+                               content::WebContents* watched_contents)
+      : content::WebContentsObserver(watched_contents), owner_(owner) {}
+
+  ~WebContentsDestroyedObserver() override = default;
+  WebContentsDestroyedObserver(const WebContentsDestroyedObserver&) = delete;
+  WebContentsDestroyedObserver& operator=(const WebContentsDestroyedObserver&) =
+      delete;
+
+  // WebContentsObserver
+  void WebContentsDestroyed() override { owner_->TabDestroyed(); }
+
+ private:
+  // Guaranteed to outlive this object.
+  extensions::TabsRemoveFunction* owner_;
+};
 
 TabsCaptureVisibleTabFunction::TabsCaptureVisibleTabFunction()
     : chrome_details_(this) {

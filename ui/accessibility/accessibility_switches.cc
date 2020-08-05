@@ -91,4 +91,8 @@ bool IsExperimentalAccessibilityPlatformUIAEnabled() {
 #endif
 }
 
+// Optionally disable AXMenuList, which makes the internal pop-up menu
+// UI for a select element directly accessible.
+const char kDisableAXMenuList[] = "disable-ax-menu-list";
+
 }  // namespace switches

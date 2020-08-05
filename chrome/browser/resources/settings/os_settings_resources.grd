@@ -362,7 +362,7 @@
                  file="chromeos/os_settings_page/os_settings_page.html"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_ENSURE_LAZY_LOADED_HTML"
-                 file="ensure_lazy_loaded.html"
+                 file="chromeos/ensure_lazy_loaded.html"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_EXTENSION_CONTROL_BROWSER_PROXY_JS"
                  file="extension_control_browser_proxy.js"
@@ -491,12 +491,6 @@
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CONTROLS_RADIO_GROUP_JS"
                  file="controls/settings_radio_group.js"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CONTROLS_SETTINGS_IDLE_LOAD_HTML"
-                 file="controls/settings_idle_load.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CONTROLS_SETTINGS_IDLE_LOAD_JS"
-                 file="controls/settings_idle_load.js"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CONTROLS_SLIDER_HTML"
                  file="controls/settings_slider.html"
@@ -638,6 +632,12 @@
       <structure name="IDR_OS_SETTINGS_OS_SETTINGS_ICONS_CSS_HTML"
                  file="chromeos/os_settings_icons_css.html"
                  flattenhtml="true"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS_SETTINGS_PAGE_SETTINGS_IDLE_LOAD_HTML"
+                 file="chromeos/os_settings_page/settings_idle_load.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS_SETTINGS_PAGE_SETTINGS_IDLE_LOAD_JS"
+                 file="chromeos/os_settings_page/settings_idle_load.js"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="chromeos/os_reset_page/os_powerwash_dialog.html"

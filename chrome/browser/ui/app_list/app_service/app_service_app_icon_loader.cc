@@ -39,9 +39,7 @@ AppServiceAppIconLoader::AppServiceAppIconLoader(
     : AppIconLoader(profile, resource_size_in_dip, delegate) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  if (proxy) {
-    Observe(&proxy->AppRegistryCache());
-  }
+  Observe(&proxy->AppRegistryCache());
 }
 
 AppServiceAppIconLoader::~AppServiceAppIconLoader() = default;
@@ -60,9 +58,9 @@ bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& id) {
 
   // Support icon loading for apps registered in AppService or Crostini apps
   // with the prefix "crostini:".
-  if (proxy && (proxy->AppRegistryCache().GetAppType(app_id) !=
-                    apps::mojom::AppType::kUnknown ||
-                crostini::IsUnmatchedCrostiniShelfAppId(app_id))) {
+  if (proxy->AppRegistryCache().GetAppType(app_id) !=
+          apps::mojom::AppType::kUnknown ||
+      crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
     return true;
   }
 
@@ -129,9 +127,6 @@ void AppServiceAppIconLoader::CallLoadIcon(const std::string& app_id,
                                            bool allow_placeholder_icon) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (!proxy) {
-    return;
-  }
 
   auto icon_type =
       (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))

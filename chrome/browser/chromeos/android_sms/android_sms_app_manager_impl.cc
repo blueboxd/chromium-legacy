@@ -48,7 +48,6 @@ void AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(Profile* profile,
                                                     const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->Launch(
       app_id,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,

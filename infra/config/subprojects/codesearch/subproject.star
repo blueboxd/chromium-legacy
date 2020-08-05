@@ -2,6 +2,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-exec('./codesearch.star')
-exec('./consoles/luci.chromium.codesearch.star')
-
+exec("./codesearch.star")
+exec("./consoles/luci.chromium.codesearch.star")

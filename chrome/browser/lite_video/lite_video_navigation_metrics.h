@@ -25,21 +25,44 @@ enum class LiteVideoDecision {
   kMaxValue = kHoldback,
 };
 
+// The result of throttling on a navigation.
+// This should be kept in sync with LiteVideoThrottleResult in enums.xml.
+enum class LiteVideoThrottleResult {
+  kUnknown,
+  // LiteVideos were enabled to throttle media requests on the navigation
+  // and they were not stopped due to rebuffering events.
+  kThrottledWithoutStop,
+  // LiteVideos were enabled to throttle media requests on the navigation
+  // but they were stopped due to rebuffering events.
+  kThrottleStoppedOnRebuffer,
+
+  // Insert new values before this line.
+  kMaxValue = kThrottleStoppedOnRebuffer,
+};
+
 class LiteVideoNavigationMetrics {
  public:
   LiteVideoNavigationMetrics(int64_t nav_id,
                              LiteVideoDecision decision,
-                             LiteVideoBlocklistReason blocklist_reason);
+                             LiteVideoBlocklistReason blocklist_reason,
+                             LiteVideoThrottleResult throttle_result);
   ~LiteVideoNavigationMetrics();
 
   int64_t nav_id() const { return nav_id_; }
   LiteVideoDecision decision() const { return decision_; }
-  LiteVideoBlocklistReason blocklist_reason() const;
+  LiteVideoBlocklistReason blocklist_reason() const {
+    return blocklist_reason_;
+  }
+  LiteVideoThrottleResult throttle_result() const { return throttle_result_; }
+
+  // Update the throttling result of the current navigation.
+  void SetThrottleResult(LiteVideoThrottleResult throttle_result);
 
  private:
   int64_t nav_id_;
   LiteVideoDecision decision_;
   LiteVideoBlocklistReason blocklist_reason_;
+  LiteVideoThrottleResult throttle_result_;
 };
 
 }  // namespace lite_video

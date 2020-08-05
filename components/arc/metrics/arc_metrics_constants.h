@@ -95,7 +95,10 @@ enum class UserInteractionType {
   // User started an app from entering URL in the Omnibox in the browser.
   APP_STARTED_FROM_OMNIBOX = 20,
 
-  kMaxValue = APP_STARTED_FROM_OMNIBOX,
+  // User started an app from Chrome OS sharesheet.
+  APP_STARTED_FROM_SHARESHEET = 21,
+
+  kMaxValue = APP_STARTED_FROM_SHARESHEET,
 };
 
 // Enumerates relevant Mojo connections.

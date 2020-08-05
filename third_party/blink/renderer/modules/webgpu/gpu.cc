@@ -121,7 +121,8 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
   // For now we choose kHighPerformance by default.
   gpu::webgpu::PowerPreference power_preference =
       gpu::webgpu::PowerPreference::kHighPerformance;
-  if (options->powerPreference() == "low-power") {
+  if (options->hasPowerPreference() &&
+      options->powerPreference() == "low-power") {
     power_preference = gpu::webgpu::PowerPreference::kLowPower;
   }
 

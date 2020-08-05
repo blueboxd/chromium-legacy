@@ -65,7 +65,8 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
                               bool expect_clear_link,
                               bool expect_reload_hint) {
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        new ContentSettingGeolocationBubbleModel(nullptr, web_contents()));
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), ContentSettingsType::GEOLOCATION));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     EXPECT_TRUE(bubble_content.title.empty());
@@ -75,7 +76,7 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
     EXPECT_NE(expect_clear_link || expect_reload_hint,
               bubble_content.custom_link.empty());
     EXPECT_EQ(expect_clear_link, bubble_content.custom_link_enabled);
-    EXPECT_TRUE(bubble_content.manage_text.empty());
+    EXPECT_FALSE(bubble_content.manage_text.empty());
   }
 
   std::string GetDefaultAudioDevice() {
@@ -871,7 +872,8 @@ TEST_F(ContentSettingBubbleModelTest, GeolocationEmbargo) {
   // Reset ContentSettings and embargo state by pressing on Custom Link.
   {
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        new ContentSettingGeolocationBubbleModel(nullptr, web_contents()));
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
 
     content_setting_bubble_model->OnCustomLinkClicked();
   }

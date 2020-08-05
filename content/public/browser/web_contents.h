@@ -579,12 +579,12 @@ class WebContents : public PageNavigator,
 
   // This function checks *all* frames in this WebContents (not just the main
   // frame) and returns true if at least one frame has either a beforeunload or
-  // an unload handler.
+  // an unload/pagehide/visibilitychange handler.
   //
   // The value of this may change over time. For example, if true and the
   // beforeunload listener is executed and allows the user to exit, then this
   // returns false.
-  virtual bool NeedToFireBeforeUnloadOrUnload() = 0;
+  virtual bool NeedToFireBeforeUnloadOrUnloadEvents() = 0;
 
   // Runs the beforeunload handler for the main frame and all its subframes.
   // See also ClosePage in RenderViewHostImpl, which runs the unload handler.

@@ -32,8 +32,14 @@
 
 namespace blink {
 
+namespace {
+
+const float kInitEffectZoom = 1.0f;
+
+}  // namespace
+
 LayoutVideo::LayoutVideo(HTMLVideoElement* video) : LayoutMedia(video) {
-  SetIntrinsicSize(CalculateIntrinsicSize());
+  SetIntrinsicSize(CalculateIntrinsicSize(kInitEffectZoom));
 }
 
 LayoutVideo::~LayoutVideo() = default;
@@ -49,8 +55,7 @@ void LayoutVideo::IntrinsicSizeChanged() {
 }
 
 void LayoutVideo::UpdateIntrinsicSize(bool is_in_layout) {
-  LayoutSize size = CalculateIntrinsicSize();
-  size.Scale(StyleRef().EffectiveZoom());
+  LayoutSize size = CalculateIntrinsicSize(StyleRef().EffectiveZoom());
 
   // Never set the element size to zero when in a media document.
   if (size.IsEmpty() && GetNode()->ownerDocument() &&
@@ -68,13 +73,16 @@ void LayoutVideo::UpdateIntrinsicSize(bool is_in_layout) {
   }
 }
 
-LayoutSize LayoutVideo::CalculateIntrinsicSize() {
+LayoutSize LayoutVideo::CalculateIntrinsicSize(float scale) {
   HTMLVideoElement* video = VideoElement();
   DCHECK(video);
 
   if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
-    if (video->IsDefaultIntrinsicSize())
-      return DefaultSize();
+    if (video->IsDefaultIntrinsicSize()) {
+      LayoutSize size = DefaultSize();
+      size.Scale(scale);
+      return size;
+    }
   }
 
   // Spec text from 4.8.6
@@ -92,15 +100,20 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
   if (web_media_player &&
       video->getReadyState() >= HTMLVideoElement::kHaveMetadata) {
     IntSize size(web_media_player->NaturalSize());
-    if (!size.IsEmpty())
-      return LayoutSize(size);
+    if (!size.IsEmpty()) {
+      LayoutSize layoutSize = LayoutSize(size);
+      layoutSize.Scale(scale);
+      return layoutSize;
+    }
   }
 
   if (video->IsShowPosterFlagSet() && !cached_image_size_.IsEmpty() &&
       !ImageResource()->ErrorOccurred())
     return cached_image_size_;
 
-  return DefaultSize();
+  LayoutSize size = DefaultSize();
+  size.Scale(scale);
+  return size;
 }
 
 void LayoutVideo::ImageChanged(WrappedImagePtr new_image,

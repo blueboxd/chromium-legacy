@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_HANDLE_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_HANDLE_H_
+#ifndef COMPONENTS_PRERENDER_BROWSER_PRERENDER_HANDLE_H_
+#define COMPONENTS_PRERENDER_BROWSER_PRERENDER_HANDLE_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/prerender/prerender_manager.h"
+#include "components/prerender/browser/prerender_manager.h"
 
 namespace prerender {
 
@@ -103,4 +103,4 @@ class PrerenderHandle : public PrerenderContents::Observer {
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_HANDLE_H_
+#endif  // COMPONENTS_PRERENDER_BROWSER_PRERENDER_HANDLE_H_

@@ -58,7 +58,7 @@ class LayoutVideo final : public LayoutMedia {
  private:
   void UpdateFromElement() override;
 
-  LayoutSize CalculateIntrinsicSize();
+  LayoutSize CalculateIntrinsicSize(float scale);
   void UpdateIntrinsicSize(bool is_in_layout);
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;

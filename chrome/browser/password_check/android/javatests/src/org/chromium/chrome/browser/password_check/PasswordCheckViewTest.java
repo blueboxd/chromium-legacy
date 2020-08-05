@@ -174,8 +174,7 @@ public class PasswordCheckViewTest {
         // Change button with script.
         assertNotNull(getCredentialChangeButtonWithScriptAt(0));
         assertThat(getCredentialChangeButtonWithScriptAt(0).getText(),
-                is(getString(
-                        R.string.password_check_credential_row_change_button_with_script_caption)));
+                is(getString(R.string.password_check_credential_row_change_button_caption)));
 
         // Explanation for change button with script.
         assertNotNull(getCredentialChangeButtonWithScriptExplanationAt(0));
@@ -185,7 +184,8 @@ public class PasswordCheckViewTest {
         // Change button without script.
         assertNotNull(getCredentialChangeButtonAt(0));
         assertThat(getCredentialChangeButtonAt(0).getText(),
-                is(getString(R.string.password_check_credential_row_change_button_caption)));
+                is(getString(
+                        R.string.password_check_credential_row_change_manually_button_caption)));
     }
 
     @Test

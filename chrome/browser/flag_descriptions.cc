@@ -3954,10 +3954,6 @@ const char kGaiaActionButtonsName[] =
 const char kGaiaActionButtonsDescription[] =
     "Enable primary/secondary action button on Gaia login screen.";
 
-const char kHelpAppName[] = "Help App";
-const char kHelpAppDescription[] =
-    "Enables the chrome://help-app System Web App (SWA)";
-
 const char kHelpAppReleaseNotesName[] = "Help App Release Notes";
 const char kHelpAppReleaseNotesDescription[] =
     "Enables release notes in the help app";

@@ -5538,6 +5538,18 @@
 
   "ExtensionCacheSize": {},
 
+  "DeviceShowLowDiskSpaceNotification": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ShowLowDiskSpaceNotification": false
+        },
+        "prefs": { "cros.device.show_low_disk_space_notification": {"value": false} }
+      }
+    ]
+  },
+
   "DeviceLoginScreenDomainAutoComplete": {},
 
   "AllowKioskAppControlChromeVersion": {},
@@ -6935,12 +6947,45 @@
   },
 
   "PerAppTimeLimitsWhitelist" : {
+    "note": "This policy is deprecated, see http://crbug.com/1103812.",
     "os": ["chromeos"],
     "can_be_recommended": false,
     "policy_pref_mapping_test": [
       {
         "policies": {
           "PerAppTimeLimitsWhitelist": {
+            "scheme_list": [
+              "chrome",
+              "files"
+            ],
+            "domain_list": [
+              "support.google.com",
+              "policies.google.com"
+            ],
+            "app_list": [
+             {
+              "app_id": "pjkljhegncpnkpknbcohdijeoejaedia",
+              "app_type": "EXTENSION"
+             },
+             {
+               "app_id": "iniodglblcgmngkgdipeiclkdjjpnlbn",
+               "app_type": "BUILT-IN"
+             }
+            ]
+          }
+        },
+        "prefs": { "child_user.per_app_time_limits.whitelist": {} }
+      }
+    ]
+  },
+
+  "PerAppTimeLimitsAllowlist" : {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PerAppTimeLimitsAllowlist": {
             "scheme_list": [
               "chrome",
               "files"

@@ -3242,6 +3242,15 @@ void AXNodeObject::AddImageMapChildren() {
 }
 
 void AXNodeObject::AddPopupChildren() {
+  if (!AXObjectCache().UseAXMenuList()) {
+    auto* html_select_element = DynamicTo<HTMLSelectElement>(GetNode());
+    if (!html_select_element || !html_select_element->UsesMenuList())
+      return;
+    if (AXObject* ax_popup = html_select_element->PopupRootAXObject())
+      children_.push_back(ax_popup);
+    return;
+  }
+
   auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
   if (!html_input_element)
     return;

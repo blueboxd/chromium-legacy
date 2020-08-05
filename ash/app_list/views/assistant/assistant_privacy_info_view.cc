@@ -22,18 +22,12 @@ AssistantPrivacyInfoView::AssistantPrivacyInfoView(
 
 AssistantPrivacyInfoView::~AssistantPrivacyInfoView() = default;
 
-void AssistantPrivacyInfoView::ButtonPressed(views::Button* sender,
-                                             const ui::Event& event) {
-  if (!IsCloseButton(sender))
-    return;
-
+void AssistantPrivacyInfoView::CloseButtonPressed() {
   view_delegate_->MarkAssistantPrivacyInfoDismissed();
   search_result_page_view_->OnPrivacyInfoViewCloseButtonPressed();
 }
 
-void AssistantPrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                      const gfx::Range& range,
-                                                      int event_flags) {
+void AssistantPrivacyInfoView::LinkClicked() {
   constexpr char url[] = "https://support.google.com/chromebook?p=assistant";
   AssistantController::Get()->OpenUrl(
       assistant::util::CreateLocalizedGURL(url));

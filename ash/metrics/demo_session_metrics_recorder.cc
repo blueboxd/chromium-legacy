@@ -79,7 +79,7 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kGoogleSheetsChromeApp;
   if (app_id == extension_misc::kGoogleSlidesDemoAppId)
     return DemoModeApp::kGoogleSlidesChromeApp;
-  if (app_id == kHelpAppId || app_id == extension_misc::kGeniusAppId)
+  if (app_id == kHelpAppId)
     return DemoModeApp::kGetHelp;
   if (app_id == extension_misc::kGoogleKeepAppId)
     return DemoModeApp::kGoogleKeepChromeApp;

@@ -91,7 +91,6 @@ AppServiceShelfContextMenu::AppServiceShelfContextMenu(
     : ShelfContextMenu(controller, item, display_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(controller->profile());
-  DCHECK(proxy);
 
   if (crostini::IsUnmatchedCrostiniShelfAppId(item->id.app_id)) {
     // For Crostini app_id with the prefix "crostini:", set app_type as Unknown
@@ -113,7 +112,6 @@ AppServiceShelfContextMenu::~AppServiceShelfContextMenu() = default;
 void AppServiceShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
-  DCHECK(proxy);
   proxy->GetMenuModel(
       item().id.app_id, apps::mojom::MenuType::kShelf, display_id(),
       base::BindOnce(&AppServiceShelfContextMenu::OnGetMenuModel,
@@ -520,7 +518,6 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       bool show_in_launcher = false;
       apps::AppServiceProxy* proxy =
           apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
-      DCHECK(proxy);
       proxy->AppRegistryCache().ForOneApp(
           item().id.app_id, [&show_in_launcher](const apps::AppUpdate& update) {
             if (update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue)

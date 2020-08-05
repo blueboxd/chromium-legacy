@@ -231,8 +231,14 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     composition_head = caret_rect;
   if (candidate_window)
     candidate_window->SetCursorBounds(caret_rect, composition_head);
-  if (assistive_window)
-    assistive_window->SetBounds(caret_rect);
+
+  if (assistive_window) {
+    chromeos::Bounds bounds;
+    bounds.caret = caret_rect;
+    bounds.autocorrect = client->GetAutocorrectCharacterBounds();
+    assistive_window->SetBounds(bounds);
+  }
+
   gfx::Range text_range;
   gfx::Range selection_range;
   base::string16 surrounding_text;

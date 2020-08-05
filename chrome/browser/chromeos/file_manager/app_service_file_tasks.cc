@@ -68,11 +68,11 @@ void FindAppServiceTasks(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(entries.size(), file_urls.size());
 
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
+    return;
+
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-
-  if (!proxy)
-    return;
 
   std::vector<std::string> mime_types;
   for (auto& entry : entries)
@@ -115,11 +115,11 @@ void ExecuteAppServiceTask(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(file_system_urls.size(), mime_types.size());
 
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
+    return;
+
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-
-  if (!proxy)
-    return;
 
   constexpr auto launch_source = apps::mojom::LaunchSource::kFromFileManager;
   constexpr auto launch_container =

@@ -28,7 +28,6 @@
 #include "chrome/browser/password_manager/chrome_biometric_authenticator.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
@@ -68,6 +67,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/prerender/browser/prerender_contents.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -168,6 +168,10 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
 void AddToWidgetInputEventObservers(
     content::RenderWidgetHost* widget_host,
     content::RenderWidgetHost::InputEventObserver* observer) {
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": widget_host: " << widget_host
+          << "; observer: " << observer;
+
   // Since Widget API doesn't allow to check whether the observer is already
   // added, the observer is removed and added again, to ensure that it is added
   // only once.
@@ -183,6 +187,10 @@ void AddToWidgetInputEventObservers(
 void RemoveFromWidgetInputEventObservers(
     content::RenderWidgetHost* widget_host,
     content::RenderWidgetHost::InputEventObserver* observer) {
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": widget_host: " << widget_host
+          << "; observer: " << observer;
+
   if (!widget_host)
     return;
 
@@ -1198,6 +1206,10 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   password_reuse_detection_manager_.DidNavigateMainFrame(GetLastCommittedURL());
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "wc: " << web_contents();
+  VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #if defined(OS_ANDROID)
@@ -1221,12 +1233,22 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
   content_credential_manager_.DisconnectBinding();
 
   DCHECK(web_contents()->GetRenderViewHost());
+
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "wc: " << web_contents();
+  VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
   RemoveFromWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 }
 
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnPaste() {
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "wc: " << web_contents();
+  VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
+
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 text;
   clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
@@ -1238,6 +1260,11 @@ void ChromePasswordManagerClient::OnPaste() {
 
 void ChromePasswordManagerClient::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "; rfh: " << render_frame_host;
+  VLOG(1) << "; rfh->GetView(): " << render_frame_host->GetView();
+
   // TODO(drubery): We should handle input events on subframes separately, so
   // that we can accurately report that the password was reused on a subframe.
   // Currently any password reuse for this WebContents will report password
@@ -1248,6 +1275,11 @@ void ChromePasswordManagerClient::RenderFrameCreated(
 
 void ChromePasswordManagerClient::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this
+          << "; rfh: " << render_frame_host
+          << "; rfh->GetView(): " << render_frame_host->GetView();
+
   if (!render_frame_host->GetView())
     return;
   RemoveFromWidgetInputEventObservers(

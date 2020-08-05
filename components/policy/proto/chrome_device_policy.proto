@@ -1686,6 +1686,10 @@ message DeviceCrostiniArcAdbSideloadingAllowedProto {
   optional AllowanceMode mode = 1 [default = DISALLOW];
 }
 
+message DeviceShowLowDiskSpaceNotificationProto {
+  optional bool device_show_low_disk_space_notification = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1825,4 +1829,6 @@ message ChromeDeviceSettingsProto {
   optional DevicePrintersBlocklistProto device_printers_blocklist = 108;
   optional DevicePrintersAllowlistProto device_printers_allowlist = 109;
   optional DevicePrintersProto device_printers = 110;
+  optional DeviceShowLowDiskSpaceNotificationProto
+      device_show_low_disk_space_notification = 111;
 }

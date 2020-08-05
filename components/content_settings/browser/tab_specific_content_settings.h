@@ -282,10 +282,6 @@ class TabSpecificContentSettings
     return mic_was_just_granted_on_site_level_;
   }
 
-  bool geolocation_was_just_granted_on_site_level() {
-    return geolocation_was_just_granted_on_site_level_;
-  }
-
   // Returns the state of the camera and microphone usage.
   // The return value always includes all active media capture devices, on top
   // of the devices from the last request.
@@ -553,12 +549,10 @@ class TabSpecificContentSettings
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
 
-  // The Geolocation, camera, and/or microphone permission was granted to this
-  // origin from a permission prompt that was triggered by the currently active
-  // document.
+  // The camera and/or microphone permission was granted to this origin from a
+  // permission prompt that was triggered by the currently active document.
   bool camera_was_just_granted_on_site_level_ = false;
   bool mic_was_just_granted_on_site_level_ = false;
-  bool geolocation_was_just_granted_on_site_level_ = false;
 
   // Observer to watch for content settings changed.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_{

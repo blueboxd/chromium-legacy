@@ -470,6 +470,7 @@ static_library("ui") {
     "//components/permissions",
     "//components/policy/core/browser",
     "//components/pref_registry",
+    "//components/prerender/browser",
     "//components/previews/content",
     "//components/previews/core",
     "//components/proxy_config",

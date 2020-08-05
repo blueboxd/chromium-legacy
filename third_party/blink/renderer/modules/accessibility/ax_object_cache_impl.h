@@ -282,6 +282,8 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   AXObject* GetActiveAriaModalDialog() const;
 
+  bool UseAXMenuList() { return use_ax_menu_list_; }
+
  protected:
   void PostPlatformNotification(
       AXObject* obj,
@@ -496,6 +498,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // A set of currently active event intents.
   BlinkAXEventIntentsSet active_event_intents_;
+
+  // If false, exposes the internal accessibility tree of a select pop-up
+  // instead.
+  bool use_ax_menu_list_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 

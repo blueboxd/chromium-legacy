@@ -77,7 +77,6 @@ const char* const kDefaultAppOrder[] = {
     default_web_apps::kOsSettingsAppId,
     ash::kInternalAppIdDiscover,
     default_web_apps::kHelpAppId,
-    extension_misc::kGeniusAppId,
     extension_misc::kCalculatorAppId,
     default_web_apps::kCanvasAppId,
     extension_misc::kTextEditorAppId,

@@ -73,11 +73,10 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
   void ExpectURLCheckMatches(
       const std::string& url,
       SupervisedUserURLFilter::FilteringBehavior expected_behavior,
-      supervised_user_error_page::FilteringBehaviorReason expected_reason,
-      bool skip_manual_parent_filter = false) {
+      supervised_user_error_page::FilteringBehaviorReason expected_reason) {
     bool called_synchronously =
-        filter_.GetFilteringBehaviorForURLWithAsyncChecks(
-            GURL(url), base::DoNothing(), skip_manual_parent_filter);
+        filter_.GetFilteringBehaviorForURLWithAsyncChecks(GURL(url),
+                                                          base::DoNothing());
     ASSERT_TRUE(called_synchronously);
 
     EXPECT_EQ(behavior_, expected_behavior);

@@ -126,7 +126,6 @@ void RemoveApps(apps::mojom::AppType app_type,
                 FakeAppListModelUpdater* model_updater) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->FlushMojoCallsForTesting();
   proxy->AppRegistryCache().ForEachApp(
       [&model_updater, &app_type](const apps::AppUpdate& update) {

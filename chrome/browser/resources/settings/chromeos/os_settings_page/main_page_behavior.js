@@ -5,6 +5,7 @@
 // clang-format off
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {ensureLazyLoaded} from '../ensure_lazy_loaded.m.js';
 // #import {Route, Router, MinimumRoutes} from '../../router.m.js';
 // clang-format on
 
@@ -200,9 +201,8 @@ cr.define('settings', function() {
       /* #ignore */ Polymer.importHref(
           /* #ignore */ '/chromeos/lazy_load.html', () => {});
 
-      // TODO(jonmann): Implement lazy loading in Polymer 3.
       // Polymer 3 codepath, do not delete next line comment.
-      // #polymer3 // ensureLazyLoaded();
+      // #polymer3 ensureLazyLoaded();
 
       this.ensureSectionForRoute_(route).then(section => {
         section.classList.add('expanded');

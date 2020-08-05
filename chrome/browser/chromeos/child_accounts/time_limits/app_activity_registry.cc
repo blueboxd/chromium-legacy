@@ -11,7 +11,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_allowlist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
@@ -329,7 +329,7 @@ bool AppActivityRegistry::IsAppActive(const AppId& app_id) const {
   return activity_registry_.at(app_id).activity.is_active();
 }
 
-bool AppActivityRegistry::IsWhitelistedApp(const AppId& app_id) const {
+bool AppActivityRegistry::IsAllowlistedApp(const AppId& app_id) const {
   DCHECK(base::Contains(activity_registry_, app_id));
   return GetAppState(app_id) == AppState::kAlwaysAvailable;
 }
@@ -536,10 +536,10 @@ bool AppActivityRegistry::SetAppLimit(
   if (!did_change && (IsAppAvailable(app_id) || app_limit.has_value()))
     return updated;
 
-  if (IsWhitelistedApp(app_id)) {
+  if (IsAllowlistedApp(app_id)) {
     if (app_limit.has_value()) {
       VLOG(1) << "Tried to set time limit for " << app_id
-              << " which is whitelisted.";
+              << " which is allowlisted.";
     }
 
     details.limit = base::nullopt;
@@ -567,7 +567,7 @@ bool AppActivityRegistry::SetAppLimit(
   return updated;
 }
 
-void AppActivityRegistry::SetAppWhitelisted(const AppId& app_id) {
+void AppActivityRegistry::SetAppAllowlisted(const AppId& app_id) {
   if (!base::Contains(activity_registry_, app_id))
     return;
   SetAppState(app_id, AppState::kAlwaysAvailable);
@@ -602,10 +602,10 @@ void AppActivityRegistry::OnChromeAppActivityChanged(
   SetAppInactive(chrome_app_id, timestamp);
 }
 
-void AppActivityRegistry::OnTimeLimitWhitelistChanged(
-    const AppTimeLimitsWhitelistPolicyWrapper& wrapper) {
-  std::vector<AppId> whitelisted_apps = wrapper.GetWhitelistAppList();
-  for (const AppId& app : whitelisted_apps) {
+void AppActivityRegistry::OnTimeLimitAllowlistChanged(
+    const AppTimeLimitsAllowlistPolicyWrapper& wrapper) {
+  std::vector<AppId> allowlisted_apps = wrapper.GetAllowlistAppList();
+  for (const AppId& app : allowlisted_apps) {
     if (!base::Contains(activity_registry_, app))
       continue;
 

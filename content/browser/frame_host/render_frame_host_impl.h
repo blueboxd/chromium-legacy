@@ -752,13 +752,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
     kInBackForwardCache,
 
     // This state corresponds to when RenderFrameHost has started running unload
-    // handlers. An event such as navigation commit or detaching the frame
-    // causes the RenderFrameHost to transition to this state. Then, the
-    // RenderFrameHost sends IPCs to the renderer process to execute unload
-    // handlers and deletes the RenderFrame. The RenderFrameHost waits for an
-    // ACK from the renderer process, either FrameHostMsg_Unload_ACK for a
-    // navigating frame or mojom::FrameHost::Detach for its subframes, after
-    // which the RenderFrameHost transitions to kReadyToBeDeleted state.
+    // handlers (this includes handlers for the "unload", "pagehide", and
+    // "visibilitychange" events). An event such as navigation commit or
+    // detaching the frame causes the RenderFrameHost to transition to this
+    // state. Then, the RenderFrameHost sends IPCs to the renderer process to
+    // execute unload handlers and deletes the RenderFrame. The RenderFrameHost
+    // waits for an ACK from the renderer process, either
+    // FrameHostMsg_Unload_ACK for a navigating frame or FrameHostMsg_Detach for
+    // its subframes, after which the RenderFrameHost transitions to
+    // kReadyToBeDeleted state.
     //
     // Transition to this state happens only from kActive state. Note that
     // eviction from BackForwardCache does not run unload handlers, and
@@ -1801,6 +1803,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   friend class TestRenderViewHost;
   friend class TextInputTestLocalFrame;
   friend class WebContentsSplitCacheBrowserTest;
+  friend class RenderFrameHostManagerUnloadBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(NavigatorTest, TwoNavigationsRacingCommit);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
@@ -2416,8 +2419,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See |SetIsXrOverlaySetup()|
   bool HasSeenRecentXrOverlaySetup();
 
-  bool has_unload_handler() {
-    return has_unload_handler_ || do_not_delete_for_testing_;
+  bool has_unload_handlers() {
+    return has_unload_handler_ || has_pagehide_handler_ ||
+           has_visibilitychange_handler_ || do_not_delete_for_testing_;
   }
 
   // Updates the |lifecycle_state_|. Called when there is a change in the
@@ -2772,6 +2776,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Renderer-side states that blocks fast shutdown of the frame.
   bool has_before_unload_handler_ = false;
   bool has_unload_handler_ = false;
+  bool has_pagehide_handler_ = false;
+  bool has_visibilitychange_handler_ = false;
 
   base::Optional<RenderFrameAudioOutputStreamFactory>
       audio_service_audio_output_stream_factory_;

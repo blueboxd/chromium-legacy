@@ -133,7 +133,8 @@ FileSystemChooser::Options::Options(
     std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
     bool include_accepts_all)
     : type_(type),
-      file_types_(ConvertAcceptsToFileTypeInfo(accepts, include_accepts_all)) {}
+      file_types_(ConvertAcceptsToFileTypeInfo(accepts, include_accepts_all)),
+      default_file_type_index_(file_types_.extensions.empty() ? 0 : 1) {}
 
 // static
 void FileSystemChooser::CreateAndShow(
@@ -178,7 +179,7 @@ void FileSystemChooser::CreateAndShow(
   listener->dialog_->SelectFile(
       dialog_type, /*title=*/base::string16(),
       /*default_path=*/base::FilePath(), &options.file_type_info(),
-      /*file_type_index=*/1,
+      options.default_file_type_index(),
       /*default_extension=*/base::FilePath::StringType(),
       web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr,
       /*params=*/nullptr);

@@ -500,6 +500,10 @@ void InternalPopupMenu::UpdateFromElement(UpdateReason) {
   needs_update_ = true;
 }
 
+AXObject* InternalPopupMenu::PopupRootAXObject() const {
+  return popup_ ? popup_->RootAXObject() : nullptr;
+}
+
 void InternalPopupMenu::Update(bool force_update) {
   if (!popup_ || !owner_element_ || (!needs_update_ && !force_update))
     return;

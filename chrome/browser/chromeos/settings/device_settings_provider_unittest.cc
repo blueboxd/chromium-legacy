@@ -399,6 +399,27 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     VerifyPolicyValue(policy_key, &list);
   }
 
+  // Helper routine clear the ShowLowDiskSpaceNotification policy.
+  void ClearDeviceShowLowDiskSpaceNotification() {
+    device_policy_->payload().clear_device_show_low_disk_space_notification();
+    BuildAndInstallDevicePolicy();
+  }
+
+  // Helper routine set the ShowLowDiskSpaceNotification policy.
+  void SetDeviceShowLowDiskSpaceNotification(bool show) {
+    em::DeviceShowLowDiskSpaceNotificationProto* proto =
+        device_policy_->payload()
+            .mutable_device_show_low_disk_space_notification();
+    proto->set_device_show_low_disk_space_notification(show);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void VerifyDeviceShowLowDiskSpaceNotification(bool expected) {
+    const base::Value expected_value(expected);
+    EXPECT_EQ(expected_value,
+              *provider_->Get(kDeviceShowLowDiskSpaceNotification));
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -1121,6 +1142,32 @@ TEST_F(DeviceSettingsProviderTest, DevicePrintersAllowlist_both) {
   SetDevicePrintersAllowlist(values);
   BuildAndInstallDevicePolicy();
   VerifyDevicePrinterList(kDevicePrintersAllowlist, values);
+}
+
+TEST_F(DeviceSettingsProviderTest,
+       DeviceShowLowDiskSpaceNotificationDefaultTrue) {
+  ClearDeviceShowLowDiskSpaceNotification();
+  // Missing policy should default to showing the low disk space
+  // notification for consumer devices.
+  VerifyDeviceShowLowDiskSpaceNotification(true);
+}
+
+TEST_F(DeviceSettingsProviderTestEnterprise,
+       DeviceShowLowDiskSpaceNotificationDefaultFalse) {
+  ClearDeviceShowLowDiskSpaceNotification();
+  // Missing policy should default to suppressing the low disk space
+  // notification for enrolled devices by default.
+  VerifyDeviceShowLowDiskSpaceNotification(false);
+}
+
+TEST_F(DeviceSettingsProviderTestEnterprise,
+       DeviceShowLowDiskSpaceNotification) {
+  // Showing the low disk space notification can be controlled by policy.
+  SetDeviceShowLowDiskSpaceNotification(true);
+  VerifyDeviceShowLowDiskSpaceNotification(true);
+
+  SetDeviceShowLowDiskSpaceNotification(false);
+  VerifyDeviceShowLowDiskSpaceNotification(false);
 }
 
 }  // namespace chromeos

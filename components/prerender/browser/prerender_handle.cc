@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_handle.h"
+#include "components/prerender/browser/prerender_handle.h"
 
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "chrome/browser/prerender/prerender_contents.h"
+#include "components/prerender/browser/prerender_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -15,11 +15,9 @@ using content::BrowserThread;
 
 namespace prerender {
 
-PrerenderHandle::Observer::Observer() {
-}
+PrerenderHandle::Observer::Observer() {}
 
-PrerenderHandle::Observer::~Observer() {
-}
+PrerenderHandle::Observer::~Observer() {}
 
 PrerenderHandle::~PrerenderHandle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -47,7 +45,7 @@ void PrerenderHandle::OnCancel() {
 bool PrerenderHandle::IsPrerendering() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return prerender_data_.get() != nullptr &&
-      !prerender_data_->contents()->prerendering_has_been_cancelled();
+         !prerender_data_->contents()->prerendering_has_been_cancelled();
 }
 
 bool PrerenderHandle::IsFinishedLoading() const {

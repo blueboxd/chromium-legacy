@@ -815,10 +815,11 @@ void ChromeLauncherController::DoShowAppInfoFlow(Profile* profile,
                                                  const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
+
   // Apps that are not in the App Service may call this function.
   // E.g. extensions, apps that are using their platform specific IDs.
-  if (proxy && proxy->AppRegistryCache().GetAppType(app_id) ==
-                   apps::mojom::AppType::kUnknown) {
+  if (proxy->AppRegistryCache().GetAppType(app_id) ==
+      apps::mojom::AppType::kUnknown) {
     return;
   }
 
@@ -1056,7 +1057,6 @@ void ChromeLauncherController::UpdateAppLaunchersFromSync() {
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  DCHECK(proxy);
 
   const std::vector<ash::ShelfID> pinned_apps =
       GetPinnedAppsFromSync(launcher_controller_helper_.get());

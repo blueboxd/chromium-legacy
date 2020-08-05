@@ -132,7 +132,6 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
 
   apps::AppServiceProxy* app_service_proxy_ =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  DCHECK(app_service_proxy_);
   app_service_proxy_->FlushMojoCallsForTesting();
 
   run_loop.RunUntilIdle();

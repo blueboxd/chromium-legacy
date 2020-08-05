@@ -28,6 +28,7 @@ class MockNavigationHandle : public NavigationHandle {
   // NavigationHandle implementation:
   int64_t GetNavigationId() override { return navigation_id_; }
   const GURL& GetURL() override { return url_; }
+  const GURL& GetPreviousURL() override { return previous_url_; }
   SiteInstance* GetStartingSiteInstance() override {
     return starting_site_instance_;
   }
@@ -74,7 +75,6 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(HasSubframeNavigationEntryCommitted, bool());
   MOCK_METHOD0(DidReplaceEntry, bool());
   MOCK_METHOD0(ShouldUpdateHistory, bool());
-  MOCK_METHOD0(GetPreviousURL, const GURL&());
   MOCK_METHOD0(GetSocketAddress, net::IPEndPoint());
   const net::HttpRequestHeaders& GetRequestHeaders() override {
     return request_headers_;
@@ -133,6 +133,9 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(GetIsOverridingUserAgent, bool());
 
   void set_url(const GURL& url) { url_ = url; }
+  void set_previous_url(const GURL& previous_url) {
+    previous_url_ = previous_url;
+  }
   void set_starting_site_instance(SiteInstance* site_instance) {
     starting_site_instance_ = site_instance;
   }
@@ -188,6 +191,7 @@ class MockNavigationHandle : public NavigationHandle {
  private:
   int64_t navigation_id_;
   GURL url_;
+  GURL previous_url_;
   SiteInstance* starting_site_instance_ = nullptr;
   WebContents* web_contents_ = nullptr;
   GURL base_url_for_data_url_;

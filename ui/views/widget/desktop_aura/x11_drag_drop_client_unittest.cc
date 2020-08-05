@@ -487,6 +487,9 @@ class X11DragDropClientTest : public ViewsTestBase {
     set_native_widget_type(NativeWidgetType::kDesktop);
 
     ViewsTestBase::SetUp();
+    // TODO(msisov): rewrite these tests for ozone and non-ozone Linux.
+    if (features::IsUsingOzonePlatform())
+      GTEST_SKIP();
 
     // Create widget to initiate the drags.
     widget_ = std::make_unique<Widget>();

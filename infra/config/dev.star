@@ -6,27 +6,27 @@
 # See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md
 # for information on starlark/lucicfg
 
-load('//project.star', 'master_only_exec')
+load("//project.star", "master_only_exec")
 
 lucicfg.check_version(
-    min = '1.18.4',
-    message = 'Update depot_tools',
+    min = "1.18.4",
+    message = "Update depot_tools",
 )
 
 # Enable LUCI Realms support.
-lucicfg.enable_experiment('crbug.com/1085650')
+lucicfg.enable_experiment("crbug.com/1085650")
 
 # Tell lucicfg what files it is allowed to touch
 lucicfg.config(
-    config_dir = 'generated',
+    config_dir = "generated",
     tracked_files = [
-        'cr-buildbucket-dev.cfg',
-        'luci-logdog-dev.cfg',
-        'luci-milo-dev.cfg',
-        'luci-scheduler-dev.cfg',
-        'realms-dev.cfg',
+        "cr-buildbucket-dev.cfg",
+        "luci-logdog-dev.cfg",
+        "luci-milo-dev.cfg",
+        "luci-scheduler-dev.cfg",
+        "realms-dev.cfg",
     ],
     fail_on_warnings = True,
 )
 
-master_only_exec('//dev/dev.star')
+master_only_exec("//dev/dev.star")

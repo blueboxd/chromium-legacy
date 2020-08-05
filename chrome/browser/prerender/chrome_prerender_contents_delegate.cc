@@ -5,13 +5,13 @@
 #include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
+#include "components/prerender/browser/prerender_contents.h"
 #include "components/prerender/browser/prerender_histograms.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "content/public/browser/web_contents.h"
 
 namespace prerender {

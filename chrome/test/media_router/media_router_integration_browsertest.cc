@@ -500,6 +500,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       web_contents->GetDelegate()->IsFullscreenForTabOrPending(web_contents));
 }
 
+// Flaky on MSan bots: http://crbug.com/879885
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OpenLocalMediaFileCastFailNoFullscreen \
+  DISABLED_OpenLocalMediaFileCastFailNoFullscreen
+#else
+#define MAYBE_OpenLocalMediaFileCastFailNoFullscreen \
+  OpenLocalMediaFileCastFailNoFullscreen
+#endif
 // Tests that failed route creation of local file does not enter fullscreen.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        OpenLocalMediaFileCastFailNoFullscreen) {

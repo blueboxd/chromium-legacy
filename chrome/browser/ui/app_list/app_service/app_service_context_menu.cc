@@ -69,7 +69,6 @@ AppServiceContextMenu::AppServiceContextMenu(
     : AppContextMenu(delegate, profile, app_id, controller) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->AppRegistryCache().ForOneApp(
       app_id, [this](const apps::AppUpdate& update) {
         app_type_ =
@@ -84,7 +83,6 @@ AppServiceContextMenu::~AppServiceContextMenu() = default;
 void AppServiceContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  DCHECK(proxy);
   if (proxy->AppRegistryCache().GetAppType(app_id()) ==
       apps::mojom::AppType::kUnknown) {
     std::move(callback).Run(nullptr);

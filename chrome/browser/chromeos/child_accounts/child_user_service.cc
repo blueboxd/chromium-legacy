@@ -114,18 +114,18 @@ bool ChildUserService::WebTimeLimitReached() const {
   return app_time_controller_->web_time_enforcer()->blocked();
 }
 
-bool ChildUserService::WebTimeLimitWhitelistedURL(const GURL& url) const {
+bool ChildUserService::WebTimeLimitAllowlistedURL(const GURL& url) const {
   if (!app_time_controller_)
     return false;
   DCHECK(app_time_controller_->web_time_enforcer());
-  return app_time_controller_->web_time_enforcer()->IsURLWhitelisted(url);
+  return app_time_controller_->web_time_enforcer()->IsURLAllowlisted(url);
 }
 
-bool ChildUserService::AppTimeLimitWhitelistedApp(
+bool ChildUserService::AppTimeLimitAllowlistedApp(
     const app_time::AppId& app_id) const {
   if (!app_time_controller_)
     return false;
-  return app_time_controller_->app_registry()->IsWhitelistedApp(app_id);
+  return app_time_controller_->app_registry()->IsAllowlistedApp(app_id);
 }
 
 base::TimeDelta ChildUserService::GetWebTimeLimit() const {

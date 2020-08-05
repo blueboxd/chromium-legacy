@@ -484,4 +484,8 @@ const char kSystemProxySettingsKeySystemServicesPassword[] =
 // An enum pref that indicates whether adb sideloading is allowed on this device
 const char kDeviceCrostiniArcAdbSideloadingAllowed[] =
     "cros.device.crostini_arc_adb_sideloading_allowed";
+
+// A boolean pref controlling showing the low disk space notification.
+const char kDeviceShowLowDiskSpaceNotification[] =
+    "cros.device.show_low_disk_space_notification";
 }  // namespace chromeos

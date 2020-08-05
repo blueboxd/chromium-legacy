@@ -16,13 +16,12 @@ LauncherAppServiceAppUpdater::LauncherAppServiceAppUpdater(
     : LauncherAppUpdater(delegate, browser_context) {
   apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
-  if (proxy) {
-    proxy->AppRegistryCache().ForEachApp([this](const apps::AppUpdate& update) {
-      if (update.Readiness() == apps::mojom::Readiness::kReady)
-        this->installed_apps_.insert(update.AppId());
-    });
-    Observe(&proxy->AppRegistryCache());
-  }
+
+  proxy->AppRegistryCache().ForEachApp([this](const apps::AppUpdate& update) {
+    if (update.Readiness() == apps::mojom::Readiness::kReady)
+      this->installed_apps_.insert(update.AppId());
+  });
+  Observe(&proxy->AppRegistryCache());
 }
 
 LauncherAppServiceAppUpdater::~LauncherAppServiceAppUpdater() = default;

@@ -120,8 +120,7 @@ void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
 bool IsUnRemovableDefaultApp(const std::string& id) {
   return id == extension_misc::kChromeAppId ||
          id == extensions::kWebStoreAppId ||
-         id == file_manager::kFileManagerAppId ||
-         id == extension_misc::kGeniusAppId;
+         id == file_manager::kFileManagerAppId;
 }
 
 void UninstallExtension(extensions::ExtensionService* service,

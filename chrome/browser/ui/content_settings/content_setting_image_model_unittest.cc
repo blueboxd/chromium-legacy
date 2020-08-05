@@ -16,7 +16,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
@@ -24,8 +23,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -37,6 +34,7 @@
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/permissions/test/mock_permission_request.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -48,10 +46,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
-
-#if defined(OS_MAC)
-#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
-#endif
 
 using content_settings::TabSpecificContentSettings;
 
@@ -118,22 +112,6 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
 bool HasIcon(const ContentSettingImageModel& model) {
   return !model.GetIcon(gfx::kPlaceholderColor).IsEmpty();
 }
-
-#if defined(OS_MAC)
-class FakeSystemGeolocationPermissionsManager
-    : public GeolocationSystemPermissionManager {
- public:
-  FakeSystemGeolocationPermissionsManager() = default;
-
-  ~FakeSystemGeolocationPermissionsManager() override = default;
-
-  SystemPermissionStatus GetSystemPermission() override { return fake_status_; }
-  void SetStatus(SystemPermissionStatus status) { fake_status_ = status; }
-
- private:
-  SystemPermissionStatus fake_status_ = SystemPermissionStatus::kAllowed;
-};
-#endif
 
 TEST_F(ContentSettingImageModelTest, Update) {
   TabSpecificContentSettings::CreateForWebContents(
@@ -284,81 +262,6 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
   EXPECT_EQ(content_setting_image_model->get_tooltip(),
             l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
 }
-
-#if defined(OS_MAC)
-// Test the correct ContentSettingImageModel for various permutations of site
-// and system level Geolocation permissions
-TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
-  auto test_location_permission_manager =
-      std::make_unique<FakeSystemGeolocationPermissionsManager>();
-  FakeSystemGeolocationPermissionsManager* location_permission_manager =
-      test_location_permission_manager.get();
-  TestingBrowserProcess::GetGlobal()
-      ->GetTestPlatformPart()
-      ->SetLocationPermissionManager(
-          std::move(test_location_permission_manager));
-
-  TabSpecificContentSettings::CreateForWebContents(
-      web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
-          web_contents()));
-  GURL requesting_origin = GURL("https://www.example.com");
-  NavigateAndCommit(controller_, requesting_origin);
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-
-  auto content_setting_image_model =
-      ContentSettingImageModel::CreateForContentType(
-          ContentSettingImageModel::ImageType::GEOLOCATION);
-  EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
-
-  settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
-                                         CONTENT_SETTING_ALLOW);
-  content_settings->OnGeolocationPermissionSet(requesting_origin,
-                                               /*allowed=*/true);
-  content_setting_image_model->Update(web_contents());
-  EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
-  EXPECT_EQ(content_setting_image_model->get_tooltip(),
-            l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOWED_TOOLTIP));
-  EXPECT_EQ(content_setting_image_model->explanatory_string_id(), 0);
-
-  settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
-                                         CONTENT_SETTING_BLOCK);
-  content_settings->OnGeolocationPermissionSet(requesting_origin,
-                                               /*allowed=*/false);
-  content_setting_image_model->Update(web_contents());
-  EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_TRUE(HasIcon(*content_setting_image_model));
-  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
-  EXPECT_EQ(content_setting_image_model->get_tooltip(),
-            l10n_util::GetStringUTF16(IDS_GEOLOCATION_BLOCKED_TOOLTIP));
-  EXPECT_EQ(content_setting_image_model->explanatory_string_id(), 0);
-
-  location_permission_manager->SetStatus(SystemPermissionStatus::kDenied);
-  content_setting_image_model->Update(web_contents());
-  EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
-  EXPECT_EQ(content_setting_image_model->get_tooltip(),
-            l10n_util::GetStringUTF16(IDS_GEOLOCATION_BLOCKED_TOOLTIP));
-  EXPECT_EQ(content_setting_image_model->explanatory_string_id(), 0);
-
-  content_settings->OnGeolocationPermissionSet(requesting_origin,
-                                               /*allowed=*/true);
-  content_setting_image_model->Update(web_contents());
-  EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
-  EXPECT_EQ(content_setting_image_model->get_tooltip(),
-            l10n_util::GetStringUTF16(IDS_GEOLOCATION_BLOCKED_TOOLTIP));
-  EXPECT_EQ(content_setting_image_model->explanatory_string_id(),
-            IDS_GEOLOCATION_TURNED_OFF);
-}
-#endif
 
 // Regression test for https://crbug.com/955408
 // See also: ContentSettingBubbleModelTest.SensorAccessPermissionsChanged

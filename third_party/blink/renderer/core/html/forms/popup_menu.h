@@ -26,6 +26,8 @@
 
 namespace blink {
 
+class AXObject;
+
 class PopupMenu : public GarbageCollected<PopupMenu> {
  public:
   virtual ~PopupMenu() = default;
@@ -39,6 +41,7 @@ class PopupMenu : public GarbageCollected<PopupMenu> {
   };
   virtual void UpdateFromElement(UpdateReason) = 0;
   virtual void DisconnectClient() = 0;
+  virtual AXObject* PopupRootAXObject() const { return nullptr; }
 };
 
 }  // namespace blink

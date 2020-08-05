@@ -73,6 +73,10 @@ class CONTENT_EXPORT MediaSessionControllersManager {
   void OnPictureInPictureAvailabilityChanged(const MediaPlayerId& id,
                                              bool available);
 
+  // Called when the audio output device for the player |id| has changed.
+  void OnAudioOutputSinkChanged(const MediaPlayerId& id,
+                                const std::string& raw_device_id);
+
  private:
   using ControllersMap =
       std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
@@ -90,4 +94,4 @@ class CONTENT_EXPORT MediaSessionControllersManager {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLERS_MANAGER_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLERS_MANAGER_H_

@@ -6,8 +6,8 @@ const protocolVersion = '1.3';
 
 chrome.test.getConfig(config => chrome.test.runTests([
   async function testInspectWorkerForbidden() {
-    const tab = await new Promise(resolve =>
-        chrome.tabs.create({url: config.customArg}, resolve));
+    const {openTab} = await import('/_test_resources/test_util/tabs_util.js');
+    const tab = await openTab(config.customArg);
     const debuggee = {tabId: tab.id};
     await new Promise(resolve =>
         chrome.debugger.attach(debuggee, protocolVersion, resolve));

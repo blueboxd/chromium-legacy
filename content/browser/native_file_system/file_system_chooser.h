@@ -42,10 +42,12 @@ class CONTENT_EXPORT FileSystemChooser : public ui::SelectFileDialog::Listener {
     const ui::SelectFileDialog::FileTypeInfo& file_type_info() const {
       return file_types_;
     }
+    int default_file_type_index() const { return default_file_type_index_; }
 
    private:
     blink::mojom::ChooseFileSystemEntryType type_;
     ui::SelectFileDialog::FileTypeInfo file_types_;
+    int default_file_type_index_ = 0;
   };
 
   static void CreateAndShow(WebContents* web_contents,

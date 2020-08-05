@@ -84,12 +84,13 @@ void HttpAuthHandlerRegistryFactory::SetHttpAuthPreferences(
 void HttpAuthHandlerRegistryFactory::RegisterSchemeFactory(
     const std::string& scheme,
     HttpAuthHandlerFactory* factory) {
-  factory->set_http_auth_preferences(http_auth_preferences());
   std::string lower_scheme = base::ToLowerASCII(scheme);
-  if (factory)
+  if (factory) {
+    factory->set_http_auth_preferences(http_auth_preferences());
     factory_map_[lower_scheme] = base::WrapUnique(factory);
-  else
+  } else {
     factory_map_.erase(lower_scheme);
+  }
 }
 
 HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(

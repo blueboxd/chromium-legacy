@@ -23,13 +23,9 @@ class SuggestedContentInfoView : public PrivacyInfoView {
   SuggestedContentInfoView& operator=(const SuggestedContentInfoView&) = delete;
   ~SuggestedContentInfoView() override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
+  // PrivacyInfoView:
+  void CloseButtonPressed() override;
+  void LinkClicked() override;
 
  private:
   AppListViewDelegate* const view_delegate_;

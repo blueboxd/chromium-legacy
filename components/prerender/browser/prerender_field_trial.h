@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
+#ifndef COMPONENTS_PRERENDER_BROWSER_PRERENDER_FIELD_TRIAL_H_
+#define COMPONENTS_PRERENDER_BROWSER_PRERENDER_FIELD_TRIAL_H_
 
 #include "base/feature_list.h"
 
@@ -25,4 +25,4 @@ bool IsNoStatePrefetchEnabled();
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
+#endif  // COMPONENTS_PRERENDER_BROWSER_PRERENDER_FIELD_TRIAL_H_

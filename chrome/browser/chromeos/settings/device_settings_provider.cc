@@ -86,6 +86,7 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenSystemInfoEnforced,
     kDeviceMinimumVersion,
     kDeviceMinimumVersionAueMessage,
+    kDeviceShowLowDiskSpaceNotification,
     kDeviceShowNumericKeyboardForPassword,
     kDeviceOffHours,
     kDeviceOwner,
@@ -997,6 +998,22 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                                  base::Value(container.mode()));
     }
   }
+
+  // Default value of the policy in case it's missing.
+  bool show_low_disk_space_notification = true;
+  // Disable the notification by default for enrolled devices.
+  if (InstallAttributes::Get()->IsEnterpriseManaged())
+    show_low_disk_space_notification = false;
+  if (policy.has_device_show_low_disk_space_notification()) {
+    const em::DeviceShowLowDiskSpaceNotificationProto& container(
+        policy.device_show_low_disk_space_notification());
+    if (container.has_device_show_low_disk_space_notification()) {
+      show_low_disk_space_notification =
+          container.device_show_low_disk_space_notification();
+    }
+  }
+  new_values_cache->SetBoolean(kDeviceShowLowDiskSpaceNotification,
+                               show_low_disk_space_notification);
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,

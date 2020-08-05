@@ -112,6 +112,16 @@ void MediaSessionControllersManager::OnPictureInPictureAvailabilityChanged(
   controller->OnPictureInPictureAvailabilityChanged(available);
 }
 
+void MediaSessionControllersManager::OnAudioOutputSinkChanged(
+    const MediaPlayerId& id,
+    const std::string& raw_device_id) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  MediaSessionController* const controller = FindOrCreateController(id);
+  controller->OnAudioOutputSinkChanged(raw_device_id);
+}
+
 MediaSessionController* MediaSessionControllersManager::FindOrCreateController(
     const MediaPlayerId& id) {
   auto it = controllers_map_.find(id);

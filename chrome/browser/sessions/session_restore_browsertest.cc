@@ -1139,12 +1139,17 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterDelete) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, StartupPagesWithOnlyNtp) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  content::WebContentsDestroyedWatcher original_tab_destroyed_watcher(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+
   SessionStartupPref pref(SessionStartupPref::URLS);
   pref.urls.push_back(url1_);
   pref.urls.push_back(url2_);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
   SessionRestore::OpenStartupPagesAfterCrash(browser());
+  // Wait until the original tab finished closing.
+  original_tab_destroyed_watcher.Wait();
 
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
@@ -1755,12 +1760,17 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClobberRestoreTest) {
   ASSERT_EQ(0, new_browser->tab_strip_model()->active_index());
   // Use the existing tab to navigate to the NTP.
   ui_test_utils::NavigateToURL(new_browser, GURL(chrome::kChromeUINewTabURL));
+  content::WebContentsDestroyedWatcher existing_tab_destroyed_watcher(
+      new_browser->tab_strip_model()->GetWebContentsAt(0));
 
   // Restore the session again, clobbering the existing tab.
   SessionRestore::RestoreSession(
       profile, new_browser,
       SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
       std::vector<GURL>());
+
+  // Wait until the existing tab finished closing.
+  existing_tab_destroyed_watcher.Wait();
 
   // 2 tabs should have been restored, with the existing tab clobbered, giving
   // us a total of 2 tabs.

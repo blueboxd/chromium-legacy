@@ -203,7 +203,7 @@ void WebTimeActivityProvider::MaybeNotifyStateChange(base::Time timestamp) {
 ChromeAppActivityState
 WebTimeActivityProvider::CalculateChromeAppActivityState() const {
   int active_count = 0;
-  int active_whitelisted_count = 0;
+  int active_allowlisted_count = 0;
 
   for (const Browser* browser : active_browsers_) {
     const content::WebContents* contents =
@@ -218,9 +218,9 @@ WebTimeActivityProvider::CalculateChromeAppActivityState() const {
     // If |observer| is not instantiated, that means that
     // WebTimeNavigationObserver::MaybeCreateForWebContents didn't create it.
     // This means that WebTimeLimitEnforcer::IsEnabled returned false.
-    // Mark it as active whitelisted.
+    // Mark it as active allowlisted.
     if (!observer) {
-      active_whitelisted_count++;
+      active_allowlisted_count++;
       continue;
     }
 
@@ -235,8 +235,8 @@ WebTimeActivityProvider::CalculateChromeAppActivityState() const {
       continue;
 
     WebTimeLimitEnforcer* enforcer = app_time_controller_->web_time_enforcer();
-    if (info->is_error || enforcer->IsURLWhitelisted(info->url)) {
-      active_whitelisted_count++;
+    if (info->is_error || enforcer->IsURLAllowlisted(info->url)) {
+      active_allowlisted_count++;
       continue;
     }
 
@@ -245,8 +245,8 @@ WebTimeActivityProvider::CalculateChromeAppActivityState() const {
 
   if (active_count > 0)
     return ChromeAppActivityState::kActive;
-  if (active_whitelisted_count > 0)
-    return ChromeAppActivityState::kActiveWhitelisted;
+  if (active_allowlisted_count > 0)
+    return ChromeAppActivityState::kActiveAllowlisted;
   return ChromeAppActivityState::kInactive;
 }
 

@@ -54,6 +54,27 @@ enum class LayoutFadeType {
   kContinuingFade
 };
 
+// Makes a copy of the given layout with only visible child views (non-visible
+// children are omitted).
+ProposedLayout WithOnlyVisibleViews(const ProposedLayout layout) {
+  ProposedLayout result;
+  result.host_size = layout.host_size;
+  std::copy_if(
+      layout.child_layouts.begin(), layout.child_layouts.end(),
+      std::back_inserter(result.child_layouts),
+      [](const ChildLayout& child_layout) { return child_layout.visible; });
+  return result;
+}
+
+// Returns true if the two proposed layouts have the same visible views, with
+// the same parameters, in the same order.
+bool HaveSameVisibleViews(const ProposedLayout& l1, const ProposedLayout& l2) {
+  // There is an approach that uses nested loops and dual iterators that is more
+  // efficient than copying, but since this method is only currently called when
+  // views are added to the layout, clarity is more important than speed.
+  return WithOnlyVisibleViews(l1) == WithOnlyVisibleViews(l2);
+}
+
 }  // namespace
 
 // Holds data about a view that is fading in or out as part of an animation.
@@ -106,6 +127,11 @@ class AnimatingLayoutManager::AnimationDelegate
   // ready-to-animate state, possibly resetting the current layout and
   // invalidating the host to make sure the layout is up to date.
   void MakeReadyForAnimation();
+
+  // Overrides the default animation container with |container|.
+  void SetAnimationContainerForTesting(gfx::AnimationContainer* container) {
+    animation_->SetContainer(container);
+  }
 
  private:
   // Observer used to watch for the host view being parented to a widget.
@@ -272,6 +298,17 @@ void AnimatingLayoutManager::FadeOut(View* child_view) {
     InvalidateHost(true);
     return;
   }
+
+  // This handles a case where we are in the middle of an animation where we
+  // would have hidden the target view, but haven't hit Layout() yet, so haven't
+  // actually hidden it yet. Because we plan fade-outs off of the current layout
+  // if the view the child view is visible it will not get a proper fade-out and
+  // will remain visible but not properly laid out. We remedy this by hiding the
+  // view immediately.
+  const ChildLayout* const current_layout =
+      FindChildViewInLayout(current_layout_, child_view);
+  if ((!current_layout || !current_layout->visible) && child_view->GetVisible())
+    SetViewVisibility(child_view, false);
 
   // Indicate that the view should become hidden in the layout without
   // immediately changing its visibility. Instead, this triggers an animation
@@ -462,6 +499,24 @@ void AnimatingLayoutManager::OnInstalled(View* host) {
   animation_delegate_ = std::make_unique<AnimationDelegate>(this);
 }
 
+bool AnimatingLayoutManager::OnViewAdded(View* host, View* view) {
+  // Handle a case where we add a visible view that shouldn't be visible in the
+  // layout. In this case, there is no animation, no invalidation, and we just
+  // set the view to not be visible.
+  if (view->GetVisible() && cached_layout_size() && !is_animating_) {
+    const gfx::Size target_size = GetAvailableTargetLayoutSize();
+    ProposedLayout proposed_layout =
+        target_layout_manager()->GetProposedLayout(target_size);
+    if (HaveSameVisibleViews(current_layout_, proposed_layout)) {
+      SetViewVisibility(view, false);
+      current_layout_ = target_layout_ = proposed_layout;
+      return false;
+    }
+  }
+
+  return RecalculateTarget();
+}
+
 void AnimatingLayoutManager::OnLayoutChanged() {
   // This replaces the normal behavior of clearing cached layouts.
   RecalculateTarget();
@@ -585,6 +640,7 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   // start or update an animation.
   const ProposedLayout proposed_layout =
       target_layout_manager()->GetProposedLayout(target_size);
+
   if (target_layout_ == proposed_layout)
     return false;
 
@@ -605,6 +661,11 @@ bool AnimatingLayoutManager::RecalculateTarget() {
     // child views' visibility changing.)
     starting_layout_ = current_layout_;
     starting_offset_ = current_offset_;
+  } else if (starting_layout_ == target_layout_) {
+    // If we initiated but did not show any frames of an animation, and we are
+    // redirected to our starting layout then just reset the layout.
+    ResetLayoutToSize(target_size);
+    return false;
   }
   CalculateFadeInfos();
   UpdateCurrentLayout(0.0);

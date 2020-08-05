@@ -1098,6 +1098,7 @@ test("views_unittests") {
     "focus/focus_traversal_unittest.cc",
     "layout/animating_layout_manager_unittest.cc",
     "layout/box_layout_unittest.cc",
+    "layout/composite_layout_tests.cc",
     "layout/fill_layout_unittest.cc",
     "layout/flex_layout_unittest.cc",
     "layout/grid_layout_unittest.cc",

@@ -102,7 +102,6 @@ IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
   // callbacks.
   Profile* profile = ProfileManager::GetActiveUserProfile();
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
-  ASSERT_TRUE(proxy);
   proxy->FlushMojoCallsForTesting();
 
   AppListClientImpl* client = AppListClientImpl::GetInstance();

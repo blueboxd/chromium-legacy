@@ -268,6 +268,7 @@ CrosUsbDetector::CrosUsbDetector() {
   g_cros_usb_detector = this;
   guest_os_classes_blocked_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_PHYSICAL));
+  guest_os_classes_blocked_.emplace_back(UsbFilterByClassCode(USB_CLASS_HUB));
   guest_os_classes_blocked_.emplace_back(UsbFilterByClassCode(USB_CLASS_HID));
   guest_os_classes_blocked_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_PRINTER));
@@ -280,6 +281,8 @@ CrosUsbDetector::CrosUsbDetector() {
       UsbFilterByClassCode(USB_CLASS_MASS_STORAGE));
   guest_os_classes_without_notif_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_VIDEO));
+  guest_os_classes_without_notif_.emplace_back(
+      UsbFilterByClassCode(USB_CLASS_BILLBOARD));
   guest_os_classes_without_notif_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_PERSONAL_HEALTHCARE));
 
@@ -372,7 +375,8 @@ bool CrosUsbDetector::ShouldShowNotification(
   if ((GetFilteredInterfacesMask(guest_os_classes_without_notif_, device_info) &
        allowed_interfaces_mask) != 0) {
     VLOG(1) << "At least one notifiable interface found for device";
-    return true;
+    // Only notify if no interfaces were suppressed.
+    return GetUsbInterfaceBaseMask(device_info) == allowed_interfaces_mask;
   }
   return false;
 }

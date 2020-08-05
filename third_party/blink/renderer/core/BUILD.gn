@@ -1194,6 +1194,7 @@ jumbo_source_set("unit_tests") {
     "layout/layout_text_fragment_test.cc",
     "layout/layout_text_test.cc",
     "layout/layout_theme_test.cc",
+    "layout/layout_video_test.cc",
     "layout/layout_view_test.cc",
     "layout/line/abstract_inline_text_box_test.cc",
     "layout/line/inline_text_box_test.cc",

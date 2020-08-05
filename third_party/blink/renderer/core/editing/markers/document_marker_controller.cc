@@ -123,6 +123,19 @@ void InvalidatePaintForNode(const Node& node) {
   ax_object_cache->HandleTextMarkerDataAdded(non_const_node, non_const_node);
 }
 
+PositionInFlatTree SearchAroundPositionStart(
+    const PositionInFlatTree& position) {
+  const PositionInFlatTree start_of_word_or_null =
+      StartOfWordPosition(position, kPreviousWordIfOnBoundary);
+  return start_of_word_or_null.IsNotNull() ? start_of_word_or_null : position;
+}
+
+PositionInFlatTree SearchAroundPositionEnd(const PositionInFlatTree& position) {
+  const PositionInFlatTree end_of_word_or_null =
+      EndOfWordPosition(position, kNextWordIfOnBoundary);
+  return end_of_word_or_null.IsNotNull() ? end_of_word_or_null : position;
+}
+
 }  // namespace
 
 Member<DocumentMarkerList>& DocumentMarkerController::ListForType(
@@ -428,15 +441,8 @@ DocumentMarker* DocumentMarkerController::FirstMarkerAroundPosition(
     DocumentMarker::MarkerTypes types) {
   if (position.IsNull())
     return nullptr;
-
-  const PositionInFlatTree start_of_word_or_null =
-      StartOfWordPosition(position, kPreviousWordIfOnBoundary);
-  const PositionInFlatTree start =
-      start_of_word_or_null.IsNotNull() ? start_of_word_or_null : position;
-  const PositionInFlatTree end_of_word_or_null =
-      EndOfWordPosition(position, kNextWordIfOnBoundary);
-  const PositionInFlatTree end =
-      end_of_word_or_null.IsNotNull() ? end_of_word_or_null : position;
+  const PositionInFlatTree& start = SearchAroundPositionStart(position);
+  const PositionInFlatTree& end = SearchAroundPositionEnd(position);
 
   if (start > end) {
     // TODO(crbug.com/778507): We shouldn't reach here, but currently do due to
@@ -534,6 +540,57 @@ DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
   }
 
   return nullptr;
+}
+
+DocumentMarkerVector DocumentMarkerController::MarkersAroundPosition(
+    const PositionInFlatTree& position,
+    DocumentMarker::MarkerTypes types) {
+  DocumentMarkerVector result;
+  if (position.IsNull())
+    return result;
+
+  if (!PossiblyHasMarkers(types))
+    return result;
+
+  const PositionInFlatTree& start = SearchAroundPositionStart(position);
+  const PositionInFlatTree& end = SearchAroundPositionEnd(position);
+
+  const Node* const start_node = start.ComputeContainerNode();
+  const unsigned start_offset = start.ComputeOffsetInContainerNode();
+  const Node* const end_node = end.ComputeContainerNode();
+  const unsigned end_offset = end.ComputeOffsetInContainerNode();
+
+  for (const Node& node : EphemeralRangeInFlatTree(start, end).Nodes()) {
+    auto* text_node = DynamicTo<Text>(node);
+    if (!text_node)
+      continue;
+
+    MarkerLists* const markers = markers_.at(text_node);
+    if (!markers)
+      continue;
+
+    const unsigned start_range_offset = node == start_node ? start_offset : 0;
+    const unsigned end_range_offset =
+        node == end_node ? end_offset : text_node->length();
+
+    // Minor optimization: if we have an empty range at a node boundary, it
+    // doesn't fall in the interior of any marker.
+    if (start_range_offset == 0 && end_range_offset == 0)
+      continue;
+    const unsigned node_length = To<CharacterData>(node).length();
+    if (start_range_offset == node_length && end_range_offset == node_length)
+      continue;
+
+    for (DocumentMarker::MarkerType type : types) {
+      const DocumentMarkerList* const list = ListForType(markers, type);
+      if (!list)
+        continue;
+
+      result.AppendVector(
+          list->MarkersIntersectingRange(start_range_offset, end_range_offset));
+    }
+  }
+  return result;
 }
 
 HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>

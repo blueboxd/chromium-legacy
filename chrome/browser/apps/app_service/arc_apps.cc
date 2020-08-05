@@ -197,6 +197,10 @@ base::Optional<arc::UserInteractionType> GetUserInterationType(
       user_interaction_type =
           arc::UserInteractionType::APP_STARTED_FROM_OMNIBOX;
       break;
+    case apps::mojom::LaunchSource::kFromSharesheet:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_SHARESHEET;
+      break;
     default:
       NOTREACHED();
       return base::nullopt;

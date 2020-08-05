@@ -452,6 +452,14 @@
            file="i18n_setup.js"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_ENSURE_LAZY_LOADED_JS"
+          file="chromeos/ensure_lazy_loaded.m.js"
+          preprocess="true"
+          compress="false" type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_LAZY_LOAD_V3_JS"
+           file="chromeos/lazy_load.js"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML"
            file="chromeos/os_settings_v3.html"
            compress="false"

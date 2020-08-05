@@ -119,6 +119,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabOpener) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "opener.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabRemove) {
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "remove.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabRemoveMultiple) {
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "remove-multiple.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabGetCurrent) {
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }

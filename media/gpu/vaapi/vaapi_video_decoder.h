@@ -15,7 +15,6 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
-#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -30,7 +29,6 @@
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 
@@ -105,11 +103,13 @@ class VaapiVideoDecoder : public DecoderInterface,
   void ClearDecodeTaskQueue(DecodeStatus status);
 
   // Releases the local reference to the VideoFrame associated with the
-  // specified |surface_id| on the decoder thread. This is called when
-  // |decoder_| has outputted the VideoFrame and stopped using it as a
-  // reference frame. Note that this doesn't mean the frame can be reused
-  // immediately, as it might still be used by the client.
-  void ReleaseVideoFrame(VASurfaceID surface_id);
+  // specified |surface_id| on the decoder thread. This is called when the last
+  // reference to the associated VASurface has been released, which happens when
+  // |decoder_| outputted the video frame, or stopped using it as a reference
+  // frame. Note that this doesn't mean the frame can be reused immediately, as
+  // it might still be used by the client.
+  void ReleaseFrame(scoped_refptr<VASurface> va_surface,
+                    VASurfaceID surface_id);
   // Callback for |frame_pool_| to notify of available resources.
   void NotifyFrameAvailable();
 
@@ -158,15 +158,6 @@ class VaapiVideoDecoder : public DecoderInterface,
 
   // The list of frames currently used as output buffers or reference frames.
   std::map<VASurfaceID, scoped_refptr<VideoFrame>> output_frames_;
-
-  // VASurfaces are created via importing |frame_pool_| resources into libva in
-  // CreateSurface(). The following map keeps those VASurfaces for reuse
-  // according to the expectations of libva vaDestroySurfaces(): "Surfaces can
-  // only be destroyed after all contexts using these surfaces have been
-  // destroyed."
-  // TODO(crbug.com/1040291): remove this keep-alive when using SharedImages.
-  base::small_map<std::map<gfx::GpuMemoryBufferId, scoped_refptr<VASurface>>>
-      allocated_va_surfaces_;
 
   // Platform and codec specific video decoder.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;

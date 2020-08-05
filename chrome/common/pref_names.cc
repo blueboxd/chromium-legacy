@@ -959,7 +959,9 @@ const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
 
 // Dictionary pref containing the whitelisted urls, schemes and applications
 // that would not be blocked by per app time limits.
-const char kPerAppTimeLimitsWhitelistPolicy[] =
+// Note that this used to be `kPerAppTimeLimitsWhitelistPolicy`, hence the
+// difference between the variable name and the string value.
+const char kPerAppTimeLimitsAllowlistPolicy[] =
     "child_user.per_app_time_limits.whitelist";
 
 // List of preconfigured network file shares.

@@ -76,6 +76,9 @@ class CONTENT_EXPORT MediaSessionController
   // Called when the media picture-in-picture availability has changed.
   void OnPictureInPictureAvailabilityChanged(bool available);
 
+  // Called when the audio output device has changed.
+  void OnAudioOutputSinkChanged(const std::string& raw_device_id);
+
  private:
   bool IsMediaSessionNeeded() const;
 

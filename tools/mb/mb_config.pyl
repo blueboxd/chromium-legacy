@@ -2854,7 +2854,7 @@
     },
 
     'official_optimize': {
-      'gn_args': 'is_official_build=true is_debug=false',
+      'gn_args': 'is_official_build=true',
     },
 
     'official_optimize_goma': {

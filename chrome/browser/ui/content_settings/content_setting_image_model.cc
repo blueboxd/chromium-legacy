@@ -20,7 +20,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model_states.h"
@@ -36,6 +35,7 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "services/device/public/cpp/device_features.h"
@@ -48,8 +48,6 @@
 #include "ui/gfx/vector_icon_types.h"
 
 #if defined(OS_MAC)
-#include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #endif
 
@@ -82,23 +80,14 @@ class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBlockedImageModel);
 };
 
-class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
+class ContentSettingGeolocationImageModel
+    : public ContentSettingSimpleImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
-  bool IsGeolocationAccessed();
-#if defined(OS_MAC)
-  bool IsGeolocationBlockedOnASystemLevel();
-#endif  // defined(OS_MAC)
-
-  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
-      ContentSettingBubbleModel::Delegate* delegate,
-      WebContents* web_contents) override;
-
  private:
-  unsigned int state_flags_ = 0;
   DISALLOW_COPY_AND_ASSIGN(ContentSettingGeolocationImageModel);
 };
 
@@ -489,77 +478,32 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
 // Geolocation -----------------------------------------------------------------
 
 ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
-    : ContentSettingImageModel(ImageType::GEOLOCATION) {}
+    : ContentSettingSimpleImageModel(ImageType::GEOLOCATION,
+                                     ContentSettingsType::GEOLOCATION) {}
 
 bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_should_auto_open_bubble(false);
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
-
   const ContentSettingsUsagesState& usages_state =
       content_settings->geolocation_usages_state();
   if (usages_state.state_map().empty())
     return false;
 
-  state_flags_ = 0;
-  usages_state.GetDetailedInfo(nullptr, &state_flags_);
-
-#if defined(OS_MAC)
-  if (base::FeatureList::IsEnabled(
-          ::features::kMacCoreLocationImplementation)) {
-    set_explanatory_string_id(0);
-
-    if (IsGeolocationAccessed()) {
-      if (IsGeolocationBlockedOnASystemLevel()) {
-        set_icon(vector_icons::kLocationOnIcon,
-                 vector_icons::kBlockedBadgeIcon);
-        set_tooltip(l10n_util::GetStringUTF16(IDS_GEOLOCATION_BLOCKED_TOOLTIP));
-        if (content_settings->geolocation_was_just_granted_on_site_level())
-          set_should_auto_open_bubble(true);
-        set_explanatory_string_id(IDS_GEOLOCATION_TURNED_OFF);
-      } else {
-        set_icon(vector_icons::kLocationOnIcon, gfx::kNoneIcon);
-        set_tooltip(l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOWED_TOOLTIP));
-      }
-      return true;
-    }
-  }
-#endif  // defined(OS_MAC)
-
-  bool allowed = IsGeolocationAccessed();
-  set_icon(vector_icons::kLocationOnIcon,
+  // If any embedded site has access the allowed icon takes priority over the
+  // blocked icon.
+  unsigned int state_flags = 0;
+  usages_state.GetDetailedInfo(nullptr, &state_flags);
+  bool allowed =
+      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
+  set_icon(kMyLocationIcon,
            allowed ? gfx::kNoneIcon : vector_icons::kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(allowed
                                             ? IDS_GEOLOCATION_ALLOWED_TOOLTIP
                                             : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
   return true;
-}
-
-bool ContentSettingGeolocationImageModel::IsGeolocationAccessed() {
-  return (state_flags_ &
-          ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED) != 0;
-}
-
-#if defined(OS_MAC)
-bool ContentSettingGeolocationImageModel::IsGeolocationBlockedOnASystemLevel() {
-  GeolocationSystemPermissionManager* permission_manager =
-      g_browser_process->platform_part()->location_permission_manager();
-  SystemPermissionStatus permission = permission_manager->GetSystemPermission();
-
-  return permission != SystemPermissionStatus::kAllowed;
-}
-
-#endif  // defined(OS_MAC)
-
-std::unique_ptr<ContentSettingBubbleModel>
-ContentSettingGeolocationImageModel::CreateBubbleModelImpl(
-    ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents) {
-  return std::make_unique<ContentSettingGeolocationBubbleModel>(delegate,
-                                                                web_contents);
 }
 
 // Protocol handlers -----------------------------------------------------------

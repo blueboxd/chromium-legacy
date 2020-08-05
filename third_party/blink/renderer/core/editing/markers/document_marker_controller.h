@@ -136,6 +136,15 @@ class CORE_EXPORT DocumentMarkerController final
       unsigned start_offset,
       unsigned end_offset,
       DocumentMarker::MarkerTypes);
+  // If the given position is either at the boundary or inside a word, expands
+  // the position to the surrounding word and then looks for all markers having
+  // the specified type. If the position is neither at the boundary or inside a
+  // word, expands the position to cover the space between the end of the
+  // previous and the start of the next words. If such markers exist, this
+  // method will return all of them. Otherwise, this method will return an empty
+  // list.
+  DocumentMarkerVector MarkersAroundPosition(const PositionInFlatTree& position,
+                                             DocumentMarker::MarkerTypes types);
   // Return all markers of the specified types whose interiors have non-empty
   // overlap with the specified range. Note that the range can be collapsed, in
   // in which case markers containing the position in their interiors are

@@ -7,6 +7,7 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {eventToPromise} from '../test_util.m.js';
 // #import {MockController, MockMethod} from '../mock_controller.m.js';
+// #import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-lottie. */
@@ -39,13 +40,13 @@ suite('cr_lottie_test', function() {
 
   /**
    * A green pixel as returned by samplePixel.
-   * @type {!Array<number>>}
+   * @type {!Array<number>}
    */
   const GREEN_PIXEL = [0, 255, 0, 255];
 
   /**
    * A blue pixel as returned by samplePixel.
-   * @type {!Array<number>>}
+   * @type {!Array<number>}
    */
   const BLUE_PIXEL = [0, 0, 255, 255];
 
@@ -61,7 +62,7 @@ suite('cr_lottie_test', function() {
   /** @type {?HTMLCanvasElement} */
   let canvas = null;
 
-  /** @type {?blob} */
+  /** @type {?Blob} */
   let lottieWorkerJs = null;
 
   /** @type {Promise} */
@@ -69,9 +70,6 @@ suite('cr_lottie_test', function() {
 
   /** @type {Promise} */
   let waitForPlayingEvent;
-
-  /** @type {Promise} */
-  let waitForResizeEvent;
 
   setup(function(done) {
     mockController = new MockController();
@@ -83,7 +81,7 @@ suite('cr_lottie_test', function() {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
         assertEquals(200, xhr.status);
-        lottieWorkerJs = xhr.response;
+        lottieWorkerJs = /** @type {Blob} */ (xhr.response);
         done();
       }
     };
@@ -94,8 +92,9 @@ suite('cr_lottie_test', function() {
   });
 
   function createLottieElement() {
-    PolymerTest.clearBody();
-    crLottieElement = document.createElement('cr-lottie');
+    document.body.innerHTML = '';
+    crLottieElement =
+        /** @type {!CrLottieElement} */ (document.createElement('cr-lottie'));
     crLottieElement.animationUrl = SAMPLE_LOTTIE_GREEN;
     crLottieElement.autoplay = true;
 
@@ -103,16 +102,14 @@ suite('cr_lottie_test', function() {
         test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
     waitForPlayingEvent =
         test_util.eventToPromise('cr-lottie-playing', crLottieElement);
-    waitForResizeEvent =
-        test_util.eventToPromise('cr-lottie-resized', crLottieElement);
 
-    container = document.createElement('div');
+    container = /** @type {!HTMLDivElement} */ (document.createElement('div'));
     container.style.width = '300px';
     container.style.height = '200px';
     document.body.appendChild(container);
     container.appendChild(crLottieElement);
 
-    canvas = crLottieElement.offscreenCanvas_;
+    canvas = /** @type {!HTMLCanvasElement} */ (crLottieElement.$$('canvas'));
 
     Polymer.dom.flush();
   }
@@ -145,34 +142,24 @@ suite('cr_lottie_test', function() {
         context.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data);
   }
 
-  test('TestInitializeAnimationAndAutoPlay', async () => {
-    createLottieElement();
-    assertFalse(crLottieElement.isAnimationLoaded_);
-    await waitForInitializeEvent;
-    assertTrue(crLottieElement.isAnimationLoaded_);
-    await waitForPlayingEvent;
-  });
-
-  // TODO(crbug.com/1021474): flaky.
-  test.skip('TestResize', async () => {
+  test('TestResize', async () => {
     createLottieElement();
     await waitForInitializeEvent;
     await waitForPlayingEvent;
-    await waitForResizeEvent;
 
     const newHeight = 300;
     const newWidth = 400;
-    waitForResizeEvent =
-        test_util.eventToPromise('cr-lottie-resized', crLottieElement)
-            .then(function(e) {
-              assertEquals(e.detail.height, newHeight);
-              assertEquals(e.detail.width, newWidth);
-            });
+    const waitForResizeEvent =
+        /** @type {!Promise<!CustomEvent<{width: number, height: number}>>} */ (
+            test_util.eventToPromise('cr-lottie-resized', crLottieElement));
 
     // Update size of parent div container to see if the canvas is resized.
     container.style.width = newWidth + 'px';
     container.style.height = newHeight + 'px';
-    await waitForResizeEvent;
+    const resizeEvent = await waitForResizeEvent;
+
+    assertEquals(resizeEvent.detail.height, newHeight);
+    assertEquals(resizeEvent.detail.width, newWidth);
   });
 
   test('TestPlayPause', async () => {
@@ -266,13 +253,15 @@ suite('cr_lottie_test', function() {
   test('TestHidden', async () => {
     await waitForPlayingEvent;
 
-    assertFalse(crLottieElement.$$('canvas').hidden);
+    assertFalse(canvas.hidden);
     crLottieElement.hidden = true;
-    assertTrue(crLottieElement.$$('canvas').hidden);
+    assertTrue(canvas.hidden);
   });
 
   test('TestDetachBeforeImageLoaded', async () => {
-    const mockXhr = {};
+    const mockXhr = {
+      onreadystatechange: () => {},
+    };
     mockXhr.open = mockController.createFunctionMock(mockXhr, 'open');
     mockXhr.send = mockController.createFunctionMock(mockXhr, 'send');
     mockXhr.abort = mockController.createFunctionMock(mockXhr, 'abort');
@@ -309,7 +298,9 @@ suite('cr_lottie_test', function() {
   });
 
   test('TestLoadNewImageWhileOldImageIsStillLoading', async () => {
-    const mockXhr = {};
+    const mockXhr = {
+      onreadystatechange: () => {},
+    };
     mockXhr.open = mockController.createFunctionMock(mockXhr, 'open');
     mockXhr.send = mockController.createFunctionMock(mockXhr, 'send');
     mockXhr.abort = mockController.createFunctionMock(mockXhr, 'abort');

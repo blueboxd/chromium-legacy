@@ -69,7 +69,7 @@ class AssistiveWindowController : public views::WidgetObserver,
 
  private:
   // IMEAssistiveWindowHandlerInterface implementation.
-  void SetBounds(const gfx::Rect& cursor_bounds) override;
+  void SetBounds(const Bounds& bounds) override;
   void SetAssistiveWindowProperties(
       const AssistiveWindowProperties& window) override;
   void ShowSuggestion(const ui::ime::SuggestionDetails& details) override;
@@ -99,6 +99,7 @@ class AssistiveWindowController : public views::WidgetObserver,
   ui::ime::UndoWindow* undo_window_ = nullptr;
   base::string16 suggestion_text_;
   size_t confirmed_length_ = 0;
+  Bounds bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistiveWindowController);
 };

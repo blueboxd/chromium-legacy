@@ -30,7 +30,6 @@ namespace sharesheet {
 SharesheetService::SharesheetService(Profile* profile)
     : sharesheet_action_cache_(std::make_unique<SharesheetActionCache>()),
       app_service_proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)) {
-  DCHECK(app_service_proxy_);
 }
 
 SharesheetService::~SharesheetService() = default;

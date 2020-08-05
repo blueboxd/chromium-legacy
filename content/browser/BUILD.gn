@@ -1879,6 +1879,8 @@ jumbo_source_set("browser") {
     "utility_process_host.cc",
     "utility_process_host.h",
     "utility_process_host_receiver_bindings.cc",
+    "utility_sandbox_delegate.cc",
+    "utility_sandbox_delegate.h",
     "v8_snapshot_files.cc",
     "v8_snapshot_files.h",
     "video_capture_service.cc",
@@ -2212,6 +2214,7 @@ jumbo_source_set("browser") {
       "installedapp/installed_app_provider_impl_win.h",
       "renderer_host/virtual_keyboard_controller_win.cc",
       "renderer_host/virtual_keyboard_controller_win.h",
+      "utility_sandbox_delegate_win.cc",
     ]
     defines += [
       # This prevents the inclusion of atlhost.h which paired

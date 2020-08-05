@@ -9,10 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/strings/string16.h"
-
-namespace gfx {
-class Rect;
-}  // namespace gfx
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 namespace ime {
@@ -24,6 +21,14 @@ struct SuggestionDetails;
 namespace chromeos {
 
 struct AssistiveWindowProperties;
+
+// Contains bounds for windows controlled by handler.
+struct Bounds {
+  // Position of the cursor.
+  gfx::Rect caret;
+  // Position of the autocorrect span, empty if not present.
+  gfx::Rect autocorrect;
+};
 
 // A interface to handle the assistive windows related method call.
 class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
@@ -56,7 +61,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
   virtual size_t GetConfirmedLength() const = 0;
 
   // Called when the application changes its caret bounds.
-  virtual void SetBounds(const gfx::Rect& cursor_bounds) = 0;
+  virtual void SetBounds(const Bounds& bounds) = 0;
 
   // Called when the text field's focus state is changed.
   virtual void FocusStateChanged() {}

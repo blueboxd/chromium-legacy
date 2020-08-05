@@ -36,6 +36,8 @@ constexpr GUID kClsid = {0x76ede292,
                          0x9c33,
                          0x4a09,
                          {0x9b, 0x3a, 0x3b, 0x88, 0xd, 0xf6, 0x44, 0x40}};
+const std::vector<GUID> kClsids = {kClsid};
+
 constexpr base::char16 kClsidRegPath[] =
     L"Software\\Classes\\CLSID\\{76EDE292-9C33-4A09-9B3A-3B880DF64440}";
 constexpr base::char16 kAppidRegPath[] =
@@ -46,6 +48,8 @@ constexpr GUID kIid = {0xf9a0c1c,
                        0xa94a,
                        0x4c0a,
                        {0x93, 0xc7, 0x81, 0x33, 0x5, 0x26, 0xac, 0x7b}};
+const std::vector<GUID> kIids = {kIid};
+
 #define IID_REGISTRY_PATH \
   L"Software\\Classes\\Interface\\{0F9A0C1C-A94A-4C0A-93C7-81330526AC7B}"
 constexpr base::char16 kIidPSRegPath[] =
@@ -116,7 +120,7 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
 
   ASSERT_TRUE(item->Do());
   EXPECT_TRUE(GetImpl(item.get())->OpenService());
@@ -177,21 +181,21 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
 
   ASSERT_TRUE(item->Do());
   EXPECT_TRUE(GetImpl(item.get())->OpenService());
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
 
   EXPECT_TRUE(InstallServiceWorkItem::DeleteService(
-      kServiceName, kProductRegPath, kClsid, kIid));
+      kServiceName, kProductRegPath, kClsids, kIids));
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
   ASSERT_TRUE(item->Do());
 
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
@@ -200,7 +204,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   auto item_upgrade = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
   EXPECT_TRUE(item_upgrade->Do());
 
   item_upgrade->Rollback();
@@ -213,7 +217,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
   ASSERT_TRUE(item->Do());
 
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
@@ -222,7 +226,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   auto item_upgrade = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine::FromString(L"NewCmd.exe arg1 arg2"), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
   EXPECT_TRUE(item_upgrade->Do());
 
   item_upgrade->Rollback();
@@ -238,7 +242,7 @@ TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kProductRegPath,
-      kClsid, kIid);
+      kClsids, kIids);
 
   EXPECT_STREQ(kServiceName,
                GetImpl(item.get())->GetCurrentServiceName().c_str());

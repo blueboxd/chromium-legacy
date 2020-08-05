@@ -327,7 +327,7 @@ ArcSupportHost::Error GetCloudProvisionFlowError(
           SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR;
 
     case mojom::CloudProvisionFlowError::ERROR_ACCOUNT_NOT_READY:
-    case mojom::CloudProvisionFlowError::ERROR_ACCOUNT_NOT_WHITELISTED:
+    case mojom::CloudProvisionFlowError::ERROR_ACCOUNT_NOT_ALLOWLISTED:
     case mojom::CloudProvisionFlowError::ERROR_DPC_SUPPORT:
     case mojom::CloudProvisionFlowError::ERROR_ENTERPRISE_INVALID:
       return ArcSupportHost::Error::

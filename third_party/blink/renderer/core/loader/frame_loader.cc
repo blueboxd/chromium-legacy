@@ -214,7 +214,14 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
 FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(MakeGarbageCollected<ProgressTracker>(frame)),
-      forced_sandbox_flags_(network::mojom::blink::WebSandboxFlags::kNone),
+      // Frames need to inherit the sandbox flags of their parent frame.
+      // These can be fixed at construction time, because the only actions that
+      // trigger a sandbox flags change in the parent will necessarily detach
+      // this frame.
+      forced_sandbox_flags_(
+          frame_->Tree().Parent()
+              ? frame_->Tree().Parent()->GetSecurityContext()->GetSandboxFlags()
+              : network::mojom::blink::WebSandboxFlags::kNone),
       dispatching_did_clear_window_object_in_main_world_(false),
       detached_(false),
       virtual_time_pauser_(
@@ -1494,11 +1501,6 @@ void FrameLoader::ForceSandboxFlags(
   forced_sandbox_flags_ |= flags;
 }
 
-void FrameLoader::SetFrameOwnerSandboxFlags(
-    network::mojom::blink::WebSandboxFlags flags) {
-  frame_owner_sandbox_flags_ = flags;
-}
-
 void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
   if (state_machine_.CreatingInitialEmptyDocument())
     return;
@@ -1532,32 +1534,11 @@ void FrameLoader::DispatchDidClearWindowObjectInMainWorld() {
   Client()->DispatchDidClearWindowObjectInMainWorld();
 }
 
-network::mojom::blink::WebSandboxFlags FrameLoader::EffectiveSandboxFlags()
-    const {
-  network::mojom::blink::WebSandboxFlags flags = forced_sandbox_flags_;
-  if (frame_->Owner()) {
-    // Cannot use flags in frame_owner->GetFramePolicy().sandbox_flags, because
-    // frame_owner's frame policy is volatile and can be changed by javascript
-    // before navigation commits. Uses a snapshot
-    // value(frame_owner_sandbox_flags_) which is set in
-    // DocumentInit::WithFramePolicy instead. crbug.com/1026627
-    DCHECK(frame_owner_sandbox_flags_.has_value());
-    flags |= frame_owner_sandbox_flags_.value();
-  }
-  // Frames need to inherit the sandbox flags of their parent frame.
-  if (Frame* parent_frame = frame_->Tree().Parent())
-    flags |= parent_frame->GetSecurityContext()->GetSandboxFlags();
-  return flags;
-}
-
 network::mojom::blink::WebSandboxFlags
 FrameLoader::PendingEffectiveSandboxFlags() const {
   network::mojom::blink::WebSandboxFlags flags = forced_sandbox_flags_;
   if (FrameOwner* frame_owner = frame_->Owner())
     flags |= frame_owner->GetFramePolicy().sandbox_flags;
-  // Frames need to inherit the sandbox flags of their parent frame.
-  if (Frame* parent_frame = frame_->Tree().Parent())
-    flags |= parent_frame->GetSecurityContext()->GetSandboxFlags();
   return flags;
 }
 

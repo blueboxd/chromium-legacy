@@ -885,7 +885,7 @@ base::Optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
       unsigned line_text_offset =
           item_result.StartOffset() - line_info->StartOffset();
       DCHECK_EQ(kObjectReplacementCharacter, line_text[line_text_offset]);
-      float space = spacing.ComputeSpacing(line_text_offset, offset);
+      float space = spacing.ComputeSpacing(line_text_offset, 0.0, offset);
       item_result.inline_size += space;
       // |offset| is non-zero only before CJK characters.
       DCHECK_EQ(offset, 0.f);

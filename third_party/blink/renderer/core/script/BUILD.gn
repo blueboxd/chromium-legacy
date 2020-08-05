@@ -67,6 +67,4 @@ blink_core_sources("script") {
   ]
 
   deps = [ "//third_party/blink/public:resources" ]
-
-  jumbo_excluded_sources = [ "modulator.cc" ]  # https://crbug.com/716395
 }

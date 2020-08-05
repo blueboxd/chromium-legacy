@@ -239,15 +239,6 @@ jumbo_component("cpp_base") {
     "url_request_mojom_traits.cc",
     "url_request_mojom_traits.h",
   ]
-  jumbo_excluded_sources = [
-    # IPC/Params code generators are based on macros and multiple
-    # inclusion of headers using those macros. That is not
-    # compatible with jumbo compiling all source, generators and
-    # users, together, so exclude those files from jumbo compilation.
-    "network_ipc_param_traits.cc",
-    "p2p_param_traits.cc",
-    "url_request_mojom_traits.cc",
-  ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -258,10 +249,10 @@ jumbo_component("cpp_base") {
     "//services/network/public/mojom:data_pipe_interfaces",
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
     "//services/network/public/mojom:trust_tokens_interface",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//url/ipc:url_ipc",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
-    "//third_party/webrtc_overrides:webrtc_component",
   ]
   deps = [
     "//base",

@@ -112,6 +112,7 @@ import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
@@ -1037,15 +1038,19 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         //                values of this depending on when it is called after the activity was
         //                shown.
 
-        if (mCallbackController != null) {
-            new OneShotCallback<>(
-                    mTabModelProfileSupplier, mCallbackController.makeCancelable(profile -> {
-                        assert profile != null : "Unexpectedly null profile from TabModel.";
-                        if (profile == null) return;
+        // Temporary safety check to make sure none of this code runs if the feature is
+        // disabled.
+        if (ReengagementNotificationController.isEnabled()) {
+            if (mCallbackController != null) {
+                new OneShotCallback<>(
+                        mTabModelProfileSupplier, mCallbackController.makeCancelable(profile -> {
+                            assert profile != null : "Unexpectedly null profile from TabModel.";
+                            if (profile == null) return;
 
-                        TrackerFactory.getTrackerForProfile(profile).notifyEvent(
-                                EventConstants.STARTED_FROM_MAIN_INTENT);
-                    }));
+                            TrackerFactory.getTrackerForProfile(profile).notifyEvent(
+                                    EventConstants.STARTED_FROM_MAIN_INTENT);
+                        }));
+            }
         }
 
         mMainIntentMetrics.onMainIntentWithNative(

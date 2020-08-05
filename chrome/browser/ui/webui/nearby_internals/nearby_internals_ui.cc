@@ -48,9 +48,10 @@ NearbyInternalsUI::NearbyInternalsUI(content::WebUI* web_ui)
       web_ui->GetWebContents()->GetBrowserContext();
 
   web_ui->AddMessageHandler(std::make_unique<NearbyInternalsLogsHandler>());
-  web_ui->AddMessageHandler(std::make_unique<NearbyInternalsHttpHandler>());
   web_ui->AddMessageHandler(
       std::make_unique<NearbyInternalsContactHandler>(context));
+  web_ui->AddMessageHandler(
+      std::make_unique<NearbyInternalsHttpHandler>(context));
 }
 
 NearbyInternalsUI::~NearbyInternalsUI() = default;

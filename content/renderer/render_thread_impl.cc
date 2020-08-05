@@ -531,13 +531,14 @@ RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
     int32_t client_id,
     std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
-    : ChildThreadImpl(base::DoNothing(),
-                      Options::Builder()
-                          .InBrowserProcess(params)
-                          .ConnectToBrowser(true)
-                          .IPCTaskRunner(scheduler->IPCTaskRunner())
-                          .ExposesInterfacesToBrowser()
-                          .Build()),
+    : ChildThreadImpl(
+          base::DoNothing(),
+          Options::Builder()
+              .InBrowserProcess(params)
+              .ConnectToBrowser(true)
+              .IPCTaskRunner(scheduler->DeprecatedDefaultTaskRunner())
+              .ExposesInterfacesToBrowser()
+              .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       client_id_(client_id) {
@@ -561,12 +562,13 @@ int32_t GetClientIdFromCommandLine() {
 RenderThreadImpl::RenderThreadImpl(
     base::RepeatingClosure quit_closure,
     std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
-    : ChildThreadImpl(std::move(quit_closure),
-                      Options::Builder()
-                          .ConnectToBrowser(true)
-                          .IPCTaskRunner(scheduler->IPCTaskRunner())
-                          .ExposesInterfacesToBrowser()
-                          .Build()),
+    : ChildThreadImpl(
+          std::move(quit_closure),
+          Options::Builder()
+              .ConnectToBrowser(true)
+              .IPCTaskRunner(scheduler->DeprecatedDefaultTaskRunner())
+              .ExposesInterfacesToBrowser()
+              .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       client_id_(GetClientIdFromCommandLine()) {
@@ -2181,8 +2183,9 @@ void RenderThreadImpl::OnSyncMemoryPressure(
 void RenderThreadImpl::OnRendererInterfaceReceiver(
     mojo::PendingAssociatedReceiver<mojom::Renderer> receiver) {
   DCHECK(!renderer_receiver_.is_bound());
-  renderer_receiver_.Bind(std::move(receiver),
-                          GetWebMainThreadScheduler()->IPCTaskRunner());
+  renderer_receiver_.Bind(
+      std::move(receiver),
+      GetWebMainThreadScheduler()->DeprecatedDefaultTaskRunner());
 }
 
 bool RenderThreadImpl::NeedsToRecordFirstActivePaint(

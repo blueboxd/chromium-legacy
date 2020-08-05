@@ -33,8 +33,8 @@ class ClipboardHistoryTest : public AshTestBase {
     scoped_feature_list_.InitWithFeatures(
         {chromeos::features::kClipboardHistory}, {});
     AshTestBase::SetUp();
-    clipboard_history_ =
-        Shell::Get()->clipboard_history_controller()->clipboard_history();
+    clipboard_history_ = const_cast<ClipboardHistory*>(
+        Shell::Get()->clipboard_history_controller()->history());
   }
 
   const std::list<ui::ClipboardData>& GetClipboardHistoryData() {

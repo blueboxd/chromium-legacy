@@ -27,6 +27,8 @@ class WebMockThreadScheduler : public WebThreadScheduler {
 
   MOCK_METHOD0(DefaultTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(DeprecatedDefaultTaskRunner,
+               scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(CompositorTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(InputTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());

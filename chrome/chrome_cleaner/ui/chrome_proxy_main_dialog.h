@@ -5,11 +5,11 @@
 #ifndef CHROME_CHROME_CLEANER_UI_CHROME_PROXY_MAIN_DIALOG_H_
 #define CHROME_CHROME_CLEANER_UI_CHROME_PROXY_MAIN_DIALOG_H_
 
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ui/main_dialog_api.h"
@@ -32,14 +32,13 @@ class ChromeProxyMainDialog : public MainDialogAPI {
   void NoPUPsFound() override;
   void CleanupDone(ResultCode cleanup_result) override;
   void Close() override;
-  void DisableExtensions(const std::vector<base::string16>& extensions,
+  void DisableExtensions(const std::vector<std::wstring>& extensions,
                          base::OnceCallback<void(bool)> on_disable) override;
 
  protected:
-  void ConfirmCleanup(
-      const std::vector<UwSId>& found_pups,
-      const FilePathSet& files_to_remove,
-      const std::vector<base::string16>& registry_keys) override;
+  void ConfirmCleanup(const std::vector<UwSId>& found_pups,
+                      const FilePathSet& files_to_remove,
+                      const std::vector<std::wstring>& registry_keys) override;
 
  private:
   // Callback for the Mojo IPC that posts PromptResultReceived() on the UI

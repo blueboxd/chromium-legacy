@@ -18,6 +18,7 @@
 #include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/win/scoped_handle.h"
@@ -497,7 +498,7 @@ std::wstring GetWinHttpVersion() {
         FileVersionInfo::CreateFileVersionInfoForModule(win_http_module));
     ::FreeLibrary(win_http_module);
     if (win_http_module_version_info)
-      return win_http_module_version_info->product_version();
+      return base::AsWString(win_http_module_version_info->product_version());
   }
   return L"?";
 }
@@ -528,8 +529,8 @@ void GetOSAndCPU(UserAgent* user_agent) {
 
 }  // namespace
 
-HttpAgentImpl::HttpAgentImpl(const std::wstring& product_name,
-                             const std::wstring& product_version) {
+HttpAgentImpl::HttpAgentImpl(base::WStringPiece product_name,
+                             base::WStringPiece product_version) {
   UserAgent user_agent(product_name, product_version);
   user_agent.set_winhttp_version(GetWinHttpVersion());
   GetOSAndCPU(&user_agent);

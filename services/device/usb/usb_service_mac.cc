@@ -320,6 +320,7 @@ void UsbServiceMac::RemoveDevices() {
     auto by_guid_it = devices().find(mac_device->guid());
     devices().erase(by_guid_it);
     NotifyDeviceRemoved(mac_device);
+    mac_device->OnDisconnect();
   }
 }
 

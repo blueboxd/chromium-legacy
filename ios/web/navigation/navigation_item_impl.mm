@@ -36,6 +36,12 @@ static int GetUniqueIDInConstructor() {
 
 namespace web {
 
+// Value 50 was picked experimentally by examining Chrome for iOS UI. Tab strip
+// on 12.9" iPad Pro trucates the title to less than 50 characters (title that
+// only consists of letters "i"). Tab strip has the biggest surface to fit
+// title.
+const size_t kMaxTitleLength = 50;
+
 // static
 std::unique_ptr<NavigationItem> NavigationItem::Create() {
   return std::unique_ptr<NavigationItem>(new NavigationItemImpl());
@@ -126,7 +132,12 @@ const GURL& NavigationItemImpl::GetVirtualURL() const {
 void NavigationItemImpl::SetTitle(const base::string16& title) {
   if (title_ == title)
     return;
-  title_ = title;
+
+  if (title.size() > kMaxTitleLength) {
+    title_ = gfx::TruncateString(title, kMaxTitleLength, gfx::CHARACTER_BREAK);
+  } else {
+    title_ = title;
+  }
   cached_display_title_.clear();
 }
 

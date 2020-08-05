@@ -1038,9 +1038,11 @@ void WebMediaPlayerImpl::SetSinkId(
 
   OutputDeviceStatusCB callback =
       ConvertToOutputDeviceStatusCB(std::move(completion_callback));
+  auto sink_id_utf8 = sink_id.Utf8();
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SetSinkIdOnMediaThread, audio_source_provider_,
-                                sink_id.Utf8(), std::move(callback)));
+                                sink_id_utf8, std::move(callback)));
+  delegate_->DidAudioOutputSinkChange(delegate_id_, sink_id_utf8);
 }
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadNone, MultibufferDataSource::NONE);
@@ -2561,6 +2563,11 @@ void WebMediaPlayerImpl::OnEnterPictureInPicture() {
 
 void WebMediaPlayerImpl::OnExitPictureInPicture() {
   client_->RequestExitPictureInPicture();
+}
+
+void WebMediaPlayerImpl::OnSetAudioSink(const std::string& sink_id) {
+  SetSinkId(WebString::FromASCII(sink_id),
+            base::DoNothing::Once<base::Optional<blink::WebSetSinkIdError>>());
 }
 
 void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {

@@ -57,7 +57,9 @@ void TestOsIntegrationManager::InstallOsHooks(
       base::BindOnce(std::move(callback), std::move(os_hooks_results)));
 }
 
-void TestOsIntegrationManager::UninstallOsHooks(const AppId& app_id) {
+void TestOsIntegrationManager::UninstallOsHooks(
+    const AppId& app_id,
+    UninstallOsHooksCallback callback) {
   NOTIMPLEMENTED();
 }
 

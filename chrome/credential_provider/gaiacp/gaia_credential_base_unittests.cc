@@ -3233,14 +3233,17 @@ INSTANTIATE_TEST_SUITE_P(All,
 //                 http server.
 // 2. bool  true:  Policies were fetched recently and don't need refreshing.
 //          false: Policies were never fetched or are very old.
+// 3. bool :       Whether cloud policies feature is enabled.
 class GcpGaiaCredentialBaseFetchCloudPoliciesTest
     : public GcpGaiaCredentialBaseTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
 
 TEST_P(GcpGaiaCredentialBaseFetchCloudPoliciesTest, FetchAndStore) {
   bool fail_fetch_policies = std::get<0>(GetParam());
   bool policy_refreshed_recently = std::get<1>(GetParam());
+  bool cloud_policies_enabled = std::get<2>(GetParam());
 
+  FakeUserPoliciesManager fake_user_policies_manager(cloud_policies_enabled);
   GoogleMdmEnrolledStatusForTesting force_success(true);
 
   // Create a fake user associated to a gaia id.
@@ -3251,29 +3254,31 @@ TEST_P(GcpGaiaCredentialBaseFetchCloudPoliciesTest, FetchAndStore) {
                 base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid_str));
   base::string16 sid = OLE2W(sid_str);
 
-  base::string16 fetch_time_millis = L"0";
-  if (policy_refreshed_recently) {
-    fetch_time_millis = base::NumberToString16(
-        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+  if (cloud_policies_enabled) {
+    base::string16 fetch_time_millis = L"0";
+    if (policy_refreshed_recently) {
+      fetch_time_millis = base::NumberToString16(
+          base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+    }
+    ASSERT_EQ(S_OK, SetUserProperty(sid, L"last_policy_refresh_time",
+                                    fetch_time_millis));
+
+    std::string expected_response;
+    if (fail_fetch_policies) {
+      expected_response = "Invalid json response";
+    } else {
+      UserPolicies policies;
+      base::Value policies_value = policies.ToValue();
+      base::JSONWriter::Write(policies_value, &expected_response);
+    }
+
+    fake_http_url_fetcher_factory()->SetFakeResponse(
+        UserPoliciesManager::Get()->GetGcpwServiceUserPoliciesUrl(sid),
+        FakeWinHttpUrlFetcher::Headers(), expected_response);
   }
-  ASSERT_EQ(S_OK, SetUserProperty(sid, L"last_policy_refresh_time",
-                                  fetch_time_millis));
 
   // Change token response to an valid one.
   SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
-
-  std::string expected_response;
-  if (fail_fetch_policies) {
-    expected_response = "Invalid json response";
-  } else {
-    UserPolicies policies;
-    base::Value policies_value = policies.ToValue();
-    base::JSONWriter::Write(policies_value, &expected_response);
-  }
-
-  fake_http_url_fetcher_factory()->SetFakeResponse(
-      UserPoliciesManager::Get()->GetGcpwServiceUserPoliciesUrl(sid),
-      FakeWinHttpUrlFetcher::Headers(), expected_response);
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -3288,12 +3293,18 @@ TEST_P(GcpGaiaCredentialBaseFetchCloudPoliciesTest, FetchAndStore) {
   base::TimeDelta time_since_last_fetch =
       UserPoliciesManager::Get()->GetTimeDeltaSinceLastPolicyFetch(sid);
 
+  if (cloud_policies_enabled && !policy_refreshed_recently) {
+    ASSERT_EQ(1, fake_user_policies_manager.GetNumTimesFetchAndStoreCalled());
+  } else {
+    ASSERT_EQ(0, fake_user_policies_manager.GetNumTimesFetchAndStoreCalled());
+  }
+
   // Expected number of HTTP calls when not fetching user policies since upload
   // device details is always called.
   const size_t base_num_http_requests = 1;
   const size_t requests_created =
       fake_http_url_fetcher_factory()->requests_created();
-  if (policy_refreshed_recently) {
+  if (!cloud_policies_enabled || policy_refreshed_recently) {
     // No new requests for fetching policies.
     ASSERT_EQ(base_num_http_requests, requests_created);
   } else {
@@ -3321,6 +3332,7 @@ TEST_P(GcpGaiaCredentialBaseFetchCloudPoliciesTest, FetchAndStore) {
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseFetchCloudPoliciesTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 }  // namespace testing

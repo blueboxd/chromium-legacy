@@ -4,9 +4,7 @@
   }
 
   #item {
-    border-left: var(--standard-border);
-    border-right: var(--standard-border);
-    border-top: var(--standard-border);
+    border: var(--standard-border);
   }
 
   #header {
@@ -48,7 +46,7 @@
       [[rpcToString_(item.rpc)]]:[[directionToString_(item.direction)]]
     </span>
     <div id="flex"></div>
-    <span id="time">[[item.time]]</span>
+    <span id="time">[[formatTime_(item.time)]]</span>
     <cr-expand-button id="expandContent" class="cr-row"
           expanded="{{contentExpanded_}}">
     </cr-expand-button>

@@ -445,10 +445,10 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
   assertEquals(result, '222');
   assertEquals(currentFiles.length, 3);
 
-  // The error stays on the third, now unopenable. But, since we've advanced,
-  // it has now rotated into the second slot. But! Also we don't validate it
-  // until it rotates into the first slot, so the error won't be present yet.
-  // If we implement pre-loading, this expectation can change to
+  // The error stays on the third, now unopenable. But, since we've advanced, it
+  // has now rotated into the second slot. But! Also we don't validate it until
+  // it rotates into the first slot, so the error won't be present yet. If we
+  // implement pre-loading, this expectation can change to
   // ',NotAllowedError,'.
   assertEquals(await getFileErrors(), ',,');
 
@@ -841,20 +841,68 @@ TEST_F('MediaAppUIBrowserTest', 'RequestSaveFileIPC', async () => {
   testDone();
 });
 
-// Tests the IPC behind the saveCopy delegate function.
-TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
+// Tests the IPC behind the saveAs function on received files.
+TEST_F('MediaAppUIBrowserTest', 'SaveAsIPC', async () => {
   // Mock out choose file system entries since it can only be interacted with
   // via trusted user gestures.
-  const newFileHandle = new FakeFileSystemFileHandle();
+  const newFileHandle = new FakeFileSystemFileHandle('new_file.jpg');
   window.showSaveFilePicker = () => Promise.resolve(newFileHandle);
   const testImage = await createTestImageFile(10, 10);
-  await loadFile(testImage, new FakeFileSystemFileHandle());
+  const testHandle = new FakeFileSystemFileHandle('original_file.jpg');
+  await loadFile(testImage, testHandle);
+  const originalFileToken = currentFiles[0].token;
+  assertEquals(entryIndex, 0);
 
-  const result = await sendTestMessage({saveCopy: true});
-  assertEquals(result.testQueryResult, 'file successfully saved');
+  const result = await sendTestMessage({saveAs: 'foo'});
 
+  // Make sure the receivedFile object has the correct state.
+  assertEquals(result.testQueryResult, 'new_file.jpg');
+  assertEquals(await result.testQueryResultData['blobText'], 'foo');
+  // Confirm the right string was written to the new file.
   const writeResult = await newFileHandle.lastWritable.closePromise;
-  assertEquals(await writeResult.text(), await testImage.text());
+  assertEquals(await writeResult.text(), 'foo');
+  // Make sure we have created a new file descriptor, and that
+  // the original file is still available.
+  assertEquals(entryIndex, 1);
+  assertEquals(currentFiles[0].handle, testHandle);
+  assertEquals(currentFiles[0].handle.name, 'original_file.jpg');
+  assertNotEquals(currentFiles[0].token, originalFileToken);
+  assertEquals(currentFiles[1].handle, newFileHandle);
+  assertEquals(currentFiles[1].handle.name, 'new_file.jpg');
+  assertEquals(currentFiles[1].token, originalFileToken);
+  assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);
+  assertEquals(tokenMap.get(currentFiles[1].token), currentFiles[1].handle);
+  testDone();
+});
+
+// Tests the error handling behind the saveAs function on received files.
+TEST_F('MediaAppUIBrowserTest', 'SaveAsErrorHandling', async () => {
+  // Prevent the trusted context from throwing errors which cause the test to
+  // fail.
+  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
+  guestMessagePipe.rethrowErrors = false;
+  const newFileHandle = new FakeFileSystemFileHandle('new_file.jpg');
+  newFileHandle.nextCreateWritableError =
+      new DOMException('Fake exception', 'FakeError');
+  window.showSaveFilePicker = () => Promise.resolve(newFileHandle);
+  const testImage = await createTestImageFile(10, 10);
+  const testHandle = new FakeFileSystemFileHandle('original_file.jpg');
+  await loadFile(testImage, testHandle);
+  const originalFileToken = currentFiles[0].token;
+
+  const result = await sendTestMessage({saveAs: 'foo'});
+
+  // Make sure we revert back to our original state.
+  assertEquals(
+      result.testQueryResult,
+      'saveAs failed Error: FakeError: save-as: Fake exception');
+  assertEquals(result.testQueryResultData['filename'], 'original_file.jpg');
+  assertEquals(entryIndex, 0);
+  assertEquals(currentFiles.length, 1);
+  assertEquals(currentFiles[0].handle, testHandle);
+  assertEquals(currentFiles[0].handle.name, 'original_file.jpg');
+  assertEquals(currentFiles[0].token, originalFileToken);
+  assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);
   testDone();
 });
 

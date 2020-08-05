@@ -65,7 +65,7 @@ void ShelfFocusCycler::FocusNavigation(bool last_element) {
     FocusOut(last_element, SourceView::kShelfNavigationView);
     return;
   }
-  navigation_widget->SetDefaultLastFocusableChild(last_element);
+  navigation_widget->PrepareForGettingFocus(last_element);
   Shell::Get()->focus_cycler()->FocusWidget(navigation_widget);
 }
 

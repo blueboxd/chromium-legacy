@@ -11,6 +11,7 @@
 #include "base/numerics/ranges.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromecast/media/audio/audio_log.h"
 #include "chromecast/media/audio/interleaved_channel_mixer.h"
 #include "chromecast/media/cma/backend/mixer/channel_layout.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
@@ -124,15 +125,16 @@ void FilterGroup::ParseVolumeLimits(const base::Value* volume_limits) {
   // Get default limits.
   if (ParseVolumeLimit(volume_limits, &default_volume_min_,
                        &default_volume_max_)) {
-    LOG(INFO) << "Default volume limits for '" << name_ << "' group: ["
-              << default_volume_min_ << ", " << default_volume_max_ << "]";
+    AUDIO_LOG(INFO) << "Default volume limits for '" << name_ << "' group: ["
+                    << default_volume_min_ << ", " << default_volume_max_
+                    << "]";
   }
 
   float min, max;
   for (const auto& item : volume_limits->DictItems()) {
     if (ParseVolumeLimit(&item.second, &min, &max)) {
-      LOG(INFO) << "Volume limits for device ID '" << item.first << "' = ["
-                << min << ", " << max << "]";
+      AUDIO_LOG(INFO) << "Volume limits for device ID '" << item.first
+                      << "' = [" << min << ", " << max << "]";
       volume_limits_.insert({item.first, {min, max}});
     }
   }
@@ -290,8 +292,8 @@ void FilterGroup::SetPostProcessorConfig(const std::string& name,
 
 void FilterGroup::UpdatePlayoutChannel(int playout_channel) {
   if (playout_channel >= num_channels_) {
-    LOG(ERROR) << "only " << num_channels_ << " present, wanted channel #"
-               << playout_channel;
+    AUDIO_LOG(ERROR) << "only " << num_channels_ << " present, wanted channel #"
+                     << playout_channel;
     return;
   }
   post_processing_pipeline_->UpdatePlayoutChannel(playout_channel);

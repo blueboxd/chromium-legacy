@@ -4,15 +4,17 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 
+#include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 
 template <typename TextContainerType>
-bool ShapeResultSpacing<TextContainerType>::SetSpacing(
-    const FontDescription& font_description) {
-  if (!font_description.LetterSpacing() && !font_description.WordSpacing()) {
+bool ShapeResultSpacing<TextContainerType>::SetSpacing(const Font& font) {
+  const FontDescription& font_description = font.GetFontDescription();
+  if (!font_description.LetterSpacing() && !font_description.WordSpacing() &&
+      !font.HasLetterSpacingOverride()) {
     has_spacing_ = false;
     return false;
   }
@@ -41,18 +43,19 @@ void ShapeResultSpacing<TextContainerType>::SetExpansion(
 
 template <typename TextContainerType>
 void ShapeResultSpacing<TextContainerType>::SetSpacingAndExpansion(
-    const FontDescription& font_description) {
+    const Font& font) {
   // Available only for TextRun since it has expansion data.
   NOTREACHED();
 }
 
 template <>
-void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(
-    const FontDescription& font_description) {
+void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(const Font& font) {
+  const FontDescription& font_description = font.GetFontDescription();
   letter_spacing_ = font_description.LetterSpacing();
   word_spacing_ = font_description.WordSpacing();
   expansion_ = text_.Expansion();
-  has_spacing_ = letter_spacing_ || word_spacing_ || expansion_;
+  has_spacing_ = letter_spacing_ || word_spacing_ || expansion_ ||
+                 font.HasLetterSpacingOverride();
   if (!has_spacing_)
     return;
 
@@ -118,8 +121,10 @@ float ShapeResultSpacing<TextContainerType>::NextExpansion() {
 }
 
 template <typename TextContainerType>
-float ShapeResultSpacing<TextContainerType>::ComputeSpacing(unsigned index,
-                                                            float& offset) {
+float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
+    unsigned index,
+    float letter_spacing_override,
+    float& offset) {
   DCHECK(has_spacing_);
   UChar32 character = text_[index];
   bool treat_as_space =
@@ -131,8 +136,10 @@ float ShapeResultSpacing<TextContainerType>::ComputeSpacing(unsigned index,
     character = kSpaceCharacter;
 
   float spacing = 0;
-  if (letter_spacing_ && !Character::TreatAsZeroWidthSpace(character))
-    spacing += letter_spacing_;
+
+  bool has_letter_spacing = letter_spacing_ || letter_spacing_override;
+  if (has_letter_spacing && !Character::TreatAsZeroWidthSpace(character))
+    spacing += letter_spacing_ + letter_spacing_override;
 
   if (treat_as_space && (index || character == kNoBreakSpaceCharacter))
     spacing += word_spacing_;

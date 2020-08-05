@@ -182,6 +182,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void OnSeekBackward(double seconds) override;
   void OnEnterPictureInPicture() override;
   void OnExitPictureInPicture() override;
+  void OnSetAudioSink(const std::string& sink_id) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
 

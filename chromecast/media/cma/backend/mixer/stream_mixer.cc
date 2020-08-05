@@ -25,6 +25,7 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/base/thread_health_checker.h"
 #include "chromecast/media/audio/audio_io_thread.h"
+#include "chromecast/media/audio/audio_log.h"
 #include "chromecast/media/audio/interleaved_channel_mixer.h"
 #include "chromecast/media/audio/mixer_service/loopback_interrupt_reason.h"
 #include "chromecast/media/base/audio_device_ids.h"
@@ -220,6 +221,9 @@ StreamMixer::StreamMixer(
     io_task_runner_ = mixer_task_runner_;
   }
 
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&logging::InitializeAudioLog));
+
   if (fixed_output_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
     LOG(INFO) << "Setting fixed sample rate to " << fixed_output_sample_rate_;
   }
@@ -307,8 +311,8 @@ void StreamMixer::CreatePostProcessors(CastMediaShlib::ResultCallback callback,
   // Attempt to fall back to built-in cast_audio.json, unless we were reset with
   // an override config.
   if (!mixer_pipeline_ && override_config.empty()) {
-    LOG(WARNING) << "Invalid cast_audio.json config loaded. Retrying with "
-                    "read-only config";
+    AUDIO_LOG(WARNING) << "Invalid cast_audio.json config loaded. Retrying with"
+                          " read-only config";
     callback(false,
              "Unable to build pipeline.");  // TODO(bshaya): Send more specific
                                             // error message.
@@ -325,10 +329,11 @@ void StreamMixer::CreatePostProcessors(CastMediaShlib::ResultCallback callback,
       fixed_num_output_channels_ != mixer_pipeline_->GetOutputChannelCount()) {
     // Just log a warning, but this is still fine because we will remap the
     // channels prior to output.
-    LOG(WARNING) << "PostProcessor configuration output channel count does not "
-                 << "match command line flag: "
-                 << mixer_pipeline_->GetOutputChannelCount() << " vs "
-                 << fixed_num_output_channels_ << ". Channels will be remapped";
+    AUDIO_LOG(WARNING) << "PostProcessor configuration output channel count"
+                       << " does not match command line flag: "
+                       << mixer_pipeline_->GetOutputChannelCount() << " vs "
+                       << fixed_num_output_channels_
+                       << ". Channels will be remapped";
   }
 
   if (state_ == kStateRunning) {
@@ -397,7 +402,7 @@ void StreamMixer::SetNumOutputChannels(int num_channels) {
 }
 
 void StreamMixer::SetNumOutputChannelsOnThread(int num_channels) {
-  LOG(INFO) << "Set the number of output channels to " << num_channels;
+  AUDIO_LOG(INFO) << "Set the number of output channels to " << num_channels;
   enable_dynamic_channel_count_ = true;
   fixed_num_output_channels_ = num_channels;
 
@@ -408,7 +413,7 @@ void StreamMixer::SetNumOutputChannelsOnThread(int num_channels) {
 }
 
 void StreamMixer::Start() {
-  LOG(INFO) << __func__ << " with " << inputs_.size() << " active inputs";
+  AUDIO_LOG(INFO) << __func__ << " with " << inputs_.size() << " active inputs";
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kStateStopped);
 
@@ -458,9 +463,9 @@ void StreamMixer::Start() {
 
   num_output_channels_ = output_->GetNumChannels();
   output_samples_per_second_ = output_->GetSampleRate();
-  LOG(INFO) << "Output " << num_output_channels_ << " "
-            << ChannelString(num_output_channels_) << " at "
-            << output_samples_per_second_ << " samples per second";
+  AUDIO_LOG(INFO) << "Output " << num_output_channels_ << " "
+                  << ChannelString(num_output_channels_) << " at "
+                  << output_samples_per_second_ << " samples per second";
   // Make sure the number of frames meets the filter alignment requirements.
   frames_per_write_ =
       output_->OptimalWriteFramesCount() & ~(filter_frame_alignment_ - 1);
@@ -476,8 +481,8 @@ void StreamMixer::Start() {
   if (!enable_dynamic_channel_count_ && num_output_channels_ == 1) {
     num_loopback_channels = 1;
   }
-  LOG(INFO) << "Using " << num_loopback_channels << " loopback "
-            << ChannelString(num_loopback_channels);
+  AUDIO_LOG(INFO) << "Using " << num_loopback_channels << " loopback "
+                  << ChannelString(num_loopback_channels);
   loopback_channel_mixer_ = std::make_unique<InterleavedChannelMixer>(
       mixer::GuessChannelLayout(mixer_pipeline_->GetLoopbackChannelCount()),
       mixer_pipeline_->GetLoopbackChannelCount(),
@@ -533,7 +538,7 @@ void StreamMixer::Start() {
 }
 
 void StreamMixer::Stop(LoopbackInterruptReason reason) {
-  LOG(INFO) << __func__;
+  AUDIO_LOG(INFO) << __func__;
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 
   weak_factory_.InvalidateWeakPtrs();
@@ -596,9 +601,10 @@ void StreamMixer::SignalError(MixerInput::Source::MixerError error) {
 }
 
 int StreamMixer::GetEffectiveChannelCount(MixerInput::Source* input_source) {
-  LOG(INFO) << "Input source channel count = " << input_source->num_channels();
+  AUDIO_LOG(INFO) << "Input source channel count = "
+                  << input_source->num_channels();
   if (!enable_dynamic_channel_count_) {
-    LOG(INFO) << "Dynamic channel count not enabled; using stereo";
+    AUDIO_LOG(INFO) << "Dynamic channel count not enabled; using stereo";
     return kDefaultInputChannels;
   }
 
@@ -631,10 +637,11 @@ void StreamMixer::AddInput(MixerInput::Source* input_source) {
   DCHECK(input_group) << "Could not find a processor for "
                       << input_source->device_id();
 
-  LOG(INFO) << "Add input " << input_source << " to " << input_group->name()
-            << " @ " << input_group->GetInputSampleRate()
-            << " samples per second. Is primary source? = "
-            << input_source->primary();
+  AUDIO_LOG(INFO) << "Add input " << input_source << " to "
+                  << input_group->name() << " @ "
+                  << input_group->GetInputSampleRate()
+                  << " samples per second. Is primary source? = "
+                  << input_source->primary();
 
   auto input = std::make_unique<MixerInput>(input_source, input_group);
   if (state_ != kStateRunning) {
@@ -673,7 +680,7 @@ void StreamMixer::RemoveInputOnThread(MixerInput::Source* input_source) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(input_source);
 
-  LOG(INFO) << "Remove input " << input_source;
+  AUDIO_LOG(INFO) << "Remove input " << input_source;
 
   auto it = inputs_.find(input_source);
   if (it != inputs_.end()) {
@@ -719,7 +726,7 @@ void StreamMixer::UpdatePlayoutChannel() {
   }
 
   DCHECK(playout_channel == kChannelAll || playout_channel >= 0);
-  LOG(INFO) << "Update playout channel: " << playout_channel;
+  AUDIO_LOG(INFO) << "Update playout channel: " << playout_channel;
   playout_channel_ = playout_channel;
   mixer_pipeline_->SetPlayoutChannel(playout_channel_);
 }
@@ -764,7 +771,7 @@ void StreamMixer::PlaybackLoop() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (inputs_.empty() && base::TimeTicks::Now() >= close_timestamp_ &&
       !mixer_pipeline_->IsRinging()) {
-    LOG(INFO) << "Close timeout";
+    AUDIO_LOG(INFO) << "Close timeout";
     Stop(LoopbackInterruptReason::kOutputStopped);
     return;
   }
@@ -843,7 +850,7 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
 void StreamMixer::AddAudioOutputRedirector(
     std::unique_ptr<AudioOutputRedirector> redirector) {
   MAKE_SURE_MIXER_THREAD(AddAudioOutputRedirector, std::move(redirector));
-  LOG(INFO) << __func__;
+  AUDIO_LOG(INFO) << __func__;
   DCHECK(redirector);
 
   AudioOutputRedirector* key = redirector.get();
@@ -867,7 +874,7 @@ void StreamMixer::RemoveAudioOutputRedirector(
 void StreamMixer::RemoveAudioOutputRedirectorOnThread(
     AudioOutputRedirector* redirector) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
-  LOG(INFO) << __func__;
+  AUDIO_LOG(INFO) << __func__;
   audio_output_redirectors_.erase(redirector);
 }
 
@@ -908,7 +915,7 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
   MAKE_SURE_MIXER_THREAD(SetOutputLimit, type, limit);
   DCHECK(type != AudioContentType::kOther);
 
-  LOG(INFO) << "Set volume limit for " << type << " to " << limit;
+  AUDIO_LOG(INFO) << "Set volume limit for " << type << " to " << limit;
   volume_info_[type].limit = limit;
   int fade_ms = kUseDefaultFade;
   if (type == AudioContentType::kMedia) {

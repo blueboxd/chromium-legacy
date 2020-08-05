@@ -1328,15 +1328,19 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
   return shortcut_creator.CreateShortcuts(creation_reason, creation_locations);
 }
 
-void DeletePlatformShortcuts(const base::FilePath& app_data_path,
+bool DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   const std::string bundle_id = GetBundleIdentifier(shortcut_info.extension_id,
                                                     shortcut_info.profile_path);
   auto bundle_infos = SearchForBundlesById(bundle_id);
-  for (const auto& bundle_info : bundle_infos)
-    base::DeletePathRecursively(bundle_info.bundle_path());
+  bool result = true;
+  for (const auto& bundle_info : bundle_infos) {
+    if (!base::DeletePathRecursively(bundle_info.bundle_path()))
+      result = false;
+  }
+  return result;
 }
 
 void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {

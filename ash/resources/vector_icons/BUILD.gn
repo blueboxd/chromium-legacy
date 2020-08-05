@@ -30,6 +30,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "battery.icon",
     "bitmap.icon",
     "captive_portal.icon",
+    "capture_mode.icon",
     "check_circle.icon",
     "custom_data.icon",
     "delete.icon",

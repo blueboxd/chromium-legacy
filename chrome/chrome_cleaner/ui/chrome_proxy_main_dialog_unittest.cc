@@ -56,8 +56,8 @@ TEST_F(ChromeProxyMainDialogTest, NoPUPsFound) {
       .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(chrome_prompt_ipc_, MockPostPromptUserTask(_, _, _, _))
       .WillOnce(Invoke([](const std::vector<base::FilePath>& files_to_delete,
-                          const std::vector<base::string16>& registry_keys,
-                          const std::vector<base::string16>& extension_ids,
+                          const std::vector<std::wstring>& registry_keys,
+                          const std::vector<std::wstring>& extension_ids,
                           ChromePromptIPC::PromptUserCallback* callback) {
         std::move(*callback).Run(PromptUserResponse::DENIED);
       }));
@@ -127,7 +127,7 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
 
   pup->expanded_registry_footprints.push_back(PUPData::RegistryFootprint(
       RegKeyPath(HKEY_USERS, L"Software\\bad-software\\bad-key"),
-      base::string16(), base::string16(), REGISTRY_VALUE_MATCH_KEY));
+      std::wstring(), std::wstring(), REGISTRY_VALUE_MATCH_KEY));
 
   std::vector<UwSId> found_pups{kFakePupId};
 
@@ -138,8 +138,8 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
                                      /*extensions*/ SizeIs(0), _))
       .WillOnce(Invoke([prompt_acceptance](
                            const std::vector<base::FilePath>& files_to_delete,
-                           const std::vector<base::string16>& registry_keys,
-                           const std::vector<base::string16>& extension_ids,
+                           const std::vector<std::wstring>& registry_keys,
+                           const std::vector<std::wstring>& extension_ids,
                            ChromePromptIPC::PromptUserCallback* callback) {
         std::move(*callback).Run(prompt_acceptance);
       }));

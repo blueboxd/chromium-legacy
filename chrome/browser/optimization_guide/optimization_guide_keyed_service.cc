@@ -23,6 +23,7 @@
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -66,6 +67,25 @@ GetOptimizationGuideDecisionFromOptimizationTargetDecision(
     case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
+}
+
+// Logs |optimization_target_decision| for |optimization_target| in a histogram
+// and passes the corresponding OptimizationGuideDecision to |callback|.
+void LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
+    optimization_guide::proto::OptimizationTarget optimization_target,
+    optimization_guide::OptimizationGuideTargetDecisionCallback callback,
+    optimization_guide::OptimizationTargetDecision
+        optimization_target_decision) {
+  base::UmaHistogramExactLinear(
+      "OptimizationGuide.TargetDecision." +
+          GetStringNameForOptimizationTarget(optimization_target),
+      static_cast<int>(optimization_target_decision),
+      static_cast<int>(
+          optimization_guide::OptimizationTargetDecision::kMaxValue));
+
+  std::move(callback).Run(
+      GetOptimizationGuideDecisionFromOptimizationTargetDecision(
+          optimization_target_decision));
 }
 
 }  // namespace
@@ -177,18 +197,11 @@ void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
     return;
   }
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      prediction_manager_->ShouldTargetNavigation(
-          navigation_handle, optimization_target, client_model_feature_values);
-  base::UmaHistogramExactLinear(
-      "OptimizationGuide.TargetDecision." +
-          GetStringNameForOptimizationTarget(optimization_target),
-      static_cast<int>(optimization_target_decision),
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kMaxValue));
-  std::move(callback).Run(
-      GetOptimizationGuideDecisionFromOptimizationTargetDecision(
-          optimization_target_decision));
+  prediction_manager_->ShouldTargetNavigationAsync(
+      navigation_handle, optimization_target, client_model_feature_values,
+      base::BindOnce(
+          &LogOptimizationTargetDecisionAndPassOptimizationGuideDecision,
+          optimization_target, std::move(callback)));
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(

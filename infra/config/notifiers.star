@@ -71,6 +71,10 @@ tree_closure_notifier(
     notify_rotation_urls = [
         "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-build-sheriff",
     ],
+    template = luci.notifier_template(
+        name = 'tree_closure_email_template',
+        body = io.read_file('templates/tree_closure_email.template'),
+    ),
 )
 
 tree_closure_notifier(

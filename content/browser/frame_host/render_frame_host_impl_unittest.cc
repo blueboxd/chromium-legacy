@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -35,7 +36,13 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
     simulator->Commit();
   }
   RenderFrameHost* initial_rfh = main_rfh();
-
+  // This test is for a bug that only happens when there is no RFH swap on
+  // same-site navigations, so we should disable same-site proactive
+  // BrowsingInstance for |initial_rfh| before continiung.
+  // Note: this will not disable RenderDocument.
+  // TODO(crbug.com/936696): Skip this test when main-frame RenderDocument is
+  // enabled.
+  DisableProactiveBrowsingInstanceSwapFor(initial_rfh);
   // Verify expected main world origin in a steady state - after a commit it
   // should be the same as the last committed origin.
   EXPECT_EQ(url::Origin::Create(initial_url),

@@ -36,15 +36,15 @@ class CppBundleGeneratorTest(unittest.TestCase):
         'test/function_platform_all.json')
     self.assertEquals(
         'defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || '
-        'defined(OS_CHROMEOS)',
+        '(defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS))',
         _getPlatformIfdefs(cpp_bundle_generator, model))
 
   def testIfDefsForChromeOS(self):
     cpp_bundle_generator, model = _createCppBundleGenerator(
         'test/function_platform_chromeos.json')
-    self.assertEquals(
-        'defined(OS_CHROMEOS)',
-        _getPlatformIfdefs(cpp_bundle_generator, model))
+    self.assertEquals('(defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS))',
+                      _getPlatformIfdefs(cpp_bundle_generator, model))
+
 
 if __name__ == '__main__':
   unittest.main()

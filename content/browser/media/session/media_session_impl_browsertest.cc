@@ -40,10 +40,10 @@ using media_session::mojom::AudioFocusType;
 using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionInfo;
 
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Expectation;
 using ::testing::NiceMock;
-using ::testing::_;
 
 namespace {
 
@@ -55,6 +55,8 @@ const base::string16 kExpectedSourceTitlePrefix =
     base::ASCIIToUTF16("http://example.com:");
 
 constexpr gfx::Size kDefaultFaviconSize = gfx::Size(16, 16);
+
+const std::string kExampleSinkId = "example_device_id";
 
 class MockAudioFocusDelegate : public content::AudioFocusDelegate {
  public:
@@ -211,6 +213,10 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
 
   void UISeekBackward() {
     media_session_->Seek(base::TimeDelta::FromSeconds(-1));
+  }
+
+  void UISetAudioSink(const std::string& sink_id) {
+    media_session_->SetAudioSinkId(sink_id);
   }
 
   void SystemStartDucking() { media_session_->StartDucking(); }
@@ -2590,6 +2596,17 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
         media_session::mojom::MediaSessionImageType::kSourceIcon,
         expected_images);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       SinkIdChangeNotifiesObservers) {
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
+
+  UISetAudioSink(kExampleSinkId);
+  EXPECT_EQ(player_observer->received_set_audio_sink_id_calls(), 1);
+  EXPECT_EQ(player_observer->GetAudioSinkId(0), kExampleSinkId);
 }
 
 class MediaSessionFaviconBrowserTest : public ContentBrowserTest {

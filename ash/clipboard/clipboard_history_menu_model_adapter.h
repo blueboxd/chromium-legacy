@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 
 namespace gfx {
@@ -39,9 +40,18 @@ class ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
   // Shows the menu, anchored below |anchor_rect|.
   void Run(const gfx::Rect& anchor_rect);
 
+  // Returns if the menu is currently running.
   bool IsRunning() const;
 
-  gfx::Rect GetClipboardHistoryMenuBoundsForTest() const;
+  // Hides and cancels the menu.
+  void Cancel();
+
+  // Returns the command of the currently selected menu item. If no menu item is
+  // currently selected, returns |base::nullopt|.
+  base::Optional<int> GetSelectedMenuItemCommand() const;
+
+  // Returns menu bounds in screen coordinates.
+  gfx::Rect GetMenuBoundsInScreenForTest() const;
 
  private:
   // The model which holds the contents of the menu.

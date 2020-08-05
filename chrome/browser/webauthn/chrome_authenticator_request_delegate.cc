@@ -306,29 +306,32 @@ bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
   return true;
 }
 
-bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
-    const url::Origin& origin) {
-  // Because the future of the caBLE extension might be that we transition
-  // everything to QR-code or sync-based pairing, we don't want use of the
-  // extension to spread without consideration. Therefore it's limited to
-  // origins that are already depending on it and test sites.
-  if (origin.DomainIs("google.com")) {
-    return true;
+void ChromeAuthenticatorRequestDelegate::ConfigureCable(
+    const url::Origin& origin,
+    base::span<const device::CableDiscoveryData> pairings_from_extension) {
+  std::vector<device::CableDiscoveryData> pairings;
+  if (ShouldPermitCableExtension(origin)) {
+    pairings.insert(pairings.end(), pairings_from_extension.begin(),
+                    pairings_from_extension.end());
+  }
+  const bool cable_extension_provided = !pairings.empty();
+
+  base::Optional<device::QRGeneratorKey> qr_generator_key;
+  bool have_paired_phones = false;
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    qr_generator_key.emplace(device::CableDiscoveryData::NewQRKey());
+    auto paired_phones = GetCablePairings();
+    have_paired_phones = !paired_phones.empty();
+    pairings.insert(pairings.end(), paired_phones.begin(), paired_phones.end());
   }
 
-  const GURL test_site("https://webauthndemo.appspot.com");
-  DCHECK(test_site.is_valid());
-  return origin.IsSameOriginWith(url::Origin::Create(test_site));
-}
+  if (pairings.empty() && !qr_generator_key) {
+    return;
+  }
 
-bool ChromeAuthenticatorRequestDelegate::SetCableTransportInfo(
-    bool cable_extension_provided,
-    bool have_paired_phones,
-    base::Optional<device::QRGeneratorKey> qr_generator_key) {
-  weak_dialog_model_->set_cable_transport_info(cable_extension_provided,
-                                               have_paired_phones,
-                                               std::move(qr_generator_key));
-  return true;
+  weak_dialog_model_->set_cable_transport_info(
+      cable_extension_provided, have_paired_phones, qr_generator_key);
+  discovery_factory()->set_cable_data(std::move(pairings), qr_generator_key);
 }
 
 void ChromeAuthenticatorRequestDelegate::SelectAccount(
@@ -554,6 +557,29 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
   std::move(cancel_callback_).Run();
 }
 
+base::Optional<device::FidoTransportProtocol>
+ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  return device::ConvertToFidoTransportProtocol(
+      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
+}
+
+bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
+    const url::Origin& origin) {
+  // Because the future of the caBLE extension might be that we transition
+  // everything to QR-code or sync-based pairing, we don't want use of the
+  // extension to spread without consideration. Therefore it's limited to
+  // origins that are already depending on it and test sites.
+  if (origin.DomainIs("google.com")) {
+    return true;
+  }
+
+  const GURL test_site("https://webauthndemo.appspot.com");
+  DCHECK(test_site.is_valid());
+  return origin.IsSameOriginWith(url::Origin::Create(test_site));
+}
+
 std::vector<device::CableDiscoveryData>
 ChromeAuthenticatorRequestDelegate::GetCablePairings() {
   std::vector<device::CableDiscoveryData> ret;
@@ -590,14 +616,6 @@ ChromeAuthenticatorRequestDelegate::GetCablePairings() {
   }
 
   return ret;
-}
-
-base::Optional<device::FidoTransportProtocol>
-ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
-  PrefService* prefs =
-      Profile::FromBrowserContext(browser_context())->GetPrefs();
-  return device::ConvertToFidoTransportProtocol(
-      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
 }
 
 void ChromeAuthenticatorRequestDelegate::CustomizeDiscoveryFactory(

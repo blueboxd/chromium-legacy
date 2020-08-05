@@ -23,7 +23,8 @@ class TestOsIntegrationManager : public OsIntegrationManager {
                       InstallOsHooksCallback callback,
                       std::unique_ptr<WebApplicationInfo> web_app_info,
                       InstallOsHooksOptions options) override;
-  void UninstallOsHooks(const AppId& app_id) override;
+  void UninstallOsHooks(const AppId& app_id,
+                        UninstallOsHooksCallback callback) override;
 
   size_t num_create_shortcuts_calls() const {
     return num_create_shortcuts_calls_;

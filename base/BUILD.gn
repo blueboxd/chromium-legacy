@@ -1816,11 +1816,6 @@ jumbo_component("base") {
       "strings/string16.cc",
     ]
 
-    # winternl.h and NTSecAPI.h have different definitions of UNICODE_STRING.
-    # There's only one client of NTSecAPI.h in base but several of winternl.h,
-    # so exclude the NTSecAPI.h one.
-    jumbo_excluded_sources = [ "rand_util_win.cc" ]
-
     deps += [ "//base/win:base_win_buildflags" ]
 
     data_deps += [ "//build/win:runtime_libs" ]
@@ -3554,6 +3549,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/VerifiesOnOMR1.java",
       "android/java/src/org/chromium/base/annotations/VerifiesOnP.java",
       "android/java/src/org/chromium/base/annotations/VerifiesOnQ.java",
+      "android/java/src/org/chromium/base/annotations/VerifiesOnR.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForM.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForN.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForO.java",

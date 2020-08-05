@@ -16,12 +16,18 @@ namespace sharesheet {
 class SharesheetServiceDelegate;
 }
 
+namespace content {
+class WebContents;
+}
+
 class SharesheetBubbleView : public views::BubbleDialogDelegateView,
                              public views::ButtonListener {
  public:
   using TargetInfo = sharesheet::TargetInfo;
 
   SharesheetBubbleView(views::View* anchor_view,
+                       sharesheet::SharesheetServiceDelegate* delegate);
+  SharesheetBubbleView(content::WebContents* web_contents,
                        sharesheet::SharesheetServiceDelegate* delegate);
   SharesheetBubbleView(const SharesheetBubbleView&) = delete;
   SharesheetBubbleView& operator=(const SharesheetBubbleView&) = delete;
@@ -44,6 +50,7 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   void OnWidgetDestroyed(views::Widget* widget) override;
 
  private:
+  void CreateBubble();
   // Owns this class.
   sharesheet::SharesheetServiceDelegate* delegate_;
   std::vector<TargetInfo> targets_;

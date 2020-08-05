@@ -97,15 +97,23 @@ async function runTestQuery(data) {
           existingFile.name, existingFile.mimeType);
       result = token.toString();
     }
-  } else if (data.saveCopy) {
+  } else if (data.saveAs) {
     const existingFile = assertCast(lastReceivedFileList).item(0);
     if (!existingFile) {
-      result = 'saveCopy failed, no file loaded';
+      result = 'saveAs failed, no file loaded';
     } else {
-      const token = await DELEGATE.requestSaveFile(
-          existingFile.name, existingFile.mimeType);
-      await DELEGATE.saveCopy(existingFile, token);
-      result = 'file successfully saved';
+      const file = firstReceivedItem();
+      try {
+        const token = await DELEGATE.requestSaveFile(
+            existingFile.name, existingFile.mimeType);
+        const testBlob = new Blob([data.saveAs]);
+        await assertCast(file.saveAs).call(file, testBlob, token);
+        result = file.name;
+        extraResultData = {blobText: await file.blob.text()};
+      } catch (/** @type{!Error} */ error) {
+        result = `saveAs failed Error: ${error}`;
+        extraResultData = {filename: file.name};
+      }
     }
   } else if (data.getFileErrors) {
     result =

@@ -242,12 +242,23 @@ size_t MaxHostModelFeaturesCacheSize() {
       kOptimizationTargetPrediction, "max_host_model_features_cache_size", 100);
 }
 
+size_t MaxHostKeyedHintCacheSize() {
+  size_t max_host_keyed_hint_cache_size = GetFieldTrialParamByFeatureAsInt(
+      kOptimizationHints, "max_host_keyed_hint_cache_size", 30);
+  return max_host_keyed_hint_cache_size;
+}
+
 size_t MaxURLKeyedHintCacheSize() {
   size_t max_url_keyed_hint_cache_size = GetFieldTrialParamByFeatureAsInt(
       kOptimizationHints, "max_url_keyed_hint_cache_size", 30);
   DCHECK_GE(max_url_keyed_hint_cache_size,
             MaxUrlsForOptimizationGuideServiceHintsFetch());
   return max_url_keyed_hint_cache_size;
+}
+
+bool ShouldPersistHintsToDisk() {
+  return GetFieldTrialParamByFeatureAsBool(kOptimizationHints,
+                                           "persist_hints_to_disk", true);
 }
 
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(

@@ -88,10 +88,6 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const ::media::AudioParameters& params,
       const std::string& device_id_or_group_id,
       const ::media::AudioManager::LogCallback& log_callback) override;
-  ::media::AudioOutputStream* MakeBitstreamOutputStream(
-      const ::media::AudioParameters& params,
-      const std::string& device_id,
-      const ::media::AudioManager::LogCallback& log_callback) override;
   ::media::AudioInputStream* MakeLinearInputStream(
       const ::media::AudioParameters& params,
       const std::string& device_id,
@@ -107,12 +103,6 @@ class CastAudioManager : public ::media::AudioManagerBase {
   // Generates a CastAudioOutputStream for |mixer_|.
   virtual ::media::AudioOutputStream* MakeMixerOutputStream(
       const ::media::AudioParameters& params);
-
-#if defined(OS_ANDROID)
-  ::media::AudioOutputStream* MakeAudioOutputStreamProxy(
-      const ::media::AudioParameters& params,
-      const std::string& device_id) override;
-#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastAudioManagerTest, CanMakeStreamProxy);

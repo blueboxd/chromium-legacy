@@ -70,7 +70,7 @@ class ZipArchiverSandboxedArchiverTest : public base::MultiProcessTest {
     std::string src_file_hash;
     ComputeSHA256DigestOfPath(src_file_path, &src_file_hash);
 
-    const base::string16 zip_filename = internal::ConstructZipArchiveFileName(
+    const std::wstring zip_filename = internal::ConstructZipArchiveFileName(
         src_file_path.BaseName().value(), src_file_hash,
         /*max_filename_length=*/255);
 

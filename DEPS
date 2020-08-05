@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '21efb7c7ddbc911adb60228934c0cdf14085f0ce',
+  'skia_revision': '10f019c5068f9ff070c16e3571209012c78826e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a8084f7d644a4e257d20d9414d831af8db8947c0',
+  'v8_revision': 'ce4c3060f6fbfd5ed410de314f7e83a66fd792d9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a3e03e1086d5c85bd8435ff0b6f48666a8042603',
+  'swiftshader_revision': 'be7c55a2a8cebd46ba6912e6b7d4dae8353d154c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'cf93e1de9eb8b7073397eb5aac874fd67e06b1a5',
+  'catapult_revision': 'ac60992d41b7007e9c6c4329e5bbfc02c912f314',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '97713d6f163e086aad0560246b1e68e3b673115f',
+  'devtools_frontend_revision': '580a4b1d52b65febb22c804a036d972898026b86',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e84a1b13760d6ca251819569af8684af56fdee19',
+  'dawn_revision': '0a4342793e0e31ed36e59d2eef36817c82ede555',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '0dd6376c6de22ff059f68023f0e876d0e275aeb1',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '8dac13ae51e05e60b394ac81dffa40cfcfd05bec',
       'condition': 'checkout_ios',
   },
 
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a0c3f906bc6fdd7cfdc892e4e1c4a89ed97d5d5a',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '486f1812ef65fde35ad0c63e3939e89dc1c876a3',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '06e30bae5cbff2a72e6840bf6f845237187c44b0',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f8ccdc63a188fd977953864bab7490eac9f9852f',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

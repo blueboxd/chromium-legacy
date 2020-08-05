@@ -86,6 +86,6 @@ Polymer({
    */
   onContactUpdateAdded_(contacts) {
     contacts.unshift('contactList_');
-    this.push.apply(this, contacts);
+    this.unshift.apply(this, contacts);
   },
 });

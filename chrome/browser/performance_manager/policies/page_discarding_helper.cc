@@ -168,9 +168,16 @@ void PageDiscardingHelper::SetMockDiscarderForTesting(
   page_discarder_ = std::move(discarder);
 }
 
-void PageDiscardingHelper::AdornsPageWithDiscardAttemptMarkerForTesting(
+// static
+void PageDiscardingHelper::AddDiscardAttemptMarkerForTesting(
     PageNode* page_node) {
   DiscardAttemptMarker::GetOrCreate(PageNodeImpl::FromNode(page_node));
+}
+
+// static
+void PageDiscardingHelper::RemovesDiscardAttemptMarkerForTesting(
+    PageNode* page_node) {
+  DiscardAttemptMarker::Destroy(PageNodeImpl::FromNode(page_node));
 }
 
 void PageDiscardingHelper::OnPassedToGraph(Graph* graph) {

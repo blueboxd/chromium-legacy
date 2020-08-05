@@ -22,7 +22,7 @@ void MainDialogAPI::ConfirmCleanupIfNeeded(
     return;
   }
 
-  std::vector<base::string16> registry_keys;
+  std::vector<std::wstring> registry_keys;
   for (const auto& pup_id : found_pups) {
     const auto* pup = PUPData::GetPUP(pup_id);
     for (const auto& registry_footprint : pup->expanded_registry_footprints)

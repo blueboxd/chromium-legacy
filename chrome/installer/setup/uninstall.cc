@@ -679,8 +679,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
     if (!InstallServiceWorkItem::DeleteService(
             install_static::GetElevationServiceName(),
             install_static::GetClientStateKeyPath(),
-            install_static::GetElevatorClsid(),
-            install_static::GetElevatorIid())) {
+            {install_static::GetElevatorClsid()},
+            {install_static::GetElevatorIid()})) {
       LOG(WARNING) << "Failed to delete "
                    << install_static::GetElevationServiceName();
     }

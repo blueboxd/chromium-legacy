@@ -54,6 +54,10 @@ class PredictionModelFetcher;
 class TopHostProvider;
 class RemoteDecisionTreePredictor;
 
+// Parameters to be passed to PredictionManager::OnModelEvaluated for post
+// processing after the model prediction decision and score are obtained.
+struct PredictionDecisionParams;
+
 using HostModelFeaturesMRUCache =
     base::HashingMRUCache<std::string, base::flat_map<std::string, float>>;
 
@@ -98,7 +102,7 @@ class PredictionManager
   // Determine if the navigation matches the criteria for
   // |optimization_target|. Return kUnknown if a PredictionModel for the
   // optimization target is not registered and kModelNotAvailableOnClient if the
-  // if model for the optimization target is not currently on the client.
+  // model for the optimization target is not currently on the client.
   // If the model for the optimization target requires a client model feature
   // that is present in |override_client_model_feature_values|, the value from
   // |override_client_model_feature_values| will be used. The client will
@@ -111,6 +115,22 @@ class PredictionManager
       proto::OptimizationTarget optimization_target,
       const base::flat_map<proto::ClientModelFeature, float>&
           override_client_model_feature_values);
+
+  // Invokes |callback| with the decision for whether the navigation matches the
+  // criteria for |optimization_target|. Passes kUnknown if a PredictionModel
+  // for the optimization target is not registered
+  // and kModelNotAvailableOnClient if the model for the optimization target is
+  // not currently on the client.
+  //
+  // Values provided in |client_model_feature_values| will be used over any
+  // values for features required by the model that may be calculated by the
+  // Optimization Guide.
+  void ShouldTargetNavigationAsync(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationTarget optimization_target,
+      const base::flat_map<proto::ClientModelFeature, float>&
+          override_client_model_feature_values,
+      OptimizationTargetDecisionCallback callback);
 
   // Update |session_fcp_| and |previous_fcp_| with |fcp|.
   void UpdateFCPSessionStatistics(base::TimeDelta fcp);
@@ -159,6 +179,11 @@ class PredictionManager
   // Return the prediction model for the optimization target used by this
   // PredictionManager for testing.
   PredictionModel* GetPredictionModelForTesting(
+      proto::OptimizationTarget optimization_target) const;
+
+  // Return the remote model predictor handle for the optimization target used
+  // by this PredictionManager for testing.
+  RemoteDecisionTreePredictor* GetRemoteDecisionTreePredictorForTesting(
       proto::OptimizationTarget optimization_target) const;
 
   // Return the host model features for all hosts used by this
@@ -307,6 +332,14 @@ class PredictionManager
   // can be constructed and successfully stored, otherwise, return false.
   bool ProcessAndStoreHostModelFeatures(
       const proto::HostModelFeatures& host_model_features);
+
+  // Callback to be passed to the ML Service via the predictor handle and to
+  // retrieve |result| and |prediction_score|. Performs post processing using
+  // information passed via |params|.
+  void OnModelEvaluated(
+      std::unique_ptr<PredictionDecisionParams> params,
+      machine_learning::mojom::DecisionTreePredictionResult result,
+      double prediction_score);
 
   // Return the time when a prediction model and host model features fetch was
   // last attempted.

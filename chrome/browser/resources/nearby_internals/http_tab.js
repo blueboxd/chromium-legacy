@@ -104,6 +104,6 @@ Polymer({
    */
   parseAndAddMessages_(messages) {
     messages.unshift('httpMessageList_');
-    this.push.apply(this, messages);
+    this.unshift.apply(this, messages);
   },
 });

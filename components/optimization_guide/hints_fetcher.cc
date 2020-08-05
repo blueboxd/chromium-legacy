@@ -126,6 +126,11 @@ bool HintsFetcher::WasHostCoveredByFetch(PrefService* pref_service,
 bool HintsFetcher::WasHostCoveredByFetch(PrefService* pref_service,
                                          const std::string& host,
                                          const base::Clock* time_clock) {
+  if (!optimization_guide::features::ShouldPersistHintsToDisk()) {
+    // Don't consult the pref if we aren't even persisting hints to disk.
+    return false;
+  }
+
   DictionaryPrefUpdate hosts_fetched(
       pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
   base::Optional<double> value =
@@ -325,6 +330,11 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
 
 void HintsFetcher::UpdateHostsSuccessfullyFetched(
     base::TimeDelta valid_duration) {
+  if (!optimization_guide::features::ShouldPersistHintsToDisk()) {
+    // Do not persist any state if we aren't persisting hints to disk.
+    return;
+  }
+
   DictionaryPrefUpdate hosts_fetched_list(
       pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
 
@@ -417,7 +427,7 @@ std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(
 
     base::Optional<double> value =
         hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
-    if (value) {
+    if (value && optimization_guide::features::ShouldPersistHintsToDisk()) {
       base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
           base::TimeDelta::FromSecondsD(*value));
       host_hints_due_for_refresh =

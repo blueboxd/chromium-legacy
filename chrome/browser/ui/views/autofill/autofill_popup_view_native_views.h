@@ -109,7 +109,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   int AdjustWidth(int width) const;
 
   // AutofillPopupBaseView:
-  void DoUpdateBoundsAndRedrawPopup() override;
+  bool DoUpdateBoundsAndRedrawPopup() override;
 
   // Controller for this view.
   AutofillPopupController* controller_ = nullptr;

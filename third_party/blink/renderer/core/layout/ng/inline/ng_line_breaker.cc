@@ -2087,7 +2087,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
       DCHECK_EQ(break_iterator_.Locale(), style.LocaleForLineBreakIterator());
     }
     ShapeResultSpacing<String> spacing(spacing_.Text());
-    spacing.SetSpacing(style.GetFontDescription());
+    spacing.SetSpacing(style.GetFont());
     DCHECK_EQ(spacing.LetterSpacing(), spacing_.LetterSpacing());
     DCHECK_EQ(spacing.WordSpacing(), spacing_.WordSpacing());
 #endif
@@ -2136,7 +2136,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   }
 
-  spacing_.SetSpacing(style.GetFontDescription());
+  spacing_.SetSpacing(style.GetFont());
 }
 
 void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {

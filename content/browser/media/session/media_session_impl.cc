@@ -26,6 +26,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -1071,7 +1072,13 @@ void MediaSessionImpl::ExitPictureInPicture() {
       normal_players_.begin()->first.player_id);
 }
 
-void MediaSessionImpl::SetAudioSinkId(const base::Optional<std::string>& id) {}
+void MediaSessionImpl::SetAudioSinkId(const base::Optional<std::string>& id) {
+  for (const auto& it : normal_players_) {
+    it.first.observer->OnSetAudioSinkId(
+        it.first.player_id,
+        id.value_or(media::AudioDeviceDescription::kDefaultDeviceId));
+  }
+}
 
 void MediaSessionImpl::GetMediaImageBitmap(
     const media_session::MediaImage& image,

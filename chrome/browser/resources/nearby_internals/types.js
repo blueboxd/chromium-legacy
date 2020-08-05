@@ -53,7 +53,7 @@ export const Direction = {
  * The HTTP request/response object, sent by NearbyInternalsHttpHandler
  * chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.cc.
  * @typedef {{body: string,
- *            time: string,
+ *            time: number,
  *            rpc: !Rpc,
  *            direction: !Direction}}
  */

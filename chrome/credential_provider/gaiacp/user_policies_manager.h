@@ -25,8 +25,9 @@ class UserPoliciesManager {
   // Fetch the policies for the user from GCPW backend with |sid| using
   // |access_token| for authentication and authorization and saves it in file
   // storage replacing any previously fetched versions.
-  HRESULT FetchAndStoreCloudUserPolicies(const base::string16& sid,
-                                         const std::string& access_token);
+  virtual HRESULT FetchAndStoreCloudUserPolicies(
+      const base::string16& sid,
+      const std::string& access_token);
 
   // Return the elapsed time delta since the last time the policies were
   // successfully fetched for the user with |sid|.

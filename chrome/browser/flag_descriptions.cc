@@ -1848,6 +1848,10 @@ const char kPrintJobManagementAppDescription[] =
     "Enables the print management app that allows Chrome OS users to view "
     "and manage their native print jobs.";
 
+const char kPrintSaveToDriveName[] = "Print Save to Drive locally";
+const char kPrintSaveToDriveDescription[] =
+    "Modifies Print Preview Save to Drive to use locally mounted Drive";
+
 const char kPrivacyElevatedAndroidName[] =
     "Elevate Privacy in Settings on Android";
 const char kPrivacyElevatedAndroidDescription[] =
@@ -2956,6 +2960,12 @@ const char kRecoverFromNeverSaveAndroidName[] =
 const char kRecoverFromNeverSaveAndroidDescription[] =
     "Enables showing UI which allows for easy reverting of the decision to "
     "never save passwords on a certain webiste";
+
+const char kReengagementNotificationName[] =
+    "Enable re-engagement notifications";
+const char kReengagementNotificationDescription[] =
+    "Enables Chrome to use the in-product help system to decide when "
+    "to show re-engagement notifications.";
 
 const char kRelatedSearchesName[] =
     "Enables an experiment for Related Searches on Android";

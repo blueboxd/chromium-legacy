@@ -12,13 +12,13 @@
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 
 WebRtcSignallingHostFCM::WebRtcSignallingHostFCM(
-    mojo::PendingReceiver<sharing::mojom::SignallingSender> signalling_sender,
+    mojo::PendingReceiver<sharing::mojom::SignalingSender> signaling_sender,
     mojo::PendingRemote<sharing::mojom::SignallingReceiver> signalling_receiver,
     SharingMessageSender* message_sender,
     std::unique_ptr<syncer::DeviceInfo> device_info)
     : message_sender_(message_sender),
       device_info_(std::move(device_info)),
-      signalling_sender_(this, std::move(signalling_sender)),
+      signaling_sender_(this, std::move(signaling_sender)),
       signalling_receiver_(std::move(signalling_receiver)) {
   DCHECK(device_info_);
 }

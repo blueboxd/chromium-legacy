@@ -31,7 +31,7 @@ enum class LoadStreamStatus {
   // The timestamp for stored data is in the future, so we're treating stored
   // data as it it is stale.
   kDataInStoreIsStaleTimestampInFuture = 9,
-  kCannotLoadFromNetworkSupressedForHistoryDelete = 10,
+  kCannotLoadFromNetworkSupressedForHistoryDelete_DEPRECATED = 10,
   kCannotLoadFromNetworkOffline = 11,
   kCannotLoadFromNetworkThrottled = 12,
   kLoadNotAllowedEulaNotAccepted = 13,

@@ -175,8 +175,8 @@ class FeedStream : public FeedStreamApi,
   void OnSignedIn();
   // The user signed out of Chrome.
   void OnSignedOut();
-  // The user has deleted their Chrome history.
-  void OnHistoryDeleted();
+  // The user has deleted all browsing history.
+  void OnAllHistoryDeleted();
   // Chrome's cached data was cleared.
   void OnCacheDataCleared();
 
@@ -215,6 +215,10 @@ class FeedStream : public FeedStreamApi,
   // call.
   LoadStreamStatus ShouldMakeFeedQueryRequest(bool is_load_more = false,
                                               bool consume_quota = true);
+
+  // Returns true if a FeedQuery request made right now should be made without
+  // user credentials.
+  bool ShouldForceSignedOutFeedQueryRequest() const;
 
   // Unloads the model. Surfaces are not updated, and will remain frozen until a
   // model load is requested.
@@ -302,7 +306,7 @@ class FeedStream : public FeedStreamApi,
 
   // Mutable state.
   RequestThrottler request_throttler_;
-  base::TimeTicks suppress_refreshes_until_;
+  base::TimeTicks signed_out_refreshes_until_;
   std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks_;
   Metadata metadata_;
   int unload_on_detach_sequence_number_ = 0;

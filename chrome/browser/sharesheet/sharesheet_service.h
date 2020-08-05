@@ -27,6 +27,10 @@ namespace views {
 class View;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace sharesheet {
 
 class SharesheetServiceDelegate;
@@ -41,7 +45,12 @@ class SharesheetService : public KeyedService {
   SharesheetService(const SharesheetService&) = delete;
   SharesheetService& operator=(const SharesheetService&) = delete;
 
+  // Displays the dialog (aka bubble) for sharing content (or files) with
+  // other applications and targets. |intent| contains the list of the
+  // files/content to be shared.
   void ShowBubble(views::View* bubble_anchor_view,
+                  apps::mojom::IntentPtr intent);
+  void ShowBubble(content::WebContents* web_contents,
                   apps::mojom::IntentPtr intent);
   void OnBubbleClosed(uint32_t id, const base::string16& active_action);
   void OnTargetSelected(uint32_t delegate_id,
@@ -50,7 +59,7 @@ class SharesheetService : public KeyedService {
                         apps::mojom::IntentPtr intent,
                         views::View* share_action_view);
   SharesheetServiceDelegate* GetDelegate(uint32_t delegate_id);
-  bool HasShareTargets(apps::mojom::IntentPtr intent);
+  bool HasShareTargets(const apps::mojom::IntentPtr& intent);
 
  private:
   using SharesheetServiceIconLoaderCallback =
@@ -72,6 +81,10 @@ class SharesheetService : public KeyedService {
   void OnAppIconsLoaded(std::unique_ptr<SharesheetServiceDelegate> delegate,
                         apps::mojom::IntentPtr intent,
                         std::vector<TargetInfo> targets);
+
+  void ShowBubbleWithDelegate(
+      std::unique_ptr<SharesheetServiceDelegate> delegate,
+      apps::mojom::IntentPtr intent);
 
   uint32_t delegate_counter_ = 0;
   std::unique_ptr<SharesheetActionCache> sharesheet_action_cache_;

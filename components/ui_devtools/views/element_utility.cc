@@ -31,6 +31,9 @@ void AppendLayerPropertiesMatchedStyle(
                     base::NumberToString(layer->layer_brightness()));
   ret->emplace_back("layer-grayscale",
                     base::NumberToString(layer->layer_grayscale()));
+  const auto offset = layer->GetSubpixelOffset();
+  if (!offset.IsZero())
+    ret->emplace_back("layer-subpixel-offset", offset.ToString());
   const ui::Layer::ShapeRects* alpha_shape_bounds = layer->alpha_shape();
   if (alpha_shape_bounds && alpha_shape_bounds->size()) {
     gfx::Rect bounding_box;

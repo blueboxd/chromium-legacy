@@ -44,6 +44,11 @@ class MediaSessionPlayerObserver {
   // The given |player_id| has been requested to exit picture-in-picture.
   virtual void OnExitPictureInPicture(int player_id) = 0;
 
+  // The given |player_id| has been requested to route audio output to the
+  // specified audio device.
+  virtual void OnSetAudioSinkId(int player_id,
+                                const std::string& raw_device_id) = 0;
+
   // Returns the position for |player_id|.
   virtual base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const = 0;

@@ -70,8 +70,13 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // Returns the bounds of the containing window in screen space.
   gfx::Rect GetWindowBounds() const;
 
-  // Update size of popup and paint (virtual for testing).
-  virtual void DoUpdateBoundsAndRedrawPopup();
+  // Returns the bounds of the content area in screen space.
+  gfx::Rect GetContentAreaBounds() const;
+
+  // Update size of popup and paint. If there is insufficient height to draw the
+  // popup, it hides and thus deletes |this| and returns false. (virtual for
+  // testing).
+  virtual bool DoUpdateBoundsAndRedrawPopup();
 
   const AutofillPopupViewDelegate* delegate() const { return delegate_; }
 

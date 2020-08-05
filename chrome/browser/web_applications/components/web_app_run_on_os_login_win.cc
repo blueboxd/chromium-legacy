@@ -24,22 +24,24 @@ bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info) {
                                  SHORTCUT_CREATION_BY_USER, shortcut_info);
 }
 
-void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
+bool UnregisterRunOnOsLogin(const base::FilePath& profile_path,
                             const base::string16& shortcut_title) {
   web_app::ShortcutLocations all_shortcut_locations;
   all_shortcut_locations.in_startup = true;
   std::vector<base::FilePath> all_paths =
       GetShortcutPaths(all_shortcut_locations);
-
+  bool result = true;
   // Only Startup folder is the expected path to be returned in all_paths.
   for (const auto& path : all_paths) {
     // Find all app's shortcuts in Startup folder to delete.
     std::vector<base::FilePath> shortcut_files =
         FindAppShortcutsByProfileAndTitle(path, profile_path, shortcut_title);
     for (const auto& shortcut_file : shortcut_files) {
-      base::DeleteFile(shortcut_file);
+      if (!base::DeleteFile(shortcut_file))
+        result = false;
     }
   }
+  return result;
 }
 
 }  // namespace internals

@@ -32,6 +32,8 @@ static_library("usb") {
     "usb_device_handle.h",
     "usb_device_handle_android.cc",
     "usb_device_handle_android.h",
+    "usb_device_handle_mac.cc",
+    "usb_device_handle_mac.h",
     "usb_device_handle_win.cc",
     "usb_device_handle_win.h",
     "usb_device_linux.cc",

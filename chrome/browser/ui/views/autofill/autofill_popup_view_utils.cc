@@ -86,3 +86,17 @@ gfx::Rect CalculatePopupBounds(const gfx::Size& desired_size,
 
   return popup_bounds;
 }
+
+bool HasEnoughHeightForOneRow(int item_height,
+                              const gfx::Rect& content_area_bounds,
+                              const gfx::Rect& element_bounds) {
+  // Ensure that at least one row of the popup can be displayed within the
+  // bounds of the content area so that the user notices the presence of the
+  // popup.
+  bool enough_space_for_one_item_in_content_area_above_element =
+      element_bounds.y() - content_area_bounds.y() >= item_height;
+  bool enough_space_for_one_item_in_content_area_below_element =
+      content_area_bounds.bottom() - element_bounds.bottom() >= item_height;
+  return enough_space_for_one_item_in_content_area_above_element ||
+         enough_space_for_one_item_in_content_area_below_element;
+}

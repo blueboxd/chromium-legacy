@@ -43,14 +43,8 @@ class EulaObserver : public web_resource::EulaAcceptedNotifier::Observer {
 
 namespace internal {
 bool ShouldClearFeed(const history::DeletionInfo& deletion_info) {
-  // We ignore expirations since they're not user-initiated.
-  if (deletion_info.is_from_expiration())
-    return false;
-
-  // If a user deletes a single URL, we don't consider this a clear user
-  // intent to clear our data.
-  return deletion_info.IsAllHistory() ||
-         deletion_info.deleted_rows().size() > 1;
+  // Only clear the feed if all history is deleted.
+  return deletion_info.IsAllHistory();
 }
 }  // namespace internal
 
@@ -71,7 +65,7 @@ class FeedService::HistoryObserverImpl
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override {
     if (internal::ShouldClearFeed(deletion_info))
-      feed_stream_->OnHistoryDeleted();
+      feed_stream_->OnAllHistoryDeleted();
   }
 
  private:

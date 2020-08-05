@@ -208,6 +208,11 @@ void AudioOutputAuthorizationHandler::OverridePermissionsForTesting(
   permissions_override_value_ = override_value;
 }
 
+void AudioOutputAuthorizationHandler::
+    SetAuthorizedDeviceIdForGlobalMediaControls(std::string hashed_device_id) {
+  hashed_device_id_for_global_media_controls_ = std::move(hashed_device_id);
+}
+
 void AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
     base::TimeTicks auth_start_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.OutputDeviceAuthorizationTime",
@@ -242,6 +247,12 @@ void AudioOutputAuthorizationHandler::AccessChecked(
     bool has_access) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   trace_scope->AccessChecked(has_access);
+
+  // If this device has been explicitly allowed by the browser, overwrite the
+  // result of the permission check.
+  has_access = device_id == hashed_device_id_for_global_media_controls_
+                   ? true
+                   : has_access;
 
   if (!has_access) {
     std::move(cb).Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,

@@ -1574,7 +1574,13 @@ CommandHandler.COMMANDS_['show-submenu'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends Command {
   execute(event, fileManager) {
-    // TODO(crbug.com/1097623): Implement this.
+    const entries = fileManager.selectionHandler.selection.entries;
+    chrome.fileManagerPrivate.invokeSharesheet(entries, () => {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.message);
+        return;
+      }
+    });
   }
 
   /** @override */

@@ -47,11 +47,11 @@ bool OmniboxPopupModel::Selection::operator<(const Selection& b) const {
 }
 
 bool OmniboxPopupModel::Selection::IsChangeToKeyword(Selection from) const {
-  return state == KEYWORD && from.state != KEYWORD;
+  return state == KEYWORD_MODE && from.state != KEYWORD_MODE;
 }
 
 bool OmniboxPopupModel::Selection::IsButtonFocused() const {
-  return state != NORMAL && state != KEYWORD;
+  return state != NORMAL && state != KEYWORD_MODE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -157,7 +157,7 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
     return;
 
   const AutocompleteMatch& match = result().match_at(selection_.line);
-  DCHECK((selection_.state != KEYWORD) || match.associated_keyword.get());
+  DCHECK((selection_.state != KEYWORD_MODE) || match.associated_keyword.get());
   if (selection_.IsButtonFocused()) {
     old_focused_url_ = match.destination_url;
     edit_model_->SetAccessibilityLabel(match);
@@ -178,10 +178,11 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
                                     base::string16(), keyword, is_keyword_hint,
                                     base::string16());
   } else if (old_selection.line != selection_.line ||
-             old_selection.IsButtonFocused()) {
+             (old_selection.IsButtonFocused() &&
+              new_selection.state != KEYWORD_MODE)) {
     // Otherwise, only update the edit model for line number changes, or
-    // when the old selection was a button. Updating the edit model for every
-    // state change breaks keyword mode.
+    // when the old selection was a button and we're not entering keyword mode.
+    // Updating the edit model for every state change breaks keyword mode.
     if (reset_to_default) {
       edit_model_->OnPopupDataChanged(
           match.inline_autocompletion,
@@ -357,7 +358,7 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
       // Keyword mode is only accessible by Tabbing forward.
       if (direction == kForward) {
         if (step == kStateOrLine) {
-          all_states.push_back(KEYWORD);
+          all_states.push_back(KEYWORD_MODE);
         }
       }
       all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
@@ -496,7 +497,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
     }
     case NORMAL:
       return true;
-    case KEYWORD:
+    case KEYWORD_MODE:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_KEYWORD:
       return match.associated_keyword != nullptr;
@@ -506,7 +507,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
         return match.has_tab_match;
       else
-        return match.ShouldShowTabMatchButtonInlineInResultView();
+        return match.has_tab_match && !match.associated_keyword;
     case FOCUSED_BUTTON_PEDAL:
       return match.pedal != nullptr;
     case FOCUSED_BUTTON_REMOVE_SUGGESTION:
@@ -515,8 +516,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
         return match.SupportsDeletion();
       else
-        return !match.associated_keyword &&
-               !match.ShouldShowTabMatchButtonInlineInResultView() &&
+        return !match.associated_keyword && !match.has_tab_match &&
                match.SupportsDeletion();
     default:
       break;
@@ -614,7 +614,7 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
       // Don't add an additional message for removable suggestions without
       // button focus, since they are relatively common.
       break;
-    case KEYWORD:
+    case KEYWORD_MODE:
       // TODO(tommycli): Investigate whether the accessibility messaging for
       // Keyword mode belongs here.
       break;

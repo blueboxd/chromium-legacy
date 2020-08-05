@@ -31,7 +31,8 @@ std::string GetHostDomainOrg(int index) {
   return "host.domain" + base::NumberToString(index) + ".org";
 }
 
-class HintCacheTest : public ProtoDatabaseProviderTestBase {
+class HintCacheTest : public ProtoDatabaseProviderTestBase,
+                      public testing::WithParamInterface<bool> {
  public:
   HintCacheTest() : loaded_hint_(nullptr) {}
 
@@ -52,8 +53,10 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     auto database_path = temp_dir_.GetPath();
     auto database_task_runner = task_environment_.GetMainThreadTaskRunner();
     hint_cache_ = std::make_unique<HintCache>(
-        std::make_unique<OptimizationGuideStore>(
-            db_provider_.get(), database_path, database_task_runner),
+        IsBackedByPersistentStore()
+            ? std::make_unique<OptimizationGuideStore>(
+                  db_provider_.get(), database_path, database_task_runner)
+            : nullptr,
         memory_cache_size);
     is_store_initialized_ = false;
     hint_cache_->Initialize(purge_existing_data,
@@ -149,6 +152,8 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  bool IsBackedByPersistentStore() const { return GetParam(); }
+
  private:
   void OnStoreInitialized() { is_store_initialized_ = true; }
   void OnUpdateComponentHints() { are_component_hints_updated_ = true; }
@@ -171,7 +176,14 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
   DISALLOW_COPY_AND_ASSIGN(HintCacheTest);
 };
 
-TEST_F(HintCacheTest, ComponentUpdate) {
+INSTANTIATE_TEST_SUITE_P(WithPersistentStore,
+                         HintCacheTest,
+                         testing::Values(true, false));
+
+TEST_P(HintCacheTest, ComponentUpdate) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -206,7 +218,10 @@ TEST_F(HintCacheTest, ComponentUpdate) {
   EXPECT_TRUE(hint_cache()->HasHint("subdomain.domain.org"));
 }
 
-TEST_F(HintCacheTest, ComponentUpdateWithSameVersionIgnored) {
+TEST_P(HintCacheTest, ComponentUpdateWithSameVersionIgnored) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -220,7 +235,10 @@ TEST_F(HintCacheTest, ComponentUpdateWithSameVersionIgnored) {
   EXPECT_FALSE(hint_cache()->MaybeCreateUpdateDataForComponentHints(version));
 }
 
-TEST_F(HintCacheTest, ComponentUpdateWithEarlierVersionIgnored) {
+TEST_P(HintCacheTest, ComponentUpdateWithEarlierVersionIgnored) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -236,7 +254,10 @@ TEST_F(HintCacheTest, ComponentUpdateWithEarlierVersionIgnored) {
   EXPECT_FALSE(hint_cache()->MaybeCreateUpdateDataForComponentHints(version_1));
 }
 
-TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
+TEST_P(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -305,7 +326,10 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   EXPECT_TRUE(hint_cache()->HasHint("host.domain2.org"));
 }
 
-TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
+TEST_P(HintCacheTest, ComponentHintsAvailableAfterRestart) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   for (int i = 0; i < 2; ++i) {
     const int kMemoryCacheSize = 5;
     CreateAndInitializeHintCache(kMemoryCacheSize,
@@ -350,7 +374,10 @@ TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
   }
 }
 
-TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
+TEST_P(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   for (int i = 0; i < 2; ++i) {
     const int kMemoryCacheSize = 5;
     CreateAndInitializeHintCache(kMemoryCacheSize,
@@ -391,7 +418,10 @@ TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
   }
 }
 
-TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
+TEST_P(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   for (int i = 0; i < 2; ++i) {
     const int kMemoryCacheSize = 5;
     CreateAndInitializeHintCache(kMemoryCacheSize,
@@ -438,7 +468,10 @@ TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
   }
 }
 
-TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
+TEST_P(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   const int kTestHintCount = 10;
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
@@ -478,7 +511,9 @@ TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
   }
 }
 
-TEST_F(HintCacheTest, TestHostNotInCache) {
+TEST_P(HintCacheTest, TestHostNotInCache) {
+  if (!IsBackedByPersistentStore())
+    return;
   const int kTestHintCount = 10;
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
@@ -500,7 +535,10 @@ TEST_F(HintCacheTest, TestHostNotInCache) {
   EXPECT_FALSE(hint_cache()->HasHint(GetHostDomainOrg(kTestHintCount)));
 }
 
-TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
+TEST_P(HintCacheTest, TestMemoryCacheLoadCallback) {
+  if (!IsBackedByPersistentStore())
+    return;
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -525,7 +563,13 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
   EXPECT_EQ(hint_key, GetLoadedHint()->key());
 }
 
-TEST_F(HintCacheTest, StoreValidFetchedHints) {
+TEST_P(HintCacheTest, StoreValidFetchedHints) {
+  if (!IsBackedByPersistentStore()) {
+    // Checking the fetched hints update time is not relevant when we don't have
+    // a backing store.
+    return;
+  }
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -550,7 +594,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 }
 
-TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
+TEST_P(HintCacheTest, ParseEmptyFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -559,12 +603,18 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
       std::make_unique<proto::GetHintsResponse>();
 
   UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {}, {});
-  // Empty Fetched Hints causes the metadata entry to be updated.
+  // Empty Fetched Hints causes the metadata entry to be updated if store is
+  // available.
   EXPECT_TRUE(are_fetched_hints_updated());
-  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
+
+  if (IsBackedByPersistentStore()) {
+    EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
+  } else {
+    EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
+  }
 }
 
-TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
+TEST_P(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   const int kMemoryCacheSize = 5;
   const int kFetchedHintExpirationSecs = 60;
   CreateAndInitializeHintCache(kMemoryCacheSize);
@@ -589,8 +639,12 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
                             {"host.domain.org"}, {navigation_url});
   EXPECT_TRUE(are_fetched_hints_updated());
 
-  // Next update time for hints should be updated.
-  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
+  if (IsBackedByPersistentStore()) {
+    // Next update time for hints should be updated.
+    EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
+  } else {
+    EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
+  }
 
   // Should be loaded right when response is received.
   EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
@@ -601,7 +655,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 }
 
-TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
+TEST_P(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -622,8 +676,12 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
                             {"host.domain.org"}, {});
   EXPECT_TRUE(are_fetched_hints_updated());
 
-  // Next update time for hints should be updated.
-  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
+  if (IsBackedByPersistentStore()) {
+    // Next update time for hints should be updated.
+    EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
+  } else {
+    EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
+  }
 
   // Should be loaded right when response is received.
   EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
@@ -635,13 +693,13 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 }
 
-TEST_F(HintCacheTest, CacheValidURLKeyedHint) {
+TEST_P(HintCacheTest, CacheValidURLKeyedHint) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
-  ASSERT_TRUE(update_data);
+  ASSERT_EQ(update_data != nullptr, IsBackedByPersistentStore());
 
   GURL url("https://whatever.com/r/werd");
 
@@ -650,18 +708,19 @@ TEST_F(HintCacheTest, CacheValidURLKeyedHint) {
 
   // Only URL-keyed hint included so there are no hints to store within the
   // update data.
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
 
   EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
 }
 
-TEST_F(HintCacheTest, URLKeyedHintExpired) {
+TEST_P(HintCacheTest, URLKeyedHintExpired) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
-  ASSERT_TRUE(update_data);
+  ASSERT_EQ(update_data != nullptr, IsBackedByPersistentStore());
 
   GURL url("https://whatever.com/r/werd");
   int cache_duration_in_secs = 60;
@@ -671,7 +730,8 @@ TEST_F(HintCacheTest, URLKeyedHintExpired) {
 
   // Only URL-keyed hint included so there are no hints to store within the
   // update data.
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
 
   EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
 
@@ -679,7 +739,13 @@ TEST_F(HintCacheTest, URLKeyedHintExpired) {
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(url));
 }
 
-TEST_F(HintCacheTest, PurgeExpiredFetchedHints) {
+TEST_P(HintCacheTest, PurgeExpiredFetchedHints) {
+  if (!IsBackedByPersistentStore()) {
+    // Purging expired fetched hints is only really relevant for when we have
+    // a backing store.
+    return;
+  }
+
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -723,13 +789,13 @@ TEST_F(HintCacheTest, PurgeExpiredFetchedHints) {
   EXPECT_TRUE(hint_cache()->HasHint("notpurged.com"));
 }
 
-TEST_F(HintCacheTest, ClearFetchedHints) {
+TEST_P(HintCacheTest, ClearFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
-  ASSERT_TRUE(update_data);
+  ASSERT_EQ(update_data != nullptr, IsBackedByPersistentStore());
 
   GURL url("https://whatever.com/r/werd");
   int cache_duration_in_secs = 60;
@@ -755,7 +821,8 @@ TEST_F(HintCacheTest, ClearFetchedHints) {
 
   // Only URL-keyed hint included so there are no hints to store within the
   // update data.
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
 
   EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
   EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded(host));
@@ -765,13 +832,13 @@ TEST_F(HintCacheTest, ClearFetchedHints) {
   EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded(host));
 }
 
-TEST_F(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
+TEST_P(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
-  ASSERT_TRUE(update_data);
+  ASSERT_EQ(update_data != nullptr, IsBackedByPersistentStore());
 
   GURL https_url("https://whatever.com/r/werd");
   GURL http_url("http://werd.com/werd/");
@@ -788,7 +855,8 @@ TEST_F(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
 
   // Only URL-keyed hint included so there are no hints to store within the
   // update data.
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
 
   EXPECT_TRUE(hint_cache()->GetURLKeyedHint(https_url));
   EXPECT_TRUE(hint_cache()->GetURLKeyedHint(http_url));
@@ -797,13 +865,13 @@ TEST_F(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(auth_url));
 }
 
-TEST_F(HintCacheTest, URLsWithNoURLKeyedHints) {
+TEST_P(HintCacheTest, URLsWithNoURLKeyedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
-  ASSERT_TRUE(update_data);
+  ASSERT_EQ(update_data != nullptr, IsBackedByPersistentStore());
 
   GURL https_url_without_hint("https://whatever.com/r/nohint");
   GURL https_url_with_hint("https://whatever.com/r/hint");
@@ -817,7 +885,8 @@ TEST_F(HintCacheTest, URLsWithNoURLKeyedHints) {
 
   // Only URL-keyed hint included so there are no hints to store within the
   // update data.
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
 
   // Add the url without hint to the url-keyed cache via UpdateFetchedHints.
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
@@ -842,7 +911,7 @@ TEST_F(HintCacheTest, URLsWithNoURLKeyedHints) {
   EXPECT_FALSE(hint_cache()->HasURLKeyedEntryForURL(https_url_unseen));
 }
 
-TEST_F(HintCacheTest, ProcessHintsNoUpdateData) {
+TEST_P(HintCacheTest, ProcessHintsNoUpdateData) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -855,10 +924,11 @@ TEST_F(HintCacheTest, ProcessHintsNoUpdateData) {
   google::protobuf::RepeatedPtrField<proto::Hint> hints;
   *(hints.Add()) = hint;
 
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, nullptr));
+  EXPECT_EQ(hint_cache()->ProcessAndCacheHints(&hints, nullptr),
+            !IsBackedByPersistentStore());
 }
 
-TEST_F(HintCacheTest,
+TEST_P(HintCacheTest,
        ProcessHintsWithNoPageHintsOrWhitelistedOptimizationsAndUpdateData) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
@@ -872,12 +942,15 @@ TEST_F(HintCacheTest,
 
   std::unique_ptr<StoreUpdateData> update_data =
       StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
-  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
-  // Verify there is 1 store entries: 1 for the metadata entry.
-  EXPECT_EQ(1ul, update_data->TakeUpdateEntries()->size());
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
+  if (IsBackedByPersistentStore()) {
+    // Verify there is 1 store entries: 1 for the metadata entry.
+    EXPECT_EQ(1ul, update_data->TakeUpdateEntries()->size());
+  }
 }
 
-TEST_F(HintCacheTest,
+TEST_P(HintCacheTest,
        ProcessHintsWithNoPageHintsButHasWhitelistedOptimizationsAndUpdateData) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
@@ -893,13 +966,16 @@ TEST_F(HintCacheTest,
 
   std::unique_ptr<StoreUpdateData> update_data =
       StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
-  EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
-  // Verify there is 1 store entries: 1 for the metadata entry plus the 1
-  // added hint entry.
-  EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
+  EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
+  if (IsBackedByPersistentStore()) {
+    // Verify there is 1 store entries: 1 for the metadata entry plus the 1
+    // added hint entry.
+    EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
+  }
 }
 
-TEST_F(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
+TEST_P(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -919,10 +995,13 @@ TEST_F(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
 
   std::unique_ptr<StoreUpdateData> update_data =
       StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
-  EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
-  // Verify there are 2 store entries: 1 for the metadata entry plus
-  // the 1 added hint entry.
-  EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
+  EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(
+      &hints, IsBackedByPersistentStore() ? update_data.get() : nullptr));
+  if (IsBackedByPersistentStore()) {
+    // Verify there are 2 store entries: 1 for the metadata entry plus
+    // the 1 added hint entry.
+    EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
+  }
 }
 
 }  // namespace

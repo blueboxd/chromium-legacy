@@ -78,12 +78,16 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          NativeMessagingLazyApiTest,
                          ::testing::Values(ContextType::kServiceWorker));
 
-IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, NativeMessagingBasic) {
+// Flaky test: http://crbug.com/1111536
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest,
+                       DISABLED_NativeMessagingBasic) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
   ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, UserLevelNativeMessaging) {
+// Flaky test: http://crbug.com/1111337
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest,
+                       DISABLED_UserLevelNativeMessaging) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(true));
   ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
 }

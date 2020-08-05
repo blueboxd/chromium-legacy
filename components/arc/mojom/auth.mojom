@@ -132,8 +132,8 @@ enum CloudProvisionFlowError {
     ERROR_ACCOUNT_NOT_READY = 14,
     // Checkin failed.
     ERROR_CHECKIN_FAILED = 15,
-    // Issues with whitelisting work account.
-    ERROR_ACCOUNT_NOT_WHITELISTED = 16,
+    // Issues with allowlisting work account.
+    ERROR_ACCOUNT_NOT_ALLOWLISTED = 16,
     // Error parsing JSON, most likely policy JSON
     ERROR_JSON = 17,
     // ManagedProvisioning failed.

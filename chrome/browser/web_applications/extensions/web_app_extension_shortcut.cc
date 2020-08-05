@@ -268,9 +268,8 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
       ShortcutInfoForExtensionAndProfile(app, profile));
   base::FilePath shortcut_data_dir =
       internals::GetShortcutDataDir(*shortcut_info);
-  internals::PostShortcutIOTask(
-      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
-      std::move(shortcut_info));
+  internals::ScheduleDeletePlatformShortcuts(
+      shortcut_data_dir, std::move(shortcut_info), base::DoNothing());
 }
 
 void UpdateAllShortcuts(const base::string16& old_app_title,

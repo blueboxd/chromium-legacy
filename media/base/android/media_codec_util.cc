@@ -168,18 +168,18 @@ bool MediaCodecUtil::IsMediaCodecAvailable() {
 
 // static
 bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
-  // We will blacklist the model on any sdk that is as old or older than
+  // We will block the model on any sdk that is as old or older than
   // |last_bad_sdk| for the given model.
-  struct BlacklistEntry {
-    BlacklistEntry(const char* m, int s) : model(m), last_bad_sdk(s) {}
+  struct BlocklistEntry {
+    BlocklistEntry(const char* m, int s) : model(m), last_bad_sdk(s) {}
     base::StringPiece model;
     int last_bad_sdk;
-    bool operator==(const BlacklistEntry& other) const {
+    bool operator==(const BlocklistEntry& other) const {
       // Search on name only.  Ignore |last_bad_sdk|.
       return model == other.model;
     }
   };
-  static const BlacklistEntry blacklist[] = {
+  static const BlocklistEntry blocklist[] = {
       // crbug.com/653905
       {"LGMS330", SDK_VERSION_LOLLIPOP_MR1},
 
@@ -199,9 +199,9 @@ bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
       {"GT-I8552", SDK_VERSION_KITKAT},
   };
 
-  const BlacklistEntry* iter = std::find(
-      std::begin(blacklist), std::end(blacklist), BlacklistEntry(model, 0));
-  return iter == std::end(blacklist) || sdk > iter->last_bad_sdk;
+  const BlocklistEntry* iter = std::find(
+      std::begin(blocklist), std::end(blocklist), BlocklistEntry(model, 0));
+  return iter == std::end(blocklist) || sdk > iter->last_bad_sdk;
 }
 
 // static
@@ -245,7 +245,7 @@ bool MediaCodecUtil::IsVp8DecoderAvailable() {
 
 // static
 bool MediaCodecUtil::IsVp8EncoderAvailable() {
-  // Currently the vp8 encoder and decoder blacklists cover the same devices,
+  // Currently the vp8 encoder and decoder blocklists cover the same devices,
   // but we have a second method for clarity in future issues.
   return IsVp8DecoderAvailable();
 }
@@ -287,8 +287,8 @@ bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
   // Disable SurfaceView output for the Samsung Galaxy S3; it does not work
   // well enough for even 360p24 H264 playback.  http://crbug.com/602870.
   //
-  // Notably this is codec agnostic at present, so any devices added to
-  // the blacklist will avoid trying to play any codecs on SurfaceView.  If
+  // Notably this is codec agnostic at present, so any devices added to the
+  // disabled list will avoid trying to play any codecs on SurfaceView.  If
   // needed in the future this can be expanded to be codec specific.
   constexpr const char* kDisabledModels[] = {// Exynos 4 (Mali-400)
                                              "GT-I9300", "GT-I9305", "SHV-E210",

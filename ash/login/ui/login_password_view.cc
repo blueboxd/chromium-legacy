@@ -108,7 +108,7 @@ constexpr base::TimeDelta kClearPasswordAfterDelay =
 
 // Hides the password after a short delay for security reasons.
 constexpr base::TimeDelta kHidePasswordAfterDelay =
-    base::TimeDelta::FromSeconds(5);
+    base::TimeDelta::FromSeconds(3);
 
 constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
 
@@ -742,10 +742,11 @@ void LoginPasswordView::ContentsChanged(views::Textfield* sender,
   if (!is_display_password_feature_enabled_)
     return;
 
-  // If the password is currently revealed.
-  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL)
-    hide_password_timer_->Reset();
-  clear_password_timer_->Reset();
+  // Only reset the timer if the display password feature is enabled.
+  if (display_password_button_->GetVisible())
+    clear_password_timer_->Reset();
+  // For UX purposes, hide back the password when the user is typing.
+  HidePassword(false /*chromevox_exception*/);
   display_password_button_->SetEnabled(!new_contents.empty());
 }
 

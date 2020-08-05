@@ -680,6 +680,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"scroll-to-text-ios", flag_descriptions::kScrollToTextIOSName,
      flag_descriptions::kScrollToTextIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kScrollToTextIOS)},
+    {"legacy-tls-interstitial",
+     flag_descriptions::kIOSLegacyTLSInterstitialsName,
+     flag_descriptions::kIOSLegacyTLSInterstitialsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kIOSLegacyTLSInterstitial)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

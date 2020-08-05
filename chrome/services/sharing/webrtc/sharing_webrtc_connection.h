@@ -34,7 +34,7 @@ namespace sharing {
 
 class IpcPacketSocketFactory;
 
-// Manages a WebRTC PeerConnection. Signalling is handled via the passed sender
+// Manages a WebRTC PeerConnection. Signaling is handled via the passed sender
 // and receiver. All network communication is handled by the network service via
 // the passed P2PSocketManager and MdnsResponder pipes. All methods of this
 // class are called on the same thread and the PeerConnectionFactory is setup to
@@ -47,7 +47,7 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
   SharingWebRtcConnection(
       webrtc::PeerConnectionFactoryInterface* connection_factory,
       const std::vector<mojom::IceServerPtr>& ice_servers,
-      mojo::PendingRemote<mojom::SignallingSender> signalling_sender,
+      mojo::PendingRemote<mojom::SignalingSender> signaling_sender,
       mojo::PendingReceiver<mojom::SignallingReceiver> signalling_receiver,
       mojo::PendingRemote<mojom::SharingWebRtcConnectionDelegate> delegate,
       mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
@@ -132,7 +132,7 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
   mojo::Receiver<mojom::SignallingReceiver> signalling_receiver_;
-  mojo::Remote<mojom::SignallingSender> signalling_sender_;
+  mojo::Remote<mojom::SignalingSender> signaling_sender_;
   mojo::Receiver<mojom::SharingWebRtcConnection> connection_;
   mojo::Remote<mojom::SharingWebRtcConnectionDelegate> delegate_;
   mojo::Remote<network::mojom::P2PSocketManager> p2p_socket_manager_;

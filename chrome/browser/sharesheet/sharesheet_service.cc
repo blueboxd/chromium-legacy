@@ -42,24 +42,19 @@ void SharesheetService::ShowBubble(views::View* bubble_anchor_view,
   auto sharesheet_service_delegate =
       std::make_unique<SharesheetServiceDelegate>(
           delegate_counter_++, std::move(bubble_anchor_view), this);
+  ShowBubbleWithDelegate(std::move(sharesheet_service_delegate),
+                         std::move(intent));
+}
 
-  std::vector<TargetInfo> targets;
-  auto& actions = sharesheet_action_cache_->GetShareActions();
-  auto iter = actions.begin();
-  while (iter != actions.end()) {
-    targets.emplace(targets.begin(), TargetType::kAction,
-                    (*iter)->GetActionIcon(), (*iter)->GetActionName(),
-                    (*iter)->GetActionName());
-    ++iter;
-  }
-
-  std::vector<apps::AppIdAndActivityName> app_id_and_activities =
-      app_service_proxy_->GetAppsForIntent(intent);
-  LoadAppIcons(std::move(app_id_and_activities), std::move(targets), 0,
-               base::BindOnce(&SharesheetService::OnAppIconsLoaded,
-                              weak_factory_.GetWeakPtr(),
-                              std::move(sharesheet_service_delegate),
-                              std::move(intent)));
+void SharesheetService::ShowBubble(content::WebContents* web_contents,
+                                   apps::mojom::IntentPtr intent) {
+  DCHECK(intent->action == apps_util::kIntentActionSend ||
+         intent->action == apps_util::kIntentActionSendMultiple);
+  auto sharesheet_service_delegate =
+      std::make_unique<SharesheetServiceDelegate>(delegate_counter_++,
+                                                  web_contents, this);
+  ShowBubbleWithDelegate(std::move(sharesheet_service_delegate),
+                         std::move(intent));
 }
 
 // Cleanup delegate when bubble closes.
@@ -121,7 +116,7 @@ SharesheetServiceDelegate* SharesheetService::GetDelegate(
   return nullptr;
 }
 
-bool SharesheetService::HasShareTargets(apps::mojom::IntentPtr intent) {
+bool SharesheetService::HasShareTargets(const apps::mojom::IntentPtr& intent) {
   auto& actions = sharesheet_action_cache_->GetShareActions();
   std::vector<apps::AppIdAndActivityName> app_id_and_activities =
       app_service_proxy_->GetAppsForIntent(intent);
@@ -175,8 +170,28 @@ void SharesheetService::OnAppIconsLoaded(
     apps::mojom::IntentPtr intent,
     std::vector<TargetInfo> targets) {
   delegate->ShowBubble(std::move(targets), std::move(intent));
-
   active_delegates_.push_back(std::move(delegate));
+}
+
+void SharesheetService::ShowBubbleWithDelegate(
+    std::unique_ptr<SharesheetServiceDelegate> delegate,
+    apps::mojom::IntentPtr intent) {
+  std::vector<TargetInfo> targets;
+  auto& actions = sharesheet_action_cache_->GetShareActions();
+  auto iter = actions.begin();
+  while (iter != actions.end()) {
+    targets.emplace(targets.begin(), TargetType::kAction,
+                    (*iter)->GetActionIcon(), (*iter)->GetActionName(),
+                    (*iter)->GetActionName());
+    ++iter;
+  }
+
+  std::vector<apps::AppIdAndActivityName> app_id_and_activities =
+      app_service_proxy_->GetAppsForIntent(intent);
+  LoadAppIcons(std::move(app_id_and_activities), std::move(targets), 0,
+               base::BindOnce(&SharesheetService::OnAppIconsLoaded,
+                              weak_factory_.GetWeakPtr(), std::move(delegate),
+                              std::move(intent)));
 }
 
 }  // namespace sharesheet

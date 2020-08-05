@@ -71,6 +71,16 @@ void CreatePlatformShortcutsAndPostCallback(
       FROM_HERE, base::BindOnce(std::move(callback), shortcut_created));
 }
 
+void DeletePlatformShortcutsAndPostCallback(
+    const base::FilePath& shortcut_data_path,
+    CreateShortcutsCallback callback,
+    const ShortcutInfo& shortcut_info) {
+  bool shortcut_deleted =
+      internals::DeletePlatformShortcuts(shortcut_data_path, shortcut_info);
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), shortcut_deleted));
+}
+
 }  // namespace
 
 ShortcutInfo::ShortcutInfo() = default;
@@ -163,6 +173,17 @@ void ScheduleCreatePlatformShortcuts(
   PostShortcutIOTask(base::BindOnce(&CreatePlatformShortcutsAndPostCallback,
                                     shortcut_data_path, creation_locations,
                                     reason, std::move(callback)),
+                     std::move(shortcut_info));
+}
+
+void ScheduleDeletePlatformShortcuts(
+    const base::FilePath& shortcut_data_path,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    DeleteShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  PostShortcutIOTask(base::BindOnce(&DeletePlatformShortcutsAndPostCallback,
+                                    shortcut_data_path, std::move(callback)),
                      std::move(shortcut_info));
 }
 

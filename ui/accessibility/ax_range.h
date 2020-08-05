@@ -131,6 +131,12 @@ class AXRange {
                : AXRange(anchor_->Clone(), focus_->Clone());
   }
 
+  AXRange AsBackwardRange() const {
+    return (CompareEndpoints(anchor(), focus()).value_or(0) < 0)
+               ? AXRange(focus_->Clone(), anchor_->Clone())
+               : AXRange(anchor_->Clone(), focus_->Clone());
+  }
+
   bool IsCollapsed() const { return !IsNull() && *anchor_ == *focus_; }
 
   // We define a "leaf text range" as an AXRange whose endpoints are leaf text

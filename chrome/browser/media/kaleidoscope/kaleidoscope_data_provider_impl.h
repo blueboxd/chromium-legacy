@@ -48,6 +48,7 @@ class KaleidoscopeDataProviderImpl
       GetContinueWatchingMediaFeedItemsCallback callback) override;
   void GetCredentials(GetCredentialsCallback cb) override;
   void GetHighWatchTimeOrigins(GetHighWatchTimeOriginsCallback cb) override;
+  void SendFeedback() override;
 
  private:
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();

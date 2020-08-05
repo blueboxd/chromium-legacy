@@ -74,6 +74,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EnterPictureInPicture,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_ExitPictureInPicture,
                     int /* delegate_id, distinguishes instances */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_SetAudioSinkId,
+                    int /* delegate_id, distinguishes instances */,
+                    std::string /* sink_id */)
+
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
                     int /* delegate_id, distinguishes instances */,
                     bool /* is experiment starting (true) or stopping? */)

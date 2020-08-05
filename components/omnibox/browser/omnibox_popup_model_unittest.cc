@@ -233,7 +233,7 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
            Selection(1, OmniboxPopupModel::NORMAL),
            Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
            Selection(2, OmniboxPopupModel::NORMAL),
-           Selection(2, OmniboxPopupModel::KEYWORD),
+           Selection(2, OmniboxPopupModel::KEYWORD_MODE),
            Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
            Selection(3, OmniboxPopupModel::NORMAL),
            Selection(0, OmniboxPopupModel::NORMAL),

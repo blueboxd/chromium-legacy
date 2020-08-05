@@ -72,6 +72,12 @@ void PepperPlayerDelegate::OnExitPictureInPicture(int player_id) {
   // Pepper player cannot exit picture-in-picture. Do nothing.
 }
 
+void PepperPlayerDelegate::OnSetAudioSinkId(int player_id,
+                                            const std::string& raw_device_id) {
+  // Pepper player cannot change audio sinks. Do nothing.
+  NOTREACHED();
+}
+
 base::Optional<media_session::MediaPosition> PepperPlayerDelegate::GetPosition(
     int player_id) const {
   // Pepper does not support position data.

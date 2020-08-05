@@ -199,12 +199,20 @@ void StreamProvider::MediaStream::OnInitializeCallback(
       callback_message.has_audio_decoder_config()) {
     const pb::AudioDecoderConfig audio_message =
         callback_message.audio_decoder_config();
-    UpdateAudioConfig(audio_message);
+    ConvertProtoToAudioDecoderConfig(audio_message, &audio_decoder_config_);
+    if (!audio_decoder_config_.IsValidConfig()) {
+      OnError("Invalid audio config");
+      return;
+    }
   } else if (type_ == DemuxerStream::VIDEO &&
              callback_message.has_video_decoder_config()) {
     const pb::VideoDecoderConfig video_message =
         callback_message.video_decoder_config();
-    UpdateVideoConfig(video_message);
+    ConvertProtoToVideoDecoderConfig(video_message, &video_decoder_config_);
+    if (!video_decoder_config_.IsValidConfig()) {
+      OnError("Invalid video config");
+      return;
+    }
   } else {
     OnError("Config missing");
     return;
@@ -244,8 +252,6 @@ void StreamProvider::MediaStream::OnReadUntilCallback(
   total_received_frame_count_ = callback_message.count();
 
   if (ToDemuxerStreamStatus(callback_message.status()) == kConfigChanged) {
-    config_changed_ = true;
-
     if (callback_message.has_audio_decoder_config()) {
       const pb::AudioDecoderConfig audio_message =
           callback_message.audio_decoder_config();
@@ -277,14 +283,7 @@ void StreamProvider::MediaStream::UpdateAudioConfig(
     OnError("Invalid audio config");
     return;
   }
-  if (config_changed_) {
-    DCHECK(audio_decoder_config_.IsValidConfig());
-    DCHECK(!next_audio_decoder_config_.IsValidConfig());
-    next_audio_decoder_config_ = audio_config;
-  } else {
-    DCHECK(!audio_decoder_config_.IsValidConfig());
-    audio_decoder_config_ = audio_config;
-  }
+  next_audio_decoder_config_ = audio_config;
 }
 
 void StreamProvider::MediaStream::UpdateVideoConfig(
@@ -296,14 +295,7 @@ void StreamProvider::MediaStream::UpdateVideoConfig(
     OnError("Invalid video config");
     return;
   }
-  if (config_changed_) {
-    DCHECK(video_decoder_config_.IsValidConfig());
-    DCHECK(!next_video_decoder_config_.IsValidConfig());
-    next_video_decoder_config_ = video_config;
-  } else {
-    DCHECK(!video_decoder_config_.IsValidConfig());
-    video_decoder_config_ = video_config;
-  }
+  next_video_decoder_config_ = video_config;
 }
 
 void StreamProvider::MediaStream::SendReadUntil() {
@@ -326,7 +318,8 @@ void StreamProvider::MediaStream::Read(ReadCB read_cb) {
   DCHECK(read_cb);
 
   read_complete_callback_ = std::move(read_cb);
-  if (buffers_.empty() && config_changed_) {
+  if (buffers_.empty() && (next_audio_decoder_config_.IsValidConfig() ||
+                           next_video_decoder_config_.IsValidConfig())) {
     CompleteRead(DemuxerStream::kConfigChanged);
     return;
   }
@@ -345,14 +338,14 @@ void StreamProvider::MediaStream::CompleteRead(DemuxerStream::Status status) {
 
   switch (status) {
     case DemuxerStream::kConfigChanged:
-      if (type_ == AUDIO) {
-        DCHECK(next_audio_decoder_config_.IsValidConfig());
+      if (next_audio_decoder_config_.IsValidConfig()) {
         audio_decoder_config_ = next_audio_decoder_config_;
-      } else {
-        DCHECK(next_video_decoder_config_.IsValidConfig());
-        video_decoder_config_ = next_video_decoder_config_;
+        next_audio_decoder_config_ = media::AudioDecoderConfig();
       }
-      config_changed_ = false;
+      if (next_video_decoder_config_.IsValidConfig()) {
+        video_decoder_config_ = next_video_decoder_config_;
+        next_video_decoder_config_ = media::VideoDecoderConfig();
+      }
       std::move(read_complete_callback_).Run(status, nullptr);
       return;
     case DemuxerStream::kAborted:

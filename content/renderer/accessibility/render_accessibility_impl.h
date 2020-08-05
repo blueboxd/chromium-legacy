@@ -297,8 +297,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // (only when debugging flags are enabled, never under normal circumstances).
   bool has_injected_stylesheet_ = false;
 
-  // We defer events to improve performance durung the initial page load.
-  EventScheduleMode event_schedule_mode_ = EventScheduleMode::kDeferEvents;
+  // We defer events to improve performance during the initial page load.
+  EventScheduleMode event_schedule_mode_;
 
   // Whether we should highlight annotation results visually on the page
   // for debugging.

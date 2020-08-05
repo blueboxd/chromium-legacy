@@ -151,7 +151,7 @@ crbug.com/772037 [ win7 release amd d3d11 passthrough ] conformance/extensions/o
 # Vulkan / Passthrough command decoder
 crbug.com/angleproject/3930 [ vulkan passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/angleproject/2914 [ vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
-crbug.com/angleproject/4684 [ vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/angleproject/4931 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
 
 # Win / Intel / Vulkan / Passthrough command decoder
 crbug.com/angleproject/4922 [ win intel vulkan passthrough ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ RetryOnFailure ]
@@ -743,10 +743,6 @@ crbug.com/1099959 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_c
 
 # All platforms, Vulkan backend
 crbug.com/1099961 [ swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
-crbug.com/1099961 [ swiftshader passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
-crbug.com/1099961 [ swiftshader passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
-crbug.com/1099961 [ swiftshader passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
-crbug.com/1099961 [ swiftshader passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
 
 # Mac. All backends.
 crbug.com/1099960 [ mac swiftshader passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]

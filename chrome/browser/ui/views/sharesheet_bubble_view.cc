@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -80,30 +81,18 @@ SharesheetBubbleView::SharesheetBubbleView(
     views::View* anchor_view,
     sharesheet::SharesheetServiceDelegate* delegate)
     : delegate_(delegate) {
-  SetButtons(ui::DIALOG_BUTTON_NONE);
-
   SetAnchorView(anchor_view);
+  CreateBubble();
+}
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-
-  auto root_view = std::make_unique<views::View>();
-  root_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  root_view_ = AddChildView(std::move(root_view));
-
-  auto main_view = std::make_unique<views::View>();
-  main_view_ = root_view_->AddChildView(std::move(main_view));
-
-  auto share_action_view = std::make_unique<views::View>();
-  share_action_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
-  share_action_view_ = root_view_->AddChildView(std::move(share_action_view));
-  share_action_view_->SetVisible(false);
+SharesheetBubbleView::SharesheetBubbleView(
+    content::WebContents* web_contents,
+    sharesheet::SharesheetServiceDelegate* delegate)
+    : delegate_(delegate) {
+  // TODO(crbug.com/1097623): Make the bubble located in the center of the
+  // invoke window.
+  set_parent_window(web_contents->GetNativeView());
+  CreateBubble();
 }
 
 SharesheetBubbleView::~SharesheetBubbleView() = default;
@@ -217,4 +206,29 @@ gfx::Size SharesheetBubbleView::CalculatePreferredSize() const {
                     margins().width();
   gfx::Size size = gfx::Size(width, GetHeightForWidth(width));
   return size;
+}
+
+void SharesheetBubbleView::CreateBubble() {
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  auto root_view = std::make_unique<views::View>();
+  root_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  root_view_ = AddChildView(std::move(root_view));
+
+  auto main_view = std::make_unique<views::View>();
+  main_view_ = root_view_->AddChildView(std::move(main_view));
+
+  auto share_action_view = std::make_unique<views::View>();
+  share_action_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
+  share_action_view_ = root_view_->AddChildView(std::move(share_action_view));
+  share_action_view_->SetVisible(false);
 }

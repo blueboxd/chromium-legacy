@@ -98,6 +98,8 @@ void MediaRouterDialogControllerViews::Reset() {
 
 void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
   DCHECK(scoped_widget_observer_.IsObserving(widget));
+  if (ui_)
+    ui_->LogMediaSinkStatus();
   Reset();
   scoped_widget_observer_.Remove(widget);
 }

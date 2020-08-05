@@ -6045,6 +6045,78 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
             site_instance_1->GetProcess());
 }
 
+// Tests that navigations that started but haven't committed yet will be
+// overridden by navigations started later if both navigations created
+// speculative RFHs.
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       MultipleNavigationsStarted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a1_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL a2_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL b1_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL b2_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), a1_url));
+  auto* a1_rfh = web_contents->GetMainFrame();
+  FrameTreeNode* node = a1_rfh->frame_tree_node();
+  scoped_refptr<SiteInstanceImpl> a1_site_instance =
+      static_cast<SiteInstanceImpl*>(a1_rfh->GetSiteInstance());
+
+  // 2) Start same-site navigation to A2 without committing.
+  TestNavigationManager navigation_a2(shell()->web_contents(), a2_url);
+  shell()->LoadURL(a2_url);
+  EXPECT_TRUE(navigation_a2.WaitForRequestStart());
+  // Verify that we're now navigating to |a2_url|.
+  EXPECT_EQ(node->navigation_request()->GetURL(), a2_url);
+  // We should have a speculative RFH for this navigation.
+  RenderFrameHostImpl* a2_speculative_rfh =
+      node->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(a2_speculative_rfh);
+  EXPECT_NE(a1_rfh, a2_speculative_rfh);
+  // The speculative RFH should use a different BrowsingInstance than the
+  // current RFH.
+  scoped_refptr<SiteInstanceImpl> a2_site_instance =
+      static_cast<SiteInstanceImpl*>(a2_speculative_rfh->GetSiteInstance());
+  EXPECT_FALSE(a1_site_instance->IsRelatedSiteInstance(a2_site_instance.get()));
+
+  // 3) Start cross-site navigation to B1 without committing.
+  TestNavigationManager navigation_b1(shell()->web_contents(), b1_url);
+  shell()->LoadURL(b1_url);
+  EXPECT_TRUE(navigation_b1.WaitForRequestStart());
+  // Verify that we're now navigating to |b1_url|.
+  EXPECT_EQ(node->navigation_request()->GetURL(), b1_url);
+  // We should have a speculative RFH for this navigation.
+  RenderFrameHostImpl* b1_speculative_rfh =
+      node->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(b1_speculative_rfh);
+  EXPECT_NE(a1_rfh, b1_speculative_rfh);
+  // The speculative RFH should use a different BrowsingInstance than the
+  // current RFH.
+  scoped_refptr<SiteInstanceImpl> b1_site_instance =
+      static_cast<SiteInstanceImpl*>(b1_speculative_rfh->GetSiteInstance());
+  EXPECT_FALSE(a1_site_instance->IsRelatedSiteInstance(b1_site_instance.get()));
+
+  // 4) Start same-site navigation to B2 without committing.
+  TestNavigationManager navigation_b2(shell()->web_contents(), b2_url);
+  shell()->LoadURL(b2_url);
+  EXPECT_TRUE(navigation_b2.WaitForRequestStart());
+  // Verify that we're now navigating to |b2_url|.
+  EXPECT_EQ(node->navigation_request()->GetURL(), b2_url);
+  // We should have a speculative RFH for this navigation.
+  RenderFrameHostImpl* b2_speculative_rfh =
+      node->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(b2_speculative_rfh);
+  EXPECT_NE(a1_rfh, b2_speculative_rfh);
+  // The speculative RFH should use a different BrowsingInstance than the
+  // current RFH.
+  scoped_refptr<SiteInstanceImpl> b2_site_instance =
+      static_cast<SiteInstanceImpl*>(b2_speculative_rfh->GetSiteInstance());
+  EXPECT_FALSE(a1_site_instance->IsRelatedSiteInstance(b2_site_instance.get()));
+}
+
 // Tests history same-site process reuse:
 // 1. Visit A1, A2, B.
 // 2. Go back to A2 (should use new process).

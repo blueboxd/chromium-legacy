@@ -27,7 +27,6 @@ void RegisterRunOnOsLoginAndPostCallback(RegisterRunOnOsLoginCallback callback,
       FROM_HERE,
       base::BindOnce(std::move(callback), run_on_os_login_registered));
 }
-
 }  // namespace
 
 namespace internals {
@@ -41,8 +40,10 @@ bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info) {
 
 // TODO(crbug.com/897302): This boilerplate function is used for platforms
 // other than Windows, currently the feature is only supported in Windows.
-void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
-                            const base::string16& shortcut_title) {}
+bool UnregisterRunOnOsLogin(const base::FilePath& profile_path,
+                            const base::string16& shortcut_title) {
+  return true;
+}
 #endif
 
 }  // namespace internals
@@ -54,6 +55,18 @@ void ScheduleRegisterRunOnOsLogin(std::unique_ptr<ShortcutInfo> shortcut_info,
   internals::PostShortcutIOTask(
       base::BindOnce(&RegisterRunOnOsLoginAndPostCallback, std::move(callback)),
       std::move(shortcut_info));
+}
+
+void ScheduleUnregisterRunOnOsLogin(const base::FilePath& profile_path,
+                                    const base::string16& shortcut_title,
+                                    UnregisterRunOnOsLoginCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  internals::GetShortcutIOTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&internals::UnregisterRunOnOsLogin, profile_path,
+                     shortcut_title),
+      std::move(callback));
 }
 
 }  // namespace web_app

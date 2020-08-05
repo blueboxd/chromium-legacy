@@ -50,7 +50,7 @@ void DeleteComService() {
                                  WorkItem::kWow64Default);
   if (!installer::InstallServiceWorkItem::DeleteService(
           kWindowsServiceName, base::ASCIIToUTF16(UPDATER_KEY),
-          CLSID_UpdaterServiceClass, GUID_NULL))
+          {CLSID_UpdaterServiceClass}, {}))
     LOG(WARNING) << "DeleteService failed.";
 }
 

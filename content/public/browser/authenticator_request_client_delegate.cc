@@ -64,22 +64,9 @@ bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {
 void AuthenticatorRequestClientDelegate::SetMightCreateResidentCredential(
     bool v) {}
 
-bool AuthenticatorRequestClientDelegate::ShouldPermitCableExtension(
-    const url::Origin& origin) {
-  return false;
-}
-
-bool AuthenticatorRequestClientDelegate::SetCableTransportInfo(
-    bool cable_extension_provided,
-    bool have_paired_phones,
-    base::Optional<device::QRGeneratorKey> qr_generator_key) {
-  return false;
-}
-
-std::vector<device::CableDiscoveryData>
-AuthenticatorRequestClientDelegate::GetCablePairings() {
-  return {};
-}
+void AuthenticatorRequestClientDelegate::ConfigureCable(
+    const url::Origin& origin,
+    base::span<const device::CableDiscoveryData> pairings_from_extension) {}
 
 void AuthenticatorRequestClientDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
@@ -184,5 +171,10 @@ void AuthenticatorRequestClientDelegate::OnInternalUserVerificationLocked() {}
 
 void AuthenticatorRequestClientDelegate::CustomizeDiscoveryFactory(
     device::FidoDiscoveryFactory* discovery_factory) {}
+
+device::FidoDiscoveryFactory*
+AuthenticatorRequestClientDelegate::discovery_factory() {
+  return discovery_factory_.get();
+}
 
 }  // namespace content

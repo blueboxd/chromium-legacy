@@ -196,6 +196,8 @@ if (enable_pdf) {
 
     configs += [ ":pdf_common_config" ]
 
+    public_deps = [ "//third_party/abseil-cpp:absl" ]
+
     deps = [
       "//base",
       "//ppapi/cpp:objects",
@@ -213,6 +215,8 @@ if (enable_pdf) {
     ]
 
     configs += [ ":pdf_common_config" ]
+
+    public_deps = [ "//third_party/abseil-cpp:absl" ]
 
     deps = [
       ":features",

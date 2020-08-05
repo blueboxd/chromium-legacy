@@ -71,8 +71,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // TODO(altimin): Move to the top when histogram is renumbered.
     kDetached = 19,
 
-    kCleanup = 20,
-
+    // 20 : kCleanup, obsolete.
     // 21 : kWebSchedulingUserInteraction, obsolete.
     // 22 : kWebSchedulingBestEffort, obsolete.
 

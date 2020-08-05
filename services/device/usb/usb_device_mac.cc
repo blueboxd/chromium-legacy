@@ -4,10 +4,21 @@
 
 #include "services/device/usb/usb_device_mac.h"
 
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOReturn.h>
+#include <IOKit/usb/IOUSBLib.h>
+
 #include <utility>
 
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_ionotificationportref.h"
+#include "base/mac/scoped_ioobject.h"
+#include "base/mac/scoped_ioplugininterface.h"
+#include "components/device_event_log/device_event_log.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "services/device/usb/usb_device_handle.h"
+#include "services/device/usb/usb_device_handle_mac.h"
 
 namespace device {
 
@@ -18,6 +29,61 @@ UsbDeviceMac::UsbDeviceMac(uint64_t entry_id,
 UsbDeviceMac::~UsbDeviceMac() = default;
 
 void UsbDeviceMac::Open(OpenCallback callback) {
+  base::ScopedCFTypeRef<CFDictionaryRef> matching_dict(
+      IORegistryEntryIDMatching(entry_id()));
+  if (!matching_dict.get()) {
+    USB_LOG(ERROR) << "Failed to create matching dictionary for ID.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // IOServiceGetMatchingService consumes a reference to the matching dictionary
+  // passed to it.
+  base::mac::ScopedIOObject<io_service_t> usb_device(
+      IOServiceGetMatchingService(kIOMasterPortDefault,
+                                  matching_dict.release()));
+  if (!usb_device.get()) {
+    USB_LOG(ERROR) << "IOService not found for ID.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  base::mac::ScopedIOPluginInterface<IOCFPlugInInterface> plugin_interface;
+  int32_t score;
+  IOReturn kr = IOCreatePlugInInterfaceForService(
+      usb_device, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID,
+      plugin_interface.InitializeInto(), &score);
+  if ((kr != kIOReturnSuccess) || !plugin_interface) {
+    USB_LOG(ERROR) << "Unable to create a plug-in: " << std::hex << kr;
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  base::mac::ScopedIOPluginInterface<IOUSBDeviceInterface182> device_interface;
+  IOReturn result =
+      (*plugin_interface)
+          ->QueryInterface(
+              plugin_interface.get(),
+              CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
+              reinterpret_cast<LPVOID*>(device_interface.InitializeInto()));
+  if (result || !device_interface) {
+    USB_LOG(ERROR) << "Couldn’t create a device interface.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  kr = (*device_interface)->USBDeviceOpen(device_interface);
+  if (kr != kIOReturnSuccess) {
+    USB_LOG(ERROR) << "Failed to open device: " << std::hex << kr;
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  auto device_handle = base::MakeRefCounted<UsbDeviceHandleMac>(
+      this, std::move(device_interface));
+
+  handles().push_back(device_handle.get());
+
   std::move(callback).Run(nullptr);
 }
 

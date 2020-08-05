@@ -45,11 +45,4 @@ jumbo_component("win") {
   libs = [ "imm32.lib" ]
 
   ldflags = [ "/DELAYLOAD:imm32.dll" ]
-
-  jumbo_excluded_sources = [
-    # tsf_text_store.cc needs INITGUID to be defined before
-    # including any header to properly generate GUID objects. That
-    # is not guaranteed when included in a jumbo build.
-    "tsf_text_store.cc",
-  ]
 }

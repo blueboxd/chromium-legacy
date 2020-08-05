@@ -60,7 +60,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   NSDictionary* GetUserInfoForValueChangedNotification(
       const BrowserAccessibilityCocoa* native_node,
       const base::string16& deleted_text,
-      const base::string16& inserted_text) const;
+      const base::string16& inserted_text,
+      id edit_text_marker) const;
 
   void AnnounceActiveDescendant(BrowserAccessibility* node) const;
 

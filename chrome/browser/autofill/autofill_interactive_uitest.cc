@@ -393,7 +393,8 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         GetWebContents(),
         "window.domAutomationController.send("
-        "    document.getElementById('" + field_name + "').value);",
+        "    document.getElementById('" +
+            field_name + "').value);",
         &value));
     EXPECT_EQ(expected_value, value) << "for field " << field_name;
   }
@@ -416,7 +417,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         GetWebContents(),
         "window.domAutomationController.send("
         "    document.defaultView.getComputedStyle(document.getElementById('" +
-        field_name + "')).backgroundColor);",
+            field_name + "')).backgroundColor);",
         color));
   }
 
@@ -1254,6 +1255,35 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
   EXPECT_TRUE(test_delegate()->Wait());
+}
+
+// Makes sure that clicking a field while there is no enough height in the
+// content area for at least one suggestion, won't show the autofill popup. This
+// is a regression test for crbug.com/1108181
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DontAutofillShowPopupWhenNoEnoughHeightInContentArea) {
+  // This firstname field starts at y=-100px and has a height of 5120px. There
+  // is no enough space to show at least one row of the autofill popup and hence
+  // the autofill shouldn't be shown.
+  static const char kTestFormWithLargeInputField[] =
+      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<label for=\"firstname\">First name:</label>"
+      " <input type=\"text\" id=\"firstname\" style=\"position:fixed; "
+      "top:-100px;height:5120px\"><br>"
+      "<label for=\"lastname\">Last name:</label>"
+      " <input type=\"text\" id=\"lastname\"><br>"
+      "<label for=\"city\">City:</label>"
+      " <input type=\"text\" id=\"city\"><br>"
+      "</form>";
+
+  CreateTestProfile();
+  SetTestUrlResponse(kTestFormWithLargeInputField);
+
+  ui_test_utils::NavigateToURL(browser(), GetTestUrl());
+
+  FocusFirstNameField();
+  SendKeyToPage(GetWebContents(), ui::DomKey::ARROW_DOWN);
+  ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
 }
 
 // Test that a field is still autofillable after the previously autofilled
@@ -2156,7 +2186,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
   PopulateForm("NAME_FIRST");
 
   ASSERT_TRUE(content::ExecuteScript(
-       GetWebContents(), "document.getElementById('testform').reset()"));
+      GetWebContents(), "document.getElementById('testform').reset()"));
 
   PopulateForm("NAME_FIRST");
 
@@ -3379,7 +3409,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   // The fields that were initially filled and not reset should still be filled.
   ExpectFieldValue("firstname", "");  // That field value was reset dynamically.
   ExpectFieldValue("address1", "4120 Freidrich Lane");
-  ExpectFieldValue("state", "CA");   // Default value.
+  ExpectFieldValue("state", "CA");  // Default value.
   ExpectFieldValue("city", "Austin");
   ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");

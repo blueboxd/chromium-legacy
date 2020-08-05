@@ -18,6 +18,8 @@ source_set("mac") {
   visibility = [ "//media/gpu" ]
 
   sources = [
+    "vt_config_util.h",
+    "vt_config_util.mm",
     "vt_video_decode_accelerator_mac.cc",
     "vt_video_decode_accelerator_mac.h",
     "vt_video_encode_accelerator_mac.cc",
@@ -43,4 +45,17 @@ source_set("mac") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  frameworks = [
+    "CoreFoundation.framework",
+    "CoreMedia.framework",
+  ]
+  deps = [
+    "//media/gpu:test_support",
+    "//testing/gtest",
+  ]
+  sources = [ "vt_config_util_unittest.cc" ]
 }

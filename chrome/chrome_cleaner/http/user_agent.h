@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace chrome_cleaner {
 
@@ -23,8 +24,8 @@ class UserAgent {
   // attributes. The client must do so.
   // @param product_name The product name.
   // @param product_version The product version.
-  UserAgent(const std::wstring& product_name,
-            const std::wstring& product_version);
+  UserAgent(base::WStringPiece product_name,
+            base::WStringPiece product_version);
   ~UserAgent();
 
   // @returns A string suitable for use as the value of a User-Agent header, and

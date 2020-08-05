@@ -524,6 +524,10 @@ source_set("unit_tests") {
     ]
     libs = [ "dxguid.lib" ]
   }
+
+  if (is_mac) {
+    deps += [ "//media/gpu/mac:unit_tests" ]
+  }
 }
 
 # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.

@@ -27,10 +27,10 @@ class MediaCodecUtilTest : public testing::Test {
 };
 
 TEST_F(MediaCodecUtilTest, TestCodecAvailableIfNewerVersion) {
-  // Test models that should be available above some sdk level.
-  // We probably don't need to test them all; we're more concerned that the
-  // blacklist code is doing the right thing with the entries it has rather than
-  // the map contents are right.
+  // Test models that should be available above some sdk level.  We probably
+  // don't need to test them all; we're more concerned that the blocklist code
+  // is doing the right thing with the entries it has rather than the map
+  // contents are right.
   struct {
     const char* model;
     int last_bad_sdk;

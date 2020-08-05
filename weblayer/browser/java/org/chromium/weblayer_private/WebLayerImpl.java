@@ -693,7 +693,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     private static void notifyWebViewRunningInProcess(ClassLoader webViewClassLoader) {
-        try {
+        // TODO(crbug.com/1112001): Investigate why loading classes causes strict mode
+        // violations in some situations.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             Class<?> webViewChromiumFactoryProviderClass =
                     Class.forName("com.android.webview.chromium.WebViewChromiumFactoryProvider",
                             true, webViewClassLoader);

@@ -160,6 +160,12 @@ TEST_F(NavigationItemTest, VirtualURLTest) {
   EXPECT_EQ(original_url, item_->GetURL());
 }
 
+// Tests setting title longer than kMaxTitleLength.
+TEST_F(NavigationItemTest, ExtraLongTitle) {
+  item_->SetTitle(base::UTF8ToUTF16(std::string(kMaxTitleLength + 1, 'i')));
+  EXPECT_EQ(kMaxTitleLength, item_->GetTitle().size());
+}
+
 // Tests NavigationItemImpl::GetDisplayTitleForURL method.
 TEST_F(NavigationItemTest, GetDisplayTitleForURL) {
   base::string16 title;

@@ -72,6 +72,8 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       const media_session::MediaPosition& position) override;
   void DidPictureInPictureAvailabilityChange(int delegate_id,
                                              bool available) override;
+  void DidAudioOutputSinkChange(int delegate_id,
+                                const std::string& hashed_device_id) override;
   void DidBufferUnderflow(int player_id) override;
 
   // content::RenderFrameObserver overrides.
@@ -105,6 +107,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnMediaDelegateEnterPictureInPicture(int player_id);
   void OnMediaDelegateExitPictureInPicture(int player_id);
+  void OnMediaDelegateSetAudioSink(int player_id, std::string sink_id);
   void OnMediaDelegatePowerExperimentState(int player_id, bool state);
 
   // Schedules UpdateTask() to run soon.

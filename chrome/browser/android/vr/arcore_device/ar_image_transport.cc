@@ -172,7 +172,8 @@ bool ArImageTransport::ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
   buffer->mailbox_holder = mailbox_bridge_->CreateSharedImage(
       buffer->gmb.get(), gfx::ColorSpace(), shared_image_usage);
   DVLOG(2) << ": CreateSharedImage, mailbox="
-           << buffer->mailbox_holder.mailbox.ToDebugString();
+           << buffer->mailbox_holder.mailbox.ToDebugString() << ", SyncToken="
+           << buffer->mailbox_holder.sync_token.ToDebugString();
 
   auto img = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(size);
 
@@ -230,6 +231,8 @@ gpu::MailboxHolder ArImageTransport::TransferFrame(
   // that it's transitioned through "processing" and "rendering" states back
   // to "animating".
   DCHECK(shared_buffer->mailbox_holder.sync_token.HasData());
+  DVLOG(2) << ": SyncToken="
+           << shared_buffer->mailbox_holder.sync_token.ToDebugString();
 
   return shared_buffer->mailbox_holder;
 }

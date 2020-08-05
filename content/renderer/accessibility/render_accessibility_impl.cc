@@ -222,6 +222,11 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   settings->SetAriaModalPrunesAXTree(true);
 #endif
 
+  if (render_frame_->IsMainFrame())
+    event_schedule_mode_ = EventScheduleMode::kDeferEvents;
+  else
+    event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
+
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
     ax_context_ = std::make_unique<WebAXContext>(document);

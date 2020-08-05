@@ -38,8 +38,22 @@ bool ClipboardHistoryMenuModelAdapter::IsRunning() const {
   return menu_runner_ && menu_runner_->IsRunning();
 }
 
-gfx::Rect
-ClipboardHistoryMenuModelAdapter::GetClipboardHistoryMenuBoundsForTest() const {
+void ClipboardHistoryMenuModelAdapter::Cancel() {
+  DCHECK(menu_runner_);
+  menu_runner_->Cancel();
+}
+
+base::Optional<int>
+ClipboardHistoryMenuModelAdapter::GetSelectedMenuItemCommand() const {
+  DCHECK(root_view_);
+  auto* menu_item = root_view_->GetMenuController()->GetSelectedMenuItem();
+  return menu_item ? base::make_optional(menu_item->GetCommand())
+                   : base::nullopt;
+}
+
+gfx::Rect ClipboardHistoryMenuModelAdapter::GetMenuBoundsInScreenForTest()
+    const {
+  DCHECK(root_view_);
   return root_view_->GetSubmenu()->GetBoundsInScreen();
 }
 

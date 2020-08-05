@@ -267,6 +267,14 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
         });
         fileManagerPrivateInternal.sharesheetHasTargets(urls, callback);
       });
+
+  apiFunctions.setHandleRequest(
+      'invokeSharesheet', function(entries, callback) {
+        var urls = entries.map(function(entry) {
+          return getEntryURL(entry);
+        });
+        fileManagerPrivateInternal.invokeSharesheet(urls, callback);
+      });
 });
 
 bindingUtil.registerEventArgumentMassager(

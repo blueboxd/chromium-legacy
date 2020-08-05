@@ -111,6 +111,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   bool HasLoadingFallback() const { return has_loading_fallback_; }
   bool HasCustomFont() const { return has_custom_font_; }
+  bool HasLetterSpacingOverride() const { return has_letter_spacing_override_; }
 
  private:
   explicit FontFallbackList(FontSelector* font_selector);
@@ -132,6 +133,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   uint16_t generation_;
   bool has_loading_fallback_ : 1;
   bool has_custom_font_ : 1;
+  bool has_letter_spacing_override_ : 1;
   bool can_shape_word_by_word_ : 1;
   bool can_shape_word_by_word_computed_ : 1;
   bool is_invalid_ : 1;

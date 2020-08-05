@@ -651,6 +651,14 @@ class DetachToBrowserTabDragControllerTest
     observer.Wait();
   }
 
+  // Helper method to click the first tab. Used to ensure no additional widgets
+  // are in focus. For example, the tab editor bubble  is automatically opened
+  // upon creating a new group.
+  void EnsureFocusToTabStrip(TabStrip* tab_strip) {
+    ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+    ASSERT_TRUE(ReleaseInput());
+  }
+
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
  private:
@@ -841,6 +849,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   tab_groups::TabGroupId group1 = model->AddToNewGroup({0});
   model->AddToNewGroup({2});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   // Dragging the tab in the first index toward the tab in the zero-th index
   // switches the tabs and adds the dragged tab to the group.
@@ -899,6 +908,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   tab_groups::TabGroupId group1 = model->AddToNewGroup({3});
   model->AddToNewGroup({1});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   // Dragging the tab in the second index to the tab in the third index switches
   // the tabs and adds the dragged tab to the group.
@@ -951,6 +961,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   model->AddToNewGroup({2});
   tab_groups::TabGroupId group4 = model->AddToNewGroup({3});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   // Click the first tab and select third tab so both first and third tabs are
   // selected.
@@ -1005,6 +1016,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   tab_groups::TabGroupId group3 = model->AddToNewGroup({2});
   model->AddToNewGroup({3});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   // Click the second tab and select fourth tab so both second and fourth tabs
   // are selected.
@@ -1117,6 +1129,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   AddTabsAndResetBrowser(browser(), 3);
   tab_groups::TabGroupId group = model->AddToNewGroup({1, 2});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   ASSERT_EQ(4, model->count());
   ASSERT_EQ(2u, group_model->GetTabGroup(group)->ListTabs().size());
@@ -2130,6 +2143,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   AddTabsAndResetBrowser(browser(), 3);
   tab_groups::TabGroupId group = model->AddToNewGroup({0, 1});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   TabGroupHeader* group_header = tab_strip->group_header(group);
   EXPECT_FALSE(group_header->dragging());
@@ -2160,6 +2174,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   AddTabsAndResetBrowser(browser(), 3);
   tab_groups::TabGroupId group = model->AddToNewGroup({2, 3});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   TabGroupHeader* group_header = tab_strip->group_header(group);
   EXPECT_FALSE(group_header->dragging());
@@ -2217,14 +2232,13 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   AddTabsAndResetBrowser(browser(), 1);
   tab_groups::TabGroupId group = model->AddToNewGroup({0});
   StopAnimating(tab_strip);
+  EnsureFocusToTabStrip(tab_strip);
 
   DragGroupAndNotify(tab_strip,
                      base::BindOnce(&PressEscapeWhileDetachedHeaderStep2, this),
                      group);
 
-  TabGroupHeader* group_header =
-      GetTabStripForBrowser(browser())->group_header(group);
-  EXPECT_FALSE(group_header->dragging());
+  EXPECT_FALSE(tab_strip->group_header(group)->dragging());
 
   ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
@@ -2330,6 +2344,8 @@ IN_PROC_BROWSER_TEST_P(
   AddTabsAndResetBrowser(browser(), 1);
   tab_groups::TabGroupId group = model->AddToNewGroup({0});
   EXPECT_FALSE(model->IsGroupCollapsed(group));
+  EnsureFocusToTabStrip(tab_strip);
+
   tab_strip->controller()->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));

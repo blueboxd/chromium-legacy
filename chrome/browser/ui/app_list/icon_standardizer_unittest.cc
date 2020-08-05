@@ -36,7 +36,7 @@ TEST_F(CreateStandardIconTest, SquareIconToStandardIcon) {
   paint_background_circle.setStyle(SkPaint::kFill_Style);
   canvas.drawCircle(
       SkPoint::Make((test_width - 1) / 2.0f, (test_width - 1) / 2.0f),
-      test_width / 2.0f - 1, paint_background_circle);
+      test_width / 2.0f - test_width * 0.01f, paint_background_circle);
 
   const SkBitmap scaled_bitmap = skia::ImageOperations::Resize(
       square_icon_bitmap, skia::ImageOperations::RESIZE_BEST, 41, 41);

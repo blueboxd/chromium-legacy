@@ -259,7 +259,9 @@ class TestFeedNetwork : public FeedNetwork {
   // FeedNetwork implementation.
   void SendQueryRequest(
       const feedwire::Request& request,
+      bool force_signed_out_request,
       base::OnceCallback<void(QueryRequestResult)> callback) override {
+    forced_signed_out_request = force_signed_out_request;
     ++send_query_call_count;
     // Emulate a successful response.
     // The response body is currently an empty message, because most of the
@@ -330,6 +332,7 @@ class TestFeedNetwork : public FeedNetwork {
   base::Optional<feedwire::FeedActionRequest> action_request_sent;
   int action_request_call_count = 0;
   std::string consistency_token;
+  bool forced_signed_out_request = false;
 
  private:
   base::Optional<feedwire::Response> injected_response_;
@@ -1010,26 +1013,28 @@ TEST_F(FeedStreamTest, LoadStreamAfterEulaIsAccepted) {
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
 }
 
-TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
-  stream_->OnHistoryDeleted();
+TEST_F(FeedStreamTest, ForceSignedOutRequestAfterHistoryIsDeleted) {
+  stream_->OnAllHistoryDeleted();
   task_environment_.FastForwardBy(kSuppressRefreshDuration -
                                   base::TimeDelta::FromSeconds(1));
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
-  EXPECT_EQ("loading -> no-cards", surface.DescribeUpdates());
+  EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  EXPECT_TRUE(network_.forced_signed_out_request);
+}
 
-  EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete,
-            metrics_reporter_->load_stream_status);
-
-  surface.Detach();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
-  surface.Clear();
-  surface.Attach(stream_.get());
+TEST_F(FeedStreamTest, AllowSignedInRequestAfterHistoryIsDeletedAfterDelay) {
+  stream_->OnAllHistoryDeleted();
+  task_environment_.FastForwardBy(kSuppressRefreshDuration +
+                                  base::TimeDelta::FromSeconds(1));
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  EXPECT_FALSE(network_.forced_signed_out_request);
 }
 
 TEST_F(FeedStreamTest, ShouldMakeFeedQueryRequestConsumesQuota) {

@@ -281,13 +281,15 @@ base::FilePath GetAppShortcutFilename(const base::FilePath& profile_path,
   return base::FilePath(filename.append(".desktop"));
 }
 
-void DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
+bool DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
   base::FilePath desktop_path;
+  bool result = false;
   if (base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
-    base::DeleteFile(desktop_path.Append(shortcut_filename));
+    result = base::DeleteFile(desktop_path.Append(shortcut_filename));
+  return result;
 }
 
-void DeleteShortcutInApplicationsMenu(
+bool DeleteShortcutInApplicationsMenu(
     const base::FilePath& shortcut_filename,
     const base::FilePath& directory_filename) {
   std::vector<std::string> argv;
@@ -306,7 +308,7 @@ void DeleteShortcutInApplicationsMenu(
     argv.push_back(directory_filename.value());
   argv.push_back(shortcut_filename.value());
   int exit_code;
-  shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
+  return shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
 }
 
 bool CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
@@ -447,7 +449,7 @@ ShortcutLocations GetExistingShortcutLocations(
   return locations;
 }
 
-void DeleteDesktopShortcuts(const base::FilePath& profile_path,
+bool DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             const std::string& extension_id) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -456,21 +458,22 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
       GetAppShortcutFilename(profile_path, extension_id);
   DCHECK(!shortcut_filename.empty());
 
-  DeleteShortcutOnDesktop(shortcut_filename);
+  bool deleted_from_desktop = DeleteShortcutOnDesktop(shortcut_filename);
   // Delete shortcuts from |kDirectoryFilename|.
   // Note that it is possible that shortcuts were not created in the Chrome Apps
   // directory. It doesn't matter: this will still delete the shortcut even if
   // it isn't in the directory.
-  DeleteShortcutInApplicationsMenu(shortcut_filename,
-                                   base::FilePath(kDirectoryFilename));
+  bool deleted_from_application_menu = DeleteShortcutInApplicationsMenu(
+      shortcut_filename, base::FilePath(kDirectoryFilename));
+  return (deleted_from_desktop && deleted_from_application_menu);
 }
 
-void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
+bool DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-
+  bool result = true;
   // Delete shortcuts from Desktop.
   base::FilePath desktop_path;
   if (base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_path)) {
@@ -478,7 +481,8 @@ void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
         shell_integration_linux::GetExistingProfileShortcutFilenames(
             profile_path, desktop_path);
     for (const auto& shortcut : shortcut_filenames_desktop) {
-      DeleteShortcutOnDesktop(shortcut);
+      if (!DeleteShortcutOnDesktop(shortcut))
+        result = false;
     }
   }
 
@@ -490,8 +494,12 @@ void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
       shell_integration_linux::GetExistingProfileShortcutFilenames(
           profile_path, applications_menu);
   for (const auto& menu : shortcut_filenames_app_menu) {
-    DeleteShortcutInApplicationsMenu(menu, base::FilePath(kDirectoryFilename));
+    if (!DeleteShortcutInApplicationsMenu(menu,
+                                          base::FilePath(kDirectoryFilename))) {
+      result = false;
+    }
   }
+  return result;
 }
 
 namespace internals {
@@ -509,12 +517,13 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
 #endif
 }
 
-void DeletePlatformShortcuts(const base::FilePath& web_app_path,
+bool DeletePlatformShortcuts(const base::FilePath& web_app_path,
                              const ShortcutInfo& shortcut_info) {
 #if !defined(OS_CHROMEOS)
-  DeleteDesktopShortcuts(shortcut_info.profile_path,
-                         shortcut_info.extension_id);
+  return DeleteDesktopShortcuts(shortcut_info.profile_path,
+                                shortcut_info.extension_id);
 #endif
+  return true;
 }
 
 void UpdatePlatformShortcuts(const base::FilePath& web_app_path,

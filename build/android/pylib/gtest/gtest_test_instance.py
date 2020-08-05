@@ -29,6 +29,9 @@ BROWSER_TEST_SUITES = [
     'weblayer_browsertests',
 ]
 
+# The max number of tests to run on a shard during the test run.
+MAX_SHARDS = 256
+
 RUN_IN_SUB_THREAD_TEST_SUITES = [
     # Multiprocess tests should be run outside of the main thread.
     'base_unittests',  # file_locking_unittest.cc uses a child process.
@@ -301,6 +304,11 @@ class GtestTestInstance(test_instance.TestInstance):
     if args.test_apk_incremental_install_json:
       incremental_part = '_incremental'
 
+    self._test_launcher_batch_limit = MAX_SHARDS
+    if (args.test_launcher_batch_limit
+        and 0 < args.test_launcher_batch_limit < MAX_SHARDS):
+      self._test_launcher_batch_limit = args.test_launcher_batch_limit
+
     apk_path = os.path.join(
         constants.GetOutDirectory(), '%s_apk' % self._suite,
         '%s-debug%s.apk' % (self._suite, incremental_part))
@@ -453,6 +461,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def test_apk_incremental_install_json(self):
     return self._test_apk_incremental_install_json
+
+  @property
+  def test_launcher_batch_limit(self):
+    return self._test_launcher_batch_limit
 
   @property
   def total_external_shards(self):

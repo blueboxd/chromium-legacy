@@ -32,6 +32,12 @@ class RemoteDecisionTreePredictor {
   // receiver. Returns nullptr if |remote_| is unbound.
   machine_learning::mojom::DecisionTreePredictorProxy* Get() const;
 
+  // Whether |remote_| is connected.
+  bool IsConnected() const;
+
+  // Flushes |remote_| for testing purpose.
+  void FlushForTesting();
+
   // Calls the |BindNewPipeAndPassReceiver| method of the |remote_|. Must only
   // be called on a bound |remote_|.
   mojo::PendingReceiver<machine_learning::mojom::DecisionTreePredictor>

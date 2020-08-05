@@ -67,6 +67,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
     virtual void OnSeekBackward(double seconds) = 0;
     virtual void OnEnterPictureInPicture() = 0;
     virtual void OnExitPictureInPicture() = 0;
+    virtual void OnSetAudioSink(const std::string& sink_id) = 0;
 
     // Called to control audio ducking. Output volume should be set to
     // |player_volume| * |multiplier|. The range of |multiplier| is [0, 1],
@@ -129,6 +130,11 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
   // Notify that picture-in-picture availability has changed.
   virtual void DidPictureInPictureAvailabilityChange(int delegate_id,
                                                      bool available) = 0;
+
+  // Notify that the audio output sink has changed
+  virtual void DidAudioOutputSinkChange(
+      int delegate_id,
+      const std::string& hashed_device_id) = 0;
 
   // Notify that a buffer underflow event happened for the media player.
   virtual void DidBufferUnderflow(int player_id) = 0;

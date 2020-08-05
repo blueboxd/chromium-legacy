@@ -197,7 +197,7 @@ class MediaCodecUtil {
       */
     @CalledByNative
     private static boolean canDecode(String mime, boolean isSecure) {
-        // Not supported on blacklisted devices.
+        // Not supported on some devices.
         if (!isDecoderSupportedForDevice(mime)) {
             Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
             return false;
@@ -340,7 +340,7 @@ class MediaCodecUtil {
 
         assert result.mediaCodec == null;
 
-        // Do not create codec for blacklisted devices.
+        // Do not create codec for unsupported devices.
         if (!isDecoderSupportedForDevice(mime)) {
             Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
             return result;
@@ -392,7 +392,7 @@ class MediaCodecUtil {
     }
 
     /**
-     * This is a way to blacklist misbehaving devices.
+     * This is a way to handle misbehaving devices.
      * Some devices cannot decode certain codecs, while other codecs work fine.
      *
      * Do not access MediaCodec or MediaCodecList in this function since it's
@@ -412,7 +412,7 @@ class MediaCodecUtil {
 
                 // Samsung Galaxy S4 Mini.
                 // Only GT-I9190 was tested with Android 4.4.2
-                // We blacklist it and the popular GT-I9195 for all Android versions.
+                // We block it and the popular GT-I9195 for all Android versions.
                 if (Build.MODEL.startsWith("GT-I9190") || Build.MODEL.startsWith("GT-I9195")) {
                     return false;
                 }
@@ -441,7 +441,7 @@ class MediaCodecUtil {
      * unusable.  For example, the S3 on 4.4.2 returns black and white, tiled
      * frames when this is enabled.
      */
-    private static boolean isAdaptivePlaybackBlacklisted(String mime) {
+    private static boolean isAdaptivePlaybackDenied(String mime) {
         if (!mime.equals("video/avc") && !mime.equals("video/avc1")) {
             return false;
         }
@@ -474,7 +474,7 @@ class MediaCodecUtil {
                 return false;
             }
 
-            if (isAdaptivePlaybackBlacklisted(mime)) {
+            if (isAdaptivePlaybackDenied(mime)) {
                 return false;
             }
 
@@ -582,7 +582,7 @@ class MediaCodecUtil {
     }
 
     /**
-     * This is a way to blacklist misbehaving devices.
+     * This is a way to handle misbehaving devices.
      * @param mime MIME type as passed to mediaCodec.createEncoderByType(mime).
      * @return true if this codec is supported for encoder on this device.
      */
@@ -592,7 +592,7 @@ class MediaCodecUtil {
     }
 
     /**
-     * Provides a way to blacklist MediaCodec.setOutputSurface() on devices.
+     * Provides a way to avoid calling MediaCodec.setOutputSurface() on unsupported devices.
      * @return true if setOutputSurface() is expected to work.
      */
     @CalledByNative

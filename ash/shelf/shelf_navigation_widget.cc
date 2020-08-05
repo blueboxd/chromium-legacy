@@ -666,6 +666,21 @@ gfx::Rect ShelfNavigationWidget::GetVisibleBounds() const {
   return gfx::Rect(target_bounds_.origin(), clip_rect_.size());
 }
 
+void ShelfNavigationWidget::PrepareForGettingFocus(bool last_element) {
+  SetDefaultLastFocusableChild(last_element);
+
+  // The native view of the navigation widget is not activatable when its target
+  // visibility is false. So show the widget before setting focus.
+
+  // Layer opacity should be set first. Because it is not allowed that a window
+  // is visible but the layers alpha is fully transparent.
+  ui::Layer* layer = GetLayer();
+  if (layer->GetTargetOpacity() != 1.f)
+    GetLayer()->SetOpacity(1.f);
+  if (!IsVisible())
+    ShowInactive();
+}
+
 void ShelfNavigationWidget::HandleLocaleChange() {
   delegate_->home_button()->HandleLocaleChange();
   delegate_->back_button()->HandleLocaleChange();

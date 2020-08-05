@@ -164,6 +164,10 @@ void InstallStageTracker::ReportCRXInstallationStage(const ExtensionId& id,
   DCHECK(!id.empty());
   InstallationData& data = installation_data_map_[id];
   data.installation_stage = stage;
+  if (stage == InstallationStage::kVerification)
+    data.verification_started_time = base::Time::Now();
+  else if (stage == InstallationStage::kCopying)
+    data.copying_started_time = base::Time::Now();
   for (auto& observer : observers_) {
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
   }

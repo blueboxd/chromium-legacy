@@ -821,12 +821,6 @@
   <message name="IDS_OS_SETTINGS_TAG_PRIVACY_VERIFIED_ACCESS" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable verified access.">
     Verified access
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing Wi-Fi to remain active while Chromebook is sleeping. Alternate phrase for: 'Keep Wi-Fi on while idle'">
-    Keep Wi-Fi on during sleep
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP_ALT1" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing Wi-Fi to remain active while Chromebook is sleeping. Alternate phrase for: 'Keep Wi-Fi on during sleep'">
-    Keep Wi-Fi on while idle
-  </message>
   <message name="IDS_OS_SETTINGS_TAG_PRIVACY_CRASH_REPORTS" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing usage statistics and crash reports to be sent to Google. Alternate phrase for: 'Feedback reports'">
     Usage statistics and crash reports
   </message>

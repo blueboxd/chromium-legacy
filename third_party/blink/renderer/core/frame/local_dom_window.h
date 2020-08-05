@@ -29,6 +29,7 @@
 
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -104,8 +105,15 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   static LocalDOMWindow* From(const ScriptState*);
 
-  explicit LocalDOMWindow(LocalFrame&, WindowAgent*);
+  LocalDOMWindow(LocalFrame&, WindowAgent*);
   ~LocalDOMWindow() override;
+
+  // Returns the token identifying the frame that this ExecutionContext was
+  // associated with at the moment of its creation. This remains valid even
+  // after the frame has been destroyed and the ExecutionContext is detached.
+  // This is used as a stable and persistent identifier for attributing detached
+  // context memory usage.
+  const LocalFrameToken& token() const { return token_; }
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 
@@ -493,6 +501,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // document. This helps to count them only once per page load.
   // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
   mutable Vector<bool> potentially_violated_features_;
+
+  // Token identifying the LocalFrame that this window was associated with at
+  // creation. Remains valid even after the frame is destroyed and the context
+  // is detached.
+  const LocalFrameToken token_;
 };
 
 template <>

@@ -21,10 +21,6 @@
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/audio/audio_device_description.h"
 
-#if defined(OS_ANDROID)
-#include "media/audio/android/audio_track_output_stream.h"
-#endif  // defined(OS_ANDROID)
-
 namespace {
 // TODO(alokp): Query the preferred value from media backend.
 const int kDefaultSampleRate = 48000;
@@ -197,20 +193,6 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
   }
 }
 
-::media::AudioOutputStream* CastAudioManager::MakeBitstreamOutputStream(
-    const ::media::AudioParameters& params,
-    const std::string& device_id,
-    const ::media::AudioManager::LogCallback& log_callback) {
-#if defined(OS_ANDROID)
-  DCHECK(params.IsBitstreamFormat());
-  return new ::media::AudioTrackOutputStream(this, params);
-#else
-  NOTREACHED() << " Not implemented on non-android platform.";
-  return ::media::AudioManagerBase::MakeBitstreamOutputStream(params, device_id,
-                                                              log_callback);
-#endif  // defined(OS_ANDROID)
-}
-
 ::media::AudioInputStream* CastAudioManager::MakeLinearInputStream(
     const ::media::AudioParameters& params,
     const std::string& device_id,
@@ -280,17 +262,6 @@ bool CastAudioManager::UseMixerOutputStream(
 
   return !use_cma_backend;
 }
-
-#if defined(OS_ANDROID)
-::media::AudioOutputStream* CastAudioManager::MakeAudioOutputStreamProxy(
-    const ::media::AudioParameters& params,
-    const std::string& device_id) {
-  // Override to use MakeAudioOutputStream to prevent the audio output stream
-  // from closing during pause/stop.
-  return MakeAudioOutputStream(params, device_id,
-                               /*log_callback, not used*/ base::DoNothing());
-}
-#endif  // defined(OS_ANDROID)
 
 }  // namespace media
 }  // namespace chromecast

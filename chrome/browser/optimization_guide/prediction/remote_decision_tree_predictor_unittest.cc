@@ -55,6 +55,12 @@ TEST(RemoteDecisionTreePredictorTest, BindPredictorToReceiver) {
   auto pending_receiver = predictor.BindNewPipeAndPassReceiver();
   EXPECT_TRUE(predictor.Get());
   EXPECT_TRUE(pending_receiver);
+  EXPECT_TRUE(predictor.IsConnected());
+
+  pending_receiver.reset();
+  predictor.FlushForTesting();
+  EXPECT_TRUE(predictor.Get());
+  EXPECT_FALSE(predictor.IsConnected());
 }
 
 }  // namespace optimization_guide

@@ -30,7 +30,7 @@ void SilentMainDialog::NoPUPsFound() {
 void SilentMainDialog::ConfirmCleanup(
     const std::vector<UwSId>& found_pups,
     const FilePathSet& files_to_remove,
-    const std::vector<base::string16>& registry_keys) {
+    const std::vector<std::wstring>& registry_keys) {
   delegate()->AcceptedCleanup(true);
 }
 
@@ -43,7 +43,7 @@ void SilentMainDialog::Close() {
 }
 
 void SilentMainDialog::DisableExtensions(
-    const std::vector<base::string16>& extensions,
+    const std::vector<std::wstring>& extensions,
     base::OnceCallback<void(bool)> on_disable) {
   std::move(on_disable).Run(true);
 }

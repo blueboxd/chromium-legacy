@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "url/gurl.h"
@@ -22,11 +23,12 @@ namespace {
 std::wstring GetUnescapedHost(GURL url) {
   std::string url_host = url.host();
 
-  url::RawCanonOutputT<wchar_t> unescaped_url_host;
+  url::RawCanonOutputT<base::char16> unescaped_url_host;
   url::DecodeURLEscapeSequences(url_host.c_str(), url_host.length(),
                                 url::DecodeURLMode::kUTF8OrIsomorphic,
                                 &unescaped_url_host);
-  return std::wstring(unescaped_url_host.data(), unescaped_url_host.length());
+  return std::wstring(base::as_wcstr(unescaped_url_host.data()),
+                      unescaped_url_host.length());
 }
 
 // Tries to parse the url string using GURL and returns the concatenation of
@@ -35,7 +37,7 @@ std::wstring GetUnescapedHost(GURL url) {
 std::wstring SanitizeUrl(const std::wstring& possible_url) {
   bool has_scheme = (possible_url.find(L"://") != std::string::npos);
   std::wstring scheme = (has_scheme) ? L"" : L"http://";
-  GURL url(scheme + possible_url);
+  GURL url(base::AsStringPiece16(scheme + possible_url));
 
   if (!url.is_valid())
     return possible_url;

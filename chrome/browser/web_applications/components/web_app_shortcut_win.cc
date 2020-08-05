@@ -229,12 +229,14 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
 // for this app were found (and deleted). This will delete duplicate shortcuts,
 // but only return each path once, even if it contained multiple deleted
 // shortcuts. Both of these may be NULL.
-void GetShortcutLocationsAndDeleteShortcuts(
+bool GetShortcutLocationsAndDeleteShortcuts(
     const base::FilePath& web_app_path,
     const base::FilePath& profile_path,
     const base::string16& title,
     bool* was_pinned_to_taskbar,
     std::vector<base::FilePath>* shortcut_paths) {
+  bool result = true;
+
   // Get all possible locations for shortcuts.
   web_app::ShortcutLocations all_shortcut_locations;
   all_shortcut_locations.in_quick_launch_bar = true;
@@ -275,9 +277,11 @@ void GetShortcutLocationsAndDeleteShortcuts(
       // Any shortcut could have been pinned, either by chrome or the user, so
       // they are all unpinned.
       base::win::UnpinShortcutFromTaskbar(*j);
-      base::DeleteFile(*j);
+      if (base::DeleteFile(*j))
+        result = false;
     }
   }
+  return result;
 }
 
 void CreateIconAndSetRelaunchDetails(
@@ -472,11 +476,11 @@ void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
   CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
 }
 
-void DeletePlatformShortcuts(const base::FilePath& web_app_path,
+bool DeletePlatformShortcuts(const base::FilePath& web_app_path,
                              const ShortcutInfo& shortcut_info) {
-  GetShortcutLocationsAndDeleteShortcuts(web_app_path,
-                                         shortcut_info.profile_path,
-                                         shortcut_info.title, NULL, NULL);
+  bool result = GetShortcutLocationsAndDeleteShortcuts(
+      web_app_path, shortcut_info.profile_path, shortcut_info.title, nullptr,
+      nullptr);
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;
@@ -488,7 +492,9 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
   }
 
   // Delete downloaded shortcut icons for the web app.
-  web_app::internals::DeleteShortcutsMenuIcons(web_app_path);
+  if (!web_app::internals::DeleteShortcutsMenuIcons(web_app_path))
+    result = false;
+  return result;
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

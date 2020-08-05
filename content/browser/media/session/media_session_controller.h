@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -50,6 +51,8 @@ class CONTENT_EXPORT MediaSessionController
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
   void OnEnterPictureInPicture(int player_id) override;
   void OnExitPictureInPicture(int player_id) override;
+  void OnSetAudioSinkId(int player_id,
+                        const std::string& raw_device_id) override;
   RenderFrameHost* render_frame_host() const override;
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;

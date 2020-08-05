@@ -21,6 +21,7 @@ const Message = {
   OVERWRITE_FILE: 'overwrite-file',
   RENAME_FILE: 'rename-file',
   REQUEST_SAVE_FILE: 'request-save-file',
+  SAVE_AS: 'save-as',
   SAVE_COPY: 'save-copy'
 };
 
@@ -138,3 +139,22 @@ let RequestSaveFileResponse;
  * @typedef {{blob: !Blob, token: number}}
  */
 let SaveCopyMessage;
+
+/**
+ * Message sent by the unprivileged context to the privileged context requesting
+ * for the provided blob to be saved in the location specified by
+ * `pickedFileToken`. Once saved the new file takes over oldFileToken if it is
+ * provided, else it gives itself a fresh token, then it becomes currently
+ * writable. The file specified by oldFileToken is given a new token and pushed
+ * forward in the navigation order. This method can be called with any file, not
+ * just the currently writable file.
+ * @typedef {{blob: !Blob, oldFileToken: ?number, pickedFileToken: number}}
+ */
+let SaveAsMessage;
+
+/**
+ * Response message sent by the privileged context with the name of the new
+ * current file.
+ * @typedef {{newFilename: string}}
+ */
+let SaveAsResponse;

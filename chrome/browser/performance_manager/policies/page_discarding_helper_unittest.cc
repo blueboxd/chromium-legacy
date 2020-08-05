@@ -62,7 +62,7 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardAudiblePage) {
 TEST_F(PageDiscardingHelperTest,
        TestCannotDiscardPageWithDiscardAttemptMarker) {
   PageDiscardingHelper::GetFromGraph(graph())
-      ->AdornsPageWithDiscardAttemptMarkerForTesting(page_node());
+      ->AddDiscardAttemptMarkerForTesting(page_node());
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));

@@ -49,6 +49,7 @@ class FeedNetwork {
   // |CancelRequests()|.
   virtual void SendQueryRequest(
       const feedwire::Request& request,
+      bool force_signed_out_request,
       base::OnceCallback<void(QueryRequestResult)> callback) = 0;
 
   // Send a feedwire::FeedActionRequest, and receive the response in |callback|.

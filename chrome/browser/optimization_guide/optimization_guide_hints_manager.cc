@@ -238,11 +238,14 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       profile_(profile),
       pref_service_(pref_service),
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
-          std::make_unique<optimization_guide::OptimizationGuideStore>(
-              database_provider,
-              profile_path.AddExtensionASCII(
-                  optimization_guide::kOptimizationGuideHintStore),
-              background_task_runner_))),
+          optimization_guide::features::ShouldPersistHintsToDisk()
+              ? std::make_unique<optimization_guide::OptimizationGuideStore>(
+                    database_provider,
+                    profile_path.AddExtensionASCII(
+                        optimization_guide::kOptimizationGuideHintStore),
+                    background_task_runner_)
+              : nullptr,
+          optimization_guide::features::MaxHostKeyedHintCacheSize())),
       page_navigation_hints_fetchers_(
           optimization_guide::features::MaxConcurrentPageNavigationFetches()),
       hints_fetcher_factory_(
@@ -359,6 +362,11 @@ OptimizationGuideHintsManager::ProcessHintsComponent(
                              config->optimization_blacklists(),
                              registered_optimization_types);
 
+  // TODO(crbug/1112500): Figure out what to do with component hints if there
+  // isn't a persistent store. Right now, it doesn't really matter since there
+  // aren't hints sent down via the component, but we need to figure out
+  // threading since these hints are now stored in memory prior to being
+  // persisted.
   if (update_data) {
     bool did_process_hints = hint_cache_->ProcessAndCacheHints(
         config->mutable_hints(), update_data.get());
@@ -678,6 +686,14 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
 void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.FetchedHints.Stored", true);
+
+  if (!optimization_guide::features::ShouldPersistHintsToDisk()) {
+    // If we aren't persisting hints to disk, there's no point in purging
+    // hints from disk or starting a new fetch since at this point we should
+    // just be fetching everything on page navigation and only storing
+    // in-memory.
+    return;
+  }
 
   hint_cache_->PurgeExpiredFetchedHints();
 

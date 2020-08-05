@@ -268,6 +268,11 @@ extern const char kInfobarUIRebootOnlyiOS13Description[];
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
 
+// Title and description for the flag to enable interstitials on legacy TLS
+// connections.
+extern const char kIOSLegacyTLSInterstitialsName[];
+extern const char kIOSLegacyTLSInterstitialsDescription[];
+
 // Title and description for the flag to enable interstitials on lookalike
 // URL navigations.
 extern const char kIOSLookalikeUrlNavigationSuggestionsUIName[];

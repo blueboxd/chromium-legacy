@@ -123,8 +123,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
-  suggestion_tab_switch_button_->SetVisible(
-      match.ShouldShowTabMatchButtonInlineInResultView());
+  suggestion_tab_switch_button_->SetVisible(ShouldShowTabMatchButtonInline());
   UpdateRemoveSuggestionVisibility();
 
   suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
@@ -242,7 +241,7 @@ void OmniboxResultView::OnSelectionStateChanged() {
     // TODO(orinj): Eventually the deep digging in this class should get
     //  replaced with a single local point of access to all selection state.
     ShowKeyword(popup_contents_view_->model()->selection().state ==
-                OmniboxPopupModel::KEYWORD);
+                OmniboxPopupModel::KEYWORD_MODE);
   } else {
     ShowKeyword(false);
   }
@@ -336,7 +335,7 @@ void OmniboxResultView::Layout() {
                                          button_size.height());
   }
 
-  if (match_.ShouldShowTabMatchButtonInlineInResultView()) {
+  if (ShouldShowTabMatchButtonInline()) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
     const gfx::Size ts_button_size =
         suggestion_tab_switch_button_->GetPreferredSize();
@@ -514,6 +513,13 @@ gfx::Image OmniboxResultView::GetIcon() const {
 void OmniboxResultView::UpdateHoverState() {
   UpdateRemoveSuggestionVisibility();
   ApplyThemeAndRefreshIcons();
+}
+
+bool OmniboxResultView::ShouldShowTabMatchButtonInline() {
+  return !OmniboxFieldTrial::IsSuggestionButtonRowEnabled() &&
+         popup_contents_view_->model()->IsControlPresentOnMatch(
+             OmniboxPopupModel::Selection(
+                 model_index_, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
 }
 
 void OmniboxResultView::UpdateRemoveSuggestionVisibility() {

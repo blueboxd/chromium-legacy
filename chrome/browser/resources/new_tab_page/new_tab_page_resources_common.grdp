@@ -6,6 +6,9 @@
   <include name="IDR_NEW_TAB_PAGE_OMNIBOX_MOJO_LITE_JS"
       file="${root_gen_dir}/chrome/common/search/omnibox.mojom-lite.js"
       use_base_dir="false" type="BINDATA" />
+  <include name="IDR_NEW_TAB_PAGE_PROMO_BROWSER_COMMAND_MOJO_LITE_JS"
+      file="${root_gen_dir}/chrome/browser/promo_browser_command/promo_browser_command.mojom-lite.js"
+      use_base_dir="false" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_ACCOUNT_CIRCLE_SVG"
       file="icons/account_circle.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_BRUSH_ICON_SVG"
@@ -64,4 +67,6 @@
       file="untrusted/background_image.js" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_ONE_GOOGLE_BAR_API_JS"
       file="one_google_bar_api.js" type="BINDATA" compress="false" />
+  <include name="IDR_NEW_TAB_PAGE_PROMO_BROWSER_COMMAND_PROXY_JS"
+      file="promo_browser_command_proxy.js" type="BINDATA" compress="false" />
 </grit-part>

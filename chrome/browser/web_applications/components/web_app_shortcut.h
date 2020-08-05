@@ -123,6 +123,10 @@ base::FilePath GetOsIntegrationResourcesDirectoryForApp(
 // platform shortcuts indicating whether or not they were successfully
 // created.
 using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
+// Callback made when DeletePlatformShortcuts has finished trying to delete the
+// platform shortcuts indicating whether or not they were successfully
+// deleted.
+using DeleteShortcutsCallback = base::OnceCallback<void(bool shortcut_deleted)>;
 
 // Returns an array of desired icon sizes (in px) to be contained in an app OS
 // shortcut, sorted in ascending order (biggest desired icon size is last).
@@ -155,10 +159,15 @@ void ScheduleCreatePlatformShortcuts(
     std::unique_ptr<ShortcutInfo> shortcut_info,
     CreateShortcutsCallback callback);
 
+void ScheduleDeletePlatformShortcuts(
+    const base::FilePath& shortcut_data_path,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    DeleteShortcutsCallback callback);
+
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and
 // is executed on the FILE thread.
-void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
+bool DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
                              const ShortcutInfo& shortcut_info);
 
 // Delete the multi-profile (non-profile_scoped) shortcuts for the specified

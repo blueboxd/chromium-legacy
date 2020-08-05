@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {Direction, Rpc} from './types.js';
 
@@ -78,5 +81,16 @@ Polymer({
       default:
         break;
     }
+  },
+
+  /**
+   * Sets the string representation of time.
+   * @private
+   * @param {number} time
+   * @return
+   */
+  formatTime_(time) {
+    const d = new Date(time);
+    return d.toLocaleTimeString();
   },
 });

@@ -62,7 +62,7 @@ class MODULES_EXPORT StorageController : public mojom::blink::DomStorageClient {
     mojo::PendingReceiver<mojom::blink::DomStorageClient> client_receiver;
   };
   StorageController(DomStorageConnection connection,
-                    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                     size_t total_cache_limit);
 
   // Creates a MakeGarbageCollected<StorageNamespace> for Session storage, and
@@ -92,8 +92,8 @@ class MODULES_EXPORT StorageController : public mojom::blink::DomStorageClient {
     return dom_storage_remote_.get();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() {
-    return ipc_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunner() {
+    return task_runner_;
   }
 
  private:
@@ -102,7 +102,7 @@ class MODULES_EXPORT StorageController : public mojom::blink::DomStorageClient {
   // mojom::blink::DomStorageClient:
   void ResetStorageAreaAndNamespaceConnections() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> ipc_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Persistent<HeapHashMap<String, WeakMember<StorageNamespace>>> namespaces_;
   Persistent<StorageNamespace> local_storage_namespace_;
   size_t total_cache_limit_;

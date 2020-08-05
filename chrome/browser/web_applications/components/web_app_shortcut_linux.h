@@ -49,13 +49,14 @@ ShortcutLocations GetExistingShortcutLocations(
     const base::FilePath& desktop_path);
 
 // Delete any desktop shortcuts on desktop or in the application menu that have
-// been added for the extension with |extension_id| in |profile_path|.
-void DeleteDesktopShortcuts(const base::FilePath& profile_path,
+// been added for the extension with |extension_id| in |profile_path|. Returns
+// true on successful deletion.
+bool DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             const std::string& extension_id);
 
 // Delete any desktop shortcuts on desktop or in the application menu that have
-// for the profile in |profile_path|.
-void DeleteAllDesktopShortcuts(const base::FilePath& profile_path);
+// for the profile in |profile_path|. Returns true on successful deletion.
+bool DeleteAllDesktopShortcuts(const base::FilePath& profile_path);
 
 }  // namespace web_app
 

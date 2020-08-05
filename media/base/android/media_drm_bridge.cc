@@ -290,7 +290,7 @@ int GetFirstApiLevel() {
 }  // namespace
 
 // MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
-// APIs and MediaCodec APIs must be enabled and not blacklisted.
+// APIs and MediaCodec APIs must be enabled and not blocked.
 // static
 bool MediaDrmBridge::IsAvailable() {
   return AreMediaDrmApisAvailable() && MediaCodecUtil::IsMediaCodecAvailable();

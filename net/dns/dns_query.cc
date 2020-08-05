@@ -148,6 +148,15 @@ DnsQuery::DnsQuery(uint16_t id,
 DnsQuery::DnsQuery(scoped_refptr<IOBufferWithSize> buffer)
     : io_buffer_(std::move(buffer)) {}
 
+DnsQuery::DnsQuery(const DnsQuery& query) {
+  CopyFrom(query);
+}
+
+DnsQuery& DnsQuery::operator=(const DnsQuery& query) {
+  CopyFrom(query);
+  return *this;
+}
+
 DnsQuery::~DnsQuery() = default;
 
 std::unique_ptr<DnsQuery> DnsQuery::CloneWithNewId(uint16_t id) const {
@@ -221,12 +230,16 @@ void DnsQuery::set_flags(uint16_t flags) {
 }
 
 DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
+  CopyFrom(orig);
+  header_->id = base::HostToNet16(id);
+}
+
+void DnsQuery::CopyFrom(const DnsQuery& orig) {
   qname_size_ = orig.qname_size_;
   io_buffer_ = base::MakeRefCounted<IOBufferWithSize>(orig.io_buffer()->size());
   memcpy(io_buffer_.get()->data(), orig.io_buffer()->data(),
          io_buffer_.get()->size());
   header_ = reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
-  header_->id = base::HostToNet16(id);
 }
 
 bool DnsQuery::ReadHeader(base::BigEndianReader* reader,

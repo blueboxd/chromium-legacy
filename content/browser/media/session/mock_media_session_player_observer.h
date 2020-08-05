@@ -30,6 +30,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
   void OnEnterPictureInPicture(int player_id) override;
   void OnExitPictureInPicture(int player_id) override;
+  void OnSetAudioSinkId(int player_id,
+                        const std::string& raw_device_id) override;
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;
   bool IsPictureInPictureAvailable(int player_id) const override;
@@ -46,6 +48,9 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   // Returns the volume multiplier of |player_id|.
   double GetVolumeMultiplier(size_t player_id);
 
+  // Returns the sink id being used for the audio output of |player_id|
+  const std::string& GetAudioSinkId(size_t player_id);
+
   // Simulate a play state change for |player_id|.
   void SetPlaying(size_t player_id, bool playing);
 
@@ -58,12 +63,15 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   int received_seek_backward_calls() const;
   int received_enter_picture_in_picture_calls() const;
   int received_exit_picture_in_picture_calls() const;
+  int received_set_audio_sink_id_calls() const;
 
  private:
   // Internal representation of the players to keep track of their statuses.
   struct MockPlayer {
    public:
-    MockPlayer(bool is_playing = true, double volume_multiplier = 1.0f);
+    explicit MockPlayer(bool is_playing = true,
+                        double volume_multiplier = 1.0f,
+                        const std::string& audio_sink_id = "");
     ~MockPlayer();
     MockPlayer(const MockPlayer&);
 
@@ -71,6 +79,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     double volume_multiplier_;
     base::Optional<media_session::MediaPosition> position_;
     bool is_in_picture_in_picture_;
+    std::string audio_sink_id_;
   };
 
   // Basic representation of the players. The position in the vector is the
@@ -85,6 +94,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   int received_seek_backward_calls_ = 0;
   int received_enter_picture_in_picture_calls_ = 0;
   int received_exit_picture_in_picture_calls_ = 0;
+  int received_set_audio_sink_id_calls_ = 0;
 };
 
 }  // namespace content

@@ -47,6 +47,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
@@ -615,6 +616,7 @@ public class SafeBrowsingTest {
     }
 
     @Test
+    @DisabledTest(message = "Wait for interstitial is flaky. crbug.com/1107540")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSafeBrowsingShowsInterstitialForSubresource() throws Throwable {
@@ -643,6 +645,7 @@ public class SafeBrowsingTest {
     }
 
     @Test
+    @DisabledTest(message = "Wait for interstitial is flaky. crbug.com/1107540")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSafeBrowsingProceedThroughInterstitialForSubresource() throws Throwable {
@@ -692,6 +695,7 @@ public class SafeBrowsingTest {
     }
 
     @Test
+    @DisabledTest(message = "Wait for interstitial is flaky. crbug.com/1107540")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSafeBrowsingDontProceedNavigatesBackForSubResource() throws Throwable {

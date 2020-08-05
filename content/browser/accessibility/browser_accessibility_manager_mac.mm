@@ -94,6 +94,8 @@ NSString* const NSAccessibilityTextSelectionChangedFocus =
 NSString* const NSAccessibilityTextChangeElement = @"AXTextChangeElement";
 NSString* const NSAccessibilityTextEditType = @"AXTextEditType";
 NSString* const NSAccessibilityTextChangeValue = @"AXTextChangeValue";
+NSString* const NSAccessibilityChangeValueStartMarker =
+    @"AXTextChangeValueStartMarker";
 NSString* const NSAccessibilityTextChangeValueLength =
     @"AXTextChangeValueLength";
 NSString* const NSAccessibilityTextChangeValues = @"AXTextChangeValues";
@@ -302,16 +304,18 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       if (base::mac::IsAtLeastOS10_11() && !text_edits_.empty()) {
         base::string16 deleted_text;
         base::string16 inserted_text;
-        int32_t id = node->GetId();
-        const auto iterator = text_edits_.find(id);
+        int32_t node_id = node->GetId();
+        const auto iterator = text_edits_.find(node_id);
+        id edit_text_marker = nil;
         if (iterator != text_edits_.end()) {
           AXTextEdit text_edit = iterator->second;
           deleted_text = text_edit.deleted_text;
           inserted_text = text_edit.inserted_text;
+          edit_text_marker = text_edit.edit_text_marker;
         }
 
         NSDictionary* user_info = GetUserInfoForValueChangedNotification(
-            native_node, deleted_text, inserted_text);
+            native_node, deleted_text, inserted_text, edit_text_marker);
 
         BrowserAccessibility* root = GetRoot();
         if (!root)
@@ -523,29 +527,42 @@ NSDictionary*
 BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
     const BrowserAccessibilityCocoa* native_node,
     const base::string16& deleted_text,
-    const base::string16& inserted_text) const {
+    const base::string16& inserted_text,
+    id edit_text_marker) const {
   DCHECK(native_node);
   if (deleted_text.empty() && inserted_text.empty())
     return nil;
 
   NSMutableArray* changes = [[[NSMutableArray alloc] init] autorelease];
   if (!deleted_text.empty()) {
-    [changes addObject:@{
-      NSAccessibilityTextEditType : @(AXTextEditTypeDelete),
-      NSAccessibilityTextChangeValueLength : @(deleted_text.length()),
-      NSAccessibilityTextChangeValue : base::SysUTF16ToNSString(deleted_text)
-    }];
+    NSMutableDictionary* change =
+        [NSMutableDictionary dictionaryWithDictionary:@{
+          NSAccessibilityTextEditType : @(AXTextEditTypeDelete),
+          NSAccessibilityTextChangeValueLength : @(deleted_text.length()),
+          NSAccessibilityTextChangeValue :
+              base::SysUTF16ToNSString(deleted_text)
+        }];
+    if (edit_text_marker) {
+      change[NSAccessibilityChangeValueStartMarker] = edit_text_marker;
+    }
+    [changes addObject:change];
   }
   if (!inserted_text.empty()) {
     // TODO(nektar): Figure out if this is a paste, insertion or typing.
     // Changes to Blink would be required. A heuristic is currently used.
     auto edit_type = inserted_text.length() > 1 ? @(AXTextEditTypeInsert)
                                                 : @(AXTextEditTypeTyping);
-    [changes addObject:@{
-      NSAccessibilityTextEditType : edit_type,
-      NSAccessibilityTextChangeValueLength : @(inserted_text.length()),
-      NSAccessibilityTextChangeValue : base::SysUTF16ToNSString(inserted_text)
-    }];
+    NSMutableDictionary* change =
+        [NSMutableDictionary dictionaryWithDictionary:@{
+          NSAccessibilityTextEditType : edit_type,
+          NSAccessibilityTextChangeValueLength : @(inserted_text.length()),
+          NSAccessibilityTextChangeValue :
+              base::SysUTF16ToNSString(inserted_text)
+        }];
+    if (edit_text_marker) {
+      change[NSAccessibilityChangeValueStartMarker] = edit_text_marker;
+    }
+    [changes addObject:change];
   }
 
   return @{

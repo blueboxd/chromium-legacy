@@ -1056,6 +1056,14 @@ chrome.fileManagerPrivate.selectAndroidPickerApp = function(androidApp, callback
  */
 chrome.fileManagerPrivate.sharesheetHasTargets = function(entries, callback) {};
 
+/**
+ * Invoke Sharesheet for selected files. If not possible, then returns
+ * an error via chrome.runtime.lastError. |entries| Array of selected entries.
+ * @param {!Array<!Entry>} entries
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.invokeSharesheet = function(entries, callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 

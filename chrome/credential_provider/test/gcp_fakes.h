@@ -595,15 +595,24 @@ class FakeUserPoliciesManager : public UserPoliciesManager {
   explicit FakeUserPoliciesManager(bool cloud_policies_enabled);
   ~FakeUserPoliciesManager() override;
 
+  HRESULT FetchAndStoreCloudUserPolicies(
+      const base::string16& sid,
+      const std::string& access_token) override;
+
   // Specify the policy to use for a user.
   void SetUserPolicies(const base::string16& sid, const UserPolicies& policies);
 
   bool GetUserPolicies(const base::string16& sid,
                        UserPolicies* policies) override;
 
+  // Returns the number of times FetchAndStoreCloudUserPolicies method was
+  // called.
+  int GetNumTimesFetchAndStoreCalled() const;
+
  private:
   UserPoliciesManager* original_manager_ = nullptr;
   std::map<base::string16, UserPolicies> user_policies_;
+  int num_times_fetch_called_ = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -62,6 +62,11 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_SETTINGS_DROPDOWN_MENU_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_dropdown_menu.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_ACCOUNT_MANAGER_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/account_manager_browser_proxy.m.js"
            use_base_dir="false"
@@ -453,6 +458,16 @@
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_OS_SETTINGS_V3_JS"
            file="chromeos/os_settings.js"
+           compress="false"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_SETTINGS_DATE_TIME_PAGE_DATE_TIME_TYPES_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/date_time_page/date_time_types.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_SETTINGS_DATE_TIME_PAGE_TIMEZONE_SELECTOR_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/date_time_page/timezone_selector.m.js"
+           use_base_dir="false"
            compress="false"
            type="BINDATA" />
 </grit-part>

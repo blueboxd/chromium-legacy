@@ -147,15 +147,15 @@ InstallServiceWorkItemImpl::InstallServiceWorkItemImpl(
     const base::string16& display_name,
     const base::CommandLine& service_cmd_line,
     const base::string16& registry_path,
-    const GUID& clsid,
-    const GUID& iid)
+    const std::vector<GUID>& clsids,
+    const std::vector<GUID>& iids)
     : com_registration_work_items_(WorkItem::CreateWorkItemList()),
       service_name_(service_name),
       display_name_(display_name),
       service_cmd_line_(service_cmd_line),
       registry_path_(registry_path),
-      clsid_(clsid),
-      iid_(iid),
+      clsids_(clsids),
+      iids_(iids),
       rollback_existing_service_(false),
       rollback_new_service_(false),
       original_service_still_exists_(false) {}
@@ -232,15 +232,15 @@ bool InstallServiceWorkItemImpl::DoInstallService() {
 }
 
 bool InstallServiceWorkItemImpl::DoComRegistration() {
-  if (clsid_ != GUID_NULL) {
-    const base::string16 clsid_reg_path = GetComClsidRegistryPath(clsid_);
-    const base::string16 appid_reg_path = GetComAppidRegistryPath(clsid_);
+  for (const auto& clsid : clsids_) {
+    const base::string16 clsid_reg_path = GetComClsidRegistryPath(clsid);
+    const base::string16 appid_reg_path = GetComAppidRegistryPath(clsid);
 
     com_registration_work_items_->AddCreateRegKeyWorkItem(
         HKEY_LOCAL_MACHINE, clsid_reg_path, WorkItem::kWow64Default);
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, clsid_reg_path, WorkItem::kWow64Default, L"AppID",
-        base::win::WStringFromGUID(clsid_), true);
+        base::win::WStringFromGUID(clsid), true);
     com_registration_work_items_->AddCreateRegKeyWorkItem(
         HKEY_LOCAL_MACHINE, appid_reg_path, WorkItem::kWow64Default);
     com_registration_work_items_->AddSetRegValueWorkItem(
@@ -248,9 +248,9 @@ bool InstallServiceWorkItemImpl::DoComRegistration() {
         L"LocalService", GetCurrentServiceName(), true);
   }
 
-  if (iid_ != GUID_NULL) {
-    const base::string16 iid_reg_path = GetComIidRegistryPath(iid_);
-    const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid_);
+  for (const auto& iid : iids_) {
+    const base::string16 iid_reg_path = GetComIidRegistryPath(iid);
+    const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid);
 
     // Registering the Ole Automation marshaler with the CLSID
     // {00020424-0000-0000-C000-000000000046} as the proxy/stub for the
@@ -269,7 +269,7 @@ bool InstallServiceWorkItemImpl::DoComRegistration() {
         WorkItem::kWow64Default);
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
-        WorkItem::kWow64Default, L"", base::win::WStringFromGUID(iid_), true);
+        WorkItem::kWow64Default, L"", base::win::WStringFromGUID(iid), true);
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
         WorkItem::kWow64Default, L"Version", L"1.0", true);
@@ -359,20 +359,22 @@ void InstallServiceWorkItemImpl::RollbackImpl() {
 
 bool InstallServiceWorkItemImpl::DeleteServiceImpl() {
   // Uninstall the elevation service.
-  if (clsid_ != GUID_NULL) {
+  for (const auto& clsid : clsids_) {
     for (const auto& reg_path :
-         {GetComClsidRegistryPath(clsid_), GetComAppidRegistryPath(clsid_)}) {
+         {GetComClsidRegistryPath(clsid), GetComAppidRegistryPath(clsid)}) {
       InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
                                      WorkItem::kWow64Default);
     }
   }
-  if (iid_ != GUID_NULL) {
+
+  for (const auto& iid : iids_) {
     for (const auto& reg_path :
-         {GetComIidRegistryPath(iid_), GetComTypeLibRegistryPath(iid_)}) {
+         {GetComIidRegistryPath(iid), GetComTypeLibRegistryPath(iid)}) {
       InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
                                      WorkItem::kWow64Default);
     }
   }
+
   scm_.Set(::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
   if (!scm_.IsValid()) {
     DPLOG(ERROR) << "::OpenSCManager Failed";

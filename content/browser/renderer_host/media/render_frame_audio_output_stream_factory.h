@@ -51,6 +51,9 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory final {
 
   ~RenderFrameAudioOutputStreamFactory();
 
+  void SetAuthorizedDeviceIdForGlobalMediaControls(
+      std::string hashed_device_id);
+
   size_t CurrentNumberOfProvidersForTesting();
 
  private:

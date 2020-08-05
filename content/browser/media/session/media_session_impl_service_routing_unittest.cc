@@ -53,6 +53,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
                void(int player_id, double volume_multiplier));
   MOCK_METHOD1(OnEnterPictureInPicture, void(int player_id));
   MOCK_METHOD1(OnExitPictureInPicture, void(int player_id));
+  MOCK_METHOD2(OnSetAudioSinkId,
+               void(int player_id, const std::string& raw_device_id));
 
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {

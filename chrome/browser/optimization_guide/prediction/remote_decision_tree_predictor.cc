@@ -43,6 +43,14 @@ RemoteDecisionTreePredictor::Get() const {
   return remote_.get();
 }
 
+bool RemoteDecisionTreePredictor::IsConnected() const {
+  return remote_.is_connected();
+}
+
+void RemoteDecisionTreePredictor::FlushForTesting() {
+  remote_.FlushForTesting();
+}
+
 mojo::PendingReceiver<machine_learning::mojom::DecisionTreePredictor>
 RemoteDecisionTreePredictor::BindNewPipeAndPassReceiver() {
   return remote_.BindNewPipeAndPassReceiver();

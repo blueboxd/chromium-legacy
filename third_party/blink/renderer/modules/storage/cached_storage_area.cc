@@ -181,12 +181,12 @@ String CachedStorageArea::RegisterSource(Source* source) {
 CachedStorageArea::CachedStorageArea(
     AreaType type,
     scoped_refptr<const SecurityOrigin> origin,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     StorageNamespace* storage_namespace)
     : type_(type),
       origin_(std::move(origin)),
       storage_namespace_(storage_namespace),
-      ipc_task_runner_(std::move(ipc_runner)),
+      task_runner_(std::move(task_runner)),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
   BindStorageArea();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -204,17 +204,16 @@ void CachedStorageArea::BindStorageArea(
   // Some tests may not provide a StorageNamespace.
   DCHECK(!remote_area_);
   if (new_area) {
-    remote_area_.Bind(std::move(new_area), ipc_task_runner_);
+    remote_area_.Bind(std::move(new_area), task_runner_);
   } else if (storage_namespace_) {
     storage_namespace_->BindStorageArea(
-        origin_, remote_area_.BindNewPipeAndPassReceiver(ipc_task_runner_));
+        origin_, remote_area_.BindNewPipeAndPassReceiver(task_runner_));
   } else {
     return;
   }
 
   receiver_.reset();
-  remote_area_->AddObserver(
-      receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
+  remote_area_->AddObserver(receiver_.BindNewPipeAndPassRemote(task_runner_));
 }
 
 void CachedStorageArea::ResetConnection(

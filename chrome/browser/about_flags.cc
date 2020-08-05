@@ -3176,6 +3176,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidPictureInPictureAPIName,
      flag_descriptions::kAndroidPictureInPictureAPIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(media::kPictureInPictureAPI)},
+    {"reengagement-notification",
+     flag_descriptions::kReengagementNotificationName,
+     flag_descriptions::kReengagementNotificationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kReengagementNotification)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -5102,6 +5106,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisplayAlignmentAssistanceName,
      flag_descriptions::kDisplayAlignmentAssistanceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDisplayAlignAssist)},
+
+    {"print-save-to-drive", flag_descriptions::kPrintSaveToDriveName,
+     flag_descriptions::kPrintSaveToDriveDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPrintSaveToDrive)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

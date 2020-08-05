@@ -4198,9 +4198,6 @@
           '--test-launcher-batch-limit=512',
           '--test-launcher-retry-limit=0',
         ],
-        'swarming': {
-          'shards': 2,
-        },
       },
       'angle_deqp_gles2_tests': {
         'args': [

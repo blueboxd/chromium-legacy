@@ -14,16 +14,10 @@ using history::DeletionInfo;
 
 TEST(ShouldClearFeed, ShouldClearFeed) {
   EXPECT_TRUE(ShouldClearFeed(DeletionInfo::ForAllHistory()));
-  EXPECT_TRUE(ShouldClearFeed(DeletionInfo::ForUrls(
-      {
-          history::URLRow(GURL("http://url1")),
-          history::URLRow(GURL("http://url2")),
-      },
-      /*favicon_urls=*/{})));
-
   EXPECT_FALSE(ShouldClearFeed(DeletionInfo::ForUrls(
       {
           history::URLRow(GURL("http://url1")),
+          history::URLRow(GURL("http://url2")),
       },
       /*favicon_urls=*/{})));
 }

@@ -914,7 +914,7 @@ bool OmniboxEditModel::AcceptKeyword(
   user_text_ = MaybeStripKeyword(user_text_);
 
   if (PopupIsOpen())
-    popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD);
+    popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD_MODE);
   else
     StartAutocomplete(false, true);
 
@@ -973,7 +973,7 @@ void OmniboxEditModel::ClearKeyword() {
   // difference, as we'll need it below. popup_model() may be nullptr in tests.
   bool was_toggled_into_keyword_mode =
       popup_model() &&
-      popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD;
+      popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD_MODE;
 
   bool entry_by_tab = keyword_mode_entry_method_ == OmniboxEventProto::TAB;
 
@@ -1552,9 +1552,10 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     } else if (popup_model()->selected_line() != OmniboxPopupModel::kNoMatch) {
       const AutocompleteMatch& selected_match =
           result().match_at(popup_model()->selected_line());
-      *match =
-          (popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD) ?
-              *selected_match.associated_keyword : selected_match;
+      *match = (popup_model()->selected_line_state() ==
+                OmniboxPopupModel::KEYWORD_MODE)
+                   ? *selected_match.associated_keyword
+                   : selected_match;
       found_match_for_text = true;
     }
     if (found_match_for_text && alternate_nav_url &&

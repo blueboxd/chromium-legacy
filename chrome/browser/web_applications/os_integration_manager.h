@@ -34,9 +34,12 @@ struct InstallOsHooksOptions {
   bool run_on_os_login = false;
 };
 
-// Callback made when InstallOsHooks has finished trying to deploy all
-// needed OS hooks.
+// Callback made after InstallOsHooks is finished.
 using InstallOsHooksCallback =
+    base::OnceCallback<void(OsHooksResults os_hooks_info)>;
+
+// Callback made after UninstallOsHooks is finished.
+using UninstallOsHooksCallback =
     base::OnceCallback<void(OsHooksResults os_hooks_info)>;
 
 // OsIntegrationManager is responsible of creating/updating/deleting
@@ -67,7 +70,8 @@ class OsIntegrationManager {
   // Uninstall all OS hooks for the web app.
   // TODO(https://crbug.com/1108109) we should record uninstall result and allow
   // callback. virtual for testing
-  virtual void UninstallOsHooks(const AppId& app_id);
+  virtual void UninstallOsHooks(const AppId& app_id,
+                                UninstallOsHooksCallback callback);
 
   void SuppressOsHooksForTesting();
 

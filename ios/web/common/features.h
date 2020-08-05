@@ -63,6 +63,9 @@ extern const base::Feature kAddWebContentDropInteraction;
 // See also: https://wicg.github.io/scroll-to-text-fragment/
 extern const base::Feature kScrollToTextIOS;
 
+// When enabled, display an interstitial on legacy TLS connections.
+extern const base::Feature kIOSLegacyTLSInterstitial;
+
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version
 // is requested by default.

@@ -146,7 +146,8 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kModelAlreadyLoaded:
     case LoadStreamStatus::kDataInStoreIsStale:
     case LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture:
-    case LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete:
+    case LoadStreamStatus::
+        kCannotLoadFromNetworkSupressedForHistoryDelete_DEPRECATED:
     case LoadStreamStatus::kLoadNotAllowedEulaNotAccepted:
     case LoadStreamStatus::kLoadNotAllowedArticlesListHidden:
     case LoadStreamStatus::kCannotParseNetworkResponseBody:

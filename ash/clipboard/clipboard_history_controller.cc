@@ -23,6 +23,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_separator_types.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -69,35 +70,18 @@ void WriteClipboardDataToClipboard(const ui::ClipboardData& data) {
   clipboard->WriteClipboardData(std::make_unique<ui::ClipboardData>(data));
 }
 
-class ClipboardHistoryMenuDelegate : public ui::SimpleMenuModel::Delegate {
- public:
-  ClipboardHistoryMenuDelegate(ClipboardHistoryController* controller)
-      : controller_(controller) {}
-  ClipboardHistoryMenuDelegate(const ClipboardHistoryMenuDelegate&) = delete;
-  ClipboardHistoryMenuDelegate& operator=(const ClipboardHistoryMenuDelegate&) =
-      delete;
-
-  // ui::SimpleMenuModel::Delegate:
-  void ExecuteCommand(int command_id, int event_flags) override {
-    controller_->MenuOptionSelected(/*index=*/command_id);
-  }
-
- private:
-  // The controller responsible for showing the Clipboard History menu.
-  ClipboardHistoryController* const controller_;
-};
-
 }  // namespace
 
-class ClipboardHistoryAcceleratorTarget : public ui::AcceleratorTarget {
+// ClipboardHistoryController::AcceleratorTarget -------------------------------
+
+class ClipboardHistoryController::AcceleratorTarget
+    : public ui::AcceleratorTarget {
  public:
-  ClipboardHistoryAcceleratorTarget(ClipboardHistoryController* controller)
+  explicit AcceleratorTarget(ClipboardHistoryController* controller)
       : controller_(controller) {}
-  ClipboardHistoryAcceleratorTarget(const ClipboardHistoryAcceleratorTarget&) =
-      delete;
-  ClipboardHistoryAcceleratorTarget& operator=(
-      const ClipboardHistoryAcceleratorTarget&) = delete;
-  ~ClipboardHistoryAcceleratorTarget() override = default;
+  AcceleratorTarget(const AcceleratorTarget&) = delete;
+  AcceleratorTarget& operator=(const AcceleratorTarget&) = delete;
+  ~AcceleratorTarget() override = default;
 
   void Init() {
     ui::Accelerator show_menu_combo(ui::VKEY_V, ui::EF_COMMAND_DOWN);
@@ -111,23 +95,47 @@ class ClipboardHistoryAcceleratorTarget : public ui::AcceleratorTarget {
  private:
   // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
-    controller_->ShowMenu();
+    if (controller_->IsMenuShowing())
+      controller_->ExecuteSelectedMenuItem();
+    else
+      controller_->ShowMenu();
     return true;
   }
 
   bool CanHandleAccelerators() const override {
-    return controller_->CanShowMenu();
+    return controller_->IsMenuShowing() || controller_->CanShowMenu();
   }
 
   // The controller responsible for showing the Clipboard History menu.
   ClipboardHistoryController* const controller_;
 };
 
+// ClipboardHistoryController::MenuDelegate ------------------------------------
+
+class ClipboardHistoryController::MenuDelegate
+    : public ui::SimpleMenuModel::Delegate {
+ public:
+  explicit MenuDelegate(ClipboardHistoryController* controller)
+      : controller_(controller) {}
+  MenuDelegate(const MenuDelegate&) = delete;
+  MenuDelegate& operator=(const MenuDelegate&) = delete;
+
+  // ui::SimpleMenuModel::Delegate:
+  void ExecuteCommand(int command_id, int event_flags) override {
+    controller_->MenuOptionSelected(/*index=*/command_id);
+  }
+
+ private:
+  // The controller responsible for showing the Clipboard History menu.
+  ClipboardHistoryController* const controller_;
+};
+
+// ClipboardHistoryController --------------------------------------------------
+
 ClipboardHistoryController::ClipboardHistoryController()
     : clipboard_history_(std::make_unique<ClipboardHistory>()),
-      accelerator_target_(
-          std::make_unique<ClipboardHistoryAcceleratorTarget>(this)),
-      menu_delegate_(std::make_unique<ClipboardHistoryMenuDelegate>(this)) {}
+      accelerator_target_(std::make_unique<AcceleratorTarget>(this)),
+      menu_delegate_(std::make_unique<MenuDelegate>(this)) {}
 
 ClipboardHistoryController::~ClipboardHistoryController() = default;
 
@@ -135,12 +143,35 @@ void ClipboardHistoryController::Init() {
   accelerator_target_->Init();
 }
 
+bool ClipboardHistoryController::IsMenuShowing() const {
+  return context_menu_ && context_menu_->IsRunning();
+}
+
+gfx::Rect ClipboardHistoryController::GetMenuBoundsInScreenForTest() const {
+  return context_menu_->GetMenuBoundsInScreenForTest();
+}
+
 bool ClipboardHistoryController::CanShowMenu() const {
   return !clipboard_history_->IsEmpty();
 }
 
+void ClipboardHistoryController::ExecuteSelectedMenuItem() {
+  DCHECK(IsMenuShowing());
+  auto command = context_menu_->GetSelectedMenuItemCommand();
+
+  // TODO(crbug.com/1106849): Update once sequential paste is supported.
+  // Force close the context menu. Failure to do so before dispatching our
+  // synthetic key event will result in the context menu consuming the event.
+  // Currently we don't support sequential copy-paste. Once we do, we'll have to
+  // update this logic.
+  context_menu_->Cancel();
+
+  // If no menu item is currently selected, we'll fallback to the first item.
+  menu_delegate_->ExecuteCommand(command.value_or(0), ui::EF_NONE);
+}
+
 void ClipboardHistoryController::ShowMenu() {
-  if (!CanShowMenu())
+  if (IsMenuShowing() || !CanShowMenu())
     return;
 
   clipboard_items_ =
@@ -205,18 +236,22 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
   // back onto the clipboard.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&WriteClipboardDataToClipboard,
-                     *(clipboard_items_.begin())),
+      base::BindOnce(
+          [](const base::WeakPtr<ClipboardHistoryController>& weak_ptr,
+             ui::ClipboardData clipboard_data) {
+            // When restoring the original item back on top of the clipboard we
+            // need to pause clipboard history. Failure to do so will result in
+            // the original item being re-recorded when this restoration step
+            // should actually be opaque to the user.
+            std::unique_ptr<ClipboardHistory::ScopedPause> scoped_pause;
+            if (weak_ptr) {
+              scoped_pause = std::make_unique<ClipboardHistory::ScopedPause>(
+                  weak_ptr->clipboard_history_.get());
+            }
+            WriteClipboardDataToClipboard(clipboard_data);
+          },
+          weak_ptr_factory_.GetWeakPtr(), *clipboard_items_.begin()),
       base::TimeDelta::FromMilliseconds(100));
-}
-
-bool ClipboardHistoryController::IsMenuShowing() const {
-  return context_menu_ && context_menu_->IsRunning();
-}
-
-gfx::Rect ClipboardHistoryController::GetClipboardHistoryMenuBoundsForTest()
-    const {
-  return context_menu_->GetClipboardHistoryMenuBoundsForTest();
 }
 
 gfx::Rect ClipboardHistoryController::CalculateAnchorRect() const {

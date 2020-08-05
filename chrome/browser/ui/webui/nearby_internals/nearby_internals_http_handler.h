@@ -6,26 +6,58 @@
 #define CHROME_BROWSER_UI_WEBUI_NEARBY_INTERNALS_NEARBY_INTERNALS_HTTP_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
+#include "chrome/browser/nearby_sharing/proto/certificate_rpc.pb.h"
+#include "chrome/browser/nearby_sharing/proto/contact_rpc.pb.h"
+#include "chrome/browser/nearby_sharing/proto/device_rpc.pb.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
 class ListValue;
 }  // namespace base
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 // WebUIMessageHandler for HTTP Messages to pass messages to the
 // chrome://nearby-internals HTTP tab.
-class NearbyInternalsHttpHandler : public content::WebUIMessageHandler {
+class NearbyInternalsHttpHandler : public content::WebUIMessageHandler,
+                                   public NearbyShareHttpNotifier::Observer {
  public:
-  NearbyInternalsHttpHandler();
+  explicit NearbyInternalsHttpHandler(content::BrowserContext* context);
   NearbyInternalsHttpHandler(const NearbyInternalsHttpHandler&) = delete;
   NearbyInternalsHttpHandler& operator=(const NearbyInternalsHttpHandler&) =
       delete;
   ~NearbyInternalsHttpHandler() override;
 
-  // content::WebUIMessageHandler
+  // content::WebUIMessageHandler:
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
+
+  // NearbyShareHttpNotifier::Observer:
+  void OnUpdateDeviceRequest(
+      const nearbyshare::proto::UpdateDeviceRequest& request) override;
+  void OnUpdateDeviceResponse(
+      const nearbyshare::proto::UpdateDeviceResponse& response) override;
+  void OnListContactPeopleRequest(
+      const nearbyshare::proto::ListContactPeopleRequest& request) override;
+  void OnListContactPeopleResponse(
+      const nearbyshare::proto::ListContactPeopleResponse& response) override;
+  void OnListPublicCertificatesRequest(
+      const nearbyshare::proto::ListPublicCertificatesRequest& request)
+      override;
+  void OnListPublicCertificatesResponse(
+      const nearbyshare::proto::ListPublicCertificatesResponse& response)
+      override;
+  void OnCheckContactsReachabilityRequest(
+      const nearbyshare::proto::CheckContactsReachabilityRequest& request)
+      override;
+  void OnCheckContactsReachabilityResponse(
+      const nearbyshare::proto::CheckContactsReachabilityResponse& response)
+      override;
 
  private:
   // Message handler callback that initializes JavaScript.
@@ -40,6 +72,9 @@ class NearbyInternalsHttpHandler : public content::WebUIMessageHandler {
   // Message handler callback that calls List Contacts RPC.
   void ListContactPeople(const base::ListValue* args);
 
+  content::BrowserContext* const context_;
+  ScopedObserver<NearbyShareHttpNotifier, NearbyShareHttpNotifier::Observer>
+      observer_{this};
   base::WeakPtrFactory<NearbyInternalsHttpHandler> weak_ptr_factory_{this};
 };
 

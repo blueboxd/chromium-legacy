@@ -47,6 +47,7 @@ FontFallbackList::FontFallbackList(FontSelector* font_selector)
       generation_(FontCache::GetFontCache()->Generation()),
       has_loading_fallback_(false),
       has_custom_font_(false),
+      has_letter_spacing_override_(false),
       can_shape_word_by_word_(false),
       can_shape_word_by_word_computed_(false),
       is_invalid_(false) {}
@@ -61,6 +62,7 @@ void FontFallbackList::RevalidateDeprecated() {
   family_index_ = 0;
   has_loading_fallback_ = false;
   has_custom_font_ = false;
+  has_letter_spacing_override_ = false;
   can_shape_word_by_word_ = false;
   can_shape_word_by_word_computed_ = false;
   font_selector_version_ = font_selector_ ? font_selector_->Version() : 0;
@@ -280,6 +282,8 @@ const FontData* FontFallbackList::FontDataAt(
       has_loading_fallback_ = true;
     if (result->IsCustomFont())
       has_custom_font_ = true;
+    if (result->HasLetterSpacingOverride())
+      has_letter_spacing_override_ = true;
   }
   return result.get();
 }

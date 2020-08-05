@@ -37,9 +37,10 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.FeatureList;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.DefaultBrowserInfo;
+import org.chromium.chrome.browser.DefaultBrowserInfo2;
 import org.chromium.chrome.browser.app.reengagement.ReengagementActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -92,7 +93,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @After
     public void tearDown() {
         TrackerFactory.setTrackerForTests(null);
-        DefaultBrowserInfo.clearDefaultInfoForTests();
+        DefaultBrowserInfo2.clearDefaultInfoForTests();
         FeatureList.resetTestCanUseDefaultsForTesting();
         FeatureList.setTestFeatures(null);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) closeReengagementNotifications();
@@ -101,7 +102,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @Test
     @MediumTest
     public void testReengagementNotificationSent() {
-        DefaultBrowserInfo.setDefaultInfoForTests(
+        DefaultBrowserInfo2.setDefaultInfoForTests(
                 createDefaultInfo(/* passesPrecondition = */ true));
         doReturn(true).when(mTracker).shouldTriggerHelpUI(
                 FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE);
@@ -121,7 +122,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @Test
     @MediumTest
     public void testReengagementDifferentNotificationSent() {
-        DefaultBrowserInfo.setDefaultInfoForTests(
+        DefaultBrowserInfo2.setDefaultInfoForTests(
                 createDefaultInfo(/* passesPrecondition = */ true));
         doReturn(true).when(mTracker).shouldTriggerHelpUI(
                 FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE);
@@ -141,7 +142,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @Test
     @MediumTest
     public void testReengagementNotificationNotSentDueToIPH() {
-        DefaultBrowserInfo.setDefaultInfoForTests(
+        DefaultBrowserInfo2.setDefaultInfoForTests(
                 createDefaultInfo(/* passesPrecondition = */ true));
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -165,7 +166,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @Test
     @MediumTest
     public void testReengagementNotificationNotSentDueToPreconditions() {
-        DefaultBrowserInfo.setDefaultInfoForTests(
+        DefaultBrowserInfo2.setDefaultInfoForTests(
                 createDefaultInfo(/* passesPrecondition = */ false));
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -189,7 +190,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @Test
     @MediumTest
     public void testReengagementNotificationNotSentDueToUnavailablePreconditions() {
-        DefaultBrowserInfo.setDefaultInfoForTests(null);
+        DefaultBrowserInfo2.setDefaultInfoForTests(null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
@@ -228,6 +229,7 @@ public class ReengagementNotificationControllerIntegrationTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1112519 - Disabled while safety guard is in place.")
     public void testEngagementTrackedWhenDisabled() {
         setReengagementNotificationEnabled(false);
         mTabbedActivityTestRule.startMainActivityFromLauncher();
@@ -246,7 +248,7 @@ public class ReengagementNotificationControllerIntegrationTest {
     @MediumTest
     public void testEngagementNotificationNotSentDueToDisabled() {
         setReengagementNotificationEnabled(false);
-        DefaultBrowserInfo.setDefaultInfoForTests(
+        DefaultBrowserInfo2.setDefaultInfoForTests(
                 createDefaultInfo(/* passesPrecondition = */ true));
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -361,9 +363,9 @@ public class ReengagementNotificationControllerIntegrationTest {
                         ReengagementNotificationController.NOTIFICATION_ID);
     }
 
-    private DefaultBrowserInfo.DefaultInfo createDefaultInfo(boolean passesPrecondition) {
+    private DefaultBrowserInfo2.DefaultInfo createDefaultInfo(boolean passesPrecondition) {
         int browserCount = passesPrecondition ? 2 : 1;
-        return new DefaultBrowserInfo.DefaultInfo(/* isChromeSystem = */ true,
+        return new DefaultBrowserInfo2.DefaultInfo(/* isChromeSystem = */ true,
                 /* isChromeDefault = */ true,
                 /* isDefaultSystem = */ true, /* hasDefault = */ true, browserCount,
                 /* systemCount = */ 0);

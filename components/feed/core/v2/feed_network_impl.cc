@@ -146,6 +146,7 @@ class FeedNetworkImpl::NetworkFetch {
   NetworkFetch(const GURL& url,
                const std::string& request_type,
                std::string request_body,
+               bool force_signed_out_request,
                signin::IdentityManager* identity_manager,
                network::SharedURLLoaderFactory* loader_factory,
                const std::string& api_key,
@@ -154,6 +155,7 @@ class FeedNetworkImpl::NetworkFetch {
       : url_(url),
         request_type_(request_type),
         request_body_(std::move(request_body)),
+        force_signed_out_request_(force_signed_out_request),
         identity_manager_(identity_manager),
         loader_factory_(loader_factory),
         api_key_(api_key),
@@ -182,7 +184,7 @@ class FeedNetworkImpl::NetworkFetch {
   void Start(base::OnceCallback<void(RawResponse)> done_callback) {
     done_callback_ = std::move(done_callback);
 
-    if (!identity_manager_->HasPrimaryAccount()) {
+    if (force_signed_out_request_ || !identity_manager_->HasPrimaryAccount()) {
       StartLoader();
       return;
     }
@@ -381,6 +383,7 @@ class FeedNetworkImpl::NetworkFetch {
   const std::string request_type_;
   std::string access_token_;
   const std::string request_body_;
+  bool force_signed_out_request_;
   signin::IdentityManager* const identity_manager_;
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
@@ -417,6 +420,7 @@ FeedNetworkImpl::~FeedNetworkImpl() = default;
 
 void FeedNetworkImpl::SendQueryRequest(
     const feedwire::Request& request,
+    bool force_signed_out_request,
     base::OnceCallback<void(QueryRequestResult)> callback) {
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
@@ -432,7 +436,7 @@ void FeedNetworkImpl::SendQueryRequest(
 
   AddMothershipPayloadQueryParams(base64proto, delegate_->GetLanguageTag(),
                                   url);
-  Send(url, "GET", /*request_body=*/{},
+  Send(url, "GET", /*request_body=*/{}, force_signed_out_request,
        base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
                                                NetworkRequestType::kFeedQuery>,
                       std::move(callback)));
@@ -445,6 +449,7 @@ void FeedNetworkImpl::SendActionRequest(
   request.SerializeToString(&binary_proto);
 
   Send(GURL(kUploadActionUrl), "POST", std::move(binary_proto),
+       /*force_signed_out_request=*/false,
        base::BindOnce(
            &ParseAndForwardResponse<ActionRequestResult,
                                     NetworkRequestType::kUploadActions>,
@@ -458,10 +463,12 @@ void FeedNetworkImpl::CancelRequests() {
 void FeedNetworkImpl::Send(const GURL& url,
                            const std::string& request_type,
                            std::string request_body,
+                           bool force_signed_out_request,
                            base::OnceCallback<void(RawResponse)> callback) {
   auto fetch = std::make_unique<NetworkFetch>(
-      url, request_type, std::move(request_body), identity_manager_,
-      loader_factory_.get(), api_key_, tick_clock_, pref_service_);
+      url, request_type, std::move(request_body), force_signed_out_request,
+      identity_manager_, loader_factory_.get(), api_key_, tick_clock_,
+      pref_service_);
   NetworkFetch* fetch_unowned = fetch.get();
   pending_requests_.emplace(std::move(fetch));
 

@@ -70,6 +70,17 @@ TEST(DnsQueryTest, Constructor) {
   EXPECT_EQ(question, q1.question());
 }
 
+TEST(DnsQueryTest, CopiesAreIndependent) {
+  DnsQuery q1(26 /* id */, kQName, dns_protocol::kTypeAAAA);
+
+  DnsQuery q2(q1);
+
+  EXPECT_EQ(q1.id(), q2.id());
+  EXPECT_EQ(base::StringPiece(q1.io_buffer()->data(), q1.io_buffer()->size()),
+            base::StringPiece(q2.io_buffer()->data(), q2.io_buffer()->size()));
+  EXPECT_NE(q1.io_buffer(), q2.io_buffer());
+}
+
 TEST(DnsQueryTest, Clone) {
   base::StringPiece qname(kQNameData, sizeof(kQNameData));
 

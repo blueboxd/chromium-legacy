@@ -138,7 +138,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -178,7 +179,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1618,7 +1620,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1657,7 +1660,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1946,7 +1950,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1985,7 +1990,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2270,7 +2276,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2308,7 +2315,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2941,7 +2949,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2980,7 +2989,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {

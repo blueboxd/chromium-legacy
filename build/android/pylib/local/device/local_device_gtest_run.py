@@ -51,7 +51,6 @@ _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')
 
-_MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
 
 # The amount of time a test executable may run before it gets killed.
@@ -487,10 +486,14 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     # Delete suspect testcase from tests.
     tests = [test for test in tests if not test in self._crashes]
 
+    batch_size = self._test_instance.test_launcher_batch_limit
+
     for i in xrange(0, device_count):
       unbounded_shard = tests[i::device_count]
-      shards += [unbounded_shard[j:j+_MAX_SHARD_SIZE]
-                 for j in xrange(0, len(unbounded_shard), _MAX_SHARD_SIZE)]
+      shards += [
+          unbounded_shard[j:j + batch_size]
+          for j in xrange(0, len(unbounded_shard), batch_size)
+      ]
     return shards
 
   #override

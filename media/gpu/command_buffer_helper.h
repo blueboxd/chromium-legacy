@@ -18,6 +18,9 @@
 
 namespace gpu {
 class CommandBufferStub;
+class SharedImageBacking;
+class SharedImageRepresentationFactoryRef;
+class TextureBase;
 }  // namespace gpu
 
 namespace gl {
@@ -54,6 +57,12 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
 
   // Makes the GL context current.
   virtual bool MakeContextCurrent() = 0;
+
+  // Register a shared image backing
+  virtual std::unique_ptr<gpu::SharedImageRepresentationFactoryRef> Register(
+      std::unique_ptr<gpu::SharedImageBacking> backing) = 0;
+
+  virtual gpu::TextureBase* GetTexture(GLuint service_id) const = 0;
 
   // Creates a texture and returns its |service_id|.
   //

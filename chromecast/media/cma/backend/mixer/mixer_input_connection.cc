@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/media/audio/audio_log.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/cma/backend/mixer/channel_layout.h"
@@ -583,7 +584,7 @@ void MixerInputConnection::WritePcm(scoped_refptr<net::IOBuffer> data) {
 int64_t MixerInputConnection::QueueData(scoped_refptr<net::IOBuffer> data) {
   int frames = GetFrameCount(data.get());
   if (frames == 0) {
-    LOG(INFO) << "End of stream for " << this;
+    AUDIO_LOG(INFO) << "End of stream for " << this;
     state_ = State::kGotEos;
     if (!started_) {
       io_task_runner_->PostTask(FROM_HERE, ready_for_playback_task_);
@@ -656,8 +657,8 @@ void MixerInputConnection::InitializeAudioPlayback(
     mixer_read_size_ = read_size;
     if (start_threshold_frames_ == 0) {
       start_threshold_frames_ = read_size + fill_size_;
-      LOG(INFO) << this
-                << " Updated start threshold: " << start_threshold_frames_;
+      AUDIO_LOG(INFO) << this << " Updated start threshold: "
+                      << start_threshold_frames_;
     }
     mixer_rendering_delay_ = initial_rendering_delay;
     if (state_ == State::kUninitialized) {
@@ -687,8 +688,8 @@ void MixerInputConnection::CheckAndStartPlaybackIfNecessary(
   const int frames_needed_to_start = std::max(
       start_threshold_frames_, fader_.FramesNeededFromSource(num_frames));
   if (max_queued_frames_ < frames_needed_to_start) {
-    LOG(INFO) << "Boost queue size to " << frames_needed_to_start
-              << " to allow stream to start";
+    AUDIO_LOG(INFO) << "Boost queue size to " << frames_needed_to_start
+                    << " to allow stream to start";
     max_queued_frames_ = frames_needed_to_start;
   }
   const bool have_enough_queued_frames =
@@ -700,7 +701,7 @@ void MixerInputConnection::CheckAndStartPlaybackIfNecessary(
   remaining_silence_frames_ = 0;
   if (!use_start_timestamp_ || (queue_.empty() && state_ == State::kGotEos)) {
     // No start timestamp, so start as soon as there are enough queued frames.
-    LOG(INFO) << "Start " << this;
+    AUDIO_LOG(INFO) << "Start " << this;
     started_ = true;
     return;
   }
@@ -726,7 +727,7 @@ void MixerInputConnection::CheckAndStartPlaybackIfNecessary(
   int64_t drop_us = (desired_pts_now - actual_pts_now) / playback_rate_;
 
   if (drop_us >= 0) {
-    LOG(INFO) << this << " Dropping audio, duration = " << drop_us;
+    AUDIO_LOG(INFO) << this << " Dropping audio, duration = " << drop_us;
     DropAudio(::media::AudioTimestampHelper::TimeToFrames(
         base::TimeDelta::FromMicroseconds(drop_us), input_samples_per_second_));
     // Only start if we still have enough data to do so.
@@ -738,20 +739,22 @@ void MixerInputConnection::CheckAndStartPlaybackIfNecessary(
                           SamplesToMicroseconds(current_buffer_offset_,
                                                 input_samples_per_second_) *
                               playback_rate_;
-      LOG(INFO) << this << " Start playback of PTS " << start_pts << " at "
-                << playback_absolute_timestamp;
+      AUDIO_LOG(INFO) << this << " Start playback of PTS " << start_pts
+                      << " at " << playback_absolute_timestamp;
     }
   } else {
     int64_t silence_duration = -drop_us;
-    LOG(INFO) << this << " Adding silence. Duration = " << silence_duration;
+    AUDIO_LOG(INFO) << this
+                    << " Adding silence. Duration = " << silence_duration;
     remaining_silence_frames_ = ::media::AudioTimestampHelper::TimeToFrames(
         base::TimeDelta::FromMicroseconds(silence_duration),
         input_samples_per_second_);
     // Round to nearest multiple of 4 to preserve buffer alignment.
     remaining_silence_frames_ = ((remaining_silence_frames_ + 2) / 4) * 4;
     started_ = true;
-    LOG(INFO) << this << " Should start playback of PTS " << actual_pts_now
-              << " at " << (playback_absolute_timestamp + silence_duration);
+    AUDIO_LOG(INFO) << this << " Should start playback of PTS "
+                    << actual_pts_now << " at "
+                    << (playback_absolute_timestamp + silence_duration);
   }
 }
 
@@ -774,7 +777,8 @@ void MixerInputConnection::DropAudio(int64_t frames_to_drop) {
   }
 
   if (frames_to_drop > 0) {
-    LOG(INFO) << this << " Still need to drop " << frames_to_drop << " frames";
+    AUDIO_LOG(INFO) << this << " Still need to drop " << frames_to_drop
+                    << " frames";
   }
 }
 
@@ -814,11 +818,11 @@ int MixerInputConnection::FillAudioPlaybackFrames(
     // full request. This will allow us to buffer up more data so we can fully
     // fade in.
     if (state_ == State::kNormalPlayback && !can_complete_fill) {
-      LOG_IF(INFO, !zero_fader_frames_) << "Stream underrun for " << this;
+      AUDIO_LOG_IF(INFO, !zero_fader_frames_) << "Stream underrun for " << this;
       zero_fader_frames_ = true;
       underrun = true;
     } else {
-      LOG_IF(INFO, started_ && zero_fader_frames_)
+      AUDIO_LOG_IF(INFO, started_ && zero_fader_frames_)
           << "Stream underrun recovered for " << this;
       zero_fader_frames_ = false;
       if (!skip_next_fill_for_rate_change_) {
@@ -932,8 +936,9 @@ bool MixerInputConnection::FillRateShifted(int needed_frames) {
   }
 
   if (rate_shifter_output_->frames() < needed_frames) {
-    LOG(WARNING) << "Rate shifter output is too small; "
-                 << rate_shifter_output_->frames() << " < " << needed_frames;
+    AUDIO_LOG(WARNING) << "Rate shifter output is too small; "
+                       << rate_shifter_output_->frames() << " < "
+                       << needed_frames;
     auto output = ::media::AudioBus::Create(num_channels_, needed_frames);
     rate_shifter_output_->CopyPartialFramesTo(0, rate_shifted_offset_, 0,
                                               output.get());
@@ -1044,7 +1049,7 @@ void MixerInputConnection::PostAudioReadyForPlayback() {
   if (audio_ready_for_playback_fired_) {
     return;
   }
-  LOG(INFO) << this << " ready for playback";
+  AUDIO_LOG(INFO) << this << " ready for playback";
 
   mixer_service::Generic message;
   auto* ready_for_playback = message.mutable_ready_for_playback();
@@ -1075,8 +1080,8 @@ void MixerInputConnection::PostOutputUnderrun() {
 
 void MixerInputConnection::OnAudioPlaybackError(MixerError error) {
   if (error == MixerError::kInputIgnored) {
-    LOG(INFO) << "Mixer input " << this
-              << " now being ignored due to output sample rate change";
+    AUDIO_LOG(INFO) << "Mixer input " << this
+                    << " now being ignored due to output sample rate change";
   }
 
   io_task_runner_->PostTask(

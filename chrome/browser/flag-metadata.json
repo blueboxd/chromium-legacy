@@ -52,7 +52,7 @@
   {
     "name": "align-font-display-auto-lcp",
     "owners": [ "xiaochengh" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "allow-disable-mouse-acceleration",
@@ -2838,6 +2838,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "legacy-tls-interstitial",
+    "owners": [ "cthomp" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "list-all-display-modes",
     "owners": [ "//ui/display/OWNERS" ],
     // This flag is used for debugging and development purposes to list all
@@ -3588,6 +3593,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "print-save-to-drive",
+    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "print-with-reduced-rasterization",
     "owners": [ "thestig" ],
     "expiry_milestone": 89
@@ -3696,6 +3706,11 @@
     "name": "reduced-referrer-granularity",
     "owners": [ "davidvc", "mkwst", "jochen" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "reengagement-notification",
+    "owners": [ "dtrainor", "xingliu" ],
+    "expiry_milestone": 90
   },
   {
     "name": "related-searches",

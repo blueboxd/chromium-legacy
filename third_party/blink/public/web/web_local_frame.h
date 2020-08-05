@@ -544,15 +544,6 @@ class WebLocalFrame : public WebFrame {
 
   // Iframe sandbox ---------------------------------------------------------
 
-  // TODO(ekaramad): This method is only exposed for testing for certain tests
-  // outside of blink/ that are interested in approximate value of the
-  // FrameReplicationState. This method should be replaced with one in content/
-  // where the notion of FrameReplicationState is relevant to.
-  // Returns the effective sandbox flags which are inherited from their parent
-  // frame.
-  virtual network::mojom::WebSandboxFlags EffectiveSandboxFlagsForTesting()
-      const = 0;
-
   // Returns false if this frame, or any parent frame is sandboxed and does not
   // have the flag "allow-downloads" set.
   virtual bool IsAllowedToDownload() const = 0;

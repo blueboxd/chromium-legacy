@@ -19,6 +19,43 @@
 
 namespace blink {
 
+namespace {
+
+enum class LegendBlockAlignment {
+  kStart,
+  kCenter,
+  kEnd,
+};
+
+// This function is very similar to BlockAlignment() in ng_length_utils.cc, but
+// it supports text-align:left/center/right.
+inline LegendBlockAlignment ComputeLegendBlockAlignment(
+    const ComputedStyle& legend_style,
+    const ComputedStyle& fieldset_style) {
+  bool start_auto = legend_style.MarginStartUsing(fieldset_style).IsAuto();
+  bool end_auto = legend_style.MarginEndUsing(fieldset_style).IsAuto();
+  if (start_auto || end_auto) {
+    if (start_auto) {
+      return end_auto ? LegendBlockAlignment::kCenter
+                      : LegendBlockAlignment::kEnd;
+    }
+    return LegendBlockAlignment::kStart;
+  }
+  const bool is_ltr = fieldset_style.IsLeftToRightDirection();
+  switch (legend_style.GetTextAlign()) {
+    case ETextAlign::kLeft:
+      return is_ltr ? LegendBlockAlignment::kStart : LegendBlockAlignment::kEnd;
+    case ETextAlign::kRight:
+      return is_ltr ? LegendBlockAlignment::kEnd : LegendBlockAlignment::kStart;
+    case ETextAlign::kCenter:
+      return LegendBlockAlignment::kCenter;
+    default:
+      return LegendBlockAlignment::kStart;
+  }
+}
+
+}  // namespace
+
 NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
     : NGLayoutAlgorithm(params),
@@ -329,7 +366,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
   LayoutUnit legend_inline_start = ComputeLegendInlineOffset(
       legend.Style(),
       NGFragment(writing_mode_, result->PhysicalFragment()).InlineSize(),
-      legend_margins, BorderScrollbarPadding().inline_start,
+      legend_margins, Style(), BorderScrollbarPadding().inline_start,
       ChildAvailableSize().inline_size);
 
   // NOTE: For painting purposes, this must be kept in sync with:
@@ -344,22 +381,21 @@ LayoutUnit NGFieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
     const ComputedStyle& legend_style,
     LayoutUnit legend_border_box_inline_size,
     const NGBoxStrut& legend_margins,
+    const ComputedStyle& fieldset_style,
     LayoutUnit fieldset_border_padding_inline_start,
     LayoutUnit fieldset_content_inline_size) {
-  const ETextAlign align = legend_style.GetTextAlign();
-  const ETextAlign align_end = legend_style.IsLeftToRightDirection()
-                                   ? ETextAlign::kRight
-                                   : ETextAlign::kLeft;
-  LayoutUnit legend_inline_start = fieldset_border_padding_inline_start;
-  if (align == ETextAlign::kCenter) {
-    legend_inline_start +=
-        (fieldset_content_inline_size - legend_border_box_inline_size) / 2;
-  } else if (align == align_end) {
-    legend_inline_start += fieldset_content_inline_size -
-                           legend_border_box_inline_size -
-                           legend_margins.inline_end;
-  } else {
-    legend_inline_start += legend_margins.inline_start;
+  LayoutUnit legend_inline_start =
+      fieldset_border_padding_inline_start + legend_margins.inline_start;
+  // The following logic is very similar to ResolveInlineMargins(), but it uses
+  // ComputeLegendBlockAlignment().
+  const LayoutUnit available_space =
+      fieldset_content_inline_size - legend_border_box_inline_size;
+  if (available_space > LayoutUnit()) {
+    auto alignment = ComputeLegendBlockAlignment(legend_style, fieldset_style);
+    if (alignment == LegendBlockAlignment::kCenter)
+      legend_inline_start += available_space / 2;
+    else if (alignment == LegendBlockAlignment::kEnd)
+      legend_inline_start += available_space - legend_margins.inline_end;
   }
   return legend_inline_start;
 }

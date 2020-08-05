@@ -195,6 +195,55 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   await saveBlobToFile(handle, blob);
 });
 
+guestMessagePipe.registerHandler(Message.SAVE_AS, async (message) => {
+  const {blob, oldFileToken, pickedFileToken} =
+      /** @type {!SaveAsMessage} */ (message);
+  const oldFileDescriptor = currentFiles.find(fd => fd.token === oldFileToken);
+  /** @type {!FileDescriptor} */
+  const pickedFileDescriptor = {
+    // We silently take over the old file's file descriptor by taking its token,
+    // note we can be passed an undefined token if the file we are saving was
+    // dragged into the media app.
+    token: oldFileToken || tokenGenerator.next().value,
+    file: null,
+    handle: tokenMap.get(pickedFileToken)
+  };
+  const oldFileIndex = currentFiles.findIndex(fd => fd.token === oldFileToken);
+  tokenMap.set(pickedFileDescriptor.token, pickedFileDescriptor.handle);
+  // Give the old file a new token, if we couldn't find the old file we assume
+  // its been deleted (or pasted/dragged into the media app) and skip this
+  // step.
+  if (oldFileDescriptor) {
+    oldFileDescriptor.token = generateToken(oldFileDescriptor.handle);
+  }
+  try {
+    // Note `pickedFileHandle` could be the same as a `FileSystemFileHandle`
+    // that exists in `tokenMap`. Possibly even the `File` currently open. But
+    // that's OK. E.g. the next overwrite-file request will just invoke
+    // `saveBlobToFile` in the same way. Note there may be no currently writable
+    // file (e.g. save from clipboard).
+    await saveBlobToFile(pickedFileDescriptor.handle, blob);
+  } catch (/** @type {!DOMException} */ e) {
+    // If something went wrong revert the token back to its original
+    // owner so future file actions function correctly.
+    if (oldFileDescriptor && oldFileToken) {
+      oldFileDescriptor.token = oldFileToken;
+      tokenMap.set(oldFileToken, oldFileDescriptor.handle);
+    }
+    throw e;
+  }
+
+  // Note: oldFileIndex may be `-1` here which causes the new file to be added
+  // to the start of the array, this is WAI.
+  currentFiles.splice(oldFileIndex + 1, 0, pickedFileDescriptor);
+  // Silently update entry index without triggering a reload of the media app.
+  entryIndex = oldFileIndex + 1;
+
+  /** @type {!SaveAsResponse} */
+  const response = {newFilename: pickedFileDescriptor.handle.name};
+  return response;
+});
+
 /**
  * Shows a file picker to get a writable file.
  * @param {string} suggestedName
@@ -231,7 +280,8 @@ const tokenGenerator = (function*() {
     assertCast(crypto).getRandomValues(randomBuffer);
     for (let i = 0; i < randomBuffer.length; ++i) {
       const token = randomBuffer[i];
-      if (!tokenMap.has(token)) {
+      // Disallow "0" as a token.
+      if (token && !tokenMap.has(token)) {
         yield Number(token);
       }
     }

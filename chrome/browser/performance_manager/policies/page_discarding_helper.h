@@ -53,8 +53,9 @@ class PageDiscardingHelper : public GraphOwned,
   bool CanUrgentlyDiscardForTesting(const PageNode* page_node) const {
     return CanUrgentlyDiscard(page_node);
   }
-  void AdornsPageWithDiscardAttemptMarkerForTesting(PageNode* page_node);
   void SetGraphForTesting(Graph* graph) { graph_ = graph; }
+  static void AddDiscardAttemptMarkerForTesting(PageNode* page_node);
+  static void RemovesDiscardAttemptMarkerForTesting(PageNode* page_node);
 
  protected:
   void OnPassedToGraph(Graph* graph) override;

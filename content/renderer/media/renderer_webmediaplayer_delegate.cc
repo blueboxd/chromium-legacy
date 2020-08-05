@@ -222,11 +222,14 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureAvailabilityChange(
       routing_id(), delegate_id, available));
 }
 
+void RendererWebMediaPlayerDelegate::DidAudioOutputSinkChange(
+    int delegate_id,
+    const std::string& hashed_device_id) {}
+
 void RendererWebMediaPlayerDelegate::DidBufferUnderflow(int player_id) {
   Send(new MediaPlayerDelegateHostMsg_OnBufferUnderflow(routing_id(),
                                                         player_id));
 }
-
 void RendererWebMediaPlayerDelegate::WasHidden() {
   RecordAction(base::UserMetricsAction("Media.Hidden"));
 
@@ -268,6 +271,8 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateEnterPictureInPicture)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ExitPictureInPicture,
                         OnMediaDelegateExitPictureInPicture)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SetAudioSinkId,
+                        OnMediaDelegateSetAudioSink)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
                         OnMediaDelegatePowerExperimentState)
     IPC_MESSAGE_UNHANDLED(return false)
@@ -395,6 +400,14 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegateExitPictureInPicture(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnExitPictureInPicture();
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegateSetAudioSink(
+    int player_id,
+    std::string sink_id) {
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer)
+    observer->OnSetAudioSink(sink_id);
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegatePowerExperimentState(

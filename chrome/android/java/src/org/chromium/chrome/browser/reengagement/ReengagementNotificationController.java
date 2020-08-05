@@ -15,7 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.DefaultBrowserInfo;
+import org.chromium.chrome.browser.DefaultBrowserInfo2;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNotificationType;
@@ -79,8 +79,8 @@ public class ReengagementNotificationController {
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    protected void getDefaultBrowserInfo(Callback<DefaultBrowserInfo.DefaultInfo> callback) {
-        DefaultBrowserInfo.getDefaultBrowserInfo(callback);
+    protected void getDefaultBrowserInfo(Callback<DefaultBrowserInfo2.DefaultInfo> callback) {
+        DefaultBrowserInfo2.getDefaultBrowserInfo(callback);
     }
 
     private boolean showNotification(String feature) {

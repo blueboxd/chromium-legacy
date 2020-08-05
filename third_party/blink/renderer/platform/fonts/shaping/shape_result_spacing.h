@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class FontDescription;
+class Font;
 
 // A context object to apply letter-spacing, word-spacing, and justification to
 // ShapeResult.
@@ -42,8 +42,10 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
     return expansion_opportunity_count_;
   }
 
-  // Set letter-spacing and word-spacing.
-  bool SetSpacing(const FontDescription&);
+  // Set letter-spacing, word-spacing, and letter-spacing-override. Uses a Font
+  // argument instead of FontDescription as letter-spacing-override is retrieved
+  // from CSS @font-face, not from style like word-spacing and letter-spacing.
+  bool SetSpacing(const Font&);
 
   // Set the expansion for the justification.
   void SetExpansion(float expansion,
@@ -52,15 +54,17 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
                     bool allows_leading_expansion = false,
                     bool allows_trailing_expansion = false);
 
-  // Set letter-spacing, word-spacing, and justification.
-  // Available only for TextRun.
-  void SetSpacingAndExpansion(const FontDescription&);
+  // Set letter-spacing, word-spacing, letter-spacing-override and
+  // justification. Available only for TextRun.
+  void SetSpacingAndExpansion(const Font&);
 
   // Compute the sum of all spacings for the specified |index|.
   // The |index| is for the |TextContainerType| given in the constructor.
   // For justification, this function must be called incrementally since it
   // keeps states and counts consumed justification opportunities.
-  float ComputeSpacing(unsigned index, float& offset);
+  float ComputeSpacing(unsigned index,
+                       float letter_spacing_override,
+                       float& offset);
 
  private:
   bool IsAfterExpansion() const { return is_after_expansion_; }
@@ -88,8 +92,7 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
 // Forward declare so no implicit instantiations happen before the
 // first explicit instantiation (which would be a C++ violation).
 template <>
-void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(
-    const FontDescription&);
+void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(const Font&);
 }  // namespace blink
 
 #endif

@@ -31,6 +31,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_view_host.h"
@@ -3271,10 +3272,17 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
 
-  // First two entries should have the same SiteInstance.
   SiteInstance* instance1 = controller.GetEntryAtIndex(0)->site_instance();
   SiteInstance* instance2 = controller.GetEntryAtIndex(1)->site_instance();
-  EXPECT_EQ(instance1, instance2);
+  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+    // If ProactivelySwapBrowsingInstance is enabled for same-site navigations,
+    // the same-site navigation from |url1| to |url2| should use different
+    // SiteInstances.
+    EXPECT_NE(instance1, instance2);
+  } else {
+    // Otherwise, the first two entries should have the same SiteInstance.
+    EXPECT_EQ(instance1, instance2);
+  }
 
   std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents().release()));
@@ -3603,10 +3611,17 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneReplaceEntry) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
 
-  // First two entries should have the same SiteInstance.
   SiteInstance* instance1 = controller.GetEntryAtIndex(0)->site_instance();
   SiteInstance* instance2 = controller.GetEntryAtIndex(1)->site_instance();
-  EXPECT_EQ(instance1, instance2);
+  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+    // If ProactivelySwapBrowsingInstance is enabled for same-site navigations,
+    // the same-site navigation from |url1| to |url2| should use different
+    // SiteInstances.
+    EXPECT_NE(instance1, instance2);
+  } else {
+    // Otherwise, the first two entries should have the same SiteInstance.
+    EXPECT_EQ(instance1, instance2);
+  }
 
   std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents().release()));

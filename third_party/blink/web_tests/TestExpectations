@@ -1307,9 +1307,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 
 # Fieldset in NG
 #
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-auto-margins.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-margin-inline.html [ Failure ]
 
 ### virtual/layout_ng_fieldset/fast/forms/fieldset/
 crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/legend-small-after-margin-before-border-horizontal-mode.html [ Failure ]
@@ -6851,13 +6848,13 @@ crbug.com/1111287 http/tests/devtools/sources/debugger-breakpoints/breakpoint-wi
 
 crbug.com/1111410 http/tests/serviceworker/service-worker-gc.html [ Pass Failure ]
 
-# Sheriff 2020-08-01
-crbug.com/1112111 fast/forms/month/month-picker-appearance-step.html [ Pass Failure ]
-
 # Sheriff 2020-08-03
 crbug.com/1108423 external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1106429 virtual/percent-based-scrolling/max-percent-delta-page-zoom.html [ Pass Failure ]
 crbug.com/1112304 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Pass Timeout ]
+
+# Flaky test
+crbug.com/1112778 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/alpha/base-url-worker.sub.html [ Pass Failure ]
 
 # Sheriff 2020-08-04: New wpt tests are failing
 crbug.com/1112771 external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.tentative.html [ Failure ]

@@ -16,7 +16,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el.target !== '_blank') {
       el.target = '_top';
     }
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (event) => {
+      const browserCommandFound =
+          event.target.getAttribute('href').match(/^command:([1-9][0-9]*)$/);
+      if (browserCommandFound) {
+        event.preventDefault();  // Prevent navigation attempt.
+        window.parent.postMessage(
+            {
+              frameType: 'promo',
+              messageType: 'execute-browser-command',
+              commandId: parseInt(browserCommandFound[1], 10),
+              clickInfo: {
+                middleButton: event.button === 1,
+                altKey: event.altKey,
+                ctrlKey: event.ctrlKey,
+                metaKey: event.metaKey,
+                shiftKey: event.shiftKey
+              }
+            },
+            'chrome://new-tab-page');
+      }
+
       window.parent.postMessage(
           {frameType: 'promo', messageType: 'link-clicked'},
           'chrome://new-tab-page');

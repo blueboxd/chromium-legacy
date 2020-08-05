@@ -143,7 +143,13 @@ class CppBundleGenerator(object):
     ifdefs = []
     for platform in model_object.platforms:
       if platform == Platforms.CHROMEOS:
-        ifdefs.append('defined(OS_CHROMEOS)')
+        # TODO(https://crbug.com/1052397): For readability, this should become
+        # defined(OS_CHROMEOS) && BUILDFLAG(IS_ASH).
+        ifdefs.append('(defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS))')
+      elif platform == Platforms.LACROS:
+        # TODO(https://crbug.com/1052397): For readability, this should become
+        # defined(OS_CHROMEOS) && BUILDFLAG(IS_LACROS).
+        ifdefs.append('BUILDFLAG(IS_LACROS)')
       elif platform == Platforms.LINUX:
         ifdefs.append('(defined(OS_LINUX) && !defined(OS_CHROMEOS))')
       elif platform == Platforms.MAC:
@@ -251,6 +257,9 @@ class _APICCGenerator(object):
     c.Append('#include "%s"' % (
         os.path.join(self._bundle._impl_dir,
                      'generated_api_registration.h')))
+    c.Append()
+    c.Append('#include "build/build_config.h"')
+    c.Append('#include "build/lacros_buildflags.h"')
     c.Append()
     for namespace in self._bundle._model.namespaces.values():
       namespace_name = namespace.unix_name.replace("experimental_", "")

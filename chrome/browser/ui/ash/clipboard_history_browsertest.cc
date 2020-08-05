@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <memory>
 
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_controller.h"
@@ -17,8 +18,21 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
+
+std::unique_ptr<views::Widget> CreateTestWidget() {
+  auto widget = std::make_unique<views::Widget>();
+
+  views::Widget::InitParams params;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  widget->Init(std::move(params));
+
+  return widget;
+}
 
 void SetClipboardText(const std::string& text) {
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
@@ -35,12 +49,11 @@ ash::ClipboardHistoryController* GetClipboardHistoryController() {
 }
 
 const std::list<ui::ClipboardData>& GetClipboardData() {
-  return GetClipboardHistoryController()->clipboard_history()->GetItems();
+  return GetClipboardHistoryController()->history()->GetItems();
 }
 
-gfx::Rect GetClipboardHistoryMenuScreenBounds() {
-  return GetClipboardHistoryController()
-      ->GetClipboardHistoryMenuBoundsForTest();
+gfx::Rect GetClipboardHistoryMenuBoundsInScreen() {
+  return GetClipboardHistoryController()->GetMenuBoundsInScreenForTest();
 }
 
 class ClipboardTestHelper {
@@ -55,11 +68,9 @@ class ClipboardTestHelper {
 
   ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
 
-  void ShowContextMenuViaAccelerator() {
-    event_generator_->PressKey(ui::KeyboardCode::VKEY_COMMAND, ui::EF_NONE);
-    event_generator_->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
-    event_generator_->ReleaseKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
-    event_generator_->ReleaseKey(ui::KeyboardCode::VKEY_COMMAND, ui::EF_NONE);
+  void PressAndRelease(ui::KeyboardCode key, int modifiers) {
+    event_generator_->PressKey(key, modifiers);
+    event_generator_->ReleaseKey(key, modifiers);
   }
 
  private:
@@ -87,8 +98,12 @@ class ClipboardHistoryWithMultiProfileBrowserTest
   }
 
  protected:
+  void PressAndRelease(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
+    test_helper_->PressAndRelease(key, modifiers);
+  }
+
   void ShowContextMenuViaAccelerator() {
-    test_helper_->ShowContextMenuViaAccelerator();
+    PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
   }
 
   void SetUpOnMainThread() override {
@@ -183,9 +198,83 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 
   // Verifies that the menu is anchored at the cursor's location.
   ASSERT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  const gfx::Point menu_origin = GetClipboardHistoryMenuScreenBounds().origin();
+  const gfx::Point menu_origin =
+      GetClipboardHistoryMenuBoundsInScreen().origin();
   EXPECT_EQ(mouse_location.x() +
                 views::MenuConfig::instance().touchable_anchor_offset,
             menu_origin.x());
   EXPECT_EQ(mouse_location.y(), menu_origin.y());
+}
+
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+                       ShouldPasteHistoryViaKeyboard) {
+  LoginUser(account_id1_);
+  CloseAllBrowsers();
+
+  // Create a widget containing a single, focusable textfield.
+  auto widget = CreateTestWidget();
+  auto* textfield =
+      widget->SetContentsView(std::make_unique<views::Textfield>());
+  textfield->SetAccessibleName(base::UTF8ToUTF16("Textfield"));
+  textfield->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+
+  // Show the widget.
+  widget->SetBounds(gfx::Rect(0, 0, 100, 100));
+  widget->Show();
+  EXPECT_TRUE(widget->IsActive());
+
+  // Focus the textfield and confirm initial state.
+  textfield->RequestFocus();
+  EXPECT_TRUE(textfield->HasFocus());
+  EXPECT_TRUE(textfield->GetText().empty());
+
+  // Write some things to the clipboard.
+  SetClipboardText("A");
+  SetClipboardText("B");
+  SetClipboardText("C");
+
+  // Verify we can paste the first history item via the ENTER key.
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_RETURN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  EXPECT_EQ("C", base::UTF16ToUTF8(textfield->GetText()));
+
+  textfield->SetText(base::string16());
+  EXPECT_TRUE(textfield->GetText().empty());
+
+  // Verify we can paste the first history item via the COMMAND+V shortcut.
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  EXPECT_EQ("C", base::UTF16ToUTF8(textfield->GetText()));
+
+  textfield->SetText(base::string16());
+  EXPECT_TRUE(textfield->GetText().empty());
+
+  // Verify we can paste the last history item via the ENTER key.
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_RETURN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  EXPECT_EQ("A", base::UTF16ToUTF8(textfield->GetText()));
+
+  textfield->SetText(base::string16());
+  EXPECT_TRUE(textfield->GetText().empty());
+
+  // Verify we can paste the last history item via the COMMAND+V shortcut.
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  EXPECT_EQ("A", base::UTF16ToUTF8(textfield->GetText()));
 }

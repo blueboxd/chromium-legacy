@@ -38,7 +38,7 @@ class FakeSharingMojoService : public sharing::mojom::Sharing,
 
   // sharing::mojom::Sharing:
   void CreateSharingWebRtcConnection(
-      mojo::PendingRemote<sharing::mojom::SignallingSender> signalling_sender,
+      mojo::PendingRemote<sharing::mojom::SignalingSender> signaling_sender,
       mojo::PendingReceiver<sharing::mojom::SignallingReceiver>
           signalling_receiver,
       mojo::PendingRemote<sharing::mojom::SharingWebRtcConnectionDelegate>

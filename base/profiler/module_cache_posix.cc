@@ -55,6 +55,20 @@ size_t GetLastExecutableOffset(const void* module_addr) {
   return max_offset;
 }
 
+FilePath GetDebugBasenameForModule(const Dl_info& dl_info) {
+#if defined(OS_ANDROID)
+  // Preferentially identify the library using its soname on Android. Libraries
+  // mapped directly from apks have the apk filename in |dl_info.dli_fname|, and
+  // this doesn't distinguish the particular library.
+  Optional<StringPiece> library_name =
+      debug::ReadElfLibraryName(dl_info.dli_fbase);
+  if (library_name)
+    return FilePath(*library_name);
+#endif
+
+  return FilePath(dl_info.dli_fname).BaseName();
+}
+
 class PosixModule : public ModuleCache::Module {
  public:
   PosixModule(const Dl_info& dl_info);
@@ -79,7 +93,7 @@ class PosixModule : public ModuleCache::Module {
 PosixModule::PosixModule(const Dl_info& dl_info)
     : base_address_(reinterpret_cast<uintptr_t>(dl_info.dli_fbase)),
       id_(GetUniqueBuildId(dl_info.dli_fbase)),
-      debug_basename_(FilePath(dl_info.dli_fname).BaseName()),
+      debug_basename_(GetDebugBasenameForModule(dl_info)),
       size_(GetLastExecutableOffset(dl_info.dli_fbase)) {}
 
 }  // namespace

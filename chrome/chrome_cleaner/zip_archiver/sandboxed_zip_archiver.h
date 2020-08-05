@@ -23,9 +23,9 @@ namespace chrome_cleaner {
 
 namespace internal {
 
-base::string16 ConstructZipArchiveFileName(const base::string16& filename,
-                                           const std::string& file_hash,
-                                           size_t max_filename_length);
+std::wstring ConstructZipArchiveFileName(const std::wstring& filename,
+                                         const std::string& file_hash,
+                                         size_t max_filename_length);
 
 }  // namespace internal
 

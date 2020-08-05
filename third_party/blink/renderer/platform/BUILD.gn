@@ -1533,27 +1533,6 @@ jumbo_component("platform") {
     ]
   }
 
-  if (is_win) {
-    jumbo_excluded_sources = [
-      # https://crbug.com/775979 - Uses libjpeg_turbo which uses a
-      # "boolean" typedef which is different (int) from the Windows
-      # standard "boolean" typedef (unsigned char), resulting in
-      # compilation errors when both are joined in a translation unit.
-      "image-decoders/jpeg/jpeg_image_decoder.cc",
-    ]
-
-    if (is_component_build) {
-      # https://crbug.com/764823 - Mixing certain //url/ headers and
-      # using url::RawCanonOutputT<char> in one translation unit breaks
-      # the Windows component build. These files use RawCanonOutput.
-      jumbo_excluded_sources += [
-        "link_hash.cc",
-        "weborigin/kurl.cc",
-        "weborigin/origin_access_entry.cc",
-        "weborigin/security_origin.cc",
-      ]
-    }
-  }
   configs += [
     ":blink_platform_pch",
     ":blink_platform_config",

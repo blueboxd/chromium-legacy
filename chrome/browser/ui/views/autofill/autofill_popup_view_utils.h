@@ -33,4 +33,10 @@ gfx::Rect CalculatePopupBounds(const gfx::Size& desired_size,
                                const gfx::Rect& element_bounds,
                                bool is_rtl);
 
+// Returns whether there is enough height within |content_area_bounds| above or
+// below |element_bounds| to display |item_height|.
+bool HasEnoughHeightForOneRow(int item_height,
+                              const gfx::Rect& content_area_bounds,
+                              const gfx::Rect& element_bounds);
+
 #endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_VIEW_UTILS_H_

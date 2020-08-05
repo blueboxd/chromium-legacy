@@ -253,7 +253,8 @@ group("closure_compile_module") {
     "bluetooth_page:closure_compile_module",
 
     #"crostini_page:closure_compile_module",
-    #"date_time_page:closure_compile_module",
+    "date_time_page:closure_compile_module",
+
     #"device_page:closure_compile_module",
     #"google_assistant_page:closure_compile_module",
     #"internet_page:closure_compile_module",

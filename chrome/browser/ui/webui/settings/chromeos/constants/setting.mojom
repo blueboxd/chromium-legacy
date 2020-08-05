@@ -153,7 +153,9 @@ enum Setting {
 
   // Privacy section.
   kVerifiedAccess = 1101,
-  kKeepWifiOnDuringSleep = 1102,
+  // Note: Value 1102 was for deprecated "Keep wi-fi on during sleep" setting -
+  // see https://bugs.chromium.org/p/chromium/issues/detail?id=1077126.
+  // Do not reuse.
   kUsageStatsAndCrashReports = 1103,
 
   // Languages and Input section.

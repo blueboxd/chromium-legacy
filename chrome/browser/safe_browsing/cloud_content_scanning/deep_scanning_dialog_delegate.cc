@@ -786,6 +786,7 @@ void DeepScanningDialogDelegate::PrepareRequest(
   request->set_analysis_connector(connector);
   request->set_email(GetProfileEmail(profile));
   request->set_url(data_.url.spec());
+  request->set_tab_url(data_.url);
   for (const std::string& tag : data_.settings.tags)
     request->add_tag(tag);
 }

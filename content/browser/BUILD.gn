@@ -2506,12 +2506,6 @@ jumbo_source_set("browser") {
       "web_contents/web_contents_view_android.h",
     ]
 
-    jumbo_excluded_sources = [
-      # Files with kJavaLangClass and similar constants:
-      # Bug https://crbug.com/787557.
-      "android/java/java_method.cc",  # and in gin_java_bound_object.cc.
-    ]
-
     set_sources_assignment_filter([])
     sources += [
       "memory/swap_metrics_driver_impl_linux.cc",

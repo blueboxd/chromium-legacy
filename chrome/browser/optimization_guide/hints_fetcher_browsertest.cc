@@ -751,18 +751,6 @@ IN_PROC_BROWSER_TEST_F(
       1);
   histogram_tester->ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 0);
-
-  LoadHintsForUrl(https_url());
-
-  ui_test_utils::NavigateToURL(browser(), https_url());
-
-  // Verifies that no Fetched Hint was added to the store, only the
-  // Component hint is loaded.
-  histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(optimization_guide::OptimizationGuideStore::
-                           StoreEntryType::kComponentHint),
-      1);
 }
 
 IN_PROC_BROWSER_TEST_F(

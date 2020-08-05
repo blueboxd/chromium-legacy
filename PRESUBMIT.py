@@ -2162,28 +2162,6 @@ def _CheckFilePermissions(input_api, output_api):
           long_text=error.output)]
 
 
-def _CheckTeamTags(input_api, output_api):
-  """Checks that OWNERS files have consistent TEAM and COMPONENT tags."""
-  checkteamtags_tool = input_api.os_path.join(
-      input_api.PresubmitLocalPath(),
-      'tools', 'checkteamtags', 'checkteamtags.py')
-  args = [input_api.python_executable, checkteamtags_tool,
-          '--root', input_api.change.RepositoryRoot()]
-  files = [f.LocalPath() for f in input_api.AffectedFiles(include_deletes=False)
-           if input_api.os_path.basename(f.AbsoluteLocalPath()).upper() ==
-           'OWNERS']
-  try:
-    if files:
-      warnings = input_api.subprocess.check_output(args + files).splitlines()
-      if warnings:
-        return [output_api.PresubmitPromptWarning(warnings[0], warnings[1:])]
-    return []
-  except input_api.subprocess.CalledProcessError as error:
-    return [output_api.PresubmitError(
-        'checkteamtags.py failed:',
-        long_text=error.output)]
-
-
 def _CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
   """Makes sure we don't include ui/aura/window_property.h
   in header files.
@@ -4425,7 +4403,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoTrinaryTrueFalse(input_api, output_api))
   results.extend(_CheckUnwantedDependencies(input_api, output_api))
   results.extend(_CheckFilePermissions(input_api, output_api))
-  results.extend(_CheckTeamTags(input_api, output_api))
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
@@ -4470,6 +4447,15 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForTooLargeFiles(input_api, output_api))
   results.extend(_CheckPythonDevilInit(input_api, output_api))
   results.extend(_CheckStableMojomChanges(input_api, output_api))
+
+  dirmd_bin = input_api.os_path.join(
+      input_api.PresubmitLocalPath(), 'third_party', 'depot_tools', 'dirmd')
+  results.extend(input_api.RunTests(
+      input_api.canned_checks.CheckDirMetadataFormat(
+          input_api, output_api, dirmd_bin)))
+  results.extend(
+      input_api.canned_checks.CheckOwnersDirMetadataExclusive(
+          input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())

@@ -177,7 +177,7 @@ class MODULES_EXPORT CachedStorageArea
   const AreaType type_;
   const scoped_refptr<const SecurityOrigin> origin_;
   const WeakPersistent<StorageNamespace> storage_namespace_;
-  const scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::unique_ptr<StorageAreaMap> map_;
 

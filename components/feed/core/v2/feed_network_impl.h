@@ -53,6 +53,7 @@ class FeedNetworkImpl : public FeedNetwork {
 
   void SendQueryRequest(
       const feedwire::Request& request,
+      bool force_signed_out_request,
       base::OnceCallback<void(QueryRequestResult)> callback) override;
 
   void SendActionRequest(
@@ -71,6 +72,7 @@ class FeedNetworkImpl : public FeedNetwork {
   void Send(const GURL& url,
             const std::string& request_type,
             std::string request_body,
+            bool force_signed_out_request,
             base::OnceCallback<void(FeedNetworkImpl::RawResponse)> callback);
 
   void SendComplete(NetworkFetch* fetch,

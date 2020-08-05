@@ -147,12 +147,24 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
   EXPECT_FALSE(request->common_params().has_user_gesture);
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
-  EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
+
+  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
+    // is enabled, the RFH should change so we should have a speculative RFH.
+    EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
+    EXPECT_FALSE(GetSpeculativeRenderFrameHost(node)->is_loading());
+  } else {
+    EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
+  }
   EXPECT_FALSE(main_test_rfh()->is_loading());
 
   // Have the current RenderFrameHost commit the navigation
   navigation->ReadyToCommit();
-  EXPECT_TRUE(main_test_rfh()->is_loading());
+  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    EXPECT_TRUE(GetSpeculativeRenderFrameHost(node)->is_loading());
+  } else {
+    EXPECT_TRUE(main_test_rfh()->is_loading());
+  }
   EXPECT_FALSE(node->navigation_request());
 
   // Commit the navigation.
@@ -1189,6 +1201,14 @@ TEST_F(NavigatorTest, NavigationRequestDeletedWhenUserInitiatedCommits) {
 
   contents()->NavigateAndCommit(kUrl1);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  // The test below only makes sense if the same-site navigation below will not
+  // create a speculative RFH, so we need to ensure that we won't trigger a
+  // same-site cross-RFH navigation.
+  // Note: this will not disable RenderDocument.
+  // TODO(crbug.com/936696): Skip this test when main-frame RenderDocument is
+  // enabled.
+  DisableProactiveBrowsingInstanceSwapFor(main_test_rfh());
 
   // Navigate same-site.
   auto navigation =

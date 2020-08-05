@@ -38,6 +38,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_names_testing.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/range/range_f.h"
@@ -3567,12 +3568,11 @@ TEST_F(RenderTextTest, FindCursorPosition) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     for (size_t j = 0; j < render_text->text().length(); ++j) {
-      const Range range(render_text->GetCursorSpan(Range(j, j + 1)).Round());
+      gfx::RangeF cursor_span = render_text->GetCursorSpan(Range(j, j + 1));
       // Test a point just inside the leading edge of the glyph bounds.
-      int x = range.is_reversed() ? range.GetMax() - 1 : range.GetMin() + 1;
-      EXPECT_EQ(
-          j, render_text->FindCursorPosition(Point(x, GetCursorYForTesting()))
-                 .caret_pos());
+      float x = cursor_span.start() + (cursor_span.is_reversed() ? -1 : 1);
+      Point point = gfx::ToCeiledPoint(PointF(x, GetCursorYForTesting()));
+      EXPECT_EQ(j, render_text->FindCursorPosition(point).caret_pos());
     }
   }
 }
@@ -5994,8 +5994,9 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
 
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
-      EXPECT_EQ(cases[i].bounds[j],
-                run.GetGraphemeBounds(render_text, j).Round());
+      RangeF bounds_f = run.GetGraphemeBounds(render_text, j);
+      Range bounds(std::round(bounds_f.start()), std::round(bounds_f.end()));
+      EXPECT_EQ(cases[i].bounds[j], bounds);
     }
   }
 }
@@ -6328,13 +6329,13 @@ TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
 
   run.range = Range(3, 8);
   run.shape.glyph_count = 0;
-  EXPECT_EQ(Range(0, 0), run.CharRangeToGlyphRange(Range(4, 5)));
-  EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(render_text, 4).Round());
+  EXPECT_EQ(Range(), run.CharRangeToGlyphRange(Range(4, 5)));
+  EXPECT_EQ(RangeF(), run.GetGraphemeBounds(render_text, 4));
   Range chars;
   Range glyphs;
   run.GetClusterAt(4, &chars, &glyphs);
   EXPECT_EQ(Range(3, 8), chars);
-  EXPECT_EQ(Range(0, 0), glyphs);
+  EXPECT_EQ(Range(), glyphs);
 }
 
 // Ensure the line breaker doesn't compute the word's width bigger than the

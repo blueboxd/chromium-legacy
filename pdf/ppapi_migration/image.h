@@ -5,8 +5,8 @@
 #ifndef PDF_PPAPI_MIGRATION_IMAGE_H_
 #define PDF_PPAPI_MIGRATION_IMAGE_H_
 
-#include "base/check.h"
 #include "ppapi/cpp/image_data.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chrome_pdf {
@@ -24,18 +24,13 @@ class Image final {
   ~Image();
 
   const pp::ImageData& pepper_image() const {
-    DCHECK(skia_image_.isNull());
-    return pepper_image_;
+    return absl::get<pp::ImageData>(image_);
   }
 
-  const SkBitmap& skia_image() const {
-    DCHECK(pepper_image_.is_null());
-    return skia_image_;
-  }
+  const SkBitmap& skia_image() const { return absl::get<SkBitmap>(image_); }
 
  private:
-  pp::ImageData pepper_image_;
-  SkBitmap skia_image_;
+  absl::variant<pp::ImageData, SkBitmap> image_;
 };
 
 }  // namespace chrome_pdf

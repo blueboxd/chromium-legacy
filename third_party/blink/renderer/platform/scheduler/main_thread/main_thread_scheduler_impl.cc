@@ -234,8 +234,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       MainThreadTaskQueue::QueueType::kV8));
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kIPC));
-  cleanup_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-      MainThreadTaskQueue::QueueType::kCleanup));
   non_waking_task_queue_ =
       NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                        MainThreadTaskQueue::QueueType::kNonWaking)
@@ -249,8 +247,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       TaskType::kMainThreadTaskQueueControl);
   ipc_task_runner_ =
       ipc_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueIPC);
-  cleanup_task_runner_ = cleanup_task_queue_->CreateTaskRunner(
-      TaskType::kMainThreadTaskQueueCleanup);
   non_waking_task_runner_ = non_waking_task_queue_->CreateTaskRunner(
       TaskType::kMainThreadTaskQueueNonWaking);
 
@@ -657,11 +653,6 @@ MainThreadSchedulerImpl::IdleTaskRunner() {
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::IPCTaskRunner() {
   return ipc_task_runner_;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MainThreadSchedulerImpl::CleanupTaskRunner() {
-  return cleanup_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

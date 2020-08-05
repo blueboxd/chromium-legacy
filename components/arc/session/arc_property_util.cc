@@ -15,6 +15,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chromeos/constants/chromeos_switches.h"
 
 namespace brillo {
@@ -40,11 +41,12 @@ constexpr char kOEMKey1PropertyPrefix[] = "ro.oem.key1=";
 constexpr char kPAIRegionsPropertyName[] = "pai-regions";
 
 // Properties related to dynamically adding native bridge 64 bit support.
-constexpr char kAbilistPropertyPrefix[] = "ro.product.cpu.abilist=";
+constexpr char kAbilistPropertyPrefixTemplate[] = "ro.%sproduct.cpu.abilist=";
 constexpr char kAbilistPropertyExpected[] = "x86_64,x86,armeabi-v7a,armeabi";
 constexpr char kAbilistPropertyReplacement[] =
     "x86_64,x86,arm64-v8a,armeabi-v7a,armeabi";
-constexpr char kAbilist64PropertyPrefix[] = "ro.product.cpu.abilist64=";
+constexpr char kAbilist64PropertyPrefixTemplate[] =
+    "ro.%sproduct.cpu.abilist64=";
 constexpr char kAbilist64PropertyExpected[] = "x86_64";
 constexpr char kAbilist64PropertyReplacement[] = "x86_64,arm64-v8a";
 constexpr char kDalvikVmIsaArm64[] = "ro.dalvik.vm.isa.arm64=x86_64";
@@ -158,7 +160,9 @@ std::string ComputeOEMKey(brillo::CrosConfigInterface* config,
 bool ExpandPropertyContents(const std::string& content,
                             brillo::CrosConfigInterface* config,
                             std::string* expanded_content,
-                            bool add_native_bridge_64bit_support) {
+                            bool add_native_bridge_64bit_support,
+                            bool append_dalvik_isa,
+                            const std::string& partition_name) {
   const std::vector<std::string> lines = base::SplitString(
       content, "\n", base::WhitespaceHandling::KEEP_WHITESPACE,
       base::SplitResult::SPLIT_WANT_ALL);
@@ -204,27 +208,30 @@ bool ExpandPropertyContents(const std::string& content,
         expanded += line.substr(prev_match);
       line = expanded;
     } while (inserted);
+
     if (add_native_bridge_64bit_support) {
-      // Special-case ro.product.cpu.abilist / ro.product.cpu.abilist64 to add
-      // ARM64.
+      // Special-case ro.<partition>.product.cpu.abilist and
+      // ro.<partition>.product.cpu.abilist64 to add ARM64.
+      std::string prefix = base::StringPrintf(kAbilistPropertyPrefixTemplate,
+                                              partition_name.c_str());
       std::string value;
-      if (FindProperty(kAbilistPropertyPrefix, &value, line)) {
+      if (FindProperty(prefix, &value, line)) {
         if (value == kAbilistPropertyExpected) {
-          line = std::string(kAbilistPropertyPrefix) +
-                 std::string(kAbilistPropertyReplacement);
+          line = prefix + std::string(kAbilistPropertyReplacement);
         } else {
-          LOG(ERROR) << "Found unexpected value for " << kAbilistPropertyPrefix
-                     << ", value " << value;
+          LOG(ERROR) << "Found unexpected value for " << prefix << ", value "
+                     << value;
           return false;
         }
       }
-      if (FindProperty(kAbilist64PropertyPrefix, &value, line)) {
+      prefix = base::StringPrintf(kAbilist64PropertyPrefixTemplate,
+                                  partition_name.c_str());
+      if (FindProperty(prefix, &value, line)) {
         if (value == kAbilist64PropertyExpected) {
-          line = std::string(kAbilist64PropertyPrefix) +
-                 std::string(kAbilist64PropertyReplacement);
+          line = prefix + std::string(kAbilist64PropertyReplacement);
         } else {
-          LOG(ERROR) << "Found unexpected value for "
-                     << kAbilist64PropertyPrefix << ", value " << value;
+          LOG(ERROR) << "Found unexpected value for " << prefix << ", value "
+                     << value;
           return false;
         }
       }
@@ -248,7 +255,7 @@ bool ExpandPropertyContents(const std::string& content,
     }
   }
 
-  if (add_native_bridge_64bit_support) {
+  if (append_dalvik_isa) {
     // Special-case to add ro.dalvik.vm.isa.arm64.
     new_properties += std::string(kDalvikVmIsaArm64) + "\n";
   }
@@ -261,7 +268,9 @@ bool ExpandPropertyFile(const base::FilePath& input,
                         const base::FilePath& output,
                         CrosConfig* config,
                         bool append,
-                        bool add_native_bridge_64bit_support) {
+                        bool add_native_bridge_64bit_support,
+                        bool append_dalvik_isa,
+                        const std::string& partition_name) {
   std::string content;
   std::string expanded;
   if (!base::ReadFileToString(input, &content)) {
@@ -269,7 +278,8 @@ bool ExpandPropertyFile(const base::FilePath& input,
     return false;
   }
   if (!ExpandPropertyContents(content, config, &expanded,
-                              add_native_bridge_64bit_support))
+                              add_native_bridge_64bit_support,
+                              append_dalvik_isa, partition_name))
     return false;
   if (append && base::PathExists(output)) {
     if (!base::AppendToFile(output, expanded.data(), expanded.size())) {
@@ -330,7 +340,8 @@ bool ExpandPropertyContentsForTesting(const std::string& content,
                                       brillo::CrosConfigInterface* config,
                                       std::string* expanded_content) {
   return ExpandPropertyContents(content, config, expanded_content,
-                                /*add_native_bridge_64bit_support=*/false);
+                                /*add_native_bridge_64bit_support=*/false,
+                                false, "");
 }
 
 bool TruncateAndroidPropertyForTesting(const std::string& line,
@@ -342,7 +353,8 @@ bool ExpandPropertyFileForTesting(const base::FilePath& input,
                                   const base::FilePath& output,
                                   CrosConfig* config) {
   return ExpandPropertyFile(input, output, config, /*append=*/false,
-                            /*add_native_bridge_64bit_support=*/false);
+                            /*add_native_bridge_64bit_support=*/false, false,
+                            "");
 }
 
 bool ExpandPropertyFiles(const base::FilePath& source_path,
@@ -355,13 +367,24 @@ bool ExpandPropertyFiles(const base::FilePath& source_path,
 
   // default.prop may not exist. Silently skip it if not found.
   for (const auto& tuple :
-       {std::tuple<const char*, bool, bool>{"default.prop", true, false},
-        {"build.prop", false, true},
-        {"vendor_build.prop", false, false}}) {
+       // The order has to match the one in PropertyLoadBootDefaults() in
+       // system/core/init/property_service.cpp.
+       // Note: Our vendor image doesn't have /vendor/default.prop although
+       // PropertyLoadBootDefaults() tries to open it.
+       {std::tuple<const char*, bool, bool, const char*>{"default.prop", true,
+                                                         false, ""},
+        {"build.prop", false, true, ""},
+        {"system_ext_build.prop", true, false, "system_ext."},
+        {"vendor_build.prop", false, false, "vendor."},
+        {"odm_build.prop", true, false, "odm."},
+        {"product_build.prop", true, false, "product."}}) {
     const char* file = std::get<0>(tuple);
     const bool is_optional = std::get<1>(tuple);
-    const bool add_native_bridge_properties =
+    // When true, unconditionally add |kDalvikVmIsaArm64| property.
+    const bool append_dalvik_isa =
         std::get<2>(tuple) && add_native_bridge_64bit_support;
+    // Search for ro.<partition_name>product.cpu.abilist* properties.
+    const char* partition_name = std::get<3>(tuple);
 
     if (is_optional && !base::PathExists(source_path.Append(file)))
       continue;
@@ -369,7 +392,8 @@ bool ExpandPropertyFiles(const base::FilePath& source_path,
     if (!ExpandPropertyFile(
             source_path.Append(file),
             single_file ? dest_path : dest_path.Append(file), &config,
-            /*append=*/single_file, add_native_bridge_properties)) {
+            /*append=*/single_file, add_native_bridge_64bit_support,
+            append_dalvik_isa, partition_name)) {
       LOG(ERROR) << "Failed to expand " << source_path.Append(file);
       return false;
     }

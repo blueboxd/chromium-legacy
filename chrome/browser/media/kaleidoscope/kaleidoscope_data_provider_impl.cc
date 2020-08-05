@@ -10,8 +10,10 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/media/kaleidoscope/constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/channel_info.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -42,6 +44,10 @@ constexpr char kChromeMediaRecommendationsOAuth2Scope[] =
 // considered high watch time.
 constexpr base::TimeDelta kProviderHighWatchTimeMin =
     base::TimeDelta::FromMinutes(30);
+
+// The feedback tag for Kaleidoscope.
+constexpr char kKaleidoscopeFeedbackCategoryTag[] =
+    "kaleidoscope_settings_menu";
 
 base::Optional<media_feeds::mojom::MediaFeedItemType> GetFeedItemTypeForTab(
     media::mojom::KaleidoscopeTab tab) {
@@ -151,6 +157,15 @@ void KaleidoscopeDataProviderImpl::GetContinueWatchingMediaFeedItems(
       base::BindOnce(
           &KaleidoscopeDataProviderImpl::OnGotContinueWatchingMediaFeedItems,
           weak_ptr_factory.GetWeakPtr(), std::move(callback)));
+}
+
+void KaleidoscopeDataProviderImpl::SendFeedback() {
+  chrome::ShowFeedbackPage(GURL(kKaleidoscopeUIURL), profile_,
+                           chrome::kFeedbackSourceKaleidoscope,
+                           std::string() /* description_template */,
+                           std::string() /* description_placeholder_text */,
+                           kKaleidoscopeFeedbackCategoryTag /* category_tag */,
+                           std::string() /* extra_diagnostics */);
 }
 
 media_history::MediaHistoryKeyedService*

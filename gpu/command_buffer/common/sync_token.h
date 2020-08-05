@@ -83,6 +83,8 @@ struct GPU_EXPORT SyncToken {
 
   bool operator!=(const SyncToken& other) const { return !(*this == other); }
 
+  std::string ToDebugString() const;
+
  private:
   bool verified_flush_;
   CommandBufferNamespace namespace_id_;

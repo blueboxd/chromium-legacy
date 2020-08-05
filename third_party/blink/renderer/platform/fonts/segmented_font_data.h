@@ -58,6 +58,7 @@ class PLATFORM_EXPORT SegmentedFontData : public FontData {
   bool IsLoadingFallback() const override;
   bool IsSegmented() const override;
   bool ShouldSkipDrawing() const override;
+  bool HasLetterSpacingOverride() const override;
 
   Vector<scoped_refptr<FontDataForRangeSet>, 1> faces_;
 };

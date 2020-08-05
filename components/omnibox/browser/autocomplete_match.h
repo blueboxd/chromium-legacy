@@ -420,14 +420,6 @@ struct AutocompleteMatch {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
-  // Not to be confused with |has_tab_match|, this returns true if the match
-  // has a matching tab and will use a switch-to-tab button inline in Result
-  // View. It returns false, for example, when the switch button is not shown
-  // because a keyword match is taking precedence. It also returns false when
-  // Suggestion Button Row is enabled, as the Switch-to-tab button will appear
-  // in the button row.
-  bool ShouldShowTabMatchButtonInlineInResultView() const;
-
   // Upgrades this match by absorbing the best properties from
   // |duplicate_match|. For instance: if |duplicate_match| has a higher
   // relevance score, this match's own relevance score will be upgraded.

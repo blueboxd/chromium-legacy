@@ -149,7 +149,7 @@ namespace sharing {
 SharingWebRtcConnection::SharingWebRtcConnection(
     webrtc::PeerConnectionFactoryInterface* connection_factory,
     const std::vector<mojom::IceServerPtr>& ice_servers,
-    mojo::PendingRemote<mojom::SignallingSender> signalling_sender,
+    mojo::PendingRemote<mojom::SignalingSender> signaling_sender,
     mojo::PendingReceiver<mojom::SignallingReceiver> signalling_receiver,
     mojo::PendingRemote<mojom::SharingWebRtcConnectionDelegate> delegate,
     mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
@@ -157,7 +157,7 @@ SharingWebRtcConnection::SharingWebRtcConnection(
     mojo::PendingRemote<network::mojom::MdnsResponder> mdns_responder,
     base::OnceCallback<void(SharingWebRtcConnection*)> on_disconnect)
     : signalling_receiver_(this, std::move(signalling_receiver)),
-      signalling_sender_(std::move(signalling_sender)),
+      signaling_sender_(std::move(signaling_sender)),
       connection_(this, std::move(connection)),
       delegate_(std::move(delegate)),
       p2p_socket_manager_(std::move(socket_manager)),
@@ -175,7 +175,7 @@ SharingWebRtcConnection::SharingWebRtcConnection(
     rtc_config.servers.push_back(ice_turn_server);
   }
 
-  signalling_sender_.set_disconnect_handler(
+  signaling_sender_.set_disconnect_handler(
       base::BindOnce(&SharingWebRtcConnection::CloseConnection,
                      weak_ptr_factory_.GetWeakPtr()));
   delegate_.set_disconnect_handler(
@@ -559,7 +559,7 @@ void SharingWebRtcConnection::OnOfferCreated(const std::string& sdp,
 
   timing_recorder_.LogEvent(WebRtcTimingEvent::kOfferCreated);
 
-  signalling_sender_->SendOffer(
+  signaling_sender_->SendOffer(
       sdp, base::BindOnce(&SharingWebRtcConnection::OnAnswerReceived,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -641,7 +641,7 @@ void SharingWebRtcConnection::CloseConnection() {
     queued_messages_.pop();
   }
 
-  signalling_sender_.reset();
+  signaling_sender_.reset();
   delegate_.reset();
 
   // Close DataChannel if necessary.
@@ -718,7 +718,7 @@ void SharingWebRtcConnection::HandlePendingIceCandidates() {
   }
 
   if (!local_ice_candidates_.empty()) {
-    signalling_sender_->SendIceCandidates(std::move(local_ice_candidates_));
+    signaling_sender_->SendIceCandidates(std::move(local_ice_candidates_));
     local_ice_candidates_.clear();
   }
 }

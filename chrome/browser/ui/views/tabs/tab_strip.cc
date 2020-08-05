@@ -1341,6 +1341,13 @@ void TabStrip::OnGroupCreated(const tab_groups::TabGroupId& group) {
   auto group_view = std::make_unique<TabGroupViews>(this, group);
   layout_helper_->InsertGroupHeader(group, group_view->header());
   group_views_[group] = std::move(group_view);
+
+  // The context menu relys on a Browser object which is not provided in
+  // TabStripTest.
+  if (this->controller()->GetBrowser()) {
+    group_views_[group]->header()->ShowContextMenuForViewImpl(
+        this, gfx::Point(), ui::MENU_SOURCE_NONE);
+  }
 }
 
 void TabStrip::OnGroupContentsChanged(const tab_groups::TabGroupId& group) {

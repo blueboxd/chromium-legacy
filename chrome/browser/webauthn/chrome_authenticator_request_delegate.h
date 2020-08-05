@@ -79,12 +79,9 @@ class ChromeAuthenticatorRequestDelegate
       bool is_enterprise_attestation,
       base::OnceCallback<void(bool)> callback) override;
   bool SupportsResidentKeys() override;
-  bool ShouldPermitCableExtension(const url::Origin& origin) override;
-  bool SetCableTransportInfo(
-      bool cable_extension_provided,
-      bool has_paired_phones,
-      base::Optional<device::QRGeneratorKey> qr_generator_key) override;
-  std::vector<device::CableDiscoveryData> GetCablePairings() override;
+  void ConfigureCable(const url::Origin& origin,
+                      base::span<const device::CableDiscoveryData>
+                          pairings_from_extension) override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
@@ -136,6 +133,15 @@ class ChromeAuthenticatorRequestDelegate
   content::BrowserContext* browser_context() const;
 
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
+
+  // ShouldPermitCableExtension returns true if the given |origin| may set a
+  // caBLE extension. This extension contains website-chosen BLE pairing
+  // information that will be broadcast by the device.
+  bool ShouldPermitCableExtension(const url::Origin& origin);
+
+  // GetCablePairings returns any known caBLE pairing data.
+  virtual std::vector<device::CableDiscoveryData> GetCablePairings();
+
   void StoreNewCablePairingInPrefs(
       std::unique_ptr<device::CableDiscoveryData> discovery_data);
 

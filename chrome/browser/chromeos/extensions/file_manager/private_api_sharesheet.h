@@ -47,6 +47,31 @@ class FileManagerPrivateInternalSharesheetHasTargetsFunction
   const ChromeExtensionFunctionDetails chrome_details_;
 };
 
+// Implements the chrome.fileManagerPrivateInternal.invokeSharesheet method.
+class FileManagerPrivateInternalInvokeSharesheetFunction
+    : public LoggedExtensionFunction {
+ public:
+  FileManagerPrivateInternalInvokeSharesheetFunction();
+
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.invokeSharesheet",
+                             FILEMANAGERPRIVATEINTERNAL_INVOKESHARESHEET)
+
+ protected:
+  ~FileManagerPrivateInternalInvokeSharesheetFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void OnMimeTypesCollected(
+      std::unique_ptr<std::vector<std::string>> mime_types);
+
+  std::unique_ptr<app_file_handler_util::MimeTypeCollector>
+      mime_type_collector_;
+  std::vector<GURL> urls_;
+  const ChromeExtensionFunctionDetails chrome_details_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_SHARESHEET_H_

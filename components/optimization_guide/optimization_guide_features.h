@@ -122,8 +122,16 @@ size_t MaxHostsForOptimizationGuideServiceModelsFetch();
 size_t MaxHostModelFeaturesCacheSize();
 
 // The maximum number of hints allowed to be maintained in a least-recently-used
-// cache.
+// cache for hosts.
+size_t MaxHostKeyedHintCacheSize();
+
+// The maximum number of hints allowed to be maintained in a least-recently-used
+// cache for URLs.
 size_t MaxURLKeyedHintCacheSize();
+
+// Returns true if hints should be persisted to disk. If this is false, hints
+// will just be stored in-memory and evicted if not recently used.
+bool ShouldPersistHintsToDisk();
 
 // Returns true if the optimization target decision for |optimization_target|
 // should not be propagated to the caller in an effort to fully understand the

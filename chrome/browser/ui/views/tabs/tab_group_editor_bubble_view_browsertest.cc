@@ -29,18 +29,6 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     TabGroupHeader* header = browser_view->tabstrip()->group_header(group);
     ASSERT_NE(nullptr, header);
-    ASSERT_FALSE(header->editor_bubble_tracker_.is_open());
-
-    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::PointF(),
-                                 gfx::PointF(), base::TimeTicks(), 0, 0);
-    header->OnMousePressed(pressed_event);
-
-    ASSERT_FALSE(header->editor_bubble_tracker_.is_open());
-
-    ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
-                                  gfx::PointF(), base::TimeTicks(), 0, 0);
-    header->OnMouseReleased(released_event);
-
     ASSERT_TRUE(header->editor_bubble_tracker_.is_open());
   }
 

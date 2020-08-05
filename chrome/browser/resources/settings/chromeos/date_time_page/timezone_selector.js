@@ -5,13 +5,11 @@
 /**
  * @fileoverview 'timezone-selector' is the time zone selector dropdown.
  */
-(function() {
-'use strict';
 
 Polymer({
   is: 'timezone-selector',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [PrefsBehavior],
 
   properties: {
     /**
@@ -179,4 +177,3 @@ Polymer({
         prefResolveOnOffValue;
   },
 });
-})();

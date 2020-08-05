@@ -13,6 +13,15 @@ declare_args() {
   default_output_buffer_size_in_frames = 2048
 }
 
+cast_source_set("audio_log") {
+  sources = [
+    "audio_log.cc",
+    "audio_log.h",
+  ]
+
+  deps = [ "//base" ]
+}
+
 cast_source_set("audio_io_thread") {
   sources = [
     "audio_io_thread.cc",

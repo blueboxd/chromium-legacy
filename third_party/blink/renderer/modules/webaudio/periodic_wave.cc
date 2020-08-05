@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
 #include "third_party/blink/renderer/platform/audio/fft_frame.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 #if defined(CPU_ARM_NEON)
@@ -67,6 +68,22 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
         "length of real array (" + String::Number(real.size()) +
             ") and length of imaginary array (" + String::Number(imag.size()) +
             ") must match.");
+    return nullptr;
+  }
+
+  if (real.size() < 2) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMinimumBound("length of the real array",
+                                                    real.size(), 2u));
+    return nullptr;
+  }
+
+  if (imag.size() < 2) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMinimumBound("length of the imag array",
+                                                    imag.size(), 2u));
     return nullptr;
   }
 

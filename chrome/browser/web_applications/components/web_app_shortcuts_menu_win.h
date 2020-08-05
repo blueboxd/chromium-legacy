@@ -13,7 +13,7 @@ namespace internals {
 
 // Deletes all .ico shortcuts menu icons that were written to disk at PWA
 // install time. Call this when PWA is uninstalled on Windows.
-void DeleteShortcutsMenuIcons(const base::FilePath& web_app_path);
+bool DeleteShortcutsMenuIcons(const base::FilePath& web_app_path);
 
 }  // namespace internals
 

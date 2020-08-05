@@ -16,6 +16,7 @@
 #include "base/strings/pattern.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/media/audio/audio_fader.h"
+#include "chromecast/media/audio/audio_log.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
@@ -183,8 +184,9 @@ AudioOutputRedirector::InputImpl::InputImpl(
   DCHECK(mixer_input_);
 
   if (mixer_input_->num_channels() != num_output_channels_) {
-    LOG(INFO) << "Remixing channels for " << mixer_input_->source() << " from "
-              << mixer_input_->num_channels() << " to " << num_output_channels_;
+    AUDIO_LOG(INFO) << "Remixing channels for " << mixer_input_->source()
+                    << " from " << mixer_input_->num_channels() << " to "
+                    << num_output_channels_;
     channel_mixer_ = std::make_unique<::media::ChannelMixer>(
         mixer::CreateAudioParametersForChannelMixer(
             mixer_input_->channel_layout(), mixer_input_->num_channels()),

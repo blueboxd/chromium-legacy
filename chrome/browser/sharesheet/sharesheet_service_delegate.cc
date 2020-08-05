@@ -11,6 +11,7 @@
 #include "chrome/browser/sharesheet/sharesheet_service.h"
 #include "chrome/browser/sharesheet/sharesheet_service_factory.h"
 #include "chrome/browser/ui/views/sharesheet_bubble_view.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/views/view.h"
 
 namespace sharesheet {
@@ -22,6 +23,14 @@ SharesheetServiceDelegate::SharesheetServiceDelegate(
     : id_(id),
       sharesheet_bubble_view_(
           std::make_unique<SharesheetBubbleView>(bubble_anchor_view, this)),
+      sharesheet_service_(sharesheet_service) {}
+SharesheetServiceDelegate::SharesheetServiceDelegate(
+    uint32_t id,
+    content::WebContents* web_contents,
+    SharesheetService* sharesheet_service)
+    : id_(id),
+      sharesheet_bubble_view_(
+          std::make_unique<SharesheetBubbleView>(web_contents, this)),
       sharesheet_service_(sharesheet_service) {}
 
 SharesheetServiceDelegate::~SharesheetServiceDelegate() = default;

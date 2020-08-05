@@ -10,15 +10,18 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/base/models/simple_menu_model.h"
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
 
 namespace ui {
 class ClipboardData;
 }  // namespace ui
 
 namespace ash {
+
 class ClipboardHistory;
-class ClipboardHistoryAcceleratorTarget;
 class ClipboardHistoryMenuModelAdapter;
 
 // Shows a menu with the last few things saved in the clipboard when the
@@ -33,23 +36,24 @@ class ASH_EXPORT ClipboardHistoryController {
 
   void Init();
 
-  // Whether a menu can be shown.
-  bool CanShowMenu() const;
-
-  // Shows a menu with the last few items copied. Executing one of the menu
-  // options results in that item being pasted into the active window.
-  void ShowMenu();
-
-  // Called when a menu option is selected.
-  void MenuOptionSelected(int index);
-
+  // Returns if the contextual menu is currently showing.
   bool IsMenuShowing() const;
 
-  gfx::Rect GetClipboardHistoryMenuBoundsForTest() const;
+  // Returns bounds for the contextual menu in screen coordinates.
+  gfx::Rect GetMenuBoundsInScreenForTest() const;
 
-  ClipboardHistory* clipboard_history() { return clipboard_history_.get(); }
+  // Returns the history which tracks what is being copied to the clipboard.
+  const ClipboardHistory* history() const { return clipboard_history_.get(); }
 
  private:
+  class AcceleratorTarget;
+  class MenuDelegate;
+
+  bool CanShowMenu() const;
+  void ShowMenu();
+  void ExecuteSelectedMenuItem();
+  void MenuOptionSelected(int index);
+
   gfx::Rect CalculateAnchorRect() const;
 
   // The menu being shown.
@@ -57,8 +61,9 @@ class ASH_EXPORT ClipboardHistoryController {
   // Used to keep track of what is being copied to the clipboard.
   std::unique_ptr<ClipboardHistory> clipboard_history_;
   // Detects the search+v key combo.
-  std::unique_ptr<ClipboardHistoryAcceleratorTarget> accelerator_target_;
-  std::unique_ptr<ui::SimpleMenuModel::Delegate> menu_delegate_;
+  std::unique_ptr<AcceleratorTarget> accelerator_target_;
+  // Handles events on the contextual menu.
+  std::unique_ptr<MenuDelegate> menu_delegate_;
   // The items we show in the contextual menu. Saved so we can paste them later.
   std::vector<ui::ClipboardData> clipboard_items_;
 

@@ -116,6 +116,9 @@ class MediaRouterViewsUI
   // Opens a file picker for when the user selected local file casting.
   void OpenFileDialog();
 
+  // Uses LoggerImpl to log current available sinks.
+  void LogMediaSinkStatus();
+
   const std::vector<MediaRoute>& routes() const { return routes_; }
   content::WebContents* initiator() const { return initiator_; }
 
@@ -411,6 +414,7 @@ class MediaRouterViewsUI
 #if defined(OS_MAC)
   base::Optional<bool> screen_capture_allowed_for_testing_;
 #endif
+  LoggerImpl* logger_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.

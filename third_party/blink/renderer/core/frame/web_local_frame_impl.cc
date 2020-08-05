@@ -2324,31 +2324,6 @@ void WebLocalFrameImpl::CopyImageAtForTesting(
   GetFrame()->CopyImageAtViewportPoint(IntPoint(pos_in_viewport));
 }
 
-network::mojom::blink::WebSandboxFlags
-WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
-  if (!GetFrame())
-    return network::mojom::blink::WebSandboxFlags::kNone;
-  network::mojom::blink::WebSandboxFlags flags =
-      GetFrame()->Loader().EffectiveSandboxFlags();
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    // When some of sandbox flags set in the 'sandbox' attribute are implemented
-    // as policies they are removed form the FrameOwner's sandbox flags to avoid
-    // being considered again as part of inherited or CSP sandbox.
-    // Note: if the FrameOwner is remote then the effective flags would miss the
-    // part of sandbox converted to FeaturePolicies. That said, with
-    // FeaturePolicyForSandbox all such flags should be part of the document's
-    // FeaturePolicy. For certain flags such as "downloads", dedicated API
-    // should be used (see IsAllowedToDownload()).
-    auto* local_owner = GetFrame()->DeprecatedLocalOwner();
-    if (local_owner && local_owner->OwnerType() ==
-                           mojom::blink::FrameOwnerElementType::kIframe) {
-      flags |= To<HTMLIFrameElement>(local_owner)
-                   ->sandbox_flags_converted_to_feature_policies();
-    }
-  }
-  return flags;
-}
-
 bool WebLocalFrameImpl::IsAllowedToDownload() const {
   if (!GetFrame())
     return true;

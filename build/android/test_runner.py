@@ -389,6 +389,12 @@ def AddGTestOptions(parser):
       '--test-apk-incremental-install-json',
       type=os.path.realpath,
       help='Path to install json for the test apk.')
+  parser.add_argument('--test-launcher-batch-limit',
+                      dest='test_launcher_batch_limit',
+                      type=int,
+                      help='The max number of tests to run in a shard. '
+                      'Ignores non-positive ints and those greater than '
+                      'MAX_SHARDS')
   parser.add_argument(
       '-w', '--wait-for-java-debugger', action='store_true',
       help='Wait for java debugger to attach before running any application '

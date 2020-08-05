@@ -1211,7 +1211,7 @@ int AutofillPopupViewNativeViews::AdjustWidth(int width) const {
   return width;
 }
 
-void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
+bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   gfx::Size preferred_size = CalculatePreferredSize();
   gfx::Rect popup_bounds;
 
@@ -1225,6 +1225,16 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   // and at the bottom in order to reposition the dropdown, so that it doesn't
   // look too close to the element.
   element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
+
+  int item_height =
+      body_container_->children().size() > 0
+          ? body_container_->children()[0]->GetPreferredSize().height()
+          : 0;
+  if (!HasEnoughHeightForOneRow(item_height, GetContentAreaBounds(),
+                                element_bounds)) {
+    controller_->Hide(PopupHidingReason::kInsufficientSpace);
+    return false;
+  }
 
   CalculatePopupYAndHeight(preferred_size.height(), window_bounds,
                            element_bounds, &popup_bounds);
@@ -1253,6 +1263,7 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   UpdateClipPath();
 
   SchedulePaint();
+  return true;
 }
 
 // static

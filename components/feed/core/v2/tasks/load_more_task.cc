@@ -55,6 +55,7 @@ void LoadMoreTask::UploadActionsComplete(UploadActionsTask::Result result) {
           stream_->GetRequestMetadata(),
           stream_->GetMetadata()->GetConsistencyToken(),
           stream_->GetModel()->GetNextPageToken()),
+      stream_->ShouldForceSignedOutFeedQueryRequest(),
       base::BindOnce(&LoadMoreTask::QueryRequestComplete, GetWeakPtr()));
 }
 

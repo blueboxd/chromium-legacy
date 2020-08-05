@@ -23,6 +23,11 @@ struct FaviconStatus;
 struct Referrer;
 struct SSLStatus;
 
+// User interface limits the length of the title, so placing limit does not
+// have any functional side effects, and allows to use less memory for
+// navigation session.
+extern const size_t kMaxTitleLength;
+
 // A NavigationItem is a data structure that captures all the information
 // required to recreate a browsing state. It represents one point in the
 // chain of navigation managed by a NavigationManager.

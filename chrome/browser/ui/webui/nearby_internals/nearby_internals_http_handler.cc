@@ -5,7 +5,17 @@
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.h"
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
+#include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
+#include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
+#include "chrome/browser/nearby_sharing/logging/proto_to_dictionary_conversion.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 
 namespace {
 
@@ -24,9 +34,44 @@ enum class Direction {
   kResponse = 1
 };
 
+std::string FormatAsJSON(const base::Value& value) {
+  std::string json;
+  base::JSONWriter::WriteWithOptions(
+      value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  return json;
+}
+
+base::Value GetJavascriptTimestamp() {
+  return base::Value(base::Time::Now().ToJsTimeIgnoringNull());
+}
+
+// FireWebUIListener message to notify the JavaScript of HTTP message addition.
+const char kHttpMessageAdded[] = "http-message-added";
+
+// Keys in the JSON representation of a Http Message
+const char kHttpMessageBodyKey[] = "body";
+const char kHttpMessageTimeKey[] = "time";
+const char kHttpMessageRpcKey[] = "rpc";
+const char kHttpMessageDirectionKey[] = "direction";
+
+// Converts a RPC request/response to a raw dictionary value used as a
+// JSON argument to JavaScript functions.
+base::Value HttpMessageToDictionary(const base::Value& message,
+                                    Direction dir,
+                                    Rpc rpc) {
+  base::Value dictionary(base::Value::Type::DICTIONARY);
+  dictionary.SetStringKey(kHttpMessageBodyKey, FormatAsJSON(message));
+  dictionary.SetKey(kHttpMessageTimeKey, GetJavascriptTimestamp());
+  dictionary.SetIntKey(kHttpMessageRpcKey, static_cast<int>(rpc));
+  dictionary.SetIntKey(kHttpMessageDirectionKey, static_cast<int>(dir));
+  return dictionary;
+}
+
 }  // namespace
 
-NearbyInternalsHttpHandler::NearbyInternalsHttpHandler() = default;
+NearbyInternalsHttpHandler::NearbyInternalsHttpHandler(
+    content::BrowserContext* context)
+    : context_(context) {}
 
 NearbyInternalsHttpHandler::~NearbyInternalsHttpHandler() = default;
 
@@ -49,9 +94,19 @@ void NearbyInternalsHttpHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void NearbyInternalsHttpHandler::OnJavascriptAllowed() {}
+void NearbyInternalsHttpHandler::OnJavascriptAllowed() {
+  NearbySharingService* service_ =
+      NearbySharingServiceFactory::GetForBrowserContext(context_);
+  if (service_) {
+    observer_.Add(service_->GetHttpNotifier());
+  } else {
+    NS_LOG(ERROR) << "No NearbyShareService instance to call.";
+  }
+}
 
-void NearbyInternalsHttpHandler::OnJavascriptDisallowed() {}
+void NearbyInternalsHttpHandler::OnJavascriptDisallowed() {
+  observer_.RemoveAll();
+}
 
 void NearbyInternalsHttpHandler::InitializeContents(
     const base::ListValue* args) {
@@ -59,19 +114,96 @@ void NearbyInternalsHttpHandler::InitializeContents(
 }
 
 void NearbyInternalsHttpHandler::UpdateDevice(const base::ListValue* args) {
-  // TODO(julietlevesque): Add functionality for Update Device call, which
-  // responds to javascript callback from chrome://nearby-internals HTTP
-  // Messages tab.
+  NearbySharingService* service_ =
+      NearbySharingServiceFactory::GetForBrowserContext(context_);
+  if (service_) {
+    service_->GetLocalDeviceDataManager()->DownloadDeviceData();
+  } else {
+    NS_LOG(ERROR) << "No NearbyShareService instance to call.";
+  }
 }
+
 void NearbyInternalsHttpHandler::ListPublicCertificates(
     const base::ListValue* args) {
-  // TODO(julietlevesque): Add functionality for List Public Certificates call,
-  // which responds to javascript callback from chrome://nearby-internals HTTP
-  // Messages tab.
+  NearbySharingService* service_ =
+      NearbySharingServiceFactory::GetForBrowserContext(context_);
+  if (service_) {
+    service_->GetCertificateManager()->DownloadPublicCertificates();
+  } else {
+    NS_LOG(ERROR) << "No NearbyShareService instance to call.";
+  }
 }
+
 void NearbyInternalsHttpHandler::ListContactPeople(
     const base::ListValue* args) {
-  // TODO(julietlevesque): Add functionality for List ContactPeople call, which
-  // responds to javascript callback from chrome://nearby-internals HTTP
-  // Messages tab.
+  NearbySharingService* service_ =
+      NearbySharingServiceFactory::GetForBrowserContext(context_);
+  if (service_) {
+    service_->GetContactManager()->DownloadContacts(
+        /*only_download_if_contacts_changed=*/false);
+  } else {
+    NS_LOG(ERROR) << "No NearbyShareService instance to call.";
+  }
+}
+
+void NearbyInternalsHttpHandler::OnUpdateDeviceRequest(
+    const nearbyshare::proto::UpdateDeviceRequest& request) {
+  FireWebUIListener(
+      kHttpMessageAdded,
+      HttpMessageToDictionary(UpdateDeviceRequestToReadableDictionary(request),
+                              Direction::kRequest, Rpc::kDevice));
+}
+
+void NearbyInternalsHttpHandler::OnUpdateDeviceResponse(
+    const nearbyshare::proto::UpdateDeviceResponse& response) {
+  FireWebUIListener(kHttpMessageAdded,
+                    HttpMessageToDictionary(
+                        UpdateDeviceResponseToReadableDictionary(response),
+                        Direction::kResponse, Rpc::kDevice));
+}
+
+void NearbyInternalsHttpHandler::OnListContactPeopleRequest(
+    const nearbyshare::proto::ListContactPeopleRequest& request) {
+  FireWebUIListener(kHttpMessageAdded,
+                    HttpMessageToDictionary(
+                        ListContactPeopleRequestToReadableDictionary(request),
+                        Direction::kRequest, Rpc::kContact));
+}
+
+void NearbyInternalsHttpHandler::OnListContactPeopleResponse(
+    const nearbyshare::proto::ListContactPeopleResponse& response) {
+  FireWebUIListener(kHttpMessageAdded,
+                    HttpMessageToDictionary(
+                        ListContactPeopleResponseToReadableDictionary(response),
+                        Direction::kResponse, Rpc::kContact));
+}
+
+void NearbyInternalsHttpHandler::OnListPublicCertificatesRequest(
+    const nearbyshare::proto::ListPublicCertificatesRequest& request) {
+  FireWebUIListener(
+      kHttpMessageAdded,
+      HttpMessageToDictionary(
+          ListPublicCertificatesRequestToReadableDictionary(request),
+          Direction::kRequest, Rpc::kCertificate));
+}
+
+void NearbyInternalsHttpHandler::OnListPublicCertificatesResponse(
+    const nearbyshare::proto::ListPublicCertificatesResponse& response) {
+  FireWebUIListener(
+      kHttpMessageAdded,
+      HttpMessageToDictionary(
+          ListPublicCertificatesResponseToReadableDictionary(response),
+          Direction::kResponse, Rpc::kCertificate));
+}
+
+void NearbyInternalsHttpHandler::OnCheckContactsReachabilityRequest(
+    const nearbyshare::proto::CheckContactsReachabilityRequest& request) {
+  // No FireWebUIListener() because internal debug page does not support
+  // CheckContactsReachabilityRequest.
+}
+
+void NearbyInternalsHttpHandler::OnCheckContactsReachabilityResponse(
+    const nearbyshare::proto::CheckContactsReachabilityResponse& response) {
+  // No FireWebUIListener() because internal debug page does not support
+  // CheckContactsReachabilityResponse.
 }

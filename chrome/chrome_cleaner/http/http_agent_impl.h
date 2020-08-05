@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "chrome/chrome_cleaner/http/http_agent.h"
 
 namespace chrome_cleaner {
@@ -22,8 +23,8 @@ class HttpAgentImpl : public HttpAgent {
   // @param product_name The product name to include in the User-Agent header.
   // @param product_version The product version to include in the User-Agent
   //     header.
-  HttpAgentImpl(const std::wstring& product_name,
-                const std::wstring& product_version);
+  HttpAgentImpl(base::WStringPiece product_name,
+                base::WStringPiece product_version);
   ~HttpAgentImpl() override;
 
   // HttpAgent implementation

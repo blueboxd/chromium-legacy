@@ -351,6 +351,9 @@ void DeepScanningRequest::PrepareConnectorRequest(
   if (item_->GetURL().is_valid())
     request->set_url(item_->GetURL().spec());
 
+  if (item_->GetTabUrl().is_valid())
+    request->set_tab_url(item_->GetTabUrl());
+
   for (const std::string& tag : analysis_settings_.tags)
     request->add_tag(tag);
 }

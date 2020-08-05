@@ -33,18 +33,17 @@ using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 // synchronously retrieve recently loaded hints keyed by URL or host.
 class HintCache {
  public:
-  // Construct the HintCache with a backing store and an optional max host-keyed
-  // cache size. While |optimization_guide_store| is required,
-  // |max_memory_cache_hints| is optional and the default max size will be used
-  // if it is not provided.
+  // Construct the HintCache with an optional backing store and max host-keyed
+  // cache size. If a backing store is not provided, all hints will only be
+  // stored in-memory.
   explicit HintCache(
       std::unique_ptr<OptimizationGuideStore> optimization_guide_store,
-      base::Optional<int> max_memory_cache_hints = base::Optional<int>());
+      int max_host_keyed_memory_cache_size);
   ~HintCache();
 
-  // Initializes the backing store contained within the hint cache and
-  // asynchronously runs the callback after initialization is complete.
-  // If |purge_existing_data| is set to true, then the cache will purge any
+  // Initializes the backing store contained within the hint cache, if provided,
+  // and asynchronously runs the callback after initialization is complete. If
+  // |purge_existing_data| is set to true, then the cache will purge any
   // pre-existing data and begin in a clean state.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
 

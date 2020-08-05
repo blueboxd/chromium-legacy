@@ -70,6 +70,23 @@ class ReceivedFile {
             Message.RENAME_FILE, {token: this.token, newFilename: newName}));
     return renameResponse.renameResult;
   }
+
+  /**
+   * @override
+   * @param {!Blob} blob
+   * @param {number} pickedFileToken
+   * @return {!Promise<undefined>}
+   */
+  async saveAs(blob, pickedFileToken) {
+    /** @type {!SaveAsMessage} */
+    const message = {blob, oldFileToken: this.token, pickedFileToken};
+    const result = /** @type {!SaveAsResponse} */ (
+        await parentMessagePipe.sendMessage(Message.SAVE_AS, message));
+    this.name = result.newFilename;
+    this.blob = blob;
+    this.size = blob.size;
+    this.mimeType = blob.type;
+  }
 }
 
 /**

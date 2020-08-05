@@ -18,6 +18,10 @@ namespace views {
 class View;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace sharesheet {
 
 class SharesheetService;
@@ -26,9 +30,12 @@ class SharesheetService;
 // business logic in the sharesheet.
 class SharesheetServiceDelegate : public SharesheetController {
  public:
-  explicit SharesheetServiceDelegate(uint32_t id,
-                                     views::View* bubble_anchor_view,
-                                     SharesheetService* sharesheet_service);
+  SharesheetServiceDelegate(uint32_t id,
+                            views::View* bubble_anchor_view,
+                            SharesheetService* sharesheet_service);
+  SharesheetServiceDelegate(uint32_t id,
+                            content::WebContents* web_contents,
+                            SharesheetService* sharesheet_service);
   ~SharesheetServiceDelegate() override;
   SharesheetServiceDelegate(const SharesheetServiceDelegate&) = delete;
   SharesheetServiceDelegate& operator=(const SharesheetServiceDelegate&) =

@@ -184,11 +184,6 @@ class StreamProvider final : public Demuxer {
     // contains how many frames are sent.
     uint32_t total_received_frame_count_ = 0;
 
-    // Indicates whether Audio/VideoDecoderConfig changed and the frames with
-    // the old config are not yet consumed. The new config is stored in the end
-    // of |audio/video_decoder_config_|.
-    bool config_changed_ = false;
-
     // Indicates whether a ReadUntil RPC message was sent without receiving the
     // ReadUntilCallback message yet.
     bool read_until_sent_ = false;

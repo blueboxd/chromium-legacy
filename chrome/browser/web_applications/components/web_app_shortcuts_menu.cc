@@ -25,10 +25,12 @@ void RegisterShortcutsMenuWithOs(
   DCHECK(ShouldRegisterShortcutsMenuWithOs());
 }
 
-void UnregisterShortcutsMenuWithOs(const AppId& app_id,
+bool UnregisterShortcutsMenuWithOs(const AppId& app_id,
                                    const base::FilePath& profile_path) {
   NOTIMPLEMENTED();
   DCHECK(ShouldRegisterShortcutsMenuWithOs());
+
+  return true;
 }
 #endif  // !defined(OS_WIN)
 

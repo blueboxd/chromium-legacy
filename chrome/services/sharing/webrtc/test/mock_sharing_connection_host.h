@@ -14,7 +14,7 @@
 
 namespace sharing {
 
-class MockSharingConnectionHost : public mojom::SignallingSender,
+class MockSharingConnectionHost : public mojom::SignalingSender,
                                   public mojom::SharingWebRtcConnectionDelegate,
                                   public network::mojom::P2PSocketManager,
                                   public network::mojom::MdnsResponder {
@@ -25,7 +25,7 @@ class MockSharingConnectionHost : public mojom::SignallingSender,
       delete;
   ~MockSharingConnectionHost() override;
 
-  // mojom::SignallingSender:
+  // mojom::SignalingSender:
   MOCK_METHOD2(SendOffer, void(const std::string&, SendOfferCallback));
   MOCK_METHOD1(SendIceCandidates, void(std::vector<mojom::IceCandidatePtr>));
 
@@ -52,7 +52,7 @@ class MockSharingConnectionHost : public mojom::SignallingSender,
   MOCK_METHOD2(RemoveNameForAddress,
                void(const ::net::IPAddress&, RemoveNameForAddressCallback));
 
-  mojo::Receiver<mojom::SignallingSender> signalling_sender{this};
+  mojo::Receiver<mojom::SignalingSender> signaling_sender{this};
   mojo::Remote<mojom::SignallingReceiver> signalling_receiver;
   mojo::Receiver<mojom::SharingWebRtcConnectionDelegate> delegate{this};
   mojo::Remote<mojom::SharingWebRtcConnection> connection;

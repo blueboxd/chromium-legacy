@@ -133,6 +133,10 @@ bool IsValidPrintableArea(const gfx::Size& page_size,
 }
 
 base::Value RecursiveGetStructTree(FPDF_STRUCTELEMENT struct_elem) {
+  int children_count = FPDF_StructElement_CountChildren(struct_elem);
+  if (children_count <= 0)
+    return base::Value(base::Value::Type::NONE);
+
   base::Optional<base::string16> opt_type =
       CallPDFiumWideStringBufferApiAndReturnOptional(
           base::BindRepeating(FPDF_StructElement_GetType, struct_elem), true);
@@ -154,10 +158,6 @@ base::Value RecursiveGetStructTree(FPDF_STRUCTELEMENT struct_elem) {
           base::BindRepeating(FPDF_StructElement_GetLang, struct_elem), true);
   if (opt_lang)
     result.SetStringKey("lang", *opt_lang);
-
-  int children_count = FPDF_StructElement_CountChildren(struct_elem);
-  if (children_count == 0)
-    return base::Value(base::Value::Type::NONE);
 
   base::Value children(base::Value::Type::LIST);
   for (int i = 0; i < children_count; i++) {

@@ -76,6 +76,14 @@ mediaApp.AbstractFile.prototype.deleteOriginalFile;
  * @type {function(string): !Promise<number>|undefined}
  */
 mediaApp.AbstractFile.prototype.renameOriginalFile;
+/**
+ * A function that will save the provided blob in the file pointed to by
+ * pickedFileToken. Once saved the new file takes over this.token and becomes
+ * currently writable. The original file is given a new token
+ * and pushed forward in the navigation order.
+ * @type {function(!Blob, number): !Promise<undefined>|undefined}
+ */
+mediaApp.AbstractFile.prototype.saveAs;
 
 /**
  * Wraps an HTML FileList object.

@@ -148,8 +148,6 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
-  BooleanPrefMember wake_on_wifi_darkconnect_;
-
   PrefChangeRegistrar pref_change_registrar_;
 
   // User owning these preferences.

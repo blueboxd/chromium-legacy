@@ -713,12 +713,6 @@ const char kFileSystemProviderMounted[] = "file_system_provider.mounted";
 // A boolean pref set to true if the virtual keyboard should be enabled.
 const char kTouchVirtualKeyboardEnabled[] = "ui.touch_virtual_keyboard_enabled";
 
-// A boolean pref that controls whether the dark connect feature is enabled.
-// The dark connect feature allows a Chrome OS device to periodically wake
-// from suspend in a low-power state to maintain WiFi connectivity.
-const char kWakeOnWifiDarkConnect[] =
-    "settings.internet.wake_on_wifi_darkconnect";
-
 // This is the policy CaptivePortalAuthenticationIgnoresProxy that allows to
 // open captive portal authentication pages in a separate window under
 // a temporary incognito profile ("signin profile" is used for this purpose),

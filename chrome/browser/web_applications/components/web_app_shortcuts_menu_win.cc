@@ -211,22 +211,23 @@ void RegisterShortcutsMenuWithOs(
                      shortcuts_menu_icons_bitmaps));
 }
 
-void UnregisterShortcutsMenuWithOs(const AppId& app_id,
+bool UnregisterShortcutsMenuWithOs(const AppId& app_id,
                                    const base::FilePath& profile_path) {
   if (!JumpListUpdater::DeleteJumpList(
           GenerateAppUserModelId(profile_path, app_id))) {
     RecordUnregistration(UnregistrationResult::kFailedToDeleteJumpList);
-    return;
+    return false;
   }
   RecordUnregistration(UnregistrationResult::kSuccess);
+  return true;
 }
 
 namespace internals {
 
-void DeleteShortcutsMenuIcons(const base::FilePath& shortcut_data_dir) {
+bool DeleteShortcutsMenuIcons(const base::FilePath& shortcut_data_dir) {
   base::FilePath shortcuts_menu_icons_path =
       GetShortcutsMenuIconsDirectory(shortcut_data_dir);
-  base::DeletePathRecursively(shortcuts_menu_icons_path);
+  return base::DeletePathRecursively(shortcuts_menu_icons_path);
 }
 
 }  // namespace internals

@@ -34,6 +34,9 @@ enum class PopupHidingReason {
   kUserAborted,    // The user explicitly dismissed the popup (e.g. ESC key).
   kViewDestroyed,  // The popup view (or its controller) goes out of scope.
   kWidgetChanged,  // The platform-native UI changed (e.g. window resize).
+  kInsufficientSpace,  // Not enough space in content area to display an display
+                       // at least one row of the popup within the bounds of the
+                       // content area.
 };
 
 }  // namespace autofill

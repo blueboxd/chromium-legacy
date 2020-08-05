@@ -7799,6 +7799,13 @@ bool RenderFrameHostImpl::ShouldBypassSecurityChecksForErrorPage(
   return false;
 }
 
+void RenderFrameHostImpl::SetAudioOutputDeviceIdForGlobalMediaControls(
+    std::string hashed_device_id) {
+  audio_service_audio_output_stream_factory_
+      ->SetAuthorizedDeviceIdForGlobalMediaControls(
+          std::move(hashed_device_id));
+}
+
 bool RenderFrameHostImpl::ValidateDidCommitParams(
     NavigationRequest* navigation_request,
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,

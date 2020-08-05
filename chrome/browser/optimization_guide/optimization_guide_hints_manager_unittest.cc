@@ -266,7 +266,11 @@ class TestHintsFetcherFactory : public optimization_guide::HintsFetcherFactory {
 class OptimizationGuideHintsManagerTest
     : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
-  OptimizationGuideHintsManagerTest() = default;
+  OptimizationGuideHintsManagerTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        optimization_guide::features::kOptimizationHints,
+        {{"max_host_keyed_hint_cache_size", "1"}});
+  }
   ~OptimizationGuideHintsManagerTest() override = default;
 
   void SetUp() override {
@@ -364,6 +368,14 @@ class OptimizationGuideHintsManagerTest
     optimization_guide::proto::PreviewsMetadata* default_opt_metadata =
         default_opt->mutable_previews_metadata();
     default_opt_metadata->set_inflation_percent(1234);
+    // Add another hint so somedomain.org hint is not in-memory initially.
+    optimization_guide::proto::Hint* hint2 = config.add_hints();
+    hint2->set_key("somedomain2.org");
+    hint2->set_key_representation(optimization_guide::proto::HOST);
+    hint2->set_version("someversion");
+    optimization_guide::proto::Optimization* opt =
+        hint2->add_whitelisted_optimizations();
+    opt->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
     ProcessHints(config, version);
   }
@@ -438,6 +450,7 @@ class OptimizationGuideHintsManagerTest
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile testing_profile_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;

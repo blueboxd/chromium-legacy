@@ -39,11 +39,18 @@ source_set("cpp") {
 }
 
 source_set("test_support") {
-  public = [ "test_support/machine_learning_test_utils.h" ]
+  public = [
+    "test_support/fake_service_connection.h",
+    "test_support/machine_learning_test_utils.h",
+  ]
 
-  sources = [ "test_support/machine_learning_test_utils.cc" ]
+  sources = [
+    "test_support/fake_service_connection.cc",
+    "test_support/machine_learning_test_utils.cc",
+  ]
 
   public_deps = [
+    ":cpp",
     "//base",
     "//chrome/services/machine_learning/public/mojom",
     "//components/optimization_guide",

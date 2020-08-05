@@ -55,10 +55,8 @@ constexpr int kTopicsBatchSize = 2;
 
 // The upper bound of delay to the fetch topics. An random value will be
 // generated in the range of |kTopicFetchDelayMax|/2 to |kTopicFetchDelayMax|.
-
-// TODO(b/139953713): Change to a correct time interval.
-// E.g. it will be max 36 seconds if we want to fetch 50 batches in 30 mins.
-constexpr base::TimeDelta kTopicFetchDelayMax = base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kTopicFetchDelayMax =
+    base::TimeDelta::FromSeconds(36);
 
 constexpr int kMaxImageSizeInBytes = 5 * 1024 * 1024;
 

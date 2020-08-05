@@ -41,10 +41,10 @@ constexpr uint32_t kMinimizedWriteAccess =
 // the default file stream "::$DATA" so it won't break the filename in the
 // following uses. For other file streams, we don't archive and ignore them.
 bool GetSanitizedFileName(const base::FilePath& path,
-                          base::string16* output_sanitized_filename) {
+                          std::wstring* output_sanitized_filename) {
   DCHECK(output_sanitized_filename);
 
-  base::string16 sanitized_filename = path.BaseName().value();
+  std::wstring sanitized_filename = path.BaseName().value();
   if (base::EndsWith(sanitized_filename, kDefaultFileStreamSuffix,
                      base::CompareCase::INSENSITIVE_ASCII)) {
     // Remove the default file stream suffix.
@@ -54,7 +54,7 @@ bool GetSanitizedFileName(const base::FilePath& path,
   }
   // If there is any ":" in |sanitized_filename|, it either points to a
   // non-default file stream or is abnormal. Don't archive in this case.
-  if (sanitized_filename.find(L":") != base::string16::npos)
+  if (sanitized_filename.find(L":") != std::wstring::npos)
     return false;
 
   *output_sanitized_filename = sanitized_filename;
@@ -92,10 +92,10 @@ void OnArchiveDone(const base::FilePath& zip_file_path,
 namespace internal {
 
 // Zip file name format: "|filename|_|file_hash|.zip"
-base::string16 ConstructZipArchiveFileName(const base::string16& filename,
-                                           const std::string& file_hash,
-                                           size_t max_filename_length) {
-  const base::string16 normalized_hash =
+std::wstring ConstructZipArchiveFileName(const std::wstring& filename,
+                                         const std::string& file_hash,
+                                         size_t max_filename_length) {
+  const std::wstring normalized_hash =
       base::UTF8ToWide(base::ToUpperASCII(file_hash));
 
   // Length of the ".zip" suffix and the "_" infix.
@@ -103,7 +103,7 @@ base::string16 ConstructZipArchiveFileName(const base::string16& filename,
 
   // If the constructed filename is too long for the destination volume, use a
   // prefix of the filename.
-  base::string16 normalized_filename;
+  std::wstring normalized_filename;
   if (filename.size() + normalized_hash.size() + kAffixSize >
       max_filename_length) {
     size_t trimmed_length =
@@ -113,7 +113,7 @@ base::string16 ConstructZipArchiveFileName(const base::string16& filename,
     normalized_filename = filename;
   }
 
-  base::string16 result =
+  std::wstring result =
       base::StrCat({normalized_filename, L"_", normalized_hash, L".zip"});
   DCHECK(result.size() <= max_filename_length);
   DCHECK(result.size() ==
@@ -190,7 +190,7 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
     return;
   }
 
-  base::string16 sanitized_src_filename;
+  std::wstring sanitized_src_filename;
   if (!GetSanitizedFileName(src_file_path, &sanitized_src_filename)) {
     std::move(result_callback).Run(ZipArchiverResultCode::kIgnoredSourceFile);
     return;
@@ -209,15 +209,15 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
     return;
   }
 
-  const base::string16 zip_filename = internal::ConstructZipArchiveFileName(
+  const std::wstring zip_filename = internal::ConstructZipArchiveFileName(
       sanitized_src_filename, src_file_hash, dst_max_component_length_);
   base::FilePath zip_file_path = dst_archive_folder_.Append(zip_filename);
 
   // If the full path is longer than MAX_PATH, prepending "\\?\" allows to
   // extend the path limit (see CreateFile documentation).
   if (zip_file_path.value().size() >= MAX_PATH) {
-    base::string16 long_file_path =
-        base::string16(L"\\\\?\\") + zip_file_path.value();
+    std::wstring long_file_path =
+        std::wstring(L"\\\\?\\") + zip_file_path.value();
     zip_file_path = base::FilePath(long_file_path);
   }
 

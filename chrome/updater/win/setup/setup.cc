@@ -93,7 +93,7 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
   list->AddWorkItem(new installer::InstallServiceWorkItem(
       kWindowsServiceName, kWindowsServiceName,
       base::CommandLine(com_service_path), base::ASCIIToUTF16(UPDATER_KEY),
-      CLSID_UpdaterServiceClass, GUID_NULL));
+      {CLSID_UpdaterServiceClass}, {}));
 }
 
 // Adds work items to register the COM Interfaces with Windows.

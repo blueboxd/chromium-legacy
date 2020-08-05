@@ -1368,7 +1368,7 @@ TEST_P(VideoDecoderStreamTest, FallbackDecoder_SelectedOnDecodeThenInitErrors) {
   FailDecoderInitOnSelection({1});
   ReadOneFrame();
 
-  // Decoder 0 should be blacklisted, and decoder 1 fails to initialize, so
+  // Decoder 0 should be blocked, and decoder 1 fails to initialize, so
   // |video_decoder_stream_| should have fallen back to decoder 2.
   ASSERT_EQ(GetDecoderName(2), decoder_->GetDisplayName());
 

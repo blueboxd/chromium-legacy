@@ -572,7 +572,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--bypass-skia-gold-functionality"
         ],
         "merge": {
           "args": [
@@ -831,6 +832,7 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
           "--git-revision=${got_revision}",
+          "--bypass-skia-gold-functionality",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter",
           "-v"
         ],
@@ -900,6 +902,7 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
           "--git-revision=${got_revision}",
+          "--bypass-skia-gold-functionality",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter",
           "-v"
         ],

@@ -48,6 +48,9 @@ class RenderFrameAudioOutputStreamFactory::Core final
       mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
           receiver);
 
+  void SetAuthorizedDeviceIdForGlobalMediaControls(
+      std::string hashed_device_id);
+
   size_t current_number_of_providers_for_testing() {
     return stream_providers_.size();
   }
@@ -178,6 +181,12 @@ RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
 
+void RenderFrameAudioOutputStreamFactory::
+    SetAuthorizedDeviceIdForGlobalMediaControls(std::string hashed_device_id) {
+  core_->SetAuthorizedDeviceIdForGlobalMediaControls(
+      std::move(hashed_device_id));
+}
+
 size_t
 RenderFrameAudioOutputStreamFactory::CurrentNumberOfProvidersForTesting() {
   return core_->current_number_of_providers_for_testing();
@@ -219,6 +228,12 @@ void RenderFrameAudioOutputStreamFactory::Core::Init(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   receiver_.Bind(std::move(receiver));
+}
+
+void RenderFrameAudioOutputStreamFactory::Core::
+    SetAuthorizedDeviceIdForGlobalMediaControls(std::string hashed_device_id) {
+  authorization_handler_.SetAuthorizedDeviceIdForGlobalMediaControls(
+      std::move(hashed_device_id));
 }
 
 void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(

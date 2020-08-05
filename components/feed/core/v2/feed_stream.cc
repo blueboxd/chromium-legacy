@@ -467,16 +467,6 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more,
     }
   }
 
-  // TODO(harringtond): |suppress_refreshes_until_| was historically used
-  // for privacy purposes after clearing data to make sure sync data made it
-  // to the server. I'm not sure we need this now. But also, it was
-  // documented as not affecting manually triggered refreshes, but coded in
-  // a way that it does. I've tried to keep the same functionality as the
-  // old feed code, but we should revisit this.
-  if (tick_clock_->NowTicks() < suppress_refreshes_until_) {
-    return LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete;
-  }
-
   if (delegate_->IsOffline()) {
     return LoadStreamStatus::kCannotLoadFromNetworkOffline;
   }
@@ -487,6 +477,10 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more,
   }
 
   return LoadStreamStatus::kNoStatus;
+}
+
+bool FeedStream::ShouldForceSignedOutFeedQueryRequest() const {
+  return base::TimeTicks::Now() < signed_out_refreshes_until_;
 }
 
 RequestMetadata FeedStream::GetRequestMetadata() {
@@ -503,11 +497,10 @@ void FeedStream::OnEulaAccepted() {
     TriggerStreamLoad();
 }
 
-void FeedStream::OnHistoryDeleted() {
-  // Due to privacy, we should not fetch for a while (unless the user
-  // explicitly asks for new suggestions) to give sync the time to propagate
-  // the changes in history to the server.
-  suppress_refreshes_until_ =
+void FeedStream::OnAllHistoryDeleted() {
+  // Give sync the time to propagate the changes in history to the server.
+  // In the interim, only send signed-out FeedQuery requests.
+  signed_out_refreshes_until_ =
       tick_clock_->NowTicks() + kSuppressRefreshDuration;
   ClearAll();
 }

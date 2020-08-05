@@ -45,6 +45,7 @@ struct DeepScanDebugData {
   base::Optional<DeepScanningClientRequest> request;
   base::Optional<enterprise_connectors::ContentAnalysisRequest>
       content_analysis_request;
+  GURL tab_url;
 
   base::Time response_time;
   std::string response_status;
@@ -333,6 +334,7 @@ class WebUIInfoSingleton {
   // and response.
   void AddToDeepScanRequests(const DeepScanningClientRequest& request);
   void AddToDeepScanRequests(
+      const GURL& tab_url,
       const enterprise_connectors::ContentAnalysisRequest& request);
 
   // Add the new response to |deep_scan_requests_| and send it to all the open

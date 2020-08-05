@@ -27,6 +27,7 @@ _API_LEVEL_VERSION_CODE = [
     (27, 'OMR1'),
     (28, 'P'),
     (29, 'Q'),
+    (30, 'R'),
 ]
 _CHECKDISCARD_RE = re.compile(r'^\s*-checkdiscard[\s\S]*?}', re.MULTILINE)
 _DIRECTIVE_RE = re.compile(r'^\s*-', re.MULTILINE)

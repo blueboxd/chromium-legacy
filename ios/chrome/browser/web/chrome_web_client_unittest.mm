@@ -33,6 +33,7 @@
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
+#import "ios/net/protocol_handler_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/error_test_util.h"
@@ -40,6 +41,7 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
@@ -480,6 +482,41 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeUrlErrorNoSuggestion) {
   EXPECT_TRUE([page containsString:close_page_string])
       << base::SysNSStringToUTF8(page);
   EXPECT_FALSE([page containsString:back_to_safety_string])
+      << base::SysNSStringToUTF8(page);
+}
+
+// Tests PrepareErrorPage for a legacy TLS error, which results in a
+// committed legacy TLS interstitial.
+TEST_F(ChromeWebClientTest, PrepareErrorPageForLegacyTLSError) {
+  web::TestWebState web_state;
+  web_state.SetBrowserState(browser_state());
+  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+      &web_state);
+  auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+  web_state.SetNavigationManager(std::move(navigation_manager));
+
+  NSError* error = [NSError errorWithDomain:net::kNSErrorDomain
+                                       code:net::ERR_SSL_OBSOLETE_VERSION
+                                   userInfo:nil];
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
+
+  ChromeWebClient web_client;
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
+                              /*is_post=*/false,
+                              /*is_off_the_record=*/false,
+                              /*info=*/base::Optional<net::SSLInfo>(),
+                              /*navigation_id=*/0, std::move(callback));
+
+  EXPECT_TRUE(callback_called);
+  NSString* error_string =
+      l10n_util::GetNSString(IDS_LEGACY_TLS_PRIMARY_PARAGRAPH);
+  EXPECT_TRUE([page containsString:error_string])
       << base::SysNSStringToUTF8(page);
 }
 

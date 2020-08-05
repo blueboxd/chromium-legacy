@@ -1166,6 +1166,15 @@ FakeUserPoliciesManager::~FakeUserPoliciesManager() {
   *GetInstanceStorage() = original_manager_;
 }
 
+HRESULT FakeUserPoliciesManager::FetchAndStoreCloudUserPolicies(
+    const base::string16& sid,
+    const std::string& access_token) {
+  ++num_times_fetch_called_;
+  fetch_status_ =
+      original_manager_->FetchAndStoreCloudUserPolicies(sid, access_token);
+  return fetch_status_;
+}
+
 void FakeUserPoliciesManager::SetUserPolicies(const base::string16& sid,
                                               const UserPolicies& policies) {
   user_policies_[sid] = policies;
@@ -1179,6 +1188,10 @@ bool FakeUserPoliciesManager::GetUserPolicies(const base::string16& sid,
   }
 
   return false;
+}
+
+int FakeUserPoliciesManager::GetNumTimesFetchAndStoreCalled() const {
+  return num_times_fetch_called_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

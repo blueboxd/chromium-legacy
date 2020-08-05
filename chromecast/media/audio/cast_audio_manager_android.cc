@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_input_stream.h"
+#include "media/audio/android/audio_track_output_stream.h"
 #include "media/audio/audio_device_name.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -104,6 +105,23 @@ void CastAudioManagerAndroid::GetAudioInputDeviceNames(
 #endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
   LOG(WARNING) << "No support for input audio devices";
   return nullptr;
+}
+
+::media::AudioOutputStream* CastAudioManagerAndroid::MakeBitstreamOutputStream(
+    const ::media::AudioParameters& params,
+    const std::string& device_id,
+    const ::media::AudioManager::LogCallback& log_callback) {
+  DCHECK(params.IsBitstreamFormat());
+  return new ::media::AudioTrackOutputStream(this, params);
+}
+
+::media::AudioOutputStream* CastAudioManagerAndroid::MakeAudioOutputStreamProxy(
+    const ::media::AudioParameters& params,
+    const std::string& device_id) {
+  // Override to use MakeAudioOutputStream to prevent the audio output stream
+  // from closing during pause/stop.
+  return MakeAudioOutputStream(params, device_id,
+                               /*log_callback, not used*/ base::DoNothing());
 }
 
 }  // namespace media

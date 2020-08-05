@@ -1218,10 +1218,19 @@ interface Functions {
 
   // Return true if sharesheet contains share targets for entries.
   // |entries| Array of selected entries
-  // |callback|
+  // |callback| is called with error in case of failure and with no arguments
+  // if successfully launched the Sharesheet dialog, but before user has
+  // finished the sharing.
   [nocompile]
   static void sharesheetHasTargets([instanceof=Entry] object[] entries,
                            BooleanCallback callback);
+
+  // Invoke Sharesheet for selected files.
+  // |entries| Array of selected entries.
+  // |callback|
+  [nocompile]
+  static void invokeSharesheet([instanceof=Entry] object[] entries,
+                                     SimpleCallback callback);
 };
 
 interface Events {

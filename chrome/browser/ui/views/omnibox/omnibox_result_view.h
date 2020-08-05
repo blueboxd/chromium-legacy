@@ -115,6 +115,13 @@ class OmniboxResultView : public views::View,
   // controls that are only visible on row hover.
   void UpdateHoverState();
 
+  // This returns true if the match has a matching tab and will use a
+  // switch-to-tab button inline in Result View. It returns false, for
+  // example, when the switch button is not shown because a keyword match is
+  // taking precedence or when Suggestion Button Row is enabled, as the
+  // Switch-to-tab button will appear in the button row.
+  bool ShouldShowTabMatchButtonInline();
+
   // Sets the visibility of the |remove_suggestion_button_| based on the current
   // state.
   void UpdateRemoveSuggestionVisibility();

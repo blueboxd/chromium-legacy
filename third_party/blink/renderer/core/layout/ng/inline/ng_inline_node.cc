@@ -1109,7 +1109,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     scoped_refptr<ShapeResult> shape_result =
         shaper.Shape(start_item, end_offset);
 
-    if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
+    if (UNLIKELY(spacing.SetSpacing(font)))
       shape_result->ApplySpacing(spacing);
 
     // If the text is from one item, use the ShapeResult as is.

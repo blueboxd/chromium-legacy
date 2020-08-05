@@ -715,7 +715,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // out.
   void OnUnloaded();
 
-
   // Stop the load in progress.
   void Stop();
 
@@ -1723,6 +1722,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool ShouldBypassSecurityChecksForErrorPage(
       NavigationRequest* navigation_request,
       bool* should_commit_unreachable_url = nullptr);
+
+  // Explicitly allow the use of an audio output device in this render frame.
+  // When called with a hashed device id string the renderer will be allowed to
+  // use the associated device for audio output until this method is called
+  // again with a different hashed device id or the origin changes. To remove
+  // this permission, this method may be called with the empty string.
+  void SetAudioOutputDeviceIdForGlobalMediaControls(
+      std::string hashed_device_id);
 
  protected:
   friend class RenderFrameHostFactory;

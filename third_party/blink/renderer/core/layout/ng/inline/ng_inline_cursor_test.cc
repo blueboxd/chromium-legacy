@@ -13,7 +13,43 @@
 
 namespace blink {
 
+namespace {
+
 using ::testing::ElementsAre;
+
+String ToDebugString(const NGInlineCursor& cursor) {
+  if (cursor.Current().IsLineBox())
+    return "#linebox";
+
+  if (cursor.Current().IsLayoutGeneratedText()) {
+    StringBuilder result;
+    result.Append("#'");
+    result.Append(cursor.CurrentText());
+    result.Append("'");
+    return result.ToString();
+  }
+
+  if (cursor.Current().IsText())
+    return cursor.CurrentText().ToString().StripWhiteSpace();
+
+  if (const LayoutObject* layout_object = cursor.Current().GetLayoutObject()) {
+    if (const Element* element = DynamicTo<Element>(layout_object->GetNode())) {
+      if (const AtomicString& id = element->GetIdAttribute())
+        return "#" + id;
+    }
+
+    return layout_object->DebugName();
+  }
+
+  return "#null";
+}
+
+Vector<String> LayoutObjectToDebugStringList(NGInlineCursor cursor) {
+  Vector<String> list;
+  for (; cursor; cursor.MoveToNextForSameLayoutObject())
+    list.push_back(ToDebugString(cursor));
+  return list;
+}
 
 class NGInlineCursorTest : public NGLayoutTest,
                            private ScopedLayoutNGFragmentItemForTest,
@@ -71,35 +107,6 @@ class NGInlineCursorTest : public NGLayoutTest,
       backwards.push_back(cursor.Current().Item());
     backwards.Reverse();
     EXPECT_THAT(backwards, forwards);
-  }
-
-  String ToDebugString(const NGInlineCursor& cursor) {
-    if (cursor.Current().IsLineBox())
-      return "#linebox";
-
-    if (cursor.Current().IsLayoutGeneratedText()) {
-      StringBuilder result;
-      result.Append("#'");
-      result.Append(cursor.CurrentText());
-      result.Append("'");
-      return result.ToString();
-    }
-
-    if (cursor.Current().IsText())
-      return cursor.CurrentText().ToString().StripWhiteSpace();
-
-    if (const LayoutObject* layout_object =
-            cursor.Current().GetLayoutObject()) {
-      if (const Element* element =
-              DynamicTo<Element>(layout_object->GetNode())) {
-        if (const AtomicString& id = element->GetIdAttribute())
-          return "#" + id;
-      }
-
-      return layout_object->DebugName();
-    }
-
-    return "#null";
   }
 
   Vector<String> ToDebugStringListWithBidiLevel(const NGInlineCursor& start) {
@@ -215,12 +222,8 @@ TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
       "</div>");
   NGInlineCursor cursor;
   cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextForSameLayoutObject();
-  }
-  EXPECT_THAT(list, ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor),
+              ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
 }
 
 // We should not have float:right fragment, because it isn't in-flow in
@@ -233,12 +236,43 @@ TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
       "</div>");
   NGInlineCursor cursor;
   cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextForSameLayoutObject();
-  }
-  EXPECT_THAT(list, ElementsAre("abc", "xyz"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("abc", "xyz"));
+}
+
+TEST_P(NGInlineCursorTest, CulledInlineWithOOF) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=root>
+      <b id=culled>abc<span style="position:absolute"></span>xyz</b>
+    </div>
+  )HTML");
+  NGInlineCursor cursor;
+  cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("abc", "xyz"));
+}
+
+TEST_P(NGInlineCursorTest, CulledInlineNested) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=root>
+      <b id=culled><span>abc</span> xyz</b>
+    </div>
+  )HTML");
+  NGInlineCursor cursor;
+  cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("abc", "xyz"));
+}
+
+TEST_P(NGInlineCursorTest, CulledInlineBlockChild) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=root>
+      <b id=culled>
+        <div>block</div>
+        <span>abc</span> xyz
+      </b>
+    </div>
+  )HTML");
+  NGInlineCursor cursor;
+  cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("#culled"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
@@ -247,12 +281,8 @@ TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
   )HTML");
   const LayoutObject* layout_inline_a = GetLayoutObjectByElementId("a");
   cursor.MoveToIncludingCulledInline(*layout_inline_a);
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextForSameLayoutObject();
-  }
-  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor),
+              ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
@@ -262,12 +292,8 @@ TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
   const LayoutObject* layout_inline_a = GetLayoutObjectByElementId("a");
   NGInlineCursor cursor;
   cursor.MoveToIncludingCulledInline(*layout_inline_a);
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextForSameLayoutObject();
-  }
-  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor),
+              ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, FirstChild) {
@@ -620,12 +646,8 @@ TEST_P(NGInlineCursorTest, NextWithInlineBox) {
 TEST_P(NGInlineCursorTest, NextForSameLayoutObject) {
   NGInlineCursor cursor = SetupCursor("<pre id=root>abc\ndef\nghi</pre>");
   cursor.MoveTo(*GetLayoutObjectByElementId("root")->SlowFirstChild());
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextForSameLayoutObject();
-  }
-  EXPECT_THAT(list, ElementsAre("abc", "", "def", "", "ghi"));
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor),
+              ElementsAre("abc", "", "def", "", "ghi"));
 }
 
 // Test |NextForSameLayoutObject| with limit range set.
@@ -660,12 +682,8 @@ TEST_P(NGInlineCursorTest, NextForSameLayoutObjectWithRange) {
   // Now |line2| is limited to the 2nd line. There should be only one framgnet
   // for `<span>` if we search using `line2`.
   LayoutObject* span1 = GetLayoutObjectByElementId("span1");
-  wtf_size_t count = 0;
-  for (line2.MoveTo(*span1); line2; line2.MoveToNextForSameLayoutObject()) {
-    DCHECK_EQ(line2.Current().GetLayoutObject(), span1);
-    ++count;
-  }
-  EXPECT_EQ(count, 1u);
+  line2.MoveTo(*span1);
+  EXPECT_THAT(LayoutObjectToDebugStringList(line2), ElementsAre("#span1"));
 }
 
 TEST_P(NGInlineCursorTest, Sibling) {
@@ -1037,5 +1055,7 @@ TEST_P(NGInlineCursorTest, CursorForDescendants) {
   EXPECT_THAT(ToDebugStringList(cursor.CursorForDescendants()),
               ElementsAre("text3"));
 }
+
+}  // namespace
 
 }  // namespace blink

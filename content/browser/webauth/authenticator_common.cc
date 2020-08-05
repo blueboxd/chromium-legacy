@@ -565,20 +565,8 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
-  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
-    std::vector<device::CableDiscoveryData> cable_pairings =
-        request_delegate_->GetCablePairings();
-    const bool have_paired_phones = !cable_pairings.empty();
-
-    device::QRGeneratorKey qr_generator_key(
-        device::CableDiscoveryData::NewQRKey());
-    if (request_delegate_->SetCableTransportInfo(
-            /*cable_extension_provided=*/false, have_paired_phones,
-            qr_generator_key)) {
-      discovery_factory->set_cable_data(cable_pairings,
-                                        std::move(qr_generator_key));
-    }
-  }
+  request_delegate_->ConfigureCable(
+      caller_origin_, base::span<const device::CableDiscoveryData>());
 
   make_credential_options_->allow_skipping_pin_touch = allow_skipping_pin_touch;
 
@@ -619,31 +607,12 @@ void AuthenticatorCommon::StartGetAssertionRequest(
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
-  std::vector<device::CableDiscoveryData> cable_pairings;
-  bool have_cable_extension = false;
+  base::span<const device::CableDiscoveryData> cable_pairings;
   if (ctap_get_assertion_request_->cable_extension &&
-      request_delegate_->ShouldPermitCableExtension(caller_origin_) &&
       IsFocused()) {
     cable_pairings = *ctap_get_assertion_request_->cable_extension;
-    have_cable_extension = !cable_pairings.empty();
   }
-
-  base::Optional<device::QRGeneratorKey> qr_generator_key;
-  bool have_paired_phones = false;
-  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
-    qr_generator_key.emplace(device::CableDiscoveryData::NewQRKey());
-    auto paired_phones = request_delegate_->GetCablePairings();
-    have_paired_phones = !paired_phones.empty();
-    cable_pairings.insert(cable_pairings.end(), paired_phones.begin(),
-                          paired_phones.end());
-  }
-
-  if ((!cable_pairings.empty() || qr_generator_key.has_value()) &&
-      request_delegate_->SetCableTransportInfo(
-          have_cable_extension, have_paired_phones, qr_generator_key)) {
-    discovery_factory->set_cable_data(std::move(cable_pairings),
-                                      std::move(qr_generator_key));
-  }
+  request_delegate_->ConfigureCable(caller_origin_, cable_pairings);
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       discovery_factory,

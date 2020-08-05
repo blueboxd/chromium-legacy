@@ -21,8 +21,6 @@ class UsbDeviceMac : public UsbDevice {
   uint64_t entry_id() const { return entry_id_; }
 
  protected:
-  friend class UsbServiceMac;
-
   ~UsbDeviceMac() override;
 
  private:

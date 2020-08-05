@@ -84,6 +84,9 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   // Returns the visible part's bounds in screen coordinates.
   gfx::Rect GetVisibleBounds() const;
 
+  // Do preparations before setting focus on the navigation widget.
+  void PrepareForGettingFocus(bool last_element);
+
   // Called when shelf layout manager detects a locale change. Reloads the
   // home and back button tooltips and accessibility name strings.
   void HandleLocaleChange();

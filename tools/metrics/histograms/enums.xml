@@ -24126,6 +24126,7 @@ Called by update_extension_histograms.py.-->
       label="AUTOTESTPRIVATE_STOPTHROUGHPUTTRACKERDATACOLLECTION"/>
   <int value="1494" label="INPUTMETHODPRIVATE_GETAUTOCORRECTRANGE"/>
   <int value="1495" label="FILEMANAGERPRIVATEINTERNAL_SHARESHEETHASTARGETS"/>
+  <int value="1496" label="FILEMANAGERPRIVATEINTERNAL_INVOKESHARESHEET"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -39928,6 +39929,7 @@ from previous Chrome versions.
   <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
+  <int value="-2017778637" label="PrintSaveToDrive:disabled"/>
   <int value="-2015293660" label="AccessibilityExposeDisplayNone:disabled"/>
   <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
   <int value="-2013124655" label="EnableEphemeralFlashPermission:disabled"/>
@@ -41427,6 +41429,7 @@ from previous Chrome versions.
   <int value="-470247915"
       label="AutofillUpstreamEditableExpirationDate:enabled"/>
   <int value="-468697885" label="ArcInputMethod:enabled"/>
+  <int value="-467792766" label="ReengagementNotification:enabled"/>
   <int value="-466704882" label="webview-log-js-console-messages"/>
   <int value="-465381408" label="Sharesheet:disabled"/>
   <int value="-462554210"
@@ -42006,6 +42009,7 @@ from previous Chrome versions.
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
   <int value="173339199" label="SmsReceiverCrossDevice:disabled"/>
   <int value="174759256" label="LockScreenMediaControls:enabled"/>
+  <int value="174917935" label="ReengagementNotification:disabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
@@ -42391,6 +42395,7 @@ from previous Chrome versions.
   <int value="606723570" label="SharingUseDeviceInfo:disabled"/>
   <int value="606834606" label="force-color-profile"/>
   <int value="606969417" label="DiscoverApp:enabled"/>
+  <int value="608761130" label="PrintSaveToDrive:enabled"/>
   <int value="609112512" label="touch-selection-strategy"/>
   <int value="609580715" label="ArcCupsApi:disabled"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
@@ -52409,7 +52414,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1000" label="24Hour Clock"/>
   <int value="1001" label="Change Time Zone"/>
   <int value="1101" label="Verified Access"/>
-  <int value="1102" label="Keep Wi-Fi On During Sleep"/>
+  <int value="1102" label="Keep Wi-Fi On During Sleep (Deprecated)"/>
   <int value="1103" label="Usage Stats And Crash Reports"/>
   <int value="1200" label="Add Language"/>
   <int value="1201" label="Show Input Options In Shelf"/>

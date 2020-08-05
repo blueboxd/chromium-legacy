@@ -12,12 +12,12 @@ namespace ash {
 // Duration of the slide show animation. Also used as |delay| in posted task to
 // download images.
 constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
+    base::TimeDelta::FromMilliseconds(500);
 
 // The default interval to refresh photos.
 // TODO(b/139953713): Change to a correct time interval.
 constexpr base::TimeDelta kPhotoRefreshInterval =
-    base::TimeDelta::FromSeconds(5);
+    base::TimeDelta::FromSeconds(60);
 
 // Directory name of ambient mode.
 constexpr char kAmbientModeDirectoryName[] = "ambient-mode";

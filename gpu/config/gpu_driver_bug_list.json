@@ -3442,6 +3442,21 @@
       "features": [
         "disable_imagebitmap_from_video_using_gpu"
       ]
+    },
+    {
+      "id": 344,
+      "description": "VP8 decoding crashes before Windows 10 Fall Creators Update.",
+      "cr_bugs": [1094840],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<",
+          "value": "10.0.16299"
+        }
+      },
+      "features": [
+        "disable_accelerated_vp8_decode"
+      ]
     }
   ]
 }

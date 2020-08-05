@@ -54,8 +54,8 @@ class InstallServiceWorkItemImpl {
                              const base::string16& display_name,
                              const base::CommandLine& service_cmd_line,
                              const base::string16& registry_path,
-                             const GUID& clsid,
-                             const GUID& iid);
+                             const std::vector<GUID>& clsids,
+                             const std::vector<GUID>& iids);
 
   ~InstallServiceWorkItemImpl();
 
@@ -170,13 +170,12 @@ class InstallServiceWorkItemImpl {
   // to the 32-bit view of the registry.
   const base::string16 registry_path_;
 
-  // If COM CLSID/AppId registration is required, |clsid| would contain a valid
-  // CLSID.
-  const GUID clsid_;
+  // If COM CLSID/AppId registration is required, |clsids_| would be populated.
+  const std::vector<GUID> clsids_;
 
-  // If COM Interface/Typelib registration is required, |iid| would contain a
-  // valid IID.
-  const GUID iid_;
+  // If COM Interface/Typelib registration is required, |iids_| would be
+  // populated.
+  const std::vector<GUID> iids_;
 
   ScopedScHandle scm_;
   ScopedScHandle service_;

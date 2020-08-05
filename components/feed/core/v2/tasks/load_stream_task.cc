@@ -120,6 +120,7 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
       CreateFeedQueryRefreshRequest(
           GetRequestReason(load_type_), stream_->GetRequestMetadata(),
           stream_->GetMetadata()->GetConsistencyToken()),
+      stream_->ShouldForceSignedOutFeedQueryRequest(),
       base::BindOnce(&LoadStreamTask::QueryRequestComplete, GetWeakPtr()));
 }
 

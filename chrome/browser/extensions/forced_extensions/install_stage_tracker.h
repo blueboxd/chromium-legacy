@@ -308,6 +308,11 @@ class InstallStageTracker : public KeyedService {
     base::Optional<base::Time> download_CRX_started_time;
     // Time at which CRX is downloaded.
     base::Optional<base::Time> download_CRX_finish_time;
+    // Time at which signature verification of CRX is started.
+    base::Optional<base::Time> verification_started_time;
+    // Time at which copying of extension archive into the working directory is
+    // started.
+    base::Optional<base::Time> copying_started_time;
   };
 
   class Observer : public base::CheckedObserver {

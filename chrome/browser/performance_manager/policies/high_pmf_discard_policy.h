@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_POLICIES_HIGH_PMF_DISCARD_POLICY_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_POLICIES_HIGH_PMF_DISCARD_POLICY_H_
 
+#include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/system_node.h"
 
@@ -49,6 +51,17 @@ class HighPMFDiscardPolicy : public GraphOwned,
   // happen if this attempt doesn't complete between 2 calls to
   // OnProcessMemoryMetricsAvailable.
   bool discard_attempt_in_progress_ = false;
+
+  // This will contain some details about the current intervention, or will be
+  // nullopt if there's no intervention in progress.
+  struct InterventionDetails {
+    int total_pmf_kb_before_intervention = 0;
+    bool a_tab_has_been_discarded = false;
+  };
+  base::Optional<InterventionDetails> intervention_details_;
+
+  size_t discard_attempts_count_while_pmf_is_high_ = 0;
+  size_t successful_discards_count_while_pmf_is_high_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

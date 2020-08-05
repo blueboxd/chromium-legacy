@@ -48,4 +48,8 @@ interface KaleidoscopeDataProvider {
   // Returns all the watch time origins from media history store that have
   // watch time above a threshold.
   GetHighWatchTimeOrigins() => (array<url.mojom.Origin> origins);
+
+  // Called when the user clicks the "Send Feedback" button in Kaleidoscope.
+  // Will trigger a feedback dialog to be displayed.
+  SendFeedback();
 };

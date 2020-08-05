@@ -1069,6 +1069,9 @@ extern const char kPreviewsAllowedDescription[];
 extern const char kPrintJobManagementAppName[];
 extern const char kPrintJobManagementAppDescription[];
 
+extern const char kPrintSaveToDriveName[];
+extern const char kPrintSaveToDriveDescription[];
+
 extern const char kPrivacyElevatedAndroidName[];
 extern const char kPrivacyElevatedAndroidDescription[];
 
@@ -1703,6 +1706,9 @@ extern const char kReaderModeInCCTDescription[];
 
 extern const char kRecoverFromNeverSaveAndroidName[];
 extern const char kRecoverFromNeverSaveAndroidDescription[];
+
+extern const char kReengagementNotificationName[];
+extern const char kReengagementNotificationDescription[];
 
 extern const char kRelatedSearchesName[];
 extern const char kRelatedSearchesDescription[];

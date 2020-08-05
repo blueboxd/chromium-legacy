@@ -2455,8 +2455,9 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   }
 
   base::string16 sid = OLE2CW(user_sid_);
-  if (UserPoliciesManager::Get()->GetTimeDeltaSinceLastPolicyFetch(sid) >
-      kMaxTimeDeltaSinceLastUserPolicyRefresh) {
+  if (UserPoliciesManager::Get()->CloudPoliciesEnabled() &&
+      UserPoliciesManager::Get()->GetTimeDeltaSinceLastPolicyFetch(sid) >
+          kMaxTimeDeltaSinceLastUserPolicyRefresh) {
     // TODO(crbug.com/976744) Use downscoped token here.
     base::string16 access_token = GetDictString(*properties, kKeyAccessToken);
     HRESULT hr = UserPoliciesManager::Get()->FetchAndStoreCloudUserPolicies(

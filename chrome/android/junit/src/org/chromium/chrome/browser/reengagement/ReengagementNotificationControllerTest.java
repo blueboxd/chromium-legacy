@@ -36,7 +36,7 @@ import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.DefaultBrowserInfo;
+import org.chromium.chrome.browser.DefaultBrowserInfo2;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -59,15 +59,15 @@ public class ReengagementNotificationControllerTest {
 
     private class TestingReengagementNotificationController
             extends ReengagementNotificationController {
-        private DefaultBrowserInfo.DefaultInfo mInfo;
+        private DefaultBrowserInfo2.DefaultInfo mInfo;
 
-        TestingReengagementNotificationController(DefaultBrowserInfo.DefaultInfo info) {
+        TestingReengagementNotificationController(DefaultBrowserInfo2.DefaultInfo info) {
             super(mContext, mTracker, Activity.class);
             mInfo = info;
         }
 
         @Override
-        protected void getDefaultBrowserInfo(Callback<DefaultBrowserInfo.DefaultInfo> callback) {
+        protected void getDefaultBrowserInfo(Callback<DefaultBrowserInfo2.DefaultInfo> callback) {
             new Handler().post(() -> callback.onResult(mInfo));
         }
     }
@@ -269,9 +269,9 @@ public class ReengagementNotificationControllerTest {
         return null;
     }
 
-    private DefaultBrowserInfo.DefaultInfo createDefaultInfo(boolean passesPrecondition) {
+    private DefaultBrowserInfo2.DefaultInfo createDefaultInfo(boolean passesPrecondition) {
         int browserCount = passesPrecondition ? 2 : 1;
-        return new DefaultBrowserInfo.DefaultInfo(/* isChromeSystem = */ true,
+        return new DefaultBrowserInfo2.DefaultInfo(/* isChromeSystem = */ true,
                 /* isChromeDefault = */ true,
                 /* isDefaultSystem = */ true, /* hasDefault = */ true, browserCount,
                 /* systemCount = */ 0);

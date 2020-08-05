@@ -28,6 +28,15 @@ class CastAudioManagerAndroid : public CastAudioManager {
       bool use_mixer);
   ~CastAudioManagerAndroid() override;
 
+  // AudioManager implementation.
+  ::media::AudioOutputStream* MakeAudioOutputStreamProxy(
+      const ::media::AudioParameters& params,
+      const std::string& device_id) override;
+  ::media::AudioOutputStream* MakeBitstreamOutputStream(
+      const ::media::AudioParameters& params,
+      const std::string& device_id,
+      const ::media::AudioManager::LogCallback& log_callback) override;
+
   // CastAudioManager implementation.
   bool HasAudioInputDevices() override;
   void GetAudioInputDeviceNames(

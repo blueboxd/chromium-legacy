@@ -86,7 +86,7 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
         NGFieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
             (*legend)->Style(),
             legend_border_box.size.ConvertToLogical(writing_mode).inline_size,
-            legend_margins, border_padding.inline_start,
+            legend_margins, style, border_padding.inline_start,
             fieldset_content_inline_size),
         legend_margins.block_start};
     legend_border_box.offset = offset.ConvertToPhysical(

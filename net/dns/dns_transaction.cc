@@ -579,13 +579,13 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
                              RequestPriority request_priority) {
   DCHECK(url_request_context);
 
-  uint16_t id = session->NextQueryId();
   std::unique_ptr<DnsQuery> query;
   if (attempts->empty()) {
-    query.reset(new DnsQuery(id, hostname, qtype, opt_rdata,
-                             DnsQuery::PaddingStrategy::BLOCK_LENGTH_128));
+    query =
+        std::make_unique<DnsQuery>(0 /* id */, hostname, qtype, opt_rdata,
+                                   DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
   } else {
-    query = attempts->at(0)->GetQuery()->CloneWithNewId(id);
+    query = std::make_unique<DnsQuery>(*attempts->at(0)->GetQuery());
   }
 
   DCHECK_LT(doh_server_index, session->config().dns_over_https_servers.size());

@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_piece.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/os/disk_util_types.h"
 #include "chrome/chrome_cleaner/os/file_path_set.h"
@@ -81,7 +82,7 @@ std::wstring FileInformationToString(
 
 // Returns true if the given |company_name| is on the list of companies whose
 // executables' details should not be reported.
-bool IsCompanyOnIgnoredReportingList(const std::wstring& company_name);
+bool IsCompanyOnIgnoredReportingList(base::WStringPiece company_name);
 
 // Returns true if the given |path| refers to an executable whose details
 // should not be reported.

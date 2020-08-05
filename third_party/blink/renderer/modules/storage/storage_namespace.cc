@@ -101,7 +101,7 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
   result = base::MakeRefCounted<CachedStorageArea>(
       IsSessionStorage() ? CachedStorageArea::AreaType::kSessionStorage
                          : CachedStorageArea::AreaType::kLocalStorage,
-      origin, controller_->IPCTaskRunner(), this);
+      origin, controller_->TaskRunner(), this);
   cached_areas_.insert(std::move(origin), result);
   return result;
 }
@@ -212,7 +212,7 @@ void StorageNamespace::EnsureConnected() {
     return;
   controller_->dom_storage()->BindSessionStorageNamespace(
       namespace_id_,
-      namespace_.BindNewPipeAndPassReceiver(controller_->IPCTaskRunner()));
+      namespace_.BindNewPipeAndPassReceiver(controller_->TaskRunner()));
 }
 
 }  // namespace blink

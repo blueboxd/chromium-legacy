@@ -78,6 +78,7 @@
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
+#import "ios/components/security_interstitials/legacy_tls/legacy_tls_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
@@ -195,6 +196,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     LookalikeUrlTabHelper::CreateForWebState(web_state);
     LookalikeUrlTabAllowList::CreateForWebState(web_state);
     LookalikeUrlContainer::CreateForWebState(web_state);
+  }
+
+  if (base::FeatureList::IsEnabled(web::features::kIOSLegacyTLSInterstitial)) {
+    LegacyTLSTabAllowList::CreateForWebState(web_state);
   }
 
   // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary

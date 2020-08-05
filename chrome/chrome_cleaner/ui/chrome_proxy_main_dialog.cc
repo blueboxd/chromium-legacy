@@ -31,8 +31,8 @@ bool ChromeProxyMainDialog::Create() {
 
 void ChromeProxyMainDialog::NoPUPsFound() {
   chrome_prompt_ipc_->PostPromptUserTask(
-      std::vector<base::FilePath>(), std::vector<base::string16>(),
-      std::vector<base::string16>(),
+      std::vector<base::FilePath>(), std::vector<std::wstring>(),
+      std::vector<std::wstring>(),
       base::BindOnce(
           &ChromeProxyMainDialog::PostCloseAfterReceivingResponseTask,
           base::Unretained(this), base::SequencedTaskRunnerHandle::Get()));
@@ -41,10 +41,10 @@ void ChromeProxyMainDialog::NoPUPsFound() {
 void ChromeProxyMainDialog::ConfirmCleanup(
     const std::vector<UwSId>& found_pups,
     const FilePathSet& files,
-    const std::vector<base::string16>& registry_keys) {
+    const std::vector<std::wstring>& registry_keys) {
   std::vector<base::FilePath> files_out = files.ToVector();
-  std::vector<base::string16> registry_keys_out = registry_keys;
-  std::vector<base::string16> extension_ids;
+  std::vector<std::wstring> registry_keys_out = registry_keys;
+  std::vector<std::wstring> extension_ids;
   for (const UwSId& pup_id : found_pups) {
     if (!PUPData::IsKnownPUP(pup_id)) {
       continue;
@@ -73,7 +73,7 @@ void ChromeProxyMainDialog::Close() {
 }
 
 void ChromeProxyMainDialog::DisableExtensions(
-    const std::vector<base::string16>& extensions,
+    const std::vector<std::wstring>& extensions,
     base::OnceCallback<void(bool)> on_disable) {
   chrome_prompt_ipc_->PostDisableExtensionsTask(extensions,
                                                 std::move(on_disable));

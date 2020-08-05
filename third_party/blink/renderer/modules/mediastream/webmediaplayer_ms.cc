@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
@@ -805,7 +806,9 @@ void WebMediaPlayerMS::SetSinkId(
   media::OutputDeviceStatusCB callback =
       ConvertToOutputDeviceStatusCB(std::move(completion_callback));
   if (audio_renderer_) {
-    audio_renderer_->SwitchOutputDevice(sink_id.Utf8(), std::move(callback));
+    auto sink_id_utf8 = sink_id.Utf8();
+    audio_renderer_->SwitchOutputDevice(sink_id_utf8, std::move(callback));
+    delegate_->DidAudioOutputSinkChange(delegate_id_, sink_id_utf8);
   } else {
     std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
     SendLogMessage(String::Format(
@@ -1079,6 +1082,11 @@ void WebMediaPlayerMS::OnEnterPictureInPicture() {
 
 void WebMediaPlayerMS::OnExitPictureInPicture() {
   client_->RequestExitPictureInPicture();
+}
+
+void WebMediaPlayerMS::OnSetAudioSink(const std::string& sink_id) {
+  SetSinkId(WebString::FromASCII(sink_id),
+            base::DoNothing::Once<base::Optional<blink::WebSetSinkIdError>>());
 }
 
 void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {

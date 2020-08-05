@@ -392,8 +392,8 @@ interface IntentHelperInstance {
   // specified.  Data can be sent as extras by including a JSON map string which
   // will be automatically converted to a bundle accessible by the receiver.
   //
-  // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
-  // added to the whitelist in ArcBridgeService.java in the Android source.
+  // Note: Broadcasts can only be sent to allowlisted packages.  Packages can be
+  // added to the allowlist in ArcBridgeService.java in the Android source.
   [MinVersion=1] SendBroadcast@1(string action,
                                  string package_name,
                                  string cls,

@@ -110,5 +110,6 @@ namespace fileManagerPrivateInternal {
                              boolean cropToSquare,
                              GetThumbnailCallback callback);
     static void sharesheetHasTargets(DOMString[] urls, BooleanCallback callback);
+    static void invokeSharesheet(DOMString[] urls, SimpleCallback callback);
   };
 };

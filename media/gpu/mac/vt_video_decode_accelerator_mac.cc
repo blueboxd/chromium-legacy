@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/mac/mac_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -32,6 +33,8 @@
 #include "base/version.h"
 #include "components/crash/core/common/crash_key.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
+#include "media/gpu/mac/vt_config_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -110,6 +113,9 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
 
   // Note that 4:2:0 textures cannot be used directly as RGBA in OpenGL, but are
   // lower power than 4:2:2 when composited directly by CoreAnimation.
+  //
+  // TODO(crbug.com/1103432): Based on other > 8-bit codecs, we'll likely need
+  // to add kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange here.
   int32_t pixel_format = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
@@ -291,155 +297,6 @@ void OutputThunk(void* decompression_output_refcon,
   vda->Output(source_frame_refcon, status, image_buffer);
 }
 
-// Read the value for the key in |key| to CFString and convert it to IdType.
-// Use the list of pairs in |cfstr_id_pairs| to do the conversion (by doing a
-// linear lookup).
-template <typename IdType, typename StringIdPair>
-bool GetImageBufferProperty(CVImageBufferRef image_buffer,
-                            CFStringRef key,
-                            const StringIdPair* cfstr_id_pairs,
-                            size_t cfstr_id_pairs_size,
-                            IdType* value_as_id) {
-  CFStringRef value_as_string = reinterpret_cast<CFStringRef>(
-      CVBufferGetAttachment(image_buffer, key, nullptr));
-  if (!value_as_string)
-    return false;
-
-  for (size_t i = 0; i < cfstr_id_pairs_size; ++i) {
-    if (!CFStringCompare(value_as_string, cfstr_id_pairs[i].cfstr, 0)) {
-      *value_as_id = cfstr_id_pairs[i].id;
-      return true;
-    }
-  }
-
-  return false;
-}
-
-// Use a matrix id that is coherent with a primary id. Useful when we fail to
-// parse the matrix. Previously it was always defaulting to MatrixID::BT709
-// See http://crbug.com/788236.
-gfx::ColorSpace::MatrixID GetDefaultMatrixID(
-    const gfx::ColorSpace::PrimaryID primary_id) {
-  gfx::ColorSpace::MatrixID matrix_id = gfx::ColorSpace::MatrixID::BT709;
-
-  switch (primary_id) {
-    case gfx::ColorSpace::PrimaryID::BT709:
-      matrix_id = gfx::ColorSpace::MatrixID::BT709;
-      break;
-    case gfx::ColorSpace::PrimaryID::BT470BG:
-      matrix_id = gfx::ColorSpace::MatrixID::BT470BG;
-      break;
-    default:
-      break;
-  }
-
-  return matrix_id;
-}
-
-gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
-  // The named primaries. Default to BT709.
-  gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::BT709;
-  struct {
-    const CFStringRef cfstr;
-    const gfx::ColorSpace::PrimaryID id;
-  } primaries[] = {
-      {
-          kCVImageBufferColorPrimaries_ITU_R_709_2,
-          gfx::ColorSpace::PrimaryID::BT709,
-      },
-      {
-          kCVImageBufferColorPrimaries_EBU_3213,
-          gfx::ColorSpace::PrimaryID::BT470BG,
-      },
-      {
-          kCVImageBufferColorPrimaries_SMPTE_C,
-          gfx::ColorSpace::PrimaryID::SMPTE240M,
-      },
-  };
-  if (!GetImageBufferProperty(image_buffer, kCVImageBufferColorPrimariesKey,
-                              primaries, base::size(primaries), &primary_id)) {
-    DLOG(ERROR) << "Failed to find CVImageBufferRef primaries.";
-  }
-
-  // The named transfer function.
-  gfx::ColorSpace::TransferID transfer_id = gfx::ColorSpace::TransferID::BT709;
-  skcms_TransferFunction custom_tr_fn = {2.2f, 1, 0, 1, 0, 0, 0};
-  struct {
-    const CFStringRef cfstr;
-    gfx::ColorSpace::TransferID id;
-  } transfers[] = {
-      {
-          kCVImageBufferTransferFunction_ITU_R_709_2,
-          gfx::ColorSpace::TransferID::BT709_APPLE,
-      },
-      {
-          kCVImageBufferTransferFunction_SMPTE_240M_1995,
-          gfx::ColorSpace::TransferID::SMPTE240M,
-      },
-      {
-          kCVImageBufferTransferFunction_UseGamma,
-          gfx::ColorSpace::TransferID::CUSTOM,
-      },
-  };
-  if (!GetImageBufferProperty(image_buffer, kCVImageBufferTransferFunctionKey,
-                              transfers, base::size(transfers), &transfer_id)) {
-    DLOG(ERROR) << "Failed to find CVImageBufferRef transfer.";
-  }
-
-  // Transfer functions can also be specified as a gamma value.
-  if (transfer_id == gfx::ColorSpace::TransferID::CUSTOM) {
-    // If we fail to find the custom transfer function parameters, fall back to
-    // BT709.
-    transfer_id = gfx::ColorSpace::TransferID::BT709;
-    CFNumberRef gamma_number =
-        reinterpret_cast<CFNumberRef>(CVBufferGetAttachment(
-            image_buffer, kCVImageBufferGammaLevelKey, nullptr));
-    if (gamma_number) {
-      CGFloat gamma_float = 0;
-      if (CFNumberGetValue(gamma_number, kCFNumberCGFloatType, &gamma_float)) {
-        transfer_id = gfx::ColorSpace::TransferID::CUSTOM;
-        custom_tr_fn.g = gamma_float;
-      } else {
-        DLOG(ERROR) << "Failed to get CVImageBufferRef gamma level as float.";
-      }
-    } else {
-      DLOG(ERROR) << "Failed to get CVImageBufferRef gamma level.";
-    }
-  }
-
-  // Read the RGB to YUV matrix ID.
-  gfx::ColorSpace::MatrixID matrix_id = GetDefaultMatrixID(primary_id);
-  struct {
-    const CFStringRef cfstr;
-    gfx::ColorSpace::MatrixID id;
-  } matrices[] = {{
-                      kCVImageBufferYCbCrMatrix_ITU_R_709_2,
-                      gfx::ColorSpace::MatrixID::BT709,
-                  },
-                  {
-                      kCVImageBufferYCbCrMatrix_ITU_R_601_4,
-                      gfx::ColorSpace::MatrixID::SMPTE170M,
-                  },
-                  {
-                      kCVImageBufferYCbCrMatrix_SMPTE_240M_1995,
-                      gfx::ColorSpace::MatrixID::SMPTE240M,
-                  }};
-  if (!GetImageBufferProperty(image_buffer, kCVImageBufferYCbCrMatrixKey,
-                              matrices, base::size(matrices), &matrix_id)) {
-    DLOG(ERROR) << "Failed to find CVImageBufferRef YUV matrix.";
-  }
-
-  // It is specified to the decoder to use luma=[16,235] chroma=[16,240] via
-  // the kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange.
-  gfx::ColorSpace::RangeID range_id = gfx::ColorSpace::RangeID::LIMITED;
-
-  if (transfer_id == gfx::ColorSpace::TransferID::CUSTOM) {
-    return gfx::ColorSpace(primary_id, gfx::ColorSpace::TransferID::CUSTOM,
-                           matrix_id, range_id, nullptr, &custom_tr_fn);
-  }
-  return gfx::ColorSpace(primary_id, transfer_id, matrix_id, range_id);
-}
-
 }  // namespace
 
 bool InitializeVideoToolbox() {
@@ -609,6 +466,7 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
   client_ = client;
 
   // Spawn a thread to handle parsing and calling VideoToolbox.
+  // TODO(sandersd): This should probably use a base::ThreadPool thread instead.
   if (!decoder_thread_.Start()) {
     DLOG(ERROR) << "Failed to start decoder thread";
     return false;

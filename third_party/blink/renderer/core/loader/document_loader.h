@@ -339,6 +339,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       mojom::MHTMLLoadResult::kSuccess;
 
  private:
+  network::mojom::blink::WebSandboxFlags CalculateSandboxFlags();
   scoped_refptr<SecurityOrigin> CalculateOrigin(
       Document* owner_document,
       network::mojom::blink::WebSandboxFlags);

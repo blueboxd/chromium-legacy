@@ -148,6 +148,9 @@ class BinaryUploadService : public KeyedService {
 
     bool use_legacy_proto() const { return use_legacy_proto_; }
 
+    void set_tab_url(const GURL& tab_url);
+    const GURL& tab_url() const;
+
     // Methods for modifying the DeepScanningClientRequest.
     void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
     void set_request_malware_scan(
@@ -198,6 +201,8 @@ class BinaryUploadService : public KeyedService {
     ContentAnalysisCallback content_analysis_callback_;
 
     GURL url_;
+    // The URL of the page that initially triggered the scan.
+    GURL tab_url_;
   };
 
   // Upload the given file contents for deep scanning if the browser is

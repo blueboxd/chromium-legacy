@@ -350,9 +350,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       ::prefs::kNoteTakingAppsLockScreenToastShown);
 
-  // We don't sync wake-on-wifi related prefs because they are device specific.
-  registry->RegisterBooleanPref(::prefs::kWakeOnWifiDarkConnect, true);
-
   registry->RegisterBooleanPref(::prefs::kShowMobileDataNotification, true);
 
   // Initially all existing users would see "What's new" for current version
@@ -540,9 +537,6 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
                                    callback);
   xkb_auto_repeat_interval_pref_.Init(ash::prefs::kXkbAutoRepeatInterval, prefs,
                                       callback);
-
-  wake_on_wifi_darkconnect_.Init(::prefs::kWakeOnWifiDarkConnect, prefs,
-                                 callback);
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(::prefs::kUserTimezone, callback);

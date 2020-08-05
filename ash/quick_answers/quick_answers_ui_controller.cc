@@ -28,8 +28,8 @@ QuickAnswersUiController::QuickAnswersUiController(
     : controller_(controller) {}
 
 QuickAnswersUiController::~QuickAnswersUiController() {
-  CloseQuickAnswersView();
-  CloseUserConsentView();
+  quick_answers_view_ = nullptr;
+  user_consent_view_ = nullptr;
 }
 
 void QuickAnswersUiController::CreateQuickAnswersView(

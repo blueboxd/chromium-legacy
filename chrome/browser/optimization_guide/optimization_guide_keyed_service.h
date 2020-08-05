@@ -36,7 +36,7 @@ class OptimizationGuideBridge;
 class OptimizationGuideService;
 class TopHostProvider;
 class PredictionManager;
-class PredictionManagerBrowserTest;
+class PredictionManagerBrowserTestBase;
 }  // namespace optimization_guide
 
 class GURL;
@@ -95,7 +95,7 @@ class OptimizationGuideKeyedService
   friend class OptimizationGuideKeyedServiceBrowserTest;
   friend class OptimizationGuideWebContentsObserver;
   friend class ProfileManager;
-  friend class optimization_guide::PredictionManagerBrowserTest;
+  friend class optimization_guide::PredictionManagerBrowserTestBase;
   friend class optimization_guide::android::OptimizationGuideBridge;
 
   // Initializes the service. |optimization_guide_service| is the

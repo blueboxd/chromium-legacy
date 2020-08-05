@@ -216,8 +216,6 @@ IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
 
 void XRWebGLDrawingBuffer::UseSharedBuffer(
     const gpu::MailboxHolder& buffer_mailbox_holder) {
-  DVLOG(3) << __FUNCTION__;
-
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   // Ensure that the mailbox holder is ready to use, the following actions need
@@ -228,6 +226,10 @@ void XRWebGLDrawingBuffer::UseSharedBuffer(
   // recovery for cases where these assumptions may not be accurate.
   DCHECK(buffer_mailbox_holder.sync_token.HasData());
   DCHECK(!buffer_mailbox_holder.mailbox.IsZero());
+  DVLOG(3) << __func__
+           << ": mailbox=" << buffer_mailbox_holder.mailbox.ToDebugString()
+           << ", SyncToken="
+           << buffer_mailbox_holder.sync_token.ToDebugString();
   gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder.sync_token.GetConstData());
 
   // Create a texture backed by the shared buffer image.

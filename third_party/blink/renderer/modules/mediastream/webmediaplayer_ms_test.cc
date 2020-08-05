@@ -183,6 +183,11 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
+  void DidAudioOutputSinkChange(int delegate_id,
+                                const std::string& hashed_device_id) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
  private:
   int delegate_id_ = 1234;
   Observer* observer_ = nullptr;
@@ -608,7 +613,6 @@ class WebMediaPlayerMSTest
   void RequestEnterPictureInPicture() override {}
   void RequestExitPictureInPicture() override {}
   Features GetFeatures() override { return Features(); }
-
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

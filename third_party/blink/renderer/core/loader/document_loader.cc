@@ -1501,6 +1501,30 @@ void DocumentLoader::DidCommitNavigation() {
   }
 }
 
+network::mojom::blink::WebSandboxFlags DocumentLoader::CalculateSandboxFlags() {
+  auto sandbox_flags = GetFrameLoader().GetForcedSandboxFlags() |
+                       content_security_policy_->GetSandboxMask() |
+                       frame_policy_.sandbox_flags;
+  if (archive_) {
+    // The URL of a Document loaded from a MHTML archive is controlled by
+    // the Content-Location header. This would allow UXSS, since
+    // Content-Location can be arbitrarily controlled to control the
+    // Document's URL and origin. Instead, force a Document loaded from a
+    // MHTML archive to be sandboxed, providing exceptions only for creating
+    // new windows.
+    DCHECK(commit_reason_ == CommitReason::kRegular ||
+           commit_reason_ == CommitReason::kInitialization);
+    sandbox_flags |= (network::mojom::blink::WebSandboxFlags::kAll &
+                      ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                        network::mojom::blink::WebSandboxFlags::
+                            kPropagatesToAuxiliaryBrowsingContexts));
+  } else if (commit_reason_ == CommitReason::kXSLT) {
+    // An XSLT document inherits sandbox flags from the document that create it.
+    sandbox_flags |= frame_->DomWindow()->GetSandboxFlags();
+  }
+  return sandbox_flags;
+}
+
 scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     Document* owner_document,
     network::mojom::blink::WebSandboxFlags sandbox_flags) {
@@ -1635,31 +1659,7 @@ void DocumentLoader::CommitNavigation() {
             .BoolValue());
   }
 
-  // Make the snapshot value of sandbox flags from the beginning of navigation
-  // available in frame loader, so that the value could be further used to
-  // initialize sandbox flags in security context. crbug.com/1026627
-  GetFrameLoader().SetFrameOwnerSandboxFlags(frame_policy_.sandbox_flags);
-
-  network::mojom::blink::WebSandboxFlags sandbox_flags =
-      GetFrameLoader().EffectiveSandboxFlags() |
-      content_security_policy_->GetSandboxMask();
-  if (archive_) {
-    // The URL of a Document loaded from a MHTML archive is controlled by
-    // the Content-Location header. This would allow UXSS, since
-    // Content-Location can be arbitrarily controlled to control the
-    // Document's URL and origin. Instead, force a Document loaded from a
-    // MHTML archive to be sandboxed, providing exceptions only for creating
-    // new windows.
-    DCHECK(commit_reason_ == CommitReason::kRegular ||
-           commit_reason_ == CommitReason::kInitialization);
-    sandbox_flags |= (network::mojom::blink::WebSandboxFlags::kAll &
-                      ~(network::mojom::blink::WebSandboxFlags::kPopups |
-                        network::mojom::blink::WebSandboxFlags::
-                            kPropagatesToAuxiliaryBrowsingContexts));
-  } else if (commit_reason_ == CommitReason::kXSLT) {
-    sandbox_flags |= frame_->DomWindow()->GetSandboxFlags();
-  }
-
+  auto sandbox_flags = CalculateSandboxFlags();
   auto security_origin = CalculateOrigin(owner_document, sandbox_flags);
 
   GlobalObjectReusePolicy global_object_reuse_policy =

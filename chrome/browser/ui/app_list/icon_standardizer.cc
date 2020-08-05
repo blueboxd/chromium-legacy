@@ -21,6 +21,8 @@ constexpr float kInsideCircleDifferenceThreshold = 0.005f;
 
 constexpr float kIconScaleToFit = 0.9f;
 
+constexpr float kBackgroundCirclePaddingRatio = 0.01f;
+
 // Returns the bounding rect for the opaque part of the icon.
 gfx::Rect GetVisibleIconBounds(const SkBitmap& bitmap) {
   const SkPixmap pixmap = bitmap.pixmap();
@@ -251,18 +253,49 @@ bool CanVisibleIconFitInCircle(const gfx::ImageSkia& image) {
   return can_icon_fit_in_circle;
 }
 
+// Returns an image with equal width and height. If necessary, padding is
+// added to ensure the width and height are equal.
+gfx::ImageSkia StandardizeSize(const gfx::ImageSkia& image) {
+  gfx::ImageSkia final_image;
+
+  for (gfx::ImageSkiaRep rep : image.image_reps()) {
+    SkBitmap unscaled_bitmap(rep.GetBitmap());
+    int width = unscaled_bitmap.width();
+    int height = unscaled_bitmap.height();
+
+    if (width == height)
+      return image;
+
+    int longest_side = std::max(width, height);
+
+    SkBitmap final_bitmap;
+    final_bitmap.allocN32Pixels(longest_side, longest_side);
+    final_bitmap.eraseColor(SK_ColorTRANSPARENT);
+
+    SkCanvas canvas(final_bitmap);
+    canvas.drawBitmap(unscaled_bitmap, (longest_side - width) / 2,
+                      (longest_side - height) / 2);
+
+    final_image.AddRepresentation(gfx::ImageSkiaRep(final_bitmap, rep.scale()));
+  }
+
+  return final_image;
+}
+
 }  // namespace
 
 gfx::ImageSkia CreateStandardIconImage(const gfx::ImageSkia& image) {
   gfx::ImageSkia final_image;
+  gfx::ImageSkia standard_size_image = app_list::StandardizeSize(image);
 
   // If icon is already circle shaped, then return the original image.
-  if (IsIconCircleShaped(image))
-    return image;
+  if (IsIconCircleShaped(standard_size_image))
+    return standard_size_image;
 
-  bool visible_icon_fits_in_circle = CanVisibleIconFitInCircle(image);
+  bool visible_icon_fits_in_circle =
+      CanVisibleIconFitInCircle(standard_size_image);
 
-  for (gfx::ImageSkiaRep rep : image.image_reps()) {
+  for (gfx::ImageSkiaRep rep : standard_size_image.image_reps()) {
     SkBitmap unscaled_bitmap(rep.GetBitmap());
     int width = unscaled_bitmap.width();
     int height = unscaled_bitmap.height();
@@ -282,8 +315,10 @@ gfx::ImageSkia CreateStandardIconImage(const gfx::ImageSkia& image) {
     float circle_diameter = width;
 
     // Draw the background circle.
-    canvas.drawCircle(SkPoint::Make((width - 1) / 2.0f, (height - 1) / 2.0f),
-                      circle_diameter / 2.0f - 1, paint_background_circle);
+    canvas.drawCircle(
+        SkPoint::Make((width - 1) / 2.0f, (height - 1) / 2.0f),
+        circle_diameter / 2.0f - width * kBackgroundCirclePaddingRatio,
+        paint_background_circle);
 
     gfx::Rect visible_icon_rect = GetVisibleIconBounds(unscaled_bitmap);
     float visible_icon_diagonal =

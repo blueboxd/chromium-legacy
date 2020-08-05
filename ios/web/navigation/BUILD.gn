@@ -35,6 +35,7 @@ source_set("navigation") {
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//ios/web/web_state/ui:web_view_handler",
     "//ios/web/web_view:util",
+    "//net",
     "//ui/base",
     "//url",
   ]

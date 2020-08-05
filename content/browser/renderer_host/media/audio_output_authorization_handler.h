@@ -62,6 +62,14 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   // always return |override_value|.
   void OverridePermissionsForTesting(bool override_value);
 
+  // Calling this method will grant authorization to the device with the given
+  // hashed id until this method is called again with a different id. If
+  // |hashed_device_id| is the empty string, then this permission will be unset.
+  // |hashed_device_id| is a hash of the raw device id that is usable only on
+  // one origin.
+  void SetAuthorizedDeviceIdForGlobalMediaControls(
+      std::string hashed_device_id);
+
   static void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time);
 
  private:
@@ -103,6 +111,7 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   const int render_process_id_;
   bool override_permissions_ = false;
   bool permissions_override_value_ = false;
+  std::string hashed_device_id_for_global_media_controls_;
 
   // All access is on the IO thread, and taking a weak pointer to const looks
   // const, so this can be mutable.

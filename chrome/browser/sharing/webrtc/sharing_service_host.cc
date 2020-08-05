@@ -148,7 +148,7 @@ void OnMessageSent(
 }  // namespace
 
 struct SharingWebRtcMojoPipes {
-  MojoPipe<sharing::mojom::SignallingSender> signalling_sender;
+  MojoPipe<sharing::mojom::SignalingSender> signaling_sender;
   MojoPipe<sharing::mojom::SignallingReceiver> signalling_receiver;
   MojoPipe<sharing::mojom::SharingWebRtcConnectionDelegate> delegate;
   MojoPipe<sharing::mojom::SharingWebRtcConnection> connection;
@@ -266,7 +266,7 @@ SharingWebRtcConnectionHost* SharingServiceHost::CreateConnection(
   auto pipes = std::make_unique<SharingWebRtcMojoPipes>();
 
   auto signalling_host = std::make_unique<WebRtcSignallingHostFCM>(
-      std::move(pipes->signalling_sender.receiver),
+      std::move(pipes->signaling_sender.receiver),
       std::move(pipes->signalling_receiver.remote), message_sender_,
       CreateDeviceInfo(device_guid, fcm_configuration, device_source_));
 
@@ -312,7 +312,7 @@ void SharingServiceHost::OnIceServersReceived(
   }
 
   sharing_utility_service_->CreateSharingWebRtcConnection(
-      std::move(pipes->signalling_sender.remote),
+      std::move(pipes->signaling_sender.remote),
       std::move(pipes->signalling_receiver.receiver),
       std::move(pipes->delegate.remote), std::move(pipes->connection.receiver),
       std::move(pipes->socket_manager.remote),

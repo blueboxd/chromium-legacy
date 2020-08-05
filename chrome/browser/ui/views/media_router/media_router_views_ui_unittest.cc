@@ -141,6 +141,7 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
     SetMediaRouterFactory();
     mock_router_ = static_cast<MockMediaRouter*>(
         MediaRouterFactory::GetApiForBrowserContext(GetBrowserContext()));
+    logger_ = std::make_unique<LoggerImpl>();
 
     // Store sink observers so that they can be notified in tests.
     ON_CALL(*mock_router_, RegisterMediaSinksObserver(_))
@@ -148,6 +149,7 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
           media_sinks_observers_.push_back(observer);
           return true;
         });
+    ON_CALL(*mock_router_, GetLogger()).WillByDefault(Return(logger_.get()));
 
     CreateSessionServiceTabHelper(web_contents());
     ui_ = std::make_unique<MediaRouterViewsUI>(web_contents());
@@ -251,6 +253,7 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
   MockMediaRouter* mock_router_ = nullptr;
   std::unique_ptr<MediaRouterViewsUI> ui_;
   std::unique_ptr<StartPresentationContext> start_presentation_context_;
+  std::unique_ptr<LoggerImpl> logger_;
   content::PresentationRequest presentation_request_{
       {0, 0},
       {GURL("https://google.com/presentation")},

@@ -51,6 +51,8 @@ class ChromeWebClient : public web::WebClient {
       bool overridable,
       int64_t navigation_id,
       const base::Callback<void(bool)>& callback) override;
+  bool IsLegacyTLSAllowedForHost(web::WebState* web_state,
+                                 const std::string& hostname) override;
   void PrepareErrorPage(web::WebState* web_state,
                         const GURL& url,
                         NSError* error,

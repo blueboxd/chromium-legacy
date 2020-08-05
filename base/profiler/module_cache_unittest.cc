@@ -92,6 +92,21 @@ const ModuleCache::Module* AddNonNativeModule(
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, DISABLED_##TestName)
 #endif
 
+MAYBE_TEST(ModuleCacheTest, GetDebugBasename) {
+  ModuleCache cache;
+  const ModuleCache::Module* module =
+      cache.GetModuleForAddress(reinterpret_cast<uintptr_t>(&AFunctionForTest));
+  ASSERT_NE(nullptr, module);
+#if defined(OS_ANDROID)
+  EXPECT_EQ("libbase_unittests__library.so",
+            module->GetDebugBasename().value());
+#elif defined(OS_POSIX)
+  EXPECT_EQ("base_unittests", module->GetDebugBasename().value());
+#elif defined(OS_WIN)
+  EXPECT_EQ(L"base_unittests.exe.pdb", module->GetDebugBasename().value());
+#endif
+}
+
 // Checks that ModuleCache returns the same module instance for
 // addresses within the module.
 MAYBE_TEST(ModuleCacheTest, LookupCodeAddresses) {

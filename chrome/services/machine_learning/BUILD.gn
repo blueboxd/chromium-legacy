@@ -48,6 +48,7 @@ source_set("unit_tests") {
     "public/cpp/decision_tree/decision_tree_prediction_model_unittest.cc",
     "public/cpp/decision_tree/prediction_model_unittest.cc",
     "public/cpp/decision_tree_model_unittest.cc",
+    "public/cpp/test_support/fake_service_connection_unittest.cc",
   ]
 
   if (build_with_tflite_lib) {

@@ -278,6 +278,7 @@ void WebUIInfoSingleton::AddToDeepScanRequests(
 }
 
 void WebUIInfoSingleton::AddToDeepScanRequests(
+    const GURL& tab_url,
     const enterprise_connectors::ContentAnalysisRequest& request) {
   if (!HasListener())
     return;
@@ -289,6 +290,7 @@ void WebUIInfoSingleton::AddToDeepScanRequests(
         base::Time::Now();
   }
 
+  deep_scan_requests_[request.request_token()].tab_url = tab_url;
   deep_scan_requests_[request.request_token()].content_analysis_request =
       request;
 
@@ -1346,6 +1348,7 @@ base::Value SerializeReportingEvent(const base::Value& event) {
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 std::string SerializeContentAnalysisRequest(
+    const GURL& tab_url,
     const enterprise_connectors::ContentAnalysisRequest& request) {
   base::DictionaryValue request_dict;
 
@@ -1377,6 +1380,9 @@ std::string SerializeContentAnalysisRequest(
           "csd", request.request_data().csd().SerializeAsString());
     }
     request_dict.SetKey("request_data", std::move(request_data));
+  }
+  if (tab_url.is_valid()) {
+    request_dict.SetStringKey("tab_url", tab_url.spec());
   }
 
   base::ListValue tags;
@@ -1618,8 +1624,9 @@ base::Value SerializeDeepScanDebugData(const std::string& token,
     value.SetStringKey("request",
                        SerializeDeepScanningRequest(data.request.value()));
   } else if (data.content_analysis_request.has_value()) {
-    value.SetStringKey("request", SerializeContentAnalysisRequest(
-                                      data.content_analysis_request.value()));
+    value.SetStringKey(
+        "request", SerializeContentAnalysisRequest(
+                       data.tab_url, data.content_analysis_request.value()));
   }
 
   if (!data.response_time.is_null()) {

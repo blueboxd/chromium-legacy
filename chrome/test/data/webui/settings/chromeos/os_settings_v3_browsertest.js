@@ -54,6 +54,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],
  ['PeoplePageKerberosAccounts', 'people_page_kerberos_accounts_test.m.js'],
  ['PrivacyPage', 'os_privacy_page_test.m.js'],
+ ['TimezoneSelector', 'timezone_selector_test.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

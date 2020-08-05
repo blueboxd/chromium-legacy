@@ -34,7 +34,8 @@ namespace optimization_guide {
 
 constexpr char optimization_guide_service_url[] = "https://hintsserver.com/";
 
-class HintsFetcherTest : public testing::Test {
+class HintsFetcherTest : public testing::Test,
+                         public testing::WithParamInterface<bool> {
  public:
   HintsFetcherTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
@@ -43,8 +44,12 @@ class HintsFetcherTest : public testing::Test {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
     base::test::ScopedFeatureList scoped_list;
-    scoped_list.InitAndEnableFeatureWithParameters(
-        features::kRemoteOptimizationGuideFetching, {});
+    scoped_list.InitWithFeaturesAndParameters(
+        {{features::kRemoteOptimizationGuideFetching, {}},
+         {features::kOptimizationHints,
+          {{"persist_hints_to_disk",
+            ShouldPersistHintsToDisk() ? "true" : "false"}}}},
+        {});
 
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     prefs::RegisterProfilePrefs(pref_service_->registry());
@@ -100,6 +105,8 @@ class HintsFetcherTest : public testing::Test {
   void SetTimeClockForTesting(base::Clock* clock) {
     hints_fetcher_->SetTimeClockForTesting(clock);
   }
+
+  bool ShouldPersistHintsToDisk() const { return GetParam(); }
 
  protected:
   bool FetchHints(const std::vector<std::string>& hosts,
@@ -166,7 +173,11 @@ class HintsFetcherTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherTest);
 };
 
-TEST_F(HintsFetcherTest,
+INSTANTIATE_TEST_SUITE_P(WithPersistentStore,
+                         HintsFetcherTest,
+                         testing::Values(true, false));
+
+TEST_P(HintsFetcherTest,
        FetchOptimizationGuideServiceHintsLogsHistogramUponExiting) {
   base::HistogramTester histogram_tester;
 
@@ -180,7 +191,7 @@ TEST_F(HintsFetcherTest,
       1, 1);
 }
 
-TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
+TEST_P(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   base::HistogramTester histogram_tester;
 
   std::string response_content;
@@ -205,7 +216,7 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in
 // progress simultaneously.
-TEST_F(HintsFetcherTest, FetchInProgress) {
+TEST_P(HintsFetcherTest, FetchInProgress) {
   base::SimpleTestClock test_clock;
   SetTimeClockForTesting(&test_clock);
 
@@ -234,7 +245,7 @@ TEST_F(HintsFetcherTest, FetchInProgress) {
 
 // Tests that the hints are refreshed again for hosts for whom hints were
 // fetched recently.
-TEST_F(HintsFetcherTest, FetchInProgress_HostsHintsRefreshed) {
+TEST_P(HintsFetcherTest, FetchInProgress_HostsHintsRefreshed) {
   base::SimpleTestClock test_clock;
   SetTimeClockForTesting(&test_clock);
 
@@ -298,7 +309,7 @@ TEST_F(HintsFetcherTest, FetchInProgress_HostsHintsRefreshed) {
 }
 
 // Tests 404 response from request.
-TEST_F(HintsFetcherTest, FetchReturned404) {
+TEST_P(HintsFetcherTest, FetchReturned404) {
   base::HistogramTester histogram_tester;
 
   std::string response_content;
@@ -317,7 +328,7 @@ TEST_F(HintsFetcherTest, FetchReturned404) {
       HintsFetcherRequestStatus::kResponseError, 1);
 }
 
-TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
+TEST_P(HintsFetcherTest, FetchReturnBadResponse) {
   base::HistogramTester histogram_tester;
 
   std::string response_content = "not proto";
@@ -334,7 +345,7 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
       HintsFetcherRequestStatus::kResponseError, 1);
 }
 
-TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
+TEST_P(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
   base::HistogramTester histogram_tester;
 
   SetConnectionOffline();
@@ -362,7 +373,7 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
       1);
 }
 
-TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
+TEST_P(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
   std::vector<std::string> hosts{"host1.com", "host2.com"};
   std::string response_content;
 
@@ -370,6 +381,9 @@ TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
+
+  if (!ShouldPersistHintsToDisk())
+    return;
 
   const base::DictionaryValue* hosts_fetched = pref_service()->GetDictionary(
       prefs::kHintsFetcherHostsSuccessfullyFetched);
@@ -387,7 +401,7 @@ TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
   }
 }
 
-TEST_F(HintsFetcherTest, HintsFetchFailsHostNotRecorded) {
+TEST_P(HintsFetcherTest, HintsFetchFailsHostNotRecorded) {
   std::vector<std::string> hosts{"host1.com", "host2.com"};
   std::string response_content;
 
@@ -396,6 +410,9 @@ TEST_F(HintsFetcherTest, HintsFetchFailsHostNotRecorded) {
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_NOT_FOUND));
   EXPECT_FALSE(hints_fetched());
 
+  if (!ShouldPersistHintsToDisk())
+    return;
+
   const base::DictionaryValue* hosts_fetched = pref_service()->GetDictionary(
       prefs::kHintsFetcherHostsSuccessfullyFetched);
   for (const std::string& host : hosts) {
@@ -403,7 +420,7 @@ TEST_F(HintsFetcherTest, HintsFetchFailsHostNotRecorded) {
   }
 }
 
-TEST_F(HintsFetcherTest, HintsFetchClearHostsSuccessfullyFetched) {
+TEST_P(HintsFetcherTest, HintsFetchClearHostsSuccessfullyFetched) {
   std::vector<std::string> hosts{"host1.com", "host2.com"};
   std::string response_content;
 
@@ -411,6 +428,9 @@ TEST_F(HintsFetcherTest, HintsFetchClearHostsSuccessfullyFetched) {
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
+
+  if (!ShouldPersistHintsToDisk())
+    return;
 
   const base::DictionaryValue* hosts_fetched = pref_service()->GetDictionary(
       prefs::kHintsFetcherHostsSuccessfullyFetched);
@@ -426,7 +446,10 @@ TEST_F(HintsFetcherTest, HintsFetchClearHostsSuccessfullyFetched) {
   }
 }
 
-TEST_F(HintsFetcherTest, HintsFetcherHostsCovered) {
+TEST_P(HintsFetcherTest, HintsFetcherHostsCovered) {
+  if (!ShouldPersistHintsToDisk())
+    return;
+
   std::vector<std::string> hosts{"host1.com", "host2.com"};
   base::Time host_invalid_time =
       base::Time::Now() + base::TimeDelta().FromHours(1);
@@ -437,7 +460,7 @@ TEST_F(HintsFetcherTest, HintsFetcherHostsCovered) {
   EXPECT_TRUE(WasHostCoveredByFetch(hosts[1]));
 }
 
-TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
+TEST_P(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
   std::string response_content;
   std::vector<std::string> hosts{"host1.com", "host2.com"};
   base::Time host_invalid_time =
@@ -451,6 +474,9 @@ TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
+
+  if (!ShouldPersistHintsToDisk())
+    return;
 
   // The first pair of hosts should be recorded as failed to be
   // covered by a recent hints fetcher as they have expired.
@@ -469,7 +495,7 @@ TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
   EXPECT_TRUE(WasHostCoveredByFetch(hosts_valid[1]));
 }
 
-TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
+TEST_P(HintsFetcherTest, HintsFetcherHostNotCovered) {
   std::vector<std::string> hosts{"host1.com", "host2.com"};
   base::Time host_invalid_time =
       base::Time::Now() + base::TimeDelta().FromHours(1);
@@ -484,7 +510,10 @@ TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
   EXPECT_FALSE(WasHostCoveredByFetch("newhost.com"));
 }
 
-TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
+TEST_P(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
+  if (!ShouldPersistHintsToDisk())
+    return;
+
   std::string response_content;
   std::vector<std::string> hosts_expired{"host1.com", "host2.com"};
   base::Time host_invalid_time =
@@ -512,7 +541,10 @@ TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
   EXPECT_TRUE(WasHostCoveredByFetch(hosts_valid[1]));
 }
 
-TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
+TEST_P(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
+  if (!ShouldPersistHintsToDisk())
+    return;
+
   std::string response_content;
   std::vector<std::string> hosts;
   size_t max_hosts =
@@ -541,7 +573,7 @@ TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
   EXPECT_TRUE(WasHostCoveredByFetch(extra_hosts[1]));
 }
 
-TEST_F(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
+TEST_P(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
   std::string response_content;
   std::vector<std::string> all_hosts;
 
@@ -564,6 +596,9 @@ TEST_F(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
 
+  if (!ShouldPersistHintsToDisk())
+    return;
+
   DictionaryPrefUpdate hosts_fetched(
       pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
   EXPECT_EQ(max_hosts_in_fetch_request, hosts_fetched->size());
@@ -575,7 +610,7 @@ TEST_F(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
   }
 }
 
-TEST_F(HintsFetcherTest, MaxUrlsForOptimizationGuideServiceHintsFetch) {
+TEST_P(HintsFetcherTest, MaxUrlsForOptimizationGuideServiceHintsFetch) {
   base::HistogramTester histogram_tester;
   std::string response_content;
   std::vector<GURL> all_urls;
@@ -612,7 +647,7 @@ TEST_F(HintsFetcherTest, MaxUrlsForOptimizationGuideServiceHintsFetch) {
   }
 }
 
-TEST_F(HintsFetcherTest, OnlyURLsToFetch) {
+TEST_P(HintsFetcherTest, OnlyURLsToFetch) {
   base::HistogramTester histogram_tester;
   std::string response_content;
 
@@ -631,7 +666,7 @@ TEST_F(HintsFetcherTest, OnlyURLsToFetch) {
       static_cast<int>(HintsFetcherRequestStatus::kSuccess), 1);
 }
 
-TEST_F(HintsFetcherTest, NoHostsOrURLsToFetch) {
+TEST_P(HintsFetcherTest, NoHostsOrURLsToFetch) {
   base::HistogramTester histogram_tester;
   std::string response_content;
 

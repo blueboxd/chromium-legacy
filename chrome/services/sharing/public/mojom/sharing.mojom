@@ -14,8 +14,8 @@ import "services/network/public/mojom/mdns_responder.mojom";
 // and is used by the browser process to offload unsafe protocol parsing.
 interface Sharing {
   // Creates a new Sharing connection via WebRTC.
-  // Signalling of WebRTC is done OOB by the browser using the
-  // |signalling_sender| and |signalling_receiver| interfaces.
+  // Signaling of WebRTC is done OOB by the browser using the |signaling_sender|
+  // and |signalling_receiver| interfaces.
   // WebRTC messages to and from the browser process are handled via the
   // |delegate| and |connection| interfaces.
   // All network communication is handled by the |socket_manager| and
@@ -23,7 +23,7 @@ interface Sharing {
   // |ice_servers| contains the list of ICE servers to be used to establish a
   // connection.
   CreateSharingWebRtcConnection(
-      pending_remote<SignallingSender> signalling_sender,
+      pending_remote<SignalingSender> signaling_sender,
       pending_receiver<SignallingReceiver> signalling_receiver,
       pending_remote<SharingWebRtcConnectionDelegate> delegate,
       pending_receiver<SharingWebRtcConnection> connection,

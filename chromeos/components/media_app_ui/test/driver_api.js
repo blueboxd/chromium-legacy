@@ -23,7 +23,7 @@ let TestMessageResponseData;
  *     renameLastFile: (string|undefined),
  *     requestFullscreen: (boolean|undefined),
  *     requestSaveFile: (boolean|undefined),
- *     saveCopy: (boolean|undefined),
+ *     saveAs: (string|undefined),
  *     testQuery: string,
  * }}
  */

@@ -29,7 +29,7 @@ class MockSignallingService : public sharing::mojom::SignallingReceiver {
   MOCK_METHOD1(OnIceCandidatesReceived,
                void(std::vector<sharing::mojom::IceCandidatePtr>));
 
-  mojo::Remote<sharing::mojom::SignallingSender> signalling_sender;
+  mojo::Remote<sharing::mojom::SignalingSender> signaling_sender;
   mojo::Receiver<sharing::mojom::SignallingReceiver> signalling_receiver{this};
 };
 
@@ -73,7 +73,7 @@ class WebRtcSignallingHostFCMTest : public testing::Test {
   MockSharingMessageSender message_sender_;
   MockSignallingService signalling_service_;
   WebRtcSignallingHostFCM signalling_host_{
-      signalling_service_.signalling_sender.BindNewPipeAndPassReceiver(),
+      signalling_service_.signaling_sender.BindNewPipeAndPassReceiver(),
       signalling_service_.signalling_receiver.BindNewPipeAndPassRemote(),
       &message_sender_, CreateFakeDeviceInfo("id", "name")};
 

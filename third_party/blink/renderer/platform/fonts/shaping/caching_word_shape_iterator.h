@@ -58,7 +58,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
 
     // SVG sets SpacingDisabled because it handles spacing by themselves.
     if (!run.SpacingDisabled())
-      spacing_.SetSpacingAndExpansion(font->GetFontDescription());
+      spacing_.SetSpacingAndExpansion(*font);
   }
 
   bool Next(scoped_refptr<const ShapeResult>* word_result) {

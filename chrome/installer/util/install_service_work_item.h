@@ -13,6 +13,7 @@
 #define CHROME_INSTALLER_UTIL_INSTALL_SERVICE_WORK_ITEM_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -47,25 +48,22 @@ class InstallServiceWorkItem : public WorkItem {
   // persist a versioned service name. An example |registry_path| is
   // "Software\ProductFoo".
   //
-  // |clsid| is the CLSID and AppId to register.
-  // If COM CLSID/AppId registration is not required, pass in GUID_NULL for
-  // |clsid|.
-  // |iid| is the Interface and Typelib to register.
-  // If COM Interface/Typelib registration is not required, pass in
-  // GUID_NULL for |iid|.
+  // If COM CLSID/AppId registration is required, |clsids| should contain the
+  // CLSIDs and AppIds to register. If COM Interface/Typelib registration is
+  // required, |iids| should contain the Interfaces and Typelibs to register.
   InstallServiceWorkItem(const base::string16& service_name,
                          const base::string16& display_name,
                          const base::CommandLine& service_cmd_line,
                          const base::string16& registry_path,
-                         const GUID& clsid,
-                         const GUID& iid);
+                         const std::vector<GUID>& clsids,
+                         const std::vector<GUID>& iids);
 
   ~InstallServiceWorkItem() override;
 
   static bool DeleteService(const base::string16& service_name,
                             const base::string16& registry_path,
-                            const GUID& clsid,
-                            const GUID& iid);
+                            const std::vector<GUID>& clsids,
+                            const std::vector<GUID>& iids);
 
  private:
   friend class InstallServiceWorkItemTest;

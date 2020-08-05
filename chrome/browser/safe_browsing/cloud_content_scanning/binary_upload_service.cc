@@ -303,7 +303,7 @@ void BinaryUploadService::OnGetRequestData(Request* request,
         request->deep_scanning_request());
   } else {
     WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-        request->content_analysis_request());
+        request->tab_url(), request->content_analysis_request());
   }
 
   // |request| might have been deleted by the call to Start() in tests, so don't
@@ -471,7 +471,7 @@ void BinaryUploadService::FinishConnectorRequest(
   // We add the request here in case we never actually uploaded anything, so it
   // wasn't added in OnGetRequestData
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->content_analysis_request());
+      request->tab_url(), request->content_analysis_request());
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
       active_tokens_[request], ResultToString(result), response);
 
@@ -607,6 +607,16 @@ BinaryUploadService::Request::Request(ContentAnalysisCallback callback,
       url_(url) {}
 
 BinaryUploadService::Request::~Request() = default;
+
+void BinaryUploadService::Request::set_tab_url(const GURL& tab_url) {
+  DCHECK(!use_legacy_proto_);
+  tab_url_ = tab_url;
+}
+
+const GURL& BinaryUploadService::Request::tab_url() const {
+  DCHECK(!use_legacy_proto_);
+  return tab_url_;
+}
 
 void BinaryUploadService::Request::set_request_dlp_scan(
     DlpDeepScanningClientRequest dlp_request) {

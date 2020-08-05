@@ -232,8 +232,9 @@ base::FilePath AppendProductPath(const base::FilePath& base_path) {
       FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE()));
 
   if (file_version_info.get()) {
-    return base_path.Append(file_version_info->company_short_name())
-        .Append(file_version_info->product_short_name());
+    return base_path
+        .Append(base::AsWStringPiece(file_version_info->company_short_name()))
+        .Append(base::AsWStringPiece(file_version_info->product_short_name()));
   } else {
     return base_path.Append(COMPANY_SHORTNAME_STRING)
         .Append(L"Chrome Cleanup Tool Test");
@@ -439,7 +440,7 @@ std::wstring FileInformationToString(
   return content;
 }
 
-bool IsCompanyOnIgnoredReportingList(const std::wstring& company_name) {
+bool IsCompanyOnIgnoredReportingList(base::WStringPiece company_name) {
   return base::Contains(kCompanyIgnoredReportingList, company_name);
 }
 
@@ -447,7 +448,8 @@ bool IsExecutableOnIgnoredReportingList(const base::FilePath& file_path) {
   std::unique_ptr<FileVersionInfo> file_information(
       FileVersionInfo::CreateFileVersionInfo(file_path));
   return file_information &&
-         IsCompanyOnIgnoredReportingList(file_information->company_name());
+         IsCompanyOnIgnoredReportingList(
+             base::AsWStringPiece(file_information->company_name()));
 }
 
 bool RetrieveDetailedFileInformation(
@@ -482,14 +484,18 @@ bool RetrieveDetailedFileInformation(
   std::unique_ptr<FileVersionInfo> version(
       FileVersionInfo::CreateFileVersionInfo(expanded_path));
   if (version) {
-    file_information->company_name = version->company_name();
-    file_information->company_short_name = version->company_short_name();
-    file_information->product_name = version->product_name();
-    file_information->product_short_name = version->product_short_name();
-    file_information->internal_name = version->internal_name();
-    file_information->original_filename = version->original_filename();
-    file_information->file_description = version->file_description();
-    file_information->file_version = version->file_version();
+    file_information->company_name = base::AsWString(version->company_name());
+    file_information->company_short_name =
+        base::AsWString(version->company_short_name());
+    file_information->product_name = base::AsWString(version->product_name());
+    file_information->product_short_name =
+        base::AsWString(version->product_short_name());
+    file_information->internal_name = base::AsWString(version->internal_name());
+    file_information->original_filename =
+        base::AsWString(version->original_filename());
+    file_information->file_description =
+        base::AsWString(version->file_description());
+    file_information->file_version = base::AsWString(version->file_version());
   }
 
   return true;

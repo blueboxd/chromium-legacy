@@ -1048,7 +1048,7 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   // Skip the drain if possible. Only VP8 codecs need draining because
   // they can hang in release() or flush() otherwise
   // (http://crbug.com/598963).
-  // TODO(watk): Strongly consider blacklisting VP8 (or specific MediaCodecs)
+  // TODO(watk): Strongly consider blocking VP8 (or specific MediaCodecs)
   // instead. Draining is responsible for a lot of complexity.
   if (decoder_config_.codec() != kCodecVP8 || !codec_ || codec_->IsFlushed() ||
       codec_->IsDrained() || using_async_api_) {

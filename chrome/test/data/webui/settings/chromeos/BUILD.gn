@@ -58,6 +58,7 @@ js_modulizer("modulize") {
     "test_multidevice_browser_proxy.js",
     "test_wallpaper_browser_proxy.js",
     "test_os_sync_browser_proxy.js",
+    "timezone_selector_test.js",
   ]
   namespace_rewrites =
       os_settings_namespace_rewrites + os_test_namespace_rewrites

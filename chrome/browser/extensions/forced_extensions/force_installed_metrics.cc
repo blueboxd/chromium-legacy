@@ -200,6 +200,13 @@ void ForceInstalledMetrics::ReportMetrics() {
             installation.download_CRX_finish_time.value() -
                 installation.download_CRX_started_time.value());
       }
+      if (installation.copying_started_time) {
+        DCHECK(installation.verification_started_time);
+        base::UmaHistogramLongTimes(
+            "Extensions.ForceInstalledTime.VerificationStartTo.CopyingStart",
+            installation.copying_started_time.value() -
+                installation.verification_started_time.value());
+      }
     }
   }
   if (missing_forced_extensions.empty()) {

@@ -134,10 +134,11 @@ WebFrameWidgetBase::WebFrameWidgetBase(
                                                 std::move(widget_host),
                                                 std::move(widget))),
       client_(&client) {
-  frame_widget_host_.Bind(std::move(frame_widget_host),
-                          ThreadScheduler::Current()->IPCTaskRunner());
+  frame_widget_host_.Bind(
+      std::move(frame_widget_host),
+      ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
   receiver_.Bind(std::move(frame_widget),
-                 ThreadScheduler::Current()->IPCTaskRunner());
+                 ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
 }
 
 WebFrameWidgetBase::~WebFrameWidgetBase() = default;

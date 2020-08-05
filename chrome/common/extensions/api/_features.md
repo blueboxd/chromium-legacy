@@ -312,8 +312,8 @@ The only accepted value is the bool `true`.
 The `platforms` property specifies the properties the feature should be
 available on.
 
-The accepted values are lists of strings from `chromeos`, `mac`, `linux`, and
-`win`.
+The accepted values are lists of strings from `chromeos`, `mac`, 'lacros',
+`linux`, and `win`.
 
 ### session\_types
 

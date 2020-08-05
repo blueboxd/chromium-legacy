@@ -61,14 +61,14 @@ class OmniboxPopupModel {
     // NORMAL means the row is focused, and Enter key navigates to the match.
     NORMAL = 1,
 
-    // KEYWORD state means actually in keyword mode, as distinct from the
-    // FOCUSED_BUTTON_KEYWORD state, which is only for button focus.
-    KEYWORD = 2,
-
     // FOCUSED_BUTTON_KEYWORD is used when the keyword button is in focus, not
     // actually in Keyword Mode. This is currently only used if deciated button
     // row is enabled
-    FOCUSED_BUTTON_KEYWORD = 3,
+    FOCUSED_BUTTON_KEYWORD = 2,
+
+    // KEYWORD_MODE state means actually in keyword mode, as distinct from the
+    // FOCUSED_BUTTON_KEYWORD state, which is only for button focus.
+    KEYWORD_MODE = 3,
 
     // FOCUSED_BUTTON_TAB_SWITCH state means the Switch Tab button is focused.
     // Pressing enter will switch to the tab match.

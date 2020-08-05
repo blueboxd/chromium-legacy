@@ -241,6 +241,13 @@ class PLATFORM_EXPORT Font {
     return EnsureFontFallbackList()->ShouldSkipDrawing();
   }
 
+  // Returns true if any of the matched @font-face rules has set a
+  // letter-spacing-override value.
+  bool HasLetterSpacingOverride() const {
+    return font_fallback_list_ &&
+           font_fallback_list_->HasLetterSpacingOverride();
+  }
+
  private:
   // TODO(xiaochengh): The function not only initializes null FontFallbackList,
   // but also syncs invalid FontFallbackList. Rename it for better readability.

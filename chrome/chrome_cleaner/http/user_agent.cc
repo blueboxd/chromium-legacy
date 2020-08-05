@@ -29,8 +29,8 @@ const wchar_t* ArchitectureToString(UserAgent::Architecture architecture) {
 
 }  // namespace
 
-UserAgent::UserAgent(const std::wstring& product_name,
-                     const std::wstring& product_version)
+UserAgent::UserAgent(base::WStringPiece product_name,
+                     base::WStringPiece product_version)
     : product_name_(product_name),
       product_version_(product_version),
       os_major_version_(0),

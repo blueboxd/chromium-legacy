@@ -50,6 +50,8 @@ const base::Feature kAddWebContentDropInteraction{
 
 const base::Feature kScrollToTextIOS{"ScrollToTextIOS",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIOSLegacyTLSInterstitial{
+    "IOSLegacyTLSInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool UseWebClientDefaultUserAgent() {
   if (@available(iOS 13, *)) {

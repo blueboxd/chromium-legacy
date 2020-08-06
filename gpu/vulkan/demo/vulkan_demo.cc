@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -57,6 +58,9 @@ void VulkanDemo::Initialize() {
 }
 
 void VulkanDemo::Destroy() {
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+  vkDeviceWaitIdle(device);
   vulkan_surface_->Destroy();
 }
 
@@ -132,8 +136,9 @@ void VulkanDemo::CreateSkSurface() {
   }
   sk_surface_ = sk_surface;
   GrBackendSemaphore semaphore;
-  semaphore.initVulkan(scoped_write_->TakeBeginSemaphore());
-  auto result = sk_surface_->wait(1, &semaphore);
+  semaphore.initVulkan(scoped_write_->begin_semaphore());
+  auto result =
+      sk_surface_->wait(1, &semaphore, /*deleteSemaphoresAfterWait=*/false);
   DCHECK(result);
 }
 
@@ -197,7 +202,7 @@ void VulkanDemo::RenderFrame() {
   CreateSkSurface();
   Draw(sk_surface_->getCanvas(), 0.7);
   GrBackendSemaphore semaphore;
-  semaphore.initVulkan(scoped_write_->GetEndSemaphore());
+  semaphore.initVulkan(scoped_write_->end_semaphore());
   GrFlushInfo flush_info = {
       .fNumSemaphores = 1,
       .fSignalSemaphores = &semaphore,

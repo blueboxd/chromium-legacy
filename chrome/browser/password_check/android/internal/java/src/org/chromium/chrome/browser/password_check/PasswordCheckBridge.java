@@ -124,6 +124,10 @@ class PasswordCheckBridge {
                 mNativePasswordCheckBridge, credentials);
     }
 
+    void removeCredential(CompromisedCredential credential) {
+        PasswordCheckBridgeJni.get().removeCredential(mNativePasswordCheckBridge, credential);
+    }
+
     /**
      * Destroys its C++ counterpart.
      */
@@ -146,6 +150,7 @@ class PasswordCheckBridge {
         int getSavedPasswordsCount(long nativePasswordCheckBridge);
         void getCompromisedCredentials(
                 long nativePasswordCheckBridge, CompromisedCredential[] credentials);
+        void removeCredential(long nativePasswordCheckBridge, CompromisedCredential credentials);
         void destroy(long nativePasswordCheckBridge);
     }
 }

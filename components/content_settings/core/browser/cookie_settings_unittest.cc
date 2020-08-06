@@ -11,11 +11,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
@@ -27,7 +27,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
+#include "components/content_settings/core/common/features.h"
+#else
 #include "third_party/blink/public/common/features.h"
 namespace {
 constexpr char kAllowedRequestsHistogram[] =
@@ -175,8 +177,10 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
 // Test fixture with ImprovedCookieControls enabled.
 class ImprovedCookieControlsCookieSettingsTest : public CookieSettingsTest {
  public:
-  ImprovedCookieControlsCookieSettingsTest() : CookieSettingsTest() {
+  ImprovedCookieControlsCookieSettingsTest() {
+#if defined(OS_IOS)
     feature_list_.InitAndEnableFeature(kImprovedCookieControls);
+#endif
   }
 
  private:
@@ -218,6 +222,7 @@ TEST_F(ImprovedCookieControlsCookieSettingsTest,
       kBlockedSite, kFirstPartySite));
 }
 
+#if defined(OS_IOS)
 // Test fixture with ImprovedCookieControls disabled.
 class ImprovedCookieControlsDisabledCookieSettingsTest
     : public CookieSettingsTest {
@@ -243,6 +248,7 @@ TEST_F(ImprovedCookieControlsDisabledCookieSettingsTest,
   EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
       kBlockedSite, kFirstPartySite));
 }
+#endif
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {
   EXPECT_TRUE(

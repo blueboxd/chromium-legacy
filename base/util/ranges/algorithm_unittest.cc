@@ -24,6 +24,7 @@ namespace util {
 namespace {
 
 struct Int {
+  constexpr Int() = default;
   constexpr Int(int value) : value(value) {}
 
   int value = 0;
@@ -1024,6 +1025,78 @@ TEST(RangesTest, BinarySearch) {
   EXPECT_TRUE(ranges::binary_search(ints, 1, ranges::greater{}, proj));
   EXPECT_TRUE(ranges::binary_search(ints, 0, ranges::greater{}, proj));
   EXPECT_FALSE(ranges::binary_search(ints, -1, ranges::greater{}, proj));
+}
+
+TEST(RangesTest, IsPartitioned) {
+  int input[] = {1, 3, 5, 0, 4, 2};
+  EXPECT_TRUE(ranges::is_partitioned(input, input, is_odd));
+  EXPECT_TRUE(ranges::is_partitioned(input, input + 6, is_odd));
+  EXPECT_TRUE(ranges::is_partitioned(input, input, is_even));
+  EXPECT_FALSE(ranges::is_partitioned(input, input + 6, is_even));
+
+  Int ints[] = {1, 0, 4, 3, 2};
+  auto lt_2 = [](const Int& i) { return i.value < 2; };
+  EXPECT_TRUE(ranges::is_partitioned(ints, lt_2, &Int::value));
+}
+
+TEST(RangesTest, Partition) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 3, ranges::partition(input, input + 5, is_even));
+  EXPECT_TRUE(is_even(input[0]));
+  EXPECT_TRUE(is_even(input[1]));
+  EXPECT_TRUE(is_even(input[2]));
+  EXPECT_TRUE(is_odd(input[3]));
+  EXPECT_TRUE(is_odd(input[4]));
+
+  Int ints[] = {6, 7, 9, 8, 5};
+  EXPECT_EQ(ints + 3, ranges::partition(ints, is_odd, &Int::value));
+  EXPECT_TRUE(is_odd(ints[0].value));
+  EXPECT_TRUE(is_odd(ints[1].value));
+  EXPECT_TRUE(is_odd(ints[2].value));
+  EXPECT_TRUE(is_even(ints[3].value));
+  EXPECT_TRUE(is_even(ints[4].value));
+}
+
+TEST(RangesTest, StablePartition) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 3, ranges::stable_partition(input, input + 5, is_even));
+  EXPECT_THAT(input, ElementsAre(2, 0, 4, 3, 1));
+
+  Int ints[] = {6, 7, 9, 8, 5};
+  EXPECT_EQ(ints + 3, ranges::stable_partition(ints, is_odd, &Int::value));
+  EXPECT_THAT(ints, ElementsAre(7, 9, 5, 6, 8));
+}
+
+TEST(RangesTest, PartitionCopy) {
+  int input[] = {3, 1, 2, 0, 4};
+  int evens[5] = {};
+  int odds[5] = {};
+  EXPECT_THAT(ranges::partition_copy(input, input + 5, evens, odds, is_even),
+              Pair(evens + 3, odds + 2));
+  EXPECT_THAT(input, ElementsAre(3, 1, 2, 0, 4));
+  EXPECT_THAT(evens, ElementsAre(2, 0, 4, 0, 0));
+  EXPECT_THAT(odds, ElementsAre(3, 1, 0, 0, 0));
+
+  Int ints[] = {6, 7, 9, 8, 5};
+  Int odd_ints[5] = {};
+  Int even_ints[5] = {};
+  EXPECT_THAT(
+      ranges::partition_copy(ints, odd_ints, even_ints, is_odd, &Int::value),
+      Pair(odd_ints + 3, even_ints + 2));
+  EXPECT_THAT(ints, ElementsAre(6, 7, 9, 8, 5));
+  EXPECT_THAT(odd_ints, ElementsAre(7, 9, 5, 0, 0));
+  EXPECT_THAT(even_ints, ElementsAre(6, 8, 0, 0, 0));
+}
+
+TEST(RangesTest, PartitionPoint) {
+  int input[] = {1, 3, 5, 0, 4, 2};
+  EXPECT_EQ(input, ranges::partition_point(input, input, is_odd));
+  EXPECT_EQ(input + 3, ranges::partition_point(input, input + 6, is_odd));
+  EXPECT_EQ(input, ranges::partition_point(input, input, is_even));
+
+  Int ints[] = {1, 0, 4, 3, 2};
+  auto lt_2 = [](const Int& i) { return i.value < 2; };
+  EXPECT_EQ(ints + 2, ranges::partition_point(ints, lt_2, &Int::value));
 }
 
 }  // namespace util

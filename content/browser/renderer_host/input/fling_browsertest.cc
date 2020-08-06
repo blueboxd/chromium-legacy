@@ -343,6 +343,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   GURL first_url(embedded_test_server()->GetURL(
       "b.a.com", "/scrollable_page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), first_url));
+  // The test below only makes sense for same-site same-RFH navigations, so we
+  // need to ensure that we won't trigger a same-site cross-RFH navigation.
+  DisableProactiveBrowsingInstanceSwapFor(
+      shell()->web_contents()->GetMainFrame());
+
   SynchronizeThreads();
   SimulateTouchscreenFling(GetWidgetHost());
   WaitForScroll();

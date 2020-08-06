@@ -268,36 +268,24 @@ TEST(VTConfigUtil, GetImageBufferColorSpace_GAMMA28) {
   EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
 }
 
-TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_PQ) {
+TEST(VTConfigUtil, DISABLED_GetImageBufferColorSpace_BT2020_PQ) {
   auto cs = VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                             VideoColorSpace::TransferID::SMPTEST2084,
                             VideoColorSpace::MatrixID::BT2020_NCL,
                             gfx::ColorSpace::RangeID::LIMITED);
   auto image_buffer = CreateCVImageBuffer(cs);
   ASSERT_TRUE(image_buffer);
-  auto image_buffer_cs = GetImageBufferColorSpace(image_buffer);
-
-  // When BT.2020 is unavailable the default should be BT.709.
-  if (__builtin_available(macos 10.13, *))
-    EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
-  else
-    EXPECT_EQ(gfx::ColorSpace::CreateREC709(), image_buffer_cs);
+  EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
 }
 
-TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_HLG) {
+TEST(VTConfigUtil, DISABLED_GetImageBufferColorSpace_BT2020_HLG) {
   auto cs = VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                             VideoColorSpace::TransferID::ARIB_STD_B67,
                             VideoColorSpace::MatrixID::BT2020_NCL,
                             gfx::ColorSpace::RangeID::LIMITED);
   auto image_buffer = CreateCVImageBuffer(cs);
   ASSERT_TRUE(image_buffer);
-  auto image_buffer_cs = GetImageBufferColorSpace(image_buffer);
-
-  // When BT.2020 is unavailable the default should be BT.709.
-  if (__builtin_available(macos 10.13, *))
-    EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
-  else
-    EXPECT_EQ(gfx::ColorSpace::CreateREC709(), image_buffer_cs);
+  EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
 }
 
 }  // namespace media

@@ -61,27 +61,25 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-        <template is="dom-if" if="[[improvedCookieControlsEnabled_]]">
-          <settings-collapse-radio-button id="blockThirdPartyIncognito"
-              pref="[[prefs.generated.cookie_primary_setting]]"
-              name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
-              label="$i18n{cookiePageBlockThirdIncognito}">
-            <div slot="collapse">
-              <div class="bullet-line">
-                <iron-icon icon="settings:cookie"></iron-icon>
-                <div class="secondary">
-                      $i18n{cookiePageBlockThirdIncognitoBulOne}
-                </div>
-              </div>
-              <div class="bullet-line">
-                <iron-icon icon="settings:block"></iron-icon>
-                <div class="secondary">
-                      $i18n{cookiePageBlockThirdIncognitoBulTwo}
-                </div>
+        <settings-collapse-radio-button id="blockThirdPartyIncognito"
+            pref="[[prefs.generated.cookie_primary_setting]]"
+            name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
+            label="$i18n{cookiePageBlockThirdIncognito}">
+          <div slot="collapse">
+            <div class="bullet-line">
+              <iron-icon icon="settings:cookie"></iron-icon>
+              <div class="secondary">
+                    $i18n{cookiePageBlockThirdIncognitoBulOne}
               </div>
             </div>
-          </settings-collapse-radio-button>
-        </template>
+            <div class="bullet-line">
+              <iron-icon icon="settings:block"></iron-icon>
+              <div class="secondary">
+                    $i18n{cookiePageBlockThirdIncognitoBulTwo}
+              </div>
+            </div>
+          </div>
+        </settings-collapse-radio-button>
         <settings-collapse-radio-button id="blockThirdParty"
             pref="[[prefs.generated.cookie_primary_setting]]"
             name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY]]"

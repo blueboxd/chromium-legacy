@@ -327,24 +327,24 @@ Polymer({
         if ((loadTimeData.getBoolean('requestsApVerdicts') &&
              dangerType === DangerType.UNCOMMON_CONTENT) ||
             dangerType === DangerType.SENSITIVE_CONTENT_WARNING) {
-          return 'cr:error';
+          return 'cr:warning';
         }
 
-        const WARNING_TYPES = [
+        const ERROR_TYPES = [
           DangerType.SENSITIVE_CONTENT_BLOCK,
           DangerType.BLOCKED_TOO_LARGE,
           DangerType.BLOCKED_PASSWORD_PROTECTED,
         ];
-        if (WARNING_TYPES.includes(dangerType)) {
-          return 'cr:warning';
+        if (ERROR_TYPES.includes(dangerType)) {
+          return 'cr:error';
         }
 
         if (this.data.state === States.ASYNC_SCANNING) {
-          return 'cr:error';
+          return 'cr:info';
         }
       }
       if (this.isDangerous_) {
-        return 'cr:warning';
+        return 'cr:error';
       }
       if (!this.useFileIcon_) {
         return 'cr:insert-drive-file';

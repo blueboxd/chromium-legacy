@@ -8,10 +8,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/value_wrapper_synthetic_module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
@@ -98,20 +98,16 @@ class ModuleScriptTest : public ::testing::Test, public ParametrizedModuleTest {
   // Tests |window.foo| is set correctly, and reset |window.foo| for the next
   // test.
   static void TestFoo(V8TestingScope& scope) {
-    v8::Local<v8::Value> value = scope.GetFrame()
-                                     .GetScriptController()
-                                     .ExecuteScriptInMainWorldAndReturnValue(
-                                         ScriptSourceCode("window.foo"), KURL(),
-                                         SanitizeScriptErrors::kSanitize);
+    v8::Local<v8::Value> value =
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode("window.foo"))
+            ->RunScriptAndReturnValue(&scope.GetFrame());
     EXPECT_TRUE(value->IsNumber());
     EXPECT_EQ(kScriptRepeatLength,
               value->NumberValue(scope.GetContext()).ToChecked());
 
-    scope.GetFrame()
-        .GetScriptController()
-        .ExecuteScriptInMainWorldAndReturnValue(
-            ScriptSourceCode("window.foo = undefined;"), KURL(),
-            SanitizeScriptErrors::kSanitize);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode("window.foo = undefined;"))
+        ->RunScriptAndReturnValue(&scope.GetFrame());
   }
 
   // Accessors for ModuleScript private members.
@@ -250,10 +246,10 @@ TEST_P(ModuleScriptTest, V8CodeCacheWithoutDiscarding) {
   // via ScriptSourceCode+ScriptResource, but here they are passed via
   // ScriptSourceCode constructor for inline scripts. So far, this is sufficient
   // for unit testing.
-  scope.GetFrame().GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(LargeSourceText(), ScriptSourceLocationType::kInternal,
-                       cache_handler),
-      KURL(), SanitizeScriptErrors::kSanitize);
+                       cache_handler))
+      ->RunScriptAndReturnValue(&scope.GetFrame());
 
   checkpoint.Call(4);
 
@@ -391,11 +387,10 @@ TEST_P(ModuleScriptTest, V8CodeCacheWithDiscarding) {
   // via ScriptSourceCode+ScriptResource, but here they are passed via
   // ScriptSourceCode constructor for inline scripts. So far, this is sufficient
   // for unit testing.
-  scope.GetFrame().GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(LargeSourceText(), ScriptSourceLocationType::kInternal,
-                       cache_handler),
-      KURL(), SanitizeScriptErrors::kSanitize);
-
+                       cache_handler))
+      ->RunScriptAndReturnValue(&scope.GetFrame());
   checkpoint.Call(4);
 
   TestFoo(scope);

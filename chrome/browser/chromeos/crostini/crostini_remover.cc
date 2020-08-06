@@ -34,6 +34,21 @@ CrostiniRemover::~CrostiniRemover() = default;
 
 void CrostiniRemover::RemoveCrostini() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (CrostiniManager::GetForProfile(profile_)->IsCrosTerminaInstalled()) {
+    CrostiniManager::GetForProfile(profile_)->InstallTerminaComponent(
+        base::BindOnce(&CrostiniRemover::OnComponentLoaded, this));
+  } else {
+    // Crostini installation didn't install the component. Concierge should not
+    // be running, nor should there be any VMs.
+    CrostiniRemover::DestroyDiskImageFinished(true);
+  }
+}
+
+void CrostiniRemover::OnComponentLoaded(CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
+    std::move(callback_).Run(result);
+    return;
+  }
   CrostiniManager::GetForProfile(profile_)->StartConcierge(
       base::BindOnce(&CrostiniRemover::OnConciergeStarted, this));
 }
@@ -72,21 +87,17 @@ void CrostiniRemover::DestroyDiskImageFinished(bool success) {
     return;
   }
 
-  CrostiniManager::GetForProfile(profile_)->UninstallTermina(
-      base::BindOnce(&CrostiniRemover::UninstallTerminaFinished, this));
-}
-
-void CrostiniRemover::UninstallTerminaFinished(bool success) {
-  if (!success) {
-    std::move(callback_).Run(CrostiniResult::UNKNOWN_ERROR);
-    return;
+  // UninstallTerminaComponent returns false both if Termina wasn't installed
+  // and if the uninstall failed, so we explicitly reset the relevant
+  // preferences even if it's already uninstalled
+  if (!CrostiniManager::GetForProfile(profile_)->IsCrosTerminaInstalled() ||
+      CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
+    profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
+    profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
+    profile_->GetPrefs()->Set(prefs::kCrostiniContainers,
+                              base::Value(base::Value::Type::LIST));
+    profile_->GetPrefs()->ClearPref(prefs::kCrostiniDefaultContainerConfigured);
   }
-
-  profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
-  profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
-  profile_->GetPrefs()->Set(prefs::kCrostiniContainers,
-                            base::Value(base::Value::Type::LIST));
-  profile_->GetPrefs()->ClearPref(prefs::kCrostiniDefaultContainerConfigured);
   std::move(callback_).Run(CrostiniResult::SUCCESS);
 }
 

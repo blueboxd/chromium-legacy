@@ -112,7 +112,6 @@ void CaptionBubbleModel::CommitPartialText() {
   // observer that the text has changed.
   const size_t num_lines = observer_->GetNumLinesInLabel();
   if (num_lines > kMaxLines) {
-    DCHECK(base::IsStringASCII(final_text_));
     const size_t truncate_index =
         observer_->GetTextIndexOfLineInLabel(num_lines - kMaxLines);
     final_text_.erase(0, truncate_index);

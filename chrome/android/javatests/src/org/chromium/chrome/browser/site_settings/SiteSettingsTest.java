@@ -41,10 +41,8 @@ import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference;
@@ -59,7 +57,6 @@ import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
@@ -82,7 +79,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
-@EnableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
 public class SiteSettingsTest {
     @Rule
     public PermissionTestRule mPermissionRule = new PermissionTestRule(true);
@@ -200,55 +196,6 @@ public class SiteSettingsTest {
         });
     }
 
-    private void setCookiesEnabledOld(
-            final SettingsActivity settingsActivity, final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final SingleCategorySettings websitePreferences =
-                        (SingleCategorySettings) settingsActivity.getMainFragment();
-                final ChromeSwitchPreference cookies =
-                        (ChromeSwitchPreference) websitePreferences.findPreference(
-                                SingleCategorySettings.BINARY_TOGGLE_KEY);
-                final ChromeBaseCheckBoxPreference thirdPartyCookies =
-                        (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                                SingleCategorySettings.THIRD_PARTY_COOKIES_TOGGLE_KEY);
-
-                if (thirdPartyCookies != null) {
-                    Assert.assertEquals("Third-party cookie toggle should be "
-                                    + (doesAcceptCookies() ? "enabled" : " disabled"),
-                            doesAcceptCookies(), thirdPartyCookies.isEnabled());
-                }
-                websitePreferences.onPreferenceChange(cookies, enabled);
-                Assert.assertEquals("Cookies should be " + (enabled ? "allowed" : "blocked"),
-                        doesAcceptCookies(), enabled);
-            }
-
-            private boolean doesAcceptCookies() {
-                return WebsitePreferenceBridge.isCategoryEnabled(
-                        getBrowserContextHandle(), ContentSettingsType.COOKIES);
-            }
-        });
-    }
-
-    private void setThirdPartyCookiesEnabledOld(
-            final SettingsActivity settingsActivity, final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            final SingleCategorySettings websitePreferences =
-                    (SingleCategorySettings) settingsActivity.getMainFragment();
-            final ChromeBaseCheckBoxPreference thirdPartyCookies =
-                    (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                            SingleCategorySettings.THIRD_PARTY_COOKIES_TOGGLE_KEY);
-
-            websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
-            Assert.assertEquals(
-                    "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                    UserPrefs.get(Profile.getLastUsedRegularProfile())
-                            .getBoolean(BLOCK_THIRD_PARTY_COOKIES),
-                    enabled);
-        });
-    }
-
     private void setBlockCookiesSiteException(final SettingsActivity settingsActivity,
             final String hostname, final boolean thirdPartiesOnly) {
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -259,7 +206,6 @@ public class SiteSettingsTest {
 
                 Assert.assertTrue(doesAcceptCookies());
                 if (thirdPartiesOnly) {
-                    Assert.assertTrue(improvedControlsEnabled());
                     websitePreferences.onAddSite(SITE_WILDCARD, hostname);
                 } else {
                     websitePreferences.onAddSite(hostname, SITE_WILDCARD);
@@ -271,11 +217,6 @@ public class SiteSettingsTest {
                         getBrowserContextHandle(), ContentSettingsType.COOKIES);
             }
 
-            private boolean improvedControlsEnabled() {
-                return ContentSettingsFeatureList.isEnabled(
-                        ContentSettingsFeatureList
-                                .IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING);
-            }
         });
     }
 
@@ -410,23 +351,6 @@ public class SiteSettingsTest {
                     actualKeys.toString() + " should match " + Arrays.toString(expectedKeys),
                     Arrays.equals(actualKeys.toArray(), expectedKeys));
         });
-        settingsActivity.finish();
-    }
-
-    /**
-     * Tests that disabling cookies turns off the third-party cookie toggle.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
-    public void testThirdPartyCookieToggleGetsDisabledOld() {
-        SettingsActivity settingsActivity =
-                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
-        setCookiesEnabledOld(settingsActivity, true);
-        setThirdPartyCookiesEnabledOld(settingsActivity, false);
-        setThirdPartyCookiesEnabledOld(settingsActivity, true);
-        setCookiesEnabledOld(settingsActivity, false);
         settingsActivity.finish();
     }
 

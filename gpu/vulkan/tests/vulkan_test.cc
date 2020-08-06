@@ -8,7 +8,6 @@
 #include "gpu/vulkan/tests/basic_vulkan_test.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
-#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -45,16 +44,15 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
       surface->Reshape(gfx::Size(100, 100), gfx::OVERLAY_TRANSFORM_NONE));
 
   constexpr VkSemaphore kNullSemaphore = VK_NULL_HANDLE;
-  auto* fence_helper = GetDeviceQueue()->GetFenceHelper();
 
   base::Optional<VulkanSwapChain::ScopedWrite> scoped_write;
   scoped_write.emplace(surface->swap_chain());
   EXPECT_TRUE(scoped_write->success());
 
-  VkSemaphore begin_semaphore = scoped_write->TakeBeginSemaphore();
+  VkSemaphore begin_semaphore = scoped_write->begin_semaphore();
   EXPECT_NE(begin_semaphore, kNullSemaphore);
 
-  VkSemaphore end_semaphore = scoped_write->GetEndSemaphore();
+  VkSemaphore end_semaphore = scoped_write->end_semaphore();
   EXPECT_NE(end_semaphore, kNullSemaphore);
 
   auto command_buffer = command_pool->CreatePrimaryCommandBuffer();
@@ -66,7 +64,6 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
                                           VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   }
   EXPECT_TRUE(command_buffer->Submit(1, &begin_semaphore, 1, &end_semaphore));
-  fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(begin_semaphore);
   scoped_write.reset();
 
   // First swap is a special case, call it first to get better errors.
@@ -82,10 +79,10 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
     scoped_write.emplace(surface->swap_chain());
     EXPECT_TRUE(scoped_write->success());
 
-    VkSemaphore begin_semaphore = scoped_write->TakeBeginSemaphore();
+    VkSemaphore begin_semaphore = scoped_write->begin_semaphore();
     EXPECT_NE(begin_semaphore, kNullSemaphore);
 
-    VkSemaphore end_semaphore = scoped_write->GetEndSemaphore();
+    VkSemaphore end_semaphore = scoped_write->end_semaphore();
     EXPECT_NE(end_semaphore, kNullSemaphore);
 
     auto command_buffer = command_pool->CreatePrimaryCommandBuffer();
@@ -97,7 +94,6 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
                                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     }
     EXPECT_TRUE(command_buffer->Submit(1, &begin_semaphore, 1, &end_semaphore));
-    fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(begin_semaphore);
     scoped_write.reset();
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());

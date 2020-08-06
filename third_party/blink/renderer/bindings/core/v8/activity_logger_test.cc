@@ -5,12 +5,12 @@
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_cache.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -77,10 +77,7 @@ class ActivityLoggerTest : public testing::Test {
     V8DOMActivityLogger::SetActivityLogger(kIsolatedWorldId, String(),
                                            base::WrapUnique(activity_logger_));
     web_view_helper_.Initialize();
-    script_controller_ = &web_view_helper_.GetWebView()
-                              ->MainFrameImpl()
-                              ->GetFrame()
-                              ->GetScriptController();
+    local_frame_ = web_view_helper_.GetWebView()->MainFrameImpl()->GetFrame();
     frame_test_helpers::LoadFrame(
         web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
   }
@@ -91,16 +88,16 @@ class ActivityLoggerTest : public testing::Test {
   }
 
   void ExecuteScriptInMainWorld(const String& script) const {
-    v8::HandleScope scope(v8::Isolate::GetCurrent());
-    script_controller_->ExecuteScriptInMainWorld(script);
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(script))
+        ->RunScript(local_frame_);
     PumpPendingRequestsForFrameToLoad(web_view_helper_.LocalMainFrame());
   }
 
   void ExecuteScriptInIsolatedWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
-    script_controller_->ExecuteScriptInIsolatedWorld(
-        kIsolatedWorldId, ScriptSourceCode(script), KURL(),
-        SanitizeScriptErrors::kSanitize);
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(script))
+        ->RunScriptInIsolatedWorldAndReturnValue(local_frame_,
+                                                 kIsolatedWorldId);
     PumpPendingRequestsForFrameToLoad(web_view_helper_.LocalMainFrame());
   }
 
@@ -114,7 +111,7 @@ class ActivityLoggerTest : public testing::Test {
   static const int kIsolatedWorldId = 1;
 
   WebViewHelper web_view_helper_;
-  Persistent<ScriptController> script_controller_;
+  Persistent<LocalFrame> local_frame_;
   // TestActivityLogger is owned by a static table within V8DOMActivityLogger
   // and should be alive as long as not overwritten.
   TestActivityLogger* activity_logger_;

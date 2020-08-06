@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -62,12 +62,9 @@ class TextFinderTest : public testing::Test {
 };
 
 v8::Local<v8::Value> TextFinderTest::EvalJs(const std::string& script) {
-  return GetDocument()
-      .GetFrame()
-      ->GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(script.c_str()),
-                                              KURL(),
-                                              SanitizeScriptErrors::kSanitize);
+  return ClassicScript::CreateUnspecifiedScript(
+             ScriptSourceCode(script.c_str()))
+      ->RunScriptAndReturnValue(GetDocument().GetFrame());
 }
 
 Document& TextFinderTest::GetDocument() const {

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin.account_picker;
 
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetProperties.AccountPickerBottomSheetState;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -18,27 +19,47 @@ class AccountPickerBottomSheetViewBinder {
             view.getSelectedAccountView().setOnClickListener(v -> {
                 model.get(AccountPickerBottomSheetProperties.ON_SELECTED_ACCOUNT_CLICKED).run();
             });
-        } else if (propertyKey == AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED) {
-            if (model.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)) {
-                view.expandAccountList();
-            } else {
-                boolean isSelectedAccountNonNull =
-                        model.get(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA) != null;
-                view.collapseAccountList(isSelectedAccountNonNull);
-            }
+        } else if (propertyKey
+                == AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE) {
+            @AccountPickerBottomSheetState
+            int state =
+                    model.get(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE);
+            switchToState(view, state);
         } else if (propertyKey == AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA) {
-            if (!model.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)) {
-                // Selected account data (which can be null) is only updated
-                // when the account list is collapsed.
-                DisplayableProfileData profileData =
-                        model.get(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA);
-                view.collapseAccountList(profileData != null);
-                view.updateCollapsedAccountList(profileData);
+            DisplayableProfileData profileData =
+                    model.get(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA);
+            if (profileData != null) {
+                view.updateSelectedAccount(profileData);
             }
         } else if (propertyKey == AccountPickerBottomSheetProperties.ON_CONTINUE_AS_CLICKED) {
             view.getContinueAsButton().setOnClickListener(v -> {
                 model.get(AccountPickerBottomSheetProperties.ON_CONTINUE_AS_CLICKED).run();
             });
+        }
+    }
+
+    /**
+     * Sets up the configuration of account picker bottom sheet according to the given state.
+     */
+    private static void switchToState(AccountPickerBottomSheetView view,
+            @AccountPickerBottomSheetState int accountPickerBottomSheetState) {
+        switch (accountPickerBottomSheetState) {
+            case AccountPickerBottomSheetState.NO_ACCOUNTS:
+                view.collapseToNoAccountView();
+                break;
+            case AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST:
+                view.collapseAccountList();
+                break;
+            case AccountPickerBottomSheetState.EXPANDED_ACCOUNT_LIST:
+                view.expandAccountList();
+                break;
+            case AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS:
+                // TODO(https://crbug.com/1102784): Implement UI update when sign-in in progress
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Cannot bind AccountPickerBottomSheetView for the state:"
+                        + accountPickerBottomSheetState);
         }
     }
 

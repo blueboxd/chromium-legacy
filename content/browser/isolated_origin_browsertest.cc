@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -2057,7 +2058,15 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
       ExecuteScript(web_contents(),
                     "location.href = '" + isolated_subdomain_url.spec() + "'"));
   observer.Wait();
-  EXPECT_EQ(isolated_instance, web_contents()->GetSiteInstance());
+  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+    // If same-site ProactivelySwapBrowsingInstance is enabled, they should be
+    // in different site instances but in the same process.
+    EXPECT_NE(isolated_instance, web_contents()->GetSiteInstance());
+    EXPECT_EQ(isolated_instance->GetProcess(),
+              web_contents()->GetSiteInstance()->GetProcess());
+  } else {
+    EXPECT_EQ(isolated_instance, web_contents()->GetSiteInstance());
+  }
 }
 
 // This class allows intercepting the OpenLocalStorage method and changing
@@ -3808,12 +3817,13 @@ IN_PROC_BROWSER_TEST_F(WildcardOriginIsolationTest, MainFrameNavigation) {
 
   // Navigate in the following order, all within the same shell:
   // 1. a_foo_url
-  // 2. b_foo_url      -- check (1) and (2) have the same pid / instance
+  // 2. b_foo_url      -- check (1) and (2) have the same pids / instances (*)
   // 3. a_isolated_url
   // 4. b_isolated_url -- check (2), (3) and (4) have distinct pids / instances
   // 5. a_foo_url      -- check (4) and (5) have distinct pids / instances
-  // 6. b_foo_url      -- check (5) and (6) have the same pid / instance
-
+  // 6. b_foo_url      -- check (5) and (6) have the same pids / instances (*)
+  // (*) SiteInstances will be the same unless ProactivelySwapBrowsingInstances
+  // is enabled for same-site navigations.
   EXPECT_TRUE(NavigateToURL(shell(), a_foo_url));
   int a_foo_pid =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
@@ -3829,7 +3839,11 @@ IN_PROC_BROWSER_TEST_F(WildcardOriginIsolationTest, MainFrameNavigation) {
   // Check that hosts in the wildcard subdomain (but not the wildcard subdomain
   // itself) have their processes reused between navigation events.
   EXPECT_EQ(a_foo_pid, b_foo_pid);
-  EXPECT_EQ(a_foo_instance, b_foo_instance);
+  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+    EXPECT_NE(a_foo_instance, b_foo_instance);
+  } else {
+    EXPECT_EQ(a_foo_instance, b_foo_instance);
+  }
 
   EXPECT_TRUE(NavigateToURL(shell(), a_isolated_url));
   int a_isolated_pid =
@@ -3869,7 +3883,11 @@ IN_PROC_BROWSER_TEST_F(WildcardOriginIsolationTest, MainFrameNavigation) {
   // Confirm that navigation events in the isolated domain behave the same as
   // before visiting the wildcard subdomain.
   EXPECT_EQ(a_foo_pid, b_foo_pid);
-  EXPECT_EQ(a_foo_instance, b_foo_instance);
+  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+    EXPECT_NE(a_foo_instance, b_foo_instance);
+  } else {
+    EXPECT_EQ(a_foo_instance, b_foo_instance);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WildcardOriginIsolationTest, SubFrameNavigation) {

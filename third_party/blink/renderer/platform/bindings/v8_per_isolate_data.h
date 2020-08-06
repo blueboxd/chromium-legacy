@@ -140,9 +140,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
     is_handling_recursion_level_error_ = value;
   }
 
-  bool IsReportingException() const { return is_reporting_exception_; }
-  void SetReportingException(bool value) { is_reporting_exception_ = value; }
-
   bool IsUseCounterDisabled() const { return use_counter_disabled_; }
 
   V8PrivateProperty* PrivateProperty() { return private_property_.get(); }
@@ -277,7 +274,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   friend class UseCounterDisabledScope;
 
   bool is_handling_recursion_level_error_;
-  bool is_reporting_exception_;
 
   Vector<base::OnceClosure> end_of_scope_tasks_;
   std::unique_ptr<Data> thread_debugger_;

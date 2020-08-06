@@ -190,20 +190,11 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
                                            v8::Local<v8::Value> data) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
 
   // During the frame teardown, there may not be a valid context.
   ScriptState* script_state = ScriptState::Current(isolate);
   if (!script_state->ContextIsValid())
     return;
-
-  // Exceptions that occur in error handler should be ignored since in that case
-  // WorkerGlobalScope::dispatchErrorEvent will send the exception to the worker
-  // object.
-  if (per_isolate_data->IsReportingException())
-    return;
-
-  per_isolate_data->SetReportingException(true);
 
   ExecutionContext* context = ExecutionContext::From(script_state);
   std::unique_ptr<SourceLocation> location =
@@ -231,8 +222,6 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
     ExecutionContext::From(script_state)
         ->DispatchErrorEvent(event, sanitize_script_errors);
   }
-
-  per_isolate_data->SetReportingException(false);
 }
 
 namespace {

@@ -52,7 +52,6 @@ import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.components.browser_ui.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.content_settings.ContentSettingValues;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -941,6 +940,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         FourStateCookieSettingsPreference fourStateCookieToggle =
                 (FourStateCookieSettingsPreference) screen.findPreference(
                         FOUR_STATE_COOKIE_TOGGLE_KEY);
+        // TODO(crbug.com/1104836): Remove the old third-party cookie blocking UI
         Preference thirdPartyCookies = screen.findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
         Preference notificationsVibrate = screen.findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         Preference notificationsQuietUi = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
@@ -976,9 +976,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             maybeShowOsWarning(screen);
         }
 
-        if (!(mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                    && ContentSettingsFeatureList.isEnabled(
-                            ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS))) {
+        if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
             screen.removePreference(screen.findPreference(COOKIE_INFO_TEXT_KEY));
         }
 

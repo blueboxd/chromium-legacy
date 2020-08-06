@@ -43,6 +43,12 @@ void PasswordCheckBridge::GetCompromisedCredentials(
   // TODO(crbug.com/1102025): implement this.
 }
 
+void PasswordCheckBridge::RemoveCredential(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& credential) {
+  // TODO(crbug.com/1108358): implement this.
+}
+
 void PasswordCheckBridge::Destroy(JNIEnv* env) {
   delete this;
 }

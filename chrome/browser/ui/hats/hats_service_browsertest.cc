@@ -27,7 +27,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/version_info/version_info.h"
@@ -49,9 +48,6 @@ base::test::ScopedFeatureList::FeatureAndParams settings_probability_one{
     {{"probability", "1.000"},
      {"survey", kHatsSurveyTriggerSettings},
      {"en_site_id", "test_site_id"}}};
-base::test::ScopedFeatureList::FeatureAndParams improved_cookie_controls{
-    content_settings::kImprovedCookieControls,
-    {{"DefaultInIncognito", "true"}}};
 
 class ScopedSetMetricsConsent {
  public:
@@ -202,8 +198,7 @@ class HatsServiceImprovedCookieControlsEnabled
     : public HatsServiceBrowserTestBase {
  protected:
   HatsServiceImprovedCookieControlsEnabled()
-      : HatsServiceBrowserTestBase(
-            {probability_one, improved_cookie_controls}) {}
+      : HatsServiceBrowserTestBase({probability_one}) {}
 
   ~HatsServiceImprovedCookieControlsEnabled() override = default;
 

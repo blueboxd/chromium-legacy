@@ -181,13 +181,14 @@ TEST(CallbackListTest, ArityTest) {
 // Sanity check that closures added to the list will be run, and those removed
 // from the list will not be run.
 TEST(CallbackListTest, BasicTest) {
-  RepeatingClosureList cb_reg;
   Listener a, b, c;
+  RepeatingClosureList cb_reg;
 
   std::unique_ptr<RepeatingClosureList::Subscription> a_subscription =
       cb_reg.Add(BindRepeating(&Listener::IncrementTotal, Unretained(&a)));
   std::unique_ptr<RepeatingClosureList::Subscription> b_subscription =
       cb_reg.Add(BindRepeating(&Listener::IncrementTotal, Unretained(&b)));
+  cb_reg.AddUnsafe(BindRepeating(&Listener::IncrementTotal, Unretained(&c)));
 
   EXPECT_TRUE(a_subscription.get());
   EXPECT_TRUE(b_subscription.get());
@@ -196,6 +197,7 @@ TEST(CallbackListTest, BasicTest) {
 
   EXPECT_EQ(1, a.total());
   EXPECT_EQ(1, b.total());
+  EXPECT_EQ(1, c.total());
 
   b_subscription.reset();
 
@@ -206,7 +208,7 @@ TEST(CallbackListTest, BasicTest) {
 
   EXPECT_EQ(2, a.total());
   EXPECT_EQ(1, b.total());
-  EXPECT_EQ(1, c.total());
+  EXPECT_EQ(3, c.total());
 }
 
 // Similar to BasicTest but with OnceCallbacks instead of Repeating.

@@ -347,7 +347,14 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       current_frame_host()->GetSiteInstance());
 
   EXPECT_TRUE(NavigateToURL(shell(), coop_page));
-  EXPECT_EQ(current_frame_host()->GetSiteInstance(), initial_site_instance);
+  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+    // When ProactivelySwapBrowsingInstance is enabled on same-site navigations,
+    // the SiteInstance will change on same-site navigations (but COOP should
+    // still be ignored).
+    EXPECT_NE(current_frame_host()->GetSiteInstance(), initial_site_instance);
+  } else {
+    EXPECT_EQ(current_frame_host()->GetSiteInstance(), initial_site_instance);
+  }
   EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
             CoopUnsafeNone());
 
@@ -912,14 +919,19 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     shell()->LoadURL(coop_page);
     EXPECT_TRUE(coop_navigation.WaitForRequestStart());
 
-    // TODO(ahemery): RenderDocument will always create a Speculative RFH.
-    // Update these expectations to test the speculative RFH's SI relation when
-    // RenderDocument lands.
-    EXPECT_FALSE(web_contents()
-                     ->GetFrameTree()
-                     ->root()
-                     ->render_manager()
-                     ->speculative_frame_host());
+    auto* speculative_rfh = web_contents()
+                                ->GetFrameTree()
+                                ->root()
+                                ->render_manager()
+                                ->speculative_frame_host();
+    if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+      // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+      // same-site main-frame navigations, the navigation will result in a new
+      // RFH, so it will create a pending RFH.
+      EXPECT_TRUE(speculative_rfh);
+    } else {
+      EXPECT_FALSE(speculative_rfh);
+    }
 
     coop_navigation.WaitForNavigationFinished();
 
@@ -942,14 +954,19 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     shell()->LoadURL(non_coop_page);
     EXPECT_TRUE(non_coop_navigation.WaitForRequestStart());
 
-    // TODO(ahemery): RenderDocument will always create a Speculative RFH.
-    // Update these expectations to test the speculative RFH's SI relation when
-    // RenderDocument lands.
-    EXPECT_FALSE(web_contents()
-                     ->GetFrameTree()
-                     ->root()
-                     ->render_manager()
-                     ->speculative_frame_host());
+    auto* speculative_rfh = web_contents()
+                                ->GetFrameTree()
+                                ->root()
+                                ->render_manager()
+                                ->speculative_frame_host();
+    if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+      // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+      // same-site main-frame navigations, the navigation will result in a new
+      // RFH, so it will create a pending RFH.
+      EXPECT_TRUE(speculative_rfh);
+    } else {
+      EXPECT_FALSE(speculative_rfh);
+    }
 
     non_coop_navigation.WaitForNavigationFinished();
 

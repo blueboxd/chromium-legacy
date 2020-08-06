@@ -525,7 +525,7 @@ void CaptionBubble::SetModel(CaptionBubbleModel* model) {
 
 void CaptionBubble::OnTextChanged() {
   DCHECK(model_);
-  label_->SetText(base::ASCIIToUTF16(model_->GetFullText()));
+  label_->SetText(base::UTF8ToUTF16(model_->GetFullText()));
   UpdateBubbleAndWaitTextVisibility();
 }
 

@@ -534,7 +534,6 @@ bool AVIFImageDecoder::CanReusePreviousFrameBuffer(size_t index) const {
 }
 
 cc::YUVSubsampling AVIFImageDecoder::GetYUVSubsampling() const {
-  DCHECK(CanDecodeToYUV());
   switch (decoder_->image->yuvFormat) {
     case AVIF_PIXEL_FORMAT_YUV420:
       return cc::YUVSubsampling::k420;
@@ -543,6 +542,7 @@ cc::YUVSubsampling AVIFImageDecoder::GetYUVSubsampling() const {
     case AVIF_PIXEL_FORMAT_YUV444:
       return cc::YUVSubsampling::k444;
     case AVIF_PIXEL_FORMAT_YUV400:
+      return cc::YUVSubsampling::kUnknown;
     case AVIF_PIXEL_FORMAT_NONE:
       NOTREACHED();
       return cc::YUVSubsampling::kUnknown;

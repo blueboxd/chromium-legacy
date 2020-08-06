@@ -46,7 +46,6 @@ extern const char kCrostiniFolderId[];
 extern const char kCrostiniDefaultImageServerUrl[];
 extern const char kCrostiniStretchImageAlias[];
 extern const char kCrostiniBusterImageAlias[];
-extern const char kCrostiniDlcName[];
 
 extern const base::FilePath::CharType kHomeDirectory[];
 

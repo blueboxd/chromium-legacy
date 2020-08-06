@@ -6,11 +6,9 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -50,8 +48,6 @@ class CookieControlsServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    feature_list_.InitAndEnableFeature(
-        content_settings::kImprovedCookieControls);
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
@@ -59,8 +55,6 @@ class CookieControlsServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   std::unique_ptr<CookieControlsServiceObserver> observer_;
 
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(CookieControlsServiceTest, HandleCookieControlsToggleChanged) {

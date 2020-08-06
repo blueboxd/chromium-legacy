@@ -7,11 +7,11 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -250,11 +250,9 @@ TEST(ModuleRecordTest, Evaluate) {
 
   EXPECT_TRUE(ModuleRecord::Evaluate(scope.GetScriptState(), module, js_url)
                   .IsSuccess());
-  v8::Local<v8::Value> value = scope.GetFrame()
-                                   .GetScriptController()
-                                   .ExecuteScriptInMainWorldAndReturnValue(
-                                       ScriptSourceCode("window.foo"), KURL(),
-                                       SanitizeScriptErrors::kSanitize);
+  v8::Local<v8::Value> value =
+      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode("window.foo"))
+          ->RunScriptAndReturnValue(&scope.GetFrame());
   ASSERT_TRUE(value->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
 

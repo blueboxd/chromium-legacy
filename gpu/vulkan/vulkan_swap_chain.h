@@ -41,13 +41,8 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     VkImage image() const { return image_; }
     uint32_t image_index() const { return image_index_; }
     VkImageLayout image_layout() const { return image_layout_; }
-
-    // Take the begin write semaphore. The ownership of the semaphore will be
-    // transferred to the caller.
-    VkSemaphore TakeBeginSemaphore();
-
-    // Get the end write semaphore.
-    VkSemaphore GetEndSemaphore();
+    VkSemaphore begin_semaphore() const { return begin_semaphore_; }
+    VkSemaphore end_semaphore() const { return end_semaphore_; }
 
    private:
     VulkanSwapChain* const swap_chain_;
@@ -111,6 +106,15 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   }
 
  private:
+  struct ImageData {
+    VkImage image = VK_NULL_HANDLE;
+    VkImageLayout image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    // Semaphore used for vkAcquireNextImageKHR()
+    VkSemaphore acquire_semaphore = VK_NULL_HANDLE;
+    // Semaphore used for vkQueuePresentKHR()
+    VkSemaphore present_semaphore = VK_NULL_HANDLE;
+  };
+
   bool InitializeSwapChain(VkSurfaceKHR surface,
                            const VkSurfaceFormatKHR& surface_format,
                            const gfx::Size& image_size,
@@ -129,13 +133,23 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   bool BeginWriteCurrentImage(VkImage* image,
                               uint32_t* image_index,
                               VkImageLayout* layout,
-                              VkSemaphore* semaphore);
-  void EndWriteCurrentImage(VkSemaphore semaphore);
+                              VkSemaphore* begin_semaphore,
+                              VkSemaphore* end_semaphore);
+  void EndWriteCurrentImage();
 
   bool PresentBuffer(const gfx::Rect& rect) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool AcquireNextImage() EXCLUSIVE_LOCKS_REQUIRED(lock_);
   // Wait until PostSubBufferAsync() is finished on ThreadPool.
   void WaitUntilPostSubBufferAsyncFinished() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  struct FenceAndSemaphores {
+    VkFence fence = VK_NULL_HANDLE;
+    VkSemaphore semaphores[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+  };
+  FenceAndSemaphores GetOrCreateFenceAndSemaphores()
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void ReturnFenceAndSemaphores(const FenceAndSemaphores& fence_and_semaphores)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   mutable base::Lock lock_;
 
@@ -145,27 +159,16 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   VkSwapchainKHR swap_chain_ GUARDED_BY(lock_) = VK_NULL_HANDLE;
   gfx::Size size_;
 
-  struct ImageData {
-    ImageData();
-    ImageData(ImageData&& other);
-    ~ImageData();
-
-    ImageData& operator=(ImageData&& other);
-
-    VkImage image = VK_NULL_HANDLE;
-    VkImageLayout image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // Semaphore passed to vkQueuePresentKHR to wait on.
-    VkSemaphore present_begin_semaphore = VK_NULL_HANDLE;
-    // Semaphore signaled when present engine is done with the image.
-    VkSemaphore present_end_semaphore = VK_NULL_HANDLE;
-  };
-
   // Images in the swap chain.
   std::vector<ImageData> images_ GUARDED_BY(lock_);
 
-  base::circular_deque<uint32_t> in_present_images_ GUARDED_BY(lock_);
+  // True if BeginWriteCurrentImage() is called, but EndWriteCurrentImage() is
+  // not.
   bool is_writing_ GUARDED_BY(lock_) = false;
-  VkSemaphore end_write_semaphore_ GUARDED_BY(lock_) = VK_NULL_HANDLE;
+
+  // True if the current image is new required, and BeginWriteCurrentImage() and
+  // EndWriteCurrentImage() pair are not called.
+  bool new_acquired_ GUARDED_BY(lock_) = true;
 
   // Condition variable is signalled when a PostSubBufferAsync() is finished.
   base::ConditionVariable condition_variable_{&lock_};
@@ -184,6 +187,10 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
 
   // For executing PosSubBufferAsync tasks off the GPU main thread.
   scoped_refptr<base::SequencedTaskRunner> post_sub_buffer_task_runner_;
+
+  // Available fence and semaphores can be reused when fence is passed.
+  base::circular_deque<FenceAndSemaphores> fence_and_semaphores_queue_
+      GUARDED_BY(lock_);
 
   THREAD_CHECKER(thread_checker_);
 

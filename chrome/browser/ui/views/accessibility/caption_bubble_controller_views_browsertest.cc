@@ -878,4 +878,12 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ExpandsAndCollapses) {
   EXPECT_EQ(line_height, GetLabel()->GetBoundsInScreen().height());
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, NonAsciiCharacter) {
+  OnPartialTranscription("犬は最高です");
+  EXPECT_EQ("犬は最高です", GetLabelText());
+
+  OnFinalTranscription("猫も大丈夫");
+  EXPECT_EQ("猫も大丈夫", GetLabelText());
+}
+
 }  // namespace captions

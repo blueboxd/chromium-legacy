@@ -76,7 +76,7 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
 
     @Override
     public void removeCredential(CompromisedCredential credential) {
-        // TODO(crbug.com/1106726): Call native method through bridge.
+        mPasswordCheckBridge.removeCredential(credential);
     }
 
     @Override

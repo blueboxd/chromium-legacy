@@ -21,9 +21,8 @@ void FakeDlcserviceClient::Install(const std::string& dlc_id,
   InstallResult install_result{
       .error = install_err_,
       .dlc_id = dlc_id,
-      .root_path = install_root_path_,
+      .root_path = "",
   };
-  dlcs_with_content_.add_dlc_infos()->set_id(dlc_id);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), std::move(install_result)));
@@ -32,15 +31,6 @@ void FakeDlcserviceClient::Install(const std::string& dlc_id,
 void FakeDlcserviceClient::Uninstall(const std::string& dlc_id,
                                      UninstallCallback callback) {
   VLOG(1) << "Requesting to uninstall DLC=" << dlc_id;
-  for (auto iter = dlcs_with_content_.dlc_infos().begin();
-       iter != dlcs_with_content_.dlc_infos().end();) {
-    if (iter->id() != dlc_id) {
-      iter++;
-      continue;
-    }
-    iter = dlcs_with_content_.mutable_dlc_infos()->erase(iter);
-  }
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), uninstall_err_));
 }

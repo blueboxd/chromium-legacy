@@ -489,7 +489,9 @@ void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
   // Give the WebLocalFrameClient a crack at the request.
   if (web_frame_->Client()) {
     WrappedResourceRequest webreq(request);
-    web_frame_->Client()->WillSendRequest(webreq);
+    web_frame_->Client()->WillSendRequest(
+        webreq, WebLocalFrameClient::ForRedirect(
+                    request.GetRedirectInfo().has_value()));
   }
 }
 

@@ -27,12 +27,6 @@ suite('CrSettingsCookiesPageTest', function() {
   /** @type {!SettingsCookiesPageElement} */
   let page;
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      improvedCookieControlsEnabled: true,
-    });
-  });
-
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
@@ -61,8 +55,6 @@ suite('CrSettingsCookiesPageTest', function() {
     assertTrue(isChildVisible(page, '#clearOnExit'));
     assertTrue(isChildVisible(page, '#doNotTrack'));
     assertTrue(isChildVisible(page, '#networkPrediction'));
-    // Ensure that with the improvedCookieControls flag enabled that the block
-    // third party cookies radio is visible.
     assertTrue(isChildVisible(page, '#blockThirdPartyIncognito'));
   });
 
@@ -201,41 +193,3 @@ suite('CrSettingsCookiesPageTest', function() {
   });
 });
 
-suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
-  /** @type {TestSiteSettingsPrefsBrowserProxy} */
-  let siteSettingsBrowserProxy;
-
-  /** @type {!SettingsCookiesPageElement} */
-  let page;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      improvedCookieControlsEnabled: false,
-    });
-  });
-
-  setup(function() {
-    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
-    document.body.innerHTML = '';
-    page = /** @type {!SettingsCookiesPageElement} */ (
-        document.createElement('settings-cookies-page'));
-    page.prefs = {
-      generated: {
-        cookie_session_only: {value: false},
-        cookie_primary_setting:
-            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
-      },
-    };
-    document.body.appendChild(page);
-    flush();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('BlockThirdPartyRadio_Hidden', function() {
-    assertFalse(isChildVisible(page, '#blockThirdPartyIncognito'));
-  });
-});

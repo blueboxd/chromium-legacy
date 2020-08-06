@@ -4,13 +4,11 @@
 
 #include "chrome/browser/content_settings/generated_cookie_prefs.h"
 
-#include "base/feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -193,8 +191,7 @@ GeneratedCookiePrimarySettingPref::GetPrefObject() const {
   } else if (block_third_party_pref_enabled) {
     pref_object->value = std::make_unique<base::Value>(
         static_cast<int>(CookiePrimarySetting::BLOCK_THIRD_PARTY));
-  } else if (cookie_controls_pref_value == CookieControlsMode::kIncognitoOnly &&
-             base::FeatureList::IsEnabled(kImprovedCookieControls)) {
+  } else if (cookie_controls_pref_value == CookieControlsMode::kIncognitoOnly) {
     pref_object->value = std::make_unique<base::Value>(
         static_cast<int>(CookiePrimarySetting::BLOCK_THIRD_PARTY_INCOGNITO));
   } else {

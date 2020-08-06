@@ -74,35 +74,39 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     }
 
     /**
-     * Collapses the account list.
-     * If there is a non null selected account, the account list will collapse to that account,
-     * otherwise, the account list will just collapse the remaining.
-     *
-     * @param isSelectedAccountNonNull Flag indicates if the selected profile data exists
-     *                                 in model.
+     * Collapses the account list to the selected account.
      */
-    void collapseAccountList(boolean isSelectedAccountNonNull) {
+    void collapseAccountList() {
         mAccountListView.setVisibility(View.GONE);
-        mSelectedAccountView.setVisibility(isSelectedAccountNonNull ? View.VISIBLE : View.GONE);
+        mSelectedAccountView.setVisibility(View.VISIBLE);
         mContinueAsButton.setVisibility(View.VISIBLE);
     }
 
     /**
-     * Updates the view of the collapsed account list.
+     * Collapses the account list to the no account view.
      */
-    void updateCollapsedAccountList(DisplayableProfileData accountProfileData) {
-        if (accountProfileData == null) {
-            mContinueAsButton.setText(R.string.signin_add_account_to_device);
-        } else {
-            ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
+    void collapseToNoAccountView() {
+        mAccountListView.setVisibility(View.GONE);
+        mSelectedAccountView.setVisibility(View.GONE);
+        mContinueAsButton.setVisibility(View.VISIBLE);
+        mContinueAsButton.setText(R.string.signin_add_account_to_device);
+    }
 
-            ImageView rowEndImage = mSelectedAccountView.findViewById(R.id.account_selection_mark);
-            rowEndImage.setImageResource(R.drawable.ic_expand_more_in_circle_24dp);
+    /**
+     * Updates the views related to the selected account.
+     *
+     * This method only updates the UI elements like text related to the selected account, it
+     * does not change the visibility.
+     */
+    void updateSelectedAccount(DisplayableProfileData accountProfileData) {
+        ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
 
-            String continueAsButtonText = mContext.getString(R.string.signin_promo_continue_as,
-                    accountProfileData.getGivenNameOrFullNameOrEmail());
-            mContinueAsButton.setText(continueAsButtonText);
-        }
+        ImageView rowEndImage = mSelectedAccountView.findViewById(R.id.account_selection_mark);
+        rowEndImage.setImageResource(R.drawable.ic_expand_more_in_circle_24dp);
+
+        String continueAsButtonText = mContext.getString(R.string.signin_promo_continue_as,
+                accountProfileData.getGivenNameOrFullNameOrEmail());
+        mContinueAsButton.setText(continueAsButtonText);
     }
 
     @Override

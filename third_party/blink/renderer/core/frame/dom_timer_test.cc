@@ -8,11 +8,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 
@@ -61,11 +60,8 @@ class DOMTimerTest : public RenderingTest {
   }
 
   v8::Local<v8::Value> EvalExpression(const char* expr) {
-    return GetDocument()
-        .GetFrame()
-        ->GetScriptController()
-        .ExecuteScriptInMainWorldAndReturnValue(
-            ScriptSourceCode(expr), KURL(), SanitizeScriptErrors::kSanitize);
+    return ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(expr))
+        ->RunScriptAndReturnValue(GetDocument().GetFrame());
   }
 
   Vector<double> ToDoubleArray(v8::Local<v8::Value> value,
@@ -82,8 +78,8 @@ class DOMTimerTest : public RenderingTest {
 
   void ExecuteScriptAndWaitUntilIdle(const char* script_text) {
     ScriptSourceCode script(script_text);
-    GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-        script, KURL(), SanitizeScriptErrors::kSanitize);
+    ClassicScript::CreateUnspecifiedScript(script)->RunScript(
+        GetDocument().GetFrame());
     platform()->RunUntilIdle();
   }
 };

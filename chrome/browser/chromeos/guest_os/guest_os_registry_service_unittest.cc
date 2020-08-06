@@ -522,4 +522,26 @@ TEST_F(GuestOsRegistryServiceTest, MigrateTerminal) {
                    ->HasKey(crostini::kCrostiniDeletedTerminalId));
 }
 
+// Validates crash fix from crbug.com/1113477.
+TEST_F(GuestOsRegistryServiceTest, TerminalPrefsAppMerge) {
+  // Add prefs entry for terminal.
+  base::DictionaryValue registry;
+  registry.SetKey(crostini::kCrostiniTerminalSystemAppId,
+                  base::DictionaryValue());
+  profile()->GetPrefs()->Set(guest_os::prefs::kGuestOsRegistry,
+                             std::move(registry));
+
+  // Pref values should merge with app values, and reading Terminal VmName
+  // should not crash.
+  bool terminal_found = false;
+  for (const auto& pair : service()->GetAllRegisteredApps()) {
+    const auto& registration = pair.second;
+    if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
+      terminal_found = true;
+      EXPECT_EQ(crostini::kCrostiniDefaultVmName, registration.VmName());
+    }
+  }
+  EXPECT_TRUE(terminal_found);
+}
+
 }  // namespace guest_os

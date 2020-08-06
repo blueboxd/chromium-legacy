@@ -213,16 +213,17 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
         SkSurface::kFlushRead_BackendHandleAccess);
     backend.setVkImageLayout(scoped_write_->image_layout());
   }
-  VkSemaphore vk_semaphore = scoped_write_->TakeBeginSemaphore();
+  VkSemaphore vk_semaphore = scoped_write_->begin_semaphore();
   if (vk_semaphore != VK_NULL_HANDLE) {
     GrBackendSemaphore semaphore;
     semaphore.initVulkan(vk_semaphore);
-    auto result = sk_surface->wait(1, &semaphore);
+    auto result =
+        sk_surface->wait(1, &semaphore, /*deleteSemaphoresAfterWait=*/false);
     DCHECK(result);
   }
 
   GrBackendSemaphore end_semaphore;
-  end_semaphore.initVulkan(scoped_write_->GetEndSemaphore());
+  end_semaphore.initVulkan(scoped_write_->end_semaphore());
   end_semaphores->push_back(std::move(end_semaphore));
 
   return sk_surface.get();

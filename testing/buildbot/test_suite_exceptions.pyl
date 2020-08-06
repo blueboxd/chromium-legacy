@@ -96,11 +96,23 @@
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'aura_unittests': {
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'blink_platform_unittests': {
     'modifications': {
@@ -446,7 +458,6 @@
       'Mac10.13 Tests Code Coverage',
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'CrWinAsan': {
@@ -597,6 +608,14 @@
         'swarming': {
           'shards': 50,
         },
+      },
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+      'linux-lacros-tester-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter',
+        ],
       },
       'linux-trusty-rel': {
        'args': [
@@ -807,6 +826,12 @@
       'android-code-coverage-native', # crbug/1018434
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'components_unittests': {
     'remove_from': [
@@ -844,12 +869,22 @@
           'shards': 2,
         },
       },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'compositor_unittests': {
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'content_browsertests': {
     'remove_from': [
@@ -977,6 +1012,10 @@
         'swarming': {
           'shards': 12,
         },
+      },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
       },
     },
   },
@@ -1113,6 +1152,12 @@
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'depth_capture_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
@@ -1145,12 +1190,22 @@
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100, # https://crbug.com/876615
       },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'extensions_unittests': {
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    # https://crbug.com/1111979
+    'modifications': {
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'gin_unittests': {
     'remove_from': [
@@ -1379,6 +1434,7 @@
   'interactive_ui_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux - Future (dbg)': {  # client.v8.chromium
@@ -1451,6 +1507,10 @@
         'swarming': {
           'shards': 10,
         },
+      },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
       },
     },
   },
@@ -1543,6 +1603,12 @@
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'mojo_unittests': {
     'modifications': {
@@ -2296,6 +2362,12 @@
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'storage_service_content_browsertests': {
     'remove_from': [
@@ -2312,20 +2384,37 @@
           'shards': 6,
         },
       },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'storage_service_extensions_browsertests': {
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'storage_service_interactive_ui_tests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1111979
+    ],
     'modifications': {
       'linux-chromeos-chrome': {
         # TODO(crbug.com/970649): Remove this filter.
         'args': [
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
         ],
+      },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
       },
     }
   },
@@ -2376,6 +2465,10 @@
         'swarming': {
           'shards': 4,
         },
+      },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
       },
     },
   },
@@ -2573,6 +2666,10 @@
           'shards': 2,
         },
       },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'url_unittests': {
@@ -2581,6 +2678,12 @@
       'Fuchsia ARM64',
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'video_decode_accelerator_gl_unittest': {
     'remove_from': [
@@ -2596,6 +2699,12 @@
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'views_unittests_wayland': {
     'modifications': {
@@ -2823,6 +2932,12 @@
     'remove_from': [
       'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
+    'modifications': {
+      # https://crbug.com/1111979
+      'linux-lacros-tester-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+    },
   },
   'xr_browser_tests': {
     'remove_from': [

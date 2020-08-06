@@ -122,14 +122,6 @@ Polymer({
       value: false,
     },
 
-    /** @private */
-    improvedCookieControlsEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('improvedCookieControlsEnabled');
-      }
-    },
-
     /** @private {!chrome.settingsPrivate.PrefObject} */
     blockAllPref_: {
       type: Object,
@@ -180,7 +172,7 @@ Polymer({
 
     // If the clear on exit toggle is managed this implies a content setting
     // policy is present and the exception lists should be disabled.
-    this.exceptionListsReadOnly_ = sessionOnlyPref.enforcement ==
+    this.exceptionListsReadOnly_ = sessionOnlyPref.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED;
 
     // It is not currently possible to represent multiple management sources

@@ -203,14 +203,14 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!ExecutionContext::From(script_state)
-           ->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebShare)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
-                                      "Permission denied");
-    return ScriptPromise();
-  }
+  // The feature policy is currently not enforced.
+  LocalDOMWindow* const window = LocalDOMWindow::From(script_state);
+  window->CountUse(
+      ExecutionContext::From(script_state)
+              ->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebShare)
+          ? WebFeature::kWebSharePolicyAllow
+          : WebFeature::kWebSharePolicyDisallow);
 
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!LocalFrame::ConsumeTransientUserActivation(window->GetFrame())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,

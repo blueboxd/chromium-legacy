@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/content_settings/generated_cookie_prefs.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 #include "chrome/browser/extensions/api/settings_private/generated_pref_test_base.h"
@@ -11,7 +10,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
@@ -372,8 +370,6 @@ TEST_F(GeneratedCookiePrefsTest, PrimarySettingPref) {
   // Check that each of the four possible preference values sets the correct
   // state and is correctly reflected in a newly returned PrefObject.
   // First test this without the improved cookie controls enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({}, {kImprovedCookieControls});
   ValidatePrimarySettingPrefValue(
       map, prefs(), pref.get(), CookiePrimarySetting::BLOCK_ALL,
       ContentSetting::CONTENT_SETTING_BLOCK, /* block 3P */ true,
@@ -384,19 +380,9 @@ TEST_F(GeneratedCookiePrefsTest, PrimarySettingPref) {
       CookieControlsMode::kBlockThirdParty,
       CookiePrimarySetting::BLOCK_THIRD_PARTY);
   ValidatePrimarySettingPrefValue(
-      map, prefs(), pref.get(),
-      CookiePrimarySetting::BLOCK_THIRD_PARTY_INCOGNITO,
-      ContentSetting::CONTENT_SETTING_ALLOW, /* block 3P */ false,
-      CookieControlsMode::kIncognitoOnly, CookiePrimarySetting::ALLOW_ALL);
-  ValidatePrimarySettingPrefValue(
       map, prefs(), pref.get(), CookiePrimarySetting::ALLOW_ALL,
       ContentSetting::CONTENT_SETTING_ALLOW, /* block 3P */ false,
       CookieControlsMode::kOff, CookiePrimarySetting::ALLOW_ALL);
-
-  // Enable improved cookie controls feature and check the pref is capable of
-  // returning the incognito setting.
-  scoped_feature_list.Reset();
-  scoped_feature_list.InitWithFeatures({kImprovedCookieControls}, {});
   ValidatePrimarySettingPrefValue(
       map, prefs(), pref.get(),
       CookiePrimarySetting::BLOCK_THIRD_PARTY_INCOGNITO,

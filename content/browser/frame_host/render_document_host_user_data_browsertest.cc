@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -298,9 +299,12 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
 
   // 2) Start navigation to B, but don't commit yet.
   TestNavigationManager manager(shell()->web_contents(), url_b);
-  // Using PAGE_TRANSITION_LINK will avoid trying to swap BrowsingInstances when
-  // we kick off the navigation. And, thus, the navigation should be committed
-  // into the speculative RenderFrameHost initially created.
+  // We should disable proactive BrowsingInstance swap for the navigation below
+  // and also use PAGE_TRANSITION_LINK for the navigation to ensure that the
+  // speculative RFH is going to use the same BrowsingInstance as the original
+  // RFH. Otherwise, we'd create a new speculative RFH at ReadyToCommit time,
+  // deleting the RDHUD we created for the first speculative RFH.
+  DisableProactiveBrowsingInstanceSwapFor(rfh_a);
   shell()->LoadURLForFrame(url_b, std::string(),
                            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
   EXPECT_TRUE(manager.WaitForRequestStart());
@@ -727,7 +731,6 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, SameSiteNavigation) {
 
   // 3) Navigate to A2.
   EXPECT_TRUE(NavigateToURL(shell(), url_a2));
-  EXPECT_EQ(rfh_a1, top_frame_host());
 
   // 4) The associated RenderDocumentHostUserData should be deleted.
   EXPECT_FALSE(data);

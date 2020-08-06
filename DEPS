@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b72037527fd5b24a691a78b4417e17737f2c44eb',
+  'skia_revision': '7a171cca0ca40c6b42db457da1030cf8e3d4c373',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e8789a53f539016b40f56ef3e43523effe1de951',
+  'angle_revision': 'bedac4f06b5cea6f79f0a8844d9414600e9ee26b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a28c7896f97fdb5bd9156966a5bb906ebdee2c67',
+  'catapult_revision': '32be4523385c9cc9611f300e54ad9f80b1e48709',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9a4b91647e233fe9681badc9e7615af91a5ab35d',
+  'devtools_frontend_revision': 'dbbc1ffe99246024049909900c77fb8f7eedd30f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b932a7fed903e1e9979591351c2a87b9724421e2',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8351dc1fb7c4eb1858096c51ffe3f45754877cb0',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),

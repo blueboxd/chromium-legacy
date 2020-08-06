@@ -66,7 +66,7 @@ suite('item tests', function() {
                hideDate: false,
                dangerType: DangerType.SENSITIVE_CONTENT_BLOCK,
              }));
-    assertEquals(item.computeIcon_(), 'cr:warning');
+    assertEquals(item.computeIcon_(), 'cr:error');
     assertFalse(item.useFileIcon_);
 
     item.set('data', createDownload({
@@ -74,7 +74,7 @@ suite('item tests', function() {
                hideDate: false,
                dangerType: DangerType.BLOCKED_TOO_LARGE,
              }));
-    assertEquals(item.computeIcon_(), 'cr:warning');
+    assertEquals(item.computeIcon_(), 'cr:error');
     assertFalse(item.useFileIcon_);
 
     item.set('data', createDownload({
@@ -82,7 +82,7 @@ suite('item tests', function() {
                hideDate: false,
                dangerType: DangerType.BLOCKED_PASSWORD_PROTECTED,
              }));
-    assertEquals(item.computeIcon_(), 'cr:warning');
+    assertEquals(item.computeIcon_(), 'cr:error');
     assertFalse(item.useFileIcon_);
   });
 

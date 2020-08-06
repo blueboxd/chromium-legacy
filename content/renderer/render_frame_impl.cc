@@ -4582,17 +4582,19 @@ void RenderFrameImpl::OnMainFrameIntersectionChanged(
   }
 }
 
-void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
+void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request,
+                                      ForRedirect for_redirect) {
   // This method is called for subresources, while transition type is
   // a navigation concept. We pass ui::PAGE_TRANSITION_LINK as default one.
   WillSendRequestInternal(request, /*for_main_frame=*/false,
-                          ui::PAGE_TRANSITION_LINK);
+                          ui::PAGE_TRANSITION_LINK, for_redirect);
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
     bool for_main_frame,
-    ui::PageTransition transition_type) {
+    ui::PageTransition transition_type,
+    ForRedirect for_redirect) {
   if (render_view_->renderer_preferences_.enable_do_not_track) {
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
@@ -4652,7 +4654,8 @@ void RenderFrameImpl::WillSendRequestInternal(
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread && render_thread->url_loader_throttle_provider()) {
+  if (!for_redirect && render_thread &&
+      render_thread->url_loader_throttle_provider()) {
     extra_data->set_url_loader_throttles(
         render_thread->url_loader_throttle_provider()->CreateThrottles(
             routing_id_, request));
@@ -6006,7 +6009,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
   bool for_main_frame = !frame_->Parent();
-  WillSendRequestInternal(request, for_main_frame, transition_type);
+  WillSendRequestInternal(request, for_main_frame, transition_type,
+                          ForRedirect(false));
 
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(base::MakeRefCounted<RequestExtraData>());

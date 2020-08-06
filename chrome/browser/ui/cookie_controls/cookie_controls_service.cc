@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
@@ -65,11 +63,6 @@ void CookieControlsService::HandleCookieControlsToggleChanged(bool checked) {
   base::RecordAction(
       checked ? base::UserMetricsAction("CookieControls.NTP.Enabled")
               : base::UserMetricsAction("CookieControls.NTP.Disabled"));
-}
-
-bool CookieControlsService::ShouldHideCookieControlsUI() {
-  return !base::FeatureList::IsEnabled(
-      content_settings::kImprovedCookieControls);
 }
 
 bool CookieControlsService::ShouldEnforceCookieControls() {

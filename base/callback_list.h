@@ -143,6 +143,17 @@ class CallbackListBase {
         callbacks_.insert(callbacks_.end(), std::move(cb))));
   }
 
+  // Registers |cb| for future notifications. Provides no way for the caller to
+  // cancel, so this is only safe for cases where the callback is guaranteed to
+  // live at least as long as this list (e.g. if it's bound on the same object
+  // that owns the list).
+  // TODO(pkasting): Attempt to use Add() instead and see if callers can relax
+  // other lifetime/ordering mechanisms as a result.
+  void AddUnsafe(CallbackType cb) {
+    DCHECK(!cb.is_null());
+    callbacks_.push_back(std::move(cb));
+  }
+
   // Registers |removal_callback| to be run after elements are removed from the
   // list of registered callbacks.
   void set_removal_callback(const RepeatingClosure& removal_callback) {

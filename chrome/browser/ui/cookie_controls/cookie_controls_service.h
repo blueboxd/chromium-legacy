@@ -41,8 +41,6 @@ class CookieControlsService : public KeyedService,
   void Shutdown() override;
 
   void HandleCookieControlsToggleChanged(bool checked);
-  // Whether cookie controls UI should be hidden in incognito ntp.
-  bool ShouldHideCookieControlsUI();
   // Whether cookie controls should appear enforced.
   bool ShouldEnforceCookieControls();
   CookieControlsEnforcement GetCookieControlsEnforcement();

@@ -41,6 +41,7 @@ class AssistantOnboardingCoordinator {
     private static final String BUY_MOVIE_TICKETS_INTENT = "BUY_MOVIE_TICKET";
     private static final String RENT_CAR_INTENT = "RENT_CAR";
     private static final String FLIGHTS_INTENT = "FLIGHTS_CHECKIN";
+    private static final String PASSWORD_CHANGE_INTENT = "PASSWORD_CHANGE";
     private static final String FOOD_ORDERING_INTENT = "FOOD_ORDERING";
     private static final String VOICE_SEARCH_INTENT = "TELEPORT";
     private static final String SHOPPING_INTENT = "SHOPPING";
@@ -236,6 +237,10 @@ class AssistantOnboardingCoordinator {
             case RENT_CAR_INTENT:
                 termsTextView.setText(R.string.autofill_assistant_init_message_short);
                 titleTextView.setText(R.string.autofill_assistant_init_message_rent_car);
+                break;
+            case PASSWORD_CHANGE_INTENT:
+                termsTextView.setText(R.string.autofill_assistant_init_message_short);
+                titleTextView.setText(R.string.autofill_assistant_init_message_password_change);
                 break;
             case SHOPPING_INTENT:
             case SHOPPING_ASSISTED_CHECKOUT_INTENT:

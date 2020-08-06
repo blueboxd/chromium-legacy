@@ -85,7 +85,6 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
 
   WebContents* main_contents = shell()->web_contents();
   TestNavigationObserver observer(main_contents);
-  RenderFrameSubmissionObserver frame_observer(main_contents);
 
   // We need to wait until hit test data is available.
   HitTestRegionObserver hittest_observer(GetWidgetHost()->GetFrameSinkId());
@@ -95,6 +94,10 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   observer.Wait();
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
 
+  // Observe the frame after page is loaded. Note that we need to initialize
+  // this after navigation because the main RenderFrameHost might have changed
+  // from before the navigation started.
+  RenderFrameSubmissionObserver frame_observer(main_contents);
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
@@ -130,13 +133,16 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
 
   WebContents* main_contents = shell()->web_contents();
   TestNavigationObserver observer(main_contents);
-  RenderFrameSubmissionObserver frame_observer(main_contents);
 
   // ExecuteScript executes with a user gesture
   EXPECT_TRUE(ExecuteScript(main_contents,
                             "location = '" + target_text_url.spec() + "';"));
   observer.Wait();
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+  // Observe the frame after page is loaded. Note that we need to initialize
+  // this after navigation because the main RenderFrameHost might have changed
+  // from before the navigation started.
+  RenderFrameSubmissionObserver frame_observer(main_contents);
 
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
@@ -182,13 +188,18 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), target_text_url));
 
   WebContents* main_contents = shell()->web_contents();
-  RenderFrameSubmissionObserver frame_observer(main_contents);
-  frame_observer.WaitForScrollOffsetAtTop(false);
+  {
+    // The RenderFrameSubmissionObserver destructor expects the RenderFrameHost
+    // stays the same until it gets destructed, so we need to scope this to make
+    // sure it gets destructed before the next navigation.
+    RenderFrameSubmissionObserver frame_observer(main_contents);
+    frame_observer.WaitForScrollOffsetAtTop(false);
 
-  // Scroll the page back to top so scroll restoration does not scroll the
-  // target back into view.
-  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
-  frame_observer.WaitForScrollOffsetAtTop(true);
+    // Scroll the page back to top so scroll restoration does not scroll the
+    // target back into view.
+    EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
+    frame_observer.WaitForScrollOffsetAtTop(true);
+  }
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 

@@ -28639,6 +28639,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3365" label="ConversionAPIAll"/>
   <int value="3366" label="ImpressionRegistration"/>
   <int value="3367" label="ConversionRegistration"/>
+  <int value="3368" label="WebSharePolicyAllow"/>
+  <int value="3369" label="WebSharePolicyDisallow"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40588,7 +40590,6 @@ from previous Chrome versions.
   <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
-  <int value="-1368913664" label="TabSearch:disabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
   <int value="-1365795470"
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
@@ -41840,7 +41841,6 @@ from previous Chrome versions.
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
   <int value="-36234530" label="PluginVmShowMicrophonePermissions:enabled"/>
-  <int value="-35745997" label="TabSearch:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-31444029" label="MediaInspectorLogging:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>

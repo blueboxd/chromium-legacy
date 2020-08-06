@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge.CookieControlsServiceObserver;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 /**
@@ -61,12 +60,8 @@ public class IncognitoCookieControlsManager
     public void initialize() {
         if (mIsInitialized) return;
 
-        if (ContentSettingsFeatureList.isInitialized()
-                && ContentSettingsFeatureList.isEnabled(
-                        ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)) {
-            mServiceBridge = new CookieControlsServiceBridge(this);
-            mShowCard = true;
-        }
+        mServiceBridge = new CookieControlsServiceBridge(this);
+        mShowCard = true;
         mIsInitialized = true;
     }
 
@@ -88,6 +83,8 @@ public class IncognitoCookieControlsManager
      * @return a boolean indicating if the card should be visible or not.
      */
     public boolean shouldShowCookieControlsCard() {
+        // TODO(crbug.com/1104836): This is always true. Remove this method and everything that
+        // depends on it.
         return mShowCard;
     }
 

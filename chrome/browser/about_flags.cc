@@ -70,7 +70,6 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/contextual_search/core/browser/public.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -5583,18 +5582,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
 
-    {"improved-cookie-controls", flag_descriptions::kImprovedCookieControlsName,
-     flag_descriptions::kImprovedCookieControlsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
-
-    {"improved-cookie-controls-for-third-party-cookie-blocking",
-     flag_descriptions::kImprovedCookieControlsForThirdPartyCookieBlockingName,
-     flag_descriptions::
-         kImprovedCookieControlsForThirdPartyCookieBlockingDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking)},
-
     {"autofill-always-return-cloud-tokenized-card",
      flag_descriptions::kAutofillAlwaysReturnCloudTokenizedCardName,
      flag_descriptions::kAutofillAlwaysReturnCloudTokenizedCardDescription,
@@ -6194,12 +6181,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kH264DecoderBufferIsCompleteFrameName,
      flag_descriptions::kH264DecoderBufferIsCompleteFrameDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kH264DecoderBufferIsCompleteFrame)},
-
-#if BUILDFLAG(ENABLE_TAB_SEARCH)
-    {"enable-tab-search", flag_descriptions::kEnableTabSearchName,
-     flag_descriptions::kEnableTabSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kTabSearch)}
-#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

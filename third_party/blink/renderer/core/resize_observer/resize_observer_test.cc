@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_resize_observer_options.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_size.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -256,21 +256,19 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
   ASSERT_EQ(observers.size(), 0U);
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ScriptController& script_controller =
-      Window().GetFrame()->GetScriptController();
+  LocalFrame* frame = Window().GetFrame();
 
   //
   // Test whether ResizeObserver is kept alive by direct JS reference
   //
-  script_controller.ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode("var ro = new ResizeObserver( entries => {});"), KURL(),
-      SanitizeScriptErrors::kSanitize, ScriptFetchOptions(),
-      ScriptController::kExecuteScriptWhenScriptsDisabled);
+  ClassicScript::CreateUnspecifiedScript(
+      ScriptSourceCode("var ro = new ResizeObserver( entries => {});"))
+      ->RunScriptAndReturnValue(
+          frame, ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
-  script_controller.ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode("ro = undefined;"), KURL(),
-      SanitizeScriptErrors::kSanitize, ScriptFetchOptions(),
-      ScriptController::kExecuteScriptWhenScriptsDisabled);
+  ClassicScript::CreateUnspecifiedScript(ScriptSourceCode("ro = undefined;"))
+      ->RunScriptAndReturnValue(
+          frame, ScriptController::kExecuteScriptWhenScriptsDisabled);
   ThreadState::Current()->CollectAllGarbageForTesting();
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.IsEmpty(), true);
@@ -278,21 +276,20 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
   //
   // Test whether ResizeObserver is kept alive by an Element
   //
-  script_controller.ExecuteScriptInMainWorldAndReturnValue(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode("var ro = new ResizeObserver( () => {});"
                        "var el = document.createElement('div');"
                        "ro.observe(el);"
-                       "ro = undefined;"),
-      KURL(), SanitizeScriptErrors::kSanitize, ScriptFetchOptions(),
-      ScriptController::kExecuteScriptWhenScriptsDisabled);
+                       "ro = undefined;"))
+      ->RunScriptAndReturnValue(
+          frame, ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
   ThreadState::Current()->CollectAllGarbageForTesting();
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.size(), 1U);
-  script_controller.ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode("el = undefined;"), KURL(),
-      SanitizeScriptErrors::kSanitize, ScriptFetchOptions(),
-      ScriptController::kExecuteScriptWhenScriptsDisabled);
+  ClassicScript::CreateUnspecifiedScript(ScriptSourceCode("el = undefined;"))
+      ->RunScriptAndReturnValue(
+          frame, ScriptController::kExecuteScriptWhenScriptsDisabled);
   ThreadState::Current()->CollectAllGarbageForTesting();
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.IsEmpty(), true);

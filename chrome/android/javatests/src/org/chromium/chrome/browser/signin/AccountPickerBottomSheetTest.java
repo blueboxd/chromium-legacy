@@ -195,6 +195,7 @@ public class AccountPickerBottomSheetTest {
         Assert.assertEquals(2, mFakeProfileDataSource.getNumberOfObservers());
         onView(isRoot()).perform(pressBack());
         Assert.assertFalse(controller.isSheetOpen());
+        verify(mAccountPickerDelegateMock).onDismiss();
         Assert.assertEquals(0, mFakeProfileDataSource.getNumberOfObservers());
     }
 
@@ -207,6 +208,7 @@ public class AccountPickerBottomSheetTest {
         Assert.assertEquals(2, mFakeProfileDataSource.getNumberOfObservers());
         onView(isRoot()).perform(pressBack());
         Assert.assertFalse(controller.isSheetOpen());
+        verify(mAccountPickerDelegateMock).onDismiss();
         Assert.assertEquals(0, mFakeProfileDataSource.getNumberOfObservers());
     }
 

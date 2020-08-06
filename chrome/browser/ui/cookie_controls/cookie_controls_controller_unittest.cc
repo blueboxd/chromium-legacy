@@ -4,7 +4,6 @@
 
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
@@ -14,7 +13,6 @@
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -64,8 +62,6 @@ std::ostream& operator<<(std::ostream& os,
 class CookieControlsTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
-    feature_list.InitAndEnableFeature(
-        content_settings::kImprovedCookieControls);
     ChromeRenderViewHostTestHarness::SetUp();
     content_settings::TabSpecificContentSettings::CreateForWebContents(
         web_contents(),
@@ -103,7 +99,6 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  base::test::ScopedFeatureList feature_list;
   MockCookieControlsView mock_;
   std::unique_ptr<content_settings::CookieControlsController> cookie_controls_;
 };

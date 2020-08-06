@@ -42,7 +42,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/google/core/common/google_util.h"
 #include "components/policy/core/common/policy_service.h"
@@ -186,7 +185,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                           base::Unretained(this)));
 }
 
-NTPResourceCache::~NTPResourceCache() {}
+NTPResourceCache::~NTPResourceCache() = default;
 
 bool NTPResourceCache::NewTabHTMLNeedsRefresh() {
 #if defined(OS_MAC)
@@ -314,8 +313,6 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_NOT_SAVED);
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
   replacements["title"] = l10n_util::GetStringUTF8(IDS_NEW_TAB_TITLE);
-  replacements["hideCookieControls"] =
-      cookie_controls_service->ShouldHideCookieControlsUI() ? "hidden" : "";
   replacements["cookieControlsTitle"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
   replacements["cookieControlsDescription"] =

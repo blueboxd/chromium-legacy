@@ -135,7 +135,6 @@ Polymer({
    * @private
    */
   shouldHideThirdPartyCookieCheckbox_() {
-    return this.category !== ContentSettingsTypes.COOKIES ||
-        !loadTimeData.getBoolean('showImprovedCookieControlsForThirdParties');
+    return this.category !== ContentSettingsTypes.COOKIES;
   },
 });

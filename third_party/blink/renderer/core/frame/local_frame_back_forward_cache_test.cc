@@ -7,11 +7,11 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -73,8 +73,9 @@ TEST_F(LocalFrameBackForwardCacheTest, EvictionOnV8ExecutionAtMicrotask) {
   // hand, the case 2) can happen. See https://crbug.com/994169
   Microtask::EnqueueMicrotask(base::BindOnce(
       [](LocalFrame* frame) {
-        frame->GetScriptController().ExecuteScriptInMainWorld(
-            "console.log('hi');");
+        ClassicScript::CreateUnspecifiedScript(
+            ScriptSourceCode("console.log('hi');"))
+            ->RunScript(frame);
       },
       frame));
   frame_host.WaitUntilEvictedFromBackForwardCache();

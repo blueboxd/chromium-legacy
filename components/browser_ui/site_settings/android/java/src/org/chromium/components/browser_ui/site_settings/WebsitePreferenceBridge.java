@@ -9,7 +9,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.location.LocationUtils;
@@ -343,9 +342,7 @@ public class WebsitePreferenceBridge {
      * (Allow/BlockThirdPartyIncognito/BlockThirdParty/Block) setting.
      */
     public static boolean requiresFourStateContentSetting(int contentSettingsType) {
-        return contentSettingsType == ContentSettingsType.COOKIES
-                && ContentSettingsFeatureList.isEnabled(
-                        ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS);
+        return contentSettingsType == ContentSettingsType.COOKIES;
     }
 
     /**

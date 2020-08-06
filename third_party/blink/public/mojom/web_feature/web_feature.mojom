@@ -2697,6 +2697,8 @@ enum WebFeature {
   kConversionAPIAll = 3365,
   kImpressionRegistration = 3366,
   kConversionRegistration = 3367,
+  kWebSharePolicyAllow = 3368,
+  kWebSharePolicyDisallow = 3369,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

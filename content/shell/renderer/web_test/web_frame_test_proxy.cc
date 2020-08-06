@@ -428,8 +428,9 @@ void WebFrameTestProxy::DidDispatchPingLoader(const blink::WebURL& url) {
   RenderFrameImpl::DidDispatchPingLoader(url);
 }
 
-void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request) {
-  RenderFrameImpl::WillSendRequest(request);
+void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request,
+                                        ForRedirect for_redirect) {
+  RenderFrameImpl::WillSendRequest(request, for_redirect);
 
   // Need to use GURL for host() and SchemeIs()
   GURL url = request.Url();

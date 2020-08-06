@@ -707,7 +707,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void FocusedElementChanged(const blink::WebElement& element) override;
   void OnMainFrameIntersectionChanged(
       const blink::WebRect& intersect_rect) override;
-  void WillSendRequest(blink::WebURLRequest& request) override;
+  void WillSendRequest(blink::WebURLRequest& request,
+                       ForRedirect for_redirect) override;
   void DidLoadResourceFromMemoryCache(
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;
@@ -1108,7 +1109,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // |transition_type| corresponds to the document which triggered this request.
   void WillSendRequestInternal(blink::WebURLRequest& request,
                                bool for_main_frame,
-                               ui::PageTransition transition_type);
+                               ui::PageTransition transition_type,
+                               ForRedirect for_redirect);
 
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;

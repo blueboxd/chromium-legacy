@@ -47,6 +47,14 @@ public class AccountPickerDelegate {
         mSigninManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
     }
+
+    /**
+     * Releases resources used by this class.
+     */
+    public void onDismiss() {
+        // TODO(https://crbug.com/1093741): Destroys WebSigninBridge in the delegate
+    }
+
     /**
      * Signs the user into the account of the given accountName.
      */

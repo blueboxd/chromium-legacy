@@ -8,7 +8,6 @@
 
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
@@ -21,7 +20,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
@@ -1527,8 +1525,6 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstabilitySubframeAggregation) {
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
   profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kOff));
@@ -1552,36 +1548,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingDisabled) {
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest,
-       ThirdPartyCookieBlockingFeatureDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetInteger(
-      prefs::kCookieControlsMode,
-      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
-
-  NavigateAndCommit(GURL(kTestUrl1));
-
-  // Simulate closing the tab.
-  DeleteContents();
-
-  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      tester()->test_ukm_recorder().GetMergedEntriesByName(
-          PageLoad::kEntryName);
-  EXPECT_EQ(1ul, merged_entries.size());
-
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kThirdPartyCookieBlockingEnabledForSiteName));
-  }
-}
-
 TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
   profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
@@ -1607,8 +1574,6 @@ TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingEnabled) {
 
 TEST_F(UkmPageLoadMetricsObserverTest,
        ThirdPartyCookieBlockingDisabledForSite) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
   profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
@@ -1749,11 +1714,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, NoLargestContentfulPaint) {
 class TestOfflinePreviewsUkmPageLoadMetricsObserver
     : public UkmPageLoadMetricsObserver {
  public:
-  TestOfflinePreviewsUkmPageLoadMetricsObserver(
+  explicit TestOfflinePreviewsUkmPageLoadMetricsObserver(
       MockNetworkQualityProvider* network_quality_provider)
       : UkmPageLoadMetricsObserver(network_quality_provider) {}
 
-  ~TestOfflinePreviewsUkmPageLoadMetricsObserver() override {}
+  ~TestOfflinePreviewsUkmPageLoadMetricsObserver() override = default;
 
   bool IsOfflinePreview(content::WebContents* web_contents) const override {
     return true;

@@ -8,5 +8,5 @@ dictionary ShareData {
   USVString title;
   USVString text;
   USVString url;
-  FrozenArray<File> files;
+  sequence<File> files;
 };

@@ -17,7 +17,6 @@
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
-#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -327,11 +326,9 @@ void VulkanRenderer::RenderFrame() {
             nullptr /* pBufferMemoryBarriers */, 1, &image_memory_barrier);
       }
     }
-    VkSemaphore begin_semaphore = scoped_write.TakeBeginSemaphore();
-    VkSemaphore end_semaphore = scoped_write.GetEndSemaphore();
+    VkSemaphore begin_semaphore = scoped_write.begin_semaphore();
+    VkSemaphore end_semaphore = scoped_write.end_semaphore();
     CHECK(command_buffer.Submit(1, &begin_semaphore, 1, &end_semaphore));
-    device_queue_->GetFenceHelper()->EnqueueSemaphoreCleanupForSubmittedWork(
-        begin_semaphore);
   }
   vulkan_surface_->SwapBuffers();
 

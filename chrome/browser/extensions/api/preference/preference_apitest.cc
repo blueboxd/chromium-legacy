@@ -22,7 +22,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -112,8 +111,6 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
 
   void SetUp() override {
     extensions::ExtensionApiTest::SetUp();
-    feature_list.InitAndEnableFeature(
-        content_settings::kImprovedCookieControls);
   }
 
   void SetUpOnMainThread() override {
@@ -126,8 +123,8 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     // Closing the last browser window also releases a module reference. Make
     // sure it's not the last one, so the message loop doesn't quit
     // unexpectedly.
-    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::BROWSER,
-                                          KeepAliveRestartOption::DISABLED));
+    keep_alive_ = std::make_unique<ScopedKeepAlive>(
+        KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
   }
 
   void TearDownOnMainThread() override {
@@ -141,7 +138,6 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
-  base::test::ScopedFeatureList feature_list;
   Profile* profile_;
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 };

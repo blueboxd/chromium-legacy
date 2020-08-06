@@ -96,6 +96,7 @@
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -266,6 +267,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
   const base::string16 filename = ElidedFilename(*file_name_label_);
   file_name_label_->SetText(filename);
   file_name_label_->set_can_process_events_within_subtree(false);
+  StyleFilename(*file_name_label_, 0, filename.length());
 
   status_label_ = AddChildView(std::make_unique<views::Label>(
       base::string16(), CONTEXT_DOWNLOAD_SHELF_STATUS));
@@ -470,20 +472,23 @@ void DownloadItemView::OnDownloadUpdated() {
 }
 
 void DownloadItemView::OnDownloadOpened() {
+  SetEnabled(false);
   file_name_label_->SetDefaultTextStyle(views::style::STYLE_DISABLED);
   const base::string16 filename = ElidedFilename(*file_name_label_);
-  file_name_label_->SetText(
-      l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, filename));
+  size_t filename_offset;
+  file_name_label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_DOWNLOAD_STATUS_OPENING, filename, &filename_offset));
+  StyleFilename(*file_name_label_, filename_offset, filename.length());
 
-  SetEnabled(false);
   const auto reenable = [](base::WeakPtr<DownloadItemView> view) {
     if (!view)
       return;
+    view->SetEnabled(true);
     auto* label = view->file_name_label_;
     label->SetDefaultTextStyle(views::style::STYLE_PRIMARY);
     const base::string16 filename = view->ElidedFilename(*label);
     label->SetText(filename);
-    view->SetEnabled(true);
+    StyleFilename(*label, 0, filename.length());
   };
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -498,9 +503,11 @@ void DownloadItemView::OnDownloadDestroyed() {
 }
 
 void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
-  // We don't care if what animation (body button/drop button/complete),
-  // is calling back, as they all have to go through the same paint call.
   SchedulePaint();
+}
+
+void DownloadItemView::AnimationEnded(const gfx::Animation* animation) {
+  AnimationProgressed(animation);
 }
 
 void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
@@ -974,18 +981,18 @@ ui::ImageModel DownloadItemView::GetIcon() const {
   // TODO(pkasting): Use a child view (ImageView subclass?) to display the icon
   // instead of recomputing this and drawing manually.
 
-  // TODO(pkasting): Some names/icons here are backwards.
   // TODO(drubery): Replace these sizes with layout provider constants when the
   // new UX is fully launched.
-  const int help_or_error_icon_size = UseNewWarnings() ? 20 : 27;
+  const int non_error_icon_size = UseNewWarnings() ? 20 : 27;
   const auto kWarning = ui::ImageModel::FromVectorIcon(
-      vector_icons::kErrorIcon, ui::NativeTheme::kColorId_AlertSeverityMedium,
-      help_or_error_icon_size);
+      vector_icons::kWarningIcon, ui::NativeTheme::kColorId_AlertSeverityMedium,
+      non_error_icon_size);
   const auto kError = ui::ImageModel::FromVectorIcon(
-      vector_icons::kWarningIcon, ui::NativeTheme::kColorId_AlertSeverityHigh,
+      vector_icons::kErrorIcon, ui::NativeTheme::kColorId_AlertSeverityHigh,
       UseNewWarnings() ? 20 : 24);
 
-  switch (model_->GetDangerType()) {
+  const auto danger_type = model_->GetDangerType();
+  switch (danger_type) {
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
       return safe_browsing::AdvancedProtectionStatusManagerFactory::
                      GetForProfile(model_->profile())
@@ -1001,15 +1008,15 @@ ui::ImageModel DownloadItemView::GetIcon() const {
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
       return kError;
-    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-      return ui::ImageModel::FromVectorIcon(
-          vector_icons::kErrorIcon, ui::NativeTheme::kColorId_DefaultIconColor,
-          help_or_error_icon_size);
+      return kWarning;
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
       return ui::ImageModel::FromVectorIcon(
-          vector_icons::kHelpIcon, ui::NativeTheme::kColorId_DefaultIconColor,
-          help_or_error_icon_size);
+          (danger_type == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING)
+              ? views::kInfoIcon
+              : vector_icons::kHelpIcon,
+          ui::NativeTheme::kColorId_DefaultIconColor, non_error_icon_size);
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:

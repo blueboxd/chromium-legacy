@@ -3247,7 +3247,258 @@ constexpr auto binary_search(Range&& range,
 // [alg.partitions] Partitions
 // Reference: https://wg21.link/alg.partitions
 
-// TODO(crbug.com/1071094): Implement.
+// Returns: `true` if and only if the elements `e` of `[first, last)` are
+// partitioned with respect to the expression
+// `bool(invoke(pred, invoke(proj, e)))`.
+//
+// Complexity: Linear. At most `last - first` applications of `pred` and `proj`.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::is_partitioned(I
+template <typename ForwardIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto is_partitioned(ForwardIterator first,
+                              ForwardIterator last,
+                              Pred pred,
+                              Proj proj = {}) {
+  return std::is_partitioned(first, last,
+                             internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Returns: `true` if and only if the elements `e` of `range` are partitioned
+// with respect to the expression `bool(invoke(pred, invoke(proj, e)))`.
+//
+// Complexity: Linear. At most `size(range)` applications of `pred` and `proj`.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::is_partitioned(R
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto is_partitioned(Range&& range, Pred pred, Proj proj = {}) {
+  return ranges::is_partitioned(ranges::begin(range), ranges::end(range),
+                                std::move(pred), std::move(proj));
+}
+
+// Let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Effects: Places all the elements `e` in `[first, last)` that satisfy `E(e)`
+// before all the elements that do not.
+//
+// Returns: Let `i` be an iterator such that `E(*j)` is `true` for every
+// iterator `j` in `[first, i)` and `false` for every iterator `j` in
+// `[i, last)`. Returns: i.
+//
+// Complexity: Let `N = last - first`:
+// Exactly `N` applications of the predicate and projection. At most `N / 2`
+// swaps if the type of `first` models `bidirectional_iterator`, and at most `N`
+// swaps otherwise.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::partition(I
+template <typename ForwardIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto partition(ForwardIterator first,
+                         ForwardIterator last,
+                         Pred pred,
+                         Proj proj = {}) {
+  return std::partition(first, last,
+                        internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Effects: Places all the elements `e` in `range` that satisfy `E(e)` before
+// all the elements that do not.
+//
+// Returns: Let `i` be an iterator such that `E(*j)` is `true` for every
+// iterator `j` in `[begin(range), i)` and `false` for every iterator `j` in
+// `[i, last)`. Returns: i.
+//
+// Complexity: Let `N = size(range)`:
+// Exactly `N` applications of the predicate and projection. At most `N / 2`
+// swaps if the type of `first` models `bidirectional_iterator`, and at most `N`
+// swaps otherwise.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::partition(R
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto partition(Range&& range, Pred pred, Proj proj = {}) {
+  return ranges::partition(ranges::begin(range), ranges::end(range),
+                           std::move(pred), std::move(proj));
+}
+
+// Let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Effects: Places all the elements `e` in `[first, last)` that satisfy `E(e)`
+// before all the elements that do not. The relative order of the elements in
+// both groups is preserved.
+//
+// Returns: Let `i` be an iterator such that for every iterator `j` in
+// `[first, i)`, `E(*j)` is `true`, and for every iterator `j` in the range
+// `[i, last)`, `E(*j)` is `false`. Returns: `i`.
+//
+// Complexity: Let `N = last - first`:
+// At most `N log N` swaps, but only `O(N)` swaps if there is enough extra
+// memory. Exactly `N` applications of the predicate and projection.
+//
+// Reference:
+// https://wg21.link/alg.partitions#:~:text=ranges::stable_partition(I
+template <typename BidirectionalIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<BidirectionalIterator>>
+constexpr auto stable_partition(BidirectionalIterator first,
+                                BidirectionalIterator last,
+                                Pred pred,
+                                Proj proj = {}) {
+  return std::stable_partition(first, last,
+                               internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Effects: Places all the elements `e` in `range` that satisfy `E(e)` before
+// all the elements that do not. The relative order of the elements in both
+// groups is preserved.
+//
+// Returns: Let `i` be an iterator such that for every iterator `j` in
+// `[begin(range), i)`, `E(*j)` is `true`, and for every iterator `j` in the
+// range `[i, end(range))`, `E(*j)` is `false`. Returns: `i`.
+//
+// Complexity: Let `N = size(range)`:
+// At most `N log N` swaps, but only `O(N)` swaps if there is enough extra
+// memory. Exactly `N` applications of the predicate and projection.
+//
+// Reference:
+// https://wg21.link/alg.partitions#:~:text=ranges::stable_partition(R
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto stable_partition(Range&& range, Pred pred, Proj proj = {}) {
+  return ranges::stable_partition(ranges::begin(range), ranges::end(range),
+                                  std::move(pred), std::move(proj));
+}
+
+// Let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Mandates: The expression `*first` is writable to `out_true` and `out_false`.
+//
+// Preconditions: The input range and output ranges do not overlap.
+//
+// Effects: For each iterator `i` in `[first, last)`, copies `*i` to the output
+// range beginning with `out_true` if `E(*i)` is `true`, or to the output range
+// beginning with `out_false` otherwise.
+//
+// Returns: Let `o1` be the end of the output range beginning at `out_true`, and
+// `o2` the end of the output range beginning at `out_false`.
+// Returns `{o1, o2}`.
+//
+// Complexity: Exactly `last - first` applications of `pred` and `proj`.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::partition_copy(I
+template <typename InputIterator,
+          typename OutputIterator1,
+          typename OutputIterator2,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator1>,
+          typename = internal::iterator_category_t<OutputIterator2>>
+constexpr auto partition_copy(InputIterator first,
+                              InputIterator last,
+                              OutputIterator1 out_true,
+                              OutputIterator2 out_false,
+                              Pred pred,
+                              Proj proj = {}) {
+  return std::partition_copy(first, last, out_true, out_false,
+                             internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Mandates: The expression `*begin(range)` is writable to `out_true` and
+// `out_false`.
+//
+// Preconditions: The input range and output ranges do not overlap.
+//
+// Effects: For each iterator `i` in `range`, copies `*i` to the output range
+// beginning with `out_true` if `E(*i)` is `true`, or to the output range
+// beginning with `out_false` otherwise.
+//
+// Returns: Let `o1` be the end of the output range beginning at `out_true`, and
+// `o2` the end of the output range beginning at `out_false`.
+// Returns `{o1, o2}`.
+//
+// Complexity: Exactly `size(range)` applications of `pred` and `proj`.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::partition_copy(R
+template <typename Range,
+          typename OutputIterator1,
+          typename OutputIterator2,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator1>,
+          typename = internal::iterator_category_t<OutputIterator2>>
+constexpr auto partition_copy(Range&& range,
+                              OutputIterator1 out_true,
+                              OutputIterator2 out_false,
+                              Pred pred,
+                              Proj proj = {}) {
+  return ranges::partition_copy(ranges::begin(range), ranges::end(range),
+                                out_true, out_false, std::move(pred),
+                                std::move(proj));
+}
+
+// let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Preconditions: The elements `e` of `[first, last)` are partitioned with
+// respect to `E(e)`.
+//
+// Returns: An iterator `mid` such that `E(*i)` is `true` for all iterators `i`
+// in `[first, mid)`, and `false` for all iterators `i` in `[mid, last)`.
+//
+// Complexity: `O(log(last - first))` applications of `pred` and `proj`.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::partition_point(I
+template <typename ForwardIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto partition_point(ForwardIterator first,
+                               ForwardIterator last,
+                               Pred pred,
+                               Proj proj = {}) {
+  return std::partition_point(first, last,
+                              internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// let `E(x)` be `bool(invoke(pred, invoke(proj, x)))`.
+//
+// Preconditions: The elements `e` of `range` are partitioned with respect to
+// `E(e)`.
+//
+// Returns: An iterator `mid` such that `E(*i)` is `true` for all iterators `i`
+// in `[begin(range), mid)`, and `false` for all iterators `i` in
+// `[mid, end(range))`.
+//
+// Complexity: `O(log(size(range)))` applications of `pred` and `proj`.
+//
+// Reference: https://wg21.link/alg.partitions#:~:text=ranges::partition_point(R
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto partition_point(Range&& range, Pred pred, Proj proj = {}) {
+  return ranges::partition_point(ranges::begin(range), ranges::end(range),
+                                 std::move(pred), std::move(proj));
+}
 
 // [alg.merge] Merge
 // Reference: https://wg21.link/alg.merge

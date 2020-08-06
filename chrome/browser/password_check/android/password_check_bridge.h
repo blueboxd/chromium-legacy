@@ -35,6 +35,12 @@ class PasswordCheckBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobjectArray>& credentials);
 
+  // Called by Java to remove a single compromised credentials from the password
+  // store.
+  void RemoveCredential(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& credentials);
+
   // Called by Java when the bridge is no longer needed. Destructs itself.
   void Destroy(JNIEnv* env);
 

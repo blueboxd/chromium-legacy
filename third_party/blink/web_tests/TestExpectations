@@ -1181,7 +1181,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/overflow-on-mul
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/overflow-on-viewport.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/preferred-widths-with-column-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/relpos-spanner-with-abspos-child.html [ Failure ]
-crbug.com/1066640 virtual/layout_ng_block_frag/fast/multicol/span/spanner-img.html [ Pass Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/spanner-with-margins-between-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/spanner-with-relpos-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/trailing-margin-before-spanner.html [ Failure ]

@@ -733,11 +733,14 @@ TEST_P(StaticAVIFColorTests, InspectImage) {
   decoder->SetData(data.get(), true);
   EXPECT_EQ(1u, decoder->FrameCount());
   EXPECT_EQ(kAnimationNone, decoder->RepetitionCount());
+  EXPECT_EQ(param.bit_depth > 8, decoder->ImageIsHighBitDepth());
+  auto metadata = decoder->MakeMetadataForDecodeAcceleration();
+  EXPECT_EQ(cc::ImageType::kAVIF, metadata.image_type);
+  // TODO(wtc): Check metadata.yuv_subsampling.
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
   EXPECT_FALSE(decoder->Failed());
-  EXPECT_EQ(param.bit_depth > 8, decoder->ImageIsHighBitDepth());
   // TODO(ryoh): How should we treat imir(mirroring), irot(rotation) and
   // clap(cropping)?
   // EXPECT_EQ(xxxx, decoder->Orientation());

@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetProperties.AccountPickerBottomSheetState;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -57,9 +58,10 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
      */
     @Override
     public void onAccountSelected(String accountName, boolean isDefaultAccount) {
-        // Click on one account in the account list when the account list is expanded
+        // Clicking on one account in the account list when the account list is expanded
         // will collapse it to the selected account
-        mModel.set(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED, false);
+        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST);
         setSelectedAccountName(accountName);
     }
 
@@ -84,6 +86,7 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     }
 
     void destroy() {
+        mAccountPickerDelegate.onDismiss();
         mProfileDataCache.removeObserver(mProfileDataSourceObserver);
         mAccountManagerFacade.removeObserver(mAccountsChangeObserver);
     }
@@ -96,28 +99,31 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     private void onAccountListUpdated() {
         List<Account> accounts = mAccountManagerFacade.tryGetGoogleAccounts();
         if (accounts.isEmpty()) {
-            // If all accounts disappeared when the account list is collapsed, we will
-            // go to the zero account screen. If the account list is expanded, we will
-            // first set the account list state to collapsed then move to the zero
-            // account collapsed screen.
-            mModel.set(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED, false);
+            // If all accounts disappeared, no matter if the account list is collapsed or expanded,
+            // we will go to the zero account screen.
+            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                    AccountPickerBottomSheetState.NO_ACCOUNTS);
             mSelectedAccountName = null;
             mModel.set(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA, null);
-        } else if (!mModel.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)
-                && !isSelectedAccountInAccountList(accounts)) {
-            // The selected account is _only_ updated when the account list is collapsed and
-            // the current selected account name is not in the new account list
-            // (or there is no selected account).
+            return;
+        }
+
+        @AccountPickerBottomSheetState
+        int state =
+                mModel.get(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE);
+        if (state == AccountPickerBottomSheetState.NO_ACCOUNTS) {
+            // When a non-empty account list appears while it is currently zero-account screen,
+            // we should change the screen to collapsed account list and set the selected account
+            // to the first account of the account list
+            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                    AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST);
+            setSelectedAccountName(accounts.get(0).name);
+        } else if (state == AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST
+                && AccountUtils.findAccountByName(accounts, mSelectedAccountName) == null) {
+            // When it is already collapsed account list, we update the selected account only
+            // when the current selected account name is no longer in the new account list
             setSelectedAccountName(accounts.get(0).name);
         }
-    }
-
-    /**
-     * Returns true if there is selected account and it is in the account list.
-     */
-    private boolean isSelectedAccountInAccountList(List<Account> accounts) {
-        return mSelectedAccountName != null
-                && AccountUtils.findAccountByName(accounts, mSelectedAccountName) != null;
     }
 
     private void setSelectedAccountName(String accountName) {
@@ -143,7 +149,8 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     private void onSelectedAccountClicked() {
         // Clicking on the selected account when the account list is collapsed will expand the
         // account list and make the account list visible
-        mModel.set(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED, true);
+        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                AccountPickerBottomSheetState.EXPANDED_ACCOUNT_LIST);
     }
 
     /**

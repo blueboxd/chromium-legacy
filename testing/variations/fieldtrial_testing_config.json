@@ -1114,7 +1114,6 @@
             "platforms": [
                 "android",
                 "android_weblayer",
-                "chromeos",
                 "ios",
                 "linux",
                 "mac",

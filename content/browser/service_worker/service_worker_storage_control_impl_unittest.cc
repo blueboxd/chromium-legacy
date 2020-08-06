@@ -84,7 +84,7 @@ struct GetUserKeysAndDataByKeyPrefixResult {
 
 struct GetUserDataForAllRegistrationsResult {
   DatabaseStatus status;
-  base::flat_map<int64_t, std::string> values;
+  std::vector<storage::mojom::ServiceWorkerUserDataPtr> values;
 };
 
 ReadResponseHeadResult ReadResponseHead(
@@ -537,13 +537,14 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     GetUserDataForAllRegistrationsResult result;
     base::RunLoop loop;
     storage()->GetUserDataForAllRegistrations(
-        key, base::BindLambdaForTesting(
-                 [&](DatabaseStatus status,
-                     const base::flat_map<int64_t, std::string>& values) {
-                   result.status = status;
-                   result.values = values;
-                   loop.Quit();
-                 }));
+        key,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                std::vector<storage::mojom::ServiceWorkerUserDataPtr> values) {
+              result.status = status;
+              result.values = std::move(values);
+              loop.Quit();
+            }));
     loop.Run();
     return result;
   }
@@ -556,9 +557,9 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
         key_prefix,
         base::BindLambdaForTesting(
             [&](DatabaseStatus status,
-                const base::flat_map<int64_t, std::string>& values) {
+                std::vector<storage::mojom::ServiceWorkerUserDataPtr> values) {
               result.status = status;
-              result.values = values;
+              result.values = std::move(values);
               loop.Quit();
             }));
     loop.Run();
@@ -1163,10 +1164,10 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
   // Store user data with two entries.
   {
     std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
-    user_data.push_back(
-        storage::mojom::ServiceWorkerUserData::New("key1", "value1"));
-    user_data.push_back(
-        storage::mojom::ServiceWorkerUserData::New("key2", "value2"));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        registration_id, "key1", "value1"));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        registration_id, "key2", "value2"));
 
     status = StoreUserData(registration_id, kScope.GetOrigin(),
                            std::move(user_data));
@@ -1253,14 +1254,14 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserDataByKeyPrefix) {
 
   // Store some user data with prefixes.
   std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
-  user_data.push_back(
-      storage::mojom::ServiceWorkerUserData::New("prefixA", "value1"));
-  user_data.push_back(
-      storage::mojom::ServiceWorkerUserData::New("prefixA2", "value2"));
-  user_data.push_back(
-      storage::mojom::ServiceWorkerUserData::New("prefixB", "value3"));
-  user_data.push_back(
-      storage::mojom::ServiceWorkerUserData::New("prefixC", "value4"));
+  user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+      registration_id, "prefixA", "value1"));
+  user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+      registration_id, "prefixA2", "value2"));
+  user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+      registration_id, "prefixB", "value3"));
+  user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+      registration_id, "prefixC", "value4"));
   status =
       StoreUserData(registration_id, kScope.GetOrigin(), std::move(user_data));
   ASSERT_EQ(status, DatabaseStatus::kOk);
@@ -1341,11 +1342,11 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   {
     std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
     user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
-        "key1", "registration1_value1"));
+        registration_id1, "key1", "registration1_value1"));
     user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
-        "key2", "registration1_value2"));
+        registration_id1, "key2", "registration1_value2"));
     user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
-        "prefix1", "registration1_prefix_value1"));
+        registration_id1, "prefix1", "registration1_prefix_value1"));
     status = StoreUserData(registration_id1, kScope1.GetOrigin(),
                            std::move(user_data));
     ASSERT_EQ(status, DatabaseStatus::kOk);
@@ -1353,11 +1354,11 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   {
     std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
     user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
-        "key1", "registration2_value1"));
+        registration_id1, "key1", "registration2_value1"));
     user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
-        "key3", "registration2_value3"));
+        registration_id1, "key3", "registration2_value3"));
     user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
-        "prefix2", "registration2_prefix_value2"));
+        registration_id1, "prefix2", "registration2_prefix_value2"));
     status = StoreUserData(registration_id2, kScope2.GetOrigin(),
                            std::move(user_data));
     ASSERT_EQ(status, DatabaseStatus::kOk);
@@ -1368,19 +1369,23 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   result = GetUserDataForAllRegistrations("key1");
   ASSERT_EQ(result.status, DatabaseStatus::kOk);
   ASSERT_EQ(result.values.size(), 2UL);
-  EXPECT_EQ(result.values[registration_id1], "registration1_value1");
-  EXPECT_EQ(result.values[registration_id2], "registration2_value1");
+  EXPECT_EQ(result.values[0]->registration_id, registration_id1);
+  EXPECT_EQ(result.values[0]->value, "registration1_value1");
+  EXPECT_EQ(result.values[1]->registration_id, registration_id2);
+  EXPECT_EQ(result.values[1]->value, "registration2_value1");
 
   // Get uncommon user data.
   result = GetUserDataForAllRegistrations("key2");
   ASSERT_EQ(result.status, DatabaseStatus::kOk);
   ASSERT_EQ(result.values.size(), 1UL);
-  EXPECT_EQ(result.values[registration_id1], "registration1_value2");
+  EXPECT_EQ(result.values[0]->registration_id, registration_id1);
+  EXPECT_EQ(result.values[0]->value, "registration1_value2");
 
   result = GetUserDataForAllRegistrations("key3");
   ASSERT_EQ(result.status, DatabaseStatus::kOk);
   ASSERT_EQ(result.values.size(), 1UL);
-  EXPECT_EQ(result.values[registration_id2], "registration2_value3");
+  EXPECT_EQ(result.values[0]->registration_id, registration_id2);
+  EXPECT_EQ(result.values[0]->value, "registration2_value3");
 
   // Getting unknown key succeeds but returns an empty value.
   // TODO(bashi): Make sure this is an intentional behavior. The existing
@@ -1396,14 +1401,17 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   result = GetUserDataForAllRegistrations("key1");
   ASSERT_EQ(result.status, DatabaseStatus::kOk);
   ASSERT_EQ(result.values.size(), 1UL);
-  EXPECT_EQ(result.values[registration_id2], "registration2_value1");
+  EXPECT_EQ(result.values[0]->registration_id, registration_id2);
+  EXPECT_EQ(result.values[0]->value, "registration2_value1");
 
   // Get prefixed user data.
   result = GetUserDataForAllRegistrationsByKeyPrefix("prefix");
   ASSERT_EQ(result.status, DatabaseStatus::kOk);
   ASSERT_EQ(result.values.size(), 2UL);
-  EXPECT_EQ(result.values[registration_id1], "registration1_prefix_value1");
-  EXPECT_EQ(result.values[registration_id2], "registration2_prefix_value2");
+  EXPECT_EQ(result.values[0]->registration_id, registration_id1);
+  EXPECT_EQ(result.values[0]->value, "registration1_prefix_value1");
+  EXPECT_EQ(result.values[1]->registration_id, registration_id2);
+  EXPECT_EQ(result.values[1]->value, "registration2_prefix_value2");
 
   // Clear prefixed user data.
   status = ClearUserDataForAllRegistrationsByKeyPrefix("prefix");

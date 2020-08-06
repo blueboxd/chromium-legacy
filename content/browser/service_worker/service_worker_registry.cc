@@ -625,8 +625,8 @@ void ServiceWorkerRegistry::StoreUserData(
                              blink::ServiceWorkerStatusCode::kErrorFailed));
       return;
     }
-    user_data.push_back(
-        storage::mojom::ServiceWorkerUserData::New(kv.first, kv.second));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        registration_id, kv.first, kv.second));
   }
 
   GetRemoteStorageControl()->StoreUserData(
@@ -717,7 +717,7 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrations(
     return;
   }
 
-  storage()->GetUserDataForAllRegistrations(
+  GetRemoteStorageControl()->GetUserDataForAllRegistrations(
       key,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -735,7 +735,7 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
     return;
   }
 
-  storage()->GetUserDataForAllRegistrationsByKeyPrefix(
+  GetRemoteStorageControl()->GetUserDataForAllRegistrationsByKeyPrefix(
       key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -1309,11 +1309,18 @@ void ServiceWorkerRegistry::DidClearUserData(
 
 void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     GetUserDataForAllRegistrationsCallback callback,
-    const std::vector<std::pair<int64_t, std::string>>& user_data,
-    storage::mojom::ServiceWorkerDatabaseStatus status) {
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> entries) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  // TODO(crbug.com/1055677): Update call sites of
+  // GetUserDataForAllRegistrations so that we can avoid converting mojo struct
+  // to a pair.
+  std::vector<std::pair<int64_t, std::string>> user_data;
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
+  for (auto& entry : entries) {
+    user_data.emplace_back(entry->registration_id, entry->value);
+  }
   std::move(callback).Run(user_data, DatabaseStatusToStatusCode(status));
 }
 

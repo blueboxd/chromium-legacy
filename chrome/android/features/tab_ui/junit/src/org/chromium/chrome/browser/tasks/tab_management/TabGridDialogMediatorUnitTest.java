@@ -193,7 +193,11 @@ public class TabGridDialogMediatorUnitTest {
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
                 mAnimationSourceViewProvider, mShareDelegateSupplier, "");
+
+        // TabModelObserver is registered when native is ready.
+        assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(true));
         mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
+        assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(false));
     }
 
     @Test

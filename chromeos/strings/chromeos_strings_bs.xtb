@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nova lozinka</translation>
 <translation id="4003259559679196451">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posjećene web stranice, lozinke i e-poštu.</translation>
 <translation id="4003384961948020559">Nije uspjelo – izlaz je pun</translation>
+<translation id="4027485274696301677">Ovim uređajem <ph name="DEVICE_TYPE" /> upravlja domena <ph name="ENROLLMENT_DOMAIN" />. Administratori mogu daljinski konfigurirati uređaj.</translation>
 <translation id="4034824040120875894">Štampač</translation>
 <translation id="4227825898293920515">Lozinka će isteći za <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nema aktivnih zadataka za štampanje</translation>
@@ -73,7 +74,6 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="808894953321890993">Promijenite lozinku</translation>
 <translation id="8208861521865154048">Privilegije</translation>
 <translation id="8347227221149377169">Zadaci štampanja</translation>
-<translation id="8623849191266582420">Ovim uređajem <ph name="DEVICE_TYPE" /> upravlja domena <ph name="ENROLLMENT_DOMAIN" />. Administratori mogu daljinski konfigurirati i pratiti uređaj.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može udaljeno upravljati postavkama i pratiti aktivnost korisnika.</translation>
 <translation id="871560550817059752">Nije uspjelo – nema tinte</translation>
 <translation id="8747900814994928677">Potvrdite promjenu</translation>

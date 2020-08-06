@@ -16,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.WebContentsState;
@@ -52,6 +51,8 @@ public class CriticalPersistedTabDataTest {
 
     private CriticalPersistedTabData mCriticalPersistedTabData;
 
+    private MockPersistedTabDataStorage mStorage;
+
     private static Tab mockTab(int id, boolean isEncrypted) {
         return new MockTab(id, isEncrypted);
     }
@@ -59,18 +60,19 @@ public class CriticalPersistedTabDataTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        PersistedTabDataConfiguration.setUseTestConfig(true);
+        mStorage =
+                (MockPersistedTabDataStorage) PersistedTabDataConfiguration.getTestConfig().storage;
     }
 
     @SmallTest
     @Test
-    @DisabledTest(message = "https://crbug.com/1101760")
     public void testNonEncryptedSaveRestore() throws InterruptedException {
         testSaveRestoreDelete(false);
     }
 
     @SmallTest
     @Test
-    @DisabledTest(message = "https://crbug.com/1101760")
     public void testEncryptedSaveRestoreDelete() throws InterruptedException {
         testSaveRestoreDelete(true);
     }
@@ -84,14 +86,14 @@ public class CriticalPersistedTabDataTest {
                 semaphore.release();
             }
         };
+        final Semaphore saveSemaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            PersistedTabDataConfiguration config =
-                    PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, isEncrypted);
-            CriticalPersistedTabData criticalPersistedTabData =
-                    new CriticalPersistedTabData(mockTab(TAB_ID, isEncrypted), PARENT_ID, ROOT_ID,
-                            TIMESTAMP, WEB_CONTENTS_STATE, CONTENT_STATE_VERSION, OPENER_APP_ID,
-                            THEME_COLOR, LAUNCH_TYPE_AT_CREATION, config.storage, config.id);
-            criticalPersistedTabData.save();
+            CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(
+                    mockTab(TAB_ID, isEncrypted), PARENT_ID, ROOT_ID, TIMESTAMP, WEB_CONTENTS_STATE,
+                    CONTENT_STATE_VERSION, OPENER_APP_ID, THEME_COLOR, LAUNCH_TYPE_AT_CREATION);
+            mStorage.setSemaphore(saveSemaphore);
+            criticalPersistedTabData.saveForTesting();
+            acquireSemaphore(saveSemaphore);
             CriticalPersistedTabData.from(mockTab(TAB_ID, isEncrypted), callback);
         });
         semaphore.acquire();
@@ -108,8 +110,11 @@ public class CriticalPersistedTabDataTest {
         Assert.assertArrayEquals(mCriticalPersistedTabData.getWebContentsState().buffer().array(),
                 WEB_CONTENTS_STATE_BYTES);
 
+        Semaphore deleteSemaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
+            mStorage.setSemaphore(deleteSemaphore);
             mCriticalPersistedTabData.delete();
+            acquireSemaphore(deleteSemaphore);
             CriticalPersistedTabData.from(mockTab(TAB_ID, isEncrypted), callback);
         });
         semaphore.acquire();
@@ -121,5 +126,14 @@ public class CriticalPersistedTabDataTest {
         //   - save() multiple times
         //  - restore() multiple times
         //  - delete() multiple times
+    }
+
+    private static void acquireSemaphore(Semaphore semaphore) {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            // Throw Runtime exception to make catching InterruptedException unnecessary
+            throw new RuntimeException(e);
+        }
     }
 }

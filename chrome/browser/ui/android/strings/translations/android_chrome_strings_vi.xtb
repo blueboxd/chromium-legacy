@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ đệm…</translation>
 <translation id="129553762522093515">Các thẻ đã đóng gần đây</translation>
+<translation id="1298077576058087471">Tiết kiệm tới 60% dữ liệu, đọc tin tức hôm nay</translation>
 <translation id="1303339473099049190">Không tìm thấy mật khẩu đó. Hãy kiểm tra chính tả rồi thử lại.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Gửi từ <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Nhóm các thẻ</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Đặt lại Chế độ thu gọn?</translation>
 <translation id="1868024384445905608">Giờ đây, Chrome tải tệp xuống còn nhanh hơn nữa</translation>
 <translation id="1874760110381325409">Bạn sẽ đăng nhập bằng Tài khoản Google của mình\n(thao tác này sẽ không bật Chrome Sync)</translation>
+<translation id="1877026089748256423">Chrome đã lỗi thời</translation>
 <translation id="1883903952484604915">Tệp của tôi</translation>
 <translation id="1919950603503897840">Chọn mục liên hệ</translation>
 <translation id="1925021887439448749">Nhập địa chỉ web tùy chỉnh</translation>
@@ -204,7 +206,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2587052924345400782">Đã có phiên bản mới hơn</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">Số thẻ</translation>
-<translation id="2622559029861875898">Chrome không thể kiểm tra các bản cập nhật. Hãy thử kiểm tra kết nối Internet.</translation>
 <translation id="2625189173221582860">Đã sao chép mật khẩu</translation>
 <translation id="2631006050119455616">Đã tiết kiệm</translation>
 <translation id="2647434099613338025">Thêm ngôn ngữ</translation>
@@ -261,8 +262,10 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="305593374596241526">Đã tắt vị trí; hãy bật vị trí trong mục <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Bạn có thể bật tính năng đồng bộ hóa bất cứ lúc nào trong phần cài đặt</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> dấu trang}other{<ph name="BOOKMARKS_COUNT_MANY" /> dấu trang}}</translation>
+<translation id="3062802207422175757">Các bài viết về chủ đề mà bạn quan tâm trên Chrome</translation>
 <translation id="3089395242580810162">Mở trong thẻ ẩn danh</translation>
 <translation id="3114012059975132928">Trình phát video</translation>
+<translation id="3114507951000454849">Đọc tin tức hôm nay <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Thông báo</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
 <translation id="3143515551205905069">Hủy đồng bộ hóa</translation>
@@ -326,6 +329,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3566923219790363270">Chrome vẫn đang chuẩn bị mô-đun Thực tế ảo. Hãy khởi động lại Chrome sau.</translation>
 <translation id="3568688522516854065">Để sử dụng các thẻ từ những thiết bị khác, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
 <translation id="3587482841069643663">Tất cả</translation>
+<translation id="3587596251841506391">Giúp tăng cường bảo mật trên web</translation>
 <translation id="3590487821116122040">Bộ nhớ trang web mà Chrome cho rằng không quan trọng (ví dụ: những trang web không có cài đặt đã lưu nào hoặc trang web mà bạn không truy cập thường xuyên)</translation>
 <translation id="3594780231884063836">Tắt tiếng video</translation>
 <translation id="3599863153486145794">Xóa lịch sử khỏi tất cả các thiết bị đã đăng nhập. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -556,7 +560,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5441522332038954058">Chuyển đến thanh địa chỉ</translation>
 <translation id="5447201525962359567">Tất cả bộ nhớ trang web, bao gồm cookie và các dữ liệu được lưu trữ cục bộ khác</translation>
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
-<translation id="5454513945794364671">Quản trị viên của bạn đã tắt tính năng Duyệt web an toàn</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
@@ -649,6 +652,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
+<translation id="6122831415929794347">Tắt tính năng Duyệt web an toàn?</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
 <translation id="6140709049082532940">Chế độ bảo vệ nâng cao:</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
@@ -656,6 +660,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6154478581116148741">Bật khóa màn hình trong Cài đặt để xuất mật khẩu của bạn từ thiết bị này</translation>
 <translation id="6157392216611456285">Chọn <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Đã tiết kiệm được <ph name="PERCENT" /> dữ liệu</translation>
+<translation id="6186394685773237175">Không phát hiện thấy mật khẩu nào bị lộ</translation>
 <translation id="6201345951596836663">Đã sao chép đường liên kết</translation>
 <translation id="6206830853671714236">Chọn thời điểm tải xuống</translation>
 <translation id="6210748933810148297">Không phải là <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6573431926118603307">Các thẻ bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="6583199322650523874">Đánh dấu trang hiện tại</translation>
 <translation id="6588043302623806746">Sử dụng hệ thống tên miền (DNS) bảo mật</translation>
+<translation id="6590471736817333463">Tiết kiệm tới 60% dữ liệu</translation>
 <translation id="6593061639179217415">Trang web cho máy tính</translation>
 <translation id="6597891566292541626">Điều chỉnh sao cho mã vạch/mã QR nằm trong khung này.</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
@@ -731,7 +737,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6659594942844771486">Thẻ</translation>
 <translation id="6663079968236414793">Đường liên kết tới văn bản</translation>
-<translation id="666573598175432848">Đã có phiên bản Chrome mới. Hãy nhấn vào thành phần này để chuyển đến Cửa hàng Play.</translation>
 <translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Thông báo quyền riêng tư của Chrome</translation>
 <translation id="6671495933530132209">Sao chép ảnh</translation>
@@ -927,6 +932,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8190358571722158785">Còn 1 ngày</translation>
 <translation id="8200772114523450471">Tiếp tục</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
+<translation id="8218052821161047641">Trang tải nhanh</translation>
 <translation id="8218622182176210845">Quản lý tài khoản của bạn</translation>
 <translation id="8223642481677794647">Trình đơn thẻ nguồn cấp dữ liệu</translation>
 <translation id="8224471946457685718">Tải tin bài cho bạn xuống qua Wi-Fi</translation>
@@ -1005,7 +1011,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8853345339104747198">Thẻ <ph name="TAB_TITLE" /></translation>
 <translation id="8854223127042600341">Xem tệp khi không có mạng</translation>
 <translation id="889338405075704026">Chuyển đến phần Cài đặt của Chrome</translation>
-<translation id="8893398027601469503">Bạn đang chạy phiên bản Chrome mới nhất</translation>
 <translation id="8898822736010347272">Gửi URL của một số trang bạn truy cập, thông tin về hệ thống (có giới hạn) và một số nội dung trang cho Google, nhằm phát hiện các mối đe dọa mới và bảo vệ mọi người khi dùng web.</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
@@ -1052,6 +1057,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9209888181064652401">Không thể gọi điện</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="926205370408745186">Xóa hoạt động của bạn trên Chrome khỏi Digital Wellbeing</translation>
+<translation id="927968626442779827">Dùng Chế độ thu gọn trên Google Chrome</translation>
 <translation id="932327136139879170">Trang chủ</translation>
 <translation id="93753284658583800">Trang chủ đã thay đổi</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>

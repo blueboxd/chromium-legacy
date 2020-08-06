@@ -44,6 +44,7 @@ namespace chrome_pdf {
 
 class Graphics;
 class PaintReadyRect;
+class PDFiumEngine;
 
 class OutOfProcessInstance : public pp::Instance,
                              public pp::Find_Private,
@@ -407,7 +408,7 @@ class OutOfProcessInstance : public pp::Instance,
 
   PrintSettings print_settings_;
 
-  std::unique_ptr<PDFEngine> engine_;
+  std::unique_ptr<PDFiumEngine> engine_;
 
   // The PreviewModeClient used for print preview. Will be passed to
   // |preview_engine_|.
@@ -416,7 +417,7 @@ class OutOfProcessInstance : public pp::Instance,
   // This engine is used to render the individual preview page data. This is
   // used only in print preview mode. This will use |PreviewModeClient|
   // interface which has very limited access to the pp::Instance.
-  std::unique_ptr<PDFEngine> preview_engine_;
+  std::unique_ptr<PDFiumEngine> preview_engine_;
 
   std::string url_;
 

@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">ချဲ့ရန် တို့ပါ</translation>
 <translation id="1291207594882862231">မှတ်တမ်း၊ ကွတ်ကီး၊ ဆိုက်ဒေတာ၊ ကက်ရှ်များကို ရှင်းလင်းပါ...</translation>
 <translation id="129553762522093515">မကြာသေးခင်က ပိတ်ထားခဲ့သည်</translation>
+<translation id="1298077576058087471">ဒေတာ ၆၀ ရာခိုင်နှုန်းအထိ ချွေတာပါ၊ ယနေ့သတင်းများကို ဖတ်ပါ</translation>
 <translation id="1303339473099049190">ထိုစကားဝှက်ကို ရှာမတွေ့ပါ။ စာလုံးပေါင်းစစ်ဆေးပြီး ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> မှ ပို့ထားသည်</translation>
 <translation id="1310482092992808703">တဘ်များကို အုပ်စုဖွဲ့ရန်</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">'အပေါ့စားမုဒ်' ပြန်လည်သတ်မှတ်မလား။</translation>
 <translation id="1868024384445905608">ယခုအခါ Chrome သည် ဖိုင်များကို ပိုမိုလျင်မြန်စွာ ဒေါင်းလုဒ်လုပ်ပါသည်</translation>
 <translation id="1874760110381325409">သင့် Google Account ဖြင့် လက်မှတ်ထိုးဝင်ရပါမည်\n(၎င်းသည် Chrome စင့်ခ်ကို ဖွင့်မည်မဟုတ်ပါ)</translation>
+<translation id="1877026089748256423">Chrome မှာ ဟောင်းသွားပြီ</translation>
 <translation id="1883903952484604915">ကျွန်ုပ်၏ဖိုင်များ</translation>
 <translation id="1919950603503897840">အဆက်အသွယ်များ ရွေးရန်</translation>
 <translation id="1925021887439448749">စိတ်ကြိုက်ဝဘ်လိပ်စာကို ထည့်ရန်</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">ပိုသစ်သော ဗားရှင်း ရှိပါသည်</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">ကဒ်နံပါတ်</translation>
-<translation id="2622559029861875898">Chrome က အပ်ဒိတ်များကို စစ်ဆေး၍မရပါ။ သင့်အင်တာနက် ချိတ်ဆက်မှုကို စစ်ဆေးပါ။</translation>
 <translation id="2625189173221582860">စကားဝှက်ကို ကူးပြီးပါပြီ</translation>
 <translation id="2631006050119455616">ချွေတာ</translation>
 <translation id="2647434099613338025">ဘာသာစကား ထည့်ပေးရန်</translation>
@@ -219,7 +220,7 @@
 <translation id="2744248271121720757">ချက်ချင်းရှာဖွေရန် သို့မဟုတ် သက်ဆိုင်သည့် လုပ်ဆောင်ချက်များကို ကြည့်ရန် စာလုံးတစ်လုံးကို တို့ပါ</translation>
 <translation id="2760989362628427051">သင့်စက်၏ မှောင်သည့်အပြင်အဆင် သို့မဟုတ် ဘက်ထရီအားထိန်းကို ဖွင့်ထားသည့်အခါ မှောင်သည့် အပြင်အဆင်ကို ဖွင့်ပါ</translation>
 <translation id="2762000892062317888">ယခုလေးတင်</translation>
-<translation id="2771869497727323769">စာသားသို့ လင့်ခ်ကို ဖန်တီး၍မရပါ။ အက်ပ်အတွင်းတွင် လင့်ခ်ကို စာမျက်နှာသို့ မျှဝေပါ။</translation>
+<translation id="2771869497727323769">စာသားသို့ လင့်ခ်ကို ပြုလုပ်၍မရပါ။ အက်ပ်အတွင်းတွင် လင့်ခ်ကို စာမျက်နှာသို့ မျှဝေပါ။</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> စက္ကန့် ကျန်သည်</translation>
 <translation id="2779651927720337254">ဒေါင်းလုဒ် မပြီးဆုံးပါ</translation>
 <translation id="2781151931089541271">၁ စက္ကန့် ကျန်သည်</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">တည်နေရာကို ပိတ်ထားသည်၊ ၎င်းကို <ph name="BEGIN_LINK" />Android ဆက်တင်များ<ph name="END_LINK" /> တွင် ဖွင့်ပါ။</translation>
 <translation id="3058498974290601450">စင့်ကို ဆက်တင်များထဲတွင် အချိန်မရွေး ဖွင့်နိုင်သည်</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{လိပ်စာ <ph name="BOOKMARKS_COUNT_ONE" /> ခု}other{လိပ်စာ <ph name="BOOKMARKS_COUNT_MANY" /> ခု}}</translation>
+<translation id="3062802207422175757">Chrome ရှိ သင်စိတ်ဝင်စားသော ဆောင်းပါးများ</translation>
 <translation id="3089395242580810162">ရုပ်ဖျက်တဘ်တွင် ဖွင့်ရန်</translation>
 <translation id="3114012059975132928">ဗီဒီယိုဖွင့်စနစ်</translation>
+<translation id="3114507951000454849">ယနေ့သတင်းများကို ဖတ်ရန် <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">ကြေညာချက်များ</translation>
 <translation id="3137521801621304719">ရုပ်ဖျက် မုဒ်ကို စွန့်ခွာရန်</translation>
 <translation id="3143515551205905069">စင့်ခ်လုပ်ခြင်း ပယ်ဖျက်ရန်</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome သည် VR အတွက် ပြင်ဆင်နေဆဲဖြစ်သည်။ နောက်မှ Chrome ကို ပြန်စတင်ပါ။</translation>
 <translation id="3568688522516854065">သင်၏ အခြားစက်ပစ္စည်းများမှ တဘ်များကိုအသုံးပြုရန် လက်မှတ်ထိုးဝင်ပြီး စင့်ခ်ကို ဖွင့်ပါ</translation>
 <translation id="3587482841069643663">အားလုံး</translation>
+<translation id="3587596251841506391">ဝဘ်တွင် လုံခြုံရေးကောင်းအောင် ကူညီပါ</translation>
 <translation id="3590487821116122040">Chrome က အရေးကြီးသည်ဟု မယူဆသည့် ဆိုက်သိုလှောင်ခန်း (ဥပမာ၊ သိမ်းဆည်းထားသည့် ဆက်တင်များမရှိသော သို့မဟုတ် သင်သိပ်မကြည့်ဖြစ်သော ဆိုက်များ)</translation>
 <translation id="3594780231884063836">ဗီဒီယိုကို အသံပိတ်ရန်</translation>
 <translation id="3599863153486145794">လက်မှတ်ထိုးဝင်ထားသော စက်ပစ္စည်းအားလုံးထဲမှ မှတ်တမ်းများကို ဖျက်လိုက်ပါလိမ့်မည်။ သင့်  Google အကောင့်က ဖွင့်ကြည့်ထားသောမှတ်တမ်းသည် <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> တွင် အခြားပုံစံများဖြင့် ရှိနေနိုင်ပါသည်။</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">လိပ်စာဘားတန်းသို့ ပြန်သွားရန်</translation>
 <translation id="5447201525962359567">ကွတ်ကီးများနှင့် စက်အတွင်းသိမ်းဆည်းထားသည့် အခြားဒေတာများအပါအဝင် ဆိုက်သိုလှောင်ခန်းအားလုံး</translation>
 <translation id="545042621069398927">သင်၏ ဒေါင်းလုဒ်ကို အရှိန်မြှင့်တင်ခြင်း။</translation>
-<translation id="5454513945794364671">သင့်စီမံခန့်ခွဲသူက 'လုံခြုံစွာ ကြည့်ရှုခြင်း' ကို ပိတ်လိုက်သည်</translation>
 <translation id="5456381639095306749">ဒေါင်းလုဒ်စာမျက်နှာ</translation>
 <translation id="548278423535722844">မြေပုံအက်ပ်တွင် ဖွင့်ပါ</translation>
 <translation id="5487521232677179737">ဒေတာများကို ရှင်းလင်းပါ</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">စဖွင့် သတ်မှတ်မှု လုပ်ကိုင်…</translation>
 <translation id="6111020039983847643">သုံးထားသော ဒေတာ</translation>
 <translation id="6112702117600201073">စာမျက်နှာအား ပြန်လည်စတင်ရန်</translation>
+<translation id="6122831415929794347">'ဘေးကင်းစွာ အသုံးပြုခြင်း' ကို ပိတ်လိုသလား။</translation>
 <translation id="6127379762771434464">အကြောင်းအရာကို ဖယ်ရှားလိုက်ပါပြီ</translation>
 <translation id="6140709049082532940">အရည်အသွေးမြှင့်တင်ထားသည့် ကာကွယ်မှု -</translation>
 <translation id="6140912465461743537">နိုင်ငံ/ဒေသ</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">ဤစက်မှ သင့်စကားဝှက်များ တင်ပို့ရန် ဆက်တင်များတွင် မျက်နှာပြင်လော့ခ် ဖွင့်ပါ</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> ကိုရွေးရန်</translation>
 <translation id="6159335304067198720">ဒေတာ <ph name="PERCENT" /> သိမ်းဆည်းနေ</translation>
+<translation id="6186394685773237175">ကျိုးပေါက်ထားသည့် စကားဝှက် မရှိပါ</translation>
 <translation id="6201345951596836663">လင့်ခ်ကူးယူပြီးပါပြီ</translation>
 <translation id="6206830853671714236">ဒေါင်းလုဒ်လုပ်ရမည့်အချိန်ကို ရွေးခြင်း</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> မဟုတ်ဘူးလား။</translation>
@@ -717,6 +722,7 @@
 <translation id="6573431926118603307">အခြားစက်ပစ္စည်းများပေါ်ရှိ Chrome တွင်ဖွင့်ထားသော တဘ်များသည် ဤနေရာတွင် ပေါ်လာပါမည်။</translation>
 <translation id="6583199322650523874">လက်ရှိစာမျက်နှာကို စာညှပ်အဖြစ်သိမ်းရန်</translation>
 <translation id="6588043302623806746">လုံခြုံသော DNS ကို အသုံးပြုပါ</translation>
+<translation id="6590471736817333463">ဒေတာ ၆၀ ရာခိုင်နှုန်းအထိ ချွေတာရန်</translation>
 <translation id="6593061639179217415">ဒက်စ်တော့ဝဘ်ဆိုက်</translation>
 <translation id="6597891566292541626">QR/ဘားကုဒ်ကို ဤဘောင်အတွင်း ထားပါ။</translation>
 <translation id="6600954340915313787">Chrome သို့ ကူးယူပြီး၏</translation>
@@ -730,7 +736,6 @@
 <translation id="6657585470893396449">စကားဝှက်</translation>
 <translation id="6659594942844771486">တဘ်</translation>
 <translation id="6663079968236414793">စာသားသို့ လင့်ခ်</translation>
-<translation id="666573598175432848">Chrome ဗားရှင်းအသစ် ရပါပြီ။ 'Play စတိုး' သို့သွားရန် ဤအရာကို တို့ပါ။</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> တွင်ဖွင့်မည်</translation>
 <translation id="666981079809192359">Chrome ကိုယ်ပိုင်လွတ်လပ်ခွင့် သတိပေးချက်</translation>
 <translation id="6671495933530132209">ပုံကို ကူးယူရန်</translation>
@@ -926,6 +931,7 @@
 <translation id="8190358571722158785">၁ ရက် ကျန်သည်</translation>
 <translation id="8200772114523450471">ပြန်ဆက်ရန်</translation>
 <translation id="8209050860603202033">ပုံဖွင့်</translation>
+<translation id="8218052821161047641">အမြန်စာမျက်နှာ</translation>
 <translation id="8218622182176210845">သင့်အကောင့်ကို စီမံခန့်ခွဲခြင်း</translation>
 <translation id="8223642481677794647">ဖိဒ်ကတ်မီနူး</translation>
 <translation id="8224471946457685718">Wi-Fi သုံး၍ သင့်အတွက် ဆောင်းပါးများ ဒေါင်းလုဒ်လုပ်သည်</translation>
@@ -1004,7 +1010,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />၊ တဘ်</translation>
 <translation id="8854223127042600341">သင်၏အော့ဖ်လိုင်း ဖိုင်များ ကြည့်ရန်</translation>
 <translation id="889338405075704026">Chrome ဆက်တင်များသို့ သွားရန်</translation>
-<translation id="8893398027601469503">သင်သည် Chrome နောက်ဆုံးဗားရှင်းကို အသုံးပြုနေသည်</translation>
 <translation id="8898822736010347272">အန္တရာယ်အသစ်များ ရှာဖွေရာ၌ အထောက်အကူဖြစ်စေရန်နှင့် ဝဘ်ပေါ်ရှိလူတိုင်းကို ကာကွယ်ရန် သင်ဝင်ကြည့်သည့် အချို့ဝဘ်ဆိုက်များ၏ URL များ၊ ကန့်သတ်ထားသည့် စနစ်အချက်အလက်များနှင့် အချို့သော ဝဘ်ဆိုက်ပါအကြောင်းအရာတို့ကို Google သို့ ပို့သည်။</translation>
 <translation id="8909135823018751308">ၐေမျှရန်...</translation>
 <translation id="8912362522468806198">Google အကောင့်</translation>
@@ -1051,6 +1056,7 @@
 <translation id="9209888181064652401">ဖုန်းခေါ်၍ မရပါ</translation>
 <translation id="9219103736887031265">ပုံများ</translation>
 <translation id="926205370408745186">'ဒစ်ဂျစ်တယ် အာရောဂျံ' မှနေ၍ သင်၏ Chrome လုပ်ဆောင်ချက်ကို ဖယ်ရှားခြင်း</translation>
+<translation id="927968626442779827">Google Chrome တွင် အပေါ့စားမုဒ် သုံးရန်</translation>
 <translation id="932327136139879170">ပင်မ</translation>
 <translation id="93753284658583800">ပင်မစာမျက်နှာ ပြောင်းလိုက်သည်</translation>
 <translation id="938850635132480979">အမှား- <ph name="ERROR_CODE" /></translation>

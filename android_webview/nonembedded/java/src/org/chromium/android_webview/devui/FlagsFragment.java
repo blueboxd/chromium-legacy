@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -120,6 +121,16 @@ public class FlagsFragment extends DevUiBaseFragment {
             @Override
             public void afterTextChanged(Editable e) {}
         });
+
+        searchBar.setOnFocusChangeListener((View v, boolean hasFocus) -> {
+            if (!hasFocus) hideKeyboard(mContext, v);
+        });
+    }
+
+    private static void hideKeyboard(Context context, View view) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     /**

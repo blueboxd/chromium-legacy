@@ -221,17 +221,25 @@ cr.define('settings', function() {
     r.OS_LANGUAGES = createSection(
         r.ADVANCED, mojom.LANGUAGES_AND_INPUT_SECTION_PATH,
         Section.kLanguagesAndInput);
-    r.OS_LANGUAGES_DETAILS = createSubpage(
-        r.OS_LANGUAGES, mojom.LANGUAGES_AND_INPUT_DETAILS_SUBPAGE_PATH,
-        Subpage.kLanguagesAndInputDetails);
-    r.OS_LANGUAGES_INPUT_METHODS = createSubpage(
-        r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
-        Subpage.kManageInputMethods);
+    if (loadTimeData.getBoolean('enableLanguageSettingsV2')) {
+      r.OS_LANGUAGES_LANGUAGES = createSubpage(
+          r.OS_LANGUAGES, mojom.LANGUAGES_SUBPAGE_PATH, Subpage.kLanguages);
+      r.OS_LANGUAGES_INPUT = createSubpage(
+          r.OS_LANGUAGES, mojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
+    } else {
+      r.OS_LANGUAGES_DETAILS = createSubpage(
+          r.OS_LANGUAGES, mojom.LANGUAGES_AND_INPUT_DETAILS_SUBPAGE_PATH,
+          Subpage.kLanguagesAndInputDetails);
+      r.OS_LANGUAGES_INPUT_METHODS = createSubpage(
+          r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
+          Subpage.kManageInputMethods);
+      r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+          r.OS_LANGUAGES_DETAILS, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+          Subpage.kInputMethodOptions);
+    }
     r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
         r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBPAGE_PATH, Subpage.kSmartInputs);
-    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
-        r.OS_LANGUAGES_DETAILS, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
-        Subpage.kInputMethodOptions);
+
 
     // Files section.
     if (!loadTimeData.getBoolean('isGuest')) {

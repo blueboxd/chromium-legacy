@@ -466,7 +466,6 @@
 <translation id="1567387640189251553">Một bàn phím khác đã được kết nối kể từ lần gần đây nhất bạn nhập mật khẩu của mình. Bàn phím này có thể đang cố gắng đánh cắp thao tác nhấn phím của bạn.</translation>
 <translation id="1567993339577891801">Bảng điều khiển JavaScript</translation>
 <translation id="1568323446248056064">Mở cài đặt thiết bị hiển thị</translation>
-<translation id="1569265916989458435">Vẫn bật Wi-Fi khi ở chế độ nghỉ</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (Khách)</translation>
 <translation id="1572266655485775982">Bật Wi-Fi</translation>
 <translation id="1572876035008611720">Nhập email của bạn</translation>
@@ -1014,6 +1013,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2224551243087462610">Chỉnh sửa tên thư mục</translation>
 <translation id="2225864335125757863">Thay đổi ngay các mật khẩu sau để bảo vệ tài khoản của bạn:</translation>
 <translation id="2226449515541314767">Trang web này đã bị chặn quyền kiểm soát hoàn toàn thiết bị MIDI.</translation>
+<translation id="2226907662744526012">Tự động mở khóa sau khi nhập mã PIN</translation>
 <translation id="222704500187107962">Hệ thống sẽ tự động xóa ngoại lệ này sau khi bạn thoát khỏi phiên Ẩn danh hiện tại</translation>
 <translation id="2227179592712503583">Xóa đề xuất</translation>
 <translation id="2229161054156947610">Còn hơn 1 giờ</translation>
@@ -1089,6 +1089,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2322318151094136999">Hỏi khi có trang web muốn truy cập vào cổng nối tiếp (khuyên dùng)</translation>
 <translation id="2323018538045954000">Các mạng Wi-Fi đã lưu</translation>
 <translation id="2325444234681128157">Ghi nhớ mật khẩu</translation>
+<translation id="2326188115274135041">Xác nhận mã PIN để bật tính năng tự động mở khóa</translation>
 <translation id="2326931316514688470">Tải &amp;lại ứng dụng</translation>
 <translation id="2327492829706409234">Bật ứng dụng</translation>
 <translation id="2328561734797404498">Vui lòng khởi động lại thiết bị để sử dụng <ph name="APP_NAME" />.</translation>
@@ -2809,6 +2810,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4451479197788154834">Mật khẩu của bạn được lưu trên thiết bị này và trong Tài khoản Google</translation>
 <translation id="4451757071857432900">Đã chặn trên những trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm (khuyên dùng)</translation>
 <translation id="4453946976636652378">Tìm kiếm <ph name="SEARCH_ENGINE_NAME" /> hoặc nhập một URL</translation>
+<translation id="4456630844127311743">Đã nhận <ph name="ATTACHMENTS" /> từ <ph name="DEVICE_NAME" /></translation>
 <translation id="4459169140545916303">Hoạt động <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ngày trước</translation>
 <translation id="4460014764210899310">Rã nhóm</translation>
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
@@ -3313,6 +3315,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5123433949759960244">Bóng rổ</translation>
 <translation id="5125751979347152379">URL không hợp lệ.</translation>
 <translation id="5126611267288187364">Xem các thay đổi</translation>
+<translation id="5127620150973591153">Mã kết nối bảo mật: <ph name="TOKEN" /></translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
 <translation id="5127881134400491887">Quản lý kết nối mạng</translation>
 <translation id="512903556749061217">được đính kèm</translation>
@@ -3660,7 +3663,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5554720593229208774">Tổ chức phát hành chứng chỉ email</translation>
 <translation id="5554931805291741487">Khay giấy ra gần đầy</translation>
 <translation id="5556459405103347317">Tải lại</translation>
-<translation id="5557991081552967863">Bật Wi-Fi khi ở chế độ ngủ</translation>
 <translation id="5558125320634132440">Trang web này bị chặn vì có thể chứa nội dung dành cho người trưởng thành</translation>
 <translation id="5558129378926964177">Phóng &amp;to</translation>
 <translation id="55601339223879446">Điều chỉnh các ranh giới của màn hình trong vòng hiển thị</translation>
@@ -3736,7 +3738,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5642508497713047">Trình ký CRL</translation>
 <translation id="5643321261065707929">Mạng có đo lượng dữ liệu</translation>
 <translation id="5643620609347735571">Xóa và tiếp tục</translation>
-<translation id="5646376287012673985">Vị trí</translation>
 <translation id="5646558797914161501">Doanh nhân</translation>
 <translation id="5648166631817621825">7 ngày qua</translation>
 <translation id="5649053991847567735">Tự động tải xuống</translation>
@@ -4177,6 +4178,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6209908325007204267">Thiết bị của bạn có Bản nâng cấp Chrome Enterprise, nhưng tên người dùng lại chưa được liên kết với một tài khoản doanh nghiệp. Vui lòng truy cập vào g.co/ChromeEnterpriseAccount để tạo một tài khoản doanh nghiệp trên thiết bị phụ.</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: Tính năng đồng bộ hóa hiện không hoạt động</translation>
 <translation id="6212039847102026977">Hiển thị thuộc tính mạng nâng cao</translation>
+<translation id="621215966665094453">Không nhận được <ph name="ATTACHMENTS" /> từ <ph name="DEVICE_NAME" /></translation>
 <translation id="6212168817037875041">Tắt màn hình</translation>
 <translation id="6212752530110374741">Gửi liên kết qua email</translation>
 <translation id="6213230117190778270">Nhận</translation>
@@ -4358,6 +4360,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6429384232893414837">Lỗi cập nhật</translation>
 <translation id="6430814529589430811">ASCII được mã hóa base64, chứng chỉ đơn</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> sẽ thiết lập cập nhật tự động cho tất cả người dùng của máy tính này.</translation>
+<translation id="6433095543510643909">Không gửi được <ph name="ATTACHMENTS" /> tới <ph name="DEVICE_NAME" /></translation>
 <translation id="6434309073475700221">Hủy</translation>
 <translation id="6434325376267409267">Bạn cần cập nhật thiết bị của mình để sử dụng <ph name="APP_NAME" />.</translation>
 <translation id="6436164536244065364">Xem trong Cửa hàng trực tuyến</translation>
@@ -4486,7 +4489,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6602956230557165253">Sử dụng các phím mũi tên trái và phải để điều hướng.</translation>
 <translation id="6605847144724004692">Chưa có người dùng nào xếp hạng.</translation>
 <translation id="6607831829715835317">Côn&amp;g cụ khác</translation>
-<translation id="6608012008902909398">Hiển thị thông tin chi tiết về quá trình kiểm tra phần mềm thiết bị</translation>
 <translation id="6611972847767394631">Tìm các thẻ của bạn ở đây</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>
@@ -4617,6 +4619,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6781284683813954823">Liên kết Doodle</translation>
 <translation id="6781978626986383437">Đã hủy quá trình sao lưu Linux</translation>
 <translation id="6782067259631821405">Mã PIN không hợp lệ</translation>
+<translation id="6785518634832172390">Mã PIN chỉ được dài tối đa 12 chữ số</translation>
 <translation id="6785915470941880363">Cuộn ngược <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Tiện ích</translation>
 <translation id="6787839852456839824">Phím tắt</translation>
@@ -5229,6 +5232,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7543525346216957623">Hãy hỏi ý kiến cha mẹ của bạn</translation>
 <translation id="7547317915858803630">Cảnh báo: cài đặt <ph name="PRODUCT_NAME" /> của bạn được lưu trữ trên ổ đĩa mạng. Điều này có thể dẫn đến giảm tốc độ, trục trặc hoặc thậm chí là mất dữ liệu.</translation>
 <translation id="7548856833046333824">Nước chanh</translation>
+<translation id="755047330066644486">Đã gửi thành công <ph name="ATTACHMENTS" /> tới <ph name="DEVICE_NAME" /></translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Tải xuống <ph name="FILE_NAME" /> không thành công</translation>
 <translation id="7551643184018910560">Ghim vào giá</translation>
@@ -5638,7 +5642,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Đã chỉnh sửa phím tắt</translation>
 <translation id="8018313076035239964">Kiểm soát thông tin trang web có thể sử dụng và nội dung trang web có thể hiển thị cho bạn</translation>
-<translation id="8022688469248132790">Xem thông tin chi tiết về lỗi</translation>
 <translation id="8023801379949507775">Cập nhật tiện ích ngay bây giờ</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8028060951694135607">Khôi phục Khoá Microsoft</translation>

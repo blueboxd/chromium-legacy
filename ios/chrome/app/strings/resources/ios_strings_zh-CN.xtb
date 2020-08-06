@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">接受并继续</translation>
 <translation id="1112015203684611006">打印操作失败。</translation>
 <translation id="1125564390852150847">创建新的标签页。</translation>
+<translation id="1134509371063488162">以无痕模式打开 ${urls}</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
 <translation id="1165039591588034296">错误</translation>
 <translation id="1172898394251786223">下一个字段</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">添加帐号</translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2273327106802955778">“更多”菜单</translation>
+<translation id="2302742851632557585">在网站上更改密码</translation>
 <translation id="2316709634732130529">使用建议的密码</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
 <translation id="2339560363438331454">同步功能和 Google 服务</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
+<translation id="3081338492074632642">请确保您要保存的密码与您用来登录 <ph name="WEBSITE" /> 的密码相符</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3131206671572504478">阻止所有 Cookie</translation>
 <translation id="3153862085237805241">保存卡片</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
 <translation id="3268451620468152448">打开的标签页</translation>
+<translation id="3272527697863656322">取消</translation>
 <translation id="3277021493514034324">已复制网站地址</translation>
 <translation id="3290875554372353449">选择帐号</translation>
 <translation id="3311748811247479259">已关闭</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">可以翻译。选项位于屏幕底部附近。</translation>
 <translation id="3393920035788932672">允许显示弹出式窗口</translation>
 <translation id="3425644765244388016">卡的昵称</translation>
+<translation id="3433057996795775706">删除此密码不会删除您在 <ph name="WEBSITE" /> 上的帐号。如需保护您在 <ph name="WEBSITE" /> 上的帐号免遭他人盗用，请更改您的密码。</translation>
 <translation id="3443810440409579745">收到标签页。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3670030362669914947">卡号</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
+<translation id="3740397331642243698">在 Google Chrome 中以无痕模式打开输入的网址。</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3775743491439407556">同步功能无法正常运行</translation>
 <translation id="3779810277399252432">无互联网连接。</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">信息</translation>
 <translation id="4659126640776004816">当您登录自己的 Google 帐号后，系统即会启用此功能。</translation>
 <translation id="4659667755519643272">进入标签页切换器</translation>
+<translation id="46614316059270592">保存密码</translation>
 <translation id="4666531726415300315">目前登录的帐号是 <ph name="EMAIL" />。
 
 您的数据已使用您的同步密码加密。输入该密码即可开始同步。</translation>
@@ -402,6 +409,7 @@
 <translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5857090052475505287">新文件夹</translation>
 <translation id="5857770089550859117">必须输入密码才能开始同步。</translation>
+<translation id="5860033963881614850">关闭</translation>
 <translation id="5869029295770560994">知道了</translation>
 <translation id="5871497086027727873">移动了1项</translation>
 <translation id="5897956970858271241">访问复制的链接</translation>
@@ -502,7 +510,6 @@
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6841409746189899007">为所选文本创建链接</translation>
 <translation id="6851516051005285358">请求切换到桌面版网站</translation>
-<translation id="6856384753476268833">由贵单位管理。</translation>
 <translation id="6858855187367714033">已扫描</translation>
 <translation id="6859944681507688231">要扫描二维码或信用卡，请在设置中允许该应用使用相机。</translation>
 <translation id="6869389390665537774">您可以查看自己访问过的网页，也可将它们从历史记录中清除</translation>
@@ -524,7 +531,6 @@
 <translation id="7006788746334555276">内容设置</translation>
 <translation id="7015203776128479407">初始同步设置未完成。同步功能处于关闭状态。</translation>
 <translation id="7029809446516969842">密码</translation>
-<translation id="7030675613184250187">您可以将所需网页保存到阅读清单中，以便再次查看或离线阅读</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7099761977003084116">最近打开的标签页</translation>
@@ -587,12 +593,12 @@
 <translation id="7856733331829174190">无法下载</translation>
 <translation id="7859704718976024901">浏览记录</translation>
 <translation id="7887198238286927132">为保护您的隐私，Chrome 不会自动填充此字段。</translation>
-<translation id="791251013315685175">由<ph name="COMPANY" />管理。</translation>
 <translation id="7918293828610777738">您的阅读清单支持离线访问。要将某个网页添加到该清单中，请依次点按 <ph name="SHARE_OPENING_ICON" /> 和“<ph name="READ_LATER_TEXT" />”。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">导出密码…</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="794799177247607889">停止生成日志</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{没有密码已遭泄露}=1{有 {COUNT} 个密码已遭泄露}other{有 {COUNT} 个密码已遭泄露}}</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7966516440812255683">网站可以使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品。
 
@@ -606,6 +612,7 @@
 <translation id="8023878949384262191">展开此部分。</translation>
 <translation id="804427445359061970">您在其他设备上打开的标签页会显示在此处</translation>
 <translation id="8059533439631660104">合拢此部分。</translation>
+<translation id="8065292699993359127">在 Chrome 中以无痕模式打开网址</translation>
 <translation id="806745655614357130">单独保存我的数据</translation>
 <translation id="8073670137947914548">已下载完毕</translation>
 <translation id="8073872304774253879">改善搜索和浏览体验</translation>

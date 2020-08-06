@@ -67,6 +67,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void ClearHistory();
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
+  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling);
 
   void MainFrameWillHappenOnImplForTesting(CompletionEvent* completion,
                                            bool* main_frame_will_happen);

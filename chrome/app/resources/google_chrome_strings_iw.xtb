@@ -15,7 +15,6 @@
 <translation id="137466361146087520">‏גרסת הביטא של Google Chrome</translation>
 <translation id="1399397803214730675">‏במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
 <translation id="1434626383986940139">‏אפליקציות Chrome – קאנארי</translation>
-<translation id="1514913130539345610">‏מנהל המערכת השבית את הבדיקה של Chrome לאיתור תוכנות מזיקות</translation>
 <translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
 <translation id="1587223624401073077">‏Google Chrome משתמש במצלמה שלך.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chrome חסם אותו.</translation>
@@ -38,7 +37,7 @@
 <translation id="1874309113135274312">‏גרסת הביטא של Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
 <translation id="1919130412786645364">‏התרת כניסה אל Chrome</translation>
-<translation id="195645108406520445">‏הגדרת הסביבה שלך ב-Chrome</translation>
+<translation id="195645108406520445">‏הגדרת הסביבה החדשה שלך ב-Chrome</translation>
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
 <translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
@@ -234,7 +233,6 @@
 <translation id="7962410387636238736">‏המחשב הזה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista</translation>
 <translation id="8008534537613507642">‏התקן מחדש את Chrome</translation>
 <translation id="8013993649590906847">‏אם אין לתמונה תיאור מועיל, Chrome ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google.</translation>
-<translation id="8034040214409724683">‏אירעה שגיאה בזמן ש-Chrome בדק את התוכנה במכשיר</translation>
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>
 <translation id="8286862437124483331">‏Google Chrome מנסה להציג סיסמאות. הקלד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>

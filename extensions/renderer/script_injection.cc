@@ -19,6 +19,7 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/host_id.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
@@ -164,6 +165,8 @@ ScriptInjection::ScriptInjection(
       injection_host_(std::move(injection_host)),
       run_location_(run_location),
       request_id_(kInvalidRequestId),
+      ukm_source_id_(base::UkmSourceId::FromInt64(
+          render_frame_->GetWebFrame()->GetDocument().GetUkmSourceId())),
       complete_(false),
       did_inject_js_(false),
       log_activity_(log_activity),
@@ -272,6 +275,8 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   complete_ = did_inject_js_ || !should_inject_js;
 
   if (complete_) {
+    if (host_id().type() == HostID::EXTENSIONS)
+      RecordContentScriptInjection(ukm_source_id_, host_id().id());
     injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
                                    render_frame_);
   } else {
@@ -360,6 +365,8 @@ void ScriptInjection::OnJsInjectionCompleted(
       execution_result_ = std::make_unique<base::Value>();
   }
   did_inject_js_ = true;
+  if (host_id().type() == HostID::EXTENSIONS)
+    RecordContentScriptInjection(ukm_source_id_, host_id().id());
 
   // If |async_completion_callback_| is set, it means the script finished
   // asynchronously, and we should run it.

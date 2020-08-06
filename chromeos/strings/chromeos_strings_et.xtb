@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Uus parool</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> haldab seda seadet ja sellel on juurdepääs kogu kasutaja tegevusele, sh külastatud veebilehtedele, paroolidele ning e-postile.</translation>
 <translation id="4003384961948020559">Ebaõnnestus – väljastusala on täis</translation>
+<translation id="4027485274696301677">Seadet <ph name="DEVICE_TYPE" /> haldab <ph name="ENROLLMENT_DOMAIN" />. Administraatorid saavad seda seadet kaugühenduse teel seadistada.</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Parooli aegumiseni on jäänud <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ühtegi prinditööd pole pooleli</translation>
@@ -73,7 +74,6 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="808894953321890993">Muuda parooli</translation>
 <translation id="8208861521865154048">Hüved</translation>
 <translation id="8347227221149377169">Prinditööd</translation>
-<translation id="8623849191266582420">Seadet <ph name="DEVICE_TYPE" /> haldab <ph name="ENROLLMENT_DOMAIN" />. Administraatorid saavad seda seadet kaugühenduse teel seadistada ja jälgida.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> haldab seda kasutajat. See võib eemalt hallata seadeid ja jälgida kasutaja tegevusi.</translation>
 <translation id="871560550817059752">Ebaõnnestus – tint on otsas</translation>
 <translation id="8747900814994928677">Kinnita muudatus</translation>

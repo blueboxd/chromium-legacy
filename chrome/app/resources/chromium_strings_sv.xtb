@@ -110,7 +110,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5224391634244552924">Inga sparade lösenord. Chromium kan bara kontrollera dina lösenord om du sparar dem.</translation>
 <translation id="5277894862589591112">Ändringarna tillämpas när du startar om Chromium</translation>
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Ett fel uppstod när Chromium skulle kontrollera enhetens programvara</translation>
 <translation id="5386450000063123300">Chromium uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Tillåt inloggning i Chromium</translation>
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
@@ -121,7 +120,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5480860683791598150">Du behöver ge Chromium åtkomst till din plats om den ska kunna delas med webbplatsen</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
 <translation id="5496810170689441661">Skriv ditt lösenord i Windows om du tillåter att lösenorden i Chromium redigeras.</translation>
-<translation id="5556694182460963866">Administratören har inaktiverat sökningen efter skadlig programvara med Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Det finns en uppdatering för Chromium}=1{Det finns en uppdatering för Chromium}other{Det finns en uppdatering för Chromium sedan # dagar}}</translation>
 <translation id="5631814766731275228">Namn och bild i Chromium</translation>
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>

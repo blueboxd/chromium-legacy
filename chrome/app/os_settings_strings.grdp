@@ -242,6 +242,12 @@
   <message name="IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE" desc="Name of the OS settings page which displays language method preferences.">
     Languages and input
   </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PAGE_TITLE" translateable="false" desc="A page under “Languages and input” section in the OS settings page that users can set system display language, web content language fallback and translation preference.">
+    Languages
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_INPUT_PAGE_TITLE" translateable="false" desc="A page under “Languages and input” section in the OS settings page that users can add, remove and manage input methods.">
+    Input
+  </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE" desc="Title for the list of the user's preferred written languages.">
     Languages
   </message>

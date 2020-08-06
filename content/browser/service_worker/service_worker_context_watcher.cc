@@ -237,10 +237,12 @@ void ServiceWorkerContextWatcher::OnStarting(int64_t version_id) {
   OnRunningStateChanged(version_id, EmbeddedWorkerStatus::STARTING);
 }
 
-void ServiceWorkerContextWatcher::OnStarted(int64_t version_id,
-                                            const GURL& scope,
-                                            int process_id,
-                                            const GURL& script_url) {
+void ServiceWorkerContextWatcher::OnStarted(
+    int64_t version_id,
+    const GURL& scope,
+    int process_id,
+    const GURL& script_url,
+    const blink::ServiceWorkerToken& token) {
   OnRunningStateChanged(version_id, EmbeddedWorkerStatus::RUNNING);
 }
 

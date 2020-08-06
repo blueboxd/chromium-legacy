@@ -616,6 +616,7 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter',
         ],
+        'experiment_percentage': 100,
       },
       'linux-trusty-rel': {
        'args': [

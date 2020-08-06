@@ -20,6 +20,7 @@ namespace gpu {
 class CommandBufferStub;
 class SharedImageBacking;
 class SharedImageRepresentationFactoryRef;
+class SharedImageStub;
 class TextureBase;
 }  // namespace gpu
 
@@ -51,6 +52,9 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // Used by DXVAVDA to test for D3D11 support, and by V4L2VDA to create
   // EGLImages. New clients should use more specialized accessors instead.
   virtual gl::GLContext* GetGLContext() = 0;
+
+  // Retrieve the interface through which to create shared images.
+  virtual gpu::SharedImageStub* GetSharedImageStub() = 0;
 
   // Checks whether the stub has been destroyed.
   virtual bool HasStub() = 0;

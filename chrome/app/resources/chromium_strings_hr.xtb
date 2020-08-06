@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Nema nijedne spremljene zaporke. Chromium može provjeriti vaše zaporke kad ih spremite.</translation>
 <translation id="5277894862589591112">Da bi se vaše promjene primijenile, ponovo pokrenite Chromium</translation>
 <translation id="5358375970380395591">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Došlo je do pogreške dok je Chromium provjeravao softver uređaja</translation>
 <translation id="5386450000063123300">Ažuriranje Chromiuma (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Dopusti prijavu u Chromium</translation>
 <translation id="5398878173008909840">Dostupna je nova verzija preglednika Chromium.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
 <translation id="5496810170689441661">Chromium pokušava urediti zaporke. Upišite svoju zaporku za Windows da biste to dopustili.</translation>
-<translation id="5556694182460963866">Vaš administrator onemogućio je Chromiumovu provjeru štetnog softvera</translation>
 <translation id="5623402015214259806">{0,plural, =0{Dostupno je ažuriranje Chromiuma}=1{Dostupno je ažuriranje Chromiuma}one{Ažuriranje Chromiuma dostupno je već # dan}few{Ažuriranje Chromiuma dostupno je već # dana}other{Ažuriranje Chromiuma dostupno je već # dana}}</translation>
 <translation id="5631814766731275228">Ime i slika Chromium profila</translation>
 <translation id="5634636535844844681">Chromium zahtijeva Windows 7 ili noviju verziju.</translation>

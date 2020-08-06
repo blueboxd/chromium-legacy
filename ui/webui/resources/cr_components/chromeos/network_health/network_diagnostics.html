@@ -9,6 +9,10 @@
 <dom-module id="network-diagnostics">
   <template>
     <style>
+      .button-group > * {
+        margin-inline-start: 10px;
+      }
+
       .routine-group {
         display: inline-flex;
         flex-wrap: wrap;
@@ -51,9 +55,12 @@
         background-color: rgb(255, 242, 204);
       }
     </style>
-    <div>
-      <cr-button class="action-button" on-click="onRunAllRoutinesClick_">
+    <div class="button-group">
+      <cr-button on-click="onRunAllRoutinesClick_">
         [[i18n('NetworkDiagnosticsRunAll')]]
+      </cr-button>
+      <cr-button on-click="onSendFeedbackReportClick_">
+        [[i18n('NetworkDiagnosticsSendFeedback')]]
       </cr-button>
     </div>
     <div class="routine-group">

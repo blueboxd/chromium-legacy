@@ -29,7 +29,6 @@
 <translation id="1088860948719068836">Kaardil oleva nime lisamine</translation>
 <translation id="1089439967362294234">Parooli muutmine</translation>
 <translation id="1096545575934602868">Sellel väljal ei tohi olla üle <ph name="MAX_ITEMS_LIMIT" /> kirje. Kõigist ülejäänud kirjetest loobutakse.</translation>
-<translation id="109743633954054152">Hallake paroole Chrome'i seadetes</translation>
 <translation id="1101672080107056897">Veatoiming</translation>
 <translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Kui see on märgitud, salvestab Chrome teie kaardi koopia sellesse seadmesse, et vormi kiiremini täita.</translation>
@@ -84,7 +83,6 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Kustutage küpsisefailid<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Kontrollige turvalise DNS-i seadeid</translation>
 <translation id="1307966114820526988">Katkestatud toega funktsioonid</translation>
-<translation id="1310581832770023220">Selles vormis olevad andmed saadetakse ebaturvalise ühenduse kaudu</translation>
 <translation id="131405271941274527"><ph name="URL" /> soovib andmeid saata ja vastu võtta, kui puudutate telefoniga NFC-seadet</translation>
 <translation id="1314509827145471431">Köide paremal</translation>
 <translation id="1320233736580025032">Prc1 (ümbrik)</translation>
@@ -104,6 +102,7 @@
 <translation id="1348198688976932919">Sait, mille soovite avada, sisaldab ohtlikke rakendusi</translation>
 <translation id="1348779747280417563">Kinnitage nimi</translation>
 <translation id="1357195169723583938">Näitab seadme hiljutisi kasutajaid ja kasutamise aega</translation>
+<translation id="1360955481084547712">Privaatselt sirvimiseks avage uus inkognito aken</translation>
 <translation id="1364822246244961190">See reegel on blokeeritud, selle väärtust eiratakse.</translation>
 <translation id="1374468813861204354">soovitused</translation>
 <translation id="1374692235857187091">Index-4x6 (postkaart)</translation>
@@ -149,9 +148,11 @@
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Leht ütleb</translation>
 <translation id="153384715582417236">See on praeguseks kõik</translation>
+<translation id="1536390784834419204">Tõlgi leht</translation>
 <translation id="154408704832528245">Valige kohaletoimetamisaadress</translation>
 <translation id="1549470594296187301">Selle funktsiooni kasutamiseks peab JavaScript olema lubatud.</translation>
 <translation id="155039086686388498">Engineering-D</translation>
+<translation id="1553358976309200471">Värskenda Chrome'i</translation>
 <translation id="1555130319947370107">Sinine</translation>
 <translation id="1559447966090556585">Kas saada märguandeid?</translation>
 <translation id="1559528461873125649">Pole sellist faili või kataloogi</translation>
@@ -223,6 +224,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Kaardiomaniku nimi</translation>
 <translation id="1807528111851433570">Algusleht</translation>
+<translation id="1811804136210993241">Kuva märkused</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
 <translation id="1822540298136254167">Teie külastatavad veebisaidid ja nendel veedetav aeg</translation>
 <translation id="1826516787628120939">Kontrollimine</translation>
@@ -255,7 +257,6 @@
 <translation id="1974060860693918893">Täpsemad</translation>
 <translation id="1975584088563498795">Postkast 10</translation>
 <translation id="1978555033938440688">Püsivara versioon</translation>
-<translation id="1981206234434200693">Kustuta Chrome'i sirvimisajaloo andmed</translation>
 <translation id="1992331125980284532">JIS B3</translation>
 <translation id="1992796205810278279">Juurdepääs küpsisefailidele ja saidi andmetele.
 
@@ -266,7 +267,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2001146170449793414">{COUNT,plural, =1{ja veel 1}other{ja veel #}}</translation>
 <translation id="2003709556000175978">Lähtestage oma parool kohe</translation>
 <translation id="2003775180883135320">Neli auku ülal</translation>
-<translation id="202072848677994234">See vorm esitatakse ebaturvalise ühenduse kaudu. Automaatne täitmine on keelatud.</translation>
 <translation id="2025115093177348061">Liitreaalsus</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollige puhverserverit ja tulemüüri<ph name="END_LINK" /></translation>
@@ -324,7 +324,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2258928405015593961">Sisestage tulevikus olev aegumiskuupäev ja proovige uuesti</translation>
 <translation id="225943865679747347">Veakood: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">HTTP viga</translation>
-<translation id="2263079731045660823">Värskendage krediitkaartide automaatse täitmise andmeid Chrome'i seadetes</translation>
 <translation id="2267047181501709434">Teie isiku kinnitamine …</translation>
 <translation id="2270484714375784793">Telefoninumber</translation>
 <translation id="2276057643614339130">Printimisalus</translation>
@@ -355,6 +354,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2367567093518048410">Tase</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Ettevõtte vaikeseade</translation>
+<translation id="2385809941344967209">Värskendage Chrome'i oma Chrome'i seadetes</translation>
 <translation id="2386255080630008482">Serveri sertifikaat on tühistatud.</translation>
 <translation id="2392959068659972793">Kuva reeglid, mille väärtusi pole määratud</translation>
 <translation id="239429038616798445">See tarneviis pole saadaval. Proovige mõnda teist tarneviisi.</translation>
@@ -369,7 +369,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2465688316154986572">Kirjaklamber</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Võrgudiagnostika käitamine<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Järjestus 1–N</translation>
-<translation id="2473195200299095979">Selle lehe tõlkimine</translation>
 <translation id="2479410451996844060">Kehtetu otsingu URL.</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="248348093745724435">Seadme reeglid</translation>
@@ -411,6 +410,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2664887757054927933">{COUNT,plural, =0{Puudub}=1{1 parool (loendile <ph name="DOMAIN_LIST" />)}=2{2 parooli (loendile <ph name="DOMAIN_LIST" />)}other{# parooli (loendile <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Üles</translation>
 <translation id="2666117266261740852">Sulgege muud vahelehed või rakendused</translation>
+<translation id="2672201172023654893">Teie brauserit ei hallata.</translation>
 <translation id="2674170444375937751">Olete kindel, et soovite need leheküljed oma ajaloost kustutada?</translation>
 <translation id="2674804415323431591">Peida soovitused</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -450,7 +450,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2826760142808435982">Ühendus on krüptitud ja autenditud üksusega <ph name="CIPHER" /> ning kasutab peamise vahetusmehhanismina üksust <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
 <translation id="2839501879576190149">Ees on võltssait</translation>
-<translation id="2847118875340931228">Ava inkognito aken</translation>
 <translation id="2850739647070081192">Invite (ümbrik)</translation>
 <translation id="2856444702002559011">Ründajad võivad üritada varastada teie teavet (nt paroole, sõnumeid või krediitkaarditeavet) saidilt <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Plakatikujuliselt volditud</translation>
@@ -481,7 +480,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2969319727213777354">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chrome neid sertifikaate kinnitada.</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, praegu valitud. <ph name="ROW_CONTENT" /></translation>
-<translation id="2982481275546140226">Kustuta andmed</translation>
 <translation id="2985306909656435243">Kui see on lubatud, salvestab Chromium teie kaardi koopia vormide kiiremaks täitmiseks sellesse seadmesse.</translation>
 <translation id="2985398929374701810">Sisestage kehtiv aadress</translation>
 <translation id="2986368408720340940">See kättesaamisviis pole saadaval. Proovige mõnda teist kättesaamisviisi.</translation>
@@ -540,6 +538,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3218181027817787318">Suhteline</translation>
 <translation id="3225919329040284222">Serveri esitatud sertifikaat ei vasta sisseehitatud ootustele. Ootused on teie kaitsmiseks kaasatud kindlate kõrge turvalisusega veebisaitide jaoks.</translation>
 <translation id="3226128629678568754">Lehe laadimiseks vajalike andmete uuesti esitamiseks vajutage uuesti laadimise nuppu.</translation>
+<translation id="3226387218769101247">Pisipildid</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3229041911291329567">Teie seadme ja brauseri versiooniteave</translation>
 <translation id="323107829343500871">Krediitkaardi <ph name="CREDIT_CARD" /> CVC sisestamine</translation>
@@ -550,6 +549,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3282497668470633863">Kaardil oleva nime lisamine</translation>
 <translation id="3287510313208355388">Laadi alla, kui ühendus on saadaval</translation>
 <translation id="3293642807462928945">Lisateave reegli <ph name="POLICY_NAME" /> kohta</translation>
+<translation id="3295444047715739395">Vaadake ja hallake oma paroole Chrome'i seadetes</translation>
 <translation id="3303855915957856445">Otsingutulemusi ei leitud</translation>
 <translation id="3308006649705061278">Organisatsiooniüksus (OU)</translation>
 <translation id="3320021301628644560">Arveldusaadressi lisamine</translation>
@@ -642,7 +642,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3650584904733503804">Valideerimine õnnestus</translation>
 <translation id="3655670868607891010">Kui näete seda sageli, proovige järgmist: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Redaktsioon</translation>
-<translation id="366077651725703012">Värskenda krediitkaarti</translation>
 <translation id="3676592649209844519">Seadme ID:</translation>
 <translation id="3677008721441257057">Kas mõtlesite domeeni &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Taotlust ei saanud allkirjastada</translation>
@@ -663,6 +662,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="373042150751172459">B4 (ümbrik)</translation>
 <translation id="3731873414101415120">Teie külastatavad veebisaidid ja ebaturvaliste lehtede sisu</translation>
 <translation id="3736520371357197498">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" /> enne, kui ohtlikud programmid on eemaldatud.</translation>
+<translation id="3738166223076830879">Teie brauserit haldab teie administraator.</translation>
 <translation id="3744899669254331632">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis tagasi arusaamatud mandaadid, mida Chromium ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="3745099705178523657">Pärast kinnitamist jagatakse teie Google'i kontol olevaid kaardi üksikasju selle saidiga.</translation>
 <translation id="3748148204939282805">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> asuvad ründajad võivad teid meelitada ohtlikele tegevustele, nagu tarkvara installimine või isiklike andmete (nt paroolid, telefoninumbrid või krediitkaarditeave) avaldamine. <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -850,6 +850,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="4435702339979719576">Postkaart)</translation>
 <translation id="443673843213245140">Puhverserveri kasutamine on keelatud, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="4466881336512663640">Vormil tehtud muudatused lähevad kaotsi. Kas soovite kindlasti jätkata?</translation>
+<translation id="4476953670630786061">See vorm pole turvaline. Automaattäide on välja lülitatud.</translation>
 <translation id="4477350412780666475">Järgmine lugu</translation>
 <translation id="4482953324121162758">Seda saiti ei tõlgita.</translation>
 <translation id="4490717597759821841">A7</translation>
@@ -919,6 +920,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="4780900888022378816">Teie seadet haldab <ph name="ENROLLMENT_DOMAIN" /> ja teie kontot haldab <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Lülitage sellele vahelehele</translation>
 <translation id="4791134497475588553">Linuxi rakenduste installimise ja viimatise kasutamise aeg</translation>
+<translation id="4792686369684665359">Esitatava teabe turvalisus pole tagatud</translation>
 <translation id="4796594887379589189">Töökonto ID</translation>
 <translation id="4798078619018708837">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC. Kui selle kinnitate, jagatakse teie Google'i kontol oleva kaardi üksikasju selle saidiga.</translation>
 <translation id="4800132727771399293">Kontrollige aegumiskuupäeva ja CVC-d ning proovige uuesti</translation>
@@ -1107,6 +1109,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5552137475244467770">Chrome võrdleb teie paroole regulaarselt veebis avaldatud loenditega. Selle käigus on teie paroolid ja kasutajanimed krüpteeritud, et mitte keegi (sh Google) ei saaks neid lugeda.</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5560088892362098740">Aegumiskuupäev</translation>
+<translation id="55635442646131152">Dokumendi liigendus</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
 <translation id="5570825185877910964">Kaitse kontot</translation>
 <translation id="5571083550517324815">Sellelt aadressilt ei saa kaupa kätte. Valige mõni teine aadress.</translation>
@@ -1120,8 +1123,10 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5608165884683734521">See sait võib olla võlts või petturlik. Chrome soovitab kohe lahkuda.</translation>
 <translation id="5610142619324316209">Kontrollige ühendust</translation>
 <translation id="5610807607761827392">Kaarte ja aadresse saate hallata menüüs <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
+<translation id="561165882404867731">Tõlkige see leht rakendusega Google'i tõlge</translation>
 <translation id="5612720917913232150"><ph name="URL" /> soovib kasutada teie arvuti asukohta</translation>
 <translation id="5617949217645503996">Host <ph name="HOST_NAME" /> suunas teid liiga mitu korda ümber.</translation>
+<translation id="5624120631404540903">Paroolide haldamine</translation>
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
 <translation id="5632627355679805402">Teie andmed krüpteeriti viimati teie <ph name="BEGIN_LINK" />Google’i parooliga<ph name="END_LINK" /> kuupäeva <ph name="TIME" /> seisuga. Sisestage see sünkroonimise alustamiseks.</translation>
@@ -1142,7 +1147,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="569000877158168851">Reegli DnsOverHttpsTemplates väärtus pole asjakohane ja seda ei kasutata, kui reegli DnsOverHttpsMode väärtuseks pole määratud <ph name="SECURE_DNS_MODE_AUTOMATIC" /> või <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Keskel</translation>
 <translation id="570530837424789914">Halda …</translation>
-<translation id="5705882733397021510">Mine tagasi</translation>
 <translation id="57094364128775171">Soovita tugevat parooli …</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -1361,6 +1365,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Mitte ükski}=1{1 saidilt (teid ei logita Google'i kontolt välja)}other{# saidilt (teid ei logita Google'i kontolt välja)}}</translation>
+<translation id="6648459603387803038">Teie administraator saab brauseri seadistust kaugühenduse kaudu muuta. Selle seadme tegevusi võidakse hallata ka väljaspool Chrome'i.</translation>
 <translation id="6652101503459149953">Kasuta Windows Hello autentimist</translation>
 <translation id="6657585470893396449">Parool</translation>
 <translation id="666259744093848177">(x86_64 tõlgitud)</translation>
@@ -1398,7 +1403,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6846340164947227603">Kasuta virtuaalkaardi numbrit …</translation>
 <translation id="6852204201400771460">Kas soovite rakenduse uuesti laadida?</translation>
 <translation id="6865412394715372076">Seda kaarti ei saa praegu kinnitada</translation>
-<translation id="6868206169573555318">Taaskäivita värskendamiseks</translation>
 <translation id="6874604403660855544">&amp;Lisa uuesti</translation>
 <translation id="6884662655240309489">Suurus 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
@@ -1433,6 +1437,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6993898126790112050">6x9 (ümbrik)</translation>
 <translation id="6996312675313362352">Tõlgi alati: <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="7004583254764674281">Kasutage kaartide kiiremaks kinnitamiseks teenust Windows Hello</translation>
+<translation id="7006930604109697472">Saada ikkagi</translation>
 <translation id="7012363358306927923">Hiina UnionPay</translation>
 <translation id="7016992613359344582">Tasud võivad olla ühekordsed või korduvad ja need ei pruugi olla ilmselged.</translation>
 <translation id="7029809446516969842">Paroolid</translation>
@@ -1462,7 +1467,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="7138472120740807366">Kohaletoimetamisviis</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="714064300541049402">Pildi nihe X-teljel 2. poolel</translation>
-<translation id="7147693119324090759">Esita ikkagi</translation>
 <translation id="7152423860607593928">Number-14 (ümbrik)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lavendlililla</translation>
@@ -1472,6 +1476,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Salvesta ja sisesta makseviisid</translation>
 <translation id="7180611975245234373">Värskenda</translation>
+<translation id="7181261019481237103">Ava inkognito aken</translation>
 <translation id="7182878459783632708">Reegleid pole määratud</translation>
 <translation id="7186367841673660872">See leht on tõlgitud keelest<ph name="ORIGINAL_LANGUAGE" />keelde<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="7192203810768312527">Vabastab <ph name="SIZE" />. Mõne saidi laadimine võib järgmisel külastusel rohkem aega võtta.</translation>
@@ -1551,6 +1556,7 @@ Lisateave:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Vaadake lisateavet<ph name="END_LINK" /> probleemi kohta.</translation>
 <translation id="7455133967321480974">Kasuta globaalset vaikeseadet (blokeeri)</translation>
 <translation id="7460618730930299168">Filtreerimine erineb valitust. Kas jätkata?</translation>
+<translation id="7469935732330206581">Vorm ei ole turvaline</translation>
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
@@ -1681,6 +1687,7 @@ Lisateave:
 <translation id="7947285636476623132">Kontrollige aegumisaastat ja proovige uuesti</translation>
 <translation id="7951415247503192394">(32-bitine)</translation>
 <translation id="7953569069500808819">Õmblus ülaservas</translation>
+<translation id="7954523986259449736">Kuna see sait kasutab ühendust, mis pole täielikult turvaline, on teie teave teistele nähtav.</translation>
 <translation id="7956713633345437162">Mobiili järjehoidjad</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="7966803981046576691">Töökonto tüüp</translation>
@@ -1690,9 +1697,9 @@ Lisateave:
 <translation id="7995512525968007366">Ei ole määratud</translation>
 <translation id="800218591365569300">Sulgege muud vahelehed või programmid, et mälu vabastada.</translation>
 <translation id="8004582292198964060">Brauser</translation>
-<translation id="8009225694047762179">Halda paroole</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{See kaart ja selle arveldusaadress salvestatakse. Saate seda kasutada, kui olete kontole <ph name="USER_EMAIL" /> sisse logitud.}other{Need kaardid ja nende arveldusaadressid salvestatakse. Saate neid kasutada, kui olete kontole <ph name="USER_EMAIL" /> sisse logitud.}}</translation>
 <translation id="8025119109950072390">Sellel saidil asuvad ründajad võivad teid meelitada ohtlikele tegevustele, nagu tarkvara installimine või isiklike andmete (nt paroolid, telefoninumbrid või krediitkaardid) avaldamine.</translation>
+<translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
 <translation id="8028960012888758725">Kärbi pärast tööd</translation>
 <translation id="8034522405403831421">Leht on <ph name="SOURCE_LANGUAGE" /> keeles. Kas tõlkida <ph name="TARGET_LANGUAGE" /> keelde?</translation>
 <translation id="8035152190676905274">Sulepea</translation>
@@ -1731,7 +1738,6 @@ Lisateave:
 <translation id="8175796834047840627">Chrome pakub võimalust salvestada kaardid teie Google'i kontole, kuna olete sisse logitud. Seda käitumist saab seadetes muuta.</translation>
 <translation id="8184538546369750125">Kasuta globaalset vaikeseadet (luba)</translation>
 <translation id="8194797478851900357">&amp;Võta teisaldamine tagasi</translation>
-<translation id="8197543752516192074">Tõlgi leht</translation>
 <translation id="8201077131113104583">ID-ga „<ph name="EXTENSION_ID" />” laienduse kehtetu värskendamise URL.</translation>
 <translation id="8202097416529803614">Tellimuse kokkuvõte</translation>
 <translation id="8202370299023114387">Konflikt</translation>
@@ -1782,7 +1788,6 @@ Lisateave:
 <translation id="8355270400102541638">Kohaliku kokkujooksmise kontekst:</translation>
 <translation id="8363502534493474904">Lülitage lennurežiim välja</translation>
 <translation id="8364627913115013041">Määramata.</translation>
-<translation id="8367477997601443248">Ebaturvaline vorm</translation>
 <translation id="8368476060205742148">Google Play teenused</translation>
 <translation id="8371889962595521444">Kohandatud juursertifikaadid</translation>
 <translation id="8380941800586852976">Ohtlik</translation>
@@ -1797,6 +1802,7 @@ Lisateave:
 <translation id="8433057134996913067">See logib teid välja enamikult veebisaitidelt.</translation>
 <translation id="8437238597147034694">&amp;Võta teisaldamine tagasi</translation>
 <translation id="8438786541497918448">Kas kasutada kaamerat ja mikrofoni?</translation>
+<translation id="8446884382197647889">Lisateave</translation>
 <translation id="8457125768502047971">Määramata</translation>
 <translation id="8461694314515752532">Krüpteeri sünkroonitud andmed sünkroonimisparooliga</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 krediitkaart}other{# krediitkaarti}}</translation>
@@ -1812,6 +1818,7 @@ Lisateave:
 <translation id="8503813439785031346">Kasutajanimi</translation>
 <translation id="8508648098325802031">Otsinguikoon</translation>
 <translation id="8522552481199248698">Chrome aitab teil oma Google'i kontot kaitsta ja parooli muuta.</translation>
+<translation id="8530813470445476232">Kustutage Chrome'i seadetes oma sirvimisajalugu ja küpsisefailid ning tühjendage vahemälu</translation>
 <translation id="8541158209346794904">Bluetooth-seade</translation>
 <translation id="8542014550340843547">Kolm kirjaklambrit all</translation>
 <translation id="8543181531796978784">Võite <ph name="BEGIN_ERROR_LINK" />teavitada tuvastusprobleemist<ph name="END_ERROR_LINK" />. Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
@@ -1862,7 +1869,6 @@ Lisateave:
 <translation id="8805819170075074995">Loendikirje „<ph name="LANGUAGE_ID" />”: kirjet eiratakse, kuna seda hõlmab ka reegel SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Kärbi pärast iga lehte</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>
-<translation id="8831512686168463822">See vorm esitatakse ebaturvalise ühenduse kaudu, mis võib paljastada teie teabe (näiteks paroolid, sõnumid või krediitkaardid), kui see saadetakse sellele saidile.</translation>
 <translation id="883848425547221593">Muud järjehoidjad</translation>
 <translation id="884264119367021077">Tarneaadress</translation>
 <translation id="884923133447025588">Tühistusmehhanismi ei leitud.</translation>
@@ -1948,6 +1954,7 @@ Lisateave:
 <translation id="9173282814238175921">Üks dokument / uus leht</translation>
 <translation id="917450738466192189">Serveri sertifikaat on kehtetu.</translation>
 <translation id="9174917557437862841">Vahelehe vahetamise nupp, vajutage selle vahelehe aktiveerimiseks sisestusklahvi</translation>
+<translation id="9179703756951298733">Hallake oma maksete ja krediitkaardi teavet Chrome'i seadetes</translation>
 <translation id="9183302530794969518">Google'i dokumendid</translation>
 <translation id="9183425211371246419">Host <ph name="HOST_NAME" /> kasutab toetamata protokolli.</translation>
 <translation id="9191834167571392248">Auk vasakul all</translation>
@@ -1984,5 +1991,4 @@ Lisateave:
     &lt;/ul&gt;</translation>
 <translation id="994346157028146140">JIS B1</translation>
 <translation id="997986563973421916">Teenusest Google Pay</translation>
-<translation id="998893882640184078">Ava uus Chrome'i inkognito aken</translation>
 </translationbundle>

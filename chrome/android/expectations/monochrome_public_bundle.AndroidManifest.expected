@@ -61,7 +61,7 @@
   <permission android:name="$PACKAGE.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
   <permission android:name="$PACKAGE.TOS_ACKED" android:protectionLevel="signatureOrSystem"/>
   <permission android:label="Debug web pages" android:name="$PACKAGE.permission.DEBUG" android:permissionGroup="android.permission-group.DEVELOPMENT_TOOLS" android:protectionLevel="signature"/>
-  <application  # DIFF-ANCHOR: 8b4c7922
+  <application  # DIFF-ANCHOR: c9a6872
       android:allowBackup="false"
       android:extractNativeLibs="false"
       android:icon="@drawable/ic_launcher"
@@ -537,7 +537,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>  # DIFF-ANCHOR: b3c76e56
     </activity>  # DIFF-ANCHOR: ecad59fd
-    <activity  # DIFF-ANCHOR: 5fe1d7ec
+    <activity  # DIFF-ANCHOR: 1d9e26ca
         android:icon="@drawable/icon_webview"
         android:label="WebView DevTools"
         android:launchMode="singleTask"
@@ -545,12 +545,13 @@
         android:process=":webview_apk"
         android:taskAffinity="$PACKAGE.org.chromium.android_webview.devui"
         android:theme="@style/Theme.DevUi.DayNight"
-        android:visibleToInstantApps="true">
+        android:visibleToInstantApps="true"
+        android:windowSoftInputMode="adjustPan">
       <intent-filter>  # DIFF-ANCHOR: 36c368a2
         <action android:name="com.android.webview.SHOW_DEV_UI"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>  # DIFF-ANCHOR: 36c368a2
-    </activity>  # DIFF-ANCHOR: 5fe1d7ec
+    </activity>  # DIFF-ANCHOR: 1d9e26ca
     <activity  # DIFF-ANCHOR: a003fb0a
         android:label="@string/license_activity_title"
         android:name="org.chromium.android_webview.nonembedded.LicenseActivity"
@@ -1460,5 +1461,5 @@
         android:exported="true"
         android:name="org.chromium.chrome.browser.prerender.ChromePrerenderService"
         tools:ignore="ExportedService"/>
-  </application>  # DIFF-ANCHOR: 8b4c7922
+  </application>  # DIFF-ANCHOR: c9a6872
 </manifest>

@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Keine gespeicherten Passwörter. Chromium kann Ihre Passwörter prüfen, wenn Sie sie speichern.</translation>
 <translation id="5277894862589591112">Starten Sie Chromium neu, um die Änderungen zu übernehmen</translation>
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Beim Prüfen der Gerätesoftware durch Chromium ist ein Fehler aufgetreten</translation>
 <translation id="5386450000063123300">Chromium wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Anmeldung in Chromium zulassen</translation>
 <translation id="5398878173008909840">Eine neue Version von Chromium ist verfügbar.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen</translation>
 <translation id="549669000822060376">Bitte warten Sie, bis die aktuellen Systemupdates von Chromium installiert wurden.</translation>
 <translation id="5496810170689441661">Chromium versucht, Passwörter zu bearbeiten. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
-<translation id="5556694182460963866">Ihr Administrator hat die Prüfung auf schädliche Software in Chromium deaktiviert</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ein Chromium-Update ist verfügbar}=1{Ein Chromium-Update ist verfügbar}other{Ein Chromium-Update ist seit # Tagen verfügbar}}</translation>
 <translation id="5631814766731275228">Chromium-Name und -Bild</translation>
 <translation id="5634636535844844681">Für Chromium ist Windows 7 oder höher erforderlich.</translation>
@@ -215,6 +213,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="7975919845073681630">Dies ist eine Zweitinstallation, daher kann Chromium nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="7979877361127045932">Im Chromium-Menü ausblenden</translation>
 <translation id="8013436988911883588">Sobald Chromium Zugriff hat, können Websites Sie um Zugriff bitten.</translation>
+<translation id="8022442821873033760">Ihren neuen Chromium Space einrichten</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8248265253516264921">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="8266560134891435528">Chromium kann Ihre Passwörter nicht prüfen, da Sie nicht angemeldet sind</translation>

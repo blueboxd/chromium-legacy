@@ -345,8 +345,10 @@ int64_t TestServiceWorkerContext::StartServiceWorker(int worker_process_id) {
 
   // Notify observers.
   for (auto& observer : observer_list_) {
-    observer.OnVersionStartedRunning(version_id,
-                                     {worker_url, GURL(), worker_process_id});
+    observer.OnVersionStartedRunning(
+        version_id,
+        content::ServiceWorkerRunningInfo(worker_url, GURL(), worker_process_id,
+                                          blink::ServiceWorkerToken::Create()));
   }
 
   return version_id;

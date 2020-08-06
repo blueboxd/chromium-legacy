@@ -169,7 +169,6 @@ public class TabGridDialogMediator {
                 updateGridTabSwitcher();
             }
         };
-        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -221,6 +220,7 @@ public class TabGridDialogMediator {
             TabGroupTitleEditor tabGroupTitleEditor) {
         mTabSelectionEditorController = tabSelectionEditorController;
         mTabGroupTitleEditor = tabGroupTitleEditor;
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;

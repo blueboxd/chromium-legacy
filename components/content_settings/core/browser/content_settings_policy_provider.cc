@@ -84,7 +84,10 @@ const PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedSensorsAllowedForUrls, ContentSettingsType::SENSORS,
          CONTENT_SETTING_ALLOW},
         {prefs::kManagedSensorsBlockedForUrls, ContentSettingsType::SENSORS,
-         CONTENT_SETTING_BLOCK}};
+         CONTENT_SETTING_BLOCK},
+        {prefs::kManagedInsecurePrivateNetworkAllowedForUrls,
+         ContentSettingsType::INSECURE_PRIVATE_NETWORK, CONTENT_SETTING_ALLOW},
+};
 
 class VectorRuleIterator : public RuleIterator {
  public:
@@ -146,7 +149,10 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultLegacyCookieAccessSetting},
         {ContentSettingsType::SERIAL_GUARD,
          prefs::kManagedDefaultSerialGuardSetting},
-        {ContentSettingsType::SENSORS, prefs::kManagedDefaultSensorsSetting}};
+        {ContentSettingsType::SENSORS, prefs::kManagedDefaultSensorsSetting},
+        {ContentSettingsType::INSECURE_PRIVATE_NETWORK,
+         prefs::kManagedDefaultInsecurePrivateNetworkSetting},
+};
 
 // static
 void PolicyProvider::RegisterProfilePrefs(
@@ -176,6 +182,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedSerialBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedSensorsAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedSensorsBlockedForUrls);
+  registry->RegisterListPref(
+      prefs::kManagedInsecurePrivateNetworkAllowedForUrls);
 
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
@@ -209,6 +217,9 @@ void PolicyProvider::RegisterProfilePrefs(
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultSensorsSetting,
                                 CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(
+      prefs::kManagedDefaultInsecurePrivateNetworkSetting,
+      CONTENT_SETTING_DEFAULT);
 }
 
 PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
@@ -248,6 +259,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedSerialBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedSensorsAllowedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedSensorsBlockedForUrls, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedInsecurePrivateNetworkAllowedForUrls, callback);
 
   // The following preferences are only used to indicate if a default content
   // setting is managed and to hold the managed default setting value. If the
@@ -279,6 +292,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedDefaultSerialGuardSetting,
                              callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultSensorsSetting, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedDefaultInsecurePrivateNetworkSetting, callback);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -583,7 +598,8 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
       name == prefs::kManagedSerialAskForUrls ||
       name == prefs::kManagedSerialBlockedForUrls ||
       name == prefs::kManagedSensorsAllowedForUrls ||
-      name == prefs::kManagedSensorsBlockedForUrls) {
+      name == prefs::kManagedSensorsBlockedForUrls ||
+      name == prefs::kManagedInsecurePrivateNetworkAllowedForUrls) {
     ReadManagedContentSettings(true);
     ReadManagedDefaultSettings();
   }

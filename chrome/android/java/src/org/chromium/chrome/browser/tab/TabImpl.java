@@ -174,11 +174,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private boolean mIsRendererUnresponsive;
 
     /**
-     * Title of the ContentViews webpage.
-     */
-    private String mTitle;
-
-    /**
      * Whether didCommitProvisionalLoadForFrame() hasn't yet been called for the current native page
      * (page A). To decrease latency, we show native pages in both loadUrl() and
      * didCommitProvisionalLoadForFrame(). However, we mustn't show a new native page (page B) in
@@ -370,9 +365,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
     @CalledByNative
     @Override
+    // TODO(crbug.com/1113834) migrate getTitle() to CriticalPersistedTabData.from(tab).getTitle()
     public String getTitle() {
-        if (mTitle == null) updateTitle();
-        return mTitle;
+        if (CriticalPersistedTabData.from(this).getTitle() == null) updateTitle();
+        return CriticalPersistedTabData.from(this).getTitle();
     }
 
     Context getThemedApplicationContext() {
@@ -839,7 +835,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         CriticalPersistedTabData.from(this).setWebContentsState(state.contentsState);
         CriticalPersistedTabData.from(this).setTimestampMillis(state.timestampMillis);
         mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
-        mTitle = state.contentsState.getDisplayTitleFromState();
+        CriticalPersistedTabData.from(this).setTitle(
+                state.contentsState.getDisplayTitleFromState());
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
         CriticalPersistedTabData.from(this).setRootId(
                 state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId);
@@ -1090,10 +1087,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * @param title Title of the page.
      */
     void updateTitle(String title) {
-        if (TextUtils.equals(mTitle, title)) return;
+        if (TextUtils.equals(CriticalPersistedTabData.from(this).getTitle(), title)) return;
 
         mIsTabStateDirty = true;
-        mTitle = title;
+        CriticalPersistedTabData.from(this).setTitle(title);
         notifyPageTitleChanged();
     }
 

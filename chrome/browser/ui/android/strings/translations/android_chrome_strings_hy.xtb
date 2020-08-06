@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Հպեք՝ ընդարձակելու համար</translation>
 <translation id="1291207594882862231">Մաքրել պատմությունը, քուքիները, կայքի տվյալները, քեշը…</translation>
 <translation id="129553762522093515">Վերջերս փակված</translation>
+<translation id="1298077576058087471">Տնտեսեք թրաֆիկի մինչև 60%-ը, կարդացեք այսօրվա նորությունները</translation>
 <translation id="1303339473099049190">Չհաջողվեց գտնել այդ գաղտնաբառը։ Ստուգեք ուղղագրությունը և նորից փորձեք։</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Ուղարկվել է <ph name="DEVICE_NAME" />-ից</translation>
 <translation id="1310482092992808703">Խմբավորել ներդիրները</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Վերակայե՞լ Lite ռեժիմը</translation>
 <translation id="1868024384445905608">Chrome-ն այժմ ավելի արագ է ֆայլեր ներբեռնում</translation>
 <translation id="1874760110381325409">Դուք կմտնեք ձեր Google հաշիվ\n(Chrome-ի համաժամացումը չի միանա)</translation>
+<translation id="1877026089748256423">Chrome-ը հնացած է</translation>
 <translation id="1883903952484604915">Իմ ֆայլերը</translation>
 <translation id="1919950603503897840">Ընտրեք կոնտակտներ</translation>
 <translation id="1925021887439448749">Մուտքագրեք այլ հասցե</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">Հասանելի է նոր տարբերակ</translation>
 <translation id="2593272815202181319">Միալայն</translation>
 <translation id="2612676031748830579">Քարտի համարը</translation>
-<translation id="2622559029861875898">Chrome-ը չի կարող ստուգել թարմացումների առկայությունը։ Ստուգեք ինտերնետ կապը։</translation>
 <translation id="2625189173221582860">Գաղտնաբառը պատճենվեց</translation>
 <translation id="2631006050119455616">Խնայվեց</translation>
 <translation id="2647434099613338025">Ավելացնել լեզու</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">Տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="3058498974290601450">Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում:</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> էջանիշ}one{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}other{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}}</translation>
+<translation id="3062802207422175757">Ձեր հետաքրքրությունների հիման վրա ընտրված հոդվածներ՝ Chrome-ում</translation>
 <translation id="3089395242580810162">Բացել ինկոգնիտո ներդիրում</translation>
 <translation id="3114012059975132928">Տեսանվագարկիչ</translation>
+<translation id="3114507951000454849">Կարդացեք այսօրվա նորությունները <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Հայտարարություններ</translation>
 <translation id="3137521801621304719">Դուրս գալ ինկոգնիտո ռեժիմից</translation>
 <translation id="3143515551205905069">Չեղարկել համաժամացումը</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome-ը դեռ նախապատրաստվում է VR-ի համար։ Վերագործարկեք այն ավելի ուշ։</translation>
 <translation id="3568688522516854065">Ձեր մյուս սարքերում եղած ներդիրներն օգտագործելու համար մտեք հաշիվ և միացրեք համաժամացումը</translation>
 <translation id="3587482841069643663">Բոլորը</translation>
+<translation id="3587596251841506391">Օգնեք բարելավել անվտանգությունը</translation>
 <translation id="3590487821116122040">Ըստ Chrome-ի ոչ կարևոր կայքերի տվյալներ (օր.` առանց պահված կարգավորումների կայքերը կամ այն կայքերը, որոնք վաղուց չեք այցելել)</translation>
 <translation id="3594780231884063836">Անջատել տեսանյութի ձայնը</translation>
 <translation id="3599863153486145794">Մաքրում է պատմությունը բոլոր սարքերից, որոնցում մուտք եք գործել։ Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում։</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">Անցնել հասցեագոտի</translation>
 <translation id="5447201525962359567">Կայքերի բոլոր տվյալները, ներառյալ` քուքիները և սարքում պահված մյուս տվյալները</translation>
 <translation id="545042621069398927">Ներբեռնումն արագացվում է։</translation>
-<translation id="5454513945794364671">Ձեր ադմինիստրատորն անջատել է անվտանգ դիտարկումը</translation>
 <translation id="5456381639095306749">Ներբեռնել էջը</translation>
 <translation id="548278423535722844">Բացեք Քարտեզներ հավելվածում</translation>
 <translation id="5487521232677179737">Ջնջել տվյալները</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">Կարգավորումն ընթացքի մեջ է…</translation>
 <translation id="6111020039983847643">օգտագործվել է</translation>
 <translation id="6112702117600201073">Էջի թարմացում</translation>
+<translation id="6122831415929794347">Անջատե՞լ ապահով դիտարկումը</translation>
 <translation id="6127379762771434464">Տարրը հեռացվեց</translation>
 <translation id="6140709049082532940">Լրացուցիչ պաշտպանություն՝</translation>
 <translation id="6140912465461743537">Երկիր/տարածաշրջան</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">Այս սարքից ձեր գաղտնաբառերն արտահանելու համար կարգավորումներում միացրեք էկրանի կողպումը։</translation>
 <translation id="6157392216611456285">Ընտրել <ph name="APP_NAME" />-ը</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> տվյալների խնայում</translation>
+<translation id="6186394685773237175">Կոտրված գաղտնաբառեր չեն գտնվել</translation>
 <translation id="6201345951596836663">Հղումը պատճենվեց</translation>
 <translation id="6206830853671714236">Ընտրեք, թե երբ է պետք ներբեռնել</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">Ձեր մյուս սարքերում Chrome-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
 <translation id="6583199322650523874">Էջանշել ընթացիկ էջը</translation>
 <translation id="6588043302623806746">Օգտագործել ապահով DNS</translation>
+<translation id="6590471736817333463">Տնտեսեք թրաֆիկի մինչև 60%-ը</translation>
 <translation id="6593061639179217415">Համակարգչային տարբերակ</translation>
 <translation id="6597891566292541626">Տեղադրեք QR-կոդը/գծակոդը այս շրջանակում։</translation>
 <translation id="6600954340915313787">Պատճենվել է Chrome-ում</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">Գաղտնաբառ</translation>
 <translation id="6659594942844771486">Ներդիր</translation>
 <translation id="6663079968236414793">Հղում տեքստին</translation>
-<translation id="666573598175432848">Հասանելի է Chrome-ի նոր տարբերակը։ Հպեք այս տարրին՝ Play Խանութ անցնելու համար։</translation>
 <translation id="666731172850799929">Բացել <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="666981079809192359">Chrome-ի Գաղտնիության ծանուցում</translation>
 <translation id="6671495933530132209">Պատճենել պատկերը</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">Մնացել է 1 օր</translation>
 <translation id="8200772114523450471">Շարունակել</translation>
 <translation id="8209050860603202033">Բացել պատկերը</translation>
+<translation id="8218052821161047641">Արագ էջ</translation>
 <translation id="8218622182176210845">Կառավարեք ձեր հաշիվը</translation>
 <translation id="8223642481677794647">Լրահոսի քարտի ընտրացանկ</translation>
 <translation id="8224471946457685718">Ներբեռնել հոդվածներ Wi-Fi-ի միջոցով</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ներդիր</translation>
 <translation id="8854223127042600341">Դիտեք անցանց ֆայլերը</translation>
 <translation id="889338405075704026">Անցնել Chrome-ի կարգավորումներ</translation>
-<translation id="8893398027601469503">Դուք օգտագործում եք Chrome-ի վերջին տարբերակը</translation>
 <translation id="8898822736010347272">Ուղարկում է Google-ին ձեր այցելած որոշ էջերի URL-ներն ու դրանց բովանդակությունը և համակարգի մասին որոշակի տեղեկություններ, որոնք օգնում են հայտնաբերել համացանցում օգտատերերին սպառնացող նոր վտանգներ։</translation>
 <translation id="8909135823018751308">Կիսվել…</translation>
 <translation id="8912362522468806198">Google հաշիվ</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">Չի հաջողվում զանգել</translation>
 <translation id="9219103736887031265">Պատկերներ</translation>
 <translation id="926205370408745186">Հեռացրեք Chrome-ի պատմությունը Թվային բարեկեցությունից</translation>
+<translation id="927968626442779827">Փորձեք Lite ռեժիմը Google Chrome-ում</translation>
 <translation id="932327136139879170">Գլխավոր էջ</translation>
 <translation id="93753284658583800">Գլխավոր էջը փոխվեց</translation>
 <translation id="938850635132480979">Սխալ՝ <ph name="ERROR_CODE" /></translation>

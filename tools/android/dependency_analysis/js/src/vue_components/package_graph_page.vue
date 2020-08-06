@@ -7,6 +7,8 @@
     <div id="page-controls">
       <GraphFilterInput
           :node-ids="pageModel.getNodeIds()"
+          :nodes-already-in-filter="
+            displaySettingsData.nodeFilterData.filterList"
           :shorten-name="filterShortenName"
           @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
       <GraphFilterItems
@@ -18,11 +20,13 @@
       <NumericInput
           description="Change inbound (blue) depth:"
           input-id="inbound-input"
-          :input-value.sync="displaySettingsData.inboundDepth"/>
+          :input-value.sync="displaySettingsData.inboundDepth"
+          :min-value="0"/>
       <NumericInput
           description="Change outbound (yellow) depth:"
           input-id="outbound-input"
-          :input-value.sync="displaySettingsData.outboundDepth"/>
+          :input-value.sync="displaySettingsData.outboundDepth"
+          :min-value="0"/>
     </div>
     <div id="graph-and-node-details-container">
       <GraphVisualization

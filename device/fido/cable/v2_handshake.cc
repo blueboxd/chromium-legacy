@@ -6,8 +6,8 @@
 
 #include "base/bits.h"
 #include "base/numerics/safe_math.h"
-#include "base/strings/string_number_conversions.h"  // TODO(agl): REMOVE
 #include "components/cbor/reader.h"
+#include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "crypto/aead.h"
@@ -21,8 +21,6 @@
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
-
-using device::fido_parsing_utils::CopyCBORBytestring;
 
 namespace {
 
@@ -44,29 +42,58 @@ bool ConstructNonce(uint32_t counter, base::span<uint8_t, 12> out_nonce) {
   return true;
 }
 
-CBS CBSFromSpan(base::span<const uint8_t> in) {
-  CBS cbs;
-  CBS_init(&cbs, in.data(), in.size());
-  return cbs;
-}
-
-bool CBS_get_span(CBS* cbs, base::span<const uint8_t>* out_span, size_t N) {
-  CBS contents;
-  if (!CBS_get_bytes(cbs, &contents, N)) {
-    return false;
-  }
-  *out_span =
-      base::span<const uint8_t>(CBS_data(&contents), CBS_len(&contents));
-  return true;
-}
-
-constexpr uint8_t kPairedPrologue[] = "caBLE handshake";
-constexpr uint8_t kQRPrologue[] = "caBLE QR code handshake";
-
 }  // namespace
 
 namespace device {
 namespace cablev2 {
+
+base::Optional<std::vector<uint8_t>> EncodePaddedCBORMap(
+    cbor::Value::MapValue map) {
+  base::Optional<std::vector<uint8_t>> cbor_bytes =
+      cbor::Writer::Write(cbor::Value(std::move(map)));
+  if (!cbor_bytes) {
+    return base::nullopt;
+  }
+
+  base::CheckedNumeric<size_t> padded_size_checked = cbor_bytes->size();
+  padded_size_checked += 1;  // padding-length byte
+  padded_size_checked = (padded_size_checked + 255) & ~255;
+  if (!padded_size_checked.IsValid()) {
+    return base::nullopt;
+  }
+
+  const size_t padded_size = padded_size_checked.ValueOrDie();
+  DCHECK_GT(padded_size, cbor_bytes->size());
+  const size_t extra_padding = padded_size - cbor_bytes->size();
+
+  cbor_bytes->resize(padded_size);
+  DCHECK_LE(extra_padding, 256u);
+  cbor_bytes->at(padded_size - 1) = static_cast<uint8_t>(extra_padding - 1);
+
+  return *cbor_bytes;
+}
+
+base::Optional<cbor::Value> DecodePaddedCBORMap(
+    base::span<const uint8_t> input) {
+  if (input.empty()) {
+    return base::nullopt;
+  }
+
+  const size_t padding_length = input.back();
+  if (padding_length + 1 > input.size()) {
+    FIDO_LOG(DEBUG) << "Invalid padding in caBLE handshake message";
+    return base::nullopt;
+  }
+  input = input.subspan(0, input.size() - padding_length - 1);
+
+  base::Optional<cbor::Value> payload = cbor::Reader::Read(input);
+  if (!payload || !payload->is_map()) {
+    FIDO_LOG(DEBUG) << "CBOR parse failure in caBLE handshake message";
+    return base::nullopt;
+  }
+
+  return payload;
+}
 
 Crypter::Crypter(base::span<const uint8_t, 32> read_key,
                  base::span<const uint8_t, 32> write_key)
@@ -115,17 +142,14 @@ bool Crypter::Encrypt(std::vector<uint8_t>* message_to_encrypt) {
   aes_key.Init(write_key_);
   DCHECK_EQ(nonce.size(), aes_key.NonceLength());
 
-  const uint8_t additional_data[2] = {
-      base::strict_cast<uint8_t>(device::FidoBleDeviceCommand::kMsg),
-      /*version=*/2};
+  const uint8_t additional_data[1] = {/*version=*/2};
   std::vector<uint8_t> ciphertext =
       aes_key.Seal(padded_message, nonce, additional_data);
   message_to_encrypt->swap(ciphertext);
   return true;
 }
 
-bool Crypter::Decrypt(FidoBleDeviceCommand command,
-                      base::span<const uint8_t> ciphertext,
+bool Crypter::Decrypt(base::span<const uint8_t> ciphertext,
                       std::vector<uint8_t>* out_plaintext) {
   std::array<uint8_t, 12> nonce;
   if (!ConstructNonce(read_sequence_num_, nonce)) {
@@ -136,8 +160,7 @@ bool Crypter::Decrypt(FidoBleDeviceCommand command,
   aes_key.Init(read_key_);
   DCHECK_EQ(nonce.size(), aes_key.NonceLength());
 
-  const uint8_t additional_data[2] = {base::strict_cast<uint8_t>(command),
-                                      /*version=*/2};
+  const uint8_t additional_data[1] = {/*version=*/2};
   base::Optional<std::vector<uint8_t>> plaintext =
       aes_key.Open(ciphertext, nonce, additional_data);
 
@@ -168,37 +191,38 @@ bool Crypter::IsCounterpartyOfForTesting(const Crypter& other) const {
 
 HandshakeInitiator::HandshakeInitiator(
     base::span<const uint8_t, 32> psk_gen_key,
-    base::span<const uint8_t, 8> nonce,
-    base::span<const uint8_t, kCableEphemeralIdSize> eid,
+    base::span<const uint8_t, kNonceSize> nonce,
     base::Optional<base::span<const uint8_t, kP256X962Length>> peer_identity,
-    base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
-        local_seed)
-    : eid_(fido_parsing_utils::Materialize(eid)) {
-  DCHECK(peer_identity.has_value() ^ local_seed.has_value());
+    bssl::UniquePtr<EC_KEY> local_identity)
+    : local_identity_(std::move(local_identity)) {
+  DCHECK(peer_identity.has_value() ^ static_cast<bool>(local_identity_));
   HKDF(psk_.data(), psk_.size(), EVP_sha256(), psk_gen_key.data(),
        psk_gen_key.size(), /*salt=*/nonce.data(), nonce.size(),
        /*info=*/nullptr, 0);
   if (peer_identity) {
-    peer_identity_ = fido_parsing_utils::Materialize(*peer_identity);
-  }
-  if (local_seed) {
-    bssl::UniquePtr<EC_GROUP> p256(
-        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
-    local_identity_.reset(EC_KEY_derive_from_secret(
-        p256.get(), local_seed->data(), local_seed->size()));
+    peer_identity_ =
+        fido_parsing_utils::Materialize<kP256X962Length>(*peer_identity);
   }
 }
 
 HandshakeInitiator::~HandshakeInitiator() = default;
 
-std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
+std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage(
+    base::span<const uint8_t, kCableEphemeralIdSize> eid,
+    base::span<const uint8_t> get_info_bytes) {
+  uint8_t prologue[1 + kCableEphemeralIdSize];
+  DCHECK_EQ(kCableEphemeralIdSize, eid.size());
+  memcpy(&prologue[1], eid.data(), kCableEphemeralIdSize);
+
   if (peer_identity_) {
     noise_.Init(Noise::HandshakeType::kNKpsk0);
-    noise_.MixHash(kPairedPrologue);
+    prologue[0] = 0;
+    noise_.MixHash(prologue);
     noise_.MixHash(*peer_identity_);
   } else {
     noise_.Init(Noise::HandshakeType::kKNpsk0);
-    noise_.MixHash(kQRPrologue);
+    prologue[0] = 1;
+    noise_.MixHash(prologue);
     noise_.MixHashPoint(EC_KEY_get0_public_key(local_identity_.get()));
   }
 
@@ -230,13 +254,19 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
     noise_.MixKey(es_key);
   }
 
-  std::vector<uint8_t> ciphertext =
-      noise_.EncryptAndHash(base::span<const uint8_t>());
+  cbor::Value::MapValue payload;
+  payload.emplace(0, get_info_bytes);
+  base::Optional<std::vector<uint8_t>> plaintext =
+      EncodePaddedCBORMap(std::move(payload));
+  if (!plaintext) {
+    FIDO_LOG(ERROR) << "Failed to pad getInfo response";
+    return {};
+  }
+  std::vector<uint8_t> ciphertext = noise_.EncryptAndHash(*plaintext);
 
   std::vector<uint8_t> handshake_message;
-  handshake_message.reserve(eid_.size() + sizeof(ephemeral_key_public_bytes) +
+  handshake_message.reserve(sizeof(ephemeral_key_public_bytes) +
                             ciphertext.size());
-  handshake_message.insert(handshake_message.end(), eid_.begin(), eid_.end());
   handshake_message.insert(
       handshake_message.end(), ephemeral_key_public_bytes,
       ephemeral_key_public_bytes + sizeof(ephemeral_key_public_bytes));
@@ -246,9 +276,8 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
   return handshake_message;
 }
 
-base::Optional<std::pair<std::unique_ptr<Crypter>,
-                         base::Optional<std::unique_ptr<CableDiscoveryData>>>>
-HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
+base::Optional<std::unique_ptr<Crypter>> HandshakeInitiator::ProcessResponse(
+    base::span<const uint8_t> response) {
   if (response.size() < kP256X962Length) {
     FIDO_LOG(DEBUG) << "Handshake response truncated (" << response.size()
                     << " bytes)";
@@ -286,99 +315,56 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
   }
 
   auto plaintext = noise_.DecryptAndHash(ciphertext);
-  if (!plaintext || plaintext->empty() != peer_identity_.has_value()) {
+  if (!plaintext || !plaintext->empty()) {
     FIDO_LOG(DEBUG) << "Invalid caBLE handshake message";
     return base::nullopt;
   }
 
-  base::Optional<std::unique_ptr<CableDiscoveryData>> discovery_data;
-  if (!peer_identity_) {
-    // Handshakes without a peer identity (i.e. KNpsk0 handshakes setup from a
-    // QR code) send a padded message in the reply. This message can,
-    // optionally, contain CBOR-encoded, long-term pairing information.
-    const size_t padding_length = (*plaintext)[plaintext->size() - 1];
-    if (padding_length + 1 > plaintext->size()) {
-      FIDO_LOG(DEBUG) << "Invalid padding in caBLE handshake message";
-      return base::nullopt;
-    }
-    plaintext->resize(plaintext->size() - padding_length - 1);
-
-    if (!plaintext->empty()) {
-      base::Optional<cbor::Value> pairing = cbor::Reader::Read(*plaintext);
-      if (!pairing || !pairing->is_map()) {
-        FIDO_LOG(DEBUG) << "CBOR parse failure in caBLE handshake message";
-        return base::nullopt;
-      }
-
-      auto future_discovery = std::make_unique<CableDiscoveryData>();
-      future_discovery->version = CableDiscoveryData::Version::V2;
-      future_discovery->v2.emplace();
-      future_discovery->v2->peer_identity.emplace();
-
-      const cbor::Value::MapValue& pairing_map(pairing->GetMap());
-      const auto name_it = pairing_map.find(cbor::Value(4));
-      if (!CopyCBORBytestring(&future_discovery->v2->eid_gen_key, pairing_map,
-                              1) ||
-          !CopyCBORBytestring(&future_discovery->v2->psk_gen_key, pairing_map,
-                              2) ||
-          !CopyCBORBytestring(&future_discovery->v2->peer_identity.value(),
-                              pairing_map, 3) ||
-          name_it == pairing_map.end() || !name_it->second.is_string() ||
-          !EC_POINT_oct2point(group, peer_point.get(),
-                              future_discovery->v2->peer_identity->data(),
-                              future_discovery->v2->peer_identity->size(),
-                              /*ctx=*/nullptr)) {
-        FIDO_LOG(DEBUG) << "CBOR structure error in caBLE handshake message";
-        return base::nullopt;
-      }
-
-      future_discovery->v2->peer_name = name_it->second.GetString();
-      discovery_data.emplace(std::move(future_discovery));
-    }
-  }
-
   std::array<uint8_t, 32> read_key, write_key;
   std::tie(write_key, read_key) = noise_.traffic_keys();
-  return std::make_pair(std::make_unique<cablev2::Crypter>(read_key, write_key),
-                        std::move(discovery_data));
+  return std::make_unique<cablev2::Crypter>(read_key, write_key);
 }
 
-base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
+base::Optional<std::pair<std::unique_ptr<Crypter>, std::vector<uint8_t>>>
+RespondToHandshake(
     base::span<const uint8_t, 32> psk_gen_key,
     const NonceAndEID& nonce_and_eid,
-    const EC_KEY* identity,
-    const EC_POINT* peer_identity,
-    const CableDiscoveryData* pairing_data,
+    base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
+        identity_seed,
+    base::Optional<base::span<const uint8_t, kP256X962Length>> peer_identity,
     base::span<const uint8_t> in,
     std::vector<uint8_t>* out_response) {
-  DCHECK(identity == nullptr || pairing_data == nullptr);
-  DCHECK(identity == nullptr ^ peer_identity == nullptr);
+  DCHECK(peer_identity.has_value() ^ identity_seed.has_value());
 
-  CBS cbs = CBSFromSpan(in);
-
-  base::span<const uint8_t> eid;
-  base::span<const uint8_t> peer_point_bytes;
-  base::span<const uint8_t> ciphertext;
-  if (!CBS_get_span(&cbs, &eid, device::kCableEphemeralIdSize) ||
-      !CBS_get_span(&cbs, &peer_point_bytes, kP256X962Length) ||
-      !CBS_get_span(&cbs, &ciphertext, 16) || CBS_len(&cbs) != 0) {
+  if (in.size() < kP256X962Length) {
+    FIDO_LOG(DEBUG) << "Handshake truncated (" << in.size() << " bytes)";
     return base::nullopt;
   }
+  auto peer_point_bytes = in.subspan(0, kP256X962Length);
+  auto ciphertext = in.subspan(kP256X962Length);
 
-  if (eid.size() != nonce_and_eid.second.size() ||
-      memcmp(eid.data(), nonce_and_eid.second.data(), eid.size()) != 0) {
-    return base::nullopt;
+  bssl::UniquePtr<EC_KEY> identity;
+  if (identity_seed) {
+    bssl::UniquePtr<EC_GROUP> p256(
+        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+    identity.reset(EC_KEY_derive_from_secret(p256.get(), identity_seed->data(),
+                                             identity_seed->size()));
   }
 
   Noise noise;
+  uint8_t prologue[1 + kCableEphemeralIdSize];
+  DCHECK_EQ(nonce_and_eid.second.size(), kCableEphemeralIdSize);
+  memcpy(&prologue[1], nonce_and_eid.second.data(), kCableEphemeralIdSize);
   if (identity) {
     noise.Init(device::Noise::HandshakeType::kNKpsk0);
-    noise.MixHash(kPairedPrologue);
-    noise.MixHashPoint(EC_KEY_get0_public_key(identity));
+    prologue[0] = 0;
+    noise.MixHash(prologue);
+    noise.MixHashPoint(EC_KEY_get0_public_key(identity.get()));
   } else {
     noise.Init(device::Noise::HandshakeType::kKNpsk0);
-    noise.MixHash(kQRPrologue);
-    noise.MixHashPoint(peer_identity);
+    prologue[0] = 1;
+    noise.MixHash(prologue);
+    noise.MixHash(*peer_identity);
   }
 
   std::array<uint8_t, 32> psk;
@@ -405,7 +391,8 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
 
   if (identity) {
     uint8_t es_key[32];
-    if (ECDH_compute_key(es_key, sizeof(es_key), peer_point.get(), identity,
+    if (ECDH_compute_key(es_key, sizeof(es_key), peer_point.get(),
+                         identity.get(),
                          /*kdf=*/nullptr) != sizeof(es_key)) {
       return base::nullopt;
     }
@@ -413,8 +400,19 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
   }
 
   auto plaintext = noise.DecryptAndHash(ciphertext);
-  if (!plaintext || !plaintext->empty()) {
+  if (!plaintext) {
     FIDO_LOG(DEBUG) << "Failed to decrypt handshake ciphertext.";
+    return base::nullopt;
+  }
+
+  base::Optional<cbor::Value> payload(DecodePaddedCBORMap(*plaintext));
+  if (!payload) {
+    return base::nullopt;
+  }
+  const cbor::Value::MapValue& payload_map(payload->GetMap());
+  const auto getinfo_it = payload_map.find(cbor::Value(0));
+  if (getinfo_it == payload_map.end() || !getinfo_it->second.is_bytestring()) {
+    FIDO_LOG(DEBUG) << "CBOR structure error in caBLE handshake message";
     return base::nullopt;
   }
 
@@ -423,7 +421,8 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
            EC_POINT_point2oct(
                group, EC_KEY_get0_public_key(ephemeral_key.get()),
                POINT_CONVERSION_UNCOMPRESSED, ephemeral_key_public_bytes,
-               sizeof(ephemeral_key_public_bytes), /*ctx=*/nullptr));
+               sizeof(ephemeral_key_public_bytes),
+               /*ctx=*/nullptr));
   noise.MixHash(ephemeral_key_public_bytes);
   noise.MixKey(ephemeral_key_public_bytes);
 
@@ -436,42 +435,21 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
   noise.MixKey(shared_key_ee);
 
   if (peer_identity) {
+    bssl::UniquePtr<EC_POINT> peer_identity_point(EC_POINT_new(group));
+    CHECK(EC_POINT_oct2point(group, peer_identity_point.get(),
+                             peer_identity->data(), peer_identity->size(),
+                             /*ctx=*/nullptr));
     uint8_t shared_key_se[32];
-    if (ECDH_compute_key(shared_key_se, sizeof(shared_key_se), peer_identity,
-                         ephemeral_key.get(),
+    if (ECDH_compute_key(shared_key_se, sizeof(shared_key_se),
+                         peer_identity_point.get(), ephemeral_key.get(),
                          /*kdf=*/nullptr) != sizeof(shared_key_se)) {
       return base::nullopt;
     }
     noise.MixKey(shared_key_se);
   }
 
-  std::vector<uint8_t> my_ciphertext;
-  if (!identity) {
-    uint8_t my_plaintext[256];
-    memset(my_plaintext, 0, sizeof(my_plaintext));
-
-    if (pairing_data) {
-      cbor::Value::MapValue pairing;
-      pairing.emplace(1, pairing_data->v2->eid_gen_key);
-      pairing.emplace(2, pairing_data->v2->psk_gen_key);
-      pairing.emplace(3, pairing_data->v2->peer_identity.value());
-      pairing.emplace(4, pairing_data->v2->peer_name.value());
-      base::Optional<std::vector<uint8_t>> cbor_bytes =
-          cbor::Writer::Write(cbor::Value(std::move(pairing)));
-      if (!cbor_bytes || cbor_bytes->size() > sizeof(my_plaintext) - 1) {
-        FIDO_LOG(DEBUG) << "Pairing encoding failed or result too large.";
-        return base::nullopt;
-      }
-      memcpy(my_plaintext, cbor_bytes->data(), cbor_bytes->size());
-      my_plaintext[255] = sizeof(my_plaintext) - 1 - cbor_bytes->size();
-    } else {
-      my_plaintext[255] = 255;
-    }
-    my_ciphertext = noise.EncryptAndHash(my_plaintext);
-  } else {
-    my_ciphertext = noise.EncryptAndHash(base::span<const uint8_t>());
-  }
-
+  const std::vector<uint8_t> my_ciphertext =
+      noise.EncryptAndHash(base::span<const uint8_t>());
   out_response->insert(
       out_response->end(), ephemeral_key_public_bytes,
       ephemeral_key_public_bytes + sizeof(ephemeral_key_public_bytes));
@@ -480,7 +458,9 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
 
   std::array<uint8_t, 32> read_key, write_key;
   std::tie(read_key, write_key) = noise.traffic_keys();
-  return std::make_unique<Crypter>(read_key, write_key);
+  return std::make_pair(
+      std::make_unique<Crypter>(read_key, write_key),
+      std::vector<uint8_t>(getinfo_it->second.GetBytestring()));
 }
 
 }  // namespace cablev2

@@ -43,6 +43,7 @@ constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"NetworkDiagnosticsNotRun", IDS_NETWORK_DIAGNOSTICS_NOT_RUN},
     {"NetworkDiagnosticsRun", IDS_NETWORK_DIAGNOSTICS_RUN},
     {"NetworkDiagnosticsRunAll", IDS_NETWORK_DIAGNOSTICS_RUN_ALL},
+    {"NetworkDiagnosticsSendFeedback", IDS_NETWORK_DIAGNOSTICS_SEND_FEEDBACK},
 };
 
 }  // namespace

@@ -1879,4 +1879,9 @@ bool LayerTreeHost::TakeForceSendMetadataRequest() {
   return force_send_metadata_request;
 }
 
+void LayerTreeHost::SetEnableFrameRateThrottling(
+    bool enable_frame_rate_throttling) {
+  proxy_->SetEnableFrameRateThrottling(enable_frame_rate_throttling);
+}
+
 }  // namespace cc

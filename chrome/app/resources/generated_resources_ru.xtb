@@ -465,7 +465,6 @@
 <translation id="1567387640189251553">После ввода пароля была подключена другая клавиатура. Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
 <translation id="1567993339577891801">Консоль JavaScript</translation>
 <translation id="1568323446248056064">Открыть настройки экрана</translation>
-<translation id="1569265916989458435">Сохранять подключение по Wi-Fi в режиме ожидания</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (гость)</translation>
 <translation id="1572266655485775982">Включить Wi-Fi</translation>
 <translation id="1572876035008611720">Эл. почта</translation>
@@ -1013,6 +1012,7 @@
 <translation id="2224551243087462610">Изменить имя папки</translation>
 <translation id="2225864335125757863">Чтобы защитить свой аккаунт, немедленно смените следующие пароли:</translation>
 <translation id="2226449515541314767">Этому сайту запрещено получать полный контроль над устройствами MIDI.</translation>
+<translation id="2226907662744526012">Разблокировать автоматически после ввода PIN-кода</translation>
 <translation id="222704500187107962">Это исключение будет автоматически удалено, после того как вы завершите текущий сеанс в режиме инкогнито</translation>
 <translation id="2227179592712503583">Удалить подсказку</translation>
 <translation id="2229161054156947610">Осталось больше часа</translation>
@@ -1088,6 +1088,7 @@
 <translation id="2322318151094136999">Запрашивать разрешение на доступ сайтов к последовательным портам (рекомендуется)</translation>
 <translation id="2323018538045954000">Сохраненные сети Wi-Fi</translation>
 <translation id="2325444234681128157">Запомнить·пароль</translation>
+<translation id="2326188115274135041">Для включения автоматической разблокировки экрана введите PIN-код.</translation>
 <translation id="2326931316514688470">Пере&amp;загрузить приложение</translation>
 <translation id="2327492829706409234">Включить приложение</translation>
 <translation id="2328561734797404498">Чтобы использовать <ph name="APP_NAME" />, перезапустите устройство.</translation>
@@ -2807,6 +2808,7 @@
 <translation id="4451479197788154834">Пароль сохранен на этом устройстве и в вашем аккаунте Google.</translation>
 <translation id="4451757071857432900">Заблокированы на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу (рекомендуется)</translation>
 <translation id="4453946976636652378">Введите поисковый запрос в <ph name="SEARCH_ENGINE_NAME" /> или укажите URL</translation>
+<translation id="4456630844127311743">Вы получили данные (<ph name="ATTACHMENTS" />) с устройства "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4459169140545916303">Последние действия: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дн. назад</translation>
 <translation id="4460014764210899310">Отменить создание группы</translation>
 <translation id="4462159676511157176">Другие серверы имен</translation>
@@ -3311,6 +3313,7 @@
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5125751979347152379">Недопустимый URL.</translation>
 <translation id="5126611267288187364">Посмотреть изменения</translation>
+<translation id="5127620150973591153">Код безопасного подключения: <ph name="TOKEN" />.</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5127881134400491887">Управление сетевыми подключениями</translation>
 <translation id="512903556749061217">подключено</translation>
@@ -3658,7 +3661,6 @@
 <translation id="5554720593229208774">Центр сертификации электронной почты</translation>
 <translation id="5554931805291741487">Выходной лоток почти заполнен.</translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
-<translation id="5557991081552967863">Сохранять подключение к Wi-Fi в спящем режиме</translation>
 <translation id="5558125320634132440">Сайт заблокирован, так как может содержать материалы для взрослых</translation>
 <translation id="5558129378926964177">&amp;Увеличить</translation>
 <translation id="55601339223879446">Подогнать границы рабочего стола под размер экрана</translation>
@@ -3734,7 +3736,6 @@
 <translation id="5642508497713047">Сторона, подписавшая список отзыва сертификатов</translation>
 <translation id="5643321261065707929">Сеть с тарификацией</translation>
 <translation id="5643620609347735571">Удалить и продолжить</translation>
-<translation id="5646376287012673985">Местоположение</translation>
 <translation id="5646558797914161501">Бизнесмен</translation>
 <translation id="5648166631817621825">Последние 7 дней</translation>
 <translation id="5649053991847567735">Автоматическое скачивание</translation>
@@ -4175,6 +4176,7 @@
 <translation id="6209908325007204267">На этом устройстве есть лицензия Chrome Enterprise, но ваше имя пользователя не связано с корпоративным аккаунтом. Создайте корпоративный аккаунт на странице g.co/ChromeEnterpriseAccount, используя другое устройство.</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: ошибка синхронизации</translation>
 <translation id="6212039847102026977">Показать дополнительные свойства сети</translation>
+<translation id="621215966665094453">Не удалось получить данные (<ph name="ATTACHMENTS" />) с устройства "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6212168817037875041">Выключать экран</translation>
 <translation id="6212752530110374741">Отправить ссылку по эл. почте</translation>
 <translation id="6213230117190778270">Принять</translation>
@@ -4356,6 +4358,7 @@
 <translation id="6429384232893414837">Ошибка обновления</translation>
 <translation id="6430814529589430811">Единый сертификат ASCII с кодировкой Base64</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> настроит автоматические обновления для всех пользователей на этом компьютере.</translation>
+<translation id="6433095543510643909">Не удалось отправить данные (<ph name="ATTACHMENTS" />) на устройство "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6434309073475700221">Закрыть</translation>
 <translation id="6434325376267409267">Чтобы использовать <ph name="APP_NAME" />, установите на устройство обновление системы.</translation>
 <translation id="6436164536244065364">Просмотреть в Интернет-магазине</translation>
@@ -4484,7 +4487,6 @@
 <translation id="6602956230557165253">Для перехода используйте клавиши со стрелками вправо и влево.</translation>
 <translation id="6605847144724004692">Оценок пока нет.</translation>
 <translation id="6607831829715835317">Дополнительные инстру&amp;менты</translation>
-<translation id="6608012008902909398">Показать дополнительные сведения о проверке программного обеспечения на устройстве</translation>
 <translation id="6611972847767394631">Здесь находятся ваши вкладки</translation>
 <translation id="6612358246767739896">Защищенный контент</translation>
 <translation id="6615455863669487791">Показать</translation>
@@ -4615,6 +4617,7 @@
 <translation id="6781284683813954823">Ссылка на дудл</translation>
 <translation id="6781978626986383437">Резервное копирование контейнера Linux отменено.</translation>
 <translation id="6782067259631821405">Неверный PIN-код.</translation>
+<translation id="6785518634832172390">PIN-код должен быть не длиннее 12 символов.</translation>
 <translation id="6785915470941880363">Прокрутка в обратную сторону. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Расширения</translation>
 <translation id="6787839852456839824">Быстрые клавиши</translation>
@@ -5227,6 +5230,7 @@
 <translation id="7543525346216957623">Обратитесь за помощью к родителю</translation>
 <translation id="7547317915858803630">Внимание! Настройки <ph name="PRODUCT_NAME" /> хранятся на сетевом диске. Это может привести к замедлению работы, сбоям или даже потере данных.</translation>
 <translation id="7548856833046333824">Лимонад</translation>
+<translation id="755047330066644486">Вы успешно отправили данные (<ph name="ATTACHMENTS" />) на устройство "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Не удалось скачать файл <ph name="FILE_NAME" /></translation>
 <translation id="7551643184018910560">Закрепить на панели запуска</translation>
@@ -5636,7 +5640,6 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Ярлык изменен</translation>
 <translation id="8018313076035239964">Выбрать, какие данные отправлять сайтам и какой контент показывать на веб-страницах</translation>
-<translation id="8022688469248132790">Посмотреть подробную информацию об ошибке</translation>
 <translation id="8023801379949507775">Обновить расширения</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8028060951694135607">Восстановление ключей Microsoft</translation>

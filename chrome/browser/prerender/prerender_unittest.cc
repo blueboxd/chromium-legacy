@@ -997,7 +997,8 @@ TEST_F(PrerenderTest, MaxConcurrencyTest) {
   }
 }
 
-TEST_F(PrerenderTest, AliasURLTest) {
+// Flaky on Android: https://crbug.com/1105908
+TEST_F(PrerenderTest, DISABLED_AliasURLTest) {
   ASSERT_TRUE(IsNoStatePrefetchEnabled());
   SetConcurrency(7);
 

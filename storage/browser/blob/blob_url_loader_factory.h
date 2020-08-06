@@ -10,11 +10,11 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 
 namespace storage {
 
-class BlobDataHandle;
 class BlobStorageContext;
 
 // URLLoaderFactory that can create loaders for exactly one url, loading the
@@ -26,7 +26,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoaderFactory
   static void Create(
       mojo::PendingRemote<blink::mojom::Blob> blob,
       const GURL& blob_url,
-      base::WeakPtr<BlobStorageContext> context,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
   // Creates a factory for a BlobURLToken. The token is used to look up the blob
@@ -52,13 +51,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoaderFactory
 
  private:
   BlobURLLoaderFactory(
-      std::unique_ptr<BlobDataHandle> handle,
+      mojo::PendingRemote<blink::mojom::Blob> blob,
       const GURL& blob_url,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
   ~BlobURLLoaderFactory() override;
   void OnConnectionError();
 
-  std::unique_ptr<BlobDataHandle> handle_;
+  mojo::Remote<blink::mojom::Blob> blob_;
   GURL url_;
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;

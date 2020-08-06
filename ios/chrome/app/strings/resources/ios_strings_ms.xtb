@@ -16,13 +16,14 @@
 <translation id="1104948393051856124">Terima &amp; Teruskan</translation>
 <translation id="1112015203684611006">Pencetakan gagal.</translation>
 <translation id="1125564390852150847">Buat tab baharu.</translation>
+<translation id="1134509371063488162">Buka ${urls} dalam Inkognito</translation>
 <translation id="1145536944570833626">Padam data sedia ada.</translation>
 <translation id="1165039591588034296">Ralat</translation>
 <translation id="1172898394251786223">Medan seterusnya</translation>
 <translation id="1176932207622159128">Gagal Simpan Imej</translation>
 <translation id="1180526666083833456">Segerakkan dan peribadikan pada semua peranti.</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
-<translation id="1185569544548277362">Baharu: Anda membuat Chrome menjadi penyemak imbas lalai anda. <ph name="BEGIN_LINK" />Buka Tetapan<ph name="END_LINK" /></translation>
+<translation id="1185569544548277362">Baharu: Chrome boleh dijadikan penyemak imbas lalai anda. <ph name="BEGIN_LINK" />Buka Tetapan<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Carian Baharu</translation>
 <translation id="1209206284964581585">Sorok sementara</translation>
 <translation id="1219674500290482172">Tidak dapat menyambung ke Internet.</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">Tambahkan Akaun</translation>
 <translation id="2268044343513325586">Perhalusi</translation>
 <translation id="2273327106802955778">Lagi menu</translation>
+<translation id="2302742851632557585">Tukar Kata Laluan pada Tapak Web</translation>
 <translation id="2316709634732130529">Gunakan Kata Laluan yang Dicadangkan</translation>
 <translation id="2320166752086256636">Sembunyikan papan kekunci</translation>
 <translation id="2339560363438331454">Segerak dan Perkhidmatan Google</translation>
@@ -183,6 +185,7 @@ Tapak tidak boleh menggunakan kuki untuk melihat aktiviti penyemakan imbas anda 
 <translation id="298306318844797842">Tambahkan Kaedah Pembayaran...</translation>
 <translation id="2989805286512600854">Buka dalam Tab Baharu</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
+<translation id="3081338492074632642">Pastikan kata laluan yang anda simpan sepadan dengan kata laluan anda untuk <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Tandakan...</translation>
 <translation id="3131206671572504478">Sekat Semua</translation>
 <translation id="3153862085237805241">Simpan Kad</translation>
@@ -201,6 +204,7 @@ Semasa dalam mod inkognito, tapak tidak boleh menggunakan kuki untuk melihat akt
 <translation id="3244271242291266297">BB</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> daripada <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Tab Terbuka</translation>
+<translation id="3272527697863656322">Batal</translation>
 <translation id="3277021493514034324">Alamat tapak disalin</translation>
 <translation id="3290875554372353449">Pilih Akaun</translation>
 <translation id="3311748811247479259">Mati</translation>
@@ -211,6 +215,7 @@ Semasa dalam mod inkognito, tapak tidak boleh menggunakan kuki untuk melihat akt
 <translation id="3371831930909698441">Terjemah tersedia. Pilihan tersedia berhampiran bahagian bawah skrin.</translation>
 <translation id="3393920035788932672">Pop Timbul Dibenarkn</translation>
 <translation id="3425644765244388016">Nama Panggilan Kad</translation>
+<translation id="3433057996795775706">Pemadaman kata laluan ini tidak akan memadamkan akaun anda pada <ph name="WEBSITE" />. Tukar kata laluan anda pada <ph name="WEBSITE" /> untuk melindungi kata laluan itu daripada orang lain.</translation>
 <translation id="3443810440409579745">Tab diterima.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Paparan Pisah</translation>
@@ -239,6 +244,7 @@ Semasa dalam mod inkognito, tapak tidak boleh menggunakan kuki untuk melihat akt
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3670030362669914947">Nombor</translation>
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
+<translation id="3740397331642243698">Buka URL yang dimasukkan di Google Chrome dalam Inkognito.</translation>
 <translation id="3771033907050503522">Tab Inkognito</translation>
 <translation id="3775743491439407556">Penyegerakan Tidak Berfungsi</translation>
 <translation id="3779810277399252432">Tiada sambungan Internet.</translation>
@@ -306,6 +312,7 @@ Semasa dalam mod inkognito, tapak tidak boleh menggunakan kuki untuk melihat akt
 <translation id="4636930964841734540">Maklumat</translation>
 <translation id="4659126640776004816">Apabila anda log masuk ke Akaun Google anda, ciri ini akan dihidupkan.</translation>
 <translation id="4659667755519643272">Masuk ke Penukar Tab</translation>
+<translation id="46614316059270592">Simpan Kata Laluan</translation>
 <translation id="4666531726415300315">Dilog masuk sebagai <ph name="EMAIL" />.
 
 Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memulakan penyegerakan.</translation>
@@ -402,6 +409,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5854790677617711513">Lebih lama daripada 30 hari</translation>
 <translation id="5857090052475505287">Folder Baharu</translation>
 <translation id="5857770089550859117">Ungkapan laluan diperlukan untuk memulakan penyegerakan.</translation>
+<translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5869029295770560994">OK, Faham</translation>
 <translation id="5871497086027727873">1 item dialihkan</translation>
 <translation id="5897956970858271241">Lawati Pautan Disalin</translation>
@@ -502,7 +510,6 @@ Tapak tidak boleh menggunakan kuki untuk melihat aktiviti penyemakan imbas anda 
 <translation id="6831043979455480757">Terjemah</translation>
 <translation id="6841409746189899007">Pautan kepada Teks</translation>
 <translation id="6851516051005285358">Minta Tapak Versi Komputer</translation>
-<translation id="6856384753476268833">Diurus oleh organisasi anda.</translation>
 <translation id="6858855187367714033">Diimbas</translation>
 <translation id="6859944681507688231">Untuk mengimbas kod QR atau kad kredit, dayakan kamera daripada tetapan.</translation>
 <translation id="6869389390665537774">Anda dapat melihat halaman yang telah dilawati atau memadamkan halaman tersebut daripada sejarah anda</translation>
@@ -524,7 +531,6 @@ Tapak tidak boleh menggunakan kuki untuk melihat aktiviti penyemakan imbas anda 
 <translation id="7006788746334555276">Tetapan Kandungan</translation>
 <translation id="7015203776128479407">Penyediaan penyegerakan awal tidak diselesaikan. Penyegerakan dimatikan.</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
-<translation id="7030675613184250187">Anda boleh menyimpan halaman ke senarai bacaan anda untuk mencari halaman itu lagi atau membaca halaman itu secara luar talian</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7062545763355031412">Terima dan tukar akaun</translation>
 <translation id="7099761977003084116">Tab Terbaharu</translation>
@@ -587,12 +593,12 @@ Oleh sebab akaun anda diurus oleh <ph name="HOSTED_DOMAIN" />, data Chrome anda 
 <translation id="7856733331829174190">Tidak Dapat Memuat Turun</translation>
 <translation id="7859704718976024901">Sejarah Penyemakan Imbas</translation>
 <translation id="7887198238286927132">Untuk melindungi privasi anda, Chrome tidak akan mengisi medan ini secara automatik.</translation>
-<translation id="791251013315685175">Diurus oleh <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Senarai bacaan anda tersedia di luar talian. Untuk menambahkan halaman pada senarai bacaan anda, ketik  <ph name="SHARE_OPENING_ICON" /> kemudian <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksport Kata Laluan...</translation>
 <translation id="7947953824732555851">Terima dan log masuk</translation>
 <translation id="794799177247607889">Berhenti Mengelog</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{Tiada kata laluan yang terjejas}=1{{COUNT} Kata laluan yang terjejas}other{{COUNT} Kata laluan yang terjejas}}</translation>
 <translation id="7961015016161918242">Tidak sama sekali</translation>
 <translation id="7966516440812255683">Tapak boleh menggunakan kuki untuk memperbaik pengalaman penyemakan imbas anda, contohnya, untuk mengekalkan log masuk anda atau untuk mengingati item dalam troli beli-belah anda.
 
@@ -606,6 +612,7 @@ Tapak boleh menggunakan kuki untuk melihat aktiviti penyemakan imbas anda merent
 <translation id="8023878949384262191">Mengembangkan bahagian.</translation>
 <translation id="804427445359061970">Anda dapat menemukan tab anda daripada peranti lain di sini</translation>
 <translation id="8059533439631660104">Meruntuhkan bahagian.</translation>
+<translation id="8065292699993359127">Buka URL di Chrome dalam Inkognito</translation>
 <translation id="806745655614357130">Biarkan data saya diasingkan</translation>
 <translation id="8073670137947914548">Muat turun selesai</translation>
 <translation id="8073872304774253879">Perbaik Carian dan Penyemakan Imbas</translation>

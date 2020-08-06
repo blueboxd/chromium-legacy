@@ -195,6 +195,9 @@ class MediaRouter : public KeyedService {
 
   // Returns a pointer to LoggerImpl that can be used to add logging messages.
   virtual LoggerImpl* GetLogger() = 0;
+
+  // Returns logs collected from Media Router components.
+  virtual base::Value GetLogs() const = 0;
 #endif  // !defined(OS_ANDROID)
 
   // Registers/Unregisters a CastRemotingConnector with the |tab_id|. For a

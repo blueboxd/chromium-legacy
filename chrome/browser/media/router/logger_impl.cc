@@ -110,6 +110,13 @@ std::string LoggerImpl::GetLogsAsJson() const {
   return json;
 }
 
+base::Value LoggerImpl::GetLogsAsValue() const {
+  base::Value entries_val(base::Value::Type::LIST);
+  for (const auto& entry : entries_)
+    entries_val.Append(AsValue(entry));
+  return entries_val;
+}
+
 LoggerImpl::Entry::Entry(Severity severity,
                          mojom::LogCategory category,
                          base::Time time,
@@ -170,13 +177,6 @@ base::Value LoggerImpl::AsValue(const LoggerImpl::Entry& entry) {
   entry_val.SetKey("mediaSource", base::Value(entry.media_source));
   entry_val.SetKey("sessionId", base::Value(entry.session_id));
   return entry_val;
-}
-
-base::Value LoggerImpl::GetLogsAsValue() const {
-  base::Value entries_val(base::Value::Type::LIST);
-  for (const auto& entry : entries_)
-    entries_val.Append(AsValue(entry));
-  return entries_val;
 }
 
 }  // namespace media_router

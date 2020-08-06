@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Új jelszó</translation>
 <translation id="4003259559679196451">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt az eszközt, ezért hozzáfér az összes felhasználói tevékenységhez, köztük a felkeresett webhelyekhez, a jelszavakhoz és az e-mailekhez.</translation>
 <translation id="4003384961948020559">Sikertelen – Megtelt a kimenet</translation>
+<translation id="4027485274696301677">Ezt a(z) <ph name="DEVICE_TYPE" /> eszközt a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli. A rendszergazdák távolról konfigurálhatják az eszközt.</translation>
 <translation id="4034824040120875894">Nyomtató</translation>
 <translation id="4227825898293920515">A jelszó <ph name="TIME" /> múlva lejár</translation>
 <translation id="4238516577297848345">Nincsenek folyamatban lévő nyomtatási feladatok</translation>
@@ -73,7 +74,6 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="808894953321890993">Jelszó módosítása</translation>
 <translation id="8208861521865154048">Előnyök</translation>
 <translation id="8347227221149377169">Nyomtatási feladatok</translation>
-<translation id="8623849191266582420">Ezt a(z) <ph name="DEVICE_TYPE" /> eszközt a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli. A rendszergazdák távolról konfigurálhatják és felügyelhetik az eszközt.</translation>
 <translation id="8701136875688985581">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt a felhasználót. A domain távolról módosíthatja a beállításokat, és figyelheti a felhasználó tevékenységeit.</translation>
 <translation id="871560550817059752">Sikertelen – Kifogyott a tinta</translation>
 <translation id="8747900814994928677">Módosítás megerősítése</translation>

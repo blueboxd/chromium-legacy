@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/variations/active_field_trials.h"
+#include "components/variations/buildflags.h"
 #include "components/variations/synthetic_trials.h"
 
 namespace variations {
@@ -22,7 +23,11 @@ namespace {
 // Size of the "num-experiments" crash key in bytes. 4096 bytes should be able
 // to hold about 227 entries, given each entry is 18 bytes long (due to being
 // of the form "8e7abfb0-c16397b7,").
+#if BUILDFLAG(LARGE_VARIATION_KEY_SIZE)
+constexpr size_t kVariationsKeySize = 8192;
+#else
 constexpr size_t kVariationsKeySize = 4096;
+#endif
 
 // Crash key reporting the number of experiments. 8 is the size of the crash key
 // in bytes, which is used to hold an int as a string.

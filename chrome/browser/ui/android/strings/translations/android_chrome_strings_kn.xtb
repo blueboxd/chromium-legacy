@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">ವಿಸ್ತರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1291207594882862231">ಇತಿಹಾಸ, ಕುಕೀಗಳು, ಸೈಟ್‌ ಡೇಟಾ, ಕ್ಯಾಷ್ ಅನ್ನು ತೆರವುಗೊಳಿಸಿ…</translation>
 <translation id="129553762522093515">ಇತ್ತೀಚೆಗೆ ಮುಚ್ಚಲಾಗಿರುವುದು</translation>
+<translation id="1298077576058087471">ಶೇಕಡಾ 60 ರಷ್ಟು ಡೇಟಾವನ್ನು ಉಳಿಸಿ, ಇಂದಿನ ಸುದ್ದಿಗಳನ್ನು ಓದಿ</translation>
 <translation id="1303339473099049190">ಆ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಕಂಡುಹಿಡಿಯಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ಬರೆದಿರುವುದು ಸರಿ ಇದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> ಸಾಧನದಿಂದ ಕಳುಹಿಸಲಾಗಿದೆ</translation>
 <translation id="1310482092992808703">ಟ್ಯಾಬ್‌ ಗುಂಪುಗೂಡಿಸಿ</translation>
@@ -106,6 +107,7 @@
 <translation id="1856325424225101786">ಲೈಟ್ ಮೋಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಬೇಕೇ?</translation>
 <translation id="1868024384445905608">Chrome ಈಗ ಫೈಲ್‌ಗಳನ್ನು ವೇಗವಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡುತ್ತದೆ</translation>
 <translation id="1874760110381325409">ನಿಮ್ಮ Google ಖಾತೆಯನ್ನು ಬಳಸಿ ನೀವು ಸೈನ್ ಇನ್ ಆಗುತ್ತೀರಿ\n(ಇದು Chrome ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡುವುದಿಲ್ಲ)</translation>
+<translation id="1877026089748256423">Chrome ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="1883903952484604915">ನನ್ನ ಫೈಲ್‌ಗಳು</translation>
 <translation id="1919950603503897840">ಸಂಪರ್ಕಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="1925021887439448749">ಕಸ್ಟಮ್ ವೆಬ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ</translation>
@@ -205,7 +207,6 @@
 <translation id="2587052924345400782">ಹೊಸ ಆವೃತ್ತಿಯು ಲಭ್ಯವಿದೆ</translation>
 <translation id="2593272815202181319">ಮೊನೋಸ್ಪೇಸ್</translation>
 <translation id="2612676031748830579">ಕಾರ್ಡ್ ಸಂಖ್ಯೆ</translation>
-<translation id="2622559029861875898">ಅಪ್‌ಡೇಟ್‌ಗಳಿವೆಯೇ ಎಂದು ನೋಡಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ನೋಡಿ.</translation>
 <translation id="2625189173221582860">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="2631006050119455616">ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2647434099613338025">ಭಾಷೆಯನ್ನು ಸೇರಿಸಿ</translation>
@@ -262,8 +263,10 @@
 <translation id="305593374596241526">ಸ್ಥಳ ಆಫ್ ಆಗಿದೆ; <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಇದನ್ನು ಆನ್‌ ಮಾಡಿ.</translation>
 <translation id="3058498974290601450">ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸಿಂಕ್ ಆನ್ ಮಾಡಬಹುದು</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ಬುಕ್‌ಮಾರ್ಕ್‌}one{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}other{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}}</translation>
+<translation id="3062802207422175757">Chrome ನಲ್ಲಿ ನಿಮ್ಮ ಆಸಕ್ತಿಗಳಿಗೆ ಅನುಗುಣವಾಗಿರುವ ಲೇಖನಗಳು</translation>
 <translation id="3089395242580810162">ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3114012059975132928">ವೀಡಿಯೊ ಪ್ಲೇಯರ್</translation>
+<translation id="3114507951000454849">ಇಂದಿನ ಸುದ್ದಿಗಳನ್ನು ಓದಿ <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">ಪ್ರಕಟಣೆಗಳು</translation>
 <translation id="3137521801621304719">ಅದೃಶ್ಯ ಮೋಡ್‌ನಿಂದ ಹೊರಬನ್ನಿ</translation>
 <translation id="3143515551205905069">ಸಿಂಕ್ ಮಾಡುವಿಕೆಯನ್ನು ರದ್ದುಪಡಿಸಿ</translation>
@@ -327,6 +330,7 @@
 <translation id="3566923219790363270">Chrome ಇನ್ನೂ VR ಗಾಗಿ ಸಿದ್ಧವಾಗುತ್ತಿದೆ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="3568688522516854065">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಿಂದ ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ ಮತ್ತು ಸಿಂಕ್ ಆನ್ ಮಾಡಿ</translation>
 <translation id="3587482841069643663">ಎಲ್ಲ</translation>
+<translation id="3587596251841506391">ವೆಬ್‌ ಸುರಕ್ಷತೆ ಸುಧಾರಿಸಲು ಸಹಕರಿಸಿ</translation>
 <translation id="3590487821116122040">ಪ್ರಮುಖವಲ್ಲವೆಂದು Chrome ಭಾವಿಸುವ ಸೈಟ್ ಸಂಗ್ರಹಣೆ (ಉದಾ. ಯಾವುದೇ ಉಳಿಸದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೊಂದಿರುವ ಅಥವಾ ನೀವು ಆಗಾಗ್ಗೆ ಭೇಟಿ ನೀಡದ ಸೈಟ್‌ಗಳು)</translation>
 <translation id="3594780231884063836">ವೀಡಿಯೊ ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="3599863153486145794">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಎಲ್ಲ ಸಾಧನಗಳಿಂದ ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">ವಿಳಾಸ ಪಟ್ಟಿಗೆ ಹೋಗಿ</translation>
 <translation id="5447201525962359567">ಕುಕೀಗಳು ಮತ್ತು ಇತರ ಸ್ಥಳೀಯವಾಗಿ ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ ಒಳಗೊಂಡು ಎಲ್ಲಾ ಸೈಟ್ ಸಂಗ್ರಹಣೆ</translation>
 <translation id="545042621069398927">ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್‌ನ ವೇಗವನ್ನು ಹೆಚ್ಚಿಸಲಾಗುತ್ತಿದೆ.</translation>
-<translation id="5454513945794364671">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ ಅನ್ನು ಆಫ್ ಮಾಡಿದ್ದಾರೆ</translation>
 <translation id="5456381639095306749">ಪುಟ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="548278423535722844">ನಕ್ಷೆಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="5487521232677179737">ಡೇಟಾ ತೆರವುಗೊಳಿಸು</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">ಸೆಟಪ್ ಪ್ರಗತಿಯಲ್ಲಿದೆ...</translation>
 <translation id="6111020039983847643">Chrome ನಿಂದ ಬಳಕೆಯಾಗಿರುವ ಡೇಟಾ</translation>
 <translation id="6112702117600201073">ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
+<translation id="6122831415929794347">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ಆಫ್ ಮಾಡುವುದೇ?</translation>
 <translation id="6127379762771434464">ಐಟಂ ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
 <translation id="6140709049082532940">ವರ್ಧಿತ ಸುರಕ್ಷತೆ:</translation>
 <translation id="6140912465461743537">ರಾಷ್ಟ್ರ/ಪ್ರದೇಶ</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತುಮಾಡಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ಡೇಟಾ ಉಳಿತಾಯಗಳು</translation>
+<translation id="6186394685773237175">ಯಾವುದೇ ಪಾಸ್‌ವರ್ಡ್ ಅಪಾಯಕ್ಕೀಡಾದ ಹಾಗೆ ಕಂಡುಬರುತ್ತಿಲ್ಲ</translation>
 <translation id="6201345951596836663">ಲಿಂಕ್ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6206830853671714236">ಯಾವಾಗ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬೇಕು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ಅಲ್ಲವೇ?</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಲ್ಲಿನ Chrome ನಲ್ಲಿ ನೀವು ತೆರೆದಿರುವಂತಹ ಟ್ಯಾಬ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ.</translation>
 <translation id="6583199322650523874">ಪ್ರಸ್ತುತ ಪುಟವನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
 <translation id="6588043302623806746">ಸುರಕ್ಷಿತ DNS ಬಳಸಿ</translation>
+<translation id="6590471736817333463">ಶೇಕಡಾ 60 ರಷ್ಟು ಡೇಟಾವನ್ನು ಉಳಿಸಿ</translation>
 <translation id="6593061639179217415">ಡೆಸ್ಕ್‌ಟಾಪ್‌ ಸೈಟ್‌</translation>
 <translation id="6597891566292541626">ಈ ಫ್ರೇಮ್‌ನಲ್ಲಿ QR/ಬಾರ್‌ಕೋಡ್‌ ಅನ್ನು ಸರಿಯಾಗಿ ಇರಿಸಿ.</translation>
 <translation id="6600954340915313787">Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="6663079968236414793">ಪಠ್ಯಕ್ಕೆ ಲಿಂಕ್ ಮಾಡಿ</translation>
-<translation id="666573598175432848">Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ. Play ಸ್ಟೋರ್‌‌ಗೆ ಹೋಗಲು ಈ ಅಂಶವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> ರಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="666981079809192359">Chrome ಗೌಪ್ಯತಾ ಸೂಚನೆ</translation>
 <translation id="6671495933530132209">ಚಿತ್ರವನ್ನು ನಕಲಿಸಿ</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">1 ದಿನ ಉಳಿದಿದೆ</translation>
 <translation id="8200772114523450471">ಪುನರಾರಂಭಿಸು</translation>
 <translation id="8209050860603202033">ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="8218052821161047641">ವೇಗವಾಗಿ ಲೋಡ್ ಆಗುವ ಪುಟ</translation>
 <translation id="8218622182176210845">ನಿಮ್ಮ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="8223642481677794647">ಫೀಡ್ ಕಾರ್ಡ್ ಮೆನು</translation>
 <translation id="8224471946457685718">ವೈ-ಫೈಯಲ್ಲಿ ನಿಮಗಾಗಿ ಲೇಖನಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ಟ್ಯಾಬ್</translation>
 <translation id="8854223127042600341">ನಿಮ್ಮ ಆಫ್‌ಲೈನ್ ಫೈಲ್‌ಗಳನ್ನು ನೋಡಿ</translation>
 <translation id="889338405075704026">Go to Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
-<translation id="8893398027601469503">ನೀವು Chrome ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ರನ್ ಮಾಡುತ್ತಿದ್ದೀರಿ</translation>
 <translation id="8898822736010347272">ಹೊಸ ಅಪಾಯಗಳನ್ನು ಕಂಡುಹಿಡಿಯಲು ಮತ್ತು ವೆಬ್‌ನಲ್ಲಿರುವ ಪ್ರತಿಯೊಬ್ಬರನ್ನು ರಕ್ಷಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು, ನೀವು ಭೇಟಿ ನೀಡುವ ಕೆಲವು ಪುಟಗಳ URL ಗಳು, ಸೀಮಿತ ಸಿಸ್ಟಂ ಮಾಹಿತಿ ಮತ್ತು ಪುಟಗಳಲ್ಲಿನ ಕೆಲವು ಕಂಟೆಂಟ್ ಅನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ.</translation>
 <translation id="8909135823018751308">ಹಂಚಿಕೊಳ್ಳು...</translation>
 <translation id="8912362522468806198">Google ಖಾತೆ</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">ಕರೆಗಳನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="9219103736887031265">ಚಿತ್ರಗಳು</translation>
 <translation id="926205370408745186">ಡಿಜಿಟಲ್ ಯೋಗಕ್ಷೇಮದಿಂದ ನಿಮ್ಮ Chrome ಚಟುವಟಿಕೆಯನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
+<translation id="927968626442779827">Google Chrome ನಲ್ಲಿ ಲೈಟ್ ಮೋಡ್ ಬಳಸಿ</translation>
 <translation id="932327136139879170">ಹೋಮ್</translation>
 <translation id="93753284658583800">ಮುಖಪುಟವನ್ನು ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="938850635132480979">ದೋಷ: <ph name="ERROR_CODE" /></translation>

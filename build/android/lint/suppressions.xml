@@ -305,6 +305,7 @@ Still reading?
     <ignore regexp="This `AsyncTask` class should be static or leaks might occur"/>
   </issue>
   <issue id="StringFormatCount" severity="Error">
+    <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-af/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-cs/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-fr/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-pl/android_chrome_strings.xml"/>

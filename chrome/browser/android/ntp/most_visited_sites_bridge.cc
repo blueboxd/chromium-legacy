@@ -222,13 +222,13 @@ void MostVisitedSitesBridge::SetObserver(
   most_visited_->SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
 }
 
-void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(
+void MostVisitedSitesBridge::AddOrRemoveBlockedUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_url,
     jboolean add_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
-  most_visited_->AddOrRemoveBlacklistedUrl(url, add_url);
+  most_visited_->AddOrRemoveBlockedUrl(url, add_url);
 }
 
 void MostVisitedSitesBridge::RecordPageImpression(

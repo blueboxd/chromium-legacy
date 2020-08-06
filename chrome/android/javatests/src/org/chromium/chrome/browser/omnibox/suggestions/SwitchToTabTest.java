@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.WaitForFocusHelper;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -100,7 +101,7 @@ public class SwitchToTabTest {
      */
     private void typeAndClickMatchingTabMatchSuggestion(Activity activity,
             LocationBarLayout locationBarLayout, Tab tab) throws InterruptedException {
-        typeInOmnibox(activity, tab.getTitle());
+        typeInOmnibox(activity, ChromeTabUtils.getTitleOnUiThread(tab));
 
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
         // waitForOmniboxSuggestions only wait until one suggestion shows up, we need to wait util
@@ -143,7 +144,8 @@ public class SwitchToTabTest {
         for (int i = 0; i < coordinator.getSuggestionCount(); ++i) {
             OmniboxSuggestion suggestion = coordinator.getSuggestionAt(i);
             if (suggestion != null && suggestion.hasTabMatch()
-                    && TextUtils.equals(suggestion.getDescription(), tab.getTitle())
+                    && TextUtils.equals(
+                            suggestion.getDescription(), ChromeTabUtils.getTitleOnUiThread(tab))
                     && TextUtils.equals(suggestion.getUrl().getSpec(), tab.getUrl().getSpec())) {
                 return suggestion;
             }

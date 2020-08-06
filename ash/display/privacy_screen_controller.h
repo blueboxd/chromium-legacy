@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/privacy_screen_dlp_helper.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "base/observer_list.h"
 #include "ui/display/manager/display_configurator.h"
@@ -20,7 +21,8 @@ namespace ash {
 
 // Controls the privacy screen feature.
 class ASH_EXPORT PrivacyScreenController
-    : public SessionObserver,
+    : public PrivacyScreenDlpHelper,
+      public SessionObserver,
       display::DisplayConfigurator::Observer {
  public:
   class Observer : public base::CheckedObserver {
@@ -64,6 +66,9 @@ class ASH_EXPORT PrivacyScreenController
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // PrivacyScreenDlpHelper:
+  void SetEnforced(bool enforced) override;
+
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
   void OnSigninScreenPrefServiceInitialized(PrefService* pref_service) override;
@@ -73,8 +78,9 @@ class ASH_EXPORT PrivacyScreenController
       const std::vector<display::DisplaySnapshot*>& displays) override;
 
  private:
-  // Called when the user pref for the status of PrivacyScreen is changed.
-  void OnEnabledPrefChanged(bool notify_observers);
+  // Called when the user pref or DLP enforcement for the state of PrivacyScreen
+  // is changed.
+  void OnStateChanged(bool notify_observers);
 
   // Called when a change to |active_user_pref_service_| is detected (i.e. when
   // OnActiveUserPrefServiceChanged() is called.
@@ -97,6 +103,10 @@ class ASH_EXPORT PrivacyScreenController
   // supported, otherwise, it is. Updates every time there's a reconfiguration
   // of displays.
   int64_t display_id_;
+
+  // Indicates whether PrivacyScreen is enforced by Data Leak Protection
+  // feature.
+  bool dlp_enforced_ = false;
 
   base::ObserverList<Observer> observers_;
 

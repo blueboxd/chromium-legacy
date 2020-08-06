@@ -9,35 +9,42 @@
 #include <string>
 
 #include "base/single_thread_task_runner.h"
-#include "chromecast/media/audio/cast_audio_manager.h"
+#include "chromecast/media/audio/cast_audio_manager_helper.h"
+#include "media/audio/android/audio_manager_android.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromecast {
 namespace media {
 
-class CastAudioManagerAndroid : public CastAudioManager {
+class CastAudioManagerAndroid : public ::media::AudioManagerAndroid {
  public:
   CastAudioManagerAndroid(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
-      GetSessionIdCallback get_session_id_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
+      CastAudioManagerHelper::GetSessionIdCallback get_session_id_callback,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
-      bool use_mixer);
+      mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector);
   ~CastAudioManagerAndroid() override;
 
   // AudioManager implementation.
+  void GetAudioOutputDeviceNames(
+      ::media::AudioDeviceNames* device_names) override;
   ::media::AudioOutputStream* MakeAudioOutputStreamProxy(
       const ::media::AudioParameters& params,
       const std::string& device_id) override;
+  ::media::AudioOutputStream* MakeLinearOutputStream(
+      const ::media::AudioParameters& params,
+      const ::media::AudioManager::LogCallback& log_callback) override;
+  ::media::AudioOutputStream* MakeLowLatencyOutputStream(
+      const ::media::AudioParameters& params,
+      const std::string& device_id_or_group_id,
+      const ::media::AudioManager::LogCallback& log_callback) override;
   ::media::AudioOutputStream* MakeBitstreamOutputStream(
       const ::media::AudioParameters& params,
       const std::string& device_id,
       const ::media::AudioManager::LogCallback& log_callback) override;
 
-  // CastAudioManager implementation.
   bool HasAudioInputDevices() override;
   void GetAudioInputDeviceNames(
       ::media::AudioDeviceNames* device_names) override;
@@ -54,6 +61,8 @@ class CastAudioManagerAndroid : public CastAudioManager {
       const ::media::AudioParameters& params,
       const std::string& device_id,
       const ::media::AudioManager::LogCallback& log_callback) override;
+
+  CastAudioManagerHelper helper_;
 
   CastAudioManagerAndroid(const CastAudioManagerAndroid&) = delete;
   CastAudioManagerAndroid& operator=(const CastAudioManagerAndroid&) = delete;

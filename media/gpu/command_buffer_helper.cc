@@ -62,6 +62,12 @@ class CommandBufferHelperImpl
     return decoder_helper_->GetGLContext();
   }
 
+  gpu::SharedImageStub* GetSharedImageStub() override {
+    if (!stub_)
+      return nullptr;
+    return stub_->channel()->shared_image_stub();
+  }
+
   bool HasStub() override {
     DVLOG(4) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

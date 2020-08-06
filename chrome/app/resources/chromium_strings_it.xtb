@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Nessuna password salvata. Chromium può controllare le password quando le salvi.</translation>
 <translation id="5277894862589591112">Riavvia Chromium per applicare le modifiche</translation>
 <translation id="5358375970380395591">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Si è verificato un errore in Chromium durante il controllo del software del dispositivo</translation>
 <translation id="5386450000063123300">Aggiornamento di Chromium in corso (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Consenti l'accesso a Chromium</translation>
 <translation id="5398878173008909840">È disponibile una nuova versione di Chromium.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium deve poter accedere alla tua posizione per condividerla con questo sito</translation>
 <translation id="549669000822060376">Attendi mentre Chromium installa gli aggiornamenti di sistema più recenti.</translation>
 <translation id="5496810170689441661">Chromium sta cercando di modificare le password. Per consentire la modifica, digita la tua password Windows.</translation>
-<translation id="5556694182460963866">L'amministratore ha disattivato il controllo della presenza di software dannoso in Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{È disponibile un aggiornamento di Chromium}=1{È disponibile un aggiornamento di Chromium}other{È disponibile un aggiornamento di Chromium da # giorni}}</translation>
 <translation id="5631814766731275228">Nome e immagine di Chromium</translation>
 <translation id="5634636535844844681">Chromium richiede Windows 7 o versioni successive.</translation>

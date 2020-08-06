@@ -463,7 +463,6 @@
 <translation id="1567387640189251553">Se conectó otro teclado desde la última vez que ingresaste tu contraseña. Es posible que alguien esté intentando determinar qué teclas presionaste.</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
 <translation id="1568323446248056064">Abrir configuración de pantalla</translation>
-<translation id="1569265916989458435">Mantener el Wi-Fi activado mientras el dispositivo está inactivo</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (invitado)</translation>
 <translation id="1572266655485775982">Habilitar Wi-Fi</translation>
 <translation id="1572876035008611720">Ingresa tu correo electrónico.</translation>
@@ -1011,6 +1010,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2225864335125757863">Para mantener tu cuenta segura, cambia estas contraseñas de inmediato:</translation>
 <translation id="2226449515541314767">Se bloqueó este sitio para que no tenga el control total de los dispositivos MIDI</translation>
+<translation id="2226907662744526012">Desbloquear automáticamente cuando se ingresa el PIN</translation>
 <translation id="222704500187107962">Se quitará esta excepción automáticamente después de que salgas de la sesión de incógnito actual.</translation>
 <translation id="2227179592712503583">Quitar sugerencia</translation>
 <translation id="2229161054156947610">Falta más de una hora.</translation>
@@ -1086,6 +1086,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2322318151094136999">Preguntarme cuando un sitio intente acceder a puertos en serie (recomendado)</translation>
 <translation id="2323018538045954000">Redes Wi-Fi guardadas</translation>
 <translation id="2325444234681128157">Recordar contraseña</translation>
+<translation id="2326188115274135041">Confirma el PIN para activar el desbloqueo automático</translation>
 <translation id="2326931316514688470">&amp;Volver a cargar la aplicación</translation>
 <translation id="2327492829706409234">Habilitar aplicación</translation>
 <translation id="2328561734797404498">Para usar <ph name="APP_NAME" />, reinicia el dispositivo.</translation>
@@ -2806,6 +2807,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4451479197788154834">La contraseña está guardada en este dispositivo y en tu Cuenta de Google</translation>
 <translation id="4451757071857432900">Bloqueados en sitios que muestran anuncios intrusivos o engañosos (opción recomendada)</translation>
 <translation id="4453946976636652378">Buscar en <ph name="SEARCH_ENGINE_NAME" /> o escribir una URL</translation>
+<translation id="4456630844127311743">Se recibieron <ph name="ATTACHMENTS" /> de <ph name="DEVICE_NAME" /></translation>
 <translation id="4459169140545916303">Activo hace <ph name="DEVICE_LAST_ACTIVATED_TIME" /> días</translation>
 <translation id="4460014764210899310">Desagrupar</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
@@ -3310,6 +3312,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5123433949759960244">Básquet</translation>
 <translation id="5125751979347152379">URL no válido.</translation>
 <translation id="5126611267288187364">Ver cambios</translation>
+<translation id="5127620150973591153">ID de conexión segura: <ph name="TOKEN" /></translation>
 <translation id="5127805178023152808">La sincronización está desactivada.</translation>
 <translation id="5127881134400491887">Administrar conexiones de red</translation>
 <translation id="512903556749061217">conectado</translation>
@@ -3657,7 +3660,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5554720593229208774">Entidad de certificación de correo electrónico</translation>
 <translation id="5554931805291741487">La bandeja de salida está casi completa</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
-<translation id="5557991081552967863">Mantener el Wi-Fi encendido durante la suspensión</translation>
 <translation id="5558125320634132440">Se bloqueó este sitio porque puede incluir contenido para mayores de edad</translation>
 <translation id="5558129378926964177">Acercar</translation>
 <translation id="55601339223879446">Ajustar los límites de tu escritorio en la pantalla</translation>
@@ -3733,7 +3735,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5642508497713047">Firmante de la CRL</translation>
 <translation id="5643321261065707929">Red de uso medido</translation>
 <translation id="5643620609347735571">Borrar y continuar</translation>
-<translation id="5646376287012673985">Ubicación</translation>
 <translation id="5646558797914161501">Empresario</translation>
 <translation id="5648166631817621825">Últimos 7 días</translation>
 <translation id="5649053991847567735">Descargas automáticas</translation>
@@ -4174,6 +4175,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6209908325007204267">El dispositivo incluye una actualización de Chrome Enterprise, pero tu nombre de usuario no está asociado a una cuenta empresarial. Para crear una cuenta de este tipo, visita g.co/ChromeEnterpriseAccount en otro dispositivo.</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: La sincronización no funciona</translation>
 <translation id="6212039847102026977">Mostrar las propiedades de red avanzadas</translation>
+<translation id="621215966665094453">No se pudieron recibir <ph name="ATTACHMENTS" /> de <ph name="DEVICE_NAME" /></translation>
 <translation id="6212168817037875041">Apagar la pantalla</translation>
 <translation id="6212752530110374741">Compartir vínculo por correo electrónico</translation>
 <translation id="6213230117190778270">Recibir</translation>
@@ -4355,6 +4357,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6429384232893414837">Error en la actualización</translation>
 <translation id="6430814529589430811">Certificado único ASCII con codificación Base64</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> configurará actualizaciones automáticas para todos los usuarios de esta computadora.</translation>
+<translation id="6433095543510643909">No se pudieron enviar <ph name="ATTACHMENTS" /> a <ph name="DEVICE_NAME" /></translation>
 <translation id="6434309073475700221">Descartar</translation>
 <translation id="6434325376267409267">Para usar <ph name="APP_NAME" />, actualiza el dispositivo.</translation>
 <translation id="6436164536244065364">Ver en Web Store</translation>
@@ -4483,7 +4486,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6602956230557165253">Utiliza las teclas de flecha hacia la izquierda y derecha para navegar.</translation>
 <translation id="6605847144724004692">Todavía no tiene una calificación de los usuarios.</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
-<translation id="6608012008902909398">Mostrar detalles sobre la verificación de software en el dispositivo</translation>
 <translation id="6611972847767394631">Encuentra tus pestañas aquí</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6615455863669487791">Mostrarme</translation>
@@ -4614,6 +4616,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6781284683813954823">Vínculo al doodle</translation>
 <translation id="6781978626986383437">Se canceló la copia de seguridad de Linux</translation>
 <translation id="6782067259631821405">El PIN no es válido</translation>
+<translation id="6785518634832172390">El PIN debe tener 12 dígitos o menos</translation>
 <translation id="6785915470941880363">Desplazamiento inverso <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6787839852456839824">Combinaciones de teclas para acceso directo</translation>
@@ -5226,6 +5229,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7543525346216957623">Pregúntales a tus padres</translation>
 <translation id="7547317915858803630">Advertencia: La configuración de <ph name="PRODUCT_NAME" /> se almacena en una unidad de red, lo que puede provocar ralentizaciones, fallas o, incluso, la pérdida de datos.</translation>
 <translation id="7548856833046333824">Limonada</translation>
+<translation id="755047330066644486">Se envió <ph name="ATTACHMENTS" /> a <ph name="DEVICE_NAME" /> correctamente</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Se descargó <ph name="FILE_NAME" /> correctamente.</translation>
 <translation id="7551643184018910560">Fijar en la biblioteca</translation>
@@ -5635,7 +5639,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Se editó el acceso directo</translation>
 <translation id="8018313076035239964">Controla qué contenido pueden mostrarte los sitios web y qué información pueden usar</translation>
-<translation id="8022688469248132790">Revisar detalles del error</translation>
 <translation id="8023801379949507775">Actualizar las extensiones ahora</translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8028060951694135607">Recuperación de claves de Microsoft</translation>

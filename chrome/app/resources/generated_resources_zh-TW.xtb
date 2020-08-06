@@ -466,7 +466,6 @@
 <translation id="1567387640189251553">自你上次輸入密碼後，裝置已連接其他鍵盤。你的按鍵行為可能會遭到側錄。</translation>
 <translation id="1567993339577891801">JavaScript 控制台</translation>
 <translation id="1568323446248056064">開啟顯示裝置設定</translation>
-<translation id="1569265916989458435">在閒置時保持 Wi-Fi 連線</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (訪客)</translation>
 <translation id="1572266655485775982">啟用 Wi-Fi</translation>
 <translation id="1572876035008611720">請輸入您的電子郵件</translation>
@@ -1014,6 +1013,7 @@
 <translation id="2224551243087462610">編輯資料夾名稱</translation>
 <translation id="2225864335125757863">請立即變更這些密碼，確保帳戶安全：</translation>
 <translation id="2226449515541314767">這個網站已遭封鎖，無法完整控制 MIDI 裝置。</translation>
+<translation id="2226907662744526012">輸入 PIN 碼後自動解鎖</translation>
 <translation id="222704500187107962">當你結束目前的無痕模式工作階段後，系統將自動移除這個例外設定</translation>
 <translation id="2227179592712503583">移除建議</translation>
 <translation id="2229161054156947610">剩下 1 個多小時</translation>
@@ -1089,6 +1089,7 @@
 <translation id="2322318151094136999">當網站要存取序列埠時，必須先詢問你 (建議)</translation>
 <translation id="2323018538045954000">已儲存的 Wi-Fi 網路</translation>
 <translation id="2325444234681128157">記住密碼</translation>
+<translation id="2326188115274135041">確認 PIN 碼以開啟自動解鎖功能</translation>
 <translation id="2326931316514688470">重新載入應用程式(&amp;R)</translation>
 <translation id="2327492829706409234">啟用應用程式</translation>
 <translation id="2328561734797404498">請重新啟動裝置以使用「<ph name="APP_NAME" />」。</translation>
@@ -2807,6 +2808,7 @@
 <translation id="4451479197788154834">你已將密碼儲存在這部裝置上和 Google 帳戶中</translation>
 <translation id="4451757071857432900">已封鎖干擾性或誤導性的網站廣告 (建議)</translation>
 <translation id="4453946976636652378">執行 <ph name="SEARCH_ENGINE_NAME" /> 搜尋或輸入網址</translation>
+<translation id="4456630844127311743">已收到來自「<ph name="DEVICE_NAME" />」的 <ph name="ATTACHMENTS" /></translation>
 <translation id="4459169140545916303">上次使用時間：<ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前</translation>
 <translation id="4460014764210899310">取消分組</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
@@ -3311,6 +3313,7 @@
 <translation id="5123433949759960244">籃球</translation>
 <translation id="5125751979347152379">網址無效。</translation>
 <translation id="5126611267288187364">查看變更</translation>
+<translation id="5127620150973591153">安全連線 ID：<ph name="TOKEN" /></translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5127881134400491887">管理網路連線</translation>
 <translation id="512903556749061217">已附加</translation>
@@ -3658,7 +3661,6 @@
 <translation id="5554720593229208774">電子郵件憑證授權單位</translation>
 <translation id="5554931805291741487">輸出紙匣幾乎已滿</translation>
 <translation id="5556459405103347317">重新載入</translation>
-<translation id="5557991081552967863">休眠期間保持開啟 Wi-Fi</translation>
 <translation id="5558125320634132440">這個網站可能包含兒童不宜的內容，因此遭到封鎖</translation>
 <translation id="5558129378926964177">放大(&amp;I)</translation>
 <translation id="55601339223879446">調整顯示畫面中的桌面邊界</translation>
@@ -3734,7 +3736,6 @@
 <translation id="5642508497713047">CRL 簽署者</translation>
 <translation id="5643321261065707929">計量付費的網路</translation>
 <translation id="5643620609347735571">清除並繼續</translation>
-<translation id="5646376287012673985">位置</translation>
 <translation id="5646558797914161501">商人</translation>
 <translation id="5648166631817621825">過去 7 天</translation>
 <translation id="5649053991847567735">自動下載</translation>
@@ -4175,6 +4176,7 @@
 <translation id="6209908325007204267">你的裝置包含 Chrome Enterprise 升級版，但你的使用者名稱未申請企業版帳戶。請透過其他裝置前往 g.co/ChromeEnterpriseAccount 建立企業版帳戶。</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />：同步處理功能無法正常運作</translation>
 <translation id="6212039847102026977">顯示進階網路屬性</translation>
+<translation id="621215966665094453">無法從「<ph name="DEVICE_NAME" />」接收 <ph name="ATTACHMENTS" /></translation>
 <translation id="6212168817037875041">關閉螢幕</translation>
 <translation id="6212752530110374741">透過電子郵件傳送連結</translation>
 <translation id="6213230117190778270">接收</translation>
@@ -4356,6 +4358,7 @@
 <translation id="6429384232893414837">更新錯誤</translation>
 <translation id="6430814529589430811">Base64-編碼 ASCII，單一憑證</translation>
 <translation id="6431347207794742960">「<ph name="PRODUCT_NAME" />」將為這部電腦的所有使用者設定自動更新。</translation>
+<translation id="6433095543510643909">無法將 <ph name="ATTACHMENTS" />傳送給「<ph name="DEVICE_NAME" />」</translation>
 <translation id="6434309073475700221">捨棄</translation>
 <translation id="6434325376267409267">必須先更新裝置才能使用「<ph name="APP_NAME" />」。</translation>
 <translation id="6436164536244065364">在線上應用程式商店中查看</translation>
@@ -4484,7 +4487,6 @@
 <translation id="6602956230557165253">使用向左鍵和向右鍵瀏覽。</translation>
 <translation id="6605847144724004692">還沒有任何使用者給予評分。</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
-<translation id="6608012008902909398">顯示裝置軟體檢查的詳細資料</translation>
 <translation id="6611972847767394631">你可以在這裡找到已開啟的分頁</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6615455863669487791">顯示</translation>
@@ -4615,6 +4617,7 @@
 <translation id="6781284683813954823">Doodle 連結</translation>
 <translation id="6781978626986383437">已取消 Linux 備份作業</translation>
 <translation id="6782067259631821405">PIN 碼無效</translation>
+<translation id="6785518634832172390">PIN 碼不能超過 12 個數字</translation>
 <translation id="6785915470941880363">反向捲動。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
@@ -5227,6 +5230,7 @@
 <translation id="7543525346216957623">請徵求家長同意</translation>
 <translation id="7547317915858803630">警告：你的 <ph name="PRODUCT_NAME" /> 設定均儲存在網路硬碟中。這麼做可能導致速度變慢、當機，甚至資料遺失。</translation>
 <translation id="7548856833046333824">檸檬汁</translation>
+<translation id="755047330066644486">已成功將 <ph name="ATTACHMENTS" />傳送至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME" /> 下載失敗</translation>
 <translation id="7551643184018910560">固定至檔案櫃</translation>
@@ -5636,7 +5640,6 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">已編輯捷徑</translation>
 <translation id="8018313076035239964">控制網站可使用的資訊，以及可對你顯示的內容</translation>
-<translation id="8022688469248132790">查看錯誤詳細資料</translation>
 <translation id="8023801379949507775">立即更新擴充功能</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8028060951694135607">Microsoft 金鑰修復</translation>

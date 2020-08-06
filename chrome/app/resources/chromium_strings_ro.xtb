@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Nu există parole salvate. Chromium îți poate verifica parolele dacă le salvezi.</translation>
 <translation id="5277894862589591112">Pentru a aplica modificările, relansează Chromium</translation>
 <translation id="5358375970380395591">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">A apărut o eroare în timp ce Chromium verifica software-ul dispozitivului</translation>
 <translation id="5386450000063123300">Chromium se actualizează (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Permite conectarea la Chromium</translation>
 <translation id="5398878173008909840">Este disponibilă o nouă versiune Chromium.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
 <translation id="5496810170689441661">Chromium încearcă să modifice parolele. Pentru a permite acest lucru, introdu parola pentru Windows.</translation>
-<translation id="5556694182460963866">Administratorul a dezactivat verificarea privind software-ul dăunător în Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Este disponibilă o actualizare Chromium}=1{Este disponibilă o actualizare Chromium}few{O actualizare Chromium este disponibilă de # zile}other{O actualizare Chromium este disponibilă de # de zile}}</translation>
 <translation id="5631814766731275228">Numele și imaginea profilului Chromium</translation>
 <translation id="5634636535844844681">Chromium necesită Windows 7 sau o versiune ulterioară.</translation>

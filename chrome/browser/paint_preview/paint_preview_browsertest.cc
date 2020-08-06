@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
@@ -18,7 +19,8 @@
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-shared.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
-#include "components/paint_preview/common/serial_utils.h"
+#include "components/paint_preview/common/recording_map.h"
+#include "components/paint_preview/common/serialized_recording.h"
 #include "components/paint_preview/common/test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/notification_types.h"
@@ -33,60 +35,13 @@
 
 namespace paint_preview {
 
-namespace {
-
-base::FilePath ProtoPathToFilePath(const base::StringPiece& proto_path) {
-#if defined(OS_WIN)
-  return base::FilePath(base::UTF8ToUTF16(proto_path));
-#else
-  return base::FilePath(proto_path);
-#endif
-}
-
-// Check that |path| points to a valid SkPicture. Don't bother checking the
-// contents as this is non-trivial and could change. Instead check that
-// the SkPicture can be read correctly and has a cull rect of at least |size|.
-void EnsureSkPictureIsValid(
-    const PaintPreviewClient::PaintPreviewParams& params,
-    const CaptureResult* const result,
-    const PaintPreviewFrameProto& frame_proto,
-    size_t expected_subframe_count,
-    const gfx::Size& size = gfx::Size(1, 1)) {
-  base::ScopedAllowBlockingForTesting scoped_blocking;
-
-  std::unique_ptr<SkStream> stream;
-  if (params.persistence == mojom::Persistence::kFileSystem) {
-    base::FilePath path = ProtoPathToFilePath(frame_proto.file_path());
-    EXPECT_TRUE(base::PathExists(path));
-    stream = std::make_unique<FileRStream>(
-        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-  } else {
-    base::UnguessableToken frame_guid = base::UnguessableToken::Deserialize(
-        frame_proto.embedding_token_high(), frame_proto.embedding_token_low());
-    const mojo_base::BigBuffer& buffer = result->serialized_skps.at(frame_guid);
-    EXPECT_TRUE(buffer.size() > 0);
-    stream = std::make_unique<SkMemoryStream>(buffer.data(), buffer.size(),
-                                              /*copy_data=*/false);
-  }
-
-  DeserializationContext ctx;
-  auto deserial_procs = MakeDeserialProcs(&ctx);
-  auto skp = SkPicture::MakeFromStream(stream.get(), &deserial_procs);
-  EXPECT_NE(skp, nullptr);
-  EXPECT_GE(skp->cullRect().width(), 0);
-  EXPECT_GE(skp->cullRect().height(), 0);
-  EXPECT_EQ(ctx.size(), expected_subframe_count);
-}
-
-}  // namespace
-
 // Test harness for a integration test of paint previews. In this test:
 // - Each RenderFrame has an instance of PaintPreviewRecorder attached.
 // - Each WebContents has an instance of PaintPreviewClient attached.
 // This permits end-to-end testing of the flow of paint previews.
 class PaintPreviewBrowserTest
     : public InProcessBrowserTest,
-      public testing::WithParamInterface<mojom::Persistence> {
+      public testing::WithParamInterface<RecordingPersistence> {
  protected:
   PaintPreviewBrowserTest() = default;
   ~PaintPreviewBrowserTest() override = default;
@@ -150,6 +105,32 @@ class PaintPreviewBrowserTest
     }
   }
 
+  // Check that |recording_map| contains the frame |frame_proto| and is a valid
+  // SkPicture. Don't bother checking the contents as this is non-trivial and
+  // could change. Instead check that the SkPicture can be read correctly and
+  // has a cull rect of at least |size|.
+  //
+  // Consumes the recording from |recording_map|.
+  static void EnsureSkPictureIsValid(RecordingMap* recording_map,
+                                     const PaintPreviewFrameProto& frame_proto,
+                                     size_t expected_subframe_count,
+                                     const gfx::Size& size = gfx::Size(1, 1)) {
+    base::ScopedAllowBlockingForTesting scoped_blocking;
+
+    auto it = recording_map->find(base::UnguessableToken::Deserialize(
+        frame_proto.embedding_token_high(), frame_proto.embedding_token_low()));
+    ASSERT_NE(it, recording_map->end());
+
+    base::Optional<SkpResult> result = std::move(it->second).Deserialize();
+    ASSERT_TRUE(result.has_value());
+    EXPECT_NE(result->skp, nullptr);
+    EXPECT_GE(result->skp->cullRect().width(), 0);
+    EXPECT_GE(result->skp->cullRect().height(), 0);
+    EXPECT_EQ(result->ctx.size(), expected_subframe_count);
+
+    recording_map->erase(it);
+  }
+
   base::ScopedTempDir temp_dir_;
   net::EmbeddedTestServer http_server_;
   net::EmbeddedTestServer http_server_different_origin_;
@@ -184,8 +165,11 @@ IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest, CaptureFrame) {
                           .content_id_to_embedding_tokens_size(),
                       0);
             EXPECT_TRUE(result->proto.root_frame().is_main_frame());
-            EnsureSkPictureIsValid(params, result.get(),
-                                   result->proto.root_frame(), 0);
+            {
+              base::ScopedAllowBlockingForTesting scoped_blocking;
+              auto pair = RecordingMapFromCaptureResult(std::move(*result));
+              EnsureSkPictureIsValid(&pair.first, pair.second.root_frame(), 0);
+            }
             quit.Run();
           },
           loop.QuitClosure(), params));
@@ -226,10 +210,12 @@ IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
                           .content_id_to_embedding_tokens_size(),
                       0);
             EXPECT_FALSE(result->proto.subframes(0).is_main_frame());
-            EnsureSkPictureIsValid(params, result.get(),
-                                   result->proto.root_frame(), 1);
-            EnsureSkPictureIsValid(params, result.get(),
-                                   result->proto.subframes(0), 0);
+            {
+              base::ScopedAllowBlockingForTesting scoped_blocking;
+              auto pair = RecordingMapFromCaptureResult(std::move(*result));
+              EnsureSkPictureIsValid(&pair.first, pair.second.root_frame(), 1);
+              EnsureSkPictureIsValid(&pair.first, pair.second.subframes(0), 0);
+            }
             quit.Run();
           },
           loop.QuitClosure(), params));
@@ -277,11 +263,13 @@ IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
                           .content_id_to_embedding_tokens_size(),
                       0);
             EXPECT_FALSE(result->proto.subframes(0).is_main_frame());
-            EnsureSkPictureIsValid(params, result.get(),
-                                   result->proto.root_frame(), 1);
-            EnsureSkPictureIsValid(params, result.get(),
-                                   result->proto.subframes(0), 0,
-                                   gfx::Size(300, 300));
+            {
+              base::ScopedAllowBlockingForTesting scoped_blocking;
+              auto pair = RecordingMapFromCaptureResult(std::move(*result));
+              EnsureSkPictureIsValid(&pair.first, pair.second.root_frame(), 1);
+              EnsureSkPictureIsValid(&pair.first, pair.second.subframes(0), 0,
+                                     gfx::Size(300, 300));
+            }
             quit.Run();
           },
           loop.QuitClosure(), params));
@@ -325,8 +313,11 @@ IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
                           .content_id_to_embedding_tokens_size(),
                       0);
             EXPECT_TRUE(result->proto.root_frame().is_main_frame());
-            EnsureSkPictureIsValid(params, result.get(),
-                                   result->proto.root_frame(), 0);
+            {
+              base::ScopedAllowBlockingForTesting scoped_blocking;
+              auto pair = RecordingMapFromCaptureResult(std::move(*result));
+              EnsureSkPictureIsValid(&pair.first, pair.second.root_frame(), 0);
+            }
             quit.Run();
           },
           loop.QuitClosure(), params));
@@ -335,8 +326,8 @@ IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          PaintPreviewBrowserTest,
-                         testing::Values(mojom::Persistence::kFileSystem,
-                                         mojom::Persistence::kMemoryBuffer),
+                         testing::Values(RecordingPersistence::kFileSystem,
+                                         RecordingPersistence::kMemoryBuffer),
                          PersistenceParamToString);
 
 }  // namespace paint_preview

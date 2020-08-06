@@ -114,7 +114,7 @@ void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
       }
       SerializationBuffer().Grow(SerializationBuffer().size() << 1);
     }
-    digest_ ^= IdentifiabilityDigestOfBytes(base::as_bytes(
+    builder_.AddAtomic(base::as_bytes(
         base::make_span(SerializationBuffer().data(), serialized_size)));
     total_ops_digested_++;
     cur_ops_digested++;

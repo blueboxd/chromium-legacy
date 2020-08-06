@@ -7,8 +7,8 @@
 
 #include "base/containers/flat_map.h"
 #include "base/unguessable_token.h"
-#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-forward.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/serialized_recording.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -47,20 +47,20 @@ struct RecordingParams {
 // multiple subframes.
 struct CaptureResult {
  public:
-  explicit CaptureResult(mojom::Persistence persistence);
+  explicit CaptureResult(RecordingPersistence persistence);
   ~CaptureResult();
 
   CaptureResult(CaptureResult&&);
   CaptureResult& operator=(CaptureResult&&);
 
   // Will match the |persistence| in the original capture request.
-  mojom::Persistence persistence;
+  RecordingPersistence persistence;
 
   PaintPreviewProto proto = {};
 
   // Maps frame embedding tokens to buffers containing the serialized
   // recordings. See |PaintPreviewCaptureResponse::skp| for information on how
-  // to intepret these buffers. Empty if |Persistence::FileSystem|.
+  // to intepret these buffers. Empty if |RecordingPersistence::FileSystem|.
   base::flat_map<base::UnguessableToken, mojo_base::BigBuffer> serialized_skps =
       {};
 
@@ -70,4 +70,4 @@ struct CaptureResult {
 
 }  // namespace paint_preview
 
-#endif
+#endif  // COMPONENTS_PAINT_PREVIEW_COMMON_CAPTURE_RESULT_H_

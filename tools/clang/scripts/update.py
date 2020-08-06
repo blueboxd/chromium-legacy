@@ -37,12 +37,11 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '1bd7046e4ce0102adef6096a12a289d7f94b8c73'
-CLANG_SVN_REVISION = 'n362116'
-CLANG_SUB_REVISION = 2
+# This is the output of `git describe` and is usable as a commit-ish.
+CLANG_REVISION = 'llvmorg-12-init-1771-g1bd7046e'
+CLANG_SUB_REVISION = 3
 
-PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
-                                CLANG_SUB_REVISION)
+PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
 RELEASE_VERSION = '12.0.0'
 
 

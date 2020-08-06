@@ -110,7 +110,6 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="5224391634244552924">Nema sačuvanih lozinki. Chromium može da proverava lozinke kada ih sačuvate.</translation>
 <translation id="5277894862589591112">Da biste primenili promene, ponovo pokrenite Chromium</translation>
 <translation id="5358375970380395591">Prijavljujete se pomoću naloga kojim se upravlja i dajete njegovom administratoru kontrolu nad Chromium profilom. Chromium podaci, kao što su aplikacije, obeleživači, istorija, lozinke i druga podešavanja, biće trajno povezani sa nalogom <ph name="USER_NAME" />. Moći ćete da izbrišete te podatke preko Kontrolne table Google naloga, ali nećete moći da ih povežete sa nekim drugim nalogom. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Došlo je do greške dok je Chromium proveravao softver uređaja</translation>
 <translation id="5386450000063123300">Ažuriranje Chromium-a (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Dozvoli prijavljivanje u Chromium</translation>
 <translation id="5398878173008909840">Dostupna je nova verzija Chromium-a.</translation>
@@ -121,7 +120,6 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="5480860683791598150">Chromium traži pristup vašoj lokaciji da biste je delili sa ovim sajtom</translation>
 <translation id="549669000822060376">Sačekajte da Chromium instalira najnovija ažuriranja sistema.</translation>
 <translation id="5496810170689441661">Chromium pokušava da izmeni lozinke. Unesite lozinku za Windows da biste to omogućili.</translation>
-<translation id="5556694182460963866">Administrator je onemogućio traženje štetnog softvera pomoću Chromium-a</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ažuriranje za Chromium je dostupno}=1{Ažuriranje za Chromium je dostupno}one{Ažuriranje za Chromium je dostupno već # dan}few{Ažuriranje za Chromium je dostupno već # dana}other{Ažuriranje za Chromium je dostupno već # dana}}</translation>
 <translation id="5631814766731275228">Naziv i slika Chromium profila</translation>
 <translation id="5634636535844844681">Za Chromium je potreban Windows 7 ili novija verzija.</translation>

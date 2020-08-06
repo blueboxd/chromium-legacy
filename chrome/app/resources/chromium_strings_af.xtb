@@ -110,7 +110,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="5224391634244552924">Geen gestoorde wagwoorde nie. Chromium kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
 <translation id="5277894862589591112">Herbegin Chromium om jou veranderinge toe te pas</translation>
 <translation id="5358375970380395591">Jy meld tans met 'n bestuurde rekening aan en gee sy administrateur beheer oor jou Chromium-profiel. Jou Chromium-data, soos jou programme, boekmerke, geskiedenis, wagwoorde en ander instellings, sal permanent aan <ph name="USER_NAME" /> gekoppel word. Jy sal hierdie data via die Google-rekening se kontroleskerm kan uitvee, maar jy sal nie hierdie data met 'n ander rekening kan assosieer nie. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Chromium kon nie die toestelsagteware nagaan nie</translation>
 <translation id="5386450000063123300">Dateer Chromium tans op (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Laat Chromium-aanmelding toe</translation>
 <translation id="5398878173008909840">Daar is 'n nuwe weergawe van Chromium beskikbaar.</translation>
@@ -121,7 +120,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="5480860683791598150">Chromium het toegang tot jou ligging nodig om jou ligging met hierdie werf te deel</translation>
 <translation id="549669000822060376">Wag terwyl Chromium die jongste stelselopdaterings installeer.</translation>
 <translation id="5496810170689441661">Chromium probeer tans om wagwoorde te wysig. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
-<translation id="5556694182460963866">Jou administrateur het Chromium se kontrolering vir skadelike sagteware gedeaktiveer</translation>
 <translation id="5623402015214259806">{0,plural, =0{'n Chromium-opdatering is beskikbaar}=1{'n Chromium-opdatering is beskikbaar}other{'n Chromium-opdatering is al # dae lank beskikbaar}}</translation>
 <translation id="5631814766731275228">Chromium-naam en -prent</translation>
 <translation id="5634636535844844681">Chromium vereis Windows 7 of nuwer.</translation>

@@ -48,6 +48,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A utility class that contains methods generic to all Tabs tests.
@@ -120,6 +121,12 @@ public class ChromeTabUtils {
     private static boolean loadComplete(Tab tab, String url) {
         return !tab.isLoading() && (url == null || TextUtils.equals(tab.getUrlString(), url))
                 && !tab.getWebContents().isLoadingToDifferentDocument();
+    }
+
+    public static String getTitleOnUiThread(Tab tab) {
+        AtomicReference<String> res = new AtomicReference<>();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { res.set(tab.getTitle()); });
+        return res.get();
     }
 
     /**

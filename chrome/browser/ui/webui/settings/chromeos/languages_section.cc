@@ -57,6 +57,29 @@ const std::vector<SearchConcept>& GetLanguagesSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetUpdatedLanguagesSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_LANGUAGES,
+       mojom::kLanguagesSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kLanguages}},
+      {IDS_OS_SETTINGS_TAG_INPUT,
+       mojom::kInputSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kInput}},
+  });
+  return *tags;
+}
+
+bool IsLanguageSettingsV2Enabled() {
+  return base::FeatureList::IsEnabled(
+      ::chromeos::features::kLanguageSettingsUpdate);
+}
+
 const std::vector<SearchConcept>& GetSmartInputsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_LANGUAGES_SMART_INPUTS,
@@ -183,7 +206,11 @@ LanguagesSection::LanguagesSection(Profile* profile,
                                    SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
-  updater.AddSearchTags(GetLanguagesSearchConcepts());
+  if (IsLanguageSettingsV2Enabled()) {
+    updater.AddSearchTags(GetUpdatedLanguagesSearchConcepts());
+  } else {
+    updater.AddSearchTags(GetLanguagesSearchConcepts());
+  }
 
   if (IsAssistivePersonalInfoAllowed() || IsEmojiSuggestionAllowed()) {
     updater.AddSearchTags(GetSmartInputsSearchConcepts());
@@ -200,6 +227,9 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"orderLanguagesInstructions",
        IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
+      {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
+      {"languagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PAGE_TITLE},
+      {"inputPageTitle", IDS_OS_SETTINGS_LANGUAGES_INPUT_PAGE_TITLE},
       {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
       {"osLanguagesListTitle", IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE},
       {"inputMethodsListTitle",
@@ -238,6 +268,8 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("imeOptionsInSettings",
                           base::FeatureList::IsEnabled(
                               ::chromeos::features::kImeOptionsInSettings));
+  html_source->AddBoolean("enableLanguageSettingsV2",
+                          IsLanguageSettingsV2Enabled());
 }
 
 void LanguagesSection::AddHandlers(content::WebUI* web_ui) {
@@ -269,6 +301,18 @@ bool LanguagesSection::IsEmojiSuggestionAllowed() const {
 }
 
 void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  // Languages.
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PAGE_TITLE,
+      mojom::Subpage::kLanguages, mojom::SearchResultIcon::kGlobe,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kLanguagesSubpagePath);
+
+  // Input.
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_LANGUAGES_INPUT_PAGE_TITLE, mojom::Subpage::kInput,
+      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kInputSubpagePath);
+
   // Languages and input details.
   generator->RegisterTopLevelSubpage(
       IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE,

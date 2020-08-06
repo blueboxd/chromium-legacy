@@ -20,10 +20,11 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
-#include "build/build_config.h"
 #include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/recording_map.h"
+#include "components/paint_preview/common/serialized_recording.h"
 #include "components/paint_preview/public/paint_preview_compositor_client.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
@@ -58,48 +59,6 @@ BuildHitTesters(const PaintPreviewProto& proto) {
       std::move(hit_testers));
 }
 
-base::FilePath ToFilePath(base::StringPiece path_str) {
-#if defined(OS_WIN)
-  return base::FilePath(base::UTF8ToUTF16(path_str));
-#else
-  return base::FilePath(path_str);
-#endif
-}
-
-base::flat_map<base::UnguessableToken, base::File> CreateFileMapFromProto(
-    const PaintPreviewProto& proto) {
-  std::vector<std::pair<base::UnguessableToken, base::File>> entries;
-  entries.reserve(1 + proto.subframes_size());
-  base::UnguessableToken root_frame_id = base::UnguessableToken::Deserialize(
-      proto.root_frame().embedding_token_high(),
-      proto.root_frame().embedding_token_low());
-  base::File root_frame_skp_file =
-      base::File(ToFilePath(proto.root_frame().file_path()),
-                 base::File::FLAG_OPEN | base::File::FLAG_READ);
-
-  // We can't composite anything with an invalid SKP file path for the root
-  // frame.
-  if (!root_frame_skp_file.IsValid())
-    return base::flat_map<base::UnguessableToken, base::File>();
-
-  entries.emplace_back(std::move(root_frame_id),
-                       std::move(root_frame_skp_file));
-  for (const auto& subframe : proto.subframes()) {
-    base::File frame_skp_file(ToFilePath(subframe.file_path()),
-                              base::File::FLAG_OPEN | base::File::FLAG_READ);
-
-    // Skip this frame if it doesn't have a valid SKP file path.
-    if (!frame_skp_file.IsValid())
-      continue;
-
-    entries.emplace_back(
-        base::UnguessableToken::Deserialize(subframe.embedding_token_high(),
-                                            subframe.embedding_token_low()),
-        std::move(frame_skp_file));
-  }
-  return base::flat_map<base::UnguessableToken, base::File>(std::move(entries));
-}
-
 base::Optional<base::ReadOnlySharedMemoryRegion> ToReadOnlySharedMemory(
     const paint_preview::PaintPreviewProto& proto) {
   auto region = base::WritableSharedMemoryRegion::Create(proto.ByteSizeLong());
@@ -119,8 +78,9 @@ PrepareCompositeRequest(const paint_preview::PaintPreviewProto& proto) {
   paint_preview::mojom::PaintPreviewBeginCompositeRequestPtr
       begin_composite_request =
           paint_preview::mojom::PaintPreviewBeginCompositeRequest::New();
-  begin_composite_request->file_map = CreateFileMapFromProto(proto);
-  if (begin_composite_request->file_map.empty())
+  begin_composite_request->recording_map =
+      RecordingMapFromPaintPreviewProto(proto);
+  if (begin_composite_request->recording_map.empty())
     return nullptr;
 
   auto read_only_proto = ToReadOnlySharedMemory(proto);

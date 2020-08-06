@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner.h"
@@ -16,6 +18,8 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
+#include "components/paint_preview/common/paint_preview_tracker.h"
+#include "components/paint_preview/common/serialized_recording.h"
 #include "components/paint_preview/renderer/paint_preview_recorder_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -45,9 +49,9 @@ FinishedRecording FinishRecording(
     sk_sp<const cc::PaintRecord> recording,
     const gfx::Rect& bounds,
     std::unique_ptr<PaintPreviewTracker> tracker,
-    mojom::Persistence persistence,
+    RecordingPersistence persistence,
     base::File skp_file,
-    size_t max_capture_size,
+    base::Optional<size_t> max_capture_size,
     mojom::PaintPreviewCaptureResponsePtr response) {
   TRACE_EVENT0("paint_preview", "FinishRecording");
   FinishedRecording out(mojom::PaintPreviewStatus::kOk, std::move(response));
@@ -62,19 +66,25 @@ FinishedRecording FinishRecording(
   TRACE_EVENT_END0("paint_preview", "ParseGlyphsAndLinks");
   size_t serialized_size = 0;
 
+  TRACE_EVENT0("paint_preview", "SerializeAsSkPicture");
+
+  auto skp = PaintRecordToSkPicture(recording, tracker.get(), bounds);
+  if (!skp) {
+    out.status = mojom::PaintPreviewStatus::kCaptureFailed;
+    return out;
+  }
+
   bool success = false;
   switch (persistence) {
-    case mojom::Persistence::kFileSystem:
-      success = SerializeAsSkPictureToFile(recording, bounds, tracker.get(),
-                                           std::move(skp_file),
-                                           max_capture_size, &serialized_size);
+    case RecordingPersistence::kFileSystem:
+      success = RecordToFile(std::move(skp_file), skp, tracker.get(),
+                             max_capture_size, &serialized_size);
       break;
-    case mojom::Persistence::kMemoryBuffer:
-      mojo_base::BigBuffer buffer;
-      success = SerializeAsSkPictureToMemoryBuffer(
-          recording, bounds, tracker.get(), &buffer, max_capture_size,
-          &serialized_size);
-      out.response->skp.emplace(std::move(buffer));
+    case RecordingPersistence::kMemoryBuffer:
+      base::Optional<mojo_base::BigBuffer> buffer = RecordToBuffer(
+          skp, tracker.get(), max_capture_size, &serialized_size);
+      success = buffer.has_value();
+      out.response->skp.emplace(std::move(buffer.value()));
       break;
   }
 
@@ -226,11 +236,19 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
     return;
   }
 
+  // Convert the special value |0| to |base::nullopt|.
+  base::Optional<size_t> max_capture_size;
+  if (params->max_capture_size == 0) {
+    max_capture_size = base::nullopt;
+  } else {
+    max_capture_size = params->max_capture_size;
+  }
+
   // This cannot be done async if the recording contains a GPU accelerated
   // image.
   FinishedRecording recording = FinishRecording(
       recorder.finishRecordingAsPicture(), bounds, std::move(tracker),
-      params->persistence, std::move(params->file), params->max_capture_size,
+      params->persistence, std::move(params->file), max_capture_size,
       std::move(response));
   std::move(callback).Run(recording.status, std::move(recording.response));
 }

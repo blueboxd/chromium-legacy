@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">接受並繼續</translation>
 <translation id="1112015203684611006">無法列印。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
+<translation id="1134509371063488162">在無痕模式中開啟 ${urls}</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
+<translation id="2302742851632557585">變更網站上的密碼</translation>
 <translation id="2316709634732130529">使用建議的密碼</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
 <translation id="2339560363438331454">同步處理和 Google 服務</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">新增付款方法…</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
 <translation id="3037605927509011580">糟糕！</translation>
+<translation id="3081338492074632642">請確保您儲存的密碼與 <ph name="WEBSITE" /> 上的密碼相符</translation>
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3131206671572504478">全部封鎖</translation>
 <translation id="3153862085237805241">儲存付款卡</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
 <translation id="3268451620468152448">開啟的分頁</translation>
+<translation id="3272527697863656322">取消</translation>
 <translation id="3277021493514034324">已複製網站網址</translation>
 <translation id="3290875554372353449">選擇帳戶</translation>
 <translation id="3311748811247479259">關閉</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">有可以用嘅翻譯。你可以喺接近畫面底部附近搵到選項。</translation>
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
 <translation id="3425644765244388016">信用卡暱稱</translation>
+<translation id="3433057996795775706">刪除此密碼不會刪除您在 <ph name="WEBSITE" /> 的帳戶。請變更您在 <ph name="WEBSITE" /> 的密碼，以免被他人盜用。</translation>
 <translation id="3443810440409579745">已收到分頁。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> 分鐘</translation>
 <translation id="3448016392200048164">分割檢視</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3670030362669914947">號碼</translation>
 <translation id="3691593122358196899">已將書籤加入到「<ph name="FOLDER_TITLE" />」</translation>
+<translation id="3740397331642243698">在 Google Chrome 中以無痕模式開啟已輸入的網址。</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3775743491439407556">同步功能無法正常運作</translation>
 <translation id="3779810277399252432">沒有互聯網連線。</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4659126640776004816">當您登入 Google 帳戶時，系統會啟用此功能</translation>
 <translation id="4659667755519643272">進入分頁切換選項</translation>
+<translation id="46614316059270592">儲存密碼</translation>
 <translation id="4666531726415300315">已使用 <ph name="EMAIL" /> 的身分登入。
 
 您已使用同步密碼短語加密資料，請輸入密碼短語開始同步資料。</translation>
@@ -402,6 +409,7 @@
 <translation id="5854790677617711513">超過 30 天</translation>
 <translation id="5857090052475505287">新資料夾</translation>
 <translation id="5857770089550859117">必須輸入密碼短語，才能開始同步資料。</translation>
+<translation id="5860033963881614850">關閉</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
 <translation id="5897956970858271241">前往複製的連結</translation>
@@ -502,7 +510,6 @@
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6841409746189899007">連結至文字</translation>
 <translation id="6851516051005285358">切換至電腦版網站</translation>
-<translation id="6856384753476268833">由您的機構管理。</translation>
 <translation id="6858855187367714033">已經掃咗瞄</translation>
 <translation id="6859944681507688231">如要掃瞄二維條碼或信用卡，請在設定中啟用相機。</translation>
 <translation id="6869389390665537774">您可查看瀏覽過的網頁，或從記錄移除網頁</translation>
@@ -524,7 +531,6 @@
 <translation id="7006788746334555276">內容設定</translation>
 <translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
 <translation id="7029809446516969842">密碼</translation>
-<translation id="7030675613184250187">您可將網頁儲存至閱讀清單，以便日後快速瀏覽或離線閱讀</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
 <translation id="7099761977003084116">最近開啟的分頁</translation>
@@ -587,12 +593,12 @@
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>
 <translation id="7887198238286927132">為保障您的私隱，Chrome 不會自動填入此欄位。</translation>
-<translation id="791251013315685175">由 <ph name="COMPANY" /> 管理。</translation>
 <translation id="7918293828610777738">閱讀清單現可供離線瀏覽。如要將網頁加入您的閱讀清單，請輕按 <ph name="SHARE_OPENING_ICON" />，然後輕按 [<ph name="READ_LATER_TEXT" />]。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">匯出密碼…</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="794799177247607889">停止記錄</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{沒有密碼被盜用}=1{{COUNT} 個密碼被盜用}other{{COUNT} 個密碼被盜用}}</translation>
 <translation id="7961015016161918242">從來沒有</translation>
 <translation id="7966516440812255683">網站可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品。
 
@@ -606,6 +612,7 @@
 <translation id="8023878949384262191">展開這個專區。</translation>
 <translation id="804427445359061970">您可在此查看從其他裝置開啟過的分頁</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
+<translation id="8065292699993359127">在 Chrome 中以無痕模式開啟網址</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
 <translation id="8073670137947914548">已經下載完成</translation>
 <translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>

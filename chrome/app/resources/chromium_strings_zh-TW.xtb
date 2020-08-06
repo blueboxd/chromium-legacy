@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">未儲存任何密碼。你必須先儲存密碼，才能使用 Chromium 的密碼檢查功能。</translation>
 <translation id="5277894862589591112">如要套用變更，請重新啟動 Chromium</translation>
 <translation id="5358375970380395591">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chromium 設定檔。你的 Chromium 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Chromium 檢查裝置軟體時發生錯誤</translation>
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">允許登入 Chromium</translation>
 <translation id="5398878173008909840">新版 Chromium 現已推出。</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium 需要位置資訊存取權，才能與這個網站分享你的位置資訊</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
 <translation id="5496810170689441661">Chromium 正在嘗試編輯密碼。如果你同意這項作業，請輸入你的 Windows 密碼。</translation>
-<translation id="5556694182460963866">系統管理員已停用 Chromium 的有害軟體檢測功能</translation>
 <translation id="5623402015214259806">{0,plural, =0{有可用的 Chromium 更新}=1{有可用的 Chromium 更新}other{Chromium 更新已發布 # 天}}</translation>
 <translation id="5631814766731275228">Chromium 名稱和相片</translation>
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
@@ -227,7 +225,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8417404458978023919">{0,plural, =1{請在 1 天內重新啟動 Chromium}other{請在 # 天內重新啟動 Chromium}}</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
-<translation id="8545858702702650646">選擇你的 Chromium Space</translation>
+<translation id="8545858702702650646">選擇你的 Chromium 空間</translation>
 <translation id="8558383651099478961">你的家長已停用 Chromium 的「網站、應用程式和擴充功能的權限」設定，因此你無法新增這個<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="8568283329061645092">如果你使用 Google 帳戶登入，Chromium 可以檢查你的密碼</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 保留所有權利。</translation>
@@ -253,7 +251,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="9158494823179993217">系統管理員已設定 Chromium 開啟替代瀏覽器來存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="9164845895615421500">Chromium 每週檢查一次垃圾軟體。上次檢查時間：不到一分鐘前。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191317372410544836">使用 Chromium Space 有效管理這部裝置上的瀏覽活動</translation>
+<translation id="9191317372410544836">使用 Chromium 空間有效管理這部裝置上的瀏覽活動</translation>
 <translation id="93478295209880648">Chromium 已不適用於 Windows XP 或 Windows Vista，因此可能無法正常運作</translation>
 <translation id="95514773681268843">在使用這個裝置前，<ph name="DOMAIN" /> 要求你詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chromium 作業系統條款》。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

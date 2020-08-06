@@ -47,7 +47,7 @@ public class MainActivityWithURLTest {
                     testServer.getURL("/chrome/test/data/android/simple.html"));
             String expectedTitle = "Activity test page";
             TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-            String title = model.getTabAt(model.index()).getTitle();
+            String title = ChromeTabUtils.getTitleOnUiThread(model.getTabAt(model.index()));
             Assert.assertEquals(expectedTitle, title);
         } finally {
             testServer.stopAndDestroyServer();

@@ -33,6 +33,7 @@
 
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
@@ -58,6 +59,10 @@ struct WebEmbeddedWorkerStartData {
   network::mojom::IPAddressSpace address_space;
 
   WebFetchClientSettingsObject outside_fetch_client_settings_object;
+
+  // Unique token that identifies this worker across the browser and renderer
+  // processes. This is not persistent across worker restarts.
+  blink::ServiceWorkerToken service_worker_token;
 
   explicit WebEmbeddedWorkerStartData(
       WebFetchClientSettingsObject outside_fetch_client_settings_object)

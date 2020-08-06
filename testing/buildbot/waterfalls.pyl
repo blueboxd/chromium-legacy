@@ -2143,7 +2143,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a6163b',
+          'xcode_12a8179i_audio',
         ],
         'test_suites': {
           'isolated_scripts': 'ios14_beta_simulator_tests'
@@ -2160,7 +2160,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a6163b',
+          'xcode_12a8179i_audio',
         ],
         'test_suites': {
           'isolated_scripts': 'ios14_sdk_simulator_tests'
@@ -4413,6 +4413,24 @@
         'test_suites': {},
       },
       'mac-arm64': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'os_type': 'mac',
+        'browser_config': 'release',
+        # TODO(thakis): This mixin is almost certainly incorrect. It exists to
+        # make the test suites listed below be valid; this can't be generated
+        # swarming dimensions are set.
+        'mixins': [
+          'mac_mini_intel_gpu_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
+        },
+      },
+      'mac-arm64-rel': {
         'additional_compile_targets': [
           'all',
         ],

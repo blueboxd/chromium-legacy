@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context_observer.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "url/gurl.h"
 
@@ -33,7 +34,8 @@ class ServiceWorkerContextCoreObserver {
   virtual void OnStarted(int64_t version_id,
                          const GURL& scope,
                          int process_id,
-                         const GURL& script_url) {}
+                         const GURL& script_url,
+                         const blink::ServiceWorkerToken& token) {}
   virtual void OnStopping(int64_t version_id) {}
   virtual void OnStopped(int64_t version_id) {}
   // Called when the context core is about to be deleted. After this is called,

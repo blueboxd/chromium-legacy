@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">‏ما مِن كلمات مرور محفوظة. لا يستطيع Chromium التحقُّق من كلمات المرور إلا عند حفظها.</translation>
 <translation id="5277894862589591112">‏لتطبيق التغييرات، يُرجى إعادة تشغيل Chromium</translation>
 <translation id="5358375970380395591">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">‏حدث خطأ أثناء تحقُّق متصفِّح Chromium من برامج الجهاز.</translation>
 <translation id="5386450000063123300">‏جارٍ تحديث Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">‏السماح بتسجيل الدخول إلى Chromium</translation>
 <translation id="5398878173008909840">‏يتوفر إصدار جديد من Chromium.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">‏يحتاج Chromium للوصول إلى موقعك الجغرافي لمشاركته مع هذا الموقع.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
 <translation id="5496810170689441661">‏يحاول Chromium تعديل كلمات المرور. للسماح بذلك، يُرجى كتابة كلمة مرور Windows الخاصة بك.</translation>
-<translation id="5556694182460963866">‏لقد أوقف المشرف ميزة "التحقُّق من البرامج الضارّة" في متصفّح Chromium.</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏يتوفر تحديث لمتصفح Chromium}=1{‏يتوفر تحديث لمتصفح Chromium}two{‏يتوفر تحديث لمتصفح Chromium منذ يومين}few{‏يتوفر تحديث لمتصفح Chromium منذ # أيام}many{‏يتوفر تحديث لمتصفح Chromium منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chromium منذ # يوم}}</translation>
 <translation id="5631814766731275228">‏الاسم والصورة على Chromium</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>

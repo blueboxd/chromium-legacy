@@ -64,16 +64,14 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
     @Override
     public void addBlocklistedUrl(String url) {
         if (mNativeMostVisitedSitesBridge == 0) return;
-        // TODO(crbug.com/1102812): Change the native C++ method name.
-        MostVisitedSitesBridgeJni.get().addOrRemoveBlacklistedUrl(
+        MostVisitedSitesBridgeJni.get().addOrRemoveBlockedUrl(
                 mNativeMostVisitedSitesBridge, MostVisitedSitesBridge.this, url, true);
     }
 
     @Override
     public void removeBlocklistedUrl(String url) {
         if (mNativeMostVisitedSitesBridge == 0) return;
-        // TODO(crbug.com/1102812): Change the native C++ method name.
-        MostVisitedSitesBridgeJni.get().addOrRemoveBlacklistedUrl(
+        MostVisitedSitesBridgeJni.get().addOrRemoveBlockedUrl(
                 mNativeMostVisitedSitesBridge, MostVisitedSitesBridge.this, url, false);
     }
 
@@ -167,8 +165,8 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
                 MostVisitedSites.HomepageClient homePageClient);
         void setObserver(long nativeMostVisitedSitesBridge, MostVisitedSitesBridge caller,
                 MostVisitedSitesBridge observer, int numSites);
-        void addOrRemoveBlacklistedUrl(long nativeMostVisitedSitesBridge,
-                MostVisitedSitesBridge caller, String url, boolean addUrl);
+        void addOrRemoveBlockedUrl(long nativeMostVisitedSitesBridge, MostVisitedSitesBridge caller,
+                String url, boolean addUrl);
         void recordPageImpression(
                 long nativeMostVisitedSitesBridge, MostVisitedSitesBridge caller, int tilesCount);
         void recordTileImpression(long nativeMostVisitedSitesBridge, MostVisitedSitesBridge caller,

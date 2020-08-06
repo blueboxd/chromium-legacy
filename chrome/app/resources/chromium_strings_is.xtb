@@ -110,7 +110,6 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="5224391634244552924">Engin vistuð aðgangsorð. Chromium getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
 <translation id="5277894862589591112">Endurræstu Chromium til að breytingarnar taki gildi</translation>
 <translation id="5358375970380395591">Þú ert að skrá þig inn með stýrðum reikningi og veitir stjórnanda hans vald yfir Chromium prófílnum þínum. Chromium gögnin þín, s.s. forrit, bókamerki, ferill, aðgangsorð og aðrar stillingar, verða tengd varanlega við <ph name="USER_NAME" />. Þú getur eytt þessum gögnum á stjórnborði Google reikninga en getur ekki tengt þau öðrum reikningi. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Villa kom upp þegar Chromium athugaði hugbúnað tækisins</translation>
 <translation id="5386450000063123300">Uppfærir Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Leyfa innskráningu í Chromium</translation>
 <translation id="5398878173008909840">Ný útgáfa af Chromium er í boði.</translation>
@@ -121,7 +120,6 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="5480860683791598150">Chromium þarf staðsetningaraðgang til að deila staðsetningu þinni með þessu vefsvæði</translation>
 <translation id="549669000822060376">Bíddu á meðan Chromium setur upp nýjustu kerfisuppfærslunar.</translation>
 <translation id="5496810170689441661">Chromium er að reyna að breyta aðgangsorðum. Sláðu inn Windows-aðgangsorðið þitt til að leyfa það.</translation>
-<translation id="5556694182460963866">Kerfisstjóri slökkti á athugun Chromium á skaðlegum hugbúnaði</translation>
 <translation id="5623402015214259806">{0,plural, =0{Uppfærsla er í boði fyrir Chromium}=1{Uppfærsla er í boði fyrir Chromium}one{Uppfærsla hefur verið í boði fyrir Chromium í # dag}other{Uppfærsla hefur verið í boði fyrir Chromium í # daga}}</translation>
 <translation id="5631814766731275228">Nafn og mynd fyrir Chromium</translation>
 <translation id="5634636535844844681">Chromium krefst Windows 7 eða nýrri útgáfu.</translation>

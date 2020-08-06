@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nowe hasło</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> zarządza tym urządzeniem i ma dostęp do wszelkiej aktywności użytkownika, w tym odwiedzanych stron internetowych, haseł i e-maili.</translation>
 <translation id="4003384961948020559">Niepowodzenie – odbiornik papieru jest pełny</translation>
+<translation id="4027485274696301677">Tym urządzeniem (<ph name="DEVICE_TYPE" />) zarządza <ph name="ENROLLMENT_DOMAIN" />. Administratorzy mogą je zdalnie konfigurować.</translation>
 <translation id="4034824040120875894">Drukarka</translation>
 <translation id="4227825898293920515">Hasło wygasa za <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Brak zadań drukowania w toku</translation>
@@ -73,7 +74,6 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="808894953321890993">Zmień hasło</translation>
 <translation id="8208861521865154048">Korzyści</translation>
 <translation id="8347227221149377169">Zadania drukowania</translation>
-<translation id="8623849191266582420">Tym urządzeniem <ph name="DEVICE_TYPE" /> zarządza <ph name="ENROLLMENT_DOMAIN" />. Administratorzy mogą je zdalnie monitorować i konfigurować.</translation>
 <translation id="8701136875688985581">Tym użytkownikiem zarządza domena <ph name="ENROLLMENT_DOMAIN" />. Może ona zdalnie zarządzać ustawieniami i monitorować aktywność użytkownika.</translation>
 <translation id="871560550817059752">Niepowodzenie – brak tuszu</translation>
 <translation id="8747900814994928677">Potwierdź zmianę</translation>

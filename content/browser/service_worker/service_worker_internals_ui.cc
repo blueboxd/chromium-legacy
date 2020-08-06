@@ -283,7 +283,8 @@ class ServiceWorkerInternalsUI::PartitionObserver
   void OnStarted(int64_t version_id,
                  const GURL& scope,
                  int process_id,
-                 const GURL& script_url) override {
+                 const GURL& script_url,
+                 const blink::ServiceWorkerToken& token) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onRunningStateChanged");

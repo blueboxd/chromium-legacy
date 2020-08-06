@@ -39,6 +39,7 @@ class WebView;
 
 class Browser;
 class BrowserView;
+class ImmersiveRevealedLock;
 
 class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public gfx::AnimationDelegate,
@@ -74,6 +75,9 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void SetVisibleForTesting(bool visible);
   views::WebView* web_view_for_testing() const { return web_view_; }
   views::View* tab_counter_for_testing() const { return tab_counter_; }
+
+  // Finish the open or close animation if it's active.
+  void FinishAnimationForTesting();
 
  private:
   class AutoCloser;
@@ -141,6 +145,9 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // When opened, if currently open. Used to calculate metric for how
   // long the tab strip is kept open.
   base::Optional<base::TimeTicks> time_at_open_;
+
+  // Used to keep the toolbar revealed while the tab strip is open.
+  std::unique_ptr<ImmersiveRevealedLock> immersive_revealed_lock_;
 
   gfx::SlideAnimation animation_{this};
 

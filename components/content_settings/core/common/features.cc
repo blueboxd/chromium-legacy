@@ -19,4 +19,7 @@ const base::Feature kDisallowWildcardsInPluginContentSettings{
     "DisallowWildcardsInPluginContentSettings",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kBlockInsecurePrivateNetworkRequests{
+    "BlockInsecurePrivateNetworkRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace content_settings

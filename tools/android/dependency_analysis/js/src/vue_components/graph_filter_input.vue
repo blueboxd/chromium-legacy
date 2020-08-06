@@ -26,6 +26,7 @@ const GraphFilterInput = {
   },
   props: {
     nodeIds: Array,
+    nodesAlreadyInFilter: Array,
     shortenName: Function,
   },
   data: function() {
@@ -41,14 +42,22 @@ const GraphFilterInput = {
           .map(nameObj => nameObj.realName),
     };
   },
+  computed: {
+    nodesAlreadyInFilterSet: function() {
+      return new Set(this.nodesAlreadyInFilter.map(
+          filterEntry => filterEntry.name));
+    },
+  },
   methods: {
     getResultValue: function(result) {
       return this.shortenName(result);
     },
 
     search: function(searchTerm) {
+      const searchTermLower = searchTerm.toLowerCase();
       return this.nodeIdsSortedByShortNames.filter(name => {
-        return name.toLowerCase().includes(searchTerm.toLowerCase());
+        return !this.nodesAlreadyInFilterSet.has(name) &&
+          name.toLowerCase().includes(searchTermLower);
       });
     },
 

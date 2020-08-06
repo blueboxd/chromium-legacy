@@ -192,7 +192,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   PageloadForegroundDurationTabHelper::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(
-          web::features::kIOSLookalikeUrlNavigationSuggestionsUI)) {
+          web::features::kIOSLookalikeUrlNavigationSuggestionsUI) &&
+      base::FeatureList::IsEnabled(web::features::kSSLCommittedInterstitials)) {
     LookalikeUrlTabHelper::CreateForWebState(web_state);
     LookalikeUrlTabAllowList::CreateForWebState(web_state);
     LookalikeUrlContainer::CreateForWebState(web_state);

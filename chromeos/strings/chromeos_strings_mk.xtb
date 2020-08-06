@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Нова лозинка</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управува со уредов и има пристап до целата активност на корисникот, вклучувајќи ги посетените веб-страници, лозинките и е-поштата.</translation>
 <translation id="4003384961948020559">Неуспешно - излезната фиока е полна</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> управува со овој <ph name="DEVICE_TYPE" />. Администраторите може да го конфигурираат уредот оддалеку.</translation>
 <translation id="4034824040120875894">Печатач</translation>
 <translation id="4227825898293920515">Лозинката истекува за <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Нема задачи за печатење во тек</translation>
@@ -73,7 +74,6 @@
 <translation id="808894953321890993">Промени лозинка</translation>
 <translation id="8208861521865154048">Поволности</translation>
 <translation id="8347227221149377169">Налози за печатење</translation>
-<translation id="8623849191266582420"><ph name="ENROLLMENT_DOMAIN" /> управува со овој <ph name="DEVICE_TYPE" />. Администраторите може да го конфигурираат и надгледуваат уредот далечински.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> управува со корисников. Може далечински да управува со поставките и да ја следи активноста на корисникот.</translation>
 <translation id="871560550817059752">Неуспешно - нема мастило</translation>
 <translation id="8747900814994928677">Потврдете ја измената</translation>

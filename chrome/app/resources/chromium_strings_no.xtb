@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Ingen lagrede passord. Chromium kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="5277894862589591112">For å bruke endringene dine må du starte Chromium på nytt</translation>
 <translation id="5358375970380395591">Du logger deg på med en administrert konto og gir tilhørende administratorer kontroll over Chromium-profilen din. Chromium-dataene dine, slik som apper, bokmerker, loggen, passord og andre innstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse dataene via oversikten for Google-kontoer, men du kan ikke knytte disse dataene til en annen konto. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Det oppsto en feil mens Chromium kontrollerte enhetsprogramvaren</translation>
 <translation id="5386450000063123300">Oppdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Tillat Chromium-pålogging</translation>
 <translation id="5398878173008909840">En nyere versjon av Chromium er tilgjengelig.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
 <translation id="5496810170689441661">Chromium prøver å redigere passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
-<translation id="5556694182460963866">Administratoren din har slått av Chromium-funksjonen for skanning etter skadelig programvare</translation>
 <translation id="5623402015214259806">{0,plural, =0{En Chromium-oppdatering er tilgjengelig}=1{En Chromium-oppdatering er tilgjengelig}other{En Chromium-oppdatering har vært tilgjengelig i # dager}}</translation>
 <translation id="5631814766731275228">Navn og bilde i Chromium</translation>
 <translation id="5634636535844844681">Chromium krever Windows 7 eller nyere.</translation>

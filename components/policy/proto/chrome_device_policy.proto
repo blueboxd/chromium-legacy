@@ -1141,6 +1141,21 @@ message UsbDetachableWhitelistProto {
   repeated UsbDeviceIdProto id = 1;
 }
 
+// Identifiers of a USB device or device family.
+message UsbDeviceIdInclusiveProto {
+  // USB Vendor Identifier (aka idVendor).
+  optional int32 vendor_id = 1;
+  // USB Product Identifier (aka idProduct).
+  optional int32 product_id = 2;
+}
+
+// This setting contains the list of USB devices to detach from the kernel
+// drivers in order to use them in web applications.
+// The list is used by the permission_broker daemon.
+message UsbDetachableAllowlistProto {
+  repeated UsbDeviceIdInclusiveProto id = 1;
+}
+
 message AllowBluetoothProto {
   // Policy which controls whether Bluetooth is available.
   optional bool allow_bluetooth = 1 [default = true];
@@ -1838,4 +1853,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceShowLowDiskSpaceNotificationProto
       device_show_low_disk_space_notification = 111;
   optional UserAllowlistProto user_allowlist = 112;
+  optional UsbDetachableAllowlistProto usb_detachable_allowlist = 113;
 }

@@ -35,6 +35,13 @@ class FaviconServiceImpl : public favicon::CoreFaviconService {
     observer_ = observer;
   }
 
+  // Requests the favicon image for a url (page). The returned image matches
+  // that returned from FaviconFetcher.
+  base::CancelableTaskTracker::TaskId GetFaviconForPageUrl(
+      const GURL& page_url,
+      base::OnceCallback<void(gfx::Image)> callback,
+      base::CancelableTaskTracker* tracker);
+
   // favicon::CoreFaviconService:
   base::CancelableTaskTracker::TaskId GetFaviconForPageURL(
       const GURL& page_url,
@@ -73,6 +80,9 @@ class FaviconServiceImpl : public favicon::CoreFaviconService {
  private:
   using MissingFaviconUrlHash = size_t;
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Returns the desired favicon sizes for the current platform.
+  static std::vector<int> GetDesiredFaviconSizesInPixels();
 
   // The TaskRunner to which FaviconServiceBackend tasks are posted. Nullptr
   // once Cleanup() is called.

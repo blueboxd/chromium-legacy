@@ -216,6 +216,11 @@ enum class ContentSettingsType : int32_t {
   // Permits creating and placing windows across the set of connected screens.
   WINDOW_PLACEMENT,
 
+  // Stores whether to allow insecure websites to make private network requests.
+  // See also: https://wicg.github.io/cors-rfc1918
+  // Set through enterprise policies only.
+  INSECURE_PRIVATE_NETWORK,
+
   NUM_TYPES,
 };
 

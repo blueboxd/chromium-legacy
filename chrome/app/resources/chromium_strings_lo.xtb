@@ -110,7 +110,6 @@
 <translation id="5224391634244552924">ບໍ່ມີລະຫັດຜ່ານທີ່ບັນທຶກໄວ້. Chromium ສາມາດກວດເບິ່ງລະຫັດຜ່ານຂອງທ່ານເມື່ອທ່ານບັນທຶກພວກມັນໄວ້.</translation>
 <translation id="5277894862589591112">ເພື່ອນຳໃຊ້ການປ່ຽນແປງຂອງທ່ານ, ກະລຸນາເປີດ Chromium ຄືນໃໝ່</translation>
 <translation id="5358375970380395591">ທ່ານກໍາລັງລົງຊື່ເຂົ້າ​ໃຊ້ດ້ວຍບັນຊີຄຸ້ມຄອງ ແລະໃຫ້ຜູ້ຄວບຄຸມຂອງມັນຄວບຄຸມໂປຣໄຟລ໌ Chromium ຂອງທ່ານ. ຂໍ້ມູນ Chromium ຂອງທ່ານ, ເຊັ່ນ: ແອັບ, ບຸກມາກສ໌, ປະຫວັດ, ລະຫັດຜ່ານ, ແລະການຕັ້ງຄ່າອື່ນໆຂອງທ່ານຈະຖືກຜູກ​ມັດ​ກັບ <ph name="USER_NAME" /> ຢ່າງຖາວອນ. ທ່ານຈະສາມາດລຶບຂໍ້ມູນນີ້ໄດ້ຜ່ານ Google Accounts Dashboard, ແຕ່ທ່ານຈະບໍ່ສາມາດເອົາຂໍ້ມູນນີ້ເຂົ້າຮ່ວມກັບບັນຊີອື່ນໄດ້. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">ເກີດຂໍ້ຜິດພາດຂຶ້ນໃນຂະນະທີ່ Chromium ກຳລັງກວດສອບຊອບແວຂອງອຸປະກອນ</translation>
 <translation id="5386450000063123300">ກຳລັງອັບເດດ Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">ອະນຸຍາດການເຂົ້າສູ່ລະບົບ Chromium</translation>
 <translation id="5398878173008909840">ມີ Chromium ລຸ້ນໃໝ່ຢູ່.</translation>
@@ -121,7 +120,6 @@
 <translation id="5480860683791598150">Chromium ຕ້ອງການເຂົ້າເຖິງສະຖານທີ່ຂອງທ່ານເພື່ອແບ່ງປັນສະຖານທີ່ຂອງທ່ານກັບເວັບໄຊນີ້</translation>
 <translation id="549669000822060376">ກະ​ລຸ​ນາ​ລໍ​ຖ້າ​ໃນ​ຂະ​ນະ​ທີ່ Chromium ​ຕິດ​ຕັ້ງ​ການອັບເດດລະບົບຫລ້າ​ສຸດ.</translation>
 <translation id="5496810170689441661">Chromium ກໍາລັງພະຍາຍາມແກ້ໄຂລະຫັດຜ່ານ. ພິມລະຫັດຜ່ານ Windows ຂອງທ່ານ ເພື່ອອະນຸຍາດໃຫ້ສຳເນົາໄດ້.</translation>
-<translation id="5556694182460963866">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ປິດການນຳໃຊ້ການກວດຫາຊອບແວອັນຕະລາຍຂອງ Chromium ແລ້ວ</translation>
 <translation id="5623402015214259806">{0,plural, =0{ມີການອັບເດດ Chromium}=1{ມີການອັບເດດ Chromium}other{ມີການອັບເດດ Chromium ເປັນເວລາ # ມື້ແລ້ວ}}</translation>
 <translation id="5631814766731275228">ຊື່ ແລະ ຮູບໃນ Chromium</translation>
 <translation id="5634636535844844681">Chromium ຕ້ອງໃຊ້ Windows 7 ຫຼື ສູງກວ່າ.</translation>

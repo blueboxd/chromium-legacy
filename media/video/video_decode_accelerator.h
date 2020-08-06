@@ -32,6 +32,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace gpu {
+class SharedImageStub;
+}
+
 namespace media {
 
 // Video decoder interface.
@@ -253,6 +257,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Initialize() will not be reported here, but will instead be indicated by
     // a false return value there.
     virtual void NotifyError(Error error) = 0;
+
+    // Return the SharedImageStub through which SharedImages may be created.
+    // Default implementation returns nullptr.
+    virtual gpu::SharedImageStub* GetSharedImageStub() const;
 
    protected:
     virtual ~Client() {}

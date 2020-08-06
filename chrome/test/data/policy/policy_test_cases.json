@@ -5570,6 +5570,8 @@
 
   "UsbDetachableWhitelist": {},
 
+  "UsbDetachableAllowlist": {},
+
   "DeviceAllowBluetooth": {},
 
   "DeviceWiFiAllowed": {

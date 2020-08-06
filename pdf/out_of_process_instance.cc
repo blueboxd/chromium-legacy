@@ -31,6 +31,7 @@
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_features.h"
+#include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/graphics.h"
@@ -546,7 +547,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   if (!stream_url)
     stream_url = original_url;
 
-  engine_ = PDFEngine::Create(this, enable_javascript);
+  engine_ = std::make_unique<PDFiumEngine>(this, enable_javascript);
 
   // If we're in print preview mode we don't need to load the document yet.
   // A |kJSResetPrintPreviewModeType| message will be sent to the plugin letting
@@ -1077,7 +1078,9 @@ void OutOfProcessInstance::DidOpen(int32_t result) {
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
   if (result == PP_OK) {
     preview_client_ = std::make_unique<PreviewModeClient>(this);
-    preview_engine_ = PDFEngine::Create(preview_client_.get(), false);
+    preview_engine_ =
+        std::make_unique<PDFiumEngine>(preview_client_.get(),
+                                       /*enable_javascript=*/false);
     preview_engine_->HandleDocumentLoad(embed_preview_loader_);
   } else {
     NOTREACHED();
@@ -1680,7 +1683,7 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   document_load_state_ = LOAD_STATE_LOADING;
   LoadUrl(url_, /*is_print_preview=*/false);
   preview_engine_.reset();
-  engine_ = PDFEngine::Create(this, false);
+  engine_ = std::make_unique<PDFiumEngine>(this, /*enable_javascript=*/false);
   engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
   engine_->New(url_.c_str(), /*headers=*/nullptr);
 

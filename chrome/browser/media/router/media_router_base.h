@@ -47,6 +47,7 @@ class MediaRouterBase : public MediaRouter {
       const MediaRoute::Id& route_id,
       mojo::PendingReceiver<mojom::MediaController> controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
+  base::Value GetLogs() const override;
 #endif  // !defined(OS_ANDROID)
   void RegisterRemotingSource(SessionID tab_id,
                               CastRemotingConnector* remoting_source) override;

@@ -13,10 +13,12 @@
 #include "base/hash/hash.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/common/url_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 #include "weblayer/browser/favicon/favicon_backend_wrapper.h"
 #include "weblayer/browser/favicon/favicon_service_impl_observer.h"
@@ -37,6 +39,39 @@ bool CanAddUrl(const GURL& url) {
   }
 
   return true;
+}
+
+// Returns the IconTypeSet for the current platform. This matches the set
+// of favicon types that are requested for the platform (see
+// FaviconDriverImpl).
+favicon_base::IconTypeSet GetIconTypeSet() {
+#if defined(OS_ANDROID)
+  return {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+          favicon_base::IconType::kTouchPrecomposedIcon,
+          favicon_base::IconType::kWebManifestIcon};
+#else
+  return {favicon_base::IconType::kFavicon};
+#endif
+}
+
+int GetDesiredFaviconSizeInDips() {
+#if defined(OS_ANDROID)
+  // This is treatest as the largest available icon.
+  return 0;
+#else
+  return gfx::kFaviconSize;
+#endif
+}
+
+void OnGotFaviconsForPageUrl(
+    int desired_size_in_dip,
+    base::OnceCallback<void(gfx::Image)> callback,
+    std::vector<favicon_base::FaviconRawBitmapResult> results) {
+  favicon_base::FaviconImageResult image_result;
+  image_result.image = favicon_base::SelectFaviconFramesFromPNGs(
+      results, favicon_base::GetFaviconScales(), desired_size_in_dip);
+  favicon_base::SetFaviconColorSpace(&image_result.image);
+  std::move(callback).Run(image_result.image);
 }
 
 }  // namespace
@@ -64,6 +99,22 @@ void FaviconServiceImpl::Init(const base::FilePath& db_path) {
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FaviconBackendWrapper::Init, backend_, db_path));
+}
+
+base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageUrl(
+    const GURL& page_url,
+    base::OnceCallback<void(gfx::Image)> callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // The arguments supplied to this function should return an image matching
+  // that returned by FaviconFetcher.
+  return tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&FaviconBackendWrapper::GetFaviconsForUrl, backend_,
+                     page_url, GetIconTypeSet(),
+                     GetDesiredFaviconSizesInPixels()),
+      base::BindOnce(&OnGotFaviconsForPageUrl, GetDesiredFaviconSizeInDips(),
+                     std::move(callback)));
 }
 
 base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageURL(
@@ -180,6 +231,11 @@ bool FaviconServiceImpl::WasUnableToDownloadFavicon(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MissingFaviconUrlHash url_hash = base::FastHash(icon_url.spec());
   return missing_favicon_urls_.find(url_hash) != missing_favicon_urls_.end();
+}
+
+// static
+std::vector<int> FaviconServiceImpl::GetDesiredFaviconSizesInPixels() {
+  return GetPixelSizesForFaviconScales(GetDesiredFaviconSizeInDips());
 }
 
 }  // namespace weblayer

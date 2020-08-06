@@ -423,14 +423,17 @@ void ServiceWorkerContextWrapper::OnControlleeNavigationCommitted(
                                              render_frame_host_id);
 }
 
-void ServiceWorkerContextWrapper::OnStarted(int64_t version_id,
-                                            const GURL& scope,
-                                            int process_id,
-                                            const GURL& script_url) {
+void ServiceWorkerContextWrapper::OnStarted(
+    int64_t version_id,
+    const GURL& scope,
+    int process_id,
+    const GURL& script_url,
+    const blink::ServiceWorkerToken& token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto insertion_result = running_service_workers_.insert(std::make_pair(
-      version_id, ServiceWorkerRunningInfo(script_url, scope, process_id)));
+      version_id,
+      ServiceWorkerRunningInfo(script_url, scope, process_id, token)));
   DCHECK(insertion_result.second);
 
   const auto& running_info = insertion_result.first->second;

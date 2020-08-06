@@ -834,7 +834,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfEmptyUrl) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfBlacklisted) {
+TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfBlocked) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
   homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
@@ -860,7 +860,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfBlacklisted) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(MostVisitedSitesTest, ShouldPinHomepageAgainIfBlacklistingUndone) {
+TEST_P(MostVisitedSitesTest, ShouldPinHomepageAgainIfBlockedUndone) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
   homepage_client->SetHomepageTileEnabled(true);
 
@@ -964,19 +964,19 @@ TEST_P(MostVisitedSitesTest, RemovesPersonalSiteIfExploreSitesTilePresent) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(MostVisitedSitesTest, ShouldInformSuggestionSourcesWhenBlacklisting) {
+TEST_P(MostVisitedSitesTest, ShouldInformSuggestionSourcesWhenBlocked) {
   EXPECT_CALL(*mock_top_sites_, AddBlockedUrl(Eq(GURL(kHomepageUrl)))).Times(1);
   EXPECT_CALL(mock_suggestions_service_, BlocklistURL(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber());
-  most_visited_sites_->AddOrRemoveBlacklistedUrl(GURL(kHomepageUrl),
-                                                 /*add_url=*/true);
+  most_visited_sites_->AddOrRemoveBlockedUrl(GURL(kHomepageUrl),
+                                             /*add_url=*/true);
   EXPECT_CALL(*mock_top_sites_, RemoveBlockedUrl(Eq(GURL(kHomepageUrl))))
       .Times(1);
   EXPECT_CALL(mock_suggestions_service_,
               UndoBlocklistURL(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber());
-  most_visited_sites_->AddOrRemoveBlacklistedUrl(GURL(kHomepageUrl),
-                                                 /*add_url=*/false);
+  most_visited_sites_->AddOrRemoveBlockedUrl(GURL(kHomepageUrl),
+                                             /*add_url=*/false);
 }
 
 TEST_P(MostVisitedSitesTest,
@@ -2174,7 +2174,7 @@ INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithEmptyCacheTest,
 // same scope as the method itself. This tests merging popular sites with
 // personal tiles.
 // More important things out of the scope of testing presently:
-// - Removing blacklisted tiles.
+// - Removing blocked tiles.
 // - Correct host extraction from the URL.
 // - Ensuring personal tiles are not duplicated in popular tiles.
 TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPersonalOnly) {

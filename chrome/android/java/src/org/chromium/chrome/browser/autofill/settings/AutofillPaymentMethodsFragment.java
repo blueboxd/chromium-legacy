@@ -177,6 +177,11 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
     }
 
     private boolean isBiometricAvailable() {
+        // Only Android versions 9 and above are supported.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return false;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             BiometricManager biometricManager =
                     getStyledContext().getSystemService(BiometricManager.class);

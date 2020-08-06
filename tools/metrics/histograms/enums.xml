@@ -11648,6 +11648,7 @@ Called by update_net_error_codes.py.-->
   <int value="67" label="Storage Access Grants"/>
   <int value="68" label="Camera pan tilt zoom"/>
   <int value="69" label="Window placement"/>
+  <int value="70" label="Insecure private network requests"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -16827,7 +16828,7 @@ metrics consent we also won't be able to send UMA metrics. -->
 <!-- Generated from third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.
 Called by update_document_policy_enum.py.-->
 
-  <int value="0" label="NotFound"/>
+  <int value="0" label="Default"/>
   <int value="1" label="FontDisplay"/>
   <int value="2" label="UnoptimizedLosslessImages"/>
   <int value="3" label="ForceLoadAtTop"/>
@@ -21363,6 +21364,7 @@ Called by update_document_policy_enum.py.-->
   <int value="762" label="PerAppTimeLimitsAllowlist"/>
   <int value="763" label="DeviceShowLowDiskSpaceNotification"/>
   <int value="764" label="DeviceUserAllowlist"/>
+  <int value="765" label="UsbDetachableAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -52606,6 +52608,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="1201" label="Manage Input Methods"/>
   <int value="1202" label="Smart Inputs"/>
   <int value="1203" label="Input Method Options"/>
+  <int value="1204" label="Languages"/>
+  <int value="1205" label="Input"/>
   <int value="1300" label="Network File Shares"/>
   <int value="1400" label="Printing Details"/>
   <int value="1500" label="Manage Accessibility"/>

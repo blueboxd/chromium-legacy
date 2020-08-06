@@ -22,6 +22,7 @@ import "third_party/blink/public/mojom/service_worker/service_worker_installed_s
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
+import "third_party/blink/public/mojom/tokens/tokens.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
@@ -114,6 +115,12 @@ struct EmbeddedWorkerStartParams {
 
   // Used for updating subresource loaders after NetworkService crash etc.
   pending_receiver<SubresourceLoaderUpdater> subresource_loader_updater;
+
+  // A unique token identifying this ServiceWorker. In can be used to identify
+  // this particular ServiceWorker in subsequent renderer -> browser messages
+  // that aren't on the EmbeddedWorkerInstanceHost interface. This is not
+  // persistent across worker restarts.
+  ServiceWorkerToken service_worker_token;
 };
 
 // Holds timing information about the start worker sequence for UMA.

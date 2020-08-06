@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/net/network_health/network_health_localized_strings.h"
 #include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -315,6 +316,29 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigMessageHandler);
 };
 
+class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
+ public:
+  NetworkDiagnosticsMessageHandler() = default;
+  ~NetworkDiagnosticsMessageHandler() override = default;
+
+  void RegisterMessages() override {
+    web_ui()->RegisterMessageCallback(
+        "OpenFeedbackDialog",
+        base::BindRepeating(
+            &NetworkDiagnosticsMessageHandler::OpenFeedbackDialog,
+            base::Unretained(this)));
+  }
+
+ private:
+  void OpenFeedbackDialog(const base::ListValue* value) {
+    const std::string result = value->GetList()[0].GetString();
+    chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceNetworkHealthPage,
+                             "" /*description_template*/,
+                             "" /*description_template_placeholder*/,
+                             "network-health", result);
+  }
+};
+
 }  // namespace
 
 // static
@@ -458,6 +482,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<NetworkConfigMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<OncImportMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<NetworkLogsMessageHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<NetworkDiagnosticsMessageHandler>());
 
   // Enable extension API calls in the WebUI.
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());

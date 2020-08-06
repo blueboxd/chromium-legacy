@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "components/cbor/values.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/noise.h"
 #include "device/fido/fido_constants.h"
@@ -21,14 +22,27 @@
 namespace device {
 namespace cablev2 {
 
+// EncodePaddedCBORMap encodes the given map and pads it to 256 bytes in such a
+// way that |DecodePaddedCBORMap| can decode it. The padding is done on the
+// assumption that the returned bytes will be encrypted and the encoded size of
+// the map should be hidden. The function can fail if the CBOR encoding fails
+// or, somehow, the size overflows.
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<std::vector<uint8_t>> EncodePaddedCBORMap(
+    cbor::Value::MapValue map);
+
+// DecodePaddedCBORMap unpads and decodes a CBOR map as produced by
+// |EncodePaddedCBORMap|.
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<cbor::Value> DecodePaddedCBORMap(
+    base::span<const uint8_t> input);
+
 // NonceAndEID contains both the random nonce chosen for an advert, as well as
 // the EID that was generated from it.
-typedef std::pair<std::array<uint8_t, device::kCableNonceSize>,
+constexpr size_t kNonceSize = 10;
+typedef std::pair<std::array<uint8_t, kNonceSize>,
                   std::array<uint8_t, device::kCableEphemeralIdSize>>
     NonceAndEID;
-
-// kP256PointSize is the number of bytes in an X9.62 encoding of a P-256 point.
-constexpr size_t kP256PointSize = 65;
 
 // Crypter handles the post-handshake encryption of CTAP2 messages.
 class COMPONENT_EXPORT(DEVICE_FIDO) Crypter {
@@ -47,8 +61,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) Crypter {
   //
   // (In practice, command must always be |kMsg|. But passing it here makes it
   // less likely that other code will forget to check that.)
-  bool Decrypt(FidoBleDeviceCommand command,
-               base::span<const uint8_t> ciphertext,
+  bool Decrypt(base::span<const uint8_t> ciphertext,
                std::vector<uint8_t>* out_plaintext);
 
   // IsCounterpartyOfForTesting returns true if |other| is the mirror-image of
@@ -62,7 +75,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) Crypter {
 };
 
 // HandshakeInitiator starts a caBLE v2 handshake and processes the single
-// response message from the other party.
+// response message from the other party. The handshake is always initiated from
+// the phone.
 class COMPONENT_EXPORT(DEVICE_FIDO) HandshakeInitiator {
  public:
   HandshakeInitiator(
@@ -71,58 +85,63 @@ class COMPONENT_EXPORT(DEVICE_FIDO) HandshakeInitiator {
       base::span<const uint8_t, 32> psk_gen_key,
       // nonce is randomly generated per advertisement and ensures that BLE
       // adverts are non-deterministic.
-      base::span<const uint8_t, 8> nonce,
-      // eid is the EID that was advertised for this handshake. This is checked
-      // as part of the handshake.
-      base::span<const uint8_t, kCableEphemeralIdSize> eid,
-      // peer_identity, if given, specifies that this is a paired handshake
-      // and then contains an X9.62, P-256 public key for the peer. Otherwise
-      // this is a QR-code handshake.
-      base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
-      // local_identity must be provided if |peer_identity| is not. It contains
-      // the seed for deriving the local identity key.
-      base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
-          local_identity);
+      base::span<const uint8_t, kNonceSize> nonce,
+      // peer_identity, if not nullopt, specifies that this is a QR handshake
+      // and then contains a P-256 public key for the peer. Otherwise this is a
+      // paired handshake.
+      base::Optional<base::span<const uint8_t, kP256X962Length>> peer_identity,
+      // local_identity must be provided iff |peer_identity| is not. It contains
+      // the local identity key.
+      bssl::UniquePtr<EC_KEY> local_identity);
 
   ~HandshakeInitiator();
 
   // BuildInitialMessage returns the handshake message to send to the peer to
   // start a handshake.
-  std::vector<uint8_t> BuildInitialMessage();
+  std::vector<uint8_t> BuildInitialMessage(
+      // eid is the EID that was advertised for this handshake. This is checked
+      // as part of the handshake.
+      base::span<const uint8_t, kCableEphemeralIdSize> eid,
+      // getinfo contains the CBOR-serialised getInfo response for this
+      // authenticator. This is assumed not to contain highly-sensitive
+      // information and is included to avoid an extra round-trip. (It is
+      // encrypted but an attacker who could eavesdrop on the tunnel connection
+      // and observe the QR code could obtain it.)
+      base::span<const uint8_t> get_info_bytes);
 
   // ProcessResponse processes the handshake response from the peer. If
   // successful it returns a |Crypter| for protecting future messages on the
-  // connection. If the peer choose to send long-term pairing data, that is also
-  // returned.
-  base::Optional<std::pair<std::unique_ptr<Crypter>,
-                           base::Optional<std::unique_ptr<CableDiscoveryData>>>>
-  ProcessResponse(base::span<const uint8_t> response);
+  // connection.
+  base::Optional<std::unique_ptr<Crypter>> ProcessResponse(
+      base::span<const uint8_t> response);
 
  private:
   Noise noise_;
-  std::array<uint8_t, 16> eid_;
   std::array<uint8_t, 32> psk_;
 
-  base::Optional<std::array<uint8_t, kP256PointSize>> peer_identity_;
+  base::Optional<std::array<uint8_t, kP256X962Length>> peer_identity_;
   bssl::UniquePtr<EC_KEY> local_identity_;
   bssl::UniquePtr<EC_KEY> ephemeral_key_;
 };
 
-// RespondToHandshake responds to a caBLE v2 handshake started by a peer.
+// RespondToHandshake responds to a caBLE v2 handshake started by a peer. It
+// returns a Crypter for encrypting and decrypting future messages, as well as
+// the getInfo response from the phone.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
-    // See |HandshakeInitiator| comments about these first three arguments.
+base::Optional<std::pair<std::unique_ptr<Crypter>, std::vector<uint8_t>>>
+RespondToHandshake(
+    // For the first two arguments see |HandshakeInitiator| comments about
+    // |psk_gen_key| and |nonce|, and the |BuildInitialMessage| comment about
+    // |eid|.
     base::span<const uint8_t, 32> psk_gen_key,
     const NonceAndEID& nonce_and_eid,
-    // identity, if not nullptr, specifies that this is a paired handshake and
-    // contains the long-term identity key for this authenticator.
-    const EC_KEY* identity,
-    // peer_identity, which must be non-nullptr iff |identity| is nullptr,
-    // contains the peer's public key as derived from the QR-code data.
-    const EC_POINT* peer_identity,
-    // pairing_data, if not nullptr, contains long-term pairing data that will
-    // be shared with the peer. This is mutually exclusive with |identity|.
-    const CableDiscoveryData* pairing_data,
+    // identity_seed, if not nullopt, specifies that this is a QR handshake and
+    // contains the seed for QR key for this client.
+    base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
+        identity_seed,
+    // peer_identity, which must be non-nullopt iff |identity| is nullopt,
+    // contains the peer's public key as taken from the pairing data.
+    base::Optional<base::span<const uint8_t, kP256X962Length>> peer_identity,
     // in contains the initial handshake message from the peer.
     base::span<const uint8_t> in,
     // out_response is set to the response handshake message, if successful.

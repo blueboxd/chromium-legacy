@@ -142,6 +142,9 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // Restart the request using |original_url_|.
   void RestartWithURLResetAndFlags(int additional_load_flags);
 
+  // Restart the request immediately if the response has not started yet.
+  void RestartWithURLResetAndFlagsNow(int additional_load_flags);
+
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -189,6 +192,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
   bool loader_completed_ = false;
+  bool did_receive_response_ = false;
 
   struct ThrottleEntry {
     ThrottleEntry(ThrottlingURLLoader* loader,

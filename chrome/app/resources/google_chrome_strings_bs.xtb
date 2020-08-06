@@ -17,7 +17,6 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Na ovom računaru je već instalirana novija verzija Google Chromea. Ako softver ne bude funkcionirao, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
 <translation id="1434626383986940139">Aplikacije Chrome Canary</translation>
-<translation id="1514913130539345610">Vaš administrator je onemogućio Chromeovu provjeru prisutnosti štetnog softvera</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1587223624401073077">Google Chrome koristi vašu kameru.</translation>
 <translation id="1587325591171447154">Fajl <ph name="FILE_NAME" /> je opasan, pa ga je Chrome blokirao.</translation>
@@ -240,7 +239,6 @@ Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profi
 <translation id="7962410387636238736">Ovaj računar više neće primati ažuriranja za Google Chrome jer sistemi Windows XP i Windows Vista više nisu podržani</translation>
 <translation id="8008534537613507642">Ponovo instaliraj Chrome</translation>
 <translation id="8013993649590906847">Ako slika ne sadrži koristan opis, Chrome će ga pokušati pružiti. Slike se šalju Googleu radi kreiranja opisa.</translation>
-<translation id="8034040214409724683">Došlo je do greške dok je Chrome provjeravao softver uređaja</translation>
 <translation id="8129812357326543296">O &amp;Google Chromeu</translation>
 <translation id="8255190535488645436">Google Chrome koristi vašu kameru i mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome pokušava prikazati lozinke. Unesite svoju lozinku za Windows da ovo omogućite.</translation>

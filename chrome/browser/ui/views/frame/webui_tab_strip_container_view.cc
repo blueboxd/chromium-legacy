@@ -36,6 +36,8 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_colors.h"
@@ -132,13 +134,17 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
   using CloseCallback = base::RepeatingCallback<void(TabStripUICloseAction)>;
 
   AutoCloser(CloseCallback close_callback,
+             views::View* top_container,
              views::View* content_area,
              views::View* omnibox)
       : close_callback_(std::move(close_callback)),
+        top_container_(top_container),
         content_area_(content_area),
         omnibox_(omnibox) {
+    DCHECK(top_container_);
     DCHECK(content_area_);
     DCHECK(omnibox_);
+    view_observer_.Add(top_container_);
     view_observer_.Add(content_area_);
     view_observer_.Add(omnibox_);
 
@@ -181,6 +187,14 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
     if (!content_area_->GetBoundsInScreen().Contains(event_location_in_screen))
       return;
 
+    // The event may intersect both the content area's bounds and the
+    // top container's bounds. In this case, the top container is
+    // occluding the web content so we shouldn't close. This happens in
+    // immersive mode while the top container is revealed. For more info see
+    // https://crbug.com/1112028
+    if (top_container_->GetBoundsInScreen().Contains(event_location_in_screen))
+      return;
+
     located_event->StopPropagation();
     close_callback_.Run(TabStripUICloseAction::kTapInTabContent);
   }
@@ -201,6 +215,8 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
       content_area_ = nullptr;
     else if (observed_view == omnibox_)
       omnibox_ = nullptr;
+    else if (observed_view == top_container_)
+      top_container_ = nullptr;
     else
       NOTREACHED();
   }
@@ -228,6 +244,7 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
 
  private:
   CloseCallback close_callback_;
+  views::View* top_container_;
   views::View* content_area_;
   views::View* omnibox_;
 
@@ -404,6 +421,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
       auto_closer_(std::make_unique<AutoCloser>(
           base::Bind(&WebUITabStripContainerView::CloseForEventOutsideTabStrip,
                      base::Unretained(this)),
+          browser_view->top_container(),
           tab_contents_container,
           omnibox)),
       drag_to_open_handler_(
@@ -521,7 +539,14 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
 
 void WebUITabStripContainerView::SetVisibleForTesting(bool visible) {
   SetContainerTargetVisibility(visible);
-  animation_.SetCurrentValue(visible ? 1.0 : 0.0);
+  FinishAnimationForTesting();
+}
+
+void WebUITabStripContainerView::FinishAnimationForTesting() {
+  if (!animation_.is_animating())
+    return;
+  const bool target = animation_.IsShowing();
+  animation_.SetCurrentValue(target ? 1.0 : 0.0);
   animation_.End();
   PreferredSizeChanged();
 }
@@ -585,6 +610,11 @@ void WebUITabStripContainerView::EndDragToOpen(
 void WebUITabStripContainerView::SetContainerTargetVisibility(
     bool target_visible) {
   if (target_visible) {
+    immersive_revealed_lock_.reset(
+        BrowserView::GetBrowserViewForBrowser(browser_)
+            ->immersive_mode_controller()
+            ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
+
     SetVisible(true);
     PreferredSizeChanged();
     if (animation_.GetCurrentValue() < 1.0) {
@@ -618,6 +648,8 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     }
 
     web_view_->SetFocusBehavior(FocusBehavior::NEVER);
+
+    immersive_revealed_lock_.reset();
   }
   auto_closer_->set_enabled(target_visible);
 }

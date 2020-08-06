@@ -1183,21 +1183,22 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     @SuppressWarnings("VisibleForTests")
     private void launchSearchUrlForQueryTileSuggestion(QueryTile queryTile) {
         int position = -1;
-        int hashCode = 0;
         int suggestionCount = getSuggestionCount();
+        OmniboxSuggestion suggestion = null;
         // Find the suggestion position and hashCode.
         for (int i = 0; i < suggestionCount; ++i) {
-            OmniboxSuggestion suggestion = getSuggestionAt(i);
+            suggestion = getSuggestionAt(i);
             if (suggestion.getType() == OmniboxSuggestionType.TILE_SUGGESTION) {
                 position = i;
-                hashCode = suggestion.hashCode();
                 break;
             }
         }
+        if (suggestion == null) return;
         GURL updatedUrl = mAutocomplete.updateMatchDestinationUrlWithQueryFormulationTime(position,
-                hashCode, getElapsedTimeSinceInputChange(), queryTile.queryText,
+                suggestion.hashCode(), getElapsedTimeSinceInputChange(), queryTile.queryText,
                 queryTile.searchParams);
         mDelegate.loadUrl(updatedUrl.getSpec(), PageTransition.LINK, mLastActionUpTimestamp);
         mDelegate.setKeyboardVisibility(false);
+        recordMetrics(position, WindowOpenDisposition.CURRENT_TAB, suggestion);
     }
 }

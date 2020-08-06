@@ -172,6 +172,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->RestartWithURLResetAndFlags(additional_load_flags);
   }
 
+  void RestartWithURLResetAndFlagsNow(int additional_load_flags) override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->RestartWithURLResetAndFlagsNow(additional_load_flags);
+  }
+
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -599,6 +607,13 @@ void ThrottlingURLLoader::RestartWithURLResetAndFlags(
   has_pending_restart_ = true;
 }
 
+void ThrottlingURLLoader::RestartWithURLResetAndFlagsNow(
+    int additional_load_flags) {
+  RestartWithURLResetAndFlags(additional_load_flags);
+  if (!did_receive_response_)
+    RestartWithFlagsNow();
+}
+
 void ThrottlingURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
@@ -606,6 +621,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
   DCHECK(deferring_throttles_.empty());
   TRACE_EVENT1("loading", "ThrottlingURLLoader::OnReceiveResponse", "url",
                response_url_.possibly_invalid_spec());
+  did_receive_response_ = true;
 
   // Dispatch BeforeWillProcessResponse().
   if (!throttles_.empty()) {

@@ -109,6 +109,7 @@ target(link_target_type, "child") {
     "//net",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",
+    "//services/network/public/cpp",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

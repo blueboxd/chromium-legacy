@@ -3630,6 +3630,9 @@
   <message name="IDS_NETWORK_DIAGNOSTICS_RUN_ALL" desc="Label for Network diagnostics run all routines button">
     Run All Routines
   </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_SEND_FEEDBACK" desc="Label for Network diagnostics send feedback report button">
+    Send Feedback Report
+  </message>
 
 
   <!-- Set time/date UI display strings -->

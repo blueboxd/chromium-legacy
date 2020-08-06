@@ -933,14 +933,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 // This tests that opening multiple profiles with session restore enabled,
 // shutting down, and then launching with kNoStartupWindow doesn't restore
 // the previously opened profiles.
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113700): flaky on ChromeOS.
-#define MAYBE_RestoreWithNoStartupWindow DISABLED_RestoreWithNoStartupWindow
-#else
-#define MAYBE_RestoreWithNoStartupWindow RestoreWithNoStartupWindow
-#endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
-                       MAYBE_RestoreWithNoStartupWindow) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, RestoreWithNoStartupWindow) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();

@@ -757,6 +757,10 @@ void VdaVideoDecoder::NotifyError(VideoDecodeAccelerator::Error error) {
                                 parent_weak_this_, error));
 }
 
+gpu::SharedImageStub* VdaVideoDecoder::GetSharedImageStub() const {
+  return command_buffer_helper_->GetSharedImageStub();
+}
+
 void VdaVideoDecoder::NotifyErrorOnParentThread(
     VideoDecodeAccelerator::Error error) {
   DVLOG(1) << __func__ << "(" << error << ")";

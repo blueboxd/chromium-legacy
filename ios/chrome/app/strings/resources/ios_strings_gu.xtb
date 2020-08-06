@@ -116,6 +116,7 @@
 <translation id="2267753748892043616">એકાઉન્ટ ઉમેરો</translation>
 <translation id="2268044343513325586">સુધારો</translation>
 <translation id="2273327106802955778">વધુ મેનૂ</translation>
+<translation id="2302742851632557585">વેબસાઇટ પર પાસવર્ડ બદલો</translation>
 <translation id="2316709634732130529">સૂચવેલ પાસવર્ડનો ઉપયોગ કરો</translation>
 <translation id="2320166752086256636">કીબોર્ડ છુપાવો</translation>
 <translation id="2339560363438331454">સિંક અને Google સેવાઓ</translation>
@@ -183,6 +184,7 @@
 <translation id="298306318844797842">ચુકવણીની પદ્ધતિ ઉમેરો…</translation>
 <translation id="2989805286512600854">નવા ટૅબમાં ખોલો</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
+<translation id="3081338492074632642"><ph name="WEBSITE" /> માટેના તમારા પાસવર્ડ સાથે, તમે સાચવી રહ્યાં છો તે પાસવર્ડ મેળ ખાતો હોવાની ખાતરી કરો</translation>
 <translation id="3112556859945124369">ચિહ્નિત કરો…</translation>
 <translation id="3131206671572504478">બધી બ્લૉક કરો</translation>
 <translation id="3153862085237805241">કાર્ડ સાચવો</translation>
@@ -201,6 +203,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> માનું <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ઓપન ટેબ્સ</translation>
+<translation id="3272527697863656322">રદ કરો</translation>
 <translation id="3277021493514034324">સાઇટનું ઍડ્રેસ કૉપિ કર્યું</translation>
 <translation id="3290875554372353449">એકાઉન્ટ પસંદ કરો</translation>
 <translation id="3311748811247479259">બંધ</translation>
@@ -211,6 +214,7 @@
 <translation id="3371831930909698441">અનુવાદ ઉપલબ્ધ છે. વિકલ્પો સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે.</translation>
 <translation id="3393920035788932672">પૉપ-અપ્સ મંજૂર છે</translation>
 <translation id="3425644765244388016">કાર્ડનું ઉપનામ</translation>
+<translation id="3433057996795775706">આ પાસવર્ડ ડિલીટ કરવાથી <ph name="WEBSITE" />નું તમારું એકાઉન્ટ ડિલીટ થશે નહીં. અન્ય લોકોથી તમારો પાસવર્ડ સુરક્ષિત રાખવા માટે, તેને <ph name="WEBSITE" /> પર બદલો.</translation>
 <translation id="3443810440409579745">ટૅબ પ્રાપ્ત થયું.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="3448016392200048164">વિભાજિત દૃશ્ય</translation>
@@ -306,6 +310,7 @@
 <translation id="4636930964841734540">માહિતી</translation>
 <translation id="4659126640776004816">જ્યારે તમે તમારા Google એકાઉન્ટમાં સાઇન ઇન કરો છો, ત્યારે આ સુવિધા ચાલુ કરવામાં આવે છે.</translation>
 <translation id="4659667755519643272">ટેબ સ્વિચરમાં દાખલ થાઓ</translation>
+<translation id="46614316059270592">પાસવર્ડ સાચવો</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> તરીકે સાઇન ઇન થયાં.
 
 તમારો ડેટા તમારા સિંક પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો છે. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
@@ -402,6 +407,7 @@
 <translation id="5854790677617711513">30 દિવસ કરતા જૂનો</translation>
 <translation id="5857090052475505287">નવું ફોલ્ડર</translation>
 <translation id="5857770089550859117">સમન્વયનને પ્રારંભ કરવા માટે પાસફ્રેઝ આવશ્યક.</translation>
+<translation id="5860033963881614850">બંધ</translation>
 <translation id="5869029295770560994">બરાબર, સમજાઈ ગયું</translation>
 <translation id="5871497086027727873">1 આઇટમ ખસેડી</translation>
 <translation id="5897956970858271241">કૉપિ કરેલી લિંકની મુલાકાત લો</translation>
@@ -502,7 +508,6 @@
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6841409746189899007">ટેક્સ્ટની લિંક</translation>
 <translation id="6851516051005285358">ડેસ્કટૉપ સાઇટની વિનંતી કરો</translation>
-<translation id="6856384753476268833">તમારી સંસ્થા દ્વારા મેનેજ કરેલું.</translation>
 <translation id="6858855187367714033">સ્કૅન કર્યો</translation>
 <translation id="6859944681507688231">QR કોડ અથવા ક્રેડિટ કાર્ડ સ્કૅન કરવા માટે, સેટિંગમાં કૅમેરા ચાલુ કરો.</translation>
 <translation id="6869389390665537774">તમે જેની મુલાકાત લીધેલી હોય તેવા પેજ તમે તમારા ઇતિહાસમાં જોઈ શકો છો અથવા તેમાંથી તેને સાફ કરી શકો છો</translation>
@@ -524,7 +529,6 @@
 <translation id="7006788746334555276">કન્ટેન્ટ સેટિંગ</translation>
 <translation id="7015203776128479407">આરંભિક સિંક સેટઅપ પૂરું થયું નથી. સિંક કરવાનું બંધ છે.</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
-<translation id="7030675613184250187">તમે પેજને ફરીથી શોધવા અથવા ઑફલાઇન વાંચવા માટે તેને તમારી વાંચન સૂચિમાં સાચવી શકો છો</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7062545763355031412">સ્વીકારો અને એકાઉન્ટ્સ સ્વિચ કરો</translation>
 <translation id="7099761977003084116">તાજેતરનાં ટૅબ</translation>
@@ -587,12 +591,12 @@
 <translation id="7856733331829174190">ડાઉનલોડ ન કરી શક્યાં</translation>
 <translation id="7859704718976024901">બ્રાઉઝિંગ ઇતિહાસ</translation>
 <translation id="7887198238286927132">તમારી પ્રાઇવસીની સુરક્ષા કરવા માટે, Chrome આ ફીલ્ડ સ્વતઃ નહીં ભરે.</translation>
-<translation id="791251013315685175"><ph name="COMPANY" /> દ્વારા મેનેજ કરવામાં આવેલું બ્રાઉઝર.</translation>
 <translation id="7918293828610777738">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે. તમારી વાંચન સૂચિમાં પેજ ઉમેરવા માટે, <ph name="SHARE_OPENING_ICON" /> પર અને પછી <ph name="READ_LATER_TEXT" /> પર ટૅપ કરો.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">પાસવર્ડની નિકાસ કરો...</translation>
 <translation id="7947953824732555851">સ્વીકારો અને સાઇન ઇન કરો</translation>
 <translation id="794799177247607889">લૉગ કરવાનું રોકો</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{ચેડાં કરાયેલો કોઈ પાસવર્ડ નથી}=1{ચેડાં કરાયેલો {COUNT} પાસવર્ડ}one{ચેડાં કરાયેલો {COUNT} પાસવર્ડ}other{ચેડાં કરાયેલા {COUNT} પાસવર્ડ}}</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 <translation id="7966516440812255683">સાઇટ તમને વધુ સારો બ્રાઉઝિંગ અનુભવ આપવા, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરીને રાખવા અથવા તમારા શૉપિંગ કાર્ટની આઇટમ યાદ રાખવા માટે, કુકીનો ઉપયોગ કરી શકે છે.
 

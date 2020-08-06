@@ -517,11 +517,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 
   RetryForHistogramUntilCountReached(
       histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
-      1);
+      2);
   RetryForHistogramUntilCountReached(histogram_tester(),
                                      "SubresourceRedirect.BypassDuration", 1);
-  // TODO(rajendrant): Verify that the image got actually loaded too after
-  // https://crbug.com/1110113 is fixed.
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+  histogram_tester()->ExpectUniqueSample(
+      "SubresourceRedirect.CompressionFetchTimeout", true, 1);
   histogram_tester()->ExpectUniqueSample(
       "SubresourceRedirect.PageLoad.BypassResult", false, 1);
   histogram_tester()->ExpectTotalCount("SubresourceRedirect.BypassDuration", 1);
@@ -547,6 +550,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  EXPECT_EQ(request_url().port(), compression_url().port());
   RetryForHistogramUntilCountReached(
       histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
       2);

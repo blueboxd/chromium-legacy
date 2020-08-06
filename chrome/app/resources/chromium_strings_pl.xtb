@@ -106,7 +106,6 @@
 <translation id="5224391634244552924">Brak zapisanych haseł. Chromium może sprawdzać Twoje hasła, gdy je zapiszesz.</translation>
 <translation id="5277894862589591112">Aby zastosować zmiany, uruchom ponownie Chromium</translation>
 <translation id="5358375970380395591">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Podczas sprawdzania oprogramowania urządzenia przez Chromium wystąpił błąd</translation>
 <translation id="5386450000063123300">Aktualizuję Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Zezwalaj na logowanie w Chromium</translation>
 <translation id="5398878173008909840">Pojawiła się nowa wersja Chromium.</translation>
@@ -117,7 +116,6 @@
 <translation id="5480860683791598150">Chromium musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie</translation>
 <translation id="549669000822060376">Poczekaj, aż Chromium zainstaluje najnowsze aktualizacje systemu.</translation>
 <translation id="5496810170689441661">Chromium próbuje edytować hasła. Aby na to zezwolić, podaj swoje hasło do systemu Windows.</translation>
-<translation id="5556694182460963866">Administrator wyłączył w Chromium sprawdzanie, czy na komputerze nie ma szkodliwego oprogramowania</translation>
 <translation id="5623402015214259806">{0,plural, =0{Dostępna jest aktualizacja Chromium}=1{Dostępna jest aktualizacja Chromium}few{Aktualizacja Chromium jest dostępna od # dni}many{Aktualizacja Chromium jest dostępna od # dni}other{Aktualizacja Chromium jest dostępna od # dnia}}</translation>
 <translation id="5631814766731275228">Nazwa i zdjęcie w Chromium</translation>
 <translation id="5634636535844844681">Chromium wymaga systemu Windows 7 lub nowszego.</translation>

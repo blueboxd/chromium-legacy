@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Laiendamiseks puudutage</translation>
 <translation id="1291207594882862231">Ajaloo, küpsiste, saidiandmete, vahemälu kustutamine …</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
+<translation id="1298077576058087471">Säästke kuni 60% andmemahtu, lugege tänaseid uudiseid</translation>
 <translation id="1303339473099049190">Seda parooli ei leita. Kontrollige õigekirja ja proovige uuesti.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – saadetud seadmest <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Vahelehtede grupeerimine</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Kas lähtestada lihtsustatud režiim?</translation>
 <translation id="1868024384445905608">Chrome laadib nüüd faile kiiremini alla</translation>
 <translation id="1874760110381325409">Teid logitakse oma Google'i kontole sisse\n(see ei lülita Chrome'i sünkroonimist sisse)</translation>
+<translation id="1877026089748256423">Chrome on aegunud</translation>
 <translation id="1883903952484604915">Minu failid</translation>
 <translation id="1919950603503897840">Kontaktide valimine</translation>
 <translation id="1925021887439448749">Sisestage kohandatud veebiaadress</translation>
@@ -204,7 +206,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="2587052924345400782">Saadaval on uuem versioon</translation>
 <translation id="2593272815202181319">Püsisammkiri</translation>
 <translation id="2612676031748830579">Kaardi number</translation>
-<translation id="2622559029861875898">Chrome ei saa värskendusi otsida. Kontrollige internetiühendust.</translation>
 <translation id="2625189173221582860">Parool on kopeeritud</translation>
 <translation id="2631006050119455616">Säästetud</translation>
 <translation id="2647434099613338025">Lisa keel</translation>
@@ -261,8 +262,10 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="305593374596241526">Asukoht on välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Saate sünkroonimise seadetes alati sisse lülitada</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> järjehoidja}other{<ph name="BOOKMARKS_COUNT_MANY" /> järjehoidjat}}</translation>
+<translation id="3062802207422175757">Teie huvidega seotud artiklid Chrome'is</translation>
 <translation id="3089395242580810162">Ava inkognito vahelehel</translation>
 <translation id="3114012059975132928">Videopleier</translation>
+<translation id="3114507951000454849">Lugege tänaseid uudiseid <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Teadaanded</translation>
 <translation id="3137521801621304719">Inkognito režiimist väljumine</translation>
 <translation id="3143515551205905069">Tühista sünkroonimine</translation>
@@ -326,6 +329,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3566923219790363270">Chrome teeb VR-i kasutamiseks endiselt ettevalmistusi. Taaskäivitage Chrome hiljem.</translation>
 <translation id="3568688522516854065">Oma teistest seadmetest vahelehtede hankimiseks logige sisse ja lülitage sünkroonimine sisse</translation>
 <translation id="3587482841069643663">Kõik</translation>
+<translation id="3587596251841506391">Aidake veebi turvalisemaks muuta</translation>
 <translation id="3590487821116122040">Saitide salvestusruum, mida Chrome peab ebatähtsaks (nt saidid, mida külastate harva või millel ei ole salvestatud seadeid)</translation>
 <translation id="3594780231884063836">Video vaigistamine</translation>
 <translation id="3599863153486145794">Kustutab ajaloo kõigist sisselogitud seadmetest. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
@@ -556,7 +560,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5441522332038954058">Aadressiribale liikumine</translation>
 <translation id="5447201525962359567">Saidi kogu salvestusruum, sh küpsised ja muud kohalikus seadmes talletatud andmed</translation>
 <translation id="545042621069398927">Allalaadimise kiirendamine.</translation>
-<translation id="5454513945794364671">Administraator lülitas Google'i ohutu sirvimise välja</translation>
 <translation id="5456381639095306749">Laadi leht alla</translation>
 <translation id="548278423535722844">Avage kaardirakenduses</translation>
 <translation id="5487521232677179737">Kustuta andmed</translation>
@@ -649,6 +652,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6108923351542677676">Seadistamine on pooleli ...</translation>
 <translation id="6111020039983847643">kasutatud andmemaht</translation>
 <translation id="6112702117600201073">Lehe värskendamine</translation>
+<translation id="6122831415929794347">Kas lülitada Google'i ohutu sirvimine välja?</translation>
 <translation id="6127379762771434464">Üksus eemaldati</translation>
 <translation id="6140709049082532940">Täiustatud kaitse:</translation>
 <translation id="6140912465461743537">Riik/piirkond</translation>
@@ -656,6 +660,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6154478581116148741">Seadmes olevate paroolide eksportimiseks lülitage seadetes ekraanilukk sisse.</translation>
 <translation id="6157392216611456285">Valige <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Andmemahu kokkuhoid: <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">Ohustatud paroole ei leitud</translation>
 <translation id="6201345951596836663">Link on kopeeritud</translation>
 <translation id="6206830853671714236">Valige, millal alla laadida</translation>
 <translation id="6210748933810148297">Kas pole <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6573431926118603307">Siin kuvatakse teie teistes seadmetes Chrome'is avatud vahelehed.</translation>
 <translation id="6583199322650523874">Praeguse lehe lisamine järjehoidjatesse</translation>
 <translation id="6588043302623806746">Kasuta turvalist DNS-i</translation>
+<translation id="6590471736817333463">Säästke kuni 60% andmemahtu</translation>
 <translation id="6593061639179217415">Arvutisait</translation>
 <translation id="6597891566292541626">Paigutage QR-/ribakood sellesse kaadrisse.</translation>
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
@@ -731,7 +737,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6657585470893396449">Parool</translation>
 <translation id="6659594942844771486">Vaheleht</translation>
 <translation id="6663079968236414793">Link teksti juurde</translation>
-<translation id="666573598175432848">Saadaval on Chrome'i uuem versioon. Puudutage Play poe avamiseks seda elementi.</translation>
 <translation id="666731172850799929">Ava rakenduses <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome'i privaatsusteatis</translation>
 <translation id="6671495933530132209">Kopeeri kujutis</translation>
@@ -927,6 +932,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8190358571722158785">Jäänud on 1 päev</translation>
 <translation id="8200772114523450471">Taasta</translation>
 <translation id="8209050860603202033">Ava kujutis</translation>
+<translation id="8218052821161047641">Kiirleht</translation>
 <translation id="8218622182176210845">Konto haldamine</translation>
 <translation id="8223642481677794647">Voo kaardimenüü</translation>
 <translation id="8224471946457685718">Teile soovitatud artiklite allalaadimine WiFi-ühendusega</translation>
@@ -1005,7 +1011,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, vahekaart</translation>
 <translation id="8854223127042600341">Vaadake oma võrguühenduseta faile</translation>
 <translation id="889338405075704026">Ava Chrome'i seaded</translation>
-<translation id="8893398027601469503">Kasutate Chrome'i uusimat versiooni</translation>
 <translation id="8898822736010347272">Saadab mõne teie külastatud lehe URL-i, piiratud süsteemiteabe ja mõne lehe sisu Google'ile, et aidata avastada uusi ohte ja veebis kõiki kaitsta.</translation>
 <translation id="8909135823018751308">Jaga ...</translation>
 <translation id="8912362522468806198">Google'i konto</translation>
@@ -1052,6 +1057,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="9209888181064652401">Ei saa helistada</translation>
 <translation id="9219103736887031265">Pildid</translation>
 <translation id="926205370408745186">Chrome'i tegevuste eemaldamine teenusest Digitaalne heaolu</translation>
+<translation id="927968626442779827">Kasutage Google Chrome'is lihtsustatud režiimi</translation>
 <translation id="932327136139879170">Kodu</translation>
 <translation id="93753284658583800">Avalehte muudeti</translation>
 <translation id="938850635132480979">Viga: <ph name="ERROR_CODE" /></translation>

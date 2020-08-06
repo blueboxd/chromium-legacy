@@ -110,7 +110,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5224391634244552924">Žiadne uložené heslá. Chromium môže skontrolovať heslá, keď ich uložíte.</translation>
 <translation id="5277894862589591112">Ak chcete zmeny použiť, spustite Chromium znova</translation>
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Pri kontrolovaní softvéru zariadenia prehliadačom Chromium sa vyskytla chyba</translation>
 <translation id="5386450000063123300">Aktualizuje sa Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Povoliť prihlásenie do prehliadača Chromium</translation>
 <translation id="5398878173008909840">K dispozícii je nová verzia prehliadača Chromium.</translation>
@@ -121,7 +120,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5480860683791598150">Chromium potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
 <translation id="549669000822060376">Počkajte, kým Chromium nainštaluje najnovšie aktualizácie systému.</translation>
 <translation id="5496810170689441661">Chromium sa pokúša upraviť heslá. Ak to chcete povoliť, zadajte heslo systému Windows.</translation>
-<translation id="5556694182460963866">Váš správca zakázal v prehliadači Chromium kontrolu prítomnosti škodlivého softvéru</translation>
 <translation id="5623402015214259806">{0,plural, =0{Je k dispozícii aktualizácia prehliadača Chromium}=1{Je k dispozícii aktualizácia prehliadača Chromium}few{Aktualizácia prehliadača Chromium je k dispozícii už # dni}many{Aktualizácia prehliadača Chromium je k dispozícii už # dňa}other{Aktualizácia prehliadača Chromium je k dispozícii už # dní}}</translation>
 <translation id="5631814766731275228">Meno a obrázok profilu Chromium</translation>
 <translation id="5634636535844844681">Chromium vyžaduje Windows 7 alebo vyšší.</translation>

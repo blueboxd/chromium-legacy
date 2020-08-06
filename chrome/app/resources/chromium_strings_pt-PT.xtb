@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Não existem palavras-passe guardadas. O Chromium consegue verificar as suas palavras-passe quando as guarda.</translation>
 <translation id="5277894862589591112">Para aplicar as alterações, reinicie o Chromium.</translation>
 <translation id="5358375970380395591">Está a iniciar sessão com uma conta gerida e a permitir que o gestor controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Ocorreu um erro enquanto o Chromium estava a verificar o software do dispositivo.</translation>
 <translation id="5386450000063123300">A atualizar o Chromium (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="538767207339317086">Permitir o início de sessão no Chromium</translation>
 <translation id="5398878173008909840">Está disponível uma nova versão do Chromium.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">O Chromium necessita de aceder à sua localização para a partilhar com este site.</translation>
 <translation id="549669000822060376">Aguarde até que o Chromium instale as atualizações do sistema mais recentes.</translation>
 <translation id="5496810170689441661">O Chromium está a tentar editar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
-<translation id="5556694182460963866">O seu administrador desativou a verificação da existência de software prejudicial do Chromium.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Está disponível uma atualização do Chromium}=1{Está disponível uma atualização do Chromium}other{Está disponível uma atualização do Chromium há # dias}}</translation>
 <translation id="5631814766731275228">Nome e imagem do Chromium</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou superior.</translation>

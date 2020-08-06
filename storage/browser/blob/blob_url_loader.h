@@ -36,6 +36,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
       const network::ResourceRequest& request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::unique_ptr<BlobDataHandle> blob_handle);
+  static void CreateAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      std::unique_ptr<BlobDataHandle> blob_handle);
   ~BlobURLLoader() override;
 
  private:
@@ -44,8 +50,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
       const network::ResourceRequest& request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::unique_ptr<BlobDataHandle> blob_handle);
+  BlobURLLoader(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      std::unique_ptr<BlobDataHandle> blob_handle);
 
-  void Start(const network::ResourceRequest& request);
+  void Start(const std::string& method, const net::HttpRequestHeaders& headers);
 
   // network::mojom::URLLoader implementation:
   void FollowRedirect(

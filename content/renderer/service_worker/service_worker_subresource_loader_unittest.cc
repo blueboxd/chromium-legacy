@@ -74,6 +74,12 @@ class FakeBlob final : public blink::mojom::Blob {
       client_remote->OnComplete(net::OK, body_.size());
     }
   }
+  void Load(mojo::PendingReceiver<network::mojom::URLLoader>,
+            const std::string& method,
+            const net::HttpRequestHeaders&,
+            mojo::PendingRemote<network::mojom::URLLoaderClient>) override {
+    NOTREACHED();
+  }
   void ReadSideData(ReadSideDataCallback callback) override {
     std::move(callback).Run(side_data_);
   }

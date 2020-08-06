@@ -186,6 +186,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kDelayAsyncScriptExecution;
 enum class DelayAsyncScriptDelayType {
   kFinishedParsing,
   kFirstPaintOrFinishedParsing,
+  kUseOptimizationGuide,
 };
 BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam;

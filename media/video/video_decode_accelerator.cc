@@ -66,6 +66,11 @@ void VideoDecodeAccelerator::Client::ProvidePictureBuffersWithVisibleRect(
   }
 }
 
+gpu::SharedImageStub* VideoDecodeAccelerator::Client::GetSharedImageStub()
+    const {
+  return nullptr;
+}
+
 VideoDecodeAccelerator::~VideoDecodeAccelerator() = default;
 
 void VideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,

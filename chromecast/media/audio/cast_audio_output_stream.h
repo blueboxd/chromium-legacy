@@ -26,7 +26,7 @@ namespace chromecast {
 namespace media {
 
 class CmaAudioOutputStream;
-class CastAudioManager;
+class CastAudioManagerHelper;
 
 // Chromecast implementation of AudioOutputStream.
 // This class forwards to MixerService if valid
@@ -103,8 +103,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   // the |device_id_| is set to kDefaultDeviceId. Valid device_id's are either
   // ::media::AudioDeviceDescription::kDefaultDeviceId or
   // ::media::AudioDeviceDescription::kCommunicationsId.
-  CastAudioOutputStream(CastAudioManager* audio_manager,
-                        chromecast::mojom::ServiceConnector* connector,
+  CastAudioOutputStream(CastAudioManagerHelper* audio_manager,
                         const ::media::AudioParameters& audio_params,
                         const std::string& device_id_or_group_id,
                         bool use_mixer_service);
@@ -135,7 +134,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
 
   double volume_;
   AudioOutputState audio_thread_state_;
-  CastAudioManager* const audio_manager_;
+  CastAudioManagerHelper* const audio_manager_;
   chromecast::mojom::ServiceConnector* connector_;
   const ::media::AudioParameters audio_params_;
   // Valid |device_id_| are kDefaultDeviceId, and kCommunicationsDeviceId

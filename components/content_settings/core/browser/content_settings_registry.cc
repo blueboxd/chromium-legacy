@@ -15,6 +15,7 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "net/cookies/cookie_util.h"
+#include "services/network/public/cpp/features.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_drm_bridge.h"
@@ -590,6 +591,21 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
+
+  ContentSetting insecure_private_network_initial_default =
+      base::FeatureList::IsEnabled(
+          network::features::kBlockInsecurePrivateNetworkRequests)
+          ? CONTENT_SETTING_BLOCK
+          : CONTENT_SETTING_ALLOW;
+  Register(ContentSettingsType::INSECURE_PRIVATE_NETWORK,
+           "insecure-private-network", insecure_private_network_initial_default,
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::ALL_PLATFORMS,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+           ContentSettingsInfo::PERSISTENT,
+           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 }
 
 void ContentSettingsRegistry::Register(
@@ -606,6 +622,7 @@ void ContentSettingsRegistry::Register(
     ContentSettingsInfo::OriginRestriction origin_restriction) {
   // Ensure that nothing has been registered yet for the given type.
   DCHECK(!website_settings_registry_->Get(type));
+
   std::unique_ptr<base::Value> default_value(
       new base::Value(static_cast<int>(initial_default_value)));
   const WebsiteSettingsInfo* website_settings_info =

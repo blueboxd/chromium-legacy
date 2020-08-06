@@ -290,8 +290,8 @@ void SubresourceRedirectURLLoaderThrottle::WillOnCompleteWithError(
 
 void SubresourceRedirectURLLoaderThrottle::OnRedirectTimeout() {
   DCHECK(did_redirect_compressed_origin_);
-  // TODO(rajendrant): Add the ability to restart the request once
-  // https://crbug.com/1110113 is fixed.
+  did_redirect_compressed_origin_ = false;
+  delegate_->RestartWithURLResetAndFlagsNow(net::LOAD_NORMAL);
   if (auto* resource_loading_hints_agent = GetResourceLoadingHintsAgent()) {
     resource_loading_hints_agent->NotifyHttpsImageCompressionFetchFailed(
         base::TimeDelta());

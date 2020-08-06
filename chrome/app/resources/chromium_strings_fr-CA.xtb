@@ -110,7 +110,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="5224391634244552924">Aucun mot de passe enregistré. Chromium ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="5277894862589591112">Pour appliquer vos modifications, relancez Chromium</translation>
 <translation id="5358375970380395591">Vous vous connectez avec un compte géré et rendez son administrateur maître de votre profil Chromium. Vos données de Chromium, comme vos applications, vos favoris, votre historique, vos mots de passe et vos autres paramètres, vont être associées de manière permanente à <ph name="USER_NAME" />. Vous pourrez supprimer ces données à l'aide du tableau de bord des comptes Google, mais vous ne pourrez pas les associer à un autre compte. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Une erreur s'est produite alors que Chromium vérifiait le logiciel de l'appareil</translation>
 <translation id="5386450000063123300">Mise à jour de Chromium en cours (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="538767207339317086">Autoriser la connexion à Chromium</translation>
 <translation id="5398878173008909840">Une nouvelle version de Chromium est maintenant offerte.</translation>
@@ -121,7 +120,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="5480860683791598150">Chromium a besoin d'accéder à votre position afin de la partager avec ce site</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour système.</translation>
 <translation id="5496810170689441661">Chromium essaie de modifier des mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
-<translation id="5556694182460963866">Votre administrateur a désactivé la fonctionnalité de vérification de logiciels nuisibles de Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Une mise à jour de Chromium est proposée}=1{Une mise à jour de Chromium est proposée}one{Une mise à jour de Chromium est proposée depuis # jour}other{Une mise à jour de Chromium est proposée depuis # jours}}</translation>
 <translation id="5631814766731275228">Nom et image Chromium</translation>
 <translation id="5634636535844844681">Chromium requiert Windows 7 ou une version ultérieure.</translation>

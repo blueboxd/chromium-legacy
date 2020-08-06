@@ -113,8 +113,9 @@ public class CaptivePortalTest {
             }
         }
                 .waitForTitleUpdate(INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS);
-
-        Assert.assertEquals(0, tab.getTitle().indexOf(CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX));
+        Assert.assertEquals(0,
+                ChromeTabUtils.getTitleOnUiThread(tab).indexOf(
+                        CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX));
     }
 
     @Test

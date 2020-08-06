@@ -46,6 +46,8 @@
 #endif
 
 #if defined(OS_MAC)
+#include "base/mac/foundation_util.h"
+#include "chrome/browser/extensions/api/enterprise_reporting_private/keychain_data_helper_mac.h"
 #include "crypto/apple_keychain.h"
 #endif
 
@@ -340,36 +342,41 @@ OSStatus AddRandomPasswordToKeychain(const crypto::AppleKeychain& keychain,
   const int kBytes = 128 / 8;
   std::string password;
   base::Base64Encode(base::RandBytesAsString(kBytes), &password);
-  void* password_data =
-      const_cast<void*>(static_cast<const void*>(password.data()));
 
-  OSStatus error = keychain.AddGenericPassword(
-      strlen(kServiceName), kServiceName, strlen(kAccountName), kAccountName,
-      password.size(), password_data, nullptr);
-
-  if (error == noErr)
+  OSStatus status = WriteKeychainItem(kServiceName, kAccountName, password);
+  if (status == noErr)
     *secret = password;
   else
     secret->clear();
-  return error;
+  return status;
 }
 
-OSStatus ReadEncryptedSecret(std::string* secret, bool force_recreate) {
+OSStatus ReadEncryptedSecret(std::string* password, bool force_recreate) {
   UInt32 password_length = 0;
   void* password_data = nullptr;
   crypto::AppleKeychain keychain;
-  secret->clear();
-  OSStatus error = keychain.FindGenericPassword(
+  password->clear();
+  base::ScopedCFTypeRef<SecKeychainItemRef> item_ref;
+  OSStatus status = keychain.FindGenericPassword(
       strlen(kServiceName), kServiceName, strlen(kAccountName), kAccountName,
-      &password_length, &password_data, nullptr);
+      &password_length, &password_data, item_ref.InitializeInto());
 
-  if (error == noErr) {
-    *secret = std::string(static_cast<char*>(password_data), password_length);
+  if (status == noErr) {
+    *password = std::string(static_cast<char*>(password_data), password_length);
     keychain.ItemFreeContent(password_data);
-  } else if (error == errSecItemNotFound || force_recreate) {
-    error = AddRandomPasswordToKeychain(keychain, secret);
+    bool keep_password;
+    status = RecreateKeychainItemIfNecessary(
+        kServiceName, kAccountName, *password, item_ref.get(), &keep_password);
+
+    if (!keep_password)
+      password->clear();
+    return status;
   }
-  return error;
+
+  if (status == errSecItemNotFound || force_recreate)
+    return AddRandomPasswordToKeychain(keychain, password);
+
+  return status;
 }
 
 #endif  // defined(OS_MAC)

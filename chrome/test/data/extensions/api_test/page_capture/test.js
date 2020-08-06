@@ -7,23 +7,9 @@
 
 const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
-const fail = chrome.test.callbackFail;
-const pass = chrome.test.callbackPass;
 
 var testUrl = 'http://www.a.com:PORT' +
     '/extensions/api_test/page_capture/google.html';
-
-function waitForCurrentTabLoaded(callback) {
-  chrome.tabs.getSelected(null, function(tab) {
-    if (tab.status == 'complete') {
-      callback();
-      return;
-    }
-    window.setTimeout(function() {
-      waitForCurrentTabLoaded(callback);
-    }, 100);
-  });
-}
 
 function testPageCapture(data, isFile) {
   assertEq(undefined, chrome.runtime.lastError);
@@ -39,11 +25,11 @@ function testPageCapture(data, isFile) {
       assertTrue(text.indexOf('logo.png') != -1);
     }
     // Run the GC so the blob is deleted.
-    window.setTimeout(function() {
-      window.gc();
+    setTimeout(function() {
+      gc();
     });
-    window.setTimeout(function() {
-      chrome.test.notifyPass();
+    setTimeout(function() {
+      chrome.test.succeed();
     }, 0);
   };
   reader.readAsText(data);
@@ -54,52 +40,46 @@ chrome.test.getConfig(function(config) {
 
   chrome.test.runTests([
     function saveAsMHTML() {
-      chrome.tabs.getSelected(null, function(tab) {
-        chrome.tabs.update(null, { "url": testUrl });
-        waitForCurrentTabLoaded(pass(function() {
+      chrome.tabs.onUpdated.addListener(function listener(
+          tabId, changeInfo, tab) {
+        if (tab.status == 'complete') {
+          chrome.tabs.onUpdated.removeListener(listener);
           chrome.pageCapture.saveAsMHTML(
-              {'tabId': tab.id}, pass(function(data) {
+              {tabId: tab.id}, function(data) {
                 if (config.customArg == 'REQUEST_DENIED') {
                   chrome.test.assertLastError('User denied request.');
-                  chrome.test.notifyPass();
+                  chrome.test.succeed();
                   return;
                 }
-                testPageCapture(data, false /* isFile */);
-              }));
-        }));
+                testPageCapture(data, false);
+              });
+        }
       });
+      chrome.tabs.create({url: testUrl});
     },
 
-    function saveAsMHTMLFile() {
-      chrome.tabs.getSelected(null, function(tab) {
-        chrome.tabs.update(null, {'url': config.testDataDirectory});
-        waitForCurrentTabLoaded(function() {
-          if (config.customArg == 'REQUEST_DENIED') {
-            chrome.pageCapture.saveAsMHTML(
-                {'tabId': tab.id}, fail('User denied request.', function(data) {
-                  chrome.test.assertLastError('User denied request.');
-                  chrome.test.notifyPass();
-                  return;
-                }));
-          } else if (config.customArg == 'ONLY_PAGE_CAPTURE_PERMISSION') {
-            chrome.pageCapture.saveAsMHTML(
-                {'tabId': tab.id},
-                fail(
-                    'Don\'t have permissions required to capture this page.',
-                    function(data) {
-                      chrome.test.assertLastError(
-                          'Don\'t have permissions required to capture this ' +
-                          'page.');
-                      return;
-                    }));
-          } else {
-            chrome.pageCapture.saveAsMHTML(
-                {'tabId': tab.id}, pass(function(data) {
-                  testPageCapture(data, true /* isFile */);
-                }));
-          }
-        });
+    function saveFileUrlAsMHTML() {
+      chrome.tabs.onUpdated.addListener(function listener(
+          tabId, changeInfo, tab) {
+        if (tab.status == 'complete') {
+          chrome.tabs.onUpdated.removeListener(listener);
+          chrome.pageCapture.saveAsMHTML(
+              {tabId: tab.id}, function(data) {
+            if (config.customArg == 'REQUEST_DENIED') {
+              chrome.test.assertLastError('User denied request.');
+              chrome.test.succeed();
+            } else if (config.customArg == 'ONLY_PAGE_CAPTURE_PERMISSION') {
+              chrome.test.assertLastError(
+                  'Don\'t have permissions required to capture this ' +
+                    'page.');
+              chrome.test.succeed();
+            } else {
+              testPageCapture(data, true /* isFile */);
+            }
+          });
+        }
       });
+      chrome.tabs.create({url: config.testDataDirectory});
     }
   ]);
 });

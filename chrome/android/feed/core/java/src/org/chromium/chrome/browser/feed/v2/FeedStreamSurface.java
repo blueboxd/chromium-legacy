@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -582,6 +583,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public void navigateTab(String url, View actionSourceView) {
         FeedStreamSurfaceJni.get().reportOpenAction(mNativeFeedStreamSurface,
                 FeedStreamSurface.this, getSliceIdFromView(actionSourceView));
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
         openUrl(url, WindowOpenDisposition.CURRENT_TAB);
 
@@ -593,6 +595,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public void navigateNewTab(String url, View actionSourceView) {
         FeedStreamSurfaceJni.get().reportOpenInNewTabAction(mNativeFeedStreamSurface,
                 FeedStreamSurface.this, getSliceIdFromView(actionSourceView));
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
         openUrl(url, WindowOpenDisposition.NEW_FOREGROUND_TAB);
 
@@ -604,6 +607,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public void navigateIncognitoTab(String url) {
         FeedStreamSurfaceJni.get().reportOpenInNewIncognitoTabAction(
                 mNativeFeedStreamSurface, FeedStreamSurface.this);
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
         openUrl(url, WindowOpenDisposition.OFF_THE_RECORD);
 

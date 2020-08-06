@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom-blink-forward.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
@@ -95,14 +96,16 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<GlobalScopeCreationParams>,
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
-      base::TimeTicks time_origin);
+      base::TimeTicks time_origin,
+      const ServiceWorkerToken& service_worker_token);
 
   ServiceWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>,
       ServiceWorkerThread*,
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
-      base::TimeTicks time_origin);
+      base::TimeTicks time_origin,
+      const ServiceWorkerToken& service_worker_token);
   ~ServiceWorkerGlobalScope() override;
 
   // ExecutionContext overrides:
@@ -324,6 +327,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   ResourceLoadScheduler::ThrottleOptionOverride GetThrottleOptionOverride()
       const override;
+
+  // TODO(chrisha): Lift this up to WorkerGlobalScope once all worker types
+  // have tokens.
+  const ServiceWorkerToken& token() const { return token_; }
 
  private:
   void importScripts(const Vector<String>& urls, ExceptionState&) override;
@@ -710,6 +717,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
                       HeapMojoWrapperMode::kWithoutContextObserver,
                       std::unique_ptr<CrossOriginResourcePolicyChecker>>
       controller_receivers_{this, this};
+
+  // Token that uniquely identifies this service worker. Corresponds to the
+  // same value in the browser representation of this object. This is not
+  // persistent across worker restarts.
+  const ServiceWorkerToken token_;
 };
 
 template <>

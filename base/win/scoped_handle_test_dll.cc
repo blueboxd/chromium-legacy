@@ -32,7 +32,7 @@ DWORD __stdcall ThreadFunc(void* params) {
 
   ::SetEvent(thread_params->ready_event);
   ::WaitForSingleObject(thread_params->start_event, INFINITE);
-  ScopedHandle handle_holder(handle);
+  CheckedScopedHandle handle_holder(handle);
   return 0;
 }
 
@@ -88,7 +88,7 @@ bool InternalRunLocationTest() {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   if (!handle)
     return false;
-  ScopedHandle handle_holder(handle);
+  CheckedScopedHandle handle_holder(handle);
 
   HMODULE verifier_module =
       base::win::internal::GetHandleVerifierModuleForTesting();

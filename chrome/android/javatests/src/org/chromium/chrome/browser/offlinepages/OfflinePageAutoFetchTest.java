@@ -238,7 +238,7 @@ public class OfflinePageAutoFetchTest {
         // A new tab should open, and it should load the offline page.
         pollInstrumentationThread(() -> {
             return getCurrentTabModel().getCount() == 2
-                    && getCurrentTab().getTitle().equals("MyTestPage");
+                    && ChromeTabUtils.getTitleOnUiThread(getCurrentTab()).equals("MyTestPage");
         });
     }
 
@@ -287,7 +287,7 @@ public class OfflinePageAutoFetchTest {
             // No new tab is opened, because the URL of the tab matches the original URL.
             return getCurrentTabModel().getCount() == 1
                     // The title matches the original page, not the 'AlternativeWebServerResponse'.
-                    && getCurrentTab().getTitle().equals("MyTestPage");
+                    && ChromeTabUtils.getTitleOnUiThread(getCurrentTab()).equals("MyTestPage");
         });
     }
 
@@ -567,7 +567,7 @@ public class OfflinePageAutoFetchTest {
         int tabCount = tabModel.getCount();
         Log.d(TAG, "Tab Count: " + tabCount);
         for (int i = 0; i < tabCount; ++i) {
-            String title = tabModel.getTabAt(i).getTitle();
+            String title = ChromeTabUtils.getTitleOnUiThread(tabModel.getTabAt(i));
             String current = tabModel.index() == i ? "*current" : "";
             Log.d(TAG, "Tab " + String.valueOf(i) + " '" + title + "' " + current);
         }

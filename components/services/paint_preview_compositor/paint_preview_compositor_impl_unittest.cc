@@ -6,22 +6,31 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/notreached.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
+#include "components/paint_preview/common/capture_result.h"
 #include "components/paint_preview/common/file_stream.h"
-#include "components/paint_preview/common/serial_utils.h"
+#include "components/paint_preview/common/paint_preview_tracker.h"
+#include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/recording_map.h"
+#include "components/paint_preview/common/serialized_recording.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkStream.h"
 
 namespace paint_preview {
 
@@ -110,15 +119,13 @@ void PopulateFrameProto(
     const base::FilePath& path,
     const gfx::Size& scroll_extents,
     std::vector<std::pair<base::UnguessableToken, gfx::Rect>> subframes,
-    base::flat_map<base::UnguessableToken, base::File>* file_map,
     base::flat_map<base::UnguessableToken, mojom::FrameDataPtr>*
         expected_data) {
   frame->set_embedding_token_low(guid.GetLowForSerialization());
   frame->set_embedding_token_high(guid.GetHighForSerialization());
   frame->set_is_main_frame(set_is_main_frame);
+  frame->set_file_path(path.AsUTF8Unsafe());
 
-  FileWStream wstream(base::File(
-      path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(ToSkRect(scroll_extents));
   SkPaint paint;
@@ -126,7 +133,12 @@ void PopulateFrameProto(
   paint.setColor(SK_ColorDKGRAY);
   canvas->drawRect(ToSkRect(scroll_extents), paint);
 
-  PictureSerializationContext picture_context;
+  // It's okay to create a new document guid every time since we're not
+  // observing it.
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), guid,
+                              set_is_main_frame);
+  PictureSerializationContext* picture_context =
+      tracker.GetPictureSerializationContext();
   mojom::FrameDataPtr frame_data = mojom::FrameData::New();
   frame_data->scroll_extents = scroll_extents;
 
@@ -141,7 +153,7 @@ void PopulateFrameProto(
         subframe_id.GetLowForSerialization());
     content_id_embedding_token_pair->set_embedding_token_high(
         subframe_id.GetHighForSerialization());
-    picture_context.insert({temp->uniqueID(), subframe_id});
+    picture_context->insert({temp->uniqueID(), subframe_id});
     canvas->drawPicture(temp.get());
     frame_data->subframes.push_back(
         mojom::SubframeClipRect::New(subframe_id, clip_rect));
@@ -149,11 +161,12 @@ void PopulateFrameProto(
 
   sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
 
-  // nullptr is safe only because no typefaces are serialized.
-  SkSerialProcs procs = MakeSerialProcs(&picture_context, nullptr);
-  pic->serialize(&wstream, &procs);
-  file_map->insert(
-      {guid, base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ)});
+  size_t serialized_size = 0;
+  ASSERT_TRUE(RecordToFile(
+      base::File(path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE),
+      pic, &tracker, base::nullopt, &serialized_size));
+  ASSERT_GE(serialized_size, 0u);
+
   expected_data->insert({guid, std::move(frame_data)});
 }
 
@@ -189,32 +202,32 @@ TEST(PaintPreviewCompositorTest, TestBeginComposite) {
 
   PaintPreviewProto proto;
   proto.mutable_metadata()->set_url(url.spec());
-  base::flat_map<base::UnguessableToken, base::File> file_map;
   base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
                      temp_dir.GetPath().AppendASCII("root.skp"),
                      root_frame_scroll_extent,
                      {{kSubframe_0_ID, subframe_0_clip_rect},
                       {kSubframe_1_ID, subframe_1_clip_rect}},
-                     &file_map, &expected_data);
+                     &expected_data);
   PopulateFrameProto(proto.add_subframes(), kSubframe_0_ID, false,
                      temp_dir.GetPath().AppendASCII("subframe_0.skp"),
                      subframe_0_scroll_extent,
                      {{kSubframe_0_0_ID, subframe_0_0_clip_rect},
                       {kSubframe_0_1_ID, subframe_0_1_clip_rect}},
-                     &file_map, &expected_data);
+                     &expected_data);
   PopulateFrameProto(proto.add_subframes(), kSubframe_0_0_ID, false,
                      temp_dir.GetPath().AppendASCII("subframe_0_0.skp"),
-                     subframe_0_0_scroll_extent, {}, &file_map, &expected_data);
+                     subframe_0_0_scroll_extent, {}, &expected_data);
   PopulateFrameProto(proto.add_subframes(), kSubframe_0_1_ID, false,
                      temp_dir.GetPath().AppendASCII("subframe_0_1.skp"),
-                     subframe_0_1_scroll_extent, {}, &file_map, &expected_data);
+                     subframe_0_1_scroll_extent, {}, &expected_data);
   PopulateFrameProto(proto.add_subframes(), kSubframe_1_ID, false,
                      temp_dir.GetPath().AppendASCII("subframe_1.skp"),
-                     subframe_1_scroll_extent, {}, &file_map, &expected_data);
+                     subframe_1_scroll_extent, {}, &expected_data);
+  auto recording_map = RecordingMapFromPaintPreviewProto(proto);
   // Missing a subframe SKP is still valid. Compositing will ignore it in the
   // results.
-  file_map.erase(kSubframe_0_0_ID);
+  recording_map.erase(kSubframe_0_0_ID);
   expected_data.erase(kSubframe_0_0_ID);
   // Remove the kSubframe_0_0_ID from the subframe list since it isn't
   // available.
@@ -224,7 +237,7 @@ TEST(PaintPreviewCompositorTest, TestBeginComposite) {
 
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  request->file_map = std::move(file_map);
+  request->recording_map = std::move(recording_map);
   request->proto = ToReadOnlySharedMemory(proto);
 
   compositor.BeginComposite(
@@ -252,21 +265,20 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeDuplicate) {
 
   PaintPreviewProto proto;
   proto.mutable_metadata()->set_url(url.spec());
-  base::flat_map<base::UnguessableToken, base::File> file_map;
   base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
                      temp_dir.GetPath().AppendASCII("root.skp"),
                      root_frame_scroll_extent,
                      {{kSubframe_0_ID, subframe_0_clip_rect},
                       {kSubframe_0_ID, subframe_0_clip_rect}},
-                     &file_map, &expected_data);
+                     &expected_data);
   PopulateFrameProto(proto.add_subframes(), kSubframe_0_ID, false,
                      temp_dir.GetPath().AppendASCII("subframe_0.skp"),
-                     subframe_0_scroll_extent, {}, &file_map, &expected_data);
+                     subframe_0_scroll_extent, {}, &expected_data);
 
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  request->file_map = std::move(file_map);
+  request->recording_map = RecordingMapFromPaintPreviewProto(proto);
   request->proto = ToReadOnlySharedMemory(proto);
 
   compositor.BeginComposite(
@@ -294,21 +306,19 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeLoop) {
 
   PaintPreviewProto proto;
   proto.mutable_metadata()->set_url(url.spec());
-  base::flat_map<base::UnguessableToken, base::File> file_map;
   base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
-  PopulateFrameProto(
-      proto.mutable_root_frame(), kRootFrameID, true,
-      temp_dir.GetPath().AppendASCII("root.skp"), root_frame_scroll_extent,
-      {{kSubframe_0_ID, subframe_0_clip_rect}}, &file_map, &expected_data);
+  PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
+                     temp_dir.GetPath().AppendASCII("root.skp"),
+                     root_frame_scroll_extent,
+                     {{kSubframe_0_ID, subframe_0_clip_rect}}, &expected_data);
   PopulateFrameProto(proto.add_subframes(), kSubframe_0_ID, false,
                      temp_dir.GetPath().AppendASCII("subframe_0.skp"),
                      subframe_0_scroll_extent,
-                     {{kRootFrameID, subframe_0_clip_rect}}, &file_map,
-                     &expected_data);
+                     {{kRootFrameID, subframe_0_clip_rect}}, &expected_data);
 
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  request->file_map = std::move(file_map);
+  request->recording_map = RecordingMapFromPaintPreviewProto(proto);
   request->proto = ToReadOnlySharedMemory(proto);
 
   compositor.BeginComposite(
@@ -333,16 +343,15 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeSelfReference) {
 
   PaintPreviewProto proto;
   proto.mutable_metadata()->set_url(url.spec());
-  base::flat_map<base::UnguessableToken, base::File> file_map;
   base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
-  PopulateFrameProto(
-      proto.mutable_root_frame(), kRootFrameID, true,
-      temp_dir.GetPath().AppendASCII("root.skp"), root_frame_scroll_extent,
-      {{kRootFrameID, root_frame_clip_rect}}, &file_map, &expected_data);
+  PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
+                     temp_dir.GetPath().AppendASCII("root.skp"),
+                     root_frame_scroll_extent,
+                     {{kRootFrameID, root_frame_clip_rect}}, &expected_data);
 
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  request->file_map = std::move(file_map);
+  request->recording_map = RecordingMapFromPaintPreviewProto(proto);
   request->proto = ToReadOnlySharedMemory(proto);
 
   compositor.BeginComposite(
@@ -410,13 +419,14 @@ TEST(PaintPreviewCompositorTest, TestInvalidRootFrame) {
   const base::UnguessableToken kRootFrameID = base::UnguessableToken::Create();
   PaintPreviewProto proto;
   proto.mutable_metadata()->set_url(url.spec());
-  base::flat_map<base::UnguessableToken, base::File> file_map;
   base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
                      temp_dir.GetPath().AppendASCII("root.skp"),
-                     gfx::Size(1, 1), {}, &file_map, &expected_data);
-  file_map.erase(kRootFrameID);  // Missing a SKP for the root file is invalid.
-  request->file_map = std::move(file_map);
+                     gfx::Size(1, 1), {}, &expected_data);
+  auto recording_map = RecordingMapFromPaintPreviewProto(proto);
+  recording_map.erase(
+      kRootFrameID);  // Missing a SKP for the root file is invalid.
+  request->recording_map = std::move(recording_map);
   request->proto = ToReadOnlySharedMemory(proto);
   compositor.BeginComposite(
       std::move(request),
@@ -438,15 +448,87 @@ TEST(PaintPreviewCompositorTest, TestComposite) {
   gfx::Size root_frame_scroll_extent(100, 200);
   PaintPreviewProto proto;
   proto.mutable_metadata()->set_url(url.spec());
-  base::flat_map<base::UnguessableToken, base::File> file_map;
   base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
                      temp_dir.GetPath().AppendASCII("root.skp"),
-                     root_frame_scroll_extent, {}, &file_map, &expected_data);
+                     root_frame_scroll_extent, {}, &expected_data);
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  request->file_map = std::move(file_map);
+  request->recording_map = RecordingMapFromPaintPreviewProto(proto);
   request->proto = ToReadOnlySharedMemory(proto);
+  compositor.BeginComposite(
+      std::move(request),
+      base::BindOnce(&BeginCompositeCallbackImpl,
+                     mojom::PaintPreviewCompositor::Status::kSuccess,
+                     kRootFrameID, std::move(expected_data)));
+  gfx::Rect rect(200, 400);
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
+  SkCanvas canvas(bitmap);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(SK_ColorDKGRAY);
+  canvas.drawRect(ToSkRect(rect), paint);
+  compositor.BitmapForFrame(
+      kRootFrameID, rect, 2,
+      base::BindOnce(&BitmapCallbackImpl,
+                     mojom::PaintPreviewCompositor::Status::kSuccess, bitmap));
+  task_environment.RunUntilIdle();
+
+  compositor.BitmapForFrame(
+      base::UnguessableToken::Create(), rect, 2,
+      base::BindOnce(&BitmapCallbackImpl,
+                     mojom::PaintPreviewCompositor::Status::kCompositingFailure,
+                     bitmap));
+  task_environment.RunUntilIdle();
+}
+
+TEST(PaintPreviewCompositorTest, TestCompositeWithMemoryBuffer) {
+  base::test::TaskEnvironment task_environment;
+  PaintPreviewCompositorImpl compositor(mojo::NullReceiver(),
+                                        base::BindOnce([]() {}));
+  GURL url("https://www.chromium.org");
+  const base::UnguessableToken kRootFrameID = base::UnguessableToken::Create();
+  gfx::Size root_frame_scroll_extent(100, 200);
+  PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
+
+  PaintPreviewFrameProto* root_frame = proto.mutable_root_frame();
+  root_frame->set_embedding_token_low(kRootFrameID.GetLowForSerialization());
+  root_frame->set_embedding_token_high(kRootFrameID.GetHighForSerialization());
+  root_frame->set_is_main_frame(true);
+
+  mojo_base::BigBuffer buffer;
+  base::flat_map<base::UnguessableToken, mojom::FrameDataPtr> expected_data;
+  {
+    SkPictureRecorder recorder;
+    SkCanvas* canvas =
+        recorder.beginRecording(ToSkRect(root_frame_scroll_extent));
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(SK_ColorDKGRAY);
+    canvas->drawRect(ToSkRect(root_frame_scroll_extent), paint);
+    sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
+
+    PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRootFrameID,
+                                /*is_main_frame=*/true);
+    size_t serialized_size = 0;
+    auto result =
+        RecordToBuffer(pic, &tracker, base::nullopt, &serialized_size);
+    ASSERT_TRUE(result.has_value());
+    buffer = std::move(result.value());
+
+    mojom::FrameDataPtr frame_data = mojom::FrameData::New();
+    frame_data->scroll_extents = root_frame_scroll_extent;
+    expected_data.insert({kRootFrameID, std::move(frame_data)});
+  }
+
+  mojom::PaintPreviewBeginCompositeRequestPtr request =
+      mojom::PaintPreviewBeginCompositeRequest::New();
+  request->recording_map.insert(
+      {kRootFrameID, SerializedRecording(std::move(buffer))});
+  request->proto = ToReadOnlySharedMemory(proto);
+
   compositor.BeginComposite(
       std::move(request),
       base::BindOnce(&BeginCompositeCallbackImpl,

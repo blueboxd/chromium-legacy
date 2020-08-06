@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
+<translation id="1298077576058087471">Заощаджуйте до 60% даних і читайте сьогоднішні новини</translation>
 <translation id="1303339473099049190">Не вдалося знайти такий пароль. Перевірте правильність написання та повторіть спробу.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Надіслано з пристрою "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1310482092992808703">Згрупувати вкладки</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Скинути спрощений режим?</translation>
 <translation id="1868024384445905608">Тепер Chrome завантажує файли швидше</translation>
 <translation id="1874760110381325409">Ви ввійдете у свій обліковий запис Google\n(синхронізацію Chrome не буде ввімкнено)</translation>
+<translation id="1877026089748256423">Версія Chrome застаріла</translation>
 <translation id="1883903952484604915">Мої файли</translation>
 <translation id="1919950603503897840">Виберіть контакти</translation>
 <translation id="1925021887439448749">Введіть користувацьку веб-адресу</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">Доступна новіша версія</translation>
 <translation id="2593272815202181319">Однакової ширини</translation>
 <translation id="2612676031748830579">Номер картки</translation>
-<translation id="2622559029861875898">Chrome не може перевірити наявність оновлень. Перевірте інтернет-з'єднання.</translation>
 <translation id="2625189173221582860">Пароль скопійовано</translation>
 <translation id="2631006050119455616">Збережено</translation>
 <translation id="2647434099613338025">Додати мову</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">Геодані вимкнено. Увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
+<translation id="3062802207422175757">Статті на цікаві вам теми в Chrome</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="3114012059975132928">Відеопрогравач</translation>
+<translation id="3114507951000454849">Читайте сьогоднішні новини <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Оголошення</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3143515551205905069">Скасувати синхронізацію</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome готується до запуску VR. Перезапустіть Chrome пізніше.</translation>
 <translation id="3568688522516854065">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
 <translation id="3587482841069643663">Все</translation>
+<translation id="3587596251841506391">Покращувати безпеку в Інтернеті</translation>
 <translation id="3590487821116122040">Дані сайтів, які Chrome визначив як неважливі, зокрема сайтів із незбереженими налаштуваннями або тих, які ви рідко відвідуєте</translation>
 <translation id="3594780231884063836">Вимкнути звук у відео</translation>
 <translation id="3599863153486145794">Видалення історії на всіх пристроях, на яких ви ввійшли в обліковий запис. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">Перейти до адресного рядка</translation>
 <translation id="5447201525962359567">Усі дані сайтів, зокрема файли cookie й інші локально збережені дані</translation>
 <translation id="545042621069398927">Прискорюється завантаження.</translation>
-<translation id="5454513945794364671">Ваш адміністратор вимкнув Безпечний перегляд</translation>
 <translation id="5456381639095306749">Завантажити сторінку</translation>
 <translation id="548278423535722844">Відкрити в додатку Карти</translation>
 <translation id="5487521232677179737">Видалити дані</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6111020039983847643">використаний трафік</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
+<translation id="6122831415929794347">Вимкнути Безпечний перегляд?</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6140709049082532940">Покращений захист:</translation>
 <translation id="6140912465461743537">Країна або регіон</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
 <translation id="6157392216611456285">Вибрати <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">Немає зламаних паролів</translation>
 <translation id="6201345951596836663">Посилання скопійовано</translation>
 <translation id="6206830853671714236">Виберіть, коли завантажити</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">Тут відображатимуться вкладки, відкриті в Chrome на інших ваших пристроях.</translation>
 <translation id="6583199322650523874">Зробити закладку поточної сторінки</translation>
 <translation id="6588043302623806746">Використовувати безпечну систему DNS</translation>
+<translation id="6590471736817333463">Заощаджуйте до 60% трафіку</translation>
 <translation id="6593061639179217415">Версія для комп’ютера</translation>
 <translation id="6597891566292541626">Вставте QR-код або штрих-код у цю рамку.</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6663079968236414793">Посилання на текст</translation>
-<translation id="666573598175432848">Доступна новіша версія Chrome. Натисніть цей елемент, щоб перейти в Google Play.</translation>
 <translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
 <translation id="6671495933530132209">Копіювати зображення</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">Залишився 1 день</translation>
 <translation id="8200772114523450471">Поновити</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
+<translation id="8218052821161047641">Сторінка завантажується швидко</translation>
 <translation id="8218622182176210845">Керувати обліковим записом</translation>
 <translation id="8223642481677794647">Меню картки зі стрічки</translation>
 <translation id="8224471946457685718">Завантажувати статті через Wi-Fi</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="8854223127042600341">Переглянути офлайн-файли</translation>
 <translation id="889338405075704026">Перейти в налаштування Chrome</translation>
-<translation id="8893398027601469503">Ви користуєтесь останньою версією Chrome</translation>
 <translation id="8898822736010347272">Надсилає в Google URL-адреси відвіданих сторінок, обмежену системну інформацію та вміст деяких сторінок, щоб виявляти нові загрози та захищати всіх користувачів в Інтернеті.</translation>
 <translation id="8909135823018751308">Надіслати…</translation>
 <translation id="8912362522468806198">Обліковий запис Google</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">Неможливо здійснювати виклики</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="926205370408745186">Видалити активність у Chrome із Цифрового добробуту</translation>
+<translation id="927968626442779827">Користуйтеся спрощеним режимом у Google Chrome</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>
 <translation id="93753284658583800">Домашню сторінку змінено</translation>
 <translation id="938850635132480979">Помилка: <ph name="ERROR_CODE" /></translation>

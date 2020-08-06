@@ -19,6 +19,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_url_loader.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
 namespace storage {
@@ -124,6 +125,16 @@ void BlobImpl::ReadAll(
   MojoBlobReader::Create(handle_.get(), net::HttpByteRange(),
                          std::make_unique<ReaderDelegate>(std::move(client)),
                          std::move(handle));
+}
+
+void BlobImpl::Load(
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
+    const std::string& method,
+    const net::HttpRequestHeaders& headers,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+  BlobURLLoader::CreateAndStart(std::move(loader), method, headers,
+                                std::move(client),
+                                std::make_unique<BlobDataHandle>(*handle_));
 }
 
 void BlobImpl::ReadSideData(ReadSideDataCallback callback) {

@@ -43,7 +43,7 @@ using testing::NiceMock;
 
 namespace {
 
-std::string DummyGetSessionId(std::string /* audio_group_id */) {
+std::string DummyGetSessionId(const std::string& /* audio_group_id */) {
   return "AABBCCDDEE";
 }
 
@@ -299,7 +299,7 @@ class CastAudioOutputStreamTest : public ::testing::Test,
           return fake_cma_backend;
         }));
     EXPECT_EQ(mock_backend_factory_.get(),
-              audio_manager_->cma_backend_factory());
+              audio_manager_->helper_.GetCmaBackendFactory());
   }
 
   void RunThreadsUntilIdle() {

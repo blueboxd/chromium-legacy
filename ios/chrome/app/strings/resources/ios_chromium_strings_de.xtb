@@ -22,6 +22,7 @@
 <translation id="3344973607274501920">Chromium konnte Ihre Passwörter nicht prüfen. Prüfen Sie Ihre Internetverbindung.</translation>
 <translation id="3639997914391704523">Chromium kann Ihre Passwörter prüfen, wenn Sie sich mit Ihrem Google-Konto anmelden.</translation>
 <translation id="3805899903892079518">Chromium hat keinen Zugriff auf Ihre Fotos und Videos. Aktivieren Sie den Zugriff unter "iOS-Einstellungen &gt; Datenschutz &gt; Fotos".</translation>
+<translation id="4166206055865952171">Chromium als Standardbrowser festlegen</translation>
 <translation id="4555020257205549924">Wenn diese Funktion aktiviert ist, haben Sie in Chromium die Möglichkeit, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Chromium-Scanner aktivieren</translation>
 <translation id="4787850887676698916">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chromium geöffnet haben.</translation>
@@ -38,10 +39,15 @@
 <translation id="6604711459180487467">Profitieren Sie von einer besseren Nutzererfahrung in Chromium auf Grundlage Ihres Standorts.</translation>
 <translation id="6820823224820483452">Chromium konnte nicht alle Passwörter prüfen. Versuchen Sie es morgen noch einmal.</translation>
 <translation id="7099326575020694068">Chromium kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
+<translation id="7118091470949186573">Sie können jetzt Chromium jederzeit nutzen, wenn Sie in Nachrichten, Dokumenten und anderen Apps auf Links tippen.</translation>
 <translation id="7173114856073700355">Einstellungen öffnen</translation>
 <translation id="7208566199746267865">Mit Chromium sparen Sie Zeit, da Sie Ihre Konten im Web verwenden können. In den Einstellungen haben Sie die Möglichkeit, Konten hinzuzufügen oder zu entfernen.</translation>
 <translation id="7269362888766543920">Einige Add-ons führen zum Ausfall von Chromium. Bitte deinstallieren Sie diese Add-ons.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">So legen Sie Chromium als Standardbrowser fest:
+        1. Öffnen Sie die Einstellungen. 
+        2. Tippen Sie auf "Standard-Webbrowser".
+        3. Wählen Sie Chromium aus.</translation>
 <translation id="7357211569052832586">Die ausgewählten Daten wurden aus Chromium und von allen synchronisierten Geräten entfernt. Eventuell finden Sie unter history.google.com weitere Arten von Browserverlaufsdaten wie Suchanfragen oder Aktivitäten anderer Google-Dienste für Ihr Google-Konto.</translation>
 <translation id="7400689562045506105">Chromium überall nutzen</translation>
 <translation id="766897673682622022">Ihr Passwort wurde durch eine Datenpanne preisgegeben. Chromium empfiehlt, das Passwort jetzt zu ändern.</translation>

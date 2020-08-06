@@ -84,11 +84,13 @@ public class TabTest {
 
         mActivityTestRule.loadUrl("data:text/html;charset=utf-8,<html><head><title>" + oldTitle
                 + "</title></head><body/></html>");
-        Assert.assertEquals("title does not match initial title", oldTitle, mTab.getTitle());
+        Assert.assertEquals("title does not match initial title", oldTitle,
+                ChromeTabUtils.getTitleOnUiThread(mTab));
         int currentCallCount = mOnTitleUpdatedHelper.getCallCount();
         mActivityTestRule.runJavaScriptCodeInCurrentTab("document.title='" + newTitle + "';");
         mOnTitleUpdatedHelper.waitForCallback(currentCallCount);
-        Assert.assertEquals("title does not update", newTitle, mTab.getTitle());
+        Assert.assertEquals(
+                "title does not update", newTitle, ChromeTabUtils.getTitleOnUiThread(mTab));
     }
 
     /**

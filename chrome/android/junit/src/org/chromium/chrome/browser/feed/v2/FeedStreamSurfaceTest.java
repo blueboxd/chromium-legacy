@@ -47,12 +47,15 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -72,7 +75,7 @@ import java.util.Map;
 
 /** Unit tests for {@link FeedStreamSeSurface}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class FeedStreamSurfaceTest {
     private static final String TEST_DATA = "test";
     private static final String TEST_URL = "https://www.chromium.org";
@@ -402,28 +405,38 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testNavigateTab() {
+        HistogramDelta actionOpenedSnippetDelta = new HistogramDelta(
+                "NewTabPage.ActionAndroid2", NewTabPageUma.ACTION_OPENED_SNIPPET);
         when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
         mFeedStreamSurface.navigateTab(TEST_URL, null);
         verify(mPageNavigationDelegate)
                 .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.CURRENT_TAB), any());
+
+        assertEquals(1, actionOpenedSnippetDelta.getDelta());
     }
 
     @Test
     @SmallTest
     public void testNavigateNewTab() {
+        HistogramDelta actionOpenedSnippetDelta = new HistogramDelta(
+                "NewTabPage.ActionAndroid2", NewTabPageUma.ACTION_OPENED_SNIPPET);
         when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
         mFeedStreamSurface.navigateNewTab(TEST_URL);
         verify(mPageNavigationDelegate)
                 .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.NEW_FOREGROUND_TAB), any());
+        assertEquals(1, actionOpenedSnippetDelta.getDelta());
     }
 
     @Test
     @SmallTest
     public void testNavigateIncognitoTab() {
+        HistogramDelta actionOpenedSnippetDelta = new HistogramDelta(
+                "NewTabPage.ActionAndroid2", NewTabPageUma.ACTION_OPENED_SNIPPET);
         when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
         mFeedStreamSurface.navigateIncognitoTab(TEST_URL);
         verify(mPageNavigationDelegate)
                 .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.OFF_THE_RECORD), any());
+        assertEquals(1, actionOpenedSnippetDelta.getDelta());
     }
 
     @Test

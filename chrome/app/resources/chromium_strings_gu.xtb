@@ -110,7 +110,6 @@
 <translation id="5224391634244552924">કોઈ સાચવેલા પાસવર્ડ નથી. જ્યારે તમે તમારા પાસવર્ડ સાચવો ત્યારે Chromium તેને ચેક કરી શકે છે.</translation>
 <translation id="5277894862589591112">તમારા ફેરફારો લાગુ કરવા માટે, Chromiumને ફરી લૉન્ચ કરો</translation>
 <translation id="5358375970380395591">તમે મેનેજ કરેલા એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે ઍપ, બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ, કાયમ માટે <ph name="USER_NAME" /> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ ડૅશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને બીજા એકાઉન્ટ સાથે સાંકળી શકશો નહિ. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Chromium દ્વારા ડિવાઇસના સૉફ્ટવેર ચેક કરવામાં આવી રહ્યાં હતા, ત્યારે કોઈ ભૂલ આવી</translation>
 <translation id="5386450000063123300">Chromium અપડેટ થઈ રહ્યું છે (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Chromiumમાં સાઇન-ઇનની મંજૂરી આપો</translation>
 <translation id="5398878173008909840">Chromiumનું નવું વર્ઝન ઉપલબ્ધ છે.</translation>
@@ -121,7 +120,6 @@
 <translation id="5480860683791598150">Chromiumને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
 <translation id="5496810170689441661">Chromium પાસવર્ડમાં ફેરફાર કરવાનો પ્રયાસ કરે છે. આની મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ લખો.</translation>
-<translation id="5556694182460963866">તમારા વ્યવસ્થાપકે Chromiumની હાનિકારક સૉફ્ટવેર ચેક કરવાની ક્ષમતા બંધ કરી છે</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium અપડેટ ઉપલબ્ધ છે}=1{Chromium અપડેટ ઉપલબ્ધ છે}one{Chromium અપડેટ # દિવસ માટે ઉપલબ્ધ છે}other{Chromium અપડેટ # દિવસ માટે ઉપલબ્ધ છે}}</translation>
 <translation id="5631814766731275228">Chromiumમાંનું નામ અને ફોટો</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>

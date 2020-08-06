@@ -225,12 +225,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)blockMostVisitedURL:(GURL)URL {
-  _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, true);
+  _mostVisitedSites->AddOrRemoveBlockedUrl(URL, true);
   [self useFreshMostVisited];
 }
 
 - (void)allowMostVisitedURL:(GURL)URL {
-  _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, false);
+  _mostVisitedSites->AddOrRemoveBlockedUrl(URL, false);
   [self useFreshMostVisited];
 }
 

@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">ยอมรับและดำเนินการต่อ</translation>
 <translation id="1112015203684611006">การพิมพ์ล้มเหลว</translation>
 <translation id="1125564390852150847">สร้างแท็บใหม่</translation>
+<translation id="1134509371063488162">เปิด ${urls} ในโหมดไม่ระบุตัวตน</translation>
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
 <translation id="1165039591588034296">ข้อผิดพลาด</translation>
 <translation id="1172898394251786223">ช่องถัดไป</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">เพิ่มบัญชี</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2273327106802955778">เมนูเพิ่มเติม</translation>
+<translation id="2302742851632557585">เปลี่ยนรหัสผ่านในเว็บไซต์</translation>
 <translation id="2316709634732130529">ใช้รหัสผ่านที่แนะนำ</translation>
 <translation id="2320166752086256636">ซ่อนแป้นพิมพ์</translation>
 <translation id="2339560363438331454">การซิงค์และบริการของ Google</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">เพิ่มวิธีการชำระเงิน...</translation>
 <translation id="2989805286512600854">เปิดในแท็บใหม่</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
+<translation id="3081338492074632642">ตรวจสอบว่ารหัสผ่านที่คุณจะบันทึกตรงกับรหัสผ่านสำหรับ <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">ทำเครื่องหมาย…</translation>
 <translation id="3131206671572504478">บล็อกทั้งหมด</translation>
 <translation id="3153862085237805241">บันทึกบัตร</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">ดด</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> จาก <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">แท็บที่เปิดอยู่</translation>
+<translation id="3272527697863656322">ยกเลิก</translation>
 <translation id="3277021493514034324">คัดลอกที่อยู่เว็บไซต์แล้ว</translation>
 <translation id="3290875554372353449">เลือกบัญชี</translation>
 <translation id="3311748811247479259">ปิด</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">มีบริการแปลภาษา ตัวเลือกจะอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="3393920035788932672">อนุญาตให้แสดงป๊อปอัป</translation>
 <translation id="3425644765244388016">ชื่อเล่นของบัตร</translation>
+<translation id="3433057996795775706">การลบรหัสผ่านนี้จะไม่ลบบัญชีของคุณใน <ph name="WEBSITE" /> เปลี่ยนรหัสผ่านใน <ph name="WEBSITE" /> เพื่อให้ปลอดภัยจากบุคคลอื่น</translation>
 <translation id="3443810440409579745">ได้รับแท็บแล้ว</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> นาที</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3670030362669914947">หมายเลข</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
+<translation id="3740397331642243698">เปิด URL ที่ป้อนใน Google Chrome ในโหมดไม่ระบุตัวตน</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3775743491439407556">การซิงค์ไม่ทำงาน</translation>
 <translation id="3779810277399252432">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">ข้อมูล</translation>
 <translation id="4659126640776004816">ฟีเจอร์นี้จะเปิดเมื่อคุณลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="4659667755519643272">เข้าสู่มุมมองตัวสลับแท็บ</translation>
+<translation id="46614316059270592">บันทึกรหัสผ่าน</translation>
 <translation id="4666531726415300315">ลงชื่อเข้าใช้ด้วย <ph name="EMAIL" />
 
 ข้อมูลของคุณจะได้รับการเข้ารหัสด้วยรหัสผ่านการซิงค์ โปรดป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
@@ -402,6 +409,7 @@
 <translation id="5854790677617711513">เกิน 30 วัน</translation>
 <translation id="5857090052475505287">โฟลเดอร์ใหม่</translation>
 <translation id="5857770089550859117">ต้องระบุรหัสผ่านเพื่อเริ่มการซิงค์</translation>
+<translation id="5860033963881614850">ปิด</translation>
 <translation id="5869029295770560994">รับทราบ</translation>
 <translation id="5871497086027727873">ย้ายแล้ว 1 รายการ</translation>
 <translation id="5897956970858271241">ไปที่ลิงก์ที่คัดลอก</translation>
@@ -502,7 +510,6 @@
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6841409746189899007">ลิงก์มายังข้อความ</translation>
 <translation id="6851516051005285358">ขอเว็บไซต์สำหรับเดสก์ท็อป</translation>
-<translation id="6856384753476268833">จัดการโดยองค์กร</translation>
 <translation id="6858855187367714033">สแกนแล้ว</translation>
 <translation id="6859944681507688231">หากต้องการสแกนคิวอาร์โค้ดหรือบัตรเครดิต ให้เปิดใช้กล้องถ่ายรูปจากการตั้งค่า</translation>
 <translation id="6869389390665537774">คุณดูหน้าที่เคยเข้าชมหรือล้างหน้าออกจากประวัติการเข้าชมได้</translation>
@@ -524,7 +531,6 @@
 <translation id="7006788746334555276">การตั้งค่าเนื้อหา</translation>
 <translation id="7015203776128479407">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ การซิงค์ปิดอยู่</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
-<translation id="7030675613184250187">คุณบันทึกหน้าในเรื่องรออ่านเพื่อให้หาเจออีกครั้งหรืออ่านแบบออฟไลน์ได้</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
 <translation id="7099761977003084116">แท็บล่าสุด</translation>
@@ -587,12 +593,12 @@
 <translation id="7856733331829174190">ดาวน์โหลดไม่ได้</translation>
 <translation id="7859704718976024901">ประวัติการเข้าชม</translation>
 <translation id="7887198238286927132">Chrome จะไม่ป้อนข้อความลงในช่องนี้โดยอัตโนมัติเพื่อปกป้องความเป็นส่วนตัวของคุณ</translation>
-<translation id="791251013315685175">จัดการโดย <ph name="COMPANY" /></translation>
 <translation id="7918293828610777738">เรื่องรออ่านของคุณพร้อมใช้งานในแบบออฟไลน์ หากต้องการเพิ่มหน้าลงในเรื่องรออ่าน ให้แตะ <ph name="SHARE_OPENING_ICON" /> แล้วแตะ "<ph name="READ_LATER_TEXT" />"</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">ส่งออกรหัสผ่าน...</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="794799177247607889">หยุดการบันทึก</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{ไม่มีรหัสผ่านที่ถูกละเมิด}=1{มีรหัสผ่านที่ถูกละเมิด {COUNT} รายการ}other{มีรหัสผ่านที่ถูกละเมิด {COUNT} รายการ}}</translation>
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7966516440812255683">เว็บไซต์จะใช้คุกกี้เพื่อปรับปรุงประสบการณ์การท่องเว็บ เช่น ให้คุณลงชื่อเข้าใช้ต่อไปเรื่อยๆ หรือจดจำรายการในรถเข็นช็อปปิ้ง
 
@@ -606,6 +612,7 @@
 <translation id="8023878949384262191">ขยายส่วนนี้</translation>
 <translation id="804427445359061970">คุณจะเห็นแท็บจากอุปกรณ์อื่นๆ ที่นี่</translation>
 <translation id="8059533439631660104">ยุบส่วนนี้</translation>
+<translation id="8065292699993359127">เปิด URL ใน Chrome ในโหมดไม่ระบุตัวตน</translation>
 <translation id="806745655614357130">เก็บข้อมูลของฉันแยกต่างหาก</translation>
 <translation id="8073670137947914548">ดาวน์โหลดเสร็จแล้ว</translation>
 <translation id="8073872304774253879">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>

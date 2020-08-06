@@ -4,17 +4,14 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
-#import <Cocoa/Cocoa.h>
-
 #include "base/files/file_path.h"
-#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
-#include "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_utils_mac.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
@@ -27,6 +24,7 @@ using base::StringPrintf;
 using base::SysNSStringToUTF8;
 using base::SysNSStringToUTF16;
 using std::string;
+using content::a11y::LineIndexesMap;
 
 namespace content {
 
@@ -95,15 +93,9 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
       const base::StringPiece& pattern) override;
 
  private:
-  using LineIndexesMap =
-      std::map<const gfx::NativeViewAccessible, base::string16>;
-
   void RecursiveBuildAccessibilityTree(const BrowserAccessibilityCocoa* node,
                                        const LineIndexesMap& line_indexes_map,
                                        base::DictionaryValue* dict);
-  void RecursiveBuildLineIndexesMap(const BrowserAccessibilityCocoa* node,
-                                    LineIndexesMap* line_indexes_map,
-                                    int* counter);
 
   base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
@@ -164,9 +156,6 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
                             const LineIndexesMap& line_indexes_map) const;
 
   std::string NodeToLineIndex(id, const LineIndexesMap&) const;
-  gfx::NativeViewAccessible LineIndexToNode(
-      const base::string16 line_index,
-      const LineIndexesMap& line_indexes_map) const;
 
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
@@ -217,9 +206,7 @@ AccessibilityTreeFormatterMac::BuildAccessibilityTree(
 
   BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
 
-  int counter = 0;
-  LineIndexesMap line_indexes_map;
-  RecursiveBuildLineIndexesMap(cocoa_root, &line_indexes_map, &counter);
+  LineIndexesMap line_indexes_map(cocoa_root);
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   RecursiveBuildAccessibilityTree(cocoa_root, line_indexes_map, dict.get());
@@ -264,18 +251,6 @@ void AccessibilityTreeFormatterMac::RecursiveBuildAccessibilityTree(
   dict->Set(kChildrenDictAttr, std::move(children));
 }
 
-void AccessibilityTreeFormatterMac::RecursiveBuildLineIndexesMap(
-    const BrowserAccessibilityCocoa* cocoa_node,
-    LineIndexesMap* line_indexes_map,
-    int* counter) {
-  const base::string16 line_index =
-      base::string16(1, ':') + base::NumberToString16(++(*counter));
-  line_indexes_map->insert({cocoa_node, line_index});
-  for (BrowserAccessibilityCocoa* cocoa_child in [cocoa_node children]) {
-    RecursiveBuildLineIndexesMap(cocoa_child, line_indexes_map, counter);
-  }
-}
-
 void AccessibilityTreeFormatterMac::AddProperties(
     const BrowserAccessibilityCocoa* cocoa_node,
     const LineIndexesMap& line_indexes_map,
@@ -284,10 +259,8 @@ void AccessibilityTreeFormatterMac::AddProperties(
   BrowserAccessibility* node = [cocoa_node owner];
   dict->SetKey("id", base::Value(base::NumberToString16(node->GetId())));
 
-  base::string16 line_index = base::ASCIIToUTF16("-1");
-  if (line_indexes_map.find(cocoa_node) != line_indexes_map.end()) {
-    line_index = line_indexes_map.at(cocoa_node);
-  }
+  base::string16 line_index =
+      base::UTF8ToUTF16(line_indexes_map.IndexBy(cocoa_node));
 
   // Attributes
   for (NSString* supportedAttribute in
@@ -426,8 +399,8 @@ AccessibilityTreeFormatterMac::PropertyNodeToUIElement(
     UIELEMENT_FAIL(propnode, "single argument is expected")
   }
 
-  gfx::NativeViewAccessible uielement =
-      LineIndexToNode(propnode.parameters[0].name_or_value, line_indexes_map);
+  gfx::NativeViewAccessible uielement = line_indexes_map.NodeBy(
+      base::UTF16ToUTF8(propnode.parameters[0].name_or_value));
   if (!uielement) {
     UIELEMENT_FAIL(propnode, "no corresponding UIElement was found in the tree")
   }
@@ -444,8 +417,8 @@ id AccessibilityTreeFormatterMac::DictNodeToTextMarker(
     TEXTMARKER_FAIL(dictnode, "wrong number of dictionary elements")
   }
 
-  BrowserAccessibilityCocoa* anchor_cocoa =
-      LineIndexToNode(dictnode.parameters[0].name_or_value, line_indexes_map);
+  BrowserAccessibilityCocoa* anchor_cocoa = line_indexes_map.NodeBy(
+      base::UTF16ToUTF8(dictnode.parameters[0].name_or_value));
   if (!anchor_cocoa) {
     TEXTMARKER_FAIL(dictnode, "1st argument: wrong anchor")
   }
@@ -664,24 +637,7 @@ base::Value AccessibilityTreeFormatterMac::PopulateArray(
 std::string AccessibilityTreeFormatterMac::NodeToLineIndex(
     id cocoa_node,
     const LineIndexesMap& line_indexes_map) const {
-  std::string line_index = ":unknown";
-  auto index_iterator = line_indexes_map.find(cocoa_node);
-  if (index_iterator != line_indexes_map.end()) {
-    line_index = base::UTF16ToUTF8(index_iterator->second);
-  }
-  return kConstValuePrefix + line_index;
-}
-
-gfx::NativeViewAccessible AccessibilityTreeFormatterMac::LineIndexToNode(
-    const base::string16 line_index,
-    const LineIndexesMap& line_indexes_map) const {
-  for (std::pair<const gfx::NativeViewAccessible, base::string16> item :
-       line_indexes_map) {
-    if (item.second == line_index) {
-      return item.first;
-    }
-  }
-  return nil;
+  return kConstValuePrefix + line_indexes_map.IndexBy(cocoa_node);
 }
 
 base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(

@@ -33,6 +33,8 @@
 #include "weblayer/browser/browser_list.h"
 #include "weblayer/browser/browsing_data_remover_delegate.h"
 #include "weblayer/browser/cookie_manager_impl.h"
+#include "weblayer/browser/favicon/favicon_service_impl.h"
+#include "weblayer/browser/favicon/favicon_service_impl_factory.h"
 #include "weblayer/browser/persistence/browser_persister_file_utils.h"
 #include "weblayer/browser/tab_impl.h"
 
@@ -565,6 +567,19 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
       return false;
   }
   NOTREACHED();
+}
+
+void ProfileImpl::GetCachedFaviconForPageUrl(
+    const GURL& page_url,
+    base::OnceCallback<void(gfx::Image)> callback) {
+  auto* service = FaviconServiceImplFactory::GetForProfile(this);
+  if (!service) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  service->GetFaviconForPageUrl(page_url, std::move(callback),
+                                &cancelable_task_tracker_);
 }
 
 int ProfileImpl::GetNumberOfBrowsers() {

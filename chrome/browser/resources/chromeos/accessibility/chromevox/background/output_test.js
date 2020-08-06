@@ -327,12 +327,11 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
           ['Time control', [{value: 'role', start: 0, end: 12}]],
           ['Date control', [{value: 'role', start: 0, end: 12}]],
           [
-            'Choose File|No file chosen|Button',
+            'No file chosen, Choose File|Button',
             [
-              {value: 'name', start: 0, end: 11},
-              {value: new Output.EarconAction('BUTTON'), start: 0, end: 11},
-              {value: 'value', start: 12, end: 26},
-              {value: 'role', start: 27, end: 33}
+              {value: 'name', start: 0, end: 27},
+              {value: new Output.EarconAction('BUTTON'), start: 0, end: 27},
+              {value: 'role', start: 28, end: 34}
             ]
           ],
           '||Search', '||Edit text'
@@ -342,7 +341,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
         const expectedBrailleValues = [
           ' ed', ' @ed 8dot', ' pwded', ' #ed', {string_: 'spnbtn', spans_: []},
           {string_: 'time'}, {string_: 'date'},
-          {string_: 'Choose File No file chosen btn'}, ' search', ' ed'
+          {string_: 'No file chosen, Choose File btn'}, ' search', ' ed'
         ];
         assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 

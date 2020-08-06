@@ -9,12 +9,12 @@
 
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shelf/shelf_observer.h"
-#include "ash/system/screen_layout_observer.h"
 #include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_bubble_base.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -35,7 +35,7 @@ class UnifiedSystemTrayView;
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
 class ASH_EXPORT UnifiedSystemTrayBubble
     : public TrayBubbleBase,
-      public ScreenLayoutObserver,
+      public display::DisplayObserver,
       public views::WidgetObserver,
       public ShelfObserver,
       public ::wm::ActivationChangeObserver,
@@ -104,8 +104,8 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   TrayBubbleView* GetBubbleView() const override;
   views::Widget* GetBubbleWidget() const override;
 
-  // ash::ScreenLayoutObserver:
-  void OnDisplayConfigurationChanged() override;
+  // display::DisplayObserver:
+  void OnDidProcessDisplayChanges() override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

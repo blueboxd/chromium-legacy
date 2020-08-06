@@ -34,4 +34,16 @@ void RecordExtensionResourceAccessResult(base::UkmSourceId ukm_source_id,
       .Record(ukm::UkmRecorder::Get());
 }
 
+void RecordContentScriptInjection(base::UkmSourceId ukm_source_id,
+                                  const ExtensionId& extension_id) {
+  if (ukm_source_id == base::kInvalidUkmSourceId)
+    return;
+  blink::IdentifiabilityMetricBuilder(ukm_source_id)
+      .Set(SurfaceForExtension(
+               blink::IdentifiableSurface::Type::kExtensionContentScript,
+               extension_id),
+           blink::IdentifiabilityDigestHelper(true))
+      .Record(ukm::UkmRecorder::Get());
+}
+
 }  // namespace extensions

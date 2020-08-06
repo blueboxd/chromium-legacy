@@ -93,7 +93,7 @@ void PaintPreviewBaseService::CapturePaintPreview(
   }
 
   PaintPreviewClient::PaintPreviewParams params(
-      mojom::Persistence::kFileSystem);
+      RecordingPersistence::kFileSystem);
   params.root_dir = root_dir;
   params.inner.clip_rect = clip_rect;
   params.inner.is_main_frame =

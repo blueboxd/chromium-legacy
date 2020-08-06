@@ -202,7 +202,7 @@ public class CustomTabTaskDescriptionHelperTest {
     }
 
     private void waitForTitle(Tab tab, String expectedTitle) throws Exception {
-        if (tab.getTitle().equals(expectedTitle)) return;
+        if (ChromeTabUtils.getTitleOnUiThread(tab).equals(expectedTitle)) return;
 
         ChromeTabUtils.waitForTitle(tab, expectedTitle);
     }

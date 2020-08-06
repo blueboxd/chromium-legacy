@@ -5,11 +5,20 @@
 #ifndef EXTENSIONS_COMMON_IDENTIFIABILITY_METRICS_H_
 #define EXTENSIONS_COMMON_IDENTIFIABILITY_METRICS_H_
 
+#include <string>
+
 #include "base/metrics/ukm_source_id.h"
+#include "extensions/common/extension_id.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
 class GURL;
 
 namespace extensions {
+
+// Encodes |type| and |extension_id| as an identifiability surface.
+blink::IdentifiableSurface SurfaceForExtension(
+    blink::IdentifiableSurface::Type type,
+    const ExtensionId& extension_id);
 
 // Used for histograms. Do not reorder.
 enum class ExtensionResourceAccessResult : int {
@@ -25,6 +34,11 @@ enum class ExtensionResourceAccessResult : int {
 void RecordExtensionResourceAccessResult(base::UkmSourceId ukm_source_id,
                                          const GURL& gurl,
                                          ExtensionResourceAccessResult result);
+
+// Records that the extension |extension_id| has injected a content script into
+// page identified by |ukm_source_id|.
+void RecordContentScriptInjection(base::UkmSourceId ukm_source_id,
+                                  const ExtensionId& extension_id);
 
 }  // namespace extensions
 

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
@@ -31,6 +32,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
@@ -247,6 +249,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle)>;
   void CreateFactoryBundles(CreateFactoryBundlesCallback callback);
 
+  // Returns the unique token that has been generated to identify this worker
+  // instance, and its corresponding GlobalScope in the renderer process. If the
+  // service worker is not currently running, this is base::nullopt.
+  const base::Optional<blink::ServiceWorkerToken>& token() const {
+    return token_;
+  }
+
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
   class ScopedLifetimeTracker;
@@ -398,6 +407,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // thread, and |coep_reporter_| has the ownership of the impl instance.
   mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter_;
+
+  // A unique identifier for this service worker instance. This is unique across
+  // the browser process, but not persistent across service worker restarts.
+  // This token is set every time the worker starts, and is plumbed through to
+  // the corresponding ServiceWorkerGlobalScope in the renderer process.
+  base::Optional<blink::ServiceWorkerToken> token_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
 

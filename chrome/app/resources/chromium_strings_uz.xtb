@@ -106,7 +106,6 @@
 <translation id="5224391634244552924">Hech qanday parol saqlanmagan. Chromium faqat saqlangan parollaringizni tekshira oladi.</translation>
 <translation id="5277894862589591112">O‘zgarishlarni tatbi qilish uchun Chromium qayta ishga tushirilishi zarur</translation>
 <translation id="5358375970380395591">Siz boshqaruvdagi hisobga kiryapsiz va uning administratoriga Chromium profilingizni boshqarishga ruxsat beryapsiz. Ilovalar, xatcho‘plar, brauzer tarixi, parollar va boshqa sozlamalar kabi barcha Chromium ma’lumotlaringiz <ph name="USER_NAME" /> hisobiga biriktiriladi. Siz bu ma’lumotlarni Google hisoblar shaxsiy kabinetidan o‘chirishingiz mumkin, lekin bu ma’lumotlarni boshqa hisob bilan bog‘lay olmaysiz. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Chromium qurilma dasturini tekshirayotganda xatolik yuz berdi</translation>
 <translation id="5386450000063123300">Chromium yangilanmoqda (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Chromium hisobiga kirishga ruxsat berish</translation>
 <translation id="5398878173008909840">Chromium brauzerining yangi versiyasi chiqdi.</translation>
@@ -117,7 +116,6 @@
 <translation id="5480860683791598150">Bu sayt manzilingizdan foydalanishi uchun Chromium brauzeriga ruxsat berishingiz lozim</translation>
 <translation id="549669000822060376">Chromium tizimning oxirgi yangilanishlarini o‘rnatib olgunicha kutib turing.</translation>
 <translation id="5496810170689441661">Chromium parollarni tahrirlashga urinmoqda. Ruxsat berish uchun Windows parolingizni kiriting.</translation>
-<translation id="5556694182460963866">Chromium zararli dasturlarni aniqlash vositasi administrator tomonidan faolsizlantirilgan</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium uchun yangilanish mavjud}=1{Chromium uchun yangilanish mavjud}other{Chromium uchun yangilanish mavjud (# kun)}}</translation>
 <translation id="5631814766731275228">Chromium profili nomi va rasmi</translation>
 <translation id="5634636535844844681">Chromium brauzeri ishlashi uchun kompyuterda Windows 7 yoki undan yangiroq versiyadagi operatsion tizim o‘rnatilgan bo‘lishi lozim.</translation>

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Iphasiwedi entsha</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> iphatha le divayisi futhi inokufinyelela kuwo wonke umsebenzi womsebenzisi, kufaka phakathi amakhasi ewebhu avakashelwe, amaphasiwedi, ne-imeyili.</translation>
 <translation id="4003384961948020559">Yehlulekile - Okukhiphayo kugcwele</translation>
+<translation id="4027485274696301677">Le-<ph name="DEVICE_TYPE" /> iphethwe yi-<ph name="ENROLLMENT_DOMAIN" />. Abalawuli bangase balungiselele ngokulawula kude idivayisi.</translation>
 <translation id="4034824040120875894">Iphrinta</translation>
 <translation id="4227825898293920515">Iphasiwedi iphelelwa isikhathi ngo-<ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ayikho imisebenzi yokuphrinta eqhubekayo</translation>
@@ -73,7 +74,6 @@ Zama ukuthepha imakrofoni ukuze ungibuze noma yini.</translation>
 <translation id="808894953321890993">Shintsha iphasiwedi</translation>
 <translation id="8208861521865154048">Izinzuzo</translation>
 <translation id="8347227221149377169">Imisebenzi yokuphrinta</translation>
-<translation id="8623849191266582420">Le-<ph name="DEVICE_TYPE" /> iphethwe yi-<ph name="ENROLLMENT_DOMAIN" />. Abalawuli bangalungiselela futhi baqaphe idivayisi baqhelile.</translation>
 <translation id="8701136875688985581">I-<ph name="ENROLLMENT_DOMAIN" /> ilawula lo msebenzisi. Ingalawula amasethingi isekudeni futhi iqaphe umsebenzi womsebenzisi.</translation>
 <translation id="871560550817059752">Yehlulekile - Uyinki uphelile</translation>
 <translation id="8747900814994928677">Qinisekisa ushintsho</translation>

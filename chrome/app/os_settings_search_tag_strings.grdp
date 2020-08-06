@@ -844,6 +844,12 @@
   <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT" desc="Text for search result item which, when clicked, navigates the user to languages and input settings.">
     Languages and input
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES" translateable="false" desc="Text for search result item which, when clicked, navigates the user to languages settings.">
+    Languages
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INPUT" translateable="false" desc="Text for search result item which, when clicked, navigates the user to input settings.">
+    Input
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_ADD_LANGUAGE" desc="Text for search result item which, when clicked, navigates the user to languages and input settings, with an option to add a new language.">
     Add languages
   </message>

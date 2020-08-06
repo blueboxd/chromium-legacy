@@ -62,7 +62,7 @@ int OnMoreData(base::TimeDelta delay,
   return kDefaultAudioParams.frames_per_buffer();
 }
 
-std::string DummyGetSessionId(std::string /* audio_group_id */) {
+std::string DummyGetSessionId(const std::string& /* audio_group_id */) {
   return "";
 }
 
@@ -155,7 +155,7 @@ class CastAudioManagerTest : public testing::Test,
           return std::move(mock_cma_backend_);
         }));
     EXPECT_EQ(mock_backend_factory_.get(),
-              audio_manager_->cma_backend_factory());
+              audio_manager_->helper_.GetCmaBackendFactory());
   }
 
   void RunThreadsUntilIdle() {

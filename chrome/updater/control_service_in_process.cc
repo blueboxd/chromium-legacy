@@ -29,28 +29,33 @@ void ControlServiceInProcess::Run(base::OnceClosure callback) {
 
   const base::TimeDelta timeSinceUpdate =
       base::Time::NowFromSystemTime() - lastUpdateTime;
-  if (timeSinceUpdate >=
-          base::TimeDelta::FromSeconds(config_->NextCheckDelay()) ||
-      timeSinceUpdate < base::TimeDelta()) {
-    scoped_refptr<UpdateServiceInProcess> update_service =
-        base::MakeRefCounted<UpdateServiceInProcess>(config_);
-
-    update_service->UpdateAll(
-        base::BindRepeating([](UpdateService::UpdateState) {}),
-        base::BindOnce(
-            [](base::OnceClosure closure,
-               scoped_refptr<updater::Configurator> config,
-               UpdateService::Result result) {
-              const int exit_code = static_cast<int>(result);
-              VLOG(0) << "UpdateAll complete: exit_code = " << exit_code;
-              if (result == UpdateService::Result::kSuccess) {
-                config->GetPrefService()->SetTime(
-                    kPrefUpdateTime, base::Time::NowFromSystemTime());
-              }
-              std::move(closure).Run();
-            },
-            base::BindOnce(std::move(callback)), config_));
+  if (base::TimeDelta() < timeSinceUpdate &&
+      timeSinceUpdate <
+          base::TimeDelta::FromSeconds(config_->NextCheckDelay())) {
+    VLOG(0) << "Skipping checking for updates:  "
+            << timeSinceUpdate.InMinutes();
+    main_task_runner_->PostTask(FROM_HERE, std::move(callback));
+    return;
   }
+
+  scoped_refptr<UpdateServiceInProcess> update_service =
+      base::MakeRefCounted<UpdateServiceInProcess>(config_);
+
+  update_service->UpdateAll(
+      base::BindRepeating([](UpdateService::UpdateState) {}),
+      base::BindOnce(
+          [](base::OnceClosure closure,
+             scoped_refptr<updater::Configurator> config,
+             UpdateService::Result result) {
+            const int exit_code = static_cast<int>(result);
+            VLOG(0) << "UpdateAll complete: exit_code = " << exit_code;
+            if (result == UpdateService::Result::kSuccess) {
+              config->GetPrefService()->SetTime(
+                  kPrefUpdateTime, base::Time::NowFromSystemTime());
+            }
+            std::move(closure).Run();
+          },
+          base::BindOnce(std::move(callback)), config_));
 }
 
 void ControlServiceInProcess::Uninitialize() {

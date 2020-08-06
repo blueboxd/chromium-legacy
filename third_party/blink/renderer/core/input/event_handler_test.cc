@@ -3069,4 +3069,128 @@ TEST_F(EventHandlerSimTest, TestNoCrashOnMouseWheelZeroDelta) {
             GetDocument().View()->LayoutViewport()->GetScrollOffset().Width());
 }
 
+// The mouse wheel events which have the phases of "MayBegin" or "Cancel"
+// should fire wheel events to the DOM.
+TEST_F(EventHandlerSimTest, TestNoWheelEventWithPhaseMayBeginAndCancel) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body>
+      <div id="area" style="width:100px;height:100px">
+      </div>
+      <p id='log'>no wheel event</p>
+    </body>
+    <script>
+      document.addEventListener('wheel', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'received wheel event, deltaX: ' + e.deltaX + ' deltaY: ' + e.deltaY;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(50, 50);
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  wheel_event.SetPositionInScreen(50, 50);
+  wheel_event.delta_x = 0;
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseMayBegin;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element.InnerHTML().Utf8());
+
+  wheel_event.phase = WebMouseWheelEvent::kPhaseCancelled;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element.InnerHTML().Utf8());
+}
+
+// The mouse wheel events which have the phases of "End" should fire wheel
+// events to the DOM, but for other phases like "Begin", "Change" and
+// "Stationary", there should be wheels evnets fired to the DOM.
+TEST_F(EventHandlerSimTest, TestWheelEventsWithDifferentPhases) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body>
+      <div id="area" style="width:100px;height:100px">
+      </div>
+      <p id='log'>no wheel event</p>
+    </body>
+    <script>
+      document.addEventListener('wheel', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'received wheel event, deltaX: ' + e.deltaX + ' deltaY: ' + e.deltaY;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(50, 50);
+  Compositor().BeginFrame();
+
+  auto* element = GetDocument().getElementById("log");
+  WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  wheel_event.SetPositionInScreen(50, 50);
+  wheel_event.delta_x = 0;
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseMayBegin;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -1;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseBegan;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 1",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -2;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseChanged;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 2",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -3;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseChanged;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 3",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -4;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseStationary;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 4",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -5;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseChanged;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 5",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseEnded;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element->innerHTML().Utf8());
+}
+
 }  // namespace blink

@@ -864,6 +864,7 @@ void EmbeddedWorkerInstance::Start(
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
+  token_ = blink::ServiceWorkerToken::Create();
 
   for (auto& observer : listener_list_)
     observer.OnStarting();
@@ -873,6 +874,7 @@ void EmbeddedWorkerInstance::Start(
   params->wait_for_debugger = false;
   params->subresource_loader_updater =
       subresource_loader_updater_.BindNewPipeAndPassReceiver();
+  params->service_worker_token = token_.value();
 
   // TODO(https://crbug.com/978694): Consider a reset flow since new mojo types
   // check is_bound strictly.
@@ -1373,6 +1375,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   status_ = EmbeddedWorkerStatus::STOPPED;
   starting_phase_ = NOT_STARTING;
   thread_id_ = ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId;
+  token_ = base::nullopt;
 }
 
 void EmbeddedWorkerInstance::OnSetupFailed(

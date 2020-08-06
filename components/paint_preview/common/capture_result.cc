@@ -12,7 +12,7 @@ RecordingParams::RecordingParams(const base::UnguessableToken& document_guid)
       capture_links(true),
       max_capture_size(0) {}
 
-CaptureResult::CaptureResult(mojom::Persistence persistence)
+CaptureResult::CaptureResult(RecordingPersistence persistence)
     : persistence(persistence) {}
 
 CaptureResult::~CaptureResult() = default;

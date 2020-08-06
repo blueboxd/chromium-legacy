@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">پھیلانے کیلئے تھپتھپائیں</translation>
 <translation id="1291207594882862231">سرگزشت، کوکیز، سائٹ ڈیٹا، کیش کو صاف کریں…</translation>
 <translation id="129553762522093515">حال ہی میں بند کردہ</translation>
+<translation id="1298077576058087471">60 فیصد تک ڈیٹا کی بچت کریں، آج کی خبریں پڑھیں</translation>
 <translation id="1303339473099049190">وہ پاس ورڈ تلاش نہیں کیا جا سکا۔ اپنے ہجے چیک کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> سے ارسال کردہ</translation>
 <translation id="1310482092992808703">گروپ ٹیبز</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">لائٹ موڈ ری سیٹ کریں؟</translation>
 <translation id="1868024384445905608">‏Chrome اب فائلز کو مزید تیزی سے ڈاؤن لوڈ کرتا ہے</translation>
 <translation id="1874760110381325409">‏آپ اپنے Google اکاؤنٹ سے سائن ان ہو جائیں گے\n(اس سے Chrome Sync آن نہیں ہوگا)</translation>
+<translation id="1877026089748256423">‏Chrome پرانا ہے</translation>
 <translation id="1883903952484604915">میری فائلز</translation>
 <translation id="1919950603503897840">رابطے منتخب کریں</translation>
 <translation id="1925021887439448749">حسب ضرورت ویب پتہ درج کریں</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">جدید تر ورژن دستیاب ہے</translation>
 <translation id="2593272815202181319">مونو اسپیس</translation>
 <translation id="2612676031748830579">کارڈ نمبر</translation>
-<translation id="2622559029861875898">‏Chrome اپ ڈیٹس چیک نہیں کر سکتا ہے۔ اپنا انٹرنیٹ کنکشن چیک کرنے کی کوشش کریں۔</translation>
 <translation id="2625189173221582860">پاسورڈ کاپی ہو گیا</translation>
 <translation id="2631006050119455616">بچت ہوئی</translation>
 <translation id="2647434099613338025">زبان شامل کریں</translation>
@@ -219,7 +220,7 @@
 <translation id="2744248271121720757">فوری تلاش یا متعلقہ کارروائی کے لیے کسی لفظ پر تھپتھپائیں</translation>
 <translation id="2760989362628427051">اپنے آلہ کے بیٹری سیور یا گہری تھیم کے آن ہونے پر گہری تھیم آن کریں</translation>
 <translation id="2762000892062317888">ابھی ابھی</translation>
-<translation id="2771869497727323769">ٹیکسٹ کا لنک تخلیق نہیں کیا جا سکتا۔ ایپ میں صفحہ کیلئے لنک کا اشتراک کریں۔</translation>
+<translation id="2771869497727323769">ٹیکسٹ کا لنک تخلیق نہیں کیا جا سکا۔ ایپ میں صفحہ کے لنک کا اشتراک کریں۔</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> سیکنڈ باقی</translation>
 <translation id="2779651927720337254">ناکام ہو گیا</translation>
 <translation id="2781151931089541271">1 سیکنڈ باقی</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">‏مقام آف ہے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں اسے آن کریں۔</translation>
 <translation id="3058498974290601450">آپ ترتیبات میں کسی بھی وقت مطابقت پذیری کو آن کر سکتے ہیں</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> بُک مارک}other{<ph name="BOOKMARKS_COUNT_MANY" /> بُک مارکس}}</translation>
+<translation id="3062802207422175757">‏Chrome پر آپ کی دلچسپیوں سے متعلق مضامین</translation>
 <translation id="3089395242580810162">پوشیدگی ٹیب میں کھولیں</translation>
 <translation id="3114012059975132928">ویڈیو پلیئر</translation>
+<translation id="3114507951000454849">آج کی خبریں پڑھیں <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">اعلانات</translation>
 <translation id="3137521801621304719">پوشیدگی وضع ترک کریں</translation>
 <translation id="3143515551205905069">مطابقت پذیری منسوخ کریں</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">‏Chrome ابھی VR کیلئے تیار ہو رہا ہے۔ Chrome کو بعد میں دوبارہ شروع کریں۔</translation>
 <translation id="3568688522516854065">اپنے دیگر آلات سے اپنے ٹیبز حاصل کرنے کیلئے، سائن ان کریں اور سِنک کو آن کریں</translation>
 <translation id="3587482841069643663">سبھی</translation>
+<translation id="3587596251841506391">ویب پر سیکیورٹی کو بہتر بنانے میں مدد کریں</translation>
 <translation id="3590487821116122040">‏سائٹ کا وہ اسٹوریج جسے Chrome اہم نہیں خیال کرتا ہے (مثلاً بغیر محفوظ کردہ ترتیبات والی سائٹس یا وہ جنہیں آپ اکثر ملاحظہ نہیں کرتے ہیں)</translation>
 <translation id="3594780231884063836">ویڈیو خاموش کریں</translation>
 <translation id="3599863153486145794">‏سبھی سائن ان کردہ آلات سے سرگزشت صاف کر دیتا ہے۔ ممکن ہے کہ <ph name="BEGIN_LINK" />myactivity.google<ph name="END_LINK" /> پر آپ کے Google اکاؤنٹ میں براؤزنگ کی سرگزشت کی دیگر شکلیں موجود ہوں۔</translation>
@@ -510,7 +514,7 @@
 <translation id="5040262127954254034">رازداری</translation>
 <translation id="5087580092889165836">کارڈ شامل کریں</translation>
 <translation id="509429900233858213">ایک خرابی پیش آگئی۔</translation>
-<translation id="5100748015044654621">کسی ایپ میں نمایاں کردہ متن میں لنک کا اشتراک کریں</translation>
+<translation id="5100748015044654621">کسی ایپ میں نمایاں کردہ متن کے لنک کا اشتراک کریں</translation>
 <translation id="510275257476243843">1 گھنٹہ باقی</translation>
 <translation id="5123685120097942451">پوشیدگی ٹیب</translation>
 <translation id="5127805178023152808">‏Sync آف ہے</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">پتہ بار پر جائیں</translation>
 <translation id="5447201525962359567">کوکیز اور دیگر مقامی طور پر اسٹور کردہ ڈیٹا سمیت، سائٹ کا سبھی اسٹوریج</translation>
 <translation id="545042621069398927">آپ کے ڈاؤن لوڈ کی رفتار بڑھائی جا رہی ہے۔</translation>
-<translation id="5454513945794364671">آپ کے منتظم نے محفوظ براؤزنگ کو آف کر دیا ہے</translation>
 <translation id="5456381639095306749">صفحہ ڈاؤن لوڈ کریں</translation>
 <translation id="548278423535722844">نقشہ کی ایپ میں کھولیں</translation>
 <translation id="5487521232677179737">ڈیٹا صاف کریں</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">سیٹ اپ جاری ہے…</translation>
 <translation id="6111020039983847643">استعمال شدہ ڈیٹا</translation>
 <translation id="6112702117600201073">صفحہ کو ریفریش کرنا</translation>
+<translation id="6122831415929794347">محفوظ براؤزنگ آن کریں؟</translation>
 <translation id="6127379762771434464">آئٹم ہٹا دیا گیا</translation>
 <translation id="6140709049082532940">بہتر کردہ حفاظت:</translation>
 <translation id="6140912465461743537">ملک/علاقہ</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">اس آلہ سے اپنے پاس ورڈز برآمد کرنے کے لئے ترتیبات میں اسکرین لاک آن کریں</translation>
 <translation id="6157392216611456285">‫<ph name="APP_NAME" /> منتخب کریں</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ڈیٹا کی سیونگز</translation>
+<translation id="6186394685773237175">کوئی متاثرہ پاس ورڈ نہیں ملا</translation>
 <translation id="6201345951596836663">لنک کاپی ہو گیا</translation>
 <translation id="6206830853671714236">ڈاؤن لوڈ کرنے کا وقت منتخب کریں</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> نہیں؟</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">‏اپنے دیگر آلات پر Chrome میں آپ نے جو ٹیبز کھولے ہیں وہ یہاں ظاہر ہوں گے۔</translation>
 <translation id="6583199322650523874">موجودہ صفحہ کا بُک مارک بنائیں</translation>
 <translation id="6588043302623806746">‏محفوظ DNS استعمال کریں</translation>
+<translation id="6590471736817333463">60 فیصد تک ڈیٹا کی بچت کریں</translation>
 <translation id="6593061639179217415">ڈیسک ٹاپ سائٹ</translation>
 <translation id="6597891566292541626">‏QR/بار کوڈ کو اس فریم میں رکھیں۔</translation>
 <translation id="6600954340915313787">‏Chrome پر کاپی کر دیا گیا</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">پاس ورڈ</translation>
 <translation id="6659594942844771486">ٹیب</translation>
 <translation id="6663079968236414793">ٹیکسٹ کا لنک</translation>
-<translation id="666573598175432848">‏Chrome کا جدید تر ورژن دستیاب ہے۔ Play اسٹور میں جانے کیلئے اس عنصر پر تھپتھپائیں۔</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> میں کھولیں</translation>
 <translation id="666981079809192359">‏Chrome کی رازداری کا نوٹس</translation>
 <translation id="6671495933530132209">تصویر کاپی کریں</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">1 دن باقی</translation>
 <translation id="8200772114523450471">دوبارہ شروع کریں</translation>
 <translation id="8209050860603202033">تصویر کھولیں</translation>
+<translation id="8218052821161047641">تیز صفحہ</translation>
 <translation id="8218622182176210845">اپنے اکاؤنٹ کا نظم کریں</translation>
 <translation id="8223642481677794647">فیڈ کارڈ مینو</translation>
 <translation id="8224471946457685718">‏Wi-Fi پر اپنے لئے مضامین ڈاؤن لوڈ کریں</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، ٹیب</translation>
 <translation id="8854223127042600341">اپنی آف لائن فائلز دیکھیں</translation>
 <translation id="889338405075704026">‏Chrome کی ترتیبات میں جائیں</translation>
-<translation id="8893398027601469503">‏آپ Chrome کا تازہ ترین ورژن چلا رہے ہیں</translation>
 <translation id="8898822736010347272">‏آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs، سسٹم کی محدود معلومات اور صفحے کا کچھ مواد Google کو بھیجتا ہے تاکہ نئے خطرات کا پتا لگانے اور ویب پر موجود سبھی کی حفاظت میں مدد مل سکے۔</translation>
 <translation id="8909135823018751308">اشتراک کریں…</translation>
 <translation id="8912362522468806198">‏Google اکاؤنٹ</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">کالز نہیں کی جا سکیں</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="926205370408745186">‏ڈیجیٹل فلاح و بہبود سے اپنی Chrome کی سرگرمی ہٹائیں</translation>
+<translation id="927968626442779827">‏Google Chrome پر لائٹ موڈ کا استعمال کریں</translation>
 <translation id="932327136139879170">ھوم</translation>
 <translation id="93753284658583800">ہوم صفحہ کو تبدیل کر دیا گیا</translation>
 <translation id="938850635132480979">خرابی: <ph name="ERROR_CODE" /></translation>

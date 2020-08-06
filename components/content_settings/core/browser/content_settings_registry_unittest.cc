@@ -133,13 +133,14 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
   // disable features like popup blocking, download blocking or ad blocking.
   // They do not allow access to user data.
   const ContentSettingsType safe_types[] = {
-      ContentSettingsType::PLUGINS,              //
-      ContentSettingsType::POPUPS,               //
-      ContentSettingsType::AUTOMATIC_DOWNLOADS,  //
-      ContentSettingsType::ADS,                  //
-      ContentSettingsType::DURABLE_STORAGE,      //
+      ContentSettingsType::PLUGINS,
+      ContentSettingsType::POPUPS,
+      ContentSettingsType::AUTOMATIC_DOWNLOADS,
+      ContentSettingsType::ADS,
+      ContentSettingsType::DURABLE_STORAGE,
       ContentSettingsType::LEGACY_COOKIE_ACCESS,
       ContentSettingsType::STORAGE_ACCESS,
+      ContentSettingsType::INSECURE_PRIVATE_NETWORK,
   };
 
   for (const ContentSettingsInfo* info : *registry()) {
@@ -205,6 +206,11 @@ TEST_F(ContentSettingsRegistryTest, GetInitialDefaultSetting) {
   const ContentSettingsInfo* popups =
       registry()->Get(ContentSettingsType::POPUPS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, popups->GetInitialDefaultSetting());
+
+  const ContentSettingsInfo* insecure_private_network =
+      registry()->Get(ContentSettingsType::INSECURE_PRIVATE_NETWORK);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            insecure_private_network->GetInitialDefaultSetting());
 }
 
 }  // namespace content_settings

@@ -399,9 +399,7 @@ class BLEClient {
         }
 
         std::vector<uint8_t> plaintext;
-        if (!crypter_->Decrypt(
-                static_cast<device::FidoBleDeviceCommand>(message->first),
-                message->second, &plaintext) ||
+        if (!crypter_->Decrypt(message->second, &plaintext) ||
             plaintext.empty()) {
           FIDO_LOG(ERROR) << "Decryption failed";
           return false;
@@ -889,7 +887,8 @@ class CableInterface : public BLEClient::Delegate {
     std::array<uint8_t, AES_BLOCK_SIZE> eid;
     AES_encrypt(/*in=*/eid_plaintext, /*out=*/eid.data(), &key);
 
-    out_nonce_and_eid->first = nonce;
+    // TODO: nonces are now a different size.
+    // out_nonce_and_eid->first = nonce;
     out_nonce_and_eid->second = eid;
 
     Java_CableAuthenticator_sendBLEAdvert(env_, cable_authenticator_,

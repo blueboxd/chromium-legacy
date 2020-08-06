@@ -44,12 +44,12 @@ class PaintPreviewClient
 
   // Augmented version of mojom::PaintPreviewServiceParams.
   struct PaintPreviewParams {
-    explicit PaintPreviewParams(mojom::Persistence persistence);
+    explicit PaintPreviewParams(RecordingPersistence persistence);
     ~PaintPreviewParams();
 
     // Indicates where the PaintPreviewRecorder should store its intermediate
     // artifacts.
-    mojom::Persistence persistence;
+    RecordingPersistence persistence;
 
     // The root directory in which to store paint_previews. This should be
     // a subdirectory inside the active user profile's directory.
@@ -94,10 +94,10 @@ class PaintPreviewClient
     InProgressDocumentCaptureState();
     ~InProgressDocumentCaptureState();
 
-    mojom::Persistence persistence;
+    RecordingPersistence persistence;
 
-    // If |Persistence::kFileSystem|, the root directory to store artifacts to.
-    // Ignored if |Persistence::kMemoryBuffer|.
+    // If |RecordingPersistence::kFileSystem|, the root directory to store
+    // artifacts to. Ignored if |RecordingPersistence::kMemoryBuffer|.
     base::FilePath root_dir;
 
     base::UnguessableToken root_frame_token;
@@ -125,8 +125,8 @@ class PaintPreviewClient
     // All the render frames that are allowed to be captured.
     base::flat_set<base::UnguessableToken> accepted_tokens;
 
-    // If |Persistence::kMemoryBuffer|, this will contain the successful
-    // recordings. Empty if |Persistence::FileSystem|
+    // If |RecordingPersistence::kMemoryBuffer|, this will contain the
+    // successful recordings. Empty if |RecordingPersistence::FileSystem|
     base::flat_map<base::UnguessableToken, mojo_base::BigBuffer>
         serialized_skps;
 

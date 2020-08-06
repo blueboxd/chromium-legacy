@@ -93,6 +93,9 @@ class IdentifiableSurface {
     // Attempt to access extension URLs.
     kExtensionFileAccess = 5,
 
+    // Extension running content-script.
+    kExtensionContentScript = 6,
+
     // We can use values up to and including |kMax|.
     kMax = (1 << kTypeBits) - 1
   };

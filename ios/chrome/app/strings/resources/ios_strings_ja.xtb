@@ -16,13 +16,14 @@
 <translation id="1104948393051856124">同意して続行</translation>
 <translation id="1112015203684611006">印刷できませんでした。</translation>
 <translation id="1125564390852150847">新しいタブを作成。</translation>
+<translation id="1134509371063488162">${urls} をシークレット モードで開く</translation>
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1165039591588034296">エラー</translation>
 <translation id="1172898394251786223">次の項目</translation>
 <translation id="1176932207622159128">画像を保存できません</translation>
 <translation id="1180526666083833456">デバイス間の同期とカスタマイズを行います。</translation>
 <translation id="1181037720776840403">削除</translation>
-<translation id="1185569544548277362">新情報: Chrome を既定に設定できます。<ph name="BEGIN_LINK" />設定を開く<ph name="END_LINK" /></translation>
+<translation id="1185569544548277362">New: Chrome を既定のブラウザに設定できます。<ph name="BEGIN_LINK" />設定を開く<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">新しく検索</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1219674500290482172">インターネットに接続できません。</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">アカウントを追加</translation>
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="2273327106802955778">その他のメニュー</translation>
+<translation id="2302742851632557585">ウェブサイトでパスワードを変更</translation>
 <translation id="2316709634732130529">推奨されたパスワードを使用</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
 <translation id="2339560363438331454">同期と Google サービス</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">お支払い方法を追加...</translation>
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3037605927509011580">エラー</translation>
+<translation id="3081338492074632642">保存するパスワードが <ph name="WEBSITE" /> のパスワードと一致していることを確認してください</translation>
 <translation id="3112556859945124369">マーク...</translation>
 <translation id="3131206671572504478">すべてブロック</translation>
 <translation id="3153862085237805241">カードを保存</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">開いているタブ</translation>
+<translation id="3272527697863656322">キャンセル</translation>
 <translation id="3277021493514034324">サイトのアドレスがコピーされました</translation>
 <translation id="3290875554372353449">アカウントの選択</translation>
 <translation id="3311748811247479259">オフ</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">翻訳が利用可能です。画面の下の方にオプションがあります。</translation>
 <translation id="3393920035788932672">ポップアップ許可済み</translation>
 <translation id="3425644765244388016">カードのニックネーム</translation>
+<translation id="3433057996795775706">このパスワードを削除しても、<ph name="WEBSITE" /> のアカウントは削除されません。他のサイトに被害が及ばないように、<ph name="WEBSITE" /> でパスワードを変更してください。</translation>
 <translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3670030362669914947">番号</translation>
 <translation id="3691593122358196899">「<ph name="FOLDER_TITLE" />」にブックマークしました</translation>
+<translation id="3740397331642243698">入力された URL を Google Chrome のシークレット モードで開きます。</translation>
 <translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3775743491439407556">同期が機能していません</translation>
 <translation id="3779810277399252432">インターネットに接続されていません。</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">情報</translation>
 <translation id="4659126640776004816">この機能は Google アカウントにログインすると有効になります。</translation>
 <translation id="4659667755519643272">タブ切り替えモードを開始</translation>
+<translation id="46614316059270592">パスワードを保存</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> としてログインしています。
 
 データは同期パスフレーズで暗号化されます。同期を開始するには、同期パスフレーズを入力してください。</translation>
@@ -402,6 +409,7 @@
 <translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
 <translation id="5857770089550859117">同期を開始するにはパスフレーズが必要です。</translation>
+<translation id="5860033963881614850">オフ</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1件の項目を移動しました</translation>
 <translation id="5897956970858271241">コピーしたリンクにアクセス</translation>
@@ -502,7 +510,6 @@
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6841409746189899007">リンクを作成</translation>
 <translation id="6851516051005285358">PC 版サイトを見る</translation>
-<translation id="6856384753476268833">組織によって管理されています。</translation>
 <translation id="6858855187367714033">スキャンされました</translation>
 <translation id="6859944681507688231">QR コードまたはクレジット カードをスキャンするには、設定でカメラを有効にしてください。</translation>
 <translation id="6869389390665537774">アクセスしたページを確認したり履歴から消去したりできます</translation>
@@ -524,7 +531,6 @@
 <translation id="7006788746334555276">コンテンツの設定</translation>
 <translation id="7015203776128479407">最初の同期設定が終了していません。同期は無効です。</translation>
 <translation id="7029809446516969842">パスワード</translation>
-<translation id="7030675613184250187">リーディング リストにページを保存すると、後から簡単にアクセスして、オフラインでも読めるようになります</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7099761977003084116">最近使ったタブ</translation>
@@ -587,12 +593,12 @@
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
 <translation id="7887198238286927132">プライバシー保護のため、Chrome ではこの欄の自動入力は行われません。</translation>
-<translation id="791251013315685175"><ph name="COMPANY" /> によって管理されています。</translation>
 <translation id="7918293828610777738">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> &gt; [<ph name="READ_LATER_TEXT" />] をタップします。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">パスワードをエクスポート...</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="794799177247607889">ログ記録を停止</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{不正使用されたパスワードはありません}=1{不正使用されたパスワード: {COUNT} 件}other{不正使用されたパスワード: {COUNT} 件}}</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7966516440812255683">サイトは、Cookie を使用してブラウジングの利便性を改善することができます。たとえばログイン状態の維持や、ショッピング カートの中身の保存が可能になります。
 
@@ -606,6 +612,7 @@
 <translation id="8023878949384262191">セクションを展開します。</translation>
 <translation id="804427445359061970">他のデバイスで開いたタブはここに表示されます</translation>
 <translation id="8059533439631660104">セクションを折りたたみます。</translation>
+<translation id="8065292699993359127">URL を Chrome のシークレット モードで開く</translation>
 <translation id="806745655614357130">データを別に保持する</translation>
 <translation id="8073670137947914548">ダウンロードが完了しました</translation>
 <translation id="8073872304774253879">検索とブラウジングを改善する</translation>

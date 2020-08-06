@@ -290,10 +290,8 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       GetMediaTaskRunner(),
-      ServiceConnector::MakeRemote(kBrowserProcessClientId),
-      BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
+      ServiceConnector::MakeRemote(kBrowserProcessClientId));
 #else
   return std::make_unique<media::CastAudioManager>(
       std::move(audio_thread), audio_log_factory,

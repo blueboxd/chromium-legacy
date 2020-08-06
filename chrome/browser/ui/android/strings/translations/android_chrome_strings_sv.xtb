@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Tryck och utöka</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
+<translation id="1298077576058087471">Spara upp till 60 % data och läs dagens nyheter</translation>
 <translation id="1303339473099049190">Det gick inte att hitta lösenordet. Kontrollera stavningen och försök igen.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Skickades från <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppera flikar</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Vill du återställa begränsat läge?</translation>
 <translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
 <translation id="1874760110381325409">Du loggas in med Google-kontot\n(detta aktiverar inte Chrome Sync)</translation>
+<translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="1883903952484604915">Mina filer</translation>
 <translation id="1919950603503897840">Välj kontakter</translation>
 <translation id="1925021887439448749">Ange en anpassad webbadress</translation>
@@ -204,7 +206,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2587052924345400782">Det finns en nyare version</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
-<translation id="2622559029861875898">Chrome kan inte söka efter uppdateringar. Testa att kontrollera internetanslutningen.</translation>
 <translation id="2625189173221582860">Lösenordet har kopierats</translation>
 <translation id="2631006050119455616">Sparat</translation>
 <translation id="2647434099613338025">Lägg till språk</translation>
@@ -261,8 +262,10 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="305593374596241526">Plats har inaktiverats. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Du kan när som helst inaktivera synkroniseringen i inställningarna</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmärke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmärken}}</translation>
+<translation id="3062802207422175757">Artiklar om dina intressen i Chrome</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="3114012059975132928">Videospelare</translation>
+<translation id="3114507951000454849">Läs dagens nyheter <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Meddelanden</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3143515551205905069">Avbryt synkronisering</translation>
@@ -326,6 +329,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3566923219790363270">Chrome förbereds fortfarande för VR. Starta om Chrome senare.</translation>
 <translation id="3568688522516854065">Logga in och aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter</translation>
 <translation id="3587482841069643663">Alla</translation>
+<translation id="3587596251841506391">Förbättra säkerheten på webben</translation>
 <translation id="3590487821116122040">Webbplatslagring som Chrome bedömer som oviktig (t.ex. webbplatser utan sparade inställningar eller som du inte besöker ofta)</translation>
 <translation id="3594780231884063836">Stäng av ljudet för videon</translation>
 <translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -556,7 +560,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5441522332038954058">Hoppa till adressfältet</translation>
 <translation id="5447201525962359567">All webbplatslagring, inklusive cookies och annan lokalt sparad data</translation>
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
-<translation id="5454513945794364671">Administratören har inaktiverat Säker webbsökning</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
@@ -649,6 +652,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6111020039983847643">Använd data</translation>
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
+<translation id="6122831415929794347">Vill du inaktivera Säker webbsökning?</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
 <translation id="6140709049082532940">Förbättrat skydd</translation>
 <translation id="6140912465461743537">Land/region</translation>
@@ -656,6 +660,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6154478581116148741">Aktivera ett skärmlås i inställningarna om du vill exportera lösenord från den här enheten.</translation>
 <translation id="6157392216611456285">Välj <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">Inga utsatta lösenord hittades</translation>
 <translation id="6201345951596836663">Länken har kopierats</translation>
 <translation id="6206830853671714236">Välj när du vill ladda ned</translation>
 <translation id="6210748933810148297">Inte <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6573431926118603307">Här visas flikar som du har öppnat i Chrome på andra enheter.</translation>
 <translation id="6583199322650523874">Infoga ett bokmärke för den aktuella sidan</translation>
 <translation id="6588043302623806746">Använd säker DNS</translation>
+<translation id="6590471736817333463">Spara upp till 60 % data</translation>
 <translation id="6593061639179217415">Datoranpassad webbplats</translation>
 <translation id="6597891566292541626">Rama in QR-koden/streckkoden i den här rutan.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
@@ -731,7 +737,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="6663079968236414793">Länka till text</translation>
-<translation id="666573598175432848">Det finns en nyare version av Chrome. Tryck på detta element om du vill besöka Play Butik.</translation>
 <translation id="666731172850799929">Öppna i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
 <translation id="6671495933530132209">Kopiera bild</translation>
@@ -927,6 +932,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8190358571722158785">1 dag kvar</translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
+<translation id="8218052821161047641">Snabb sida</translation>
 <translation id="8218622182176210845">Hantera kontot</translation>
 <translation id="8223642481677794647">Menyn med flödeskort</translation>
 <translation id="8224471946457685718">Ladda ned artiklar för dig via Wi-Fi</translation>
@@ -1005,7 +1011,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="8854223127042600341">Se dina offlinefiler</translation>
 <translation id="889338405075704026">Öppna Chrome-inställningarna</translation>
-<translation id="8893398027601469503">Du har den senaste versionen av Chrome</translation>
 <translation id="8898822736010347272">Skickar webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll till Google för att upptäcka och blockera nya hot och skydda alla användare på internet.</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1052,6 +1057,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9209888181064652401">Det går inte att ringa</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Ta bort din aktivitet i Chrome från Digitalt välmående</translation>
+<translation id="927968626442779827">Använd begränsat läge i Google Chrome</translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="93753284658583800">Startsidan har ändrats</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>

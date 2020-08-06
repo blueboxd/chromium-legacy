@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONTENT_MANAGER_H_
 
 #include "base/containers/flat_map.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 
 class GURL;
@@ -75,7 +76,14 @@ class DlpContentManager {
 
   // Called when the restrictions for currently visible content changes.
   void OnScreenRestrictionsChanged(
-      const DlpContentRestrictionSet& restrictions) const;
+      const DlpContentRestrictionSet& added_restrictions,
+      const DlpContentRestrictionSet& removed_restrictions) const;
+
+  // Removes PrivacyScreen enforcement after delay if it's still not enforced.
+  void MaybeRemovePrivacyScreenEnforcement() const;
+
+  // Get the delay before switching privacy screen off.
+  static base::TimeDelta GetPrivacyScreenOffDelayForTesting();
 
   // Map from currently known confidential WebContents to the restrictions.
   base::flat_map<content::WebContents*, DlpContentRestrictionSet>

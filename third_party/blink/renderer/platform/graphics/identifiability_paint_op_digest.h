@@ -10,6 +10,7 @@
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/paint_cache.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
@@ -46,8 +47,8 @@ class PLATFORM_EXPORT IdentifiabilityPaintOpDigest {
     prefix_skip_count_ = prefix_skip_count;
   }
 
-  // The digest that was calculated, based on the PaintOps observed.
-  uint64_t digest() const { return digest_; }
+  // The IdentifiabilityToken (digest), based on the PaintOps observed.
+  IdentifiableToken GetToken() const { return builder_.GetToken(); }
 
   bool encountered_partially_digested_image() const {
     return encountered_partially_digested_image_;
@@ -71,9 +72,8 @@ class PLATFORM_EXPORT IdentifiabilityPaintOpDigest {
   // IdentifiabilityPaintOpDigest object.
   const int max_digest_ops_;
 
-  // The current identifiability digest -- potentially updated every
-  // MaybeUpdateDigest() call.
-  uint64_t digest_ = 0;
+  // Potentially updated every MaybeUpdateDigest() call.
+  IdentifiableTokenBuilder builder_;
 
   // The number of PaintOps that have contributed to the current digest -- used
   // to stop updating the digest after a threshold number of operations to avoid

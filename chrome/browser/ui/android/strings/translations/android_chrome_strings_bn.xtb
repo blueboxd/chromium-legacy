@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">প্রসারিত করতে আলতো চাপুন</translation>
 <translation id="1291207594882862231">ইতিহাস, কুকিজ, সাইট ডেটা, ক্যাশে সাফ করে...</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
+<translation id="1298077576058087471">৬০% পর্যন্ত ডেটা সেভ করুন, আজকের খবর পড়ুন</translation>
 <translation id="1303339473099049190">ওই পাসওয়ার্ডটি খুঁজে পাওয়া যায়নি। বানান পরীক্ষা করে আবার চেষ্টা করে দেখুন।</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> থেকে পাঠানো হয়েছে</translation>
 <translation id="1310482092992808703">ট্যাবগুলি গ্রুপ করুন</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">লাইট মোড রিসেট করবেন?</translation>
 <translation id="1868024384445905608">Chrome এখন আরও দ্রুত ফাইল ডাউনলোড করে</translation>
 <translation id="1874760110381325409">আপনি নিজের Google অ্যাকাউন্টের মাধ্যমে সাইন-ইন হয়ে যাবেন\n(এটি Chrome সিঙ্ক' ফিচারের সুবিধা চালু করবে না)</translation>
+<translation id="1877026089748256423">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="1883903952484604915">আমার ফাইল</translation>
 <translation id="1919950603503897840">পরিচিতিগুলি বেছে নিন</translation>
 <translation id="1925021887439448749">কাস্টম ওয়েব ঠিকানা লিখুন</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">নতুন ভার্সন উপলভ্য</translation>
 <translation id="2593272815202181319">মোনোস্পেস</translation>
 <translation id="2612676031748830579">কার্ড নম্বর</translation>
-<translation id="2622559029861875898">Chrome কোনও আপডেট আছে কিনা তা চেক করে দেখতে পারছে না। আপনার ইন্টারনেট কানেকশন চেক করে দেখে নিন।</translation>
 <translation id="2625189173221582860">পাসওয়ার্ড কপি করা হয়েছে</translation>
 <translation id="2631006050119455616">সংরক্ষিত হয়েছে</translation>
 <translation id="2647434099613338025">ভাষা যুক্ত করুন</translation>
@@ -219,7 +220,7 @@
 <translation id="2744248271121720757">ঝটপট সার্চ এবং সম্পর্কিত অ্যাকশন দেখতে একটি শব্দ ট্যাপ করুন</translation>
 <translation id="2760989362628427051">আপনার ডিভাইসে গাঢ় থিম বা ব্যাটারি সেভার চালু থাকলে, গাঢ় থিম চালু করুন</translation>
 <translation id="2762000892062317888">এখনই</translation>
-<translation id="2771869497727323769">টেক্সট করার জন্য লিঙ্ক তৈরি করা যাচ্ছে না। অ্যাপে থাকা পৃষ্ঠাতে লিঙ্ক শেয়ার করুন।</translation>
+<translation id="2771869497727323769">টেক্সটের লিঙ্ক তৈরি করা যাচ্ছে না। কোনও অ্যাপে পৃষ্ঠার লিঙ্ক শেয়ার করুন।</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> সেকেন্ড বাকি আছে</translation>
 <translation id="2779651927720337254">করা যায়নি</translation>
 <translation id="2781151931089541271">১ সেকেন্ড বাকি আছে</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">লোকেশনটি বন্ধ, <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="3058498974290601450">যেকোনও সময় সেটিংস থেকে আপনি সিঙ্ক চালু করতে পারেন</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />টি বুকমার্ক}one{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}other{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}}</translation>
+<translation id="3062802207422175757">Chrome-এ আপনার পছন্দের নিবন্ধ রয়েছে</translation>
 <translation id="3089395242580810162">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="3114012059975132928">ভিডিও প্লেয়ার</translation>
+<translation id="3114507951000454849">আজকের খবর পড়ুন <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">ঘোষণা</translation>
 <translation id="3137521801621304719">ছদ্মবেশী মোড ছেড়ে যান</translation>
 <translation id="3143515551205905069">সিঙ্ক বাতিল করুন</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">ভি আর সমর্থনের জন্য Chrome-এ এখনও কাজ চলছে। পরে Chrome রিস্টার্ট করুন।</translation>
 <translation id="3568688522516854065">আপনার অন্যান্য ডিভাইস থেকে ট্যাবগুলি পেতে সাইন-ইন করে সিঙ্ক বিকল্প চালু করুন</translation>
 <translation id="3587482841069643663">সকল</translation>
+<translation id="3587596251841506391">ওয়েবে নিরাপত্তা উন্নত করতে সাহায্য করে</translation>
 <translation id="3590487821116122040">যে সাইট স্টোরেজকে Chrome গুরুত্বপূর্ণ মনে করে না (উদাঃ সেভকরা সেটিংস বিহীন সাইটগুলি বা আপনি প্রায়শই ঘুরে দেখেন না এমন সাইটগুলি)</translation>
 <translation id="3594780231884063836">ভিডিওটি মিউট করুন</translation>
 <translation id="3599863153486145794">সমস্ত সাইন-ইন করা ডিভাইসগুলি থেকে ইতিহাস মুছে ফেলে। <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />-এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিংয়ের ইতিহাস থাকতে পারে।</translation>
@@ -512,7 +516,7 @@
 <translation id="5040262127954254034">গোপনীয়তা</translation>
 <translation id="5087580092889165836">কার্ড জুড়ুন</translation>
 <translation id="509429900233858213">একটি ত্রুটি ঘটেছে৷</translation>
-<translation id="5100748015044654621">অ্যাপে থাকা হাইলাইট করা টেক্সট লিঙ্ক শেয়ার করুন</translation>
+<translation id="5100748015044654621">হাইলাইট করা টেক্সটের লিঙ্ক কোনও অ্যাপে শেয়ার করুন</translation>
 <translation id="510275257476243843">১ ঘণ্টা বাকি আছে</translation>
 <translation id="5123685120097942451">ছদ্মবেশী ট্যাব</translation>
 <translation id="5127805178023152808">সিঙ্ক বন্ধ রয়েছে</translation>
@@ -558,7 +562,6 @@
 <translation id="5441522332038954058">অ্যাড্রেস বারে চলে যান</translation>
 <translation id="5447201525962359567">কুকিজ ও অন্যান্য স্থানীয়ভাবে সংরক্ষণ করা তথ্য সহ সাইটের সকল সঞ্চয়স্থান</translation>
 <translation id="545042621069398927">আপনার ডাউনলোডের স্পিড বাড়ানো হচ্ছে।</translation>
-<translation id="5454513945794364671">আপনার অ্যাডমিনিস্ট্রেটর Safe Browsing বন্ধ করে দিয়েছে</translation>
 <translation id="5456381639095306749">পৃষ্ঠা ডাউনলোড করুন</translation>
 <translation id="548278423535722844">ম্যাপ অ্যাপ্লিকেশানে খুলুন</translation>
 <translation id="5487521232677179737">ডেটা সাফ করুন</translation>
@@ -651,6 +654,7 @@
 <translation id="6108923351542677676">সেটআপ চলছে...</translation>
 <translation id="6111020039983847643">ব্যবহৃত ডেটা</translation>
 <translation id="6112702117600201073">রিফ্রেশ পৃষ্ঠা</translation>
+<translation id="6122831415929794347">Safe Browsing বন্ধ করতে চান?</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6140709049082532940">উন্নত সুরক্ষা:</translation>
 <translation id="6140912465461743537">দেশ/অঞ্চল</translation>
@@ -658,6 +662,7 @@
 <translation id="6154478581116148741">এই ডিভাইস থেকে আপনার পাসওয়ার্ড এক্সপোর্ট করতে সেটিংসে স্ক্রিন লক চালু করুন</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> বেছে নিন</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ডেটা সঞ্চয়</translation>
+<translation id="6186394685773237175">কোনও চুরি হয়ে যাওয়া পাসওয়ার্ড খুঁজে পাওয়া যায়নি</translation>
 <translation id="6201345951596836663">লিঙ্ক কপি করা হয়েছে</translation>
 <translation id="6206830853671714236">কোন সময় ডাউনলোড করবেন, তা বেছে নিন</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> না?</translation>
@@ -720,6 +725,7 @@
 <translation id="6573431926118603307">আপনার অন্য ডিভাইসগুলিতে Chrome এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
 <translation id="6583199322650523874">বর্তমান পৃষ্ঠাটি বুকমার্ক করুন</translation>
 <translation id="6588043302623806746">নিরাপদ ডিএনএস ব্যবহার করুন</translation>
+<translation id="6590471736817333463">৬০% পর্যন্ত ডেটা সেভ করুন</translation>
 <translation id="6593061639179217415">ডেস্কটপ সাইট</translation>
 <translation id="6597891566292541626">এই ফ্রেমের মধ্যে QR/বার কোড বসান।</translation>
 <translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>
@@ -733,7 +739,6 @@
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="6663079968236414793">টেক্সটের সাথে লিঙ্ক করুন</translation>
-<translation id="666573598175432848">Chrome-এর একটি নতুন ভার্সন উপলভ্য রয়েছে। Play Store-এ যেতে এই এলিমেন্টে ট্যাপ করুন।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> এ খুলুন</translation>
 <translation id="666981079809192359">Chrome এর গোপনীয়তা বিজ্ঞপ্তি</translation>
 <translation id="6671495933530132209">ছবি কপি করুন</translation>
@@ -929,6 +934,7 @@
 <translation id="8190358571722158785">১ দিন বাকি আছে</translation>
 <translation id="8200772114523450471">আবার চালু করা</translation>
 <translation id="8209050860603202033">ছবি খুলুন</translation>
+<translation id="8218052821161047641">'ফাস্ট পেজ' মোড</translation>
 <translation id="8218622182176210845">আপনার অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="8223642481677794647">ফিড কার্ডের মেনু</translation>
 <translation id="8224471946457685718">ওয়াই-ফাই ব্যবহার করে আপনার জন্য নিবন্ধ ডাউনলোড করুন</translation>
@@ -1007,7 +1013,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ট্যাব</translation>
 <translation id="8854223127042600341">অফলাইনে সেভ করা আপনার ফাইলগুলি দেখুন</translation>
 <translation id="889338405075704026">Chrome সেটিংসে যান</translation>
-<translation id="8893398027601469503">আপনার কাছে Chrome-এর লেটেস্ট ভার্সনটি ইনস্টল করা রয়েছে</translation>
 <translation id="8898822736010347272">আপনার দেখা কিছু পৃষ্ঠার ইউআরএল, সীমিত সিস্টেম সম্পর্কিত তথ্য এবং কিছু পৃষ্ঠার কন্টেন্ট Google-এর কাছে পাঠান যাতে নতুন ঝুঁকি চিহ্নিত করে ওয়েব ব্যবহারকারীর প্রত্যেককে সুরক্ষিত রাখা যায়।</translation>
 <translation id="8909135823018751308">শেয়ার করুন...</translation>
 <translation id="8912362522468806198">Google অ্যাকাউন্ট</translation>
@@ -1054,6 +1059,7 @@
 <translation id="9209888181064652401">কল করা যাচ্ছে না</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="926205370408745186">ডিজিটাল ওয়েলবিং থেকে আপনার Chrome অ্যাক্টিভিটি সরিয়ে দিন</translation>
+<translation id="927968626442779827">Google Chrome-এর 'লাইট মোড' ব্যবহার করুন</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="93753284658583800">হোমপেজ বদলানো হয়েছে</translation>
 <translation id="938850635132480979">ত্রুটি: <ph name="ERROR_CODE" /></translation>

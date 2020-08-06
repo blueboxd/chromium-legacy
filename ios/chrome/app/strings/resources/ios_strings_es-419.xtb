@@ -116,6 +116,7 @@
 <translation id="2267753748892043616">Agregar cuenta</translation>
 <translation id="2268044343513325586">Definir mejor</translation>
 <translation id="2273327106802955778">Menú Más</translation>
+<translation id="2302742851632557585">Cambiar la contraseña en el sitio web</translation>
 <translation id="2316709634732130529">Usar la contraseña sugerida</translation>
 <translation id="2320166752086256636">Ocultar el teclado</translation>
 <translation id="2339560363438331454">Sincronización y servicios</translation>
@@ -183,6 +184,7 @@ Tampoco pueden usar cookies para ver la actividad de navegación en diferentes s
 <translation id="298306318844797842">Agregar forma de pago…</translation>
 <translation id="2989805286512600854">Abrir en una nueva pestaña</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
+<translation id="3081338492074632642">Asegúrate de que la contraseña que guardes coincida con la de <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3131206671572504478">Bloquear todas</translation>
 <translation id="3153862085237805241">Guardar tarjeta</translation>
@@ -201,6 +203,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Pestañas abiertas</translation>
+<translation id="3272527697863656322">Cancelar</translation>
 <translation id="3277021493514034324">Se copió la dirección del sitio</translation>
 <translation id="3290875554372353449">Elegir una cuenta</translation>
 <translation id="3311748811247479259">No</translation>
@@ -211,6 +214,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="3371831930909698441">Está disponible la traducción. Las opciones disponibles se encuentran cerca de la parte inferior de la pantalla.</translation>
 <translation id="3393920035788932672">Ventanas permitidas</translation>
 <translation id="3425644765244388016">Sobrenombre de la tarjeta</translation>
+<translation id="3433057996795775706">Si borras esta contraseña, no se quitará tu cuenta de <ph name="WEBSITE" />. Cambia la contraseña de <ph name="WEBSITE" /> para proteger la cuenta.</translation>
 <translation id="3443810440409579745">Se recibió una pestaña.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
@@ -306,6 +310,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="4636930964841734540">Información</translation>
 <translation id="4659126640776004816">Esta función se activa cuando accedes a tu Cuenta de Google.</translation>
 <translation id="4659667755519643272">Acceder al alternador de pestañas</translation>
+<translation id="46614316059270592">Guardar contraseña</translation>
 <translation id="4666531726415300315">Accediste como <ph name="EMAIL" />.
 
 Tus datos están encriptados con tu frase de contraseña para sincronización. Debes ingresarla para iniciar la sincronización.</translation>
@@ -402,6 +407,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere la frase de contraseña para comenzar la sincronización.</translation>
+<translation id="5860033963881614850">Desactivado</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 artículo movido</translation>
 <translation id="5897956970858271241">Visitar el vínculo copiado</translation>
@@ -502,7 +508,6 @@ Sin embargo, no pueden usar cookies para ver la actividad de navegación en dife
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6841409746189899007">Crear vínculo al texto</translation>
 <translation id="6851516051005285358">Solicitar versión de escritorio</translation>
-<translation id="6856384753476268833">Administrado por tu organización.</translation>
 <translation id="6858855187367714033">Escaneado</translation>
 <translation id="6859944681507688231">Para escanear un código QR o una tarjeta de crédito, habilita la cámara desde la configuración.</translation>
 <translation id="6869389390665537774">Puedes ver las páginas que visitaste o borrarlas de tu historial</translation>
@@ -524,7 +529,6 @@ Sin embargo, no pueden usar cookies para ver la actividad de navegación en dife
 <translation id="7006788746334555276">Configuración de contenido</translation>
 <translation id="7015203776128479407">No se completó la configuración de la sincronización inicial. La sincronización está desactivada.</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
-<translation id="7030675613184250187">Puedes guardar páginas en tu lista de lectura para volver a ellas más tarde y leerlas sin conexión</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7099761977003084116">Pestañas recientes</translation>
@@ -587,12 +591,12 @@ Como <ph name="HOSTED_DOMAIN" /> administra tu cuenta, los datos de Chrome se bo
 <translation id="7856733331829174190">No se pudo descargar</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7887198238286927132">Para proteger tu privacidad, Chrome no completará este campo de forma automática.</translation>
-<translation id="791251013315685175">Administrado por <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Tu lista de lectura está disponible sin conexión. Para agregar una página a la lista, presiona <ph name="SHARE_OPENING_ICON" /> y, luego, <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar contraseñas…</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="794799177247607889">Detener registro</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{No tienes contraseñas hackeadas}=1{{COUNT} contraseña hackeada}other{{COUNT} contraseñas hackeadas}}</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7966516440812255683">Los sitios pueden usar cookies para mejorar la experiencia de navegación, por ejemplo, para mantener el acceso a ellos o recordar artículos en el carrito de compras.
 

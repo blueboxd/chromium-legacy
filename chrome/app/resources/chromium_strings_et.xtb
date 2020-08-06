@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Salvestatud paroole ei ole. Chromium saab teie paroole kontrollida, kui olete need salvestanud.</translation>
 <translation id="5277894862589591112">Muudatuste rakendamiseks käivitage Chromium uuesti</translation>
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Ilmnes viga, kui Chromium kontrollis selle seadme tarkvara</translation>
 <translation id="5386450000063123300">Chromiumi värskendamine (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Luba Chromiumisse sisselogimine</translation>
 <translation id="5398878173008909840">Chromiumi uus versioon on saadaval.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium vajab juurdepääsu teie asukohale, et seda selle saidiga jagada</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
 <translation id="5496810170689441661">Chromium püüab paroole muuta. Selle lubamiseks sisestage Windowsi parool.</translation>
-<translation id="5556694182460963866">Administraator keelas Chromiumil kahjuliku tarkvara kontrollimise</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromiumi värskendus on saadaval}=1{Chromiumi värskendus on saadaval}other{Chromiumi värskendus on # päeva saadaval olnud}}</translation>
 <translation id="5631814766731275228">Chromiumi nimi ja pilt</translation>
 <translation id="5634636535844844681">Chromium vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>

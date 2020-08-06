@@ -96,6 +96,9 @@ class CC_EXPORT Proxy {
 
   virtual void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) = 0;
+
+  virtual void SetEnableFrameRateThrottling(
+      bool enable_frame_rate_throttling) = 0;
 };
 
 }  // namespace cc

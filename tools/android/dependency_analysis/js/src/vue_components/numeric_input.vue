@@ -29,14 +29,24 @@ const NumericInput = {
     description: String,
     inputId: String,
     inputValue: Number,
+    minValue: Number,
   },
   computed: {
     internalInputValue: {
       get: function() {
         return this.inputValue;
       },
-      set: function(newValue) {
-        this.$emit('update:inputValue', newValue);
+      set: function(newValue, oldValue) {
+        const validNewValue = Math.max(this.minValue, newValue);
+        this.$emit('update:inputValue', validNewValue);
+        // If `inputValue` is currently `minValue` and the user submits input <
+        // `minValue`, `inputValue` will be updated to `minValue` (which, since
+        // it already was `minValue`, does not trigger a rerender from Vue's
+        // reactivity system). In these cases, we need to force an update to
+        // sync the UI with the data.
+        if (validNewValue === oldValue) {
+          this.$forceUpdate();
+        }
       },
     },
   },

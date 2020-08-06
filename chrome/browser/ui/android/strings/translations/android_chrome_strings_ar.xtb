@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
+<translation id="1298077576058087471">توفير ما يصل إلى 60% من البيانات والاطّلاع على أخبار اليوم</translation>
 <translation id="1303339473099049190">يتعذّر العثور على كلمة المرور هذه. يجب إجراء تدقيق إملائي وإعادة المحاولة.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - تم الإرسال من <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">جمع علامات التبويب</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">هل ترغب في إعادة ضبط الوضع البسيط؟</translation>
 <translation id="1868024384445905608">‏يُنزِّل Chrome الآن الملفات بشكلٍ أسرع.</translation>
 <translation id="1874760110381325409">‏سيتمّ تسجيل دخولك باستخدام حسابك على Google\n(لن يُفعِّل هذا الإجراء ميزة "مزامنة Chrome").</translation>
+<translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="1883903952484604915">ملفاتي</translation>
 <translation id="1919950603503897840">اختيار جهات الاتصال</translation>
 <translation id="1925021887439448749">إدخال عنوان الويب المُخصص</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
 <translation id="2612676031748830579">رقم البطاقة</translation>
-<translation id="2622559029861875898">‏يتعذّر على Chrome البحث عن تحديثات. يُرجى التحقّق من اتصال الإنترنت.</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2631006050119455616">تم توفيرها</translation>
 <translation id="2647434099613338025">إضافة لغة</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">‏تحديد الموقع الجغرافي متوقف، يمكنك تفعيله من <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{إشارة مرجعية <ph name="BOOKMARKS_COUNT_ONE" />}zero{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}two{إشارتان مرجعيتان (<ph name="BOOKMARKS_COUNT_MANY" />)}few{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}many{<ph name="BOOKMARKS_COUNT_MANY" /> إشارةً مرجعيةً}other{<ph name="BOOKMARKS_COUNT_MANY" /> إشارة مرجعية}}</translation>
+<translation id="3062802207422175757">‏اقرأ مقالات حول مواضيع تهمّك على متصفِّح Chrome.</translation>
 <translation id="3089395242580810162">الفتح في علامة تبويب تصفّح متخفي</translation>
 <translation id="3114012059975132928">مشغّل الفيديو</translation>
+<translation id="3114507951000454849">الاطّلاع على أخبار اليوم <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">الإعلامات</translation>
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3143515551205905069">إلغاء المزامنة</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">‏لا يزال Chrome يستعد للواقع الافتراضي. يُرجى إعادة تشغيل Chrome لاحقًا.</translation>
 <translation id="3568688522516854065">للحصول على علامات التبويب من أجهزتك الأخرى، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="3587482841069643663">الكل</translation>
+<translation id="3587596251841506391">المساعدة في تحسين الأمان على الويب</translation>
 <translation id="3590487821116122040">‏مساحة تخزين الموقع التي لا يعتقد Chrome أنها مهمة (مثل المواقع التي لا تتضمَّن إعدادات محفوظة أو تلك التي لا تزورها مرارًا)</translation>
 <translation id="3594780231884063836">كتم صوت الفيديو</translation>
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">الانتقال السريع إلى شريط العناوين</translation>
 <translation id="5447201525962359567">مساحة التخزين في الموقع كاملة، بما في ذلك ملفات تعريف الارتباط وغيرها من البيانات المُخزَّنَة محليًا</translation>
 <translation id="545042621069398927">جارٍ تسريع التنزيل.</translation>
-<translation id="5454513945794364671">لقد أوقف المشرف ميزة "التصفّح الآمن".</translation>
 <translation id="5456381639095306749">تنزيل الصفحة</translation>
 <translation id="548278423535722844">فتح في تطبيق الخرائط</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6111020039983847643">حجم البيانات المستخدَمة</translation>
 <translation id="6112702117600201073">يتم الآن إعادة تحميل الصفحة</translation>
+<translation id="6122831415929794347">هل تريد إيقاف "التصفُّح الآمن"؟</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6140709049082532940">الحماية المُحسَّنة:</translation>
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">تشغيل قفل الشاشة في الإعدادات لتصدير كلمات المرور من هذا الجهاز</translation>
 <translation id="6157392216611456285">اختيار <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">لم يتم العثور على أي كلمات مرور محتمَل تعرّضها للاختراق.</translation>
 <translation id="6201345951596836663">تم نسخ الرابط</translation>
 <translation id="6206830853671714236">اختيار وقت التنزيل</translation>
 <translation id="6210748933810148297">ليس <ph name="EMAIL" />؟</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="6583199322650523874">وضع إشارة مرجعية على الصفحة الحالية</translation>
 <translation id="6588043302623806746">‏استخدام "نظام أسماء النطاقات" (DNS) الآمن</translation>
+<translation id="6590471736817333463">توفير ما يصل إلى 60% من البيانات</translation>
 <translation id="6593061639179217415">العرض بإصدار سطح المكتب</translation>
 <translation id="6597891566292541626">ضَع رمز الاستجابة السريعة أو الرمز الشريطي في هذا الإطار.</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="6663079968236414793">إنشاء رابط للنص</translation>
-<translation id="666573598175432848">‏يتوفّر إصدار أحدث من متصفّح Chrome. يُرجى النقر على هذا العنصر للانتقال إلى "متجر Play".</translation>
 <translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
 <translation id="6671495933530132209">نسخ الصورة</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">يتبقى يوم واحد</translation>
 <translation id="8200772114523450471">استئناف</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
+<translation id="8218052821161047641">صفحة سريعة الاستجابة</translation>
 <translation id="8218622182176210845">إدارة حسابك</translation>
 <translation id="8223642481677794647">قائمة بطاقات الخلاصة</translation>
 <translation id="8224471946457685718">‏تنزيل مقالات لك عند الاتصال بشبكة Wi-Fi</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="8854223127042600341">الاطّلاع على ملفاتك بلا إنترنت</translation>
 <translation id="889338405075704026">‏الانتقال إلى إعدادات Chrome</translation>
-<translation id="8893398027601469503">‏يتم تشغيل أحدث إصدار من متصفّح Chrome.</translation>
 <translation id="8898822736010347272">‏إرسال عناوين URL الخاصّة ببعض الصفحات التي تزورها، وعدد محدود من معلومات النظام، وبعض أنواع محتوى الصفحات إلى Google، وذلك للمساعدة على اكتشاف التهديدات الجديدة وتوفير الحماية لجميع المستخدمين على الويب</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">لا يمكن إجراء المكالمات</translation>
 <translation id="9219103736887031265">الصور</translation>
 <translation id="926205370408745186">‏إزالة نشاط Chrome من الرفاهية الرقمية</translation>
+<translation id="927968626442779827">‏استخدِم "الوضع البسيط" على Google Chrome.</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="93753284658583800">تم تغيير الصفحة الرئيسية.</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>

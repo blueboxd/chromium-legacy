@@ -33,6 +33,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/strings/grit/ui_strings.h"
 
 using message_center::Notification;
@@ -194,12 +195,12 @@ const char ScreenLayoutObserver::kNotificationId[] =
     "chrome://settings/display";
 
 ScreenLayoutObserver::ScreenLayoutObserver() {
-  Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->display_manager()->AddObserver(this);
   UpdateDisplayInfo(nullptr);
 }
 
 ScreenLayoutObserver::~ScreenLayoutObserver() {
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->display_manager()->RemoveObserver(this);
 }
 
 void ScreenLayoutObserver::SetDisplayChangedFromSettingsUI(int64_t display_id) {
@@ -398,7 +399,13 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
           base::BindRepeating(&OnNotificationClicked)),
       kNotificationScreenIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
+  // With the reduce display notifications feature enabled, we only want to show
+  // an add display notification, and it should disappear after a couple
+  // seconds.
+  auto priority = features::IsReduceDisplayNotificationsEnabled()
+                      ? message_center::DEFAULT_PRIORITY
+                      : message_center::SYSTEM_PRIORITY;
+  notification->set_priority(priority);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DISPLAY_NOTIFICATION_CREATED);
@@ -406,7 +413,22 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
       std::move(notification));
 }
 
-void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
+void ScreenLayoutObserver::OnDisplayAdded(const display::Display& new_display) {
+  if (!show_notifications_for_testing_)
+    return;
+
+  // The older way handles showing display added notifications as well. We will
+  // use that if display notifications are not suppressed.
+  if (!features::IsReduceDisplayNotificationsEnabled())
+    return;
+
+  base::string16 additional_message;
+  base::string16 message =
+      GetDisplayAddedMessage(new_display.id(), &additional_message);
+  CreateOrUpdateNotification(message, additional_message);
+}
+
+void ScreenLayoutObserver::OnDidProcessDisplayChanges() {
   DisplayInfoMap old_info;
   UpdateDisplayInfo(&old_info);
 

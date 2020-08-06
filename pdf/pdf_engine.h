@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -318,10 +317,6 @@ class PDFEngine {
     bool is_password;
     pp::FloatRect bounds;
   };
-
-  // Factory method to create an instance of the PDF Engine.
-  static std::unique_ptr<PDFEngine> Create(Client* client,
-                                           bool enable_javascript);
 
   virtual ~PDFEngine() {}
 

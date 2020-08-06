@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">برای بزرگ کردن ضربه بزنید</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
+<translation id="1298077576058087471">تا ۶۰٪ در مصرف داده صرفه‌جویی کنید، اخبار امروز را بخوانید</translation>
 <translation id="1303339473099049190">گذرواژه پیدا نشد. املای آن را بررسی و دوباره امتحان کنید.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - ارسال‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">گروه‌بندی برگه‌ها</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">«حالت ساده» بازنشانی شود؟</translation>
 <translation id="1868024384445905608">‏اکنون Chrome فایل‌ها را سریع‌تر بارگیری می‌کند</translation>
 <translation id="1874760110381325409">‏با «حساب Google» خود به سیستم وارد خواهید شد\n(با این کار، «همگام‌سازی Chrome» روشن نخواهد شد)</translation>
+<translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
 <translation id="1883903952484604915">فایل‌های من</translation>
 <translation id="1919950603503897840">انتخاب مخاطبین</translation>
 <translation id="1925021887439448749">نشانی وب سفارشی وارد کنید</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">نسخه جدیدتری در دسترس است</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
 <translation id="2612676031748830579">شماره کارت</translation>
-<translation id="2622559029861875898">‏Chrome نمی‌تواند به‌روزرسانی‌ها را بررسی کند. اتصال اینترنت را بررسی کنید.</translation>
 <translation id="2625189173221582860">گذرواژه کپی شد</translation>
 <translation id="2631006050119455616">ذخیره شده</translation>
 <translation id="2647434099613338025">افزودن زبان</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">‏مکان خاموش است، آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3058498974290601450">هرزمان خواستید می‌توانید همگام‌سازی را در تنظیمات روشن کنید</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> نشانک}one{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}other{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}}</translation>
+<translation id="3062802207422175757">‏مقاله‌های مرتبط با علایقتان در Chrome</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="3114012059975132928">پخش‌کننده ویدیو</translation>
+<translation id="3114507951000454849">اخبار <ph name="NEWS_ICON" /> امروز را بخوانید</translation>
 <translation id="3123734510202723619">اطلاعیه‌ها</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
 <translation id="3143515551205905069">لغو همگام‌سازی</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">‏Chrome هنوز درحال آماده‌سازی برای VR است. Chrome بعداً بازراه‌اندازی شود.</translation>
 <translation id="3568688522516854065">برای اینکه به برگه‌های بازشده در سایر دستگاه‌ها دسترسی داشته باشید، به سیستم وارد شوید و همگام‌سازی را روشن کنید</translation>
 <translation id="3587482841069643663">همه</translation>
+<translation id="3587596251841506391">به بهبود امنیت وب کمک کنید</translation>
 <translation id="3590487821116122040">‏فضای ذخیره‌سازی سایت که از نظر Chrome مهم نیست (مثلاً سایت‌هایی که تنظیمات ذخیره‌شده ندارند یا شما مرتب بازدید نمی‌کنید)</translation>
 <translation id="3594780231884063836">بی‌صدا کردن ویدیو</translation>
 <translation id="3599863153486145794">‏سابقه را از همه دستگاه‌های به سیستم واردشده پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">رفتن به نوار نشانی</translation>
 <translation id="5447201525962359567">همه فضای ذخیره سایت‌ها، ازجمله کوکی‌ها و سایر داده‌های ذخیره‌شده در دستگاه</translation>
 <translation id="545042621069398927">درحال سرعت بخشیدن به بارگیری.</translation>
-<translation id="5454513945794364671">سرپرستتان «مرور ایمن» را خاموش کرده است</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
 <translation id="6111020039983847643">داده مصرف‌شده</translation>
 <translation id="6112702117600201073">درحال بازخوانی صفحه</translation>
+<translation id="6122831415929794347">«مرور ایمن» خاموش شود؟</translation>
 <translation id="6127379762771434464">مورد برداشته شد</translation>
 <translation id="6140709049082532940">محافظت بهبودیافته:</translation>
 <translation id="6140912465461743537">کشور/منطقه</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">برای صادر کردن گذرواژه‌ها از این دستگاه، قفل صفحه را در تنظیمات روشن کنید.</translation>
 <translation id="6157392216611456285">انتخاب <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">گذرواژه لورفته‌ای پیدا نشد</translation>
 <translation id="6201345951596836663">پیوند کپی شد</translation>
 <translation id="6206830853671714236">انتخاب زمان بارگیری</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ایمیل شما نیست؟</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">‏برگه‌هایی که در دستگاه‌های دیگر در Chrome باز کرده‌اید، در اینجا نمایان می‌شوند.</translation>
 <translation id="6583199322650523874">نشانک‌گذاری صفحه کنونی</translation>
 <translation id="6588043302623806746">‏استفاده از DNS ایمن</translation>
+<translation id="6590471736817333463">تا ۶۰٪ در مصرف داده صرفه‌جویی کنید</translation>
 <translation id="6593061639179217415">سایت مخصوص رایانه</translation>
 <translation id="6597891566292541626">‏کد QR/بارکد را در این قاب قرار دهید.</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6659594942844771486">برگه</translation>
 <translation id="6663079968236414793">پیوند به نوشتار</translation>
-<translation id="666573598175432848">‏نسخه جدیدتری از Chrome دردسترس است. برای رفتن به «فروشگاه Play»، روی این عنصر ضربه بزنید.</translation>
 <translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
 <translation id="6671495933530132209">کپی تصویر</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">۱ روز باقی‌مانده است</translation>
 <translation id="8200772114523450471">ازسرگیری</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
+<translation id="8218052821161047641">صفحه سریع</translation>
 <translation id="8218622182176210845">مدیریت حساب</translation>
 <translation id="8223642481677794647">منوی کارت فید</translation>
 <translation id="8224471946457685718">‏بارگیری مقالات برای شما با Wi-Fi</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، برگه</translation>
 <translation id="8854223127042600341">مشاهده فایل‌های آفلاین</translation>
 <translation id="889338405075704026">‏به تنظیمات Chrome بروید</translation>
-<translation id="8893398027601469503">‏از جدیدترین نسخه Chrome استفاده می‌کنید</translation>
 <translation id="8898822736010347272">‏نشانی‌های وب بعضی از صفحه‌هایی که بازدید می‌کنید، اطلاعات محدودی از سیستم، و برخی از محتوای صفحه را به Google ارسال می‌کند تا به کشف تهدیدهای جدید و محافظت از همه افراد در وب کمک کند.</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">برقراری تماس ممکن نیست</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="926205370408745186">‏فعالیت Chrome شما از «آسایش دیجیتالی» برداشته شود</translation>
+<translation id="927968626442779827">‏استفاده از «حالت ساده» در Google Chrome</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="93753284658583800">صفحه اصلی تغییر کرد</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>

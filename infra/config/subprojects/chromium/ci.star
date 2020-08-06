@@ -994,8 +994,22 @@ ci.mac_builder(
     os = os.MAC_ANY,
 )
 
+# TODO(https://crbug.com/1106950): Builder moved to mac-arm64-rel.  Remove
+# this builder after the CL lands.
 ci.mac_builder(
     name = "mac-arm64",
+    console_view_entry = ci.console_view_entry(
+        category = "release",
+        short_name = "arm",
+    ),
+    main_console_view = settings.main_console_name,
+    cores = None,
+    os = os.MAC_ANY,
+    triggered_by = [],
+)
+
+ci.mac_builder(
+    name = "mac-arm64-rel",
     console_view_entry = ci.console_view_entry(
         category = "release",
         short_name = "a64",

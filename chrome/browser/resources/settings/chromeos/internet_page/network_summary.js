@@ -125,6 +125,17 @@ Polymer({
     this.getNetworkLists_();
   },
 
+  /*
+   * Returns the network-summary-item element corresponding to the
+   * |networkType|.
+   * @param {!chromeos.networkConfig.mojom.NetworkType} networkType
+   * @return {?NetworkSummaryItemElement}
+   */
+  getNetworkRow(networkType) {
+    const networkTypeString = OncMojo.getNetworkTypeString(networkType);
+    return this.$$(`#${networkTypeString}`);
+  },
+
   /**
    * Requests the list of device states and network states from Chrome.
    * Updates deviceStates, activeNetworkStates, and networkStateLists once the

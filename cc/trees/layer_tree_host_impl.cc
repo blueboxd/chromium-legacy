@@ -1529,6 +1529,11 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
 }
 
+void LayerTreeHostImpl::SetEnableFrameRateThrottling(
+    bool enable_frame_rate_throttling) {
+  enable_frame_rate_throttling_ = enable_frame_rate_throttling;
+}
+
 void LayerTreeHostImpl::UpdateElements(ElementListType changed_list) {
   mutator_host()->UpdateRegisteredElementIds(changed_list);
 }
@@ -2533,10 +2538,14 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
   frame_rate_estimator_.WillDraw(CurrentBeginFrameArgs().frame_time);
 
-  if (settings_.force_preferred_interval_for_video) {
-    // Use max interval to ensure the compositor's updates don't affect
-    // display's refresh rate.
-    metadata.preferred_frame_interval = base::TimeDelta::Max();
+  if (settings_.force_preferred_interval_for_video ||
+      enable_frame_rate_throttling_) {
+    // For now cap the interval assuming a 24fps video, which is likely the
+    // lowest frame rate we'll see for a video that would also be acceptable to
+    // the page.
+    double interval_in_seconds = 1 / 24;
+    metadata.preferred_frame_interval =
+        base::TimeDelta::FromSecondsD(interval_in_seconds);
   } else {
     metadata.preferred_frame_interval =
         frame_rate_estimator_.GetPreferredInterval();

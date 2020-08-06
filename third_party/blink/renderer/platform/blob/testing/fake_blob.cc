@@ -76,6 +76,14 @@ void FakeBlob::ReadAll(
     client_remote->OnComplete(0 /* OK */, body_.length());
 }
 
+void FakeBlob::Load(
+    mojo::PendingReceiver<network::mojom::blink::URLLoader>,
+    const String& method,
+    const net::HttpRequestHeaders&,
+    mojo::PendingRemote<network::mojom::blink::URLLoaderClient>) {
+  NOTREACHED();
+}
+
 void FakeBlob::ReadSideData(ReadSideDataCallback callback) {
   NOTREACHED();
 }

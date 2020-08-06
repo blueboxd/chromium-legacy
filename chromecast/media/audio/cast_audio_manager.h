@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "chromecast/common/mojom/service_connector.mojom.h"
+#include "chromecast/media/audio/cast_audio_manager_helper.h"
 #include "media/audio/audio_manager_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -46,14 +47,11 @@ class CmaBackendFactory;
 
 class CastAudioManager : public ::media::AudioManagerBase {
  public:
-  using GetSessionIdCallback =
-      base::RepeatingCallback<std::string(std::string)>;
-
   CastAudioManager(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
-      GetSessionIdCallback get_session_id_callback,
+      CastAudioManagerHelper::GetSessionIdCallback get_session_id_callback,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
@@ -71,13 +69,6 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const std::string& device_id) override;
   const char* GetName() override;
   void ReleaseOutputStream(::media::AudioOutputStream* stream) override;
-
-  CmaBackendFactory* cma_backend_factory();
-  base::SingleThreadTaskRunner* media_task_runner() {
-    return media_task_runner_.get();
-  }
-
-  std::string GetSessionId(std::string audio_group_id);
 
  protected:
   // AudioManagerBase implementation.
@@ -109,13 +100,12 @@ class CastAudioManager : public ::media::AudioManagerBase {
   friend class CastAudioMixer;
   friend class CastAudioManagerTest;
   friend class CastAudioOutputStreamTest;
-  chromecast::mojom::ServiceConnector* GetConnector();
 
   CastAudioManager(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
-      GetSessionIdCallback get_session_id_callback,
+      CastAudioManagerHelper::GetSessionIdCallback get_session_id_callback,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
@@ -126,18 +116,11 @@ class CastAudioManager : public ::media::AudioManagerBase {
   // stream audio playback.
   bool UseMixerOutputStream(const ::media::AudioParameters& params);
 
-  base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter_;
-  GetSessionIdCallback get_session_id_callback_;
-  CmaBackendFactory* cma_backend_factory_ = nullptr;
+  CastAudioManagerHelper helper_;
+
   scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   std::unique_ptr<::media::AudioOutputStream> mixer_output_stream_;
   std::unique_ptr<CastAudioMixer> mixer_;
-
-  // |connector_| is bound to |pending_connector_| lazily on first use, as it is
-  // created on the main thread but used on the Audio thread, which may differ.
-  mojo::PendingRemote<chromecast::mojom::ServiceConnector> pending_connector_;
-  mojo::Remote<chromecast::mojom::ServiceConnector> connector_;
 
   // Let unit test force the CastOutputStream to uses
   // CmaBackend implementation.

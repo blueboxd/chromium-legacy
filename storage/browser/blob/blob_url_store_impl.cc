@@ -132,7 +132,7 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   BlobURLLoaderFactory::Create(
       context_ ? context_->GetBlobFromPublicURL(url) : mojo::NullRemote(), url,
-      context_, std::move(receiver));
+      std::move(receiver));
 }
 
 void BlobURLStoreImpl::ResolveForNavigation(

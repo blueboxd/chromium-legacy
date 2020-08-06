@@ -276,7 +276,7 @@ void HTMLCanvasElement::IdentifiabilityReportWithDigest(
             : nullptr;
     const uint64_t canvas_digest =
         identifiability_paintop_digest
-            ? identifiability_paintop_digest->digest()
+            ? identifiability_paintop_digest->GetToken().ToUkmMetricValue()
             : 0;
     const uint64_t context_type =
         context_ ? context_->GetContextType()

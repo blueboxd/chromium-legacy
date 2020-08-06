@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを削除…</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="1298077576058087471">最大 60% のデータを節約、今日のニュースをチェックしよう</translation>
 <translation id="1303339473099049190">お探しのパスワードが見つかりません。誤字や脱字がないかご確認のうえ、もう一度お試しください。</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> から送信</translation>
 <translation id="1310482092992808703">タブをグループ化</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">ライトモードをリセットしますか？</translation>
 <translation id="1868024384445905608">Chrome でのファイルのダウンロードがさらに速くなりました</translation>
 <translation id="1874760110381325409">Google アカウントでログインします\n（Chrome 同期は有効になりません）</translation>
+<translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="1883903952484604915">マイファイル</translation>
 <translation id="1919950603503897840">連絡先を選択</translation>
 <translation id="1925021887439448749">カスタムのウェブアドレスを入力</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">新しいバージョンをご利用いただけます</translation>
 <translation id="2593272815202181319">等幅</translation>
 <translation id="2612676031748830579">カード番号</translation>
-<translation id="2622559029861875898">Chrome がアップデートを確認できません。インターネット接続を確認してみてください。</translation>
 <translation id="2625189173221582860">パスワードがコピーされました</translation>
 <translation id="2631006050119455616">削減量</translation>
 <translation id="2647434099613338025">言語の追加</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">位置情報が OFF になっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で ON にしてください。</translation>
 <translation id="3058498974290601450">同期は設定でいつでもオンにできます。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個のブックマーク}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個のブックマーク}}</translation>
+<translation id="3062802207422175757">Chrome の履歴に基づくおすすめの記事を表示します</translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="3114012059975132928">動画プレーヤー</translation>
+<translation id="3114507951000454849">今日のニュースをチェック <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">お知らせ</translation>
 <translation id="3137521801621304719">シークレット モードを終了</translation>
 <translation id="3143515551205905069">同期をキャンセル</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome はまだ VR の準備中です。しばらく待ってから Chrome を再起動してください。</translation>
 <translation id="3568688522516854065">他のデバイスと同じタブを使用するには、ログインして同期を有効にします</translation>
 <translation id="3587482841069643663">すべて</translation>
+<translation id="3587596251841506391">ウェブ上のセキュリティ強化に協力する</translation>
 <translation id="3590487821116122040">Chrome で重要度が低いと判断されるサイトのストレージ（設定を保存していないサイトやアクセス頻度の少ないサイトなど）</translation>
 <translation id="3594780231884063836">動画をミュート</translation>
 <translation id="3599863153486145794">ログインしているすべてのデバイスの履歴を削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">アドレスバーに移動する</translation>
 <translation id="5447201525962359567">すべてのサイトのストレージ（Cookie やローカルに保存した他のデータを含む）</translation>
 <translation id="545042621069398927">ダウンロード速度が向上しました。</translation>
-<translation id="5454513945794364671">管理者がセーフ ブラウジングをオフにしました</translation>
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6111020039983847643">データ使用量</translation>
 <translation id="6112702117600201073">ページを更新しています</translation>
+<translation id="6122831415929794347">セーフ ブラウジングをオフにしますか？</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6140709049082532940">保護強化機能:</translation>
 <translation id="6140912465461743537">国 / 地域</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">このデバイスからパスワードをエクスポートするには、[設定] で画面ロックをオンにしてください。</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> を選択する</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
+<translation id="6186394685773237175">漏洩した可能性のあるパスワードは見つかりませんでした</translation>
 <translation id="6201345951596836663">リンクをコピーしました</translation>
 <translation id="6206830853671714236">ダウンロード日時の選択</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ではありませんか？</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">他のデバイスの Chrome で開いているタブがここに表示されます。</translation>
 <translation id="6583199322650523874">現在のページをブックマークする</translation>
 <translation id="6588043302623806746">セキュア DNS を使用する</translation>
+<translation id="6590471736817333463">最大 60% のデータを節約</translation>
 <translation id="6593061639179217415">PC 版サイト</translation>
 <translation id="6597891566292541626">QR コードまたはバーコードをこの枠内に合わせてください。</translation>
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">パスワード</translation>
 <translation id="6659594942844771486">タブ</translation>
 <translation id="6663079968236414793">テキストにリンク</translation>
-<translation id="666573598175432848">Chrome の新しいバージョンを利用できます。この要素をタップすると Play ストアに移動します。</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />で開く</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
 <translation id="6671495933530132209">画像をコピー</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">残り 1 日</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8209050860603202033">画像を開く</translation>
+<translation id="8218052821161047641">高速版ページ</translation>
 <translation id="8218622182176210845">アカウントを管理</translation>
 <translation id="8223642481677794647">フィードカード メニュー</translation>
 <translation id="8224471946457685718">Wi-Fi 接続時に記事をダウンロード</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="8854223127042600341">オフライン ファイルを表示</translation>
 <translation id="889338405075704026">Chrome 設定に移動</translation>
-<translation id="8893398027601469503">実行している Chrome のバージョンは最新です</translation>
 <translation id="8898822736010347272">新たな脅威の発見と、すべてのウェブユーザーの保護に役立てるため、アクセスした一部のページの URL、限定的なシステム情報、一部のページ コンテンツを Google に送信します。</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">通話ができません</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="926205370408745186">Chrome のアクティビティを Digital Wellbeing から削除</translation>
+<translation id="927968626442779827">Google Chrome のライトモードをご活用ください</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="93753284658583800">ホームページを変更しました</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>

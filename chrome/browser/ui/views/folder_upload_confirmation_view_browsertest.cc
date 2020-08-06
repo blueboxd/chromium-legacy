@@ -55,14 +55,8 @@ class FolderUploadConfirmationViewTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(FolderUploadConfirmationViewTest);
 };
 
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113695): flaky on ChromeOS.
-#define MAYBE_InitiallyFocusesCancel DISABLED_InitiallyFocusesCancel
-#else
-#define MAYBE_InitiallyFocusesCancel InitiallyFocusesCancel
-#endif
 IN_PROC_BROWSER_TEST_F(FolderUploadConfirmationViewTest,
-                       MAYBE_InitiallyFocusesCancel) {
+                       InitiallyFocusesCancel) {
   ShowUi(std::string());
   EXPECT_EQ(widget_->widget_delegate()->AsDialogDelegate()->GetCancelButton(),
             widget_->GetFocusManager()->GetFocusedView());

@@ -39,6 +39,7 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
 
   // CommandBufferHelper implementation.
   gl::GLContext* GetGLContext() override;
+  gpu::SharedImageStub* GetSharedImageStub() override;
   bool HasStub() override;
   bool MakeContextCurrent() override;
   std::unique_ptr<gpu::SharedImageRepresentationFactoryRef> Register(

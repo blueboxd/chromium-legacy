@@ -17,15 +17,18 @@ if (!is_ios) {
       "glyph_usage.h",
       "paint_preview_tracker.cc",
       "paint_preview_tracker.h",
+      "recording_map.cc",
+      "recording_map.h",
       "serial_utils.cc",
       "serial_utils.h",
+      "serialized_recording.cc",
+      "serialized_recording.h",
       "subset_font.cc",
       "subset_font.h",
     ]
 
     deps = [
       "//base",
-      "//components/paint_preview/common/proto",
       "//skia",
       "//third_party:freetype_harfbuzz",
       "//third_party/harfbuzz-ng:hb_scoped_util",
@@ -33,7 +36,10 @@ if (!is_ios) {
       "//url",
     ]
 
-    public_deps = [ "//components/paint_preview/common/mojom" ]
+    public_deps = [
+      "//components/paint_preview/common/mojom",
+      "//components/paint_preview/common/proto",
+    ]
   }
 
   source_set("test_utils") {
@@ -45,7 +51,7 @@ if (!is_ios) {
     ]
 
     deps = [
-      "//components/paint_preview/common/mojom",
+      "//components/paint_preview/common",
       "//testing/gmock",
       "//testing/gtest",
     ]
@@ -59,6 +65,7 @@ if (!is_ios) {
       "glyph_usage_unittest.cc",
       "paint_preview_tracker_unittest.cc",
       "serial_utils_unittest.cc",
+      "serialized_recording_unittest.cc",
       "subset_font_unittest.cc",
     ]
 

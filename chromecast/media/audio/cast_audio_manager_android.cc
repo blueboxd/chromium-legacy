@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_input_stream.h"
+#include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "media/audio/android/audio_track_output_stream.h"
 #include "media/audio/audio_device_name.h"
 #include "media/base/audio_parameters.h"
@@ -29,19 +30,15 @@ CastAudioManagerAndroid::CastAudioManagerAndroid(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
-    GetSessionIdCallback get_session_id_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
+    CastAudioManagerHelper::GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
-    bool use_mixer)
-    : CastAudioManager(std::move(audio_thread),
-                       audio_log_factory,
-                       std::move(backend_factory_getter),
-                       std::move(get_session_id_callback),
-                       browser_task_runner,
-                       media_task_runner,
-                       std::move(connector),
-                       use_mixer) {}
+    mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector)
+    : ::media::AudioManagerAndroid(std::move(audio_thread), audio_log_factory),
+      helper_(this,
+              std::move(backend_factory_getter),
+              std::move(get_session_id_callback),
+              std::move(media_task_runner),
+              std::move(connector)) {}
 
 CastAudioManagerAndroid::~CastAudioManagerAndroid() = default;
 
@@ -105,6 +102,41 @@ void CastAudioManagerAndroid::GetAudioInputDeviceNames(
 #endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
   LOG(WARNING) << "No support for input audio devices";
   return nullptr;
+}
+
+void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
+    ::media::AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  DCHECK(HasAudioOutputDevices());
+
+  // Default device name is added inside AudioManagerAndroid.
+  ::media::AudioManagerAndroid::GetAudioOutputDeviceNames(device_names);
+
+  device_names->push_back(::media::AudioDeviceName::CreateCommunications());
+}
+
+::media::AudioOutputStream* CastAudioManagerAndroid::MakeLinearOutputStream(
+    const ::media::AudioParameters& params,
+    const ::media::AudioManager::LogCallback& log_callback) {
+  DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LINEAR, params.format());
+
+  return new CastAudioOutputStream(
+      &helper_, params, ::media::AudioDeviceDescription::kDefaultDeviceId,
+      false /* use_mixer_service */);
+}
+
+::media::AudioOutputStream* CastAudioManagerAndroid::MakeLowLatencyOutputStream(
+    const ::media::AudioParameters& params,
+    const std::string& device_id_or_group_id,
+    const ::media::AudioManager::LogCallback& log_callback) {
+  DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
+
+  return new CastAudioOutputStream(
+      &helper_, params,
+      device_id_or_group_id.empty()
+          ? ::media::AudioDeviceDescription::kDefaultDeviceId
+          : device_id_or_group_id,
+      false /* use_mixer_service */);
 }
 
 ::media::AudioOutputStream* CastAudioManagerAndroid::MakeBitstreamOutputStream(

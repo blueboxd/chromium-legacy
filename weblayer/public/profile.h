@@ -16,6 +16,12 @@ namespace base {
 class FilePath;
 }
 
+namespace gfx {
+class Image;
+}
+
+class GURL;
+
 namespace weblayer {
 class CookieManager;
 class DownloadDelegate;
@@ -88,6 +94,14 @@ class Profile {
 
   // Get the boolean value of the given setting type.
   virtual bool GetBooleanSetting(SettingType type) = 0;
+
+  // Returns the cached favicon for the specified url. Off the record profiles
+  // do not cache favicons. If this is called on an off-the-record profile
+  // the callback is run with an empty image synchronously. The returned image
+  // matches that returned by FaviconFetcher.
+  virtual void GetCachedFaviconForPageUrl(
+      const GURL& page_url,
+      base::OnceCallback<void(gfx::Image)> callback) = 0;
 };
 
 }  // namespace weblayer

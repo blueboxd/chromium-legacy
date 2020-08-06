@@ -42,6 +42,17 @@ Polymer({
     },
 
     /**
+     * This is enabled when language settings update feature flag is enabled.
+     * @private
+     * */
+    languageSettingsV2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableLanguageSettingsV2');
+      },
+    },
+
+    /**
      * This is enabled when any of the smart inputs features is allowed.
      * @private
      * */
@@ -52,6 +63,18 @@ Polymer({
             loadTimeData.getBoolean('allowEmojiSuggestion');
       },
     }
+  },
+
+  /** @private */
+  onLanguagesV2Click_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_LANGUAGES);
+  },
+
+  /** @private */
+  onInputClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_INPUT);
   },
 
   /** @private */

@@ -135,7 +135,7 @@ public class AddExceptionPreference
                     boolean isThirdPartyException = thirdPartyExceptionsBox.isChecked();
                     String hostname = input.getText().toString().trim();
 
-                    // If a user chooses "all cookies, on this site only", set wildcard as primary
+                    // If a user clicks the third party checkbox, set wildcard as primary
                     String primary = isThirdPartyException ? SITE_WILDCARD : hostname;
                     String secondary = !isThirdPartyException ? SITE_WILDCARD : hostname;
 

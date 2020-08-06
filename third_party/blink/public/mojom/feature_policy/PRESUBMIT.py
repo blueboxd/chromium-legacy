@@ -168,7 +168,7 @@ checks = [
                                        'core', 'feature_policy',
                                        'document_policy_features.json5'),
         enum_name="DocumentPolicyFeature",
-        ignore_enums={'Default'}),
+        ignore_enums=set()),
 ]
 
 

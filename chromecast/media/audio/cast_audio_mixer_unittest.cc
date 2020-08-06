@@ -32,7 +32,7 @@ mojo::PendingRemote<chromecast::mojom::ServiceConnector> CreateConnector() {
   return connector;
 }
 
-std::string DummyGetSessionId(std::string /* audio_group_id */) {
+std::string DummyGetSessionId(const std::string& /* audio_group_id */) {
   return "";
 }
 

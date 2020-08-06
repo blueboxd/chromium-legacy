@@ -110,7 +110,6 @@
 <translation id="5224391634244552924">Нема сачуваних лозинки. Chromium може да проверава лозинке када их сачувате.</translation>
 <translation id="5277894862589591112">Да бисте применили промене, поново покрените Chromium</translation>
 <translation id="5358375970380395591">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Дошло је до грешке док је Chromium проверавао софтвер уређаја</translation>
 <translation id="5386450000063123300">Ажурирање Chromium-а (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Дозволи пријављивање у Chromium</translation>
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
@@ -121,7 +120,6 @@
 <translation id="5480860683791598150">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
 <translation id="5496810170689441661">Chromium покушава да измени лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
-<translation id="5556694182460963866">Администратор је онемогућио тражење штетног софтвера помоћу Chromium-а</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ажурирање за Chromium је доступно}=1{Ажурирање за Chromium је доступно}one{Ажурирање за Chromium је доступно већ # дан}few{Ажурирање за Chromium је доступно већ # дана}other{Ажурирање за Chromium је доступно већ # дана}}</translation>
 <translation id="5631814766731275228">Назив и слика Chromium профила</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>

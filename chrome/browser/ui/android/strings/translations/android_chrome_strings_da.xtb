@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Tryk for at udvide</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
+<translation id="1298077576058087471">Spar op til 60 % data, læs dagens nyheder</translation>
 <translation id="1303339473099049190">Adgangskoden blev ikke fundet. Tjek stavningen, og prøv igen.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – sendt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppér faner</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Vil du nulstille Lite-tilstand?</translation>
 <translation id="1868024384445905608">Chrome downloader nu filer endnu hurtigere</translation>
 <translation id="1874760110381325409">Du bliver logget ind på din Google-konto\n(Chrome-synkronisering aktiveres ikke)</translation>
+<translation id="1877026089748256423">Chrome er forældet</translation>
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1919950603503897840">Vælg kontakter</translation>
 <translation id="1925021887439448749">Angiv tilpasset webadresse</translation>
@@ -204,7 +206,6 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="2587052924345400782">Der findes en nyere version</translation>
 <translation id="2593272815202181319">Enkelt tegnafstand</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
-<translation id="2622559029861875898">Chrome kan ikke søge efter opdateringer. Prøv at tjekke din internetforbindelse.</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2631006050119455616">Sparet</translation>
 <translation id="2647434099613338025">Tilføj sprog</translation>
@@ -261,8 +262,10 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="305593374596241526">Placering er slået fra. Du kan aktivere den i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Du kan til enhver tid aktivere synkronisering i indstillingerne</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bogmærke}one{<ph name="BOOKMARKS_COUNT_MANY" />bogmærke}other{<ph name="BOOKMARKS_COUNT_MANY" />bogmærker}}</translation>
+<translation id="3062802207422175757">Artikler om dine interesser i Chrome</translation>
 <translation id="3089395242580810162">Åbn på inkognitofane</translation>
 <translation id="3114012059975132928">Videoafspiller</translation>
+<translation id="3114507951000454849">Læs dagens nyheder <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Meddelelser</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3143515551205905069">Annuller synkronisering</translation>
@@ -326,6 +329,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3566923219790363270">Chrome er stadig i gang med at forberede VR. Genstart Chrome senere.</translation>
 <translation id="3568688522516854065">Log ind, og aktivér synkronisering for at få adgang til dine faner på dine andre enheder</translation>
 <translation id="3587482841069643663">Alle</translation>
+<translation id="3587596251841506391">Gør sikkerheden på nettet bedre</translation>
 <translation id="3590487821116122040">Websitelagerplads, som ikke er vigtig ifølge Chrome (f.eks. websites uden gemte indstillinger eller websites, du ikke besøger så ofte)</translation>
 <translation id="3594780231884063836">Slå lyden i videoen fra</translation>
 <translation id="3599863153486145794">Rydder historikken på alle enheder, hvor du er logget ind. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -556,7 +560,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5441522332038954058">Gå til adresselinjen</translation>
 <translation id="5447201525962359567">Al websitelagerplads, herunder cookies og andre data, der er gemt lokalt</translation>
 <translation id="545042621069398927">Øger hastigheden på din download.</translation>
-<translation id="5454513945794364671">Din administrator har deaktiveret Beskyttet browsing</translation>
 <translation id="5456381639095306749">Download siden</translation>
 <translation id="548278423535722844">Åbn i kortapp</translation>
 <translation id="5487521232677179737">Ryd data</translation>
@@ -649,6 +652,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
 <translation id="6111020039983847643">dataforbrug</translation>
 <translation id="6112702117600201073">Opdaterer siden</translation>
+<translation id="6122831415929794347">Vil du deaktivere Beskyttet browsing?</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6140709049082532940">Forbedret beskyttelse:</translation>
 <translation id="6140912465461743537">Land/region</translation>
@@ -656,6 +660,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6154478581116148741">Aktivér skærmlåsen i Indstillinger for at eksportere dine adgangskoder fra denne enhed</translation>
 <translation id="6157392216611456285">Vælg <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> sparet data</translation>
+<translation id="6186394685773237175">Der blev ikke fundet nogen kompromitterede adgangskoder</translation>
 <translation id="6201345951596836663">Linket blev kopieret</translation>
 <translation id="6206830853671714236">Vælg tidspunkt for download</translation>
 <translation id="6210748933810148297">Ikke <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6573431926118603307">Faner, du har åbnet i Chrome på dine andre enheder, vises her.</translation>
 <translation id="6583199322650523874">Føj et bogmærke til den aktuelle side</translation>
 <translation id="6588043302623806746">Brug et sikkert DNS</translation>
+<translation id="6590471736817333463">Spar op til 60 % data</translation>
 <translation id="6593061639179217415">Standardwebsite</translation>
 <translation id="6597891566292541626">Placer QR-/stregkoden inden for denne ramme.</translation>
 <translation id="6600954340915313787">Kopieret til Chrome</translation>
@@ -731,7 +737,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6657585470893396449">Adgangskode</translation>
 <translation id="6659594942844771486">Fane</translation>
 <translation id="6663079968236414793">Link til tekst</translation>
-<translation id="666573598175432848">Der findes en ny version af Chrome. Tryk på dette element for at gå til Play butik.</translation>
 <translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Erklæring om privatliv for Google Chrome</translation>
 <translation id="6671495933530132209">Kopiér billede</translation>
@@ -927,6 +932,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8190358571722158785">1 dag tilbage</translation>
 <translation id="8200772114523450471">Genoptag</translation>
 <translation id="8209050860603202033">Åbn billede</translation>
+<translation id="8218052821161047641">Hurtig side</translation>
 <translation id="8218622182176210845">Administrer din konto</translation>
 <translation id="8223642481677794647">Feedkortmenu</translation>
 <translation id="8224471946457685718">Download artikler til dig via Wi-Fi</translation>
@@ -1005,7 +1011,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="8854223127042600341">Se dine offlinefiler</translation>
 <translation id="889338405075704026">Gå til Chrome-indstillinger</translation>
-<translation id="8893398027601469503">Du bruger den nyeste version af Chrome</translation>
 <translation id="8898822736010347272">Sender webadresser på visse sider, du besøger, begrænsede systemoplysninger og indhold fra visse sider til Google med henblik på at opdage nye trusler og beskytte brugerne på nettet.</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1052,6 +1057,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="9209888181064652401">Det er ikke muligt at foretage opkald</translation>
 <translation id="9219103736887031265">Billeder</translation>
 <translation id="926205370408745186">Fjern din Chrome-aktivitet fra Digital balance</translation>
+<translation id="927968626442779827">Brug Lite-tilstand i Google Chrome</translation>
 <translation id="932327136139879170">Start</translation>
 <translation id="93753284658583800">Startsiden blev ændret</translation>
 <translation id="938850635132480979">Fejl: <ph name="ERROR_CODE" /></translation>

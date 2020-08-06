@@ -4,6 +4,7 @@
 
 module paint_preview.mojom;
 
+import "components/paint_preview/common/mojom/paint_preview_types.mojom";
 import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/time.mojom";
@@ -37,23 +38,11 @@ enum PaintPreviewStatus {
   kFailed,
 };
 
-// Enumation of strategies to store artifacts of an operation.
-enum Persistence {
-  // Store artifacts in the file system. This strategy can be robust to browser
-  // restarts, since the lifetime of the files can outlive the browser process.
-  kFileSystem,
-
-  // Store artifacts in memory buffers returned from or passed to capture or
-  // compositing methods. On low-memory devices, there is a higher risk of
-  // out-of-memory issues.
-  kMemoryBuffer,
-};
-
 // The collection of parameters needed for a recording of a render frame.
 struct PaintPreviewCaptureParams {
   // The strategy for where to store the serialized SkPictures resulting from
   // this capture.
-  Persistence persistence;
+  RecordingPersistence persistence;
 
   // GUID for the Paint Preview (used to associate subframes to main frame).
   mojo_base.mojom.UnguessableToken guid;
@@ -72,9 +61,10 @@ struct PaintPreviewCaptureParams {
   bool capture_links;
 
   // File to write the SkPicture to (write-only). A separate file should be
-  // created for each RenderFrame.
+  // created for each RenderFrame. See |SerializedRecording| for details on
+  // contents.
   //
-  // null if not |Persistence::FileSystem|.
+  // null if not |RecordingPersistence::FileSystem|.
   mojo_base.mojom.File? file;
 
   // The maximum allowed size of a capture that can be produced. A value of
@@ -109,13 +99,10 @@ struct PaintPreviewCaptureResponse {
   // Scroll offsets of the frame at capture time.
   gfx.mojom.Size scroll_offsets;
 
-  // The serialized skia picture. It should be deserialized with the
-  // |SkDeserialProcs| that correspond with the |SkSerialProcs| it was
-  // serialized with.
+  // The serialized skia picture. See |SerializedRecording| for details on
+  // contents.
   //
-  // It is not safe to deserialize this in the browser process.
-  //
-  // null if not |Persistence::MemoryBuffer|.
+  // null if not |RecordingPersistence::MemoryBuffer|.
   mojo_base.mojom.BigBuffer? skp;
 };
 

@@ -45,6 +45,10 @@ void MediaRouterInternalsWebUIMessageHandler::RegisterMessages() {
       base::BindRepeating(
           &MediaRouterInternalsWebUIMessageHandler::HandleGetProviderState,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getLogs", base::BindRepeating(
+                     &MediaRouterInternalsWebUIMessageHandler::HandleGetLogs,
+                     base::Unretained(this)));
 }
 
 void MediaRouterInternalsWebUIMessageHandler::HandleGetState(
@@ -72,6 +76,13 @@ void MediaRouterInternalsWebUIMessageHandler::HandleGetProviderState(
       provider_id,
       base::BindOnce(&MediaRouterInternalsWebUIMessageHandler::OnProviderState,
                      weak_factory_.GetWeakPtr(), std::move(callback_id)));
+}
+
+void MediaRouterInternalsWebUIMessageHandler::HandleGetLogs(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id, router_->GetLogs());
 }
 
 void MediaRouterInternalsWebUIMessageHandler::OnProviderState(

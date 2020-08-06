@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">پذیرش و ادامه</translation>
 <translation id="1112015203684611006">چاپ انجام نشد.</translation>
 <translation id="1125564390852150847">ایجاد برگه جدید</translation>
+<translation id="1134509371063488162">‏باز کردن ${urls} در حالت «ناشناس»</translation>
 <translation id="1145536944570833626">حذف داده‌های موجود.</translation>
 <translation id="1165039591588034296">خطا</translation>
 <translation id="1172898394251786223">فیلد بعدی</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">افزودن حساب</translation>
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2273327106802955778">منوی بیشتر</translation>
+<translation id="2302742851632557585">گذرواژه را در وب‌سایت تغییر دهید</translation>
 <translation id="2316709634732130529">استفاده از گذرواژه پیشنهادی</translation>
 <translation id="2320166752086256636">پنهان کردن صفحه‌کلید</translation>
 <translation id="2339560363438331454">‏همگام‌سازی و سرویس‌های Google</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">افزودن روش پرداخت…</translation>
 <translation id="2989805286512600854">باز کردن در برگهٔ جدید</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
+<translation id="3081338492074632642">مطمئن شوید گذرواژه‌ای که ذخیره می‌کنید با گذرواژه <ph name="WEBSITE" /> مطابقت داشته باشد</translation>
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
 <translation id="3131206671572504478">مسدود کردن همه</translation>
 <translation id="3153862085237805241">ذخیره کردن کارت</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">ماه</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، ‏<ph name="ADDITIONAL_INFO" />، ‏<ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">برگه‌های باز</translation>
+<translation id="3272527697863656322">لغو</translation>
 <translation id="3277021493514034324">نشانی سایت کپی شد</translation>
 <translation id="3290875554372353449">انتخاب حساب</translation>
 <translation id="3311748811247479259">خاموش</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">«مترجم» دردسترس است. گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند.</translation>
 <translation id="3393920035788932672">پنجره‌های بازشو مجاز است</translation>
 <translation id="3425644765244388016">نام مستعار کارت</translation>
+<translation id="3433057996795775706">حذف این گذرواژه باعث حذف شدن حساب شما در <ph name="WEBSITE" /> نمی‌شود. برای ایمن نگه‌داشتن گذرواژه‌تان دربرابر دیگران، آن را در <ph name="WEBSITE" /> تغییر دهید.</translation>
 <translation id="3443810440409579745">برگه دریافت شد.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقیقه</translation>
 <translation id="3448016392200048164">نمای تقسیم</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">صفحات وب از پیش بارگیری شده</translation>
 <translation id="3670030362669914947">عدد</translation>
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
+<translation id="3740397331642243698">‏نشانی‌های واردشده را در Google Chrome در حالت «ناشناس» باز می‌کند.</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
 <translation id="3775743491439407556">همگام‌سازی کار نمی‌کند</translation>
 <translation id="3779810277399252432">اتصال اینترنتی ندارید</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">اطلاعات</translation>
 <translation id="4659126640776004816">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود.</translation>
 <translation id="4659667755519643272">به تعویض‌کننده برگه وارد شود</translation>
+<translation id="46614316059270592">ذخیره گذرواژه</translation>
 <translation id="4666531726415300315">ورود به سیستم به‌عنوان <ph name="EMAIL" />.
 
 داده‌های شما با عبارت عبور همگام‌سازی رمزگذاری می‌شود. برای شروع همگام‌سازی آن را وارد کنید.</translation>
@@ -402,6 +409,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5854790677617711513">قدیمی‌تر از ۳۰ روز</translation>
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
 <translation id="5857770089550859117">برای شروع همگام‌سازی به عبارت عبور نیاز است.</translation>
+<translation id="5860033963881614850">خاموش</translation>
 <translation id="5869029295770560994">بله متوجه شدم</translation>
 <translation id="5871497086027727873">۱ مورد منتقل شد</translation>
 <translation id="5897956970858271241">به پیوندی که کپی کرده‌اید بروید</translation>
@@ -502,7 +510,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6841409746189899007">پیوند به نوشتار</translation>
 <translation id="6851516051005285358">درخواست سایت میزکار</translation>
-<translation id="6856384753476268833">توسط سازمانتان مدیریت می‌شود.</translation>
 <translation id="6858855187367714033">اسکن‌شده</translation>
 <translation id="6859944681507688231">‏برای اسکن کردن کد QR یا کارت اعتباری، دوربین را در تنظیمات فعال کنید.</translation>
 <translation id="6869389390665537774">‏می‌توانید صفحه‌هایی را که از آن‌‎ها بازدید کرده‌اید ببینید یا آن‌ها را از سابقه پاک کنید</translation>
@@ -524,7 +531,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7006788746334555276">تنظیمات محتوا</translation>
 <translation id="7015203776128479407">راه‌اندازی اولیه همگام‌سازی کامل نشد. همگام‌سازی خاموش است.</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
-<translation id="7030675613184250187">می‌توانید صفحات را در فهرست خواندن ذخیره کنید تا دوباره آن‌ها را پیدا کنید یا درحالت آفلاین آن‌ها را بخوانید</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7062545763355031412">پذیرش و تغییر حساب‌ها</translation>
 <translation id="7099761977003084116">برگه‌های اخیر</translation>
@@ -587,12 +593,12 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7856733331829174190">بارگیری نشد</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7887198238286927132">‏برای محافظت از حریم‌خصوصی‌تان، Chrome از ویژگی تکمیل خودکار برای این فیلد استفاده نخواهد کرد.</translation>
-<translation id="791251013315685175">تحت مدیریت <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">فهرست مطالعه‌تان درحالت آفلاین دردسترس است. برای اضافه کردن صفحه به فهرست مطالعه، روی <ph name="SHARE_OPENING_ICON" /> و بعد <ph name="READ_LATER_TEXT" /> ضربه بزنید.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">صادر کردن گذرواژه‌ها…</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="794799177247607889">توقف گزارش‌گیری</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{گذرواژه لورفته‌ای وجود ندارد}=1{{COUNT} گذرواژه لورفته}one{{COUNT} گذرواژه لورفته}other{{COUNT} گذرواژه لورفته}}</translation>
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7966516440812255683">سایت‌ها می‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند.
 
@@ -606,6 +612,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8023878949384262191">بخش را بزرگ می‌کند.</translation>
 <translation id="804427445359061970">برگه‌های مربوط به دستگاه‌های دیگر را اینجا خواهید دید</translation>
 <translation id="8059533439631660104">بخش را کوچک می‌کند.</translation>
+<translation id="8065292699993359127">‏باز کردن نشانی‌های وب در Chrome در حالت «ناشناس»</translation>
 <translation id="806745655614357130">داده‌های من مجزا باشد</translation>
 <translation id="8073670137947914548">بارگیری به پایان رسید</translation>
 <translation id="8073872304774253879">بهبود جستجوها و مرور</translation>

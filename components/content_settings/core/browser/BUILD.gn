@@ -60,6 +60,7 @@ static_library("browser") {
     "//components/url_formatter",
     "//extensions/buildflags",
     "//net",
+    "//services/network/public/cpp",
     "//services/preferences/public/cpp",
     "//url",
   ]

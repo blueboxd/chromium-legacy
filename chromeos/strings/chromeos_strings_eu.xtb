@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Pasahitz berria</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailu hau, eta erabiltzaileen jarduera guztiak atzi ditzake; besteak beste, bisitatutako webguneak, erabilitako pasahitzak eta posta elektronikoa.</translation>
 <translation id="4003384961948020559">Hutsegitea - Irteera-erretilua beteta dago</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> da <ph name="DEVICE_TYPE" /> gailuaren kudeatzailea. Baliteke kudeatzaileek urrunetik konfiguratzea gailua.</translation>
 <translation id="4034824040120875894">Inprimagailua</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> barru iraungiko da pasahitza</translation>
 <translation id="4238516577297848345">Ez dago inprimatze-lanik abian</translation>
@@ -73,7 +74,6 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="808894953321890993">Aldatu pasahitza</translation>
 <translation id="8208861521865154048">Abantailak</translation>
 <translation id="8347227221149377169">Inprimatze-lanak</translation>
-<translation id="8623849191266582420"><ph name="ENROLLMENT_DOMAIN" /> da <ph name="DEVICE_TYPE" /> gailuaren kudeatzailea. Kudeatzaileek urrunetik konfiguratu eta kontrola dezakete gailua.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du erabiltzaile hau. Ezarpenak kudeatu eta erabiltzailearen jarduerak gainbegira ditzake urrunetik.</translation>
 <translation id="871560550817059752">Hutsegitea - Ez dago tintarik</translation>
 <translation id="8747900814994928677">Berretsi aldaketa</translation>

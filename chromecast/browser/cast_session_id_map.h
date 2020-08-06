@@ -42,7 +42,7 @@ class CastSessionIdMap {
   // Fetch the session id that is mapped to the provided group_id. Defaults to
   // empty string if the mapping is not found.
   // Must be called on the sequence for |task_runner_|.
-  static std::string GetSessionId(std::string group_id);
+  static std::string GetSessionId(const std::string& group_id);
 
  private:
   class GroupObserver;
@@ -64,7 +64,7 @@ class CastSessionIdMap {
                             std::unique_ptr<GroupObserver> group_observer);
   // Retrieves the session id for the provided group id.
   // This must be called on the |task_runner_|.
-  std::string GetSessionIdInternal(std::string group_id);
+  std::string GetSessionIdInternal(const std::string& group_id);
 
   base::flat_map<
       std::string,

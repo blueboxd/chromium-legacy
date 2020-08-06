@@ -473,7 +473,7 @@ public class WebsitePermissionsFetcherTest {
         // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        Assert.assertEquals(63, ContentSettingsType.NUM_TYPES);
+        Assert.assertEquals(64, ContentSettingsType.NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.COOKIES, googleOrigin,
                         ContentSettingValues.DEFAULT, preferenceSource));
@@ -495,6 +495,9 @@ public class WebsitePermissionsFetcherTest {
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.AUTOMATIC_DOWNLOADS, googleOrigin,
                         ContentSettingValues.DEFAULT, preferenceSource));
+        websitePreferenceBridge.addContentSettingException(
+                new ContentSettingException(ContentSettingsType.INSECURE_PRIVATE_NETWORK,
+                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
 
         // Add storage info.
         int storageSize = 256;

@@ -970,6 +970,7 @@
       'desc': '''Controls miscellaneous settings including USB, bluetooth, policy refresh, developer mode and others.''',
       'policies': [
         'UsbDetachableWhitelist',
+        'UsbDetachableAllowlist',
         'DeviceAllowBluetooth',
         'TPMFirmwareUpdateSettings',
         'DeviceEcryptfsMigrationStrategy',
@@ -14108,6 +14109,7 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': [
         {
           'vendor_id' : 1027,
@@ -14120,6 +14122,45 @@
       ],
       'id': 322,
       'caption': '''Whitelist of USB detachable devices''',
+      'tags': ['system-security'],
+      'desc': '''Setting the policy defines the list of USB devices users can detach from their kernel driver to use through the chrome.usb API directly inside a web app. Entries are pairs of USB Vendor Identifier and Product Identifier to identify specific hardware.
+
+      If not set, the list of a detachable USB devices is empty.
+
+      This policy is deprecated, please use <ph name="USB_DETACHABLE_ALLOWLIST">UsbDetachableAllowlist</ph> instead.''',
+    },
+    {
+      'name': 'UsbDetachableAllowlist',
+      'owners': ['file://components/policy/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'id': 'UsbDeviceIdInclusive',
+          'properties': {
+            'vendor_id': { 'type': 'integer' },
+            'product_id': { 'type': 'integer' },
+          },
+        },
+      },
+      'supported_on': ['chrome_os:86-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': False,
+      },
+      'example_value': [
+        {
+          'vendor_id' : 1027,
+          'product_id' : 24577,
+        },
+        {
+          'vendor_id' : 16700,
+          'product_id' : 8453,
+        }
+      ],
+      'id': 765,
+      'caption': '''Allowlist of USB detachable devices''',
       'tags': ['system-security'],
       'desc': '''Setting the policy defines the list of USB devices users can detach from their kernel driver to use through the chrome.usb API directly inside a web app. Entries are pairs of USB Vendor Identifier and Product Identifier to identify specific hardware.
 
@@ -16054,7 +16095,7 @@
       'id': 759,
       'caption': '''The list of note-taking apps allowed on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen''',
       'tags': [],
-      'desc': '''Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen.
+      'desc': '''The list of apps allowed on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> lock screen.
 
       If the preferred note-taking app is enabled on the lock screen, the lock screen will contain UI element for launching the preferred note taking app.
       When launched, the app will be able to create an app window on top of the lock screen, and create data items (notes) in the lock screen context. The app will be able to import created notes to the primary user session, when the session is unlocked. Currently, only Chrome note-taking apps are supported on the lock screen.
@@ -23017,6 +23058,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     ['DeviceOffHours', 'device_off_hours.ignored_policy_proto_tags'],
     # UsbDetachableWhitelist is a strongly typed proto.
     ['UsbDetachableWhitelist', 'usb_detachable_whitelist.id'],
+    # UsbDetachableAllowlist is a strongly typed proto.
+    ['UsbDetachableAllowlist', 'usb_detachable_allowlist.id'],
     # DeviceUpdateAllowedConnectionTypes is not generatable since the proto
     # uses enums, whereas the schema uses strings.
     ['DeviceUpdateAllowedConnectionTypes', 'auto_update_settings.allowed_connection_types'],
@@ -23675,6 +23718,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 764,
+  'highest_id_currently_used': 765,
   'highest_atomic_group_id_currently_used': 39
 }

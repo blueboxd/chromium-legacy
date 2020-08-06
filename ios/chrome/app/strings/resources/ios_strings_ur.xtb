@@ -116,6 +116,7 @@
 <translation id="2267753748892043616">اکاؤنٹ شامل کریں</translation>
 <translation id="2268044343513325586">بہتر بنائیں</translation>
 <translation id="2273327106802955778">مزید مینو</translation>
+<translation id="2302742851632557585">ویب سائٹ پر پاس ورڈ تبدیل کریں</translation>
 <translation id="2316709634732130529">تجویز کردہ پاس ورڈ استعمال کریں</translation>
 <translation id="2320166752086256636">کی بورڈ چھپائیں</translation>
 <translation id="2339560363438331454">‏مطابقت پذیری اور Google سروسز</translation>
@@ -183,6 +184,7 @@
 <translation id="298306318844797842">ادائیگی کا طریقہ شامل کریں...</translation>
 <translation id="2989805286512600854">نئے ٹیب میں کھولیں</translation>
 <translation id="3037605927509011580">ارے، رکیں!</translation>
+<translation id="3081338492074632642">اس بات کو یقینی بنائیں کہ آپ جو پاس ورڈ محفوظ کر رہے ہیں وہ آپ کے <ph name="WEBSITE" /> کے پاس ورڈ سے مماثل ہے</translation>
 <translation id="3112556859945124369">نشان زد کریں…</translation>
 <translation id="3131206671572504478">سبھی کو مسدود کریں</translation>
 <translation id="3153862085237805241">کارڈ محفوظ کریں</translation>
@@ -201,6 +203,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، <ph name="ADDITIONAL_INFO" />، <ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">کھلے ٹیبز</translation>
+<translation id="3272527697863656322">منسوخ کریں</translation>
 <translation id="3277021493514034324">سائٹ کا پتہ کاپی ہو گیا</translation>
 <translation id="3290875554372353449">اکاؤنٹ منتخب کریں</translation>
 <translation id="3311748811247479259">آف</translation>
@@ -211,6 +214,7 @@
 <translation id="3371831930909698441">ترجمہ دستیاب ہے۔ اسکرین کے نچلے حصہ کے قریب اختیارات دستیاب ہیں۔</translation>
 <translation id="3393920035788932672">پاپ اپس کی اجازت ہے</translation>
 <translation id="3425644765244388016">کارڈ کا عرفی نام</translation>
+<translation id="3433057996795775706">اس پاس ورڈ کو حذف کرنے سے آپ کا اکاؤنٹ <ph name="WEBSITE" /> سے حذف نہیں ہوگا۔ اپنا اکاؤنٹ دوسروں سے محفوظ رکھنے کے لیے <ph name="WEBSITE" /> پر اپنا پاس ورڈ تبدیل کریں۔</translation>
 <translation id="3443810440409579745">ٹیب موصول ہوا۔</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> منٹ</translation>
 <translation id="3448016392200048164">تقسیم کا منظر</translation>
@@ -306,6 +310,7 @@
 <translation id="4636930964841734540">معلومات</translation>
 <translation id="4659126640776004816">‏جب آپ اپنے Google اکاؤنٹ میں سائن ان کرتے ہیں، تو یہ خصوصیت آن ہو جاتی ہے۔</translation>
 <translation id="4659667755519643272">ٹیب سوئچ کنندہ میں داخل ہوں</translation>
+<translation id="46614316059270592">پاس ورڈ محفوظ کریں</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> کے بطور سائن ان کردہ۔
 
 آپ کے ڈیٹا کی آپ کے مطابقت پذیر پاس فریز کے ساتھ مرموز کاری کی گئی ہے۔ مطابقت پذیری شروع کرنے کیلئے اسے درج کریں۔</translation>
@@ -402,6 +407,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="5854790677617711513">30 دن سے زیادہ پرانا</translation>
 <translation id="5857090052475505287">نیا فولڈر</translation>
 <translation id="5857770089550859117">مطابقت پذیری شروع کرنے کیلئے پاس فریز درکار ہے۔</translation>
+<translation id="5860033963881614850">آف</translation>
 <translation id="5869029295770560994">ٹھیک ہے، سمجھ آ گئی</translation>
 <translation id="5871497086027727873">1 آئٹم منتقل کیا گیا</translation>
 <translation id="5897956970858271241">کاپی کردہ لنک ملاحظہ کریں</translation>
@@ -502,7 +508,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6831043979455480757">ترجمہ کریں</translation>
 <translation id="6841409746189899007">ٹیکسٹ کا لنک</translation>
 <translation id="6851516051005285358">ڈیسک ٹاپ سائٹ کی درخواست کریں</translation>
-<translation id="6856384753476268833">آپ کی تنظیم کے زیر نظم۔</translation>
 <translation id="6858855187367714033">اسکین کیا گیا</translation>
 <translation id="6859944681507688231">‏QR کوڈ یا کریڈٹ کارڈ اسکین کرنے کیلئے، ترتیبات سے کیمرا کو فعال کریں۔</translation>
 <translation id="6869389390665537774">آپ ان صفحات کو دیکھ سکتے ہیں جو آپ نے ملاحظہ کئے ہیں یا انھیں اپنی سرگزشت سے صاف کر سکتے ہیں</translation>
@@ -524,7 +529,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7006788746334555276">مواد کی ترتیبات</translation>
 <translation id="7015203776128479407">مطابقت پذیری کا ابتدائی سیٹ اپ مکمل نہیں ہوا۔ مطابقت پذیری آف ہے۔</translation>
 <translation id="7029809446516969842">پاس ورڈز</translation>
-<translation id="7030675613184250187">آپ صفحات کو دوبارہ تلاش کرنے یا آف لائن پڑھنے کیلئے اپنی پڑھنے کی فہرست میں محفوظ کر سکتے ہیں</translation>
 <translation id="7053983685419859001">مسدود کریں</translation>
 <translation id="7062545763355031412">قبول کریں اور اکاؤنٹس سوئچ کریں</translation>
 <translation id="7099761977003084116">حالیہ ٹیبز</translation>
@@ -587,12 +591,12 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7856733331829174190">ڈاؤن لوڈ نہیں ہو سکی</translation>
 <translation id="7859704718976024901">براؤزنگ سرگزشت</translation>
 <translation id="7887198238286927132">‏آپ کی رازداری کے تحفظ کے لیے، Chrome اس فیلڈ کو آٹو فل نہیں کرے گا۔</translation>
-<translation id="791251013315685175"><ph name="COMPANY" /> کے زیر نظم ہے۔</translation>
 <translation id="7918293828610777738">آپ کی پڑھنے کی فہرست آف لائن دستیاب ہے۔ اپنی پڑھنے کی فہرست میں صفحہ شامل کرنے کیلئے، پہلے <ph name="SHARE_OPENING_ICON" /> پھر <ph name="READ_LATER_TEXT" /> کو تھپتھپائیں۔</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">پاس ورڈز برآمد کریں...</translation>
 <translation id="7947953824732555851">قبول و سائن ان کریں</translation>
 <translation id="794799177247607889">لاگ کرنا روکیں</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{کوئی متاثرہ پاس ورڈ نہیں}=1{{COUNT} متاثرہ پاس ورڈ}other{{COUNT} متاثرہ پاس ورڈز}}</translation>
 <translation id="7961015016161918242">کبھی نہیں</translation>
 <translation id="7966516440812255683">سائٹس آپ کے براؤزنگ کے تجربہ کو بہتر بنانے کے لیے کوکیز کا استعمال کر سکتی ہیں، مثال کے طور پر آپ کو سائن ان رکھنا یا آپ کی شاپنگ کارٹ میں آئٹمز کو یاد رکھنا۔
 
@@ -640,7 +644,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> ٹیبز <ph name="FIRST_VISIBLE_TAB" /> سے <ph name="LAST_VISIBLE_TAB" /> از <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">نئی</translation>
 <translation id="8532105204136943229">میعاد کے اختتام کا سال</translation>
-<translation id="8533166274275423134">کہیں اور کھولا گیا</translation>
+<translation id="8533166274275423134">کہیں اور کھلی ہوئیں</translation>
 <translation id="8534481786647257214">‏Google+‎ اشاعت مکمل ہوگئی۔</translation>
 <translation id="8548878600947630424">صفحہ میں تلاش کریں…</translation>
 <translation id="8574235780160508979">‏Chrome کی سروس کی شرائط 31 مارچ کو بدل رہی ہیں۔ <ph name="BEGIN_LINK" />براہ کرم جائزہ لیں<ph name="END_LINK" /></translation>

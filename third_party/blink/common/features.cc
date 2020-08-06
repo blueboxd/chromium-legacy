@@ -570,7 +570,9 @@ const base::FeatureParam<DelayAsyncScriptDelayType>::Option
     delay_async_script_execution_delay_types[] = {
         {DelayAsyncScriptDelayType::kFinishedParsing, "finished_parsing"},
         {DelayAsyncScriptDelayType::kFirstPaintOrFinishedParsing,
-         "first_paint_or_finished_parsing"}};
+         "first_paint_or_finished_parsing"},
+        {DelayAsyncScriptDelayType::kUseOptimizationGuide,
+         "use_optimization_guide"}};
 const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam{
         &kDelayAsyncScriptExecution, "delay_type",

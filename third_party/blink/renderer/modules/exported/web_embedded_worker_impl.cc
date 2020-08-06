@@ -231,7 +231,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       std::make_unique<ServiceWorkerGlobalScopeProxy>(
           *this, *worker_context_client_, initiator_thread_task_runner),
       std::move(installed_scripts_manager), std::move(cache_storage_remote),
-      initiator_thread_task_runner);
+      initiator_thread_task_runner, worker_start_data->service_worker_token);
 
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();
   devtools_params->devtools_worker_token =

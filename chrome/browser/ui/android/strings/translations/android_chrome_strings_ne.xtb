@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">विस्तृत गर्न ट्याप गर्नुहोस्</translation>
 <translation id="1291207594882862231">इतिहास, कुकी, साइट सम्बन्धी डेटा, क्यासलाई खाली गर्नुहोस्…</translation>
 <translation id="129553762522093515">हालैमा बन्द गरिएको</translation>
+<translation id="1298077576058087471">६०% सम्म डेटा बचत गर्नुहोस्, आजको समाचार पढ्नुहोस्</translation>
 <translation id="1303339473099049190">उक्त पासवर्ड फेला पार्न सकिएन। आफ्नो हिज्जेको जाँच गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> बाट पठाइएको</translation>
 <translation id="1310482092992808703">ट्याबहरू समूहबद्ध गर्नुहोस्</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">लाइट मोड रिसेट गर्ने हो?</translation>
 <translation id="1868024384445905608">Chrome ले अब फाइलहरू अझ छिटो डाउनलोड गर्छ</translation>
 <translation id="1874760110381325409">तपाईं आफ्नो Google खातामार्फत साइन इन हुनु हुने छ\n(यसो गर्दा Chrome सिंक नामक सुविधा अन हुने छैन)</translation>
+<translation id="1877026089748256423">Chrome को मिति समाप्त भएको छ</translation>
 <translation id="1883903952484604915">मेरा फाइलहरू</translation>
 <translation id="1919950603503897840">सम्पर्कहरू चयन गर्नुहोस्</translation>
 <translation id="1925021887439448749">आफू अनुकूल पारिएको वेब ठेगाना प्रविष्टि गर्नुहोस्</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">नयाँ संस्करण उपलब्ध छ</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
 <translation id="2612676031748830579">कार्ड नम्बर</translation>
-<translation id="2622559029861875898">Chrome ले अद्यावधिक छ वा छैन भन्ने कुराको जाँच गर्न सकेन। आफ्नो इन्टरनेट जडान जाँच गरी हेर्नुहोस्।</translation>
 <translation id="2625189173221582860">पासवर्ड प्रतिलिपि गरियो</translation>
 <translation id="2631006050119455616">बचत गरिएको डेटा</translation>
 <translation id="2647434099613338025">भाषा थप्नुहोस्</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">स्थानसम्बन्धी सुविधा निष्क्रिय छ; <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
 <translation id="3058498974290601450">तपाईं सेटिङहरूमा गई जुनसुकै बेला सिंक सक्रिय गर्न सक्नुहुन्छ</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> पुस्तक चिन्ह}other{<ph name="BOOKMARKS_COUNT_MANY" /> पुस्तक चिन्हहरू}}</translation>
+<translation id="3062802207422175757">Chrome मा तपाईंको रुचिका विषयसँग सम्बन्धित लेखहरू पढ्नुहोस्</translation>
 <translation id="3089395242580810162">इन्कोग्निटो ट्याबमा खोल्नुहोस्</translation>
 <translation id="3114012059975132928">भिडियो प्लेयर</translation>
+<translation id="3114507951000454849">आजको समाचार पढ्नुहोस् <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">घोषणाहरू</translation>
 <translation id="3137521801621304719">इनकगनिटो मोडलाई छोड्नुहोस्</translation>
 <translation id="3143515551205905069">सिंक रद्द गर्नुहोस्</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome ले अझै VR का लागि तयारी गर्दै छ। Chrome पछि पुनः सुरु गर्नुहोस्।</translation>
 <translation id="3568688522516854065">आफ्ना अन्य यन्त्रहरूबाट आफ्ना ट्याबहरू प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="3587482841069643663">सबै</translation>
+<translation id="3587596251841506391">वेब प्रयोग गर्ने सबै जनालाई सुरक्षित रहन मद्दत गर्नुहोस्</translation>
 <translation id="3590487821116122040">साइटको Chrome लाई महत्वपूर्ण नलाग्ने भण्डारण (उदाहरणका लागि सुरक्षित गरिएका सेटिङहरू नभएका वा तपाईं प्रायजसो नजाने साइटहरू)</translation>
 <translation id="3594780231884063836">भिडियो म्युट गर्नुहोस्</translation>
 <translation id="3599863153486145794">साइन इन गरिएका सबै यन्त्रहरूबाट इतिहास खाली गर्दछ। तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा अन्य किसिमका ब्राउजिङ इतिहास रहेका हुन सक्छन्।</translation>
@@ -555,7 +559,6 @@
 <translation id="5441522332038954058">ठेगाना पट्टीमा जानुहोस्</translation>
 <translation id="5447201525962359567">कुकी र अन्य स्थानीय रूपमा भण्डारण गरिएको डेटा सहित साइटको सबै भण्डारण</translation>
 <translation id="545042621069398927">तपाईंको डाउनलोडको गति बढाउँदै।</translation>
-<translation id="5454513945794364671">तपाईंका एड्मिनले Safe Browsing अफ गर्नुभएको छ</translation>
 <translation id="5456381639095306749">पृष्ठ डाउनलोड गर्नुहोस्</translation>
 <translation id="548278423535722844">नक्सा अनुप्रयोगमा खोल्नुहोस्</translation>
 <translation id="5487521232677179737">डेटा खाली गर्नुहोस्</translation>
@@ -648,6 +651,7 @@
 <translation id="6108923351542677676">सेटअप प्रगतिमा छ...</translation>
 <translation id="6111020039983847643">प्रयोग भएको डेटा</translation>
 <translation id="6112702117600201073">पृष्ठ पुनः ताजा गर्दै</translation>
+<translation id="6122831415929794347">सुरक्षित ब्राउजिङ निष्क्रिय पार्ने हो?</translation>
 <translation id="6127379762771434464">वस्तुलाई हटाइयो</translation>
 <translation id="6140709049082532940">सुदृढ सुरक्षा:</translation>
 <translation id="6140912465461743537">देश/क्षेत्र</translation>
@@ -655,6 +659,7 @@
 <translation id="6154478581116148741">यो यन्त्रबाट आफ्ना पासवर्डहरू निर्यात गर्न सेटिङहरूमा गई स्क्रिन लक सक्रिय गर्नुहोस्</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> छनौट गर्नुहोस्</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
+<translation id="6186394685773237175">अरूले देखेको कुनै पनि पासवर्ड फेला परेन</translation>
 <translation id="6201345951596836663">लिंक प्रतिलिपि गरियो</translation>
 <translation id="6206830853671714236">कहिले डाउनलोड गर्नु पर्ने हो छनौट गर्नुहोस्</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> होइन?</translation>
@@ -717,6 +722,7 @@
 <translation id="6573431926118603307">तपाईँले आफ्ना अन्य यन्त्रहरूमा Chrome मा खोल्नुभएका ट्याबहरू यहाँ देखिनेछन्।</translation>
 <translation id="6583199322650523874">हालको पृष्ठलाई पुस्तक चिन्ह लगाउनुहोस्</translation>
 <translation id="6588043302623806746">सुरक्षित DNS प्रयोग गर्नुहोस्</translation>
+<translation id="6590471736817333463">६०% सम्म डेटा बचत गर्नुहोस्</translation>
 <translation id="6593061639179217415">डेस्कटप साइट</translation>
 <translation id="6597891566292541626">QR/बार कोडलाई यस फ्रेमभित्र पार्नुहोस्।</translation>
 <translation id="6600954340915313787">Chrome मा प्रतिलिपि गरियो</translation>
@@ -730,7 +736,6 @@
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">ट्याब</translation>
 <translation id="6663079968236414793">पाठसँग लिंक गर्नुहोस्</translation>
-<translation id="666573598175432848">Chrome को अझ नयाँ संस्करण उपलब्ध छ। Play स्टोरमा जान यो बटनमा ट्याप गर्नुहोस्।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> मा खोल्नुहोस्</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
 <translation id="6671495933530132209">छविको प्रतिलिपि गर्नुहोस्</translation>
@@ -779,7 +784,7 @@
 <translation id="7063006564040364415">समक्रमण सर्भरमा जडान गर्न सकेन।</translation>
 <translation id="7071521146534760487">खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
-<translation id="7080806333218412752">यस सुविधाले URL हरूको जाँच गर्नका निम्ति तिनलाई सुरक्षित ब्राउजिङमा पठाउँछ। यस सुविधाले नयाँ जोखिमहरू पत्ता लगाउन पृष्ठ, डाउनलोड, एक्स्टेन्सनसम्बन्धी गतिविधि र प्रणालीसम्बन्धी जानकारीको सानो नमुनालाई पनि सुरक्षित ब्राउजिङमा पठाउँछ। यस सुविधाले तपाईं साइन इन भएका बेला यो डेटा केही समयका लागि तपाईंको Google खातामा लिंक गर्छ। यसो गर्नुको उद्देश्य Google का एपहरूमा तपाईंको डेटा सुरक्षित राख्नु हो।</translation>
+<translation id="7080806333218412752">यस सुविधाले URL हरूको जाँच गर्नका निम्ति तिनलाई सुरक्षित ब्राउजिङमा पठाउँछ। यस सुविधाले नयाँ जोखिमहरू पत्ता लगाउन पृष्ठ, डाउनलोड, एक्स्टेन्सनसम्बन्धी गतिविधि र प्रणालीसम्बन्धी जानकारीको सानो नमुना पनि सुरक्षित ब्राउजिङमा पठाउँछ। यस सुविधाले तपाईं साइन इन भएका बेला यो डेटा केही समयका लागि तपाईंको Google खातामा लिंक गर्छ। यसो गर्नुको उद्देश्य Google का एपहरूमा तपाईंको डेटा सुरक्षित राख्नु हो।</translation>
 <translation id="7121362699166175603">ठेगाना पट्टीका इतिहास र स्वतः पूर्णताहरूलाई खाली गर्छ। तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा अन्य किसिमका ब्राउजिङ इतिहास रहेका हुन सक्छन्।</translation>
 <translation id="7128355412245153445">होम बटनमा ट्याप गर्ने बित्तिकै आफ्ना शीर्ष साइट तथा ताजा समाचार देखिने बनाउनुहोस्</translation>
 <translation id="7138678301420049075">अन्य</translation>
@@ -926,6 +931,7 @@
 <translation id="8190358571722158785">१ दिन बाँकी छ</translation>
 <translation id="8200772114523450471">रिजुमी</translation>
 <translation id="8209050860603202033">छवि खोल्नुहोस्</translation>
+<translation id="8218052821161047641">छिटो लोड हुने पृष्ठ</translation>
 <translation id="8218622182176210845">आफ्नो खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="8223642481677794647">फिड कार्ड मेनु</translation>
 <translation id="8224471946457685718">Wi-Fi को प्रयोग गरी आफ्ना लागि लेखहरू डाउनलोड गर्नुहोस्</translation>
@@ -1004,7 +1010,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ट्याब</translation>
 <translation id="8854223127042600341">आफ्ना अफलाइन फाइलहरू हेर्नुहोस्</translation>
 <translation id="889338405075704026">Chrome को सेटिङमा जानुहोस्</translation>
-<translation id="8893398027601469503">तपाईं Chrome को नवीनतम संस्करण चलाउँदै हुनुहुन्छ</translation>
 <translation id="8898822736010347272">नयाँ खतराहरू पत्ता लगाउन र वेब प्रयोग गर्ने सम्पूर्ण प्रयोगकर्ताहरूलाई सुरक्षित राख्न Google लाई तपाईंले हेर्ने केही पृष्ठका URL, प्रणालीसम्बन्धी निश्चित जानकारी र पृष्ठका केही सामग्रीहरू पठाउँछ।</translation>
 <translation id="8909135823018751308">साझा गर्नुहोस्...</translation>
 <translation id="8912362522468806198">Google खाता</translation>
@@ -1051,6 +1056,7 @@
 <translation id="9209888181064652401">कल गर्न सकिएन</translation>
 <translation id="9219103736887031265">छविहरू</translation>
 <translation id="926205370408745186">आफूले Chrome मा गरेका क्रियाकलाप डिजिटल वेलबिइङबाट हटाउनुहोस्</translation>
+<translation id="927968626442779827">Google Chrome को लाइट मोड प्रयोग गर्नुहोस्</translation>
 <translation id="932327136139879170">गृहपृष्ठ</translation>
 <translation id="93753284658583800">गृहपृष्ठ परिवर्तन गरियो</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>

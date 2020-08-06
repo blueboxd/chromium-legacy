@@ -17,6 +17,13 @@ suite('NavigationBehaviorTest', function() {
 
       behaviors: [NavigationBehavior],
 
+      properties: {
+        subtitle: {
+          type: String,
+          value: 'My subtitle',
+        },
+      },
+
       ready: function() {
         this.reset();
       },
@@ -45,11 +52,17 @@ suite('NavigationBehaviorTest', function() {
   });
 
   setup(function() {
+    loadTimeData.overrideValues({
+      headerText: 'My title',
+    });
+
+
     document.body.innerHTML = '';
     // Creates 3 elements with IDs step-(0~2).
     for (let i = 0; i < 3; i++) {
       elements.push(document.createElement('test-element'));
       elements[i].id = `step-${i}`;
+      elements[i].subtitle = `Step ${i}`;
     }
   });
 
@@ -162,5 +175,15 @@ suite('NavigationBehaviorTest', function() {
     assertTrue(elements[2].changeCalled);
     assertFalse(elements[2].exitCalled);
     assertCallOrders();
+  });
+
+  test('updates title', () => {
+    navigateTo(/* doesn't matter which route */ Routes.NEW_USER, 0);
+    appendAll();
+    resetAll();
+    assertEquals('My title - Step 0', document.title);
+
+    navigateTo(/* doesn't matter which route */ Routes.NEW_USER, 1);
+    assertEquals('My title - Step 1', document.title);
   });
 });

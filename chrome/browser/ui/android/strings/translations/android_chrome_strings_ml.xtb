@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">വികസിപ്പിക്കാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1291207594882862231">ചരിത്രവും കുക്കികളും സൈറ്റ് വിവരവും കാഷെയും മായ്‌ക്കുക...</translation>
 <translation id="129553762522093515">സമീപകാലത്ത് അടച്ചവ</translation>
+<translation id="1298077576058087471">60% വരെ ഡാറ്റ ലാഭിക്കൂ, ഇന്നത്തെ വാർത്തകൾ വായിക്കൂ</translation>
 <translation id="1303339473099049190">പാസ്‌വേഡ് കണ്ടെത്താനായില്ല. അക്ഷരത്തെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" />-ൽ നിന്ന് അയച്ചത്</translation>
 <translation id="1310482092992808703">ടാബുകൾ ഗ്രൂപ്പ് ചെയ്യൂ</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">ലൈറ്റ് മോഡ് പുനഃസജ്ജീകരിക്കണോ?</translation>
 <translation id="1868024384445905608">Chrome ഇപ്പോൾ വേഗത്തിൽ ഫയലുകൾ ഡൗൺലോഡ് ചെയ്യുന്നു</translation>
 <translation id="1874760110381325409">നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യും\n(ഇത് Chrome സമന്വയം ഓണാക്കില്ല)</translation>
+<translation id="1877026089748256423">Chrome കാലഹരണപ്പെട്ടതാണ്</translation>
 <translation id="1883903952484604915">എന്റെ ഫയലുകൾ</translation>
 <translation id="1919950603503897840">കോൺടാക്റ്റുകൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1925021887439448749">ഇഷ്‌ടാനുസൃത വെബ് വിലാസം നൽകുക</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">ഏറ്റവും പുതിയ പതിപ്പ് ലഭ്യമാണ്</translation>
 <translation id="2593272815202181319">മോണോസ്പെ‌യ്‌സ്</translation>
 <translation id="2612676031748830579">കാർഡ് നമ്പർ</translation>
-<translation id="2622559029861875898">Chrome-ന് അപ്‌ഡേറ്റുകൾക്കായി പരിശോധിക്കാനാവില്ല. നിങ്ങളുടെ ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുക.</translation>
 <translation id="2625189173221582860">പാസ്‌വേഡ് പകർത്തി</translation>
 <translation id="2631006050119455616">ലാഭിച്ചത്</translation>
 <translation id="2647434099613338025">ഭാഷ ചേര്‍ക്കുക</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">ലൊക്കേഷൻ ഓഫാണ്; <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> അത് ഓണാക്കുക.</translation>
 <translation id="3058498974290601450">നിങ്ങൾക്ക് ഏത് സമയത്തും ക്രമീകരണത്തിൽ സമന്വയം ഓണാക്കാവുന്നതാണ്</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ബുക്ക്‌മാർക്ക്}other{<ph name="BOOKMARKS_COUNT_MANY" /> ബുക്ക്‌മാർക്കുകൾ}}</translation>
+<translation id="3062802207422175757">Chrome-ൽ നിങ്ങൾക്ക് താൽപ്പര്യമുള്ള വിഷയങ്ങളിലെ ലേഖനങ്ങൾ കാണൂ</translation>
 <translation id="3089395242580810162">അദൃശ്യ ടാബിൽ തുറക്കുക</translation>
 <translation id="3114012059975132928">വീഡിയോ പ്ലേയർ</translation>
+<translation id="3114507951000454849">ഇന്നത്തെ വാർത്തകൾ വായിക്കൂ <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">അറിയിപ്പുകൾ</translation>
 <translation id="3137521801621304719">അദൃശ്യ മോഡ് വിടുക</translation>
 <translation id="3143515551205905069">സമന്വയം റദ്ദാക്കുക</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome ഇപ്പോഴും VR-നായി തയ്യാറെടുത്തുകൊണ്ടിരിക്കുകയാണ്. Chrome പിന്നീട് റീസ്‌റ്റാർട്ട് ചെയ്യുക.</translation>
 <translation id="3568688522516854065">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, സൈൻ ഇൻ ചെയ്‌ത് സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="3587482841069643663">എല്ലാം</translation>
+<translation id="3587596251841506391">വെബിലെ സുരക്ഷ മെച്ചപ്പെടുത്താൻ സഹായിക്കുക</translation>
 <translation id="3590487821116122040">Chrome, സൈറ്റ് സ്‌റ്റോറേജിനെ പ്രധാനപ്പെട്ടതായി കണക്കാക്കുന്നില്ല (ഉദാ: ക്രമീകരണം സംരക്ഷിച്ചിട്ടില്ലാത്തതോ നിങ്ങൾ ഇടയ്‌ക്കിടെ സന്ദർശിക്കാത്തതോ ആയ സൈറ്റുകൾ)</translation>
 <translation id="3594780231884063836">വീഡിയോ മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="3599863153486145794">സൈൻ ഇൻ ചെയ്‌ത എല്ലാ ഉപകരണങ്ങളിൽ നിന്നും ചരിത്രം മായ്ക്കുന്നു. നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രങ്ങളുണ്ടായിരിക്കാം.</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">വിലാസ ബാറിലേക്ക് പോകുക</translation>
 <translation id="5447201525962359567">കുക്കികളും പ്രാദേശികമായി സംഭരിച്ച മറ്റ് വിവരങ്ങളും ഉൾപ്പെടെയുള്ള എല്ലാ സൈറ്റ് സ്‌റ്റോറേജും</translation>
 <translation id="545042621069398927">നിങ്ങളുടെ ഡൗൺലോഡ് വേഗത്തിലാക്കുന്നു.</translation>
-<translation id="5454513945794364671">സുരക്ഷിത ബ്രൗസ് ചെയ്യൽ നിങ്ങളുടെ അഡ്‌മിൻ ഓഫാക്കി</translation>
 <translation id="5456381639095306749">പേജ് ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="548278423535722844">മാപ്‌സ് ആപ്പിൽ തുറക്കുക</translation>
 <translation id="5487521232677179737">ഡാറ്റ മായ്‌ക്കുക</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">സജ്ജീകരണം പുരോഗതിയിലാണ്...</translation>
 <translation id="6111020039983847643">ഉപയോഗിച്ച ഡാറ്റ</translation>
 <translation id="6112702117600201073">പേജ് പുതുക്കുന്നു</translation>
+<translation id="6122831415929794347">സുരക്ഷിത ബ്രൗസിംഗ് ഓഫാക്കണോ?</translation>
 <translation id="6127379762771434464">ഇനം നീക്കംചെയ്‌തു</translation>
 <translation id="6140709049082532940">മെച്ചപ്പെടുത്തിയ പരിരക്ഷ:</translation>
 <translation id="6140912465461743537">രാജ്യം/പ്രദേശം</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാൻ ക്രമീകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ഓണാക്കുക</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ഡാറ്റ ലാഭിക്കൽ</translation>
+<translation id="6186394685773237175">അപഹരിക്കപ്പെട്ട പാസ്‌വേഡുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="6201345951596836663">ലിങ്ക് പകർത്തി</translation>
 <translation id="6206830853671714236">എപ്പോൾ ഡൗൺലോഡ് ചെയ്യണമെന്ന് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> അല്ലേ?</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിലെ Chrome-ൽ തുറന്ന ടാബുകൾ ഇവിടെ ദൃശ്യമാകും.</translation>
 <translation id="6583199322650523874">നിലവിലെ പേജ് ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>
 <translation id="6588043302623806746">സുരക്ഷിത DNS ഉപയോഗിക്കുക</translation>
+<translation id="6590471736817333463">60% വരെ ഡാറ്റ ലാഭിക്കൂ</translation>
 <translation id="6593061639179217415">ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ്</translation>
 <translation id="6597891566292541626">QR/ബാർകോഡ് ഈ ഫ്രെയിമിനുള്ളിൽ ആക്കുക.</translation>
 <translation id="6600954340915313787">Chrome-ലേക്ക് പ്കർത്തി</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6659594942844771486">ടാബ്</translation>
 <translation id="6663079968236414793">ടെക്‌സ്‌റ്റിലേക്കുള്ള ലിങ്ക്</translation>
-<translation id="666573598175432848">Chrome-ന്റെ പുതിയ പതിപ്പ് ലഭ്യമാണ്. Play സ്റ്റോറിലേക്ക് പോകാൻ ഈ ഘടകത്തിൽ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />-ൽ തുറക്കുക</translation>
 <translation id="666981079809192359">Chrome സ്വകാര്യതാ അറിയിപ്പ്</translation>
 <translation id="6671495933530132209">ചിത്രം പകർത്തുക</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">ഒരു ദിവസം ശേഷിക്കുന്നു</translation>
 <translation id="8200772114523450471">പുനരാരംഭിക്കുക</translation>
 <translation id="8209050860603202033">ചിത്രം തുറക്കുക</translation>
+<translation id="8218052821161047641">വേഗം ലോഡാകുന്ന പേജ്</translation>
 <translation id="8218622182176210845">നിങ്ങളുടെ അക്കൗണ്ട് മാനേജ് ചെയ്യുക</translation>
 <translation id="8223642481677794647">ഫീഡ് കാർഡ് മെനു</translation>
 <translation id="8224471946457685718">വൈഫൈ ഉപയോഗിച്ച് നിങ്ങൾക്കായി ലേഖനങ്ങൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ടാബ്</translation>
 <translation id="8854223127042600341">നിങ്ങളുടെ ഓഫ്‌ലൈൻ ഫയലുകൾ കാണുക</translation>
 <translation id="889338405075704026">Chrome ക്രമീകരണത്തിലേക്ക് പോകുക</translation>
-<translation id="8893398027601469503">Chrome-ന്റെ ഏറ്റവും പുതിയ പതിപ്പാണ് നിങ്ങൾ റൺ ചെയ്യുന്നത്</translation>
 <translation id="8898822736010347272">വെബിലെ പുതിയ ഭീഷണികൾ കണ്ടെത്തി എല്ലാവരെയും പരിരക്ഷിക്കാൻ സഹായിക്കുന്നതിന് നിങ്ങൾ സന്ദർശിക്കുന്ന ചില പേജുകളുടെ URL-കൾ, പരിമിത സിസ്‌റ്റം വിവരങ്ങൾ, ചില പേജുകളുടെ ഉള്ളടക്കം എന്നിവ Google-ലേക്ക് അയയ്ക്കുന്നു.</translation>
 <translation id="8909135823018751308">പങ്കിടുക...</translation>
 <translation id="8912362522468806198">Google അക്കൗണ്ട്</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">കോളുകൾ ചെയ്യാനാവില്ല</translation>
 <translation id="9219103736887031265">ചിത്രങ്ങൾ‌</translation>
 <translation id="926205370408745186">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി നീക്കം ചെയ്യുക</translation>
+<translation id="927968626442779827">Google Chrome-ൽ ലൈറ്റ് മോഡ് ഉപയോഗിക്കൂ</translation>
 <translation id="932327136139879170">ഹോം</translation>
 <translation id="93753284658583800">ഹോംപേജ് മാറ്റി</translation>
 <translation id="938850635132480979">പിശക്: <ph name="ERROR_CODE" /></translation>

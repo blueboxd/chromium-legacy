@@ -36,6 +36,7 @@ extern const char kManagedDefaultWebBluetoothGuardSetting[];
 extern const char kManagedDefaultWebUsbGuardSetting[];
 extern const char kManagedDefaultLegacyCookieAccessSetting[];
 extern const char kManagedDefaultSerialGuardSetting[];
+extern const char kManagedDefaultInsecurePrivateNetworkSetting[];
 
 extern const char kManagedCookiesAllowedForUrls[];
 extern const char kManagedCookiesBlockedForUrls[];
@@ -61,6 +62,7 @@ extern const char kManagedWebUsbBlockedForUrls[];
 extern const char kManagedLegacyCookieAccessAllowedForDomains[];
 extern const char kManagedSerialAskForUrls[];
 extern const char kManagedSerialBlockedForUrls[];
+extern const char kManagedInsecurePrivateNetworkAllowedForUrls[];
 
 extern const char kEnableQuietNotificationPermissionUi[];
 

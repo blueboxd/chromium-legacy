@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Нова парола</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управлява това устройство и има достъп до цялата потребителска активност, включително посетените уеб страници, паролите и имейлите.</translation>
 <translation id="4003384961948020559">Неуспешно – изходният контейнер е пълен</translation>
+<translation id="4027485274696301677">Това устройство <ph name="DEVICE_TYPE" /> се управлява от <ph name="ENROLLMENT_DOMAIN" />. Администраторите може да го конфигурират отдалечено.</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Паролата изтича след <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Няма активни задания за отпечатване</translation>
@@ -73,7 +74,6 @@
 <translation id="808894953321890993">Промяна на паролата</translation>
 <translation id="8208861521865154048">Предимства</translation>
 <translation id="8347227221149377169">Задания за отпечатване</translation>
-<translation id="8623849191266582420">Това устройство <ph name="DEVICE_TYPE" /> се управлява от <ph name="ENROLLMENT_DOMAIN" />. Администраторите може отдалечено да го конфигурират и наблюдават.</translation>
 <translation id="8701136875688985581">Този потребител се управлява от <ph name="ENROLLMENT_DOMAIN" />. Възможно е отдалечено управление на настройките и наблюдение на потребителската активност.</translation>
 <translation id="871560550817059752">Неуспешно – няма мастило</translation>
 <translation id="8747900814994928677">Потвърждаване на промяната</translation>

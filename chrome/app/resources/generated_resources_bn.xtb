@@ -466,7 +466,6 @@
 <translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
 <translation id="1567993339577891801">JavaScript কনসোল</translation>
 <translation id="1568323446248056064">প্রদর্শন ডিভাইস সেটিংস খুলুন</translation>
-<translation id="1569265916989458435">স্লিপ মোডে থাকাকালীন ওয়াই-ফাই চালু রাখুন</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (অতিথি)</translation>
 <translation id="1572266655485775982">ওয়াই ফাই সক্ষম করুন</translation>
 <translation id="1572876035008611720">আপনার ইমেল আইডি লিখুন</translation>
@@ -1014,6 +1013,7 @@
 <translation id="2224551243087462610">ফোল্ডার নাম সম্পাদনা করুন</translation>
 <translation id="2225864335125757863">আপনার অ্যাকাউন্ট নিরাপদে রাখতে এই পাসওয়ার্ডগুলি পরিবর্তন করুন:</translation>
 <translation id="2226449515541314767">MIDI ডিভাইসগুলির সম্পূর্ণ নিয়ন্ত্রণ থেকে এই সাইটিকে অবরুদ্ধ করা হয়েছে৷</translation>
+<translation id="2226907662744526012">একবার পিন লিখে অটোমেটিক আনলক করার সুবিধা চালু করুন</translation>
 <translation id="222704500187107962">আপনি ছদ্মবেশী সেশন ছেড়ে গেলেই অটোমেটিক ভাবে এই এক্সেপশন সরিয়ে দেওয়া হবে</translation>
 <translation id="2227179592712503583">সাজেশন সরিয়ে দিন</translation>
 <translation id="2229161054156947610">1 ঘন্টার বেশী বাকি</translation>
@@ -1089,6 +1089,7 @@
 <translation id="2322318151094136999">কোনও সাইট সিরিয়াল পোর্ট অ্যাক্সেস করতে চাইলে আমাকে জিজ্ঞাসা করুন (সাজেস্ট করা হচ্ছে)</translation>
 <translation id="2323018538045954000">সেভ করা ওয়াই-ফাই নেটওয়ার্ক</translation>
 <translation id="2325444234681128157">পাসওয়ার্ড মনে রাখুন</translation>
+<translation id="2326188115274135041">অটোমেটিক আনলক চালু করতে পিন কনফার্ম করুন</translation>
 <translation id="2326931316514688470">&amp;অ্যাপ্লিকেশান আবার লোড করুন</translation>
 <translation id="2327492829706409234">অ্যাপ্লিকেশন সক্ষম করুন</translation>
 <translation id="2328561734797404498"><ph name="APP_NAME" /> চালু করার আগে আপনার ডিভাইস রিস্টার্ট করতে হবে।</translation>
@@ -1305,7 +1306,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />-এ শুধুমাত্র পাঠযোগ্য অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
 <translation id="2575247648642144396">এই আইকনটি দৃশ্যমান হবে যখন এক্সটেনশন বর্তমান পৃষ্ঠার উপর কাজ করতে পারবে৷ আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশন ব্যবহার করুন৷</translation>
 <translation id="257779572837908839">মিটিংয়ের জন্য Chromebox সেট-আপ করুন</translation>
-<translation id="2579232805407578790">সার্ভারে কানেক্ট করা যায়নি। আপনার নেটওয়ার্কের কানেকশন চেক করে আবার চেষ্টা করে দেখুন। যদি সমস্যাটি চলতে থাকে তাহলে আপনার Chromebook রিস্টার্ট করুন। সমস্যার কোড: <ph name="ERROR_CODE" /></translation>
+<translation id="2579232805407578790">সার্ভারে কানেক্ট করা যায়নি। আপনার নেটওয়ার্ক কানেকশন চেক করে আবার চেষ্টা করে দেখুন। যদি সমস্যাটি চলতে থাকে তাহলে আপনার Chromebook রিস্টার্ট করুন। সমস্যার কোড: <ph name="ERROR_CODE" /></translation>
 <translation id="2580889980133367162">একাধিক ফাইল ডাউনলোড করতে <ph name="HOST" />-কে সবসময় অনুমতি দিন</translation>
 <translation id="258095186877893873">দীর্ঘ সময়</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (প্ল্যাটফর্ম <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -2807,6 +2808,7 @@
 <translation id="4451479197788154834">এই ডিভাইসে এবং আপনার Google অ্যাকাউন্টে পাসওয়ার্ড সেভ করা আছে</translation>
 <translation id="4451757071857432900">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করা হয়েছে (প্রস্তাবিত)</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />-এ সার্চ করুন অথবা ইউআরএল টাইপ করুন</translation>
+<translation id="4456630844127311743"><ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> পাওয়া গেছে</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> দিন আগে ব্যবহার করা হয়েছে</translation>
 <translation id="4460014764210899310">আলাদা করুন</translation>
 <translation id="4462159676511157176">কাস্টম নাম সার্ভার</translation>
@@ -3311,6 +3313,7 @@
 <translation id="5123433949759960244">বাস্কেটবল</translation>
 <translation id="5125751979347152379">ভুল ইউআরএল৷</translation>
 <translation id="5126611267288187364">পরিবর্তনগুলি দেখুন</translation>
+<translation id="5127620150973591153">নিরাপদ কানেকশন আইডি: <ph name="TOKEN" /></translation>
 <translation id="5127805178023152808">সিঙ্ক বন্ধ রয়েছে</translation>
 <translation id="5127881134400491887">নেটওয়ার্ক সংযোগগুলি পরিচালনা করুন</translation>
 <translation id="512903556749061217">সংযুক্ত</translation>
@@ -3658,7 +3661,6 @@
 <translation id="5554720593229208774">ইমেল সার্টিফিকেশন কর্তৃপক্ষ</translation>
 <translation id="5554931805291741487">আউটপুট এরিয়া প্রায় ভরে এসেছে</translation>
 <translation id="5556459405103347317">রিলোড করুন</translation>
-<translation id="5557991081552967863">নিষ্ক্রিয় থাকাকালীন ওয়াই-ফাই চালু রাখুন</translation>
 <translation id="5558125320634132440">প্রাপ্তবয়স্কদের জন্য কন্টেন্ট থাকার কারণে হয়ত এই সাইট ব্লক করা হয়েছে</translation>
 <translation id="5558129378926964177">বড়ো করুন</translation>
 <translation id="55601339223879446">প্রদর্শনের মধ্যে আপনার ডেস্কটপ সীমানার সামঞ্জস্যবিধান করুন</translation>
@@ -3735,7 +3737,6 @@
 <translation id="5642508497713047">CRL স্বাক্ষরকারী</translation>
 <translation id="5643321261065707929">মিটার্ড নেটওয়ার্ক</translation>
 <translation id="5643620609347735571">খালি করুন এবং চালিয়ে যান</translation>
-<translation id="5646376287012673985">লোকেশন</translation>
 <translation id="5646558797914161501">ব্যবসায়ী</translation>
 <translation id="5648166631817621825">গত ৭ দিন</translation>
 <translation id="5649053991847567735">অটোমেটিক ডাউনলোডগুলি</translation>
@@ -4177,6 +4178,7 @@
 <translation id="6209908325007204267">আপনার ডিভাইসে Chrome Enterprise আপগ্রেড অন্তর্ভুক্ত রয়েছে, কিন্তু আপনার ইউজারনেমটি কোনও এন্টারপ্রাইজ অ্যাকাউন্টের সাথে যুক্ত নয়। অন্য একটি ডিভাইস থেকে g.co/ChromeEnterpriseAccount লিঙ্কে ক্লিক করে একটি এন্টারপ্রাইজ অ্যাকাউন্ট তৈরি করুন।</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: সিঙ্ক কাজ করছে না</translation>
 <translation id="6212039847102026977">উন্নত নেটওয়ার্ক বৈশিষ্ট্যগুলি দেখুন</translation>
+<translation id="621215966665094453"><ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> পাওয়া যায়নি</translation>
 <translation id="6212168817037875041">ডিসপ্লে বন্ধ করুন</translation>
 <translation id="6212752530110374741">ইমেল লিঙ্ক</translation>
 <translation id="6213230117190778270">গ্রহণ করুন</translation>
@@ -4358,6 +4360,7 @@
 <translation id="6429384232893414837">আপডেট করতে সমস্যা হয়েছে</translation>
 <translation id="6430814529589430811">Base64-এনকোডেড ASCII, একক সার্টিফিকেট</translation>
 <translation id="6431347207794742960">এই কম্পিউটারে সকল ব্যবহারকারীর জন্য <ph name="PRODUCT_NAME" /> স্বয়ংক্রিয় আপডেটগুলো সেটআপ করবে।</translation>
+<translation id="6433095543510643909"><ph name="DEVICE_NAME" />-এ <ph name="ATTACHMENTS" /> পাঠানাে যায়নি</translation>
 <translation id="6434309073475700221">বাতিল</translation>
 <translation id="6434325376267409267"><ph name="APP_NAME" /> ইনস্টল করার আগে আপনার ডিভাইস আপডেট করতে হবে।</translation>
 <translation id="6436164536244065364">ওয়েব স্টোর-এ দেখুন</translation>
@@ -4486,7 +4489,6 @@
 <translation id="6602956230557165253">নেভিগেট করার জন্য বাঁ ও ডান তীরগুলি ব্যবহার করুন৷</translation>
 <translation id="6605847144724004692">এখনও কোনও ব্যবহারকারী রেট করেনি</translation>
 <translation id="6607831829715835317">আরও সরঞ্জা&amp;ম</translation>
-<translation id="6608012008902909398">ডিভাইসের সফ্টওয়্যার চেক করার বিবরণ দেখুন</translation>
 <translation id="6611972847767394631">এখানে আপনার ট্যাবগুলি দেখুন</translation>
 <translation id="6612358246767739896">সুরক্ষিত কন্টেন্ট</translation>
 <translation id="6615455863669487791">আমাকে দেখান</translation>
@@ -4617,6 +4619,7 @@
 <translation id="6781284683813954823">ডুডল লিঙ্ক</translation>
 <translation id="6781978626986383437">Linux ব্যাক-আপ বাতিল করা হয়েছে</translation>
 <translation id="6782067259631821405">ভুল পিন</translation>
+<translation id="6785518634832172390">পিন ১২ সংখ্যা বা তার থেকে কম হতে হবে</translation>
 <translation id="6785915470941880363">রিভার্স স্ক্রলিং <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">এক্সটেনশানসমূহ</translation>
 <translation id="6787839852456839824">কীবোর্ড শর্টকাটগুলি</translation>
@@ -5229,6 +5232,7 @@
 <translation id="7543525346216957623">আপনার বাবা-মাকে জিজ্ঞাসা করুন</translation>
 <translation id="7547317915858803630">সতর্কবাণী: আপনার <ph name="PRODUCT_NAME" />সেটিংস নেটওয়ার্ক ড্রাইভে সংরক্ষণ করা হয়৷ এর ফলে মন্থরতা, ক্র্যাশ, অথবা এমনকি ডেটা হারিয়ে যেতে পারে৷</translation>
 <translation id="7548856833046333824">লেমনেড</translation>
+<translation id="755047330066644486"><ph name="DEVICE_NAME" />-এ <ph name="ATTACHMENTS" /> পাঠানো হয়েছে</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME" /> ডাউনলোড করা যায়নি</translation>
 <translation id="7551643184018910560">শেল্ফে পিন করুন</translation>
@@ -5398,7 +5402,7 @@
 <translation id="7764225426217299476">ঠিকানা যোগ করুন</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> থেকে <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">সরান</translation>
-<translation id="7766082757934713382">অটোমেটিক অ্যাপ এবং সিস্টেম আপডেট পজ করে নেটওয়ার্ক ডেটার ব্যবহার কম করতে সাহায্য করে</translation>
+<translation id="7766082757934713382">অ্যাপ ও সিস্টেমের অটোমেটিক আপডেট পজ করে নেটওয়ার্ক ডেটার ব্যবহার কম করতে সাহায্য করে</translation>
 <translation id="7766807826975222231">একবার ঘুরে দেখুন</translation>
 <translation id="7766838926148951335">অনুমতিগুলি স্বীকার করুন</translation>
 <translation id="7768770796815395237">পরিবর্তন করুন</translation>
@@ -5637,7 +5641,6 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">শর্টকাট এডিট করা হয়েছে</translation>
 <translation id="8018313076035239964">ওয়েবসাইটগুলি কোন তথ্য ব্যবহার করতে পারবে এবং আপনাকে কোন কোন কন্টেন্ট দেখাতে পারবে তা নিয়ন্ত্রণ করে</translation>
-<translation id="8022688469248132790">সমস্যার বিবরণ পর্যালোচনা করুন</translation>
 <translation id="8023801379949507775">এক্সটেনশগুলি এখনই আপডেট করুন</translation>
 <translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="8028060951694135607">Microsoft মূল পুনরুদ্ধার</translation>

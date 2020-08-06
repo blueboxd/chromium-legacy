@@ -90,6 +90,8 @@ cast_source_set("audio") {
     "cast_audio_input_stream.h",
     "cast_audio_manager.cc",
     "cast_audio_manager.h",
+    "cast_audio_manager_helper.cc",
+    "cast_audio_manager_helper.h",
     "cast_audio_mixer.cc",
     "cast_audio_mixer.h",
     "cast_audio_output_stream.cc",

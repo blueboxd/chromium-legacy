@@ -1531,13 +1531,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, GifImageShare) {
       gfx::Size(276, 110), gfx::Size(276, 110), ".gif");
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113835): flaky on ChromeOS.
-#define MAYBE_GifImageDownscaleToJpeg DISABLED_GifImageDownscaleToJpeg
-#else
-#define MAYBE_GifImageDownscaleToJpeg GifImageDownscaleToJpeg
-#endif
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_GifImageDownscaleToJpeg) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, GifImageDownscaleToJpeg) {
   OpenImagePageAndContextMenu("/google/logo.gif");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,

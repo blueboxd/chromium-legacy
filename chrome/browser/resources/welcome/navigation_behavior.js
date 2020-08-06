@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../strings.m.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /**
@@ -79,10 +82,8 @@ function notifyObservers() {
 
   // If currentRouteElement is not null, it means there was a new route.
   if (currentRouteElement) {
-    (/** @type {{onRouteEnter: Function}} */ (currentRouteElement))
-        .onRouteEnter();
-    (/** @type {{updateFocusForA11y: Function}} */ (currentRouteElement))
-        .updateFocusForA11y();
+    (/** @type {{notifyRouteEnter: Function}} */ (currentRouteElement))
+        .notifyRouteEnter();
   }
 }
 
@@ -137,6 +138,9 @@ export function navigateTo(route, step) {
  * @polymerBehavior
  */
 export const NavigationBehavior = {
+  /** @type {string} */
+  subtitle: '',
+
   /** @override */
   attached() {
     assert(!routeObservers.has(this));
@@ -154,9 +158,18 @@ export const NavigationBehavior = {
     // means that element is for the current route.
     if (this.id === `step-${step}`) {
       currentRouteElement = this;
-      this.onRouteEnter();
-      this.updateFocusForA11y();
+      this.notifyRouteEnter();
     }
+  },
+
+  /**
+   * Notifies elements that route was entered and updates the state of the
+   * app based on the new route.
+   */
+  notifyRouteEnter() {
+    this.onRouteEnter();
+    this.updateFocusForA11y();
+    this.updateTitle();
   },
 
   /** Called to update focus when progressing through the modules. */
@@ -165,6 +178,14 @@ export const NavigationBehavior = {
     if (header) {
       afterNextRender(this, () => header.focus());
     }
+  },
+
+  updateTitle() {
+    let title = loadTimeData.getString('headerText');
+    if (this.subtitle) {
+      title += ' - ' + this.subtitle;
+    }
+    document.title = title;
   },
 
   /** @override */

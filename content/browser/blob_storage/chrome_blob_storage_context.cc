@@ -248,9 +248,8 @@ ChromeBlobStorageContext::URLLoaderFactoryForUrl(
              mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
              const GURL& url) {
             auto blob_remote = context->context()->GetBlobFromPublicURL(url);
-            storage::BlobURLLoaderFactory::Create(
-                std::move(blob_remote), url, context->context()->AsWeakPtr(),
-                std::move(receiver));
+            storage::BlobURLLoaderFactory::Create(std::move(blob_remote), url,
+                                                  std::move(receiver));
           },
           base::WrapRefCounted(GetFor(browser_context)),
           blob_url_loader_factory_remote.InitWithNewPipeAndPassReceiver(),

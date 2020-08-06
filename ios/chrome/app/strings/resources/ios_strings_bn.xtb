@@ -22,7 +22,7 @@
 <translation id="1176932207622159128">ছবি সেভ করা যায়নি</translation>
 <translation id="1180526666083833456">বিভিন্ন ডিভাইস জুড়ে সিঙ্ক করুন এবং নিজের পছন্দ অনুযায়ী করে নিন।</translation>
 <translation id="1181037720776840403">সরান</translation>
-<translation id="1185569544548277362">নতুন: আপনি এখন Chrome-কে আপনার ডিফল্ট ব্রাউজার হিসেবে সেট করতে পারেন। <ph name="BEGIN_LINK" />সেটিংসে যান<ph name="END_LINK" /></translation>
+<translation id="1185569544548277362">নতুন: আপনি এখন Chrome-কে আপনার ডিফল্ট ব্রাউজার হিসেবে সেট করতে পারেন। <ph name="BEGIN_LINK" />'সেটিংস' বিকল্পে যান<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">নতুন সার্চ</translation>
 <translation id="1209206284964581585">এখনকার মতো লুকান</translation>
 <translation id="1219674500290482172">ইন্টারনেটের সাথে সংযোগ করতে অক্ষম৷</translation>
@@ -116,6 +116,7 @@
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2268044343513325586">রিফাইন করুন</translation>
 <translation id="2273327106802955778">‘আরও’ মেনু</translation>
+<translation id="2302742851632557585">ওয়েবসাইটে গিয়ে পাসওয়ার্ড পরিবর্তন করুন</translation>
 <translation id="2316709634732130529">সাজেস্ট করা পাসওয়ার্ড ব্যবহার করুন</translation>
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
 <translation id="2339560363438331454">সিঙ্ক এবং Google পরিষেবাগুলি</translation>
@@ -183,6 +184,7 @@
 <translation id="298306318844797842">পেমেন্টের পদ্ধতি যোগ করুন...</translation>
 <translation id="2989805286512600854">নতুন ট্যাবে খুলুন</translation>
 <translation id="3037605927509011580">ইস!</translation>
+<translation id="3081338492074632642">আপনি যে পাসওয়ার্ডটি সেভ করছেন, সেটি <ph name="WEBSITE" />-এ আপনার দেওয়া পাসওয়ার্ডের সাথে মিলছে কিনা ভাল করে দেখে নিন</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
 <translation id="3131206671572504478">সব ব্লক করুন</translation>
 <translation id="3153862085237805241">কার্ড সেভ করুন</translation>
@@ -201,6 +203,7 @@
 <translation id="3244271242291266297">মিমি</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> এর <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
+<translation id="3272527697863656322">বাতিল করুন</translation>
 <translation id="3277021493514034324">সাইটের ঠিকানা কপি করা হয়েছে</translation>
 <translation id="3290875554372353449">একটি অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="3311748811247479259">বন্ধ করা আছে</translation>
@@ -211,6 +214,7 @@
 <translation id="3371831930909698441">অনুবাদ পাওয়া যাচ্ছে। স্ক্রিনের একটু নিচের দিকে বিকল্পগুলি দেওয়া আছে।</translation>
 <translation id="3393920035788932672">মঞ্জুরিপ্রাপ্ত পপ-আপ</translation>
 <translation id="3425644765244388016">কার্ডের বিশেষ নাম</translation>
+<translation id="3433057996795775706">এই পাসওয়ার্ড সরিয়ে দিলেও, <ph name="WEBSITE" />-এ থাকা আপনার অ্যাকাউন্ট মুছে যাবে না। অন্যদের থেকে এটি নিরাপদে রাখতে, <ph name="WEBSITE" />-এ আপনার দেওয়া পাসওয়ার্ড পরিবর্তন করুন।</translation>
 <translation id="3443810440409579745">ট্যাব পাওয়া গেছে।</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">বিভক্ত দৃশ্য</translation>
@@ -306,6 +310,7 @@
 <translation id="4636930964841734540">তথ্য</translation>
 <translation id="4659126640776004816">আপনার Google অ্যাকাউন্টে সাইন-ইন করলে এই ফিচারটি চালু হয়ে যাবে।</translation>
 <translation id="4659667755519643272">ট্যাব পরিবর্তনকারী আনুন</translation>
+<translation id="46614316059270592">পাসওয়ার্ড সেভ করুন</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> হিসেবে প্রবেশ করেছেন।
 
 আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করতে এটি লিখুন।</translation>
@@ -403,6 +408,7 @@
 <translation id="5854790677617711513">৩০ দিনের বেশি পুরনো</translation>
 <translation id="5857090052475505287">নতুন ফোল্ডার</translation>
 <translation id="5857770089550859117">সিঙ্ক শুরু করতে পাসফ্রেজ প্রয়োজন।</translation>
+<translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5869029295770560994">ঠিক আছে, বুঝেছি</translation>
 <translation id="5871497086027727873">১টি আইটেম সরানো হয়েছে</translation>
 <translation id="5897956970858271241">কপি করা লিঙ্কে যান</translation>
@@ -503,7 +509,6 @@
 <translation id="6831043979455480757">অনুবাদ</translation>
 <translation id="6841409746189899007">টেক্সটের সাথে লিঙ্ক করুন</translation>
 <translation id="6851516051005285358">ডেস্কটপ সাইটের জন্য অনুরোধ করুন</translation>
-<translation id="6856384753476268833">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা হয়।</translation>
 <translation id="6858855187367714033">স্ক্যান করা হয়েছে</translation>
 <translation id="6859944681507688231">কোনও QR কোড বা ক্রেডিট কার্ড স্ক্যান করতে সেটিংস থেকে ক্যামেরা চালু করুন।</translation>
 <translation id="6869389390665537774">আপনি যেসব পৃষ্ঠাতে গেছেন, সেগুলি এখানে দেখতে পারেন বা আপনার দেখার ইতিহাস থেকে সেগুলি সরিয়ে দিতে পারেন</translation>
@@ -525,7 +530,6 @@
 <translation id="7006788746334555276">কন্টেন্ট সেটিংস</translation>
 <translation id="7015203776128479407">সিঙ্কের প্রাথমিক সেট-আপ সম্পূর্ণ হয়নি। সিঙ্ক বন্ধ আছে।</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
-<translation id="7030675613184250187">পৃষ্ঠাগুলি আবার খুঁজে পেতে বা অফলাইনে পড়তে আপনার পড়ার তালিকাতে সেগুলি সেভ করে রাখতে পারবেন</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7062545763355031412">স্বীকার করে অ্যাকাউন্টগুলি সুইচ করুন</translation>
 <translation id="7099761977003084116">সাম্প্রতিক ট্যাব</translation>
@@ -588,12 +592,12 @@
 <translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
 <translation id="7887198238286927132">আপনার গোপনীয়তা রক্ষার জন্য, Chrome এই ক্ষেত্রটি নিজে থেকে পূরণ করবে না।</translation>
-<translation id="791251013315685175"><ph name="COMPANY" /> দ্বারা ম্যানেজ করা হয়।</translation>
 <translation id="7918293828610777738">আপনার পড়ার তালিকাটি অফলাইনে উপলভ্য। আপনার পড়ার তালিকায় কোনও পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" />  তারপর <ph name="READ_LATER_TEXT" /> ট্যাপ করুন।</translation>
 <translation id="7938254975914653459">ফেসটাইম</translation>
 <translation id="7939128259257418052">পাসওয়ার্ড এক্সপোর্ট করুন...</translation>
 <translation id="7947953824732555851">সম্মত হয়ে সাইন-ইন করুন</translation>
 <translation id="794799177247607889">লগ করা বন্ধ করুন</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{কোনও পাসওয়ার্ড চুরি হয়নি}=1{{COUNT}টি পাসওয়ার্ড চুরি হয়েছে}one{{COUNT}টি পাসওয়ার্ড চুরি হয়েছে}other{{COUNT}টি পাসওয়ার্ড চুরি হয়েছে}}</translation>
 <translation id="7961015016161918242">কখনই নয়</translation>
 <translation id="7966516440812255683">আপনি যাতে সাইন-ইন হয়ে থাকতে পারেন তার ব্যবস্থা করা বা শপিং কার্টে আপনার বেছে নেওয়া আইটেমগুলি মনে রাখার মতো আপনার ব্রাউজিং অভিজ্ঞতা আরও ভাল করার জন্য সাইট কুকি ব্যবহার করতে পারবে।
 

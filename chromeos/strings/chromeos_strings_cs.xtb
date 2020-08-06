@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nové heslo</translation>
 <translation id="4003259559679196451">Toto zařízení je spravováno doménou <ph name="ENROLLMENT_DOMAIN" />, která má přístup k veškeré uživatelské aktivitě, včetně navštívených webových stránek, hesel a e‑mailu.</translation>
 <translation id="4003384961948020559">Tisk selhal – výstupní zásobník je plný</translation>
+<translation id="4027485274696301677">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Administrátoři mohou zařízení vzdáleně konfigurovat.</translation>
 <translation id="4034824040120875894">Tiskárna</translation>
 <translation id="4227825898293920515">Platnost hesla vyprší za <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nemáte žádné probíhající tiskové úlohy</translation>
@@ -73,7 +74,6 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="808894953321890993">Změnit heslo</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8347227221149377169">Tiskové úlohy</translation>
-<translation id="8623849191266582420">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Administrátoři mohou zařízení vzdáleně konfigurovat a sledovat.</translation>
 <translation id="8701136875688985581">Tohoto uživatele spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Může vzdáleně spravovat nastavení a sledovat aktivitu uživatele.</translation>
 <translation id="871560550817059752">Tisk selhal – došel inkoust</translation>
 <translation id="8747900814994928677">Potvrdit změnu</translation>

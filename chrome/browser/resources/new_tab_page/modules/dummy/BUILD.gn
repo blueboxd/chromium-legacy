@@ -7,6 +7,7 @@ import("//tools/polymer/html_to_js.gni")
 
 js_library("module") {
   deps = [
+    "../..:grid",
     "../..:module_descriptor",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]

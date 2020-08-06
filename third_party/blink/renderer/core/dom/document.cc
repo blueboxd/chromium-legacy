@@ -6780,8 +6780,14 @@ void Document::RecordAsyncScriptCount() {
 }
 
 void Document::MaybeExecuteDelayedAsyncScripts() {
-  // Notify the ScriptRunner if the first paint has been recorded and we're
-  // delaying async scripts until first paint.
+  // TODO(domfarolino): If the |kDelayAsyncScriptExecution| feature is enabled
+  // and |kDelayAsyncScriptExecutionDelayParam.Get()| is
+  // |kUseOptimizationGuide|, use the BlinkOptimizationGuide hint provided to
+  // Blink for the delay milestone.
+
+  // Notify the ScriptRunner if the first paint has been recorded and
+  // we're delaying async scripts until first paint or finished parsing
+  // (whichever comes first).
   if (first_paint_recorded_ &&
       ((base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
         features::kDelayAsyncScriptExecutionDelayParam.Get() ==
@@ -6792,6 +6798,8 @@ void Document::MaybeExecuteDelayedAsyncScripts() {
     script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
   }
 
+  // Notify the ScriptRunner if we're finished parsing and we're delaying async
+  // scripts until finished parsing occurs.
   if (!Parsing() &&
       (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) ||
        RuntimeEnabledFeatures::

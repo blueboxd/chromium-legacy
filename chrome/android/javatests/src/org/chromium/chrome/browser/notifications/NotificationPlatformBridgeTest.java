@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
@@ -95,7 +96,7 @@ public class NotificationPlatformBridgeTest {
 
         } catch (TimeoutException e) {
             // The title is not as expected, this assertion neatly logs what the difference is.
-            Assert.assertEquals(expectedTitle, tab.getTitle());
+            Assert.assertEquals(expectedTitle, ChromeTabUtils.getTitleOnUiThread(tab));
         }
     }
 

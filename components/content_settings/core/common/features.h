@@ -24,6 +24,14 @@ extern const base::Feature kImprovedCookieControls;
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 extern const base::Feature kDisallowWildcardsInPluginContentSettings;
 
+// When kBlockInsecurePrivateNetworkRequests is enabled, requests initiated
+// from a less-private network may only target a more-private network if the
+// initiating context is secure.
+//
+// See also: https://wicg.github.io/cors-rfc1918/#integration-fetch
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::Feature kBlockInsecurePrivateNetworkRequests;
+
 }  // namespace content_settings
 
 #endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_FEATURES_H_

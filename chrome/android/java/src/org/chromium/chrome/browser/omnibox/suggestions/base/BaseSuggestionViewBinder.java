@@ -72,6 +72,9 @@ public final class BaseSuggestionViewBinder<T extends View>
         final int actionCount = actions != null ? actions.size() : 0;
         view.setActionButtonsCount(actionCount);
 
+        // Drawable retrieved once here (expensive) and will be copied multiple times (cheap).
+        Drawable backgroundDrawable = getSelectableBackgroundDrawable(view, model);
+
         final List<ImageView> actionViews = view.getActionButtons();
         for (int index = 0; index < actionCount; index++) {
             final ImageView actionView = actionViews.get(index);
@@ -79,6 +82,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             actionView.setOnClickListener(v -> action.callback.run());
             actionView.setContentDescription(
                     view.getContext().getResources().getString(action.accessibilityDescription));
+            actionView.setBackground(copyDrawable(backgroundDrawable));
             updateIcon(actionView, action.icon,
                     ChromeColors.getPrimaryIconTintRes(!useDarkColors(model)));
         }
@@ -88,10 +92,8 @@ public final class BaseSuggestionViewBinder<T extends View>
     private static <T extends View> void updateColorScheme(
             PropertyModel model, BaseSuggestionView<T> view) {
         updateSuggestionIcon(model, view);
-        Drawable selectableBackgroundDrawable = OmniboxResourceProvider.resolveAttributeToDrawable(
-                view.getContext(), model.get(SuggestionCommonProperties.OMNIBOX_THEME),
-                R.attr.selectableItemBackground);
-        view.getDecoratedSuggestionView().setBackground(selectableBackgroundDrawable);
+        Drawable backgroundDrawable = getSelectableBackgroundDrawable(view, model);
+        view.getDecoratedSuggestionView().setBackground(backgroundDrawable);
 
         final List<Action> actions = model.get(BaseSuggestionViewProperties.ACTIONS);
         // Setting ACTIONS and updating actionViews can happen later. Appropriate color scheme will
@@ -101,7 +103,7 @@ public final class BaseSuggestionViewBinder<T extends View>
         final List<ImageView> actionViews = view.getActionButtons();
         for (int index = 0; index < actionViews.size(); index++) {
             ImageView actionView = actionViews.get(index);
-            actionView.setBackground(selectableBackgroundDrawable.getConstantState().newDrawable());
+            actionView.setBackground(copyDrawable(backgroundDrawable));
             updateIcon(actionView, actions.get(index).icon,
                     ChromeColors.getPrimaryIconTintRes(!useDarkColors(model)));
         }
@@ -189,6 +191,33 @@ public final class BaseSuggestionViewBinder<T extends View>
 
         final int minimumHeight = view.getResources().getDimensionPixelSize(minimumHeightRes);
         view.getContentView().setMinimumHeight(minimumHeight);
+    }
+
+    /**
+     * Retrieves selecatable background drawable from resources. If possible prefer
+     * {@link #copyDrawable(Drawable)} over this operation, as it offers an order of magnitude
+     * better performance in incognito.
+     * The drawable should be used only once, all other uses should make a copy.
+     *
+     * @param view A view that provides context.
+     * @param model A property model to look up relevant properties.
+     * @return A selectable background drawable.
+     */
+    private static Drawable getSelectableBackgroundDrawable(View view, PropertyModel model) {
+        return OmniboxResourceProvider.resolveAttributeToDrawable(view.getContext(),
+                model.get(SuggestionCommonProperties.OMNIBOX_THEME),
+                R.attr.selectableItemBackground);
+    }
+
+    /**
+     * Creates a copy of the drawable. The drawable should be used only once, all other uses should
+     * make a copy.
+     *
+     * @param original Original drawable to be copied.
+     * @return Copied drawable.
+     */
+    private static Drawable copyDrawable(Drawable original) {
+        return original.getConstantState().newDrawable();
     }
 
     /** Update image view using supplied drawable state object. */

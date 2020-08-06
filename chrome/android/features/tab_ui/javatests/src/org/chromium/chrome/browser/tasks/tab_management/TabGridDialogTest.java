@@ -710,6 +710,24 @@ public class TabGridDialogTest {
         mRenderTestRule.render(dialogView, "5_tabs_select_last");
     }
 
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.INSTANT_START})
+    public void testSetup_WithInstantStart() {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabsWithThumbnail(mActivityTestRule, 2, 0, "about:blank");
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+
+        // Verify TabModelObserver is correctly setup by checking if tab grid dialog changes with
+        // tab closure.
+        closeFirstTabInDialog();
+        verifyShowingDialog(cta, 1, null);
+    }
+
     private void openDialogFromTabSwitcherAndVerify(
             ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         clickFirstCardFromTabSwitcher(cta);

@@ -50,8 +50,6 @@ BUG_REPORT_URL = ('https://crbug.com and run'
                   ' tools/clang/scripts/process_crashreports.py'
                   ' (only works inside Google) which will upload a report')
 
-FIRST_LLVM_COMMIT = '97724f18c79c7cc81ced24239eb5e883bf1398ef'
-
 
 win_sdk_dir = None
 dia_dll = None
@@ -190,12 +188,12 @@ def GetLatestLLVMCommit():
   return ref['object']['sha']
 
 
-def GetCommitCount(commit):
-  """Get the number of commits from FIRST_LLVM_COMMIT to commit.
+def GetCommitDescription(commit):
+  """Get the output of `git describe`.
 
   Needs to be called from inside the git repository dir."""
-  return subprocess.check_output(['git', 'rev-list', '--count',
-                                  FIRST_LLVM_COMMIT + '..' + commit]).rstrip()
+  return subprocess.check_output(
+      ['git', 'describe', '--long', '--abbrev=8', commit]).rstrip()
 
 
 def DeleteChromeToolsShim():
@@ -483,14 +481,16 @@ def main():
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
-    CLANG_REVISION = GetLatestLLVMCommit()
+    checkout_revision = GetLatestLLVMCommit()
+  else:
+    checkout_revision = CLANG_REVISION
 
   if not args.skip_checkout:
-    CheckoutLLVM(CLANG_REVISION, LLVM_DIR);
+    CheckoutLLVM(checkout_revision, LLVM_DIR)
 
   if args.llvm_force_head_revision:
-    PACKAGE_VERSION = 'n%s-%s-0' % (GetCommitCount(CLANG_REVISION),
-                                   CLANG_REVISION[:8])
+    CLANG_REVISION = GetCommitDescription(checkout_revision)
+    PACKAGE_VERSION = '%s-0' % CLANG_REVISION
 
   print('Locally building clang %s...' % PACKAGE_VERSION)
   WriteStampFile('', STAMP_FILE)

@@ -256,11 +256,10 @@ void WorkerWatcher::OnVersionStartedRunning(
     const content::ServiceWorkerRunningInfo& running_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(chrisha): Plumb in the ServiceWorkerToken.
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kService,
       process_node_source_->GetProcessNode(running_info.render_process_id),
-      WorkerToken::Create());
+      WorkerToken(running_info.token.value()));
   bool inserted =
       service_worker_nodes_.emplace(version_id, std::move(worker_node)).second;
   DCHECK(inserted);

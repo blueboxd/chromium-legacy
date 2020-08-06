@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
+#include "chrome/browser/extensions/identifiability_metrics_test_util.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -44,6 +45,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -51,6 +53,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -1607,6 +1610,86 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CoepFrameTest) {
   watcher.AlsoWaitForTitle(kFailed);
 
   ASSERT_EQ(kPassed, watcher.WaitAndGetTitle());
+}
+
+class ContentScriptApiIdentifiabilityTest : public ContentScriptApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    identifiability_metrics_test_helper_.SetUpOnMainThread();
+    ContentScriptApiTest::SetUpOnMainThread();
+  }
+
+ protected:
+  IdentifiabilityMetricsTestHelper identifiability_metrics_test_helper_;
+};
+
+// Test that identifiability study of content script injection produces the
+// expected UKM events.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiIdentifiabilityTest, InjectionRecorded) {
+  base::RunLoop run_loop;
+  identifiability_metrics_test_helper_.PrepareForTest(&run_loop);
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/all_frames")) << message_;
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      identifiability_metrics_test_helper_.NavigateToBlankAndWaitForMetrics(
+          web_contents, &run_loop);
+
+  // Right now the instrumentation infra doesn't track all of the sources that
+  // reported a particular surface, so we merely look for if one had it.
+  // Eventually both frames should report it.
+  bool found = false;
+  for (const auto& entry : merged_entries) {
+    const auto& metrics = entry.second->metrics;
+    if (metrics.contains(
+            SurfaceForExtension(
+                blink::IdentifiableSurface::Type::kExtensionContentScript,
+                GetSingleLoadedExtension()->id())
+                .ToUkmMetricHash())) {
+      found = true;
+    }
+  }
+  EXPECT_TRUE(found);
+}
+
+// Test that where a page doesn't get a content script injected, no
+// such event is recorded.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiIdentifiabilityTest,
+                       NoInjectionRecorded) {
+  base::RunLoop run_loop;
+  identifiability_metrics_test_helper_.PrepareForTest(&run_loop);
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create a canvas and serialize it to force at least one event to happen,
+  // since otherwise there is no way to synchronize with the renderer.
+  constexpr char kForceMetricScript[] =
+      R"(
+        var c = document.createElement("canvas");
+        document.body.appendChild(c);
+        var ctx = c.getContext("2d");
+        var url = c.toDataURL();
+        "ok";
+      )";
+  EXPECT_EQ("ok", content::EvalJs(web_contents, kForceMetricScript));
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      identifiability_metrics_test_helper_.NavigateToBlankAndWaitForMetrics(
+          web_contents, &run_loop);
+  for (const auto& entry : merged_entries) {
+    const auto& metrics = entry.second->metrics;
+    for (const auto& surface_value : metrics) {
+      EXPECT_NE(blink::IdentifiableSurface::Type::kExtensionContentScript,
+                blink::IdentifiableSurface::FromMetricHash(surface_value.first)
+                    .GetType());
+    }
+  }
 }
 
 }  // namespace extensions

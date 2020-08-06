@@ -1111,7 +1111,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::RewriteDB() {
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
     const std::string& user_data_name,
-    std::vector<std::pair<int64_t, std::string>>* user_data) {
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr>* user_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(user_data->empty());
 
@@ -1153,7 +1153,8 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
         user_data->clear();
         break;
       }
-      user_data->push_back(std::make_pair(registration_id, value));
+      user_data->emplace_back(storage::mojom::ServiceWorkerUserData::New(
+          registration_id, user_data_name, value));
     }
   }
 
@@ -1164,7 +1165,7 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::ReadUserDataForAllRegistrationsByKeyPrefix(
     const std::string& user_data_name_prefix,
-    std::vector<std::pair<int64_t, std::string>>* user_data) {
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr>* user_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(user_data->empty());
 
@@ -1221,7 +1222,8 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrationsByKeyPrefix(
         user_data->clear();
         break;
       }
-      user_data->push_back(std::make_pair(registration_id, value));
+      user_data->push_back(storage::mojom::ServiceWorkerUserData::New(
+          registration_id, parts[0], value));
     }
   }
 

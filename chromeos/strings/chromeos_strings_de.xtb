@@ -60,7 +60,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="6058625436358447366">Geben Sie zum Schluss Ihr altes und Ihr neues Passwort ein</translation>
 <translation id="6106186594183574873">Geben Sie zum Schluss Ihr altes Passwort ein</translation>
 <translation id="6146993107019042706">Geben Sie zum Schluss Ihr neues Passwort ein</translation>
-<translation id="636850387210749493">Unternehmensanmeldung</translation>
+<translation id="636850387210749493">Enterprise-Registrierung</translation>
 <translation id="6517239166834772319">Entdecken</translation>
 <translation id="6564646048574748301">Fehlgeschlagen – Drucker nicht erreichbar</translation>
 <translation id="6643016212128521049">Löschen</translation>
@@ -73,7 +73,6 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="808894953321890993">Passwort ändern</translation>
 <translation id="8208861521865154048">Vorteile</translation>
 <translation id="8347227221149377169">Druckaufträge</translation>
-<translation id="8623849191266582420">Dieses <ph name="DEVICE_TYPE" /> wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Administratoren können das Gerät per Remotezugriff konfigurieren und überwachen.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> verwaltet diesen Nutzer. Es werden möglicherweise per Remotezugriff Einstellungen verwaltet und Nutzeraktivitäten überwacht.</translation>
 <translation id="871560550817059752">Fehlgeschlagen – Keine Tinte</translation>
 <translation id="8747900814994928677">Änderung bestätigen</translation>

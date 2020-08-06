@@ -4,50 +4,26 @@
 
 #include "components/services/paint_preview_compositor/paint_preview_compositor_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
-#include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/recording_map.h"
+#include "components/paint_preview/common/serialized_recording.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
-#include "components/services/paint_preview_compositor/skp_result.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkStream.h"
 
 namespace paint_preview {
 
 namespace {
-
-base::flat_map<base::UnguessableToken, SkpResult> DeserializeAllFrames(
-    base::flat_map<base::UnguessableToken, base::File>* file_map) {
-  TRACE_EVENT0("paint_preview",
-               "PaintPreviewCompositorImpl::DeserializeAllFrames");
-  std::vector<std::pair<base::UnguessableToken, SkpResult>> results;
-  results.reserve(file_map->size());
-
-  for (auto& it : *file_map) {
-    if (!it.second.IsValid())
-      continue;
-
-    SkpResult result;
-    FileRStream rstream(std::move(it.second));
-    SkDeserialProcs procs = MakeDeserialProcs(&result.ctx);
-    result.skp = SkPicture::MakeFromStream(&rstream, &procs);
-    if (!result.skp || result.skp->cullRect().width() == 0 ||
-        result.skp->cullRect().height() == 0) {
-      continue;
-    }
-
-    results.push_back({it.first, std::move(result)});
-  }
-
-  return base::flat_map<base::UnguessableToken, SkpResult>(std::move(results));
-}
 
 base::Optional<PaintPreviewFrame> BuildFrame(
     const base::UnguessableToken& token,
@@ -151,7 +127,7 @@ void PaintPreviewCompositorImpl::BeginComposite(
         mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
         std::move(response));
   }
-  auto frames = DeserializeAllFrames(&request->file_map);
+  auto frames = DeserializeAllFrames(std::move(request->recording_map));
 
   // Adding the root frame must succeed.
   if (!AddFrame(paint_preview.root_frame(), frames, &response)) {
@@ -224,6 +200,31 @@ bool PaintPreviewCompositorImpl::AddFrame(
   (*response)->frames.insert({guid, std::move(frame_data)});
   frames_.insert({guid, std::move(maybe_frame.value())});
   return true;
+}
+
+// static
+base::flat_map<base::UnguessableToken, SkpResult>
+PaintPreviewCompositorImpl::DeserializeAllFrames(RecordingMap&& recording_map) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewCompositorImpl::DeserializeAllFrames");
+  std::vector<std::pair<base::UnguessableToken, SkpResult>> results;
+  results.reserve(recording_map.size());
+
+  for (auto& it : recording_map) {
+    base::Optional<SkpResult> maybe_result = std::move(it.second).Deserialize();
+    if (!maybe_result.has_value())
+      continue;
+
+    SkpResult& result = maybe_result.value();
+    if (!result.skp || result.skp->cullRect().width() == 0 ||
+        result.skp->cullRect().height() == 0) {
+      continue;
+    }
+
+    results.emplace_back(it.first, std::move(result));
+  }
+
+  return base::flat_map<base::UnguessableToken, SkpResult>(std::move(results));
 }
 
 }  // namespace paint_preview

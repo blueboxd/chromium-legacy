@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Нова лозинка</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управља овим уређајем и има приступ свим активностима корисника, укључујући посећене веб-странице, лозинке и имејлове.</translation>
 <translation id="4003384961948020559">Није успело – излаз је пун</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> управља овим <ph name="DEVICE_TYPE" /> уређајем. Администратори могу да конфигуришу уређај даљински.</translation>
 <translation id="4034824040120875894">Штампач</translation>
 <translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ниједан задатак штампања није у току</translation>
@@ -73,7 +74,6 @@
 <translation id="808894953321890993">Промени лозинку</translation>
 <translation id="8208861521865154048">Погодности</translation>
 <translation id="8347227221149377169">Задаци штампања</translation>
-<translation id="8623849191266582420"><ph name="ENROLLMENT_DOMAIN" /> управља овим <ph name="DEVICE_TYPE" /> уређајем. Администратори могу да даљински конфигуришу и прате уређај.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> управља овим корисником. Може даљински да управља подешавањима и надгледа активности корисника.</translation>
 <translation id="871560550817059752">Није успело – нема више мастила</translation>
 <translation id="8747900814994928677">Потврдите промену</translation>

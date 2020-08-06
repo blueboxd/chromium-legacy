@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
-#include "components/paint_preview/common/serial_utils.h"
+#include "components/paint_preview/common/recording_map.h"
 #include "components/services/paint_preview_compositor/paint_preview_frame.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -54,6 +54,9 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
       const PaintPreviewFrameProto& frame_proto,
       const base::flat_map<base::UnguessableToken, SkpResult>& skp_map,
       mojom::PaintPreviewBeginCompositeResponsePtr* response);
+
+  static base::flat_map<base::UnguessableToken, SkpResult> DeserializeAllFrames(
+      RecordingMap&& recording_map);
 
   mojo::Receiver<mojom::PaintPreviewCompositor> receiver_{this};
 

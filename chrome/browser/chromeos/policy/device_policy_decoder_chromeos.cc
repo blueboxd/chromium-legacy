@@ -1388,6 +1388,24 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_usb_detachable_allowlist()) {
+    const em::UsbDetachableAllowlistProto& container(
+        policy.usb_detachable_allowlist());
+    base::Value allowlist(base::Value::Type::LIST);
+    for (const auto& entry : container.id()) {
+      base::Value ids(base::Value::Type::DICTIONARY);
+      if (entry.has_vendor_id()) {
+        ids.SetStringKey("vid", base::StringPrintf("%04X", entry.vendor_id()));
+      }
+      if (entry.has_product_id()) {
+        ids.SetStringKey("pid", base::StringPrintf("%04X", entry.product_id()));
+      }
+      allowlist.Append(std::move(ids));
+    }
+    policies->Set(key::kUsbDetachableAllowlist, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(allowlist), nullptr);
+  }
   if (policy.has_usb_detachable_whitelist()) {
     const em::UsbDetachableWhitelistProto& container(
         policy.usb_detachable_whitelist());

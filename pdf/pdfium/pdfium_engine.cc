@@ -436,11 +436,6 @@ PDFEngine::AccessibilityTextFieldInfo::AccessibilityTextFieldInfo(
 
 PDFEngine::AccessibilityTextFieldInfo::~AccessibilityTextFieldInfo() = default;
 
-std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
-                                             bool enable_javascript) {
-  return std::make_unique<PDFiumEngine>(client, enable_javascript);
-}
-
 PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
     : client_(client),
       form_filler_(this, enable_javascript),

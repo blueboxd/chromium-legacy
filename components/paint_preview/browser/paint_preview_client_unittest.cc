@@ -107,7 +107,7 @@ mojom::PaintPreviewCaptureParamsPtr ToMojoParams(
 
 class PaintPreviewClientRenderViewHostTest
     : public content::RenderViewHostTestHarness,
-      public testing::WithParamInterface<mojom::Persistence> {
+      public testing::WithParamInterface<RecordingPersistence> {
  public:
   PaintPreviewClientRenderViewHostTest() {}
 
@@ -124,7 +124,7 @@ class PaintPreviewClientRenderViewHostTest
   mojo::StructPtr<mojom::PaintPreviewCaptureResponse>
   NewMockPaintPreviewCaptureResponse() {
     auto response = mojom::PaintPreviewCaptureResponse::New();
-    if (GetParam() == mojom::Persistence::kMemoryBuffer) {
+    if (GetParam() == RecordingPersistence::kMemoryBuffer) {
       response->skp = {mojo_base::BigBuffer()};
     }
     return response;
@@ -188,7 +188,7 @@ TEST_P(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
             expected_proto.mutable_root_frame();
         main_frame->set_embedding_token_low(token.GetLowForSerialization());
         main_frame->set_embedding_token_high(token.GetHighForSerialization());
-        if (GetParam() == mojom::Persistence::kFileSystem) {
+        if (GetParam() == RecordingPersistence::kFileSystem) {
           main_frame->set_file_path(
               temp_dir.AppendASCII(base::StrCat({token.ToString(), ".skp"}))
                   .AsUTF8Unsafe());
@@ -197,7 +197,7 @@ TEST_P(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
         EXPECT_THAT(result->proto, EqualsProto(expected_proto));
 
         switch (GetParam()) {
-          case mojom::Persistence::kFileSystem: {
+          case RecordingPersistence::kFileSystem: {
             base::ScopedAllowBlockingForTesting scope;
 #if defined(OS_WIN)
             base::FilePath path = base::FilePath(
@@ -209,7 +209,7 @@ TEST_P(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
             EXPECT_TRUE(base::PathExists(path));
           } break;
 
-          case mojom::Persistence::kMemoryBuffer: {
+          case RecordingPersistence::kMemoryBuffer: {
             EXPECT_EQ(result->serialized_skps.size(), 1u);
             EXPECT_TRUE(result->serialized_skps.contains(token));
           } break;
@@ -311,8 +311,8 @@ TEST_P(PaintPreviewClientRenderViewHostTest, RenderFrameDeletedDuringCapture) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          PaintPreviewClientRenderViewHostTest,
-                         testing::Values(mojom::Persistence::kFileSystem,
-                                         mojom::Persistence::kMemoryBuffer),
+                         testing::Values(RecordingPersistence::kFileSystem,
+                                         RecordingPersistence::kMemoryBuffer),
                          PersistenceParamToString);
 
 }  // namespace paint_preview

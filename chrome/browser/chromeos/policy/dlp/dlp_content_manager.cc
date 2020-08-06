@@ -4,12 +4,23 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 
+#include "ash/public/cpp/privacy_screen_dlp_helper.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace policy {
+
+namespace {
+// Delay to wait to turn off privacy screen enforcement after confidential data
+// becomes not visible. This is done to not blink the privacy screen in case of
+// a quick switch from one confidential data to another.
+const base::TimeDelta kPrivacyScreenOffDelay =
+    base::TimeDelta::FromMilliseconds(500);
+}  // namespace
 
 static DlpContentManager* g_dlp_content_manager = nullptr;
 
@@ -94,14 +105,47 @@ void DlpContentManager::MaybeChangeOnScreenRestrictions() {
     }
   }
   if (on_screen_restrictions_ != new_restriction_set) {
+    DlpContentRestrictionSet added_restrictions =
+        new_restriction_set.DifferenceWith(on_screen_restrictions_);
+    DlpContentRestrictionSet removed_restrictions =
+        on_screen_restrictions_.DifferenceWith(new_restriction_set);
     on_screen_restrictions_ = new_restriction_set;
-    OnScreenRestrictionsChanged(on_screen_restrictions_);
+    OnScreenRestrictionsChanged(added_restrictions, removed_restrictions);
   }
 }
 
 void DlpContentManager::OnScreenRestrictionsChanged(
-    const DlpContentRestrictionSet& restrictions) const {
-  // TODO(crbug/1105991): Implement enforcing/releasing of restrictions.
+    const DlpContentRestrictionSet& added_restrictions,
+    const DlpContentRestrictionSet& removed_restrictions) const {
+  DCHECK(!(added_restrictions.HasRestriction(
+               DlpContentRestriction::kPrivacyScreen) &&
+           removed_restrictions.HasRestriction(
+               DlpContentRestriction::kPrivacyScreen)));
+  if (added_restrictions.HasRestriction(
+          DlpContentRestriction::kPrivacyScreen)) {
+    ash::PrivacyScreenDlpHelper::Get()->SetEnforced(true);
+  }
+
+  if (removed_restrictions.HasRestriction(
+          DlpContentRestriction::kPrivacyScreen)) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DlpContentManager::MaybeRemovePrivacyScreenEnforcement,
+                       base::Unretained(this)),
+        kPrivacyScreenOffDelay);
+  }
+}
+
+void DlpContentManager::MaybeRemovePrivacyScreenEnforcement() const {
+  if (!GetOnScreenPresentRestrictions().HasRestriction(
+          DlpContentRestriction::kPrivacyScreen)) {
+    ash::PrivacyScreenDlpHelper::Get()->SetEnforced(false);
+  }
+}
+
+// static
+base::TimeDelta DlpContentManager::GetPrivacyScreenOffDelayForTesting() {
+  return kPrivacyScreenOffDelay;
 }
 
 }  // namespace policy

@@ -79,6 +79,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -442,6 +443,10 @@ void PrintPreviewHandler::RegisterMessages() {
       base::BindRepeating(
           &PrintPreviewHandler::HandleRequestPrinterStatusUpdate,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "isDriveMounted",
+      base::BindRepeating(&PrintPreviewHandler::HandleIsDriveMounted,
+                          base::Unretained(this)));
 #endif
 }
 
@@ -1399,6 +1404,18 @@ void PrintPreviewHandler::OnPrinterStatusUpdated(
     const std::string& callback_id,
     const base::Value& cups_printer_status) {
   ResolveJavascriptCallback(base::Value(callback_id), cups_printer_status);
+}
+
+void PrintPreviewHandler::HandleIsDriveMounted(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  const std::string& callback_id = args->GetList()[0].GetString();
+
+  drive::DriveIntegrationService* drive_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  ResolveJavascriptCallback(
+      base::Value(callback_id),
+      base::Value(drive_service && drive_service->IsMounted()));
 }
 #endif
 

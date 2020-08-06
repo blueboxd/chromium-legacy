@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nova senha</translation>
 <translation id="4003259559679196451">O domínio <ph name="ENROLLMENT_DOMAIN" /> gerencia este dispositivo e tem acesso a todas as atividades do usuário, incluindo páginas visitadas, senhas e e-mail.</translation>
 <translation id="4003384961948020559">Falha - Saída cheia</translation>
+<translation id="4027485274696301677">Este <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="ENROLLMENT_DOMAIN" />. Os administradores podem configurar o dispositivo remotamente.</translation>
 <translation id="4034824040120875894">Impressora</translation>
 <translation id="4227825898293920515">A senha expirará em <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenhum trabalho de impressão em andamento</translation>
@@ -73,7 +74,6 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="808894953321890993">Alterar senha</translation>
 <translation id="8208861521865154048">Benefícios</translation>
 <translation id="8347227221149377169">Trabalhos de impressão</translation>
-<translation id="8623849191266582420">Este <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="ENROLLMENT_DOMAIN" />. Os administradores podem configurar e monitorar o dispositivo remotamente.</translation>
 <translation id="8701136875688985581">O domínio <ph name="ENROLLMENT_DOMAIN" /> gerencia esta conta. Ele pode gerenciar configurações e monitorar a atividade do usuário remotamente.</translation>
 <translation id="871560550817059752">Falha - Sem tinta</translation>
 <translation id="8747900814994928677">Confirmar alteração</translation>

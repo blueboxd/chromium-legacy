@@ -209,8 +209,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // must be enabled.
   void UndoCustomLinkAction();
 
-  void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
-  void ClearBlacklistedUrls();
+  void AddOrRemoveBlockedUrl(const GURL& url, bool add_url);
+  void ClearBlockedUrls();
 
   // MostVisitedSitesSupervisor::Observer implementation.
   void OnBlockedSitesChanged() override;

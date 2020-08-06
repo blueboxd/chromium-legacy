@@ -88,7 +88,9 @@
         <h2>$i18n{networkHealthLabel}</h2>
         <network-health-summary></network-health-summary>
         <h2>$i18n{networkDiagnosticsLabel}</h2>
-        <network-diagnostics></network-diagnostics>
+        <network-diagnostics
+            on-open-feedback-dialog="onOpenFeedbackDialog_">
+        </network-diagnostics>
       </div>
 
       <div class="tabpanel" id="logs">

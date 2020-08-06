@@ -459,6 +459,10 @@ void MediaRouterMojoImpl::GetMediaController(
       std::move(callback));
 }
 
+base::Value MediaRouterMojoImpl::GetLogs() const {
+  return logger_.GetLogsAsValue();
+}
+
 // static
 MediaSource MediaRouterMojoImpl::MediaSinksQuery::GetKey(
     const MediaSource::Id& id) {

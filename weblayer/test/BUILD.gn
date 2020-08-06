@@ -120,6 +120,7 @@ test("weblayer_browsertests") {
     "//net:test_support",
     "//testing/gtest",
     "//ui/base",
+    "//ui/gfx:test_support",
     "//weblayer/shell:weblayer_shell_lib",
   ]
 
@@ -131,6 +132,8 @@ test("weblayer_browsertests") {
     "../browser/download_browsertest.cc",
     "../browser/errorpage_browsertest.cc",
     "../browser/favicon/favicon_fetcher_browsertest.cc",
+    "../browser/favicon/test_favicon_fetcher_delegate.cc",
+    "../browser/favicon/test_favicon_fetcher_delegate.h",
     "../browser/google_accounts_browsertest.cc",
     "../browser/js_communication/web_message_browsertest.cc",
     "../browser/navigation_browsertest.cc",

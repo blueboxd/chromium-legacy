@@ -1594,13 +1594,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
 // Test that the webRequest events are dispatched for the WebSocket handshake
 // requests.
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113845): flaky on ChromeOS.
-#define MAYBE_WebSocketRequest DISABLED_WebSocketRequest
-#else
-#define MAYBE_WebSocketRequest WebSocketRequest
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebSocketRequest) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebSocketRequest) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(StartWebSocketServer(net::GetWebSocketTestDataDirectory()));
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_websocket.html"))

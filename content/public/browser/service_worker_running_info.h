@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "url/gurl.h"
 
@@ -16,7 +17,8 @@ namespace content {
 struct CONTENT_EXPORT ServiceWorkerRunningInfo {
   ServiceWorkerRunningInfo(const GURL& script_url,
                            const GURL& scope,
-                           int64_t render_process_id);
+                           int64_t render_process_id,
+                           const blink::ServiceWorkerToken& token);
   ServiceWorkerRunningInfo(ServiceWorkerRunningInfo&& other) noexcept;
   ServiceWorkerRunningInfo& operator=(
       ServiceWorkerRunningInfo&& other) noexcept;
@@ -30,6 +32,9 @@ struct CONTENT_EXPORT ServiceWorkerRunningInfo {
 
   // The ID of the render process on which this service worker lives.
   int render_process_id = content::ChildProcessHost::kInvalidUniqueID;
+
+  // The token that uniquely identifies this worker.
+  blink::ServiceWorkerToken token;
 };
 
 }  // namespace content

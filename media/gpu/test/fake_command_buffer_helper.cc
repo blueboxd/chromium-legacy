@@ -66,6 +66,10 @@ gl::GLContext* FakeCommandBufferHelper::GetGLContext() {
   return nullptr;
 }
 
+gpu::SharedImageStub* FakeCommandBufferHelper::GetSharedImageStub() {
+  return nullptr;
+}
+
 bool FakeCommandBufferHelper::HasStub() {
   return has_stub_;
 }

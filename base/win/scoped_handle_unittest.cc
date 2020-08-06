@@ -71,19 +71,19 @@ TEST(ScopedHandleTest, HandleVerifierDoubleTracking) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
 
-  base::win::ScopedHandle handle_holder(handle);
+  base::win::CheckedScopedHandle handle_holder(handle);
 
-  ASSERT_DEATH({ base::win::ScopedHandle handle_holder2(handle); }, "");
+  ASSERT_DEATH({ base::win::CheckedScopedHandle handle_holder2(handle); }, "");
 }
 
 TEST(ScopedHandleTest, HandleVerifierWrongOwner) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
 
-  base::win::ScopedHandle handle_holder(handle);
+  base::win::CheckedScopedHandle handle_holder(handle);
   ASSERT_DEATH(
       {
-        base::win::ScopedHandle handle_holder2;
+        base::win::CheckedScopedHandle handle_holder2;
         handle_holder2.handle_ = handle;
       },
       "");
@@ -97,7 +97,7 @@ TEST(ScopedHandleTest, HandleVerifierUntrackedHandle) {
 
   ASSERT_DEATH(
       {
-        base::win::ScopedHandle handle_holder;
+        base::win::CheckedScopedHandle handle_holder;
         handle_holder.handle_ = handle;
       },
       "");

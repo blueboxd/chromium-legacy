@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Novo geslo</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> upravlja to napravo in ima dostop do vse dejavnosti uporabnika, vključno z obiskanimi spletnimi mesti, gesli in e-pošto.</translation>
 <translation id="4003384961948020559">Napaka – izhodni pladenj je poln</translation>
+<translation id="4027485274696301677">To napravo <ph name="DEVICE_TYPE" /> upravlja <ph name="ENROLLMENT_DOMAIN" />. Skrbniki lahko napravo konfigurirajo na daljavo.</translation>
 <translation id="4034824040120875894">Tiskalnik</translation>
 <translation id="4227825898293920515">Geslo poteče čez toliko časa: <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nobeno tiskalno opravilo ne poteka</translation>
@@ -73,7 +74,6 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="808894953321890993">Sprememba gesla</translation>
 <translation id="8208861521865154048">Ugodnosti</translation>
 <translation id="8347227221149377169">Tiskalna opravila</translation>
-<translation id="8623849191266582420">To napravo <ph name="DEVICE_TYPE" /> upravlja <ph name="ENROLLMENT_DOMAIN" />. Skrbniki lahko na daljavo konfigurirajo in nadzirajo napravo.</translation>
 <translation id="8701136875688985581">Domena <ph name="ENROLLMENT_DOMAIN" /> upravlja tega uporabnika. Na daljavo lahko upravlja nastavitve in nadzira dejavnost uporabnika.</translation>
 <translation id="871560550817059752">Napaka – zmanjkalo je črnila</translation>
 <translation id="8747900814994928677">Potrditev spremembe</translation>

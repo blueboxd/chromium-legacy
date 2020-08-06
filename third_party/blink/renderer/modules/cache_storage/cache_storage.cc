@@ -129,15 +129,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                   "CacheStorage", "CacheStorage::Open::Callback",
                   TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN, "status",
                   CacheStorageTracedValue(result->get_status()));
-              switch (result->get_status()) {
-                case mojom::blink::CacheStorageError::kErrorNotFound:
-                case mojom::blink::CacheStorageError::kErrorStorage:
-                  resolver->Resolve();
-                  break;
-                default:
-                  RejectCacheStorageWithError(resolver, result->get_status());
-                  break;
-              }
+              RejectCacheStorageWithError(resolver, result->get_status());
             } else {
               TRACE_EVENT_WITH_FLOW1(
                   "CacheStorage", "CacheStorage::Open::Callback",

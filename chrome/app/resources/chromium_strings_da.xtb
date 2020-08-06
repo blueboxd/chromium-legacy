@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Der er ingen gemte adgangskoder. Chromium kan tjekke dine adgangskoder, når du gemmer dem.</translation>
 <translation id="5277894862589591112">Åbn Chromium igen for at anvende ændringerne</translation>
 <translation id="5358375970380395591">Du er ved at logge ind med en managerstyret konto og giver dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via kontrolpanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Der opstod en fejl i Chromium ved scanningen af software på enheden</translation>
 <translation id="5386450000063123300">Opdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Tillad login via Chromium</translation>
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium skal have adgang til din placering for at dele din placering med dette website</translation>
 <translation id="549669000822060376">Vent, mens Chromium installerer de nyeste systemopdateringer.</translation>
 <translation id="5496810170689441661">Chromium forsøger at redigere adgangskoder. Angiv din Windows-adgangskode for at tillade dette.</translation>
-<translation id="5556694182460963866">Din administrator har deaktiveret Chromiums scanning efter skadelig software</translation>
 <translation id="5623402015214259806">{0,plural, =0{Der er en tilgængelig Chromium-opdatering}=1{Der er en tilgængelig Chromium-opdatering}one{En Chromium-opdatering har været tilgængelig i # dag}other{En Chromium-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="5631814766731275228">Chromium-navn og -billede</translation>
 <translation id="5634636535844844681">Chromium kræver Windows 7 eller nyere.</translation>

@@ -15,7 +15,6 @@
 <translation id="137466361146087520">Google Chrome 測試版</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
 <translation id="1434626383986940139">Chrome Canary 應用程式</translation>
-<translation id="1514913130539345610">系統管理員已停用 Chrome 的有害軟體檢測功能</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用你的攝影機。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 並不安全，因此遭到 Chrome 封鎖。</translation>
@@ -79,7 +78,7 @@
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="3127818369811890733">Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
-<translation id="3351117925998652957">選擇你的 Chrome Space</translation>
+<translation id="3351117925998652957">選擇你的 Chrome 空間</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome 將立即重新啟動}=1{Chrome 將在 1 秒後重新啟動}other{Chrome 將在 # 秒後重新啟動}}</translation>
 <translation id="3395323229510056640">前往 Chrome 作業系統說明頁面</translation>
@@ -214,7 +213,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>
 <translation id="7573289029918943991">如要查看你的裝置是否為最新版，請前往 <ph name="LINK_BEGIN" />Chrome 作業系統設定<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">我們已不支援 Mac OS X 10.9，因此這部電腦不會再收到 Google Chrome 更新。</translation>
-<translation id="7591404275842302616">使用 Chrome Space 有效管理這部裝置上的瀏覽活動</translation>
+<translation id="7591404275842302616">使用 Chrome 空間有效管理這部裝置上的瀏覽活動</translation>
 <translation id="7592736734348559088">你的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7629695634924605473">Chrome 會通知你密碼是否曾遭外洩</translation>
@@ -236,7 +235,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7962410387636238736">Google Chrome 已停止支援 Windows XP 和 Windows Vista，因此這部電腦不會再收到 Google Chrome 更新</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
 <translation id="8013993649590906847">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。系統會將圖片傳送給 Google，以便產生說明。</translation>
-<translation id="8034040214409724683">Chrome 檢查裝置軟體時發生錯誤</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用你的攝影機和麥克風。</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果你同意的話，請輸入你的 Windows 密碼。</translation>

@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">ಅಂಗೀಕರಿಸಿ ಮತ್ತು ಮುಂದುವರಿಯಿರಿ</translation>
 <translation id="1112015203684611006">ಮುದ್ರಿಸುವಿಕೆ ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="1125564390852150847">ಹೊಸ ಟ್ಯಾಬ್ ರಚಿಸಿ.</translation>
+<translation id="1134509371063488162">${urls} ಅನ್ನು ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="1145536944570833626">ಪ್ರಸ್ತುತ ಡೇಟಾ ಅಳಿಸಿ.</translation>
 <translation id="1165039591588034296">ದೋಷ</translation>
 <translation id="1172898394251786223">ಮುಂದಿನ ಕ್ಷೇತ್ರ</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">ಖಾತೆ ಸೇರಿಸಿ</translation>
 <translation id="2268044343513325586">ಪರಿಷ್ಕರಿಸು</translation>
 <translation id="2273327106802955778">ಹೆಚ್ಚಿನ ಮೆನು</translation>
+<translation id="2302742851632557585">ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ</translation>
 <translation id="2316709634732130529">ಸೂಚಿಸಿರುವ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
 <translation id="2320166752086256636">ಕೀಬೋರ್ಡ್ ಮರೆಮಾಡಿ</translation>
 <translation id="2339560363438331454">ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳು</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">ಪಾವತಿ ವಿಧಾನವನ್ನು ಸೇರಿಸಿ...</translation>
 <translation id="2989805286512600854">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3037605927509011580">ಓಹ್, ಹೋಯ್ತು!</translation>
+<translation id="3081338492074632642">ನೀವು ಈಗ ಉಳಿಸುತ್ತಿರುವ ಪಾಸ್‌ವರ್ಡ್, ಈ ಮೊದಲು <ph name="WEBSITE" /> ಗೆ ಹೊಂದಿಸಿದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗೆ ಹೋಲುತ್ತಿದೆಯೇ ಎಂಬುದನ್ನು ದೃಢೀಕರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="3112556859945124369">ಗುರುತಿಸಿ...</translation>
 <translation id="3131206671572504478">ಎಲ್ಲವನ್ನೂ ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="3153862085237805241">ಕಾರ್ಡ್‌ ಅನ್ನು ಉಳಿಸಿ</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">ಮಿಮೀ</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> ರಲ್ಲಿ <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
+<translation id="3272527697863656322">ರದ್ದುಮಾಡಿ</translation>
 <translation id="3277021493514034324">ಸೈಟ್‌ ವಿಳಾಸವನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3290875554372353449">ಖಾತೆಯೊಂದನ್ನು ಆರಿಸಿ</translation>
 <translation id="3311748811247479259">ಆಫ್ ಆಗಿದೆ</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">ಅನುವಾದ ಲಭ್ಯವಿದೆ. ಪರದೆಯ ಕೆಳಭಾಗದ ಸಮೀಪದಲ್ಲಿ ಆಯ್ಕೆಗಳು ಲಭ್ಯವಿವೆ.</translation>
 <translation id="3393920035788932672">ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="3425644765244388016">ಕಾರ್ಡ್ ಅಡ್ಡ ಹೆಸರು</translation>
+<translation id="3433057996795775706">ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಅಳಿಸುವುದರಿಂದ <ph name="WEBSITE" /> ನಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ. <ph name="WEBSITE" /> ಅನ್ನು ಇತರರಿಂದ ರಕ್ಷಿಸಲು, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ.</translation>
 <translation id="3443810440409579745">ಟ್ಯಾಬ್ ಅನ್ನು ಸ್ವೀಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ನಿಮಿಷ</translation>
 <translation id="3448016392200048164">ವಿಭಜಿತ ವೀಕ್ಷಣೆ</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">ವೆಬ್ ಪುಟಗಳನ್ನು ಪೂರ್ವಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3670030362669914947">ಸಂಖ್ಯೆ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ಗೆ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="3740397331642243698">Google Chrome ನ ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿ ಇನ್‌ಪುಟ್ ಮಾಡಿದ URL ಗಳನ್ನು ತೆರೆಯುತ್ತದೆ.</translation>
 <translation id="3771033907050503522">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="3775743491439407556">ಸಿಂಕ್ ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ</translation>
 <translation id="3779810277399252432">ಇಂಟರ್ನೆಟ್‌ ಸಂಪರ್ಕ ಇಲ್ಲ.</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">ಮಾಹಿತಿ</translation>
 <translation id="4659126640776004816">ನಿಮ್ಮ Google ಖಾತೆಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, ಈ ವೈಶಿಷ್ಟ್ಯವು ಆನ್ ಆಗುತ್ತದೆ.</translation>
 <translation id="4659667755519643272">ಟ್ಯಾಬ್ ಸ್ವಿಚರ್ ನಮೂದಿಸಿ</translation>
+<translation id="46614316059270592">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಿ</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> ಎಂಬುದಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗಿದೆ.
 
 ನಿಮ್ಮ ಡೇಟಾವನ್ನು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್‌ನೊಂದಿಗೆ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ. ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ಅದನ್ನು ನಮೂದಿಸಿ.</translation>
@@ -402,6 +409,7 @@
 <translation id="5854790677617711513">30 ದಿನಗಳಿಗಿಂತ ಹಳೆಯದು</translation>
 <translation id="5857090052475505287">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="5857770089550859117">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಪಾಸ್‌ಫ್ರೇಸ್ ಅಗತ್ಯವಿದೆ.</translation>
+<translation id="5860033963881614850">ಆಫ್</translation>
 <translation id="5869029295770560994">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
 <translation id="5871497086027727873">1 ಐಟಂ ಸರಿಸಲಾಗಿದೆ</translation>
 <translation id="5897956970858271241">ನಕಲಿಸಿದ ಲಿಂಕ್‌ಗೆ ಭೇಟಿ ನೀಡಿ</translation>
@@ -502,7 +510,6 @@
 <translation id="6831043979455480757">ಅನುವಾದಿಸು</translation>
 <translation id="6841409746189899007">ಪಠ್ಯಕ್ಕೆ ಲಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="6851516051005285358">ಡೆಸ್ಕ್‌ಟಾಪ್‌ ಸೈಟ್‌ ಅನ್ನು ವಿನಂತಿಸಿ</translation>
-<translation id="6856384753476268833">ನಿಮ್ಮ ಸಂಸ್ಥೆಯವರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ.</translation>
 <translation id="6858855187367714033">ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6859944681507688231">QR ಕೋಡ್ ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮರಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="6869389390665537774">ನೀವು ಭೇಟಿ ನೀಡಿದ ಪುಟಗಳನ್ನು ನೀವು ನೋಡಬಹುದು ಅಥವಾ ನಿಮ್ಮ ಇತಿಹಾಸದಿಂದ ಅವುಗಳನ್ನು ತೆರವುಗೊಳಿಸಬಹುದು</translation>
@@ -524,7 +531,6 @@
 <translation id="7006788746334555276">ವಿಷಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="7015203776128479407">ಪ್ರಾರಂಭಿಕ ಸಿಂಕ್ ಸೆಟಪ್ ಮುಗಿದಿಲ್ಲ. ಸಿಂಕ್ ಆಫ್ ಆಗಿದೆ.</translation>
 <translation id="7029809446516969842">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
-<translation id="7030675613184250187">ಪುಟಗಳನ್ನು ಮತ್ತೆ ಹುಡುಕಲು ಅಥವಾ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಓದಲು ನೀವು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಗೆ ಉಳಿಸಬಹುದು</translation>
 <translation id="7053983685419859001">ನಿರ್ಬಂಧಿಸು</translation>
 <translation id="7062545763355031412">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಖಾತೆಗಳನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="7099761977003084116">ಇತ್ತೀಚಿನ ಟ್ಯಾಬ್‌ಗಳು</translation>
@@ -587,12 +593,12 @@
 <translation id="7856733331829174190">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="7859704718976024901">ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ</translation>
 <translation id="7887198238286927132">ನಿಮ್ಮ ಗೌಪ್ಯತೆಯನ್ನು ರಕ್ಷಿಸಲು, Chrome ಈ ಫೀಲ್ಡ್ ಅನ್ನು ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುವುದಿಲ್ಲ.</translation>
-<translation id="791251013315685175"><ph name="COMPANY" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ.</translation>
 <translation id="7918293828610777738">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿದೆ. ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯಲ್ಲಿ ಪುಟವನ್ನು ಸೇರಿಸಲು, <ph name="SHARE_OPENING_ICON" /> ಟ್ಯಾಪ್ ಮಾಡಿ ನಂತರ <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮಾಡಿ...</translation>
 <translation id="7947953824732555851">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ</translation>
 <translation id="794799177247607889">ಲಾಗ್ ಮಾಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{ಅಪಾಯಕ್ಕೀಡಾಗಬಹುದಾದ ಯಾವುದೇ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಲ್ಲ}=1{{COUNT} ಅಪಾಯಕ್ಕೀಡಾಗಬಹುದಾದ ಪಾಸ್‌ವರ್ಡ್‌ ಇದೆ}one{{COUNT} ಅಪಾಯಕ್ಕೀಡಾಗಬಹುದಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿವೆ}other{{COUNT} ಅಪಾಯಕ್ಕೀಡಾಗಬಹುದಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿವೆ}}</translation>
 <translation id="7961015016161918242">ಎಂದಿಗೂ ಇಲ್ಲ</translation>
 <translation id="7966516440812255683">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು, ಉದಾಹರಣೆಗೆ, ನಿಮ್ಮನ್ನು ಸೈನ್ ಇನ್ ಆಗಿರಿಸಲು ಅಥವಾ ನಿಮ್ಮ ಶಾಪಿಂಗ್ ಕಾರ್ಟ್‌ನಲ್ಲಿರುವ ಐಟಂಗಳನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಲು ಸೈಟ್‌ಗಳು ಕುಕೀಗಳನ್ನು ಬಳಸಬಹುದು.
 
@@ -606,6 +612,7 @@
 <translation id="8023878949384262191">ವಿಭಾಗವನ್ನು ವಿಸ್ತರಿಸುತ್ತದೆ.</translation>
 <translation id="804427445359061970">ಇತರ ಸಾಧನಗಳಲ್ಲಿನ ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ನೀವು ಇಲ್ಲಿ ಕಾಣಬಹುದು</translation>
 <translation id="8059533439631660104">ವಿಭಾಗವನ್ನು ಕುಗ್ಗಿಸುತ್ತದೆ.</translation>
+<translation id="8065292699993359127">URL ಗಳನ್ನು Chrome ನ ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="806745655614357130">ನನ್ನ ಡೇಟಾ ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="8073670137947914548">ಡೌನ್‌ಲೋಡ್‌ ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="8073872304774253879">ಹುಡುಕಾಟಗಳು ಮತ್ತು ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಿ</translation>

@@ -45,7 +45,7 @@ message PaintPreviewFrameProto {
 
   // The file path to the serialized Skia Picture.
   // null if the persistence type of the |PaintPreviewCaptureParams| is
-  // |Persistence::MemoryBuffer|.
+  // |RecordingPersistence::MemoryBuffer|.
   optional string file_path = 4;
 
   // A list of links within the frame.

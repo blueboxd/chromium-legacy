@@ -2151,7 +2151,7 @@ Output.ROLE_INFO_ = {
   article: {msgId: 'role_article', inherits: 'abstractItem'},
   application: {msgId: 'role_application', inherits: 'abstractContainer'},
   banner: {msgId: 'role_banner', inherits: 'abstractContainer'},
-  button: {msgId: 'role_button', earconId: 'BUTTON'},
+  button: {msgId: 'role_button', earconId: 'BUTTON', inherits: 'button'},
   buttonDropDown: {msgId: 'role_button', earconId: 'BUTTON'},
   checkBox: {msgId: 'role_checkbox'},
   columnHeader: {msgId: 'role_columnheader', inherits: 'cell'},
@@ -2419,6 +2419,10 @@ Output.RULES = {
       enter: `$earcon(ALERT_MODAL) $name $state $description`,
       speak: `$earcon(ALERT_MODAL) $name $nameOrTextContent $description $state
           $role`
+    },
+    button: {
+      speak: `$name $node(activeDescendant) $state $restriction $role
+          $description`
     },
     cell: {
       enter: {

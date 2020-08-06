@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
@@ -72,7 +73,8 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
         @Override
         public void onTitleUpdated(Tab tab) {
-            if (mActivity.getActivityTab().getTitle().equals(mExpectedTitle)) {
+            if (ChromeTabUtils.getTitleOnUiThread(mActivity.getActivityTab())
+                            .equals(mExpectedTitle)) {
                 mCallbackHelper.notifyCalled();
             }
         }
@@ -89,7 +91,10 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
             // Update might have already happened, check before waiting for title udpdates.
             mExpectedTitle = mPrefix;
             if (numUpdates != 0) mExpectedTitle += numUpdates;
-            if (mActivity.getActivityTab().getTitle().equals(mExpectedTitle)) return;
+            if (ChromeTabUtils.getTitleOnUiThread(mActivity.getActivityTab())
+                            .equals(mExpectedTitle)) {
+                return;
+            }
 
             mCallbackHelper.waitForCallback(0);
         }

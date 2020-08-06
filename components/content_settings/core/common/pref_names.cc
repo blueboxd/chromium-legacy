@@ -55,6 +55,8 @@ const char kManagedDefaultLegacyCookieAccessSetting[] =
     "profile.managed_default_content_settings.legacy_cookie_access";
 const char kManagedDefaultSerialGuardSetting[] =
     "profile.managed_default_content_settings.serial_guard";
+const char kManagedDefaultInsecurePrivateNetworkSetting[] =
+    "profile.managed_default_content_settings.insecure_private_network";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -104,6 +106,8 @@ const char kManagedLegacyCookieAccessAllowedForDomains[] =
 const char kManagedSerialAskForUrls[] = "profile.managed_serial_ask_for_urls";
 const char kManagedSerialBlockedForUrls[] =
     "profile.managed_serial_blocked_for_urls";
+const char kManagedInsecurePrivateNetworkAllowedForUrls[] =
+    "profile.managed_insecure_private_network_allowed_for_urls";
 
 // Boolean indicating whether the quiet UX is enabled for notification
 // permission requests.

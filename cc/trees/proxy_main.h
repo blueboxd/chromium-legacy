@@ -107,6 +107,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void ClearHistory() override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
+  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling) override;
 
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.

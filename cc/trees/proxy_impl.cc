@@ -803,4 +803,9 @@ void ProxyImpl::SetRenderFrameObserver(
   host_impl_->SetRenderFrameObserver(std::move(observer));
 }
 
+void ProxyImpl::SetEnableFrameRateThrottling(
+    bool enable_frame_rate_throttling) {
+  host_impl_->SetEnableFrameRateThrottling(enable_frame_rate_throttling);
+}
+
 }  // namespace cc

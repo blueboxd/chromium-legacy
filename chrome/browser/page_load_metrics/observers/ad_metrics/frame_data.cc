@@ -316,7 +316,7 @@ void FrameData::SetFirstEligibleToPaint(
     // If the ad frame tree hasn't already received an earlier paint
     // eligibility stamp, mark it as eligible to paint. Since multiple frames
     // may report timestamps, we keep the earliest reported stamp.
-    // Note that this timestamp (or lack tereof) is best-effort.
+    // Note that this timestamp (or lack thereof) is best-effort.
     if (!first_eligible_to_paint_.has_value() ||
         first_eligible_to_paint_.value() > time_stamp.value())
       first_eligible_to_paint_ = time_stamp;

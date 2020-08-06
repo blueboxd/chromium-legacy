@@ -116,6 +116,7 @@
 <translation id="2267753748892043616">खाता थप्नुहोस्...</translation>
 <translation id="2268044343513325586">परिशुद्ध</translation>
 <translation id="2273327106802955778">थप मेनु</translation>
+<translation id="2302742851632557585">वेबसाइटमा गई पासवर्ड बदल्नुहोस्</translation>
 <translation id="2316709634732130529">सुझाव दिइएको पासवर्ड प्रयोग गर्नुहोस्</translation>
 <translation id="2320166752086256636">किबोर्ड लुकाउनुहोस्</translation>
 <translation id="2339560363438331454">सिंक तथा Google सेवाहरू</translation>
@@ -183,6 +184,7 @@
 <translation id="298306318844797842">भुक्तानी विधि थप्नुहोस्...</translation>
 <translation id="2989805286512600854">नयाँ ट्याबमा खोल्नुहोस्</translation>
 <translation id="3037605927509011580">हरे, स्न्याप!</translation>
+<translation id="3081338492074632642">तपाईंले सुरक्षित गर्न लाग्नुभएको पासवर्ड तपाईंको <ph name="WEBSITE" /> को पासवर्डसँग मेल खान्छ भन्ने कुरा सुनिश्चित गर्नुहोस्</translation>
 <translation id="3112556859945124369">चिन्ह लगाउनुहोस्…</translation>
 <translation id="3131206671572504478">सबै ब्लक गर्नुहोस्</translation>
 <translation id="3153862085237805241">कार्ड सुरक्षित गर्नुहोस्</translation>
@@ -201,6 +203,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> को <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ट्याबहरू खोल्नुहोस्</translation>
+<translation id="3272527697863656322">रद्द गर्नुहोस्</translation>
 <translation id="3277021493514034324">साइटको ठेगाना प्रतिलिपि गरियो</translation>
 <translation id="3290875554372353449">कुनै खाता छान्नुहोस्</translation>
 <translation id="3311748811247479259">निष्क्रिय छ</translation>
@@ -211,6 +214,7 @@
 <translation id="3371831930909698441">अनुवाद उपलब्ध छ। विकल्पहरू स्क्रिनका पुछारतिर उपलब्ध छन्।</translation>
 <translation id="3393920035788932672">पप-अपहरूलाई अनुमति दिइयो</translation>
 <translation id="3425644765244388016">कार्डको उपनाम</translation>
+<translation id="3433057996795775706">तपाईंले यो पासवर्ड मेटाउनुभयो भने <ph name="WEBSITE" /> मा रहेको तपाईंको खाता मेटिने छैन। यो खाता अन्य मान्छेहरूबाट सुरक्षित राख्न <ph name="WEBSITE" /> मा गई आफ्नो पासवर्ड परिवर्तन गर्नुहोस्।</translation>
 <translation id="3443810440409579745">ट्याब प्राप्त गरियो।</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनेट</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
@@ -306,6 +310,7 @@
 <translation id="4636930964841734540">जानकारी</translation>
 <translation id="4659126640776004816">तपाईंले आफ्नो Google खातामा साइन इन गर्दा यो सुविधा सक्रिय गरिन्छ।</translation>
 <translation id="4659667755519643272">ट्याब स्विचर प्रविष्टि गर्नुहोस्</translation>
+<translation id="46614316059270592">पासवर्ड सुरक्षित गर्नुहोस्</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> को रूपमा साइन इन गरिएको छ।
 
 तपाईँको डेटालाई तपाईँको सिंकको पासफ्रेजमार्फत इन्क्रिप्ट गरिएको छ। सिंक सुरु गर्न त्यो पासफ्रेज प्रविष्टि गर्नुहोस्।</translation>
@@ -402,6 +407,7 @@
 <translation id="5854790677617711513">३० दिनभन्दा पुरानो</translation>
 <translation id="5857090052475505287">नयाँ फोल्डर</translation>
 <translation id="5857770089550859117">सिंक सुरु गर्न पासफ्रेज आवश्यक छ।</translation>
+<translation id="5860033963881614850">बन्द</translation>
 <translation id="5869029295770560994">ठिक छ, बुझेँ</translation>
 <translation id="5871497086027727873">1 वस्तु सारियो</translation>
 <translation id="5897956970858271241">प्रतिलिपि गरिएको लिंकमा जानुहोस्</translation>
@@ -502,7 +508,6 @@
 <translation id="6831043979455480757">अनुवाद गर्नुहोस्</translation>
 <translation id="6841409746189899007">पाठको लिंक</translation>
 <translation id="6851516051005285358">डेस्कटप साइट अनुरोध गर्नुहोस्</translation>
-<translation id="6856384753476268833">तपाईंको सङ्गठनले व्यवस्थापन गरेको।</translation>
 <translation id="6858855187367714033">स्क्यान गरियो</translation>
 <translation id="6859944681507688231">कुनै QR कोड वा क्रेडिट कार्ड स्क्यान गर्न सेटिङमा गई क्यामेरा सक्षम पार्नुहोस्।</translation>
 <translation id="6869389390665537774">तपाईं आफू गएका पृष्ठहरू हेर्न वा आफ्नो इतिहासमा गई ती सबै जानकारी मेटाउन सक्नुहुन्छ</translation>
@@ -524,7 +529,6 @@
 <translation id="7006788746334555276">सामग्री सेटिङहरू</translation>
 <translation id="7015203776128479407">सिंकसम्बन्धी प्रारम्भिक सेटअप पूरा भएन। सिंक सुविधा निष्क्रिय छ</translation>
 <translation id="7029809446516969842">पासवर्डहरू</translation>
-<translation id="7030675613184250187">तपाईं पृष्ठहरूलाई आफ्नो अध्ययन सूचीमा सुरक्षित गरी ती पृष्ठ पछि फेरि फेला पार्न वा इन्टरनेट नभएका बेलामा पढ्न सक्नुहुन्छ</translation>
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7062545763355031412">स्वीकार गरी खाताहरू स्विच गर्नुहोस्</translation>
 <translation id="7099761977003084116">हालका ट्याबहरू</translation>
@@ -587,12 +591,12 @@
 <translation id="7856733331829174190">डाउनलोड गर्न सकिएन</translation>
 <translation id="7859704718976024901">ब्राउजिङ इतिहास</translation>
 <translation id="7887198238286927132">तपाईंको गोपनीयताको सुरक्षा गर्न Chrome ले यो फिल्ड स्वतः भर्ने छैन।</translation>
-<translation id="791251013315685175"><ph name="COMPANY" /> ले व्यवस्थापन गरेको।</translation>
 <translation id="7918293828610777738">तपाईंको पाठ्य सूची अफलाइन उपलब्ध छ। आफ्नो पाठ्य सूचीमा कुनै पृष्ठ थप्न पहिला <ph name="SHARE_OPENING_ICON" /> र त्यसपछि <ph name="READ_LATER_TEXT" /> मा ट्याप गर्नुहोस्।</translation>
 <translation id="7938254975914653459">फेसटाइम</translation>
 <translation id="7939128259257418052">पासवर्ड निर्यात गर्नु…</translation>
 <translation id="7947953824732555851">स्वीकार र साइन इन गर्नुहोस्</translation>
 <translation id="794799177247607889">लग गर्न छाड्नुहोस्</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{कुनै पनि पासवर्ड अरूले देखेका छैनन्}=1{अरूले देखेको {COUNT} पासवर्ड फेला पर्‍यो}other{अरूले देखेका {COUNT} पासवर्डहरू फेला परे}}</translation>
 <translation id="7961015016161918242">कहिल्यै पनि होइन</translation>
 <translation id="7966516440812255683">साइटहरूले तपाईंलाई राम्रो ब्राउजिङको अनुभव प्रदान गर्न कुकीहरूको प्रयोग गर्न सक्छन्। उदाहरणको लागि साइटहरूले कुकीहरूको प्रयोग गरी तपाईंलाई साइन इन अवस्थामै राख्न वा तपाईंको किनमेलको कार्टमा भएका वस्तुहरू सम्झन सक्छन्।
 

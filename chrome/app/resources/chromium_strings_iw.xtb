@@ -106,7 +106,6 @@
 <translation id="5224391634244552924">‏אין סיסמאות שמורות. Chromium יכול לבדוק את הסיסמאות שלך רק אם שמרת אותן.</translation>
 <translation id="5277894862589591112">‏כדי להחיל את השינויים שביצעת, יש להפעיל מחדש את Chromium</translation>
 <translation id="5358375970380395591">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">‏אירעה שגיאה בזמן ש-Chromium בדק את התוכנה במכשיר</translation>
 <translation id="5386450000063123300">‏מעדכן את Chromium‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">‏התרת כניסה אל Chromium</translation>
 <translation id="5398878173008909840">‏גרסה חדשה של Chromium זמינה כעת.</translation>
@@ -117,7 +116,6 @@
 <translation id="5480860683791598150">‏Chromium זקוק לגישה למיקום שלך כדי לשתף אותו עם האתר הזה</translation>
 <translation id="549669000822060376">‏המתן בזמן ש-Chromium מתקין את עדכוני המערכת האחרונים.</translation>
 <translation id="5496810170689441661">‏Chromium מנסה לערוך את הסיסמאות. כדי לאפשר זאת, יש להזין את הסיסמה שלך ל-Windows.</translation>
-<translation id="5556694182460963866">‏מנהל המערכת השבית את הבדיקה של Chromium לאיתור תוכנות מזיקות</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏יש עדכון ל-Chromium}=1{‏יש עדכון ל-Chromium}two{‏עדכון של Chromium זמין כבר # ימים}many{‏עדכון של Chromium זמין כבר # ימים}other{‏עדכון של Chromium זמין כבר # ימים}}</translation>
 <translation id="5631814766731275228">‏שם ותמונה ב-Chromium</translation>
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>

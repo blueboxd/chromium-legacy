@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
+<translation id="1298077576058087471">Makatipid ng hanggang 60% data, basahin ang balita ngayong araw</translation>
 <translation id="1303339473099049190">Hindi mahanap ang password na iyon. Tingnan ang iyong spelling at subukan ulit.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Ipinadala mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Igrupo ang mga tab</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">I-reset ang Lite mode?</translation>
 <translation id="1868024384445905608">Mas mabilis nang mag-download ng mga file ang Chrome</translation>
 <translation id="1874760110381325409">Masa-sign in ka sa iyong Google Account\n(hindi nito mao-on ang Chrome Sync)</translation>
+<translation id="1877026089748256423">Luma na ang Chrome</translation>
 <translation id="1883903952484604915">Aking Mga File</translation>
 <translation id="1919950603503897840">Pumili ng mga contact</translation>
 <translation id="1925021887439448749">Maglagay ng custom na address sa web</translation>
@@ -204,7 +206,6 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="2587052924345400782">May available na mas bagong bersyon</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">Numero ng card</translation>
-<translation id="2622559029861875898">Hindi matingnan ng Chrome kung may mga update. Subukang tingnan ang iyong koneksyon sa internet.</translation>
 <translation id="2625189173221582860">Nakopya ang password</translation>
 <translation id="2631006050119455616">Na-save</translation>
 <translation id="2647434099613338025">Magdagdag ng wika</translation>
@@ -261,8 +262,10 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="305593374596241526">Naka-off ang lokasyon; i-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Maaari mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}one{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> na bookmark}}</translation>
+<translation id="3062802207422175757">Mga artikulo tungkol sa iyong mga interes sa Chrome</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="3114012059975132928">Player ng video</translation>
+<translation id="3114507951000454849">Basahin ang balita ngayong araw <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Mga Anunsyo</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
 <translation id="3143515551205905069">Kanselahin ang pag-sync</translation>
@@ -326,6 +329,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3566923219790363270">Naghahanda pa rin ang Chrome para sa VR. I-restart ang Chrome sa ibang pagkakataon.</translation>
 <translation id="3568688522516854065">Para makuha ang iyong mga tab sa iba mo pang device, mag-sign in at i-on ang pag-sync</translation>
 <translation id="3587482841069643663">Lahat</translation>
+<translation id="3587596251841506391">Pahusayin ang seguridad sa web</translation>
 <translation id="3590487821116122040">Storage ng site na sa tingin ng Chrome ay hindi mahalaga (hal. mga site na walang mga naka-save na setting o hindi mo madalas bisitahin)</translation>
 <translation id="3594780231884063836">I-mute ang video</translation>
 <translation id="3599863153486145794">Kini-clear ang history sa lahat ng naka-sign in na device. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -556,7 +560,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5441522332038954058">Pumunta sa address bar</translation>
 <translation id="5447201525962359567">Lahat ng storage ng site, kabilang ang cookies at iba pang lokal na naka-store na data</translation>
 <translation id="545042621069398927">Pinapabilis ang iyong pag-download.</translation>
-<translation id="5454513945794364671">Na-off ng iyong administrator ang Ligtas na Pag-browse</translation>
 <translation id="5456381639095306749">I-download ang page</translation>
 <translation id="548278423535722844">Buksan sa app na mga mapa</translation>
 <translation id="5487521232677179737">I-clear ang data</translation>
@@ -649,6 +652,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>
 <translation id="6111020039983847643">nagamit na data</translation>
 <translation id="6112702117600201073">Nire-refresh ang page</translation>
+<translation id="6122831415929794347">I-off ang Ligtas na Pag-browse?</translation>
 <translation id="6127379762771434464">Inalis ang item</translation>
 <translation id="6140709049082532940">Pinaigting na proteksyon:</translation>
 <translation id="6140912465461743537">Bansa/Rehiyon</translation>
@@ -656,6 +660,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="6154478581116148741">I-on ang lock ng screen sa Mga Setting upang i-export ang iyong mga password mula sa device na ito</translation>
 <translation id="6157392216611456285">Piliin ang <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ang natipid sa data</translation>
+<translation id="6186394685773237175">Walang nakitang nakompromisong password</translation>
 <translation id="6201345951596836663">Nakopya ang Link</translation>
 <translation id="6206830853671714236">Piliin kung kailan ida-download</translation>
 <translation id="6210748933810148297">Hindi si <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6573431926118603307">Dito lalabas ang mga nabuksan mong tab sa Chrome sa iba mo pang mga device.</translation>
 <translation id="6583199322650523874">I-bookmark ang kasalukuyang page</translation>
 <translation id="6588043302623806746">Gamitin ang secure na DNS</translation>
+<translation id="6590471736817333463">Makatipid ng hanggang 60% data</translation>
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6597891566292541626">Iposisyon ang QR/barcode sa frame na ito.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
@@ -731,7 +737,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6663079968236414793">I-link sa text</translation>
-<translation id="666573598175432848">May available na mas bagong bersyon ng Chrome. I-tap ang element na ito para pumunta sa Play Store.</translation>
 <translation id="666731172850799929">Buksan sa <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notification ng Privacy ng Chrome</translation>
 <translation id="6671495933530132209">Kopyahin ang larawan</translation>
@@ -927,6 +932,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8190358571722158785">1 araw na lang ang natitira</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8209050860603202033">Buksan ang larawan</translation>
+<translation id="8218052821161047641">Mabilis na page</translation>
 <translation id="8218622182176210845">Pamahalaan ang iyong account</translation>
 <translation id="8223642481677794647">Menu ng feed card</translation>
 <translation id="8224471946457685718">Mag-download ng mga artikulo para sa iyo sa Wi-Fi</translation>
@@ -1005,7 +1011,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="8854223127042600341">Tingnan ang iyong mga offline na file</translation>
 <translation id="889338405075704026">Pumunta sa mga setting ng Chrome</translation>
-<translation id="8893398027601469503">Pinapatakbo mo ang pinakabagong bersyon ng Chrome</translation>
 <translation id="8898822736010347272">Nagpapadala ng mga URL ng ilang page na binibisita mo, limitadong impormasyon ng system, at ilang content ng page sa Google, para makatulong na tumuklas ng mga bagong banta at protektahan ang lahat ng nasa web.</translation>
 <translation id="8909135823018751308">Ibahagi…</translation>
 <translation id="8912362522468806198">Google Account</translation>
@@ -1052,6 +1057,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="9209888181064652401">Hindi makatawag</translation>
 <translation id="9219103736887031265">Mga Larawan</translation>
 <translation id="926205370408745186">Alisin sa Digital Wellness ang iyong aktibidad sa Chrome</translation>
+<translation id="927968626442779827">Gamitin ang Lite mode sa Google Chrome</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="93753284658583800">Binago ang homepage</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

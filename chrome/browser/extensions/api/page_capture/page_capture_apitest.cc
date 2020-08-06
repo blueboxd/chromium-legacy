@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <atomic>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/threading/thread_restrictions.h"
@@ -60,62 +62,47 @@ class PageCaptureSaveAsMHTMLDelegate
     PageCaptureSaveAsMHTMLFunction::SetTestDelegate(NULL);
   }
 
-  void OnTemporaryFileCreated(const base::FilePath& temp_file) override {
-    temp_file_ = temp_file;
+  void OnTemporaryFileCreated(
+      scoped_refptr<storage::ShareableFileReference> file) override {
+    file->AddFinalReleaseCallback(
+        base::BindOnce(&PageCaptureSaveAsMHTMLDelegate::OnReleaseCallback,
+                       base::Unretained(this)));
+    ++temp_file_count_;
   }
 
-  base::FilePath temp_file_;
+  void WaitForFinalRelease() {
+    if (temp_file_count_ > 0)
+      run_loop_.Run();
+  }
+
+  int temp_file_count() const { return temp_file_count_; }
+
+ private:
+  void OnReleaseCallback(const base::FilePath& path) {
+    if (--temp_file_count_ == 0)
+      release_closure_.Run();
+  }
+
+  base::RunLoop run_loop_;
+  base::RepeatingClosure release_closure_ = run_loop_.QuitClosure();
+  std::atomic<int> temp_file_count_{0};
 };
 
-// TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess \
-  DISABLED_SaveAsMHTMLWithActiveTabWithFileAccess
-#else
-#define MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess \
-  SaveAsMHTMLWithActiveTabWithFileAccess
-#endif
-
-// TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
-// Also flaky-failing on slow (debug) bots: https://crbug.com/1017305
-#if defined(LEAK_SANITIZER) || !defined(NDEBUG) || \
-    defined(ADDRESS_SANITIZER) || defined(OS_MAC) || defined(OS_WIN)
-#define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
-#else
-#define MAYBE_SaveAsMHTML SaveAsMHTML
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
+IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
+                       SaveAsMHTMLWithoutFileAccess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("page_capture", "ONLY_PAGE_CAPTURE_PERMISSION"))
+  ASSERT_TRUE(RunExtensionTestWithFlagsAndArg(
+      "page_capture", "ONLY_PAGE_CAPTURE_PERMISSION", kFlagNone, kFlagNone))
       << message_;
-  // Make sure the MHTML data gets written to the temporary file.
-  ASSERT_FALSE(delegate.temp_file_.empty());
-  // Flush the message loops to make sure the delete happens.
-  content::RunAllTasksUntilIdle();
-  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-  // Make sure the temporary file is destroyed once the javascript side reads
-  // the contents.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ASSERT_FALSE(base::PathExists(delegate.temp_file_));
+  EXPECT_EQ(0, delegate.temp_file_count());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
-                       MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess) {
+IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, SaveAsMHTMLWithFileAccess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
-  // Make sure the MHTML data gets written to the temporary file.
-  ASSERT_FALSE(delegate.temp_file_.empty());
-  // Flush the message loops to make sure the delete happens.
-  content::RunAllTasksUntilIdle();
-  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-  // Make sure the temporary file is destroyed once the javascript side reads
-  // the contents.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ASSERT_FALSE(base::PathExists(delegate.temp_file_));
+  delegate.WaitForFinalRelease();
 }
 
 #if defined(OS_CHROMEOS)
@@ -127,20 +114,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
   // Resolve Permission dialog with Allow.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
-  ASSERT_FALSE(delegate.temp_file_.empty());
-  content::RunAllTasksUntilIdle();
-  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ASSERT_FALSE(base::PathExists(delegate.temp_file_));
+  delegate.WaitForFinalRelease();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
                        PublicSessionRequestDenied) {
   ASSERT_TRUE(StartEmbeddedTestServer());
+  PageCaptureSaveAsMHTMLDelegate delegate;
   chromeos::ScopedTestPublicSessionLoginState login_state;
   // Resolve Permission dialog with Deny.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::CANCEL);
   ASSERT_TRUE(RunExtensionTestWithArg("page_capture", "REQUEST_DENIED"))
       << message_;
+  EXPECT_EQ(0, delegate.temp_file_count());
 }
 #endif  // defined(OS_CHROMEOS)

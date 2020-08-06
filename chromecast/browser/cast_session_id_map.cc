@@ -63,7 +63,7 @@ void CastSessionIdMap::SetSessionId(std::string session_id,
 }
 
 // static
-std::string CastSessionIdMap::GetSessionId(std::string group_id) {
+std::string CastSessionIdMap::GetSessionId(const std::string& group_id) {
   return GetInstance()->GetSessionIdInternal(group_id);
 }
 
@@ -100,7 +100,8 @@ void CastSessionIdMap::SetSessionIdInternal(
   mapping_.emplace(group_id.ToString(), std::move(group_data));
 }
 
-std::string CastSessionIdMap::GetSessionIdInternal(std::string group_id) {
+std::string CastSessionIdMap::GetSessionIdInternal(
+    const std::string& group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = mapping_.find(group_id);
   if (it != mapping_.end())

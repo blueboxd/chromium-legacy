@@ -41,6 +41,11 @@ Polymer({
       value: loadTimeData.getBoolean('is_win10'),
     },
     // </if>
+
+    subtitle: {
+      type: String,
+      value: loadTimeData.getString('setDefaultHeader'),
+    },
   },
 
   /** @private {NuxSetAsDefaultProxy} */

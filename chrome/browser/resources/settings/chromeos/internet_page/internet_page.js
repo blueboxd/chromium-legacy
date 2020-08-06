@@ -209,8 +209,8 @@ Polymer({
         element = subPage.$$('#networkList');
       }
     } else if (this.detailType_ !== undefined) {
-      const oncType = OncMojo.getNetworkTypeString(this.detailType_);
-      const rowForDetailType = this.$$('network-summary').$$(`#${oncType}`);
+      const rowForDetailType =
+          this.$$('network-summary').getNetworkRow(this.detailType_);
 
       // Note: It is possible that the row is no longer present in the DOM
       // (e.g., when a Cellular dongle is unplugged or when Instant Tethering

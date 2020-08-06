@@ -250,14 +250,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 // a page's lifecycling by creating a large ad frame, destroying it, and
 // creating a smaller iframe. The ad density recorded is the density with
 // the first larger frame.
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113692): flaky on ChromeOS.
-#define MAYBE_PageAdDensityRecordsPageMax DISABLED_PageAdDensityRecordsPageMax
-#else
-#define MAYBE_PageAdDensityRecordsPageMax PageAdDensityRecordsPageMax
-#endif
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       MAYBE_PageAdDensityRecordsPageMax) {
+                       PageAdDensityRecordsPageMax) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -430,16 +424,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
 // Creates a frame with display:none styling and verifies that it has an
 // empty intersection with the main frame.
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113696): flaky on ChromeOS.
-#define MAYBE_PageAdDensityIgnoreDisplayNoneFrame \
-  DISABLED_PageAdDensityIgnoreDisplayNoneFrame
-#else
-#define MAYBE_PageAdDensityIgnoreDisplayNoneFrame \
-  PageAdDensityIgnoreDisplayNoneFrame
-#endif
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       MAYBE_PageAdDensityIgnoreDisplayNoneFrame) {
+                       PageAdDensityIgnoreDisplayNoneFrame) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();

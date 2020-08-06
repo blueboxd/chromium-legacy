@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/constants/software_reporter_tool_branding.h"
@@ -126,6 +128,10 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   chrome_cleaner::EnableSecureDllLoading();
 
   base::AtExitManager at_exit;
+
+#if !DCHECK_IS_ON()
+  base::win::DisableHandleVerifier();
+#endif
 
   // This must be done BEFORE constructing ScopedLogging, which calls
   // InitLogging to set the name of the log file, which needs to read

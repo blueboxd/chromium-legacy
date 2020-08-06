@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">දිග හැරීමට තට්ටු කරන්න</translation>
 <translation id="1291207594882862231">ඉතිහාසය, කුකීස්, අඩවි දත්ත, හැඹිලිය හිස් කරන්න...</translation>
 <translation id="129553762522093515">මෑත දී වැසිණි</translation>
+<translation id="1298077576058087471">දත්ත 60%ක් දක්වා සුරකින්න, අද දවසේ පුවත් කියවන්න</translation>
 <translation id="1303339473099049190">එම මුරපදය සොයාගත නොහැක. ඔබේ අක්‍ෂර වින්‍යාසය පරීක්‍ෂා කර නැවත උත්සාහ කරන්න.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> වෙතින් යවන ලදි</translation>
 <translation id="1310482092992808703">පටිති සමූහ කරන්න</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">සැහැල්ලු ප්‍රකාරය යළි පිහිටුවන්න ද?</translation>
 <translation id="1868024384445905608">Chrome දැන් ගොනු වේගවත්ව බාගනී</translation>
 <translation id="1874760110381325409">දැන් ඔබ ඔබගේ Google ගිණුම සමගින් පුරා ඇත\n(මෙය Chrome සමමුහුර්තකරණය ක්‍රියාත්මක නොකරනු ඇත)</translation>
+<translation id="1877026089748256423">Chrome යල් පැන ගොස් ඇත</translation>
 <translation id="1883903952484604915">මගේ ගොනු</translation>
 <translation id="1919950603503897840">සම්බන්ධතා තෝරන්න</translation>
 <translation id="1925021887439448749">අභිරුචි වෙබ් ලිපිනය ඇතුළු කරන්න</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">වඩා අලුත් අනුවාදයක් තිබේ</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">කාඩ්පත් අංකය</translation>
-<translation id="2622559029861875898">Chrome හට යාවත්කාලීන පරීක්‍ෂා කළ නොහැක. ඔබේ අන්තර්ජාල සම්බන්ධතාව පරීක්‍ෂා කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="2625189173221582860">මුරපදය පිටපත් කරන ලදී</translation>
 <translation id="2631006050119455616">සුරැකිණි</translation>
 <translation id="2647434099613338025">භාෂාව එක් කරන්න</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">ස්ථානය ක්‍රියා විරහිතයි; <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ එය ක්‍රියාත්මක කරන්න.</translation>
 <translation id="3058498974290601450">ඔබට ඕනෑම වේලාවක සැකසීම් තුළ සමමුහූර්තය සක්‍රීය කළ හැක</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> පිටුසනක්}one{පිටුසන් <ph name="BOOKMARKS_COUNT_MANY" />ක්}other{පිටුසන් <ph name="BOOKMARKS_COUNT_MANY" />ක්}}</translation>
+<translation id="3062802207422175757">Chrome හි ඔබේ රුචිකත්ව ගැන ලිපි</translation>
 <translation id="3089395242580810162">අප්‍රකට පටිත්තක විවෘත කරන්න</translation>
 <translation id="3114012059975132928">වීඩියෝ ධාවකය</translation>
+<translation id="3114507951000454849">අද දවසේ <ph name="NEWS_ICON" /> පුවත් කියවන්න</translation>
 <translation id="3123734510202723619">නිවේදන</translation>
 <translation id="3137521801621304719">අප්‍රසිද්ධ ප්‍රකාරයෙන් ඉවත් වන්න</translation>
 <translation id="3143515551205905069">සමමුහුර්තය අවලංගු කරන්න</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome තවමත් VR සඳහා සූදානම් වෙයි. පසුව Chrome යළි අරඹන්න.</translation>
 <translation id="3568688522516854065">ඔබගේ වෙනත් උපාංගවලින් ඔබගේ පටිති ලබා ගැනීමට, පුරනය වී සමමුහුර්තය ක්‍රියාත්මක කරන්න</translation>
 <translation id="3587482841069643663">සියළු</translation>
+<translation id="3587596251841506391">වෙබයෙහි ආරක්ෂාව දියුණුවට උදව් ව.</translation>
 <translation id="3590487821116122040">Chrome වැදගත් යැයි නොසිතන අඩවි ආචයනය (උදා: සුරැකූ සැකසීම් නැති හෝ ඔබ බොහෝ විට නොපිවිසෙන අඩවි)</translation>
 <translation id="3594780231884063836">වීඩියෝව නිහඬ කරන්න</translation>
 <translation id="3599863153486145794">සියලු පුරනය-වූ උපාංගවලින් ඉතිහාසය හිස් කරයි. ඔබේ Google ගිණුමට <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> හිදී බ්‍රවුස් කිරීමේ ඉතිහාසයේ වෙනත් ආකාරයන් තිබිය හැක.</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">ලිපින තීරුව වෙත පනින්න</translation>
 <translation id="5447201525962359567">කුකීස් සහ අනෙකුත් ස්ථානීයව ගබඩා කළ දත්ත ඇතුළුව, සියලුම අඩවි ආචයනය</translation>
 <translation id="545042621069398927">ඔබේ බාගැනීම වේගවත් කරමින්.</translation>
-<translation id="5454513945794364671">ඔබේ පරිපාලක ආරක්ෂිත බ්‍රවුස් කිරීම ක්‍රියා විරහිත කර ඇත</translation>
 <translation id="5456381639095306749">පිටුව බාගන්න</translation>
 <translation id="548278423535722844">සිතියම් යෙදුම තුළ විවෘත කරන්න</translation>
 <translation id="5487521232677179737">දත්ත හිස් කරන්නෙ</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">පිහිටුවීම දැනට සිදුවෙමින් පවතී...</translation>
 <translation id="6111020039983847643">භාවිත කළ දත්ත</translation>
 <translation id="6112702117600201073">පිටුව නැවුම් කරමින්</translation>
+<translation id="6122831415929794347">ආරක්‍ෂිත බ්‍රවුස් කිරීම අක්‍රිය කරන්නේද?</translation>
 <translation id="6127379762771434464">අයිතමය ඉවත් කරන ලදී</translation>
 <translation id="6140709049082532940">වැඩිදියුණු කළ ආරක්ෂාව:</translation>
 <translation id="6140912465461743537">රට/කලාපය:</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">මෙම උපාංගයෙන් ඔබේ මුරපද නිර්යාත කිරීමට සැකසීම් තුළ තිර අගුල ක්‍රියාත්මක කරන්න</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> තෝරන්න</translation>
 <translation id="6159335304067198720">දත්ත සුරැකීම <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">සමථයට පත් වූ මුරපද කිසියක් නැත</translation>
 <translation id="6201345951596836663">සබැඳිය පිටපත් කළා</translation>
 <translation id="6206830853671714236">බාගත යුතු අවස්ථාව තෝරන්න</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> නොවේද?</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">ඔබේ වෙනත් උපාංගවල ඔබ Chrome හි විවෘත කර ඇති ටැබ මෙහි දිස් වනු ඇත.</translation>
 <translation id="6583199322650523874">වත්මන් පිටුව පිටුසන් කරන්න</translation>
 <translation id="6588043302623806746">සුරක්‍ෂිත DNS භාවිත කරන්න</translation>
+<translation id="6590471736817333463">දත්ත 60%ක් දක්වා සුරකින්න</translation>
 <translation id="6593061639179217415">ඩෙක්ස්ටොප් අඩවිය</translation>
 <translation id="6597891566292541626">මෙම රාමුව තුළ QR/තීරු කේතය ස්ථානගත කරන්න.</translation>
 <translation id="6600954340915313787">Chrome වෙත පිටපත් කරන ලදි</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">මුරපදය</translation>
 <translation id="6659594942844771486">ටැබ</translation>
 <translation id="6663079968236414793">පෙළට සබැඳිය</translation>
-<translation id="666573598175432848">Chrome හි වඩාත් අලුත් අනුවාදයක් තිබේ. Play Store වෙත යාමට මෙම මූලාංගය තට්ටු කරන්න.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> තුළ විවෘත කරන්න</translation>
 <translation id="666981079809192359">Chrome රහස්‍යතා දැනුම්දීම</translation>
 <translation id="6671495933530132209">රූපය පිටපත් කරන්න</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">දින 1ක් ඉතිරියි</translation>
 <translation id="8200772114523450471">කරගෙන යන්න</translation>
 <translation id="8209050860603202033">රූපය විවෘත කරන්න</translation>
+<translation id="8218052821161047641">වේගවත් පිටුව</translation>
 <translation id="8218622182176210845">ඔබගේ ගිණුම කළමනා කරන්න</translation>
 <translation id="8223642481677794647">සංග්‍රහ කාඩ්පත් මෙනුව</translation>
 <translation id="8224471946457685718">Wi-Fi මත ඔබ සඳහා ලිපි බාගන්න</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ටැබය</translation>
 <translation id="8854223127042600341">ඔබේ නොබැඳි ගොනු බලන්න</translation>
 <translation id="889338405075704026">Chrome සැකසීම් වෙත යන්න</translation>
-<translation id="8893398027601469503">ඔබ Chrome හි නවතම අනුවාදය ධාවනය කරමින් සිටී</translation>
 <translation id="8898822736010347272">වෙබය මත නව තර්ජන සොයා ගෙන සියලු දෙනා ආරක්ෂා කිරීමට උදවු කිරීමට Google වෙත ඔබ පැමිණෙන සමහර පිටුවල URL, සීමිත පද්ධති තොරතුරු, සහ යම් පිටු අන්තර්ගතය යවයි.</translation>
 <translation id="8909135823018751308">බෙදාගන්න…</translation>
 <translation id="8912362522468806198">Google ගිණුම</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">ඇමතුම් කළ නොහැක</translation>
 <translation id="9219103736887031265">රූප</translation>
 <translation id="926205370408745186">ඩිජිටල් සුවතාව වෙතින් ඔබේ Chrome ක්‍රියාකාරකම් ඉවත් කරන්න</translation>
+<translation id="927968626442779827">Google Chrome හි සැහැල්ලු ප්‍රකාරය භාවිත කරන්න</translation>
 <translation id="932327136139879170">මුල් පිටුව</translation>
 <translation id="93753284658583800">මුල් පිටුව වෙනස් විය</translation>
 <translation id="938850635132480979">දෝෂය: <ph name="ERROR_CODE" /></translation>

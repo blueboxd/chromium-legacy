@@ -510,14 +510,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTestWithBackgroundLogEnabled,
 
 // Tests that all window metrics are logged with correct value which are
 // different from their default values in TabFeatures.
-#if defined(OS_CHROMEOS)
-// TODO(http://crbug.com/1113702): flaky on ChromeOS.
-#define MAYBE_AllWindowMetricsArePopulated DISABLED_AllWindowMetricsArePopulated
-#else
-#define MAYBE_AllWindowMetricsArePopulated AllWindowMetricsArePopulated
-#endif
-IN_PROC_BROWSER_TEST_F(TabActivityWatcherTest,
-                       MAYBE_AllWindowMetricsArePopulated) {
+IN_PROC_BROWSER_TEST_F(TabActivityWatcherTest, AllWindowMetricsArePopulated) {
   ui_test_utils::NavigateToURL(browser(), test_urls_[0]);
 
   // Adding a new foreground tab logs the previously active tab.

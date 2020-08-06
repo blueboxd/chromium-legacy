@@ -250,7 +250,7 @@ class AdsPageLoadMetricsObserver
                  subresource_filter::SubresourceFilterObserver>
       subresource_observer_;
 
-  // The tick clock used to get the current time.  Can be replaced by tests.
+  // The tick clock used to get the current time. Can be replaced by tests.
   const base::TickClock* clock_;
 
   // Whether the page load currently being observed is a reload of a previous
@@ -280,7 +280,7 @@ class AdsPageLoadMetricsObserver
   std::unique_ptr<HeavyAdThresholdNoiseProvider>
       heavy_ad_threshold_noise_provider_;
 
-  // The maximum ad density measurements for the page during it's lifecycle.
+  // The maximum ad density measurements for the page during its lifecycle.
   PageAdDensityTracker page_ad_density_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);

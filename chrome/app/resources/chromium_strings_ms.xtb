@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">Tiada kata laluan yang disimpan. Chromium boleh menyemak kata laluan anda yang disimpan.</translation>
 <translation id="5277894862589591112">Untuk menggunakan perubahan anda, mulakan semula Chromium</translation>
 <translation id="5358375970380395591">Anda log masuk menggunakan akaun yang terurus dan memberikan pentadbirnya kawalan ke atas profil Chromium anda. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Ralat berlaku semasa Chromium menyemak perisian peranti</translation>
 <translation id="5386450000063123300">Mengemas kini Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Benarkan log masuk Chromium</translation>
 <translation id="5398878173008909840">Terdapat versi baharu Chromium tersedia.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
 <translation id="5496810170689441661">Chromium cuba mengedit kata laluan. Taip kata laluan Windows anda untuk membenarkan tindakan ini.</translation>
-<translation id="5556694182460963866">Pentadbir anda telah melumpuhkan semakan Chrome untuk perisian berbahaya</translation>
 <translation id="5623402015214259806">{0,plural, =0{Kemas kini Chromium tersedia}=1{Kemas kini Chromium tersedia}other{Kemas kini Chromium telah tersedia selama # hari}}</translation>
 <translation id="5631814766731275228">Nama dan gambar Chromium</translation>
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>

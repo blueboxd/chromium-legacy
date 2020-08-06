@@ -197,7 +197,7 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
     const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   AudioOutputStream* stream = AudioManagerBase::MakeAudioOutputStream(
-      params, std::string(), AudioManager::LogCallback());
+      params, device_id, AudioManager::LogCallback());
   if (stream)
     streams_.insert(static_cast<MuteableAudioOutputStream*>(stream));
   return stream;
@@ -259,7 +259,6 @@ AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const LogCallback& log_callback) {
-  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
   if (UseAAudio()) {

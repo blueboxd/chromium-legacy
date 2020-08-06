@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/profile_disk_operations.h"
@@ -90,6 +91,9 @@ class ProfileImpl : public Profile {
       base::flat_set<std::string> ids) override;
   void SetBooleanSetting(SettingType type, bool value) override;
   bool GetBooleanSetting(SettingType type) override;
+  void GetCachedFaviconForPageUrl(
+      const GURL& page_url,
+      base::OnceCallback<void(gfx::Image)> callback) override;
 
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env,
@@ -161,6 +165,12 @@ class ProfileImpl : public Profile {
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_profile_;
 #endif
+
+  // The typical pattern for CancelableTaskTrackers is to have the caller
+  // supply one. This code is predominantly called from the Java side, where
+  // CancelableTaskTracker isn't applicable. Because of this, the
+  // CancelableTaskTracker is owned by Profile.
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

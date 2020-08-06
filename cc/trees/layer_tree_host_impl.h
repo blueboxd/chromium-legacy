@@ -388,6 +388,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidAnimateScrollOffset();
   void SetFullViewportDamage();
   void SetViewportDamage(const gfx::Rect& damage_rect);
+  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling);
 
   // Updates registered ElementIds present in |changed_list|. Call this after
   // changing the property trees for the |changed_list| trees.
@@ -1444,6 +1445,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   FrameRateEstimator frame_rate_estimator_;
   bool has_observed_first_scroll_delay_ = false;
+
+  bool enable_frame_rate_throttling_ = false;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

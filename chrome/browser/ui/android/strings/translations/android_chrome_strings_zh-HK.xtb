@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">輕按即可展開</translation>
 <translation id="1291207594882862231">清除記錄、Cookie、網站資料、快取…</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
+<translation id="1298077576058087471">節省高達 60% 數據用量，立即閱讀今天新聞</translation>
 <translation id="1303339473099049190">找不到該密碼。請檢查您輸入的內容，然後再試一次。</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - 來自 <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">將分頁加入群組</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">要重設精簡模式嗎？</translation>
 <translation id="1868024384445905608">Chrome 現在的檔案下載速度更快了</translation>
 <translation id="1874760110381325409">您將使用 Google 帳戶登入\n(Chrome 同步功能不會因此啟用)</translation>
+<translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="1883903952484604915">我的檔案</translation>
 <translation id="1919950603503897840">選取聯絡人</translation>
 <translation id="1925021887439448749">輸入自訂網址</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">全新版本現已推出</translation>
 <translation id="2593272815202181319">等寬</translation>
 <translation id="2612676031748830579">信用卡號碼</translation>
-<translation id="2622559029861875898">Chrome 無法檢查更新，請檢查互聯網連線。</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2631006050119455616">已節省</translation>
 <translation id="2647434099613338025">新增語言</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">位置資訊功能已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟此功能。</translation>
 <translation id="3058498974290601450">您可隨時在設定中開啟同步功能</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個書籤}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個書籤}}</translation>
+<translation id="3062802207422175757">您感興趣的文章和內容，一切盡在 Chrome</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3114012059975132928">影片播放器</translation>
+<translation id="3114507951000454849">閱讀今天的新聞 <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">公告</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3143515551205905069">取消同步處理</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome 仍在準備 VR。請稍後再重新啟動 Chrome。</translation>
 <translation id="3568688522516854065">如要取得其他裝置上的分頁，請登入並開啟同步處理功能</translation>
 <translation id="3587482841069643663">全部</translation>
+<translation id="3587596251841506391">協助改善網絡安全</translation>
 <translation id="3590487821116122040">Chrome 認為不重要的網站 (例如未儲存任何設定的網站，或您不常瀏覽的網站) 儲存空間的資料</translation>
 <translation id="3594780231884063836">將影片靜音</translation>
 <translation id="3599863153486145794">清除所有已登入裝置上的記錄。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">跳至網址列</translation>
 <translation id="5447201525962359567">所有網站儲存空間的資料，包括 Cookie 和其他儲存在本機上的資料</translation>
 <translation id="545042621069398927">正在加快下載速度。</translation>
-<translation id="5454513945794364671">您的管理員已停用「安全瀏覽」功能</translation>
 <translation id="5456381639095306749">下載網頁</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6111020039983847643">數據用量</translation>
 <translation id="6112702117600201073">正在重新整理網頁</translation>
+<translation id="6122831415929794347">要關閉安全瀏覽嗎？</translation>
 <translation id="6127379762771434464">項目已移除</translation>
 <translation id="6140709049082532940">強化保護功能：</translation>
 <translation id="6140912465461743537">國家/地區</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定功能，即可從此裝置匯出您的密碼</translation>
 <translation id="6157392216611456285">選擇 <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據用量</translation>
+<translation id="6186394685773237175">找不到被盜用的密碼</translation>
 <translation id="6201345951596836663">已複製連結</translation>
 <translation id="6206830853671714236">請選擇下載時間</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">您在其他裝置上開啟的 Chrome 分頁會在這裡顯示。</translation>
 <translation id="6583199322650523874">將目前的網頁加入書籤</translation>
 <translation id="6588043302623806746">使用安全 DNS</translation>
+<translation id="6590471736817333463">節省高達 60% 數據用量</translation>
 <translation id="6593061639179217415">桌面版網站</translation>
 <translation id="6597891566292541626">將二維條碼/條碼放在此方框中。</translation>
 <translation id="6600954340915313787">已複製至 Chrome</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6663079968236414793">連結至文字</translation>
-<translation id="666573598175432848">已推出新版本的 Chrome。輕按此元素，即可前往「Play 商店」</translation>
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="666981079809192359">Chrome 私隱聲明</translation>
 <translation id="6671495933530132209">複製圖片</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">尚餘 1 天</translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
+<translation id="8218052821161047641">快速載入的頁面</translation>
 <translation id="8218622182176210845">管理您的帳戶</translation>
 <translation id="8223642481677794647">資訊提供卡選單</translation>
 <translation id="8224471946457685718">透過 Wi-Fi 下載為您推薦的文章</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> (分頁)</translation>
 <translation id="8854223127042600341">查看離線檔案</translation>
 <translation id="889338405075704026">前往 Chrome 設定</translation>
-<translation id="8893398027601469503">您正在使用最新版本的 Chrome</translation>
 <translation id="8898822736010347272">向 Google 傳送部分您瀏覽網頁的網址、特定的系統資料及部分網頁內容，以協助探索新威脅，並保護所有網絡使用者。</translation>
 <translation id="8909135823018751308">共用…</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">無法撥打電話</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="926205370408745186">從「健康數碼生活」中移除您的 Chrome 活動記錄</translation>
+<translation id="927968626442779827">使用 Google Chrome 的「精簡模式」</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="93753284658583800">已變更首頁</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>

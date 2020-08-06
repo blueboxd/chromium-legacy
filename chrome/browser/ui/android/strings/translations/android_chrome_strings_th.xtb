@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
 <translation id="1291207594882862231">ล้างประวัติการเข้าชม คุกกี้ ข้อมูลเว็บไซต์ แคช…</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
+<translation id="1298077576058087471">อ่านข่าววันนี้ ประหยัดอินเทอร์เน็ตได้ถึง 60%</translation>
 <translation id="1303339473099049190">ไม่พบรหัสผ่านดังกล่าว โปรดตรวจสอบการสะกดแล้วลองอีกครั้ง</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - ส่งจาก <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">จัดกลุ่มแท็บ</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">รีเซ็ตโหมด Lite ไหม</translation>
 <translation id="1868024384445905608">ตอนนี้ Chrome ดาวน์โหลดไฟล์ได้เร็วขึ้นแล้ว</translation>
 <translation id="1874760110381325409">คุณจะลงชื่อเข้าใช้ด้วยบัญชี Google\n(การดำเนินการนี้จะไม่เปิดการซิงค์ของ Chrome)</translation>
+<translation id="1877026089748256423">Chrome ล้าสมัย</translation>
 <translation id="1883903952484604915">ไฟล์ของฉัน</translation>
 <translation id="1919950603503897840">เลือกรายชื่อติดต่อ</translation>
 <translation id="1925021887439448749">ป้อนที่อยู่เว็บที่กำหนดเอง</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">มีเวอร์ชันใหม่กว่าให้ใช้งาน</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">หมายเลขบัตร</translation>
-<translation id="2622559029861875898">Chrome ตรวจหาอัปเดตไม่ได้ โปรดลองตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2625189173221582860">คัดลอกรหัสผ่านแล้ว</translation>
 <translation id="2631006050119455616">ประหยัดได้</translation>
 <translation id="2647434099613338025">เพิ่มภาษา</translation>
@@ -219,7 +220,7 @@
 <translation id="2744248271121720757">แตะคำเพื่อค้นหาทันทีหรือดูการทำงานที่เกี่ยวข้อง</translation>
 <translation id="2760989362628427051">เปิดธีมสีเข้มเมื่อโหมดธีมสีเข้มหรือโหมดประหยัดแบตเตอรี่ของอุปกรณ์เปิดอยู่</translation>
 <translation id="2762000892062317888">เมื่อสักครู่</translation>
-<translation id="2771869497727323769">สร้างลิงก์ให้ข้อความไม่ได้ โปรดใช้แอปเพื่อแชร์ลิงก์หน้าเว็บ</translation>
+<translation id="2771869497727323769">สร้างลิงก์มายังข้อความไม่ได้ โปรดแชร์ลิงก์หน้าเว็บในแอป</translation>
 <translation id="2777555524387840389">เหลือ <ph name="SECONDS" /> วิ</translation>
 <translation id="2779651927720337254">ล้มเหลว</translation>
 <translation id="2781151931089541271">เหลือ 1 วิ</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">ตอนนี้ตำแหน่งปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3058498974290601450">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_ONE" /> รายการ}other{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_MANY" /> รายการ}}</translation>
+<translation id="3062802207422175757">บทความที่เกี่ยวข้องกับความสนใจของคุณใน Chrome</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="3114012059975132928">โปรแกรมเล่นวิดีโอ</translation>
+<translation id="3114507951000454849">อ่านข่าววันนี้ <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">ประกาศ</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3143515551205905069">ยกเลิกการซิงค์</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome ยังคงเตรียมความพร้อมสำหรับ VR อยู่ รีสตาร์ท Chrome ภายหลัง</translation>
 <translation id="3568688522516854065">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="3587482841069643663">ทั้งหมด</translation>
+<translation id="3587596251841506391">ช่วยปรับปรุงความปลอดภัยในอินเทอร์เน็ต</translation>
 <translation id="3590487821116122040">พื้นที่เก็บข้อมูลเว็บไซต์ที่ Chrome คิดว่าไม่สำคัญ (เช่น เว็บไซต์ที่ไม่มีการตั้งค่าที่บันทึกไว้หรือที่คุณไม่ได้เข้าชมบ่อยครั้ง)</translation>
 <translation id="3594780231884063836">ปิดเสียงวิดีโอ</translation>
 <translation id="3599863153486145794">ล้างประวัติจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -510,7 +514,7 @@
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5087580092889165836">เพิ่มบัตร</translation>
 <translation id="509429900233858213">มีข้อผิดพลาดเกิดขึ้น</translation>
-<translation id="5100748015044654621">แชร์ลิงก์ข้อความที่ไฮไลต์ในแอป</translation>
+<translation id="5100748015044654621">แชร์ลิงก์มายังข้อความที่ไฮไลต์ในแอป</translation>
 <translation id="510275257476243843">เหลือ 1 ชั่วโมง</translation>
 <translation id="5123685120097942451">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">ข้ามไปยังแถบที่อยู่เว็บ</translation>
 <translation id="5447201525962359567">พื้นที่เก็บข้อมูลเว็บไซต์ทั้งหมด รวมถึงคุกกี้และข้อมูลอื่นๆ ที่เก็บไว้ในเครื่อง</translation>
 <translation id="545042621069398927">กำลังเพิ่มความเร็วในการดาวน์โหลด</translation>
-<translation id="5454513945794364671">ผู้ดูแลระบบปิด Google Safe Browsing</translation>
 <translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
 <translation id="6111020039983847643">อินเทอร์เน็ตที่ใช้</translation>
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
+<translation id="6122831415929794347">ปิด Google Safe Browsing ใช่ไหม</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
 <translation id="6140709049082532940">การปกป้องที่ปรับปรุงแล้ว:</translation>
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
 <translation id="6157392216611456285">เลือก <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
+<translation id="6186394685773237175">ไม่พบรหัสผ่านที่ไม่รัดกุม</translation>
 <translation id="6201345951596836663">คัดลอกลิงก์แล้ว</translation>
 <translation id="6206830853671714236">เลือกเวลาที่จะดาวน์โหลด</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
 <translation id="6583199322650523874">บุ๊กมาร์กหน้าปัจจุบัน</translation>
 <translation id="6588043302623806746">ใช้ DNS ที่ปลอดภัย</translation>
+<translation id="6590471736817333463">ประหยัดอินเทอร์เน็ตได้ถึง 60%</translation>
 <translation id="6593061639179217415">เว็บไซต์เวอร์ชันเดสก์ท็อป</translation>
 <translation id="6597891566292541626">จัดตำแหน่งคิวอาร์โค้ด/บาร์โค้ดให้อยู่ในกรอบนี้</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="6663079968236414793">ลิงก์มายังข้อความ</translation>
-<translation id="666573598175432848">Chrome เวอร์ชันใหม่พร้อมให้บริการแล้ว แตะเอลิเมนต์นี้เพื่อไปที่ Play Store</translation>
 <translation id="666731172850799929">เปิดใน <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Chrome</translation>
 <translation id="6671495933530132209">คัดลอกรูปภาพ</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
 <translation id="8209050860603202033">เปิดรูปภาพ</translation>
+<translation id="8218052821161047641">หน้าที่โหลดเร็ว</translation>
 <translation id="8218622182176210845">จัดการบัญชีของคุณ</translation>
 <translation id="8223642481677794647">เมนูของการ์ดฟีด</translation>
 <translation id="8224471946457685718">ดาวน์โหลดบทความสำหรับคุณผ่าน Wi-Fi</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> เป็นแท็บ</translation>
 <translation id="8854223127042600341">ดูไฟล์ออฟไลน์</translation>
 <translation id="889338405075704026">ไปที่การตั้งค่า Chrome</translation>
-<translation id="8893398027601469503">คุณใช้ Chrome เวอร์ชันล่าสุดอยู่</translation>
 <translation id="8898822736010347272">ส่ง URL ของหน้าบางหน้าที่คุณเข้าชม ข้อมูลระบบที่จำกัด และเนื้อหาบางส่วนของหน้าไปให้ Google เพื่อช่วยตรวจหาภัยคุกคามใหม่ๆ และปกป้องทุกคนที่ใช้อินเทอร์เน็ต</translation>
 <translation id="8909135823018751308">แชร์…</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">โทรออกไม่ได้</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="926205370408745186">นำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัล</translation>
+<translation id="927968626442779827">ใช้โหมด Lite ใน Google Chrome</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="93753284658583800">เปลี่ยนหน้าแรกแล้ว</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>

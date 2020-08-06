@@ -37,6 +37,11 @@ void URLLoaderThrottle::Delegate::RestartWithURLResetAndFlags(
   NOTIMPLEMENTED();
 }
 
+void URLLoaderThrottle::Delegate::RestartWithURLResetAndFlagsNow(
+    int additional_load_flags) {
+  NOTIMPLEMENTED();
+}
+
 URLLoaderThrottle::Delegate::~Delegate() {}
 
 URLLoaderThrottle::~URLLoaderThrottle() {}

@@ -5,7 +5,7 @@
 module paint_preview.mojom;
 
 import "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom";
-import "mojo/public/mojom/base/file.mojom";
+import "components/paint_preview/common/mojom/paint_preview_types.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "skia/public/mojom/bitmap.mojom";
@@ -17,8 +17,8 @@ struct PaintPreviewBeginCompositeRequest {
   // A serialized PaintPreviewProto.
   mojo_base.mojom.ReadOnlySharedMemoryRegion proto;
 
-  // A mapping between frame GUIDs and file handles.
-  map<mojo_base.mojom.UnguessableToken, mojo_base.mojom.File> file_map;
+  // A mapping between frame GUIDs and serialized recordings.
+  map<mojo_base.mojom.UnguessableToken, SerializedRecording> recording_map;
 };
 
 // A struct representing the clip rect of a subframe within its parent.

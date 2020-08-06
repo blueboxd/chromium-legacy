@@ -154,7 +154,7 @@
     Block for current search engine
   </message>
   <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_EXCEPTION_LABEL" desc="The label for site exceptions that affect third party cookies.">
-   All cookies, on this site only
+   Including third-party cookies on this site
   </message>
 
   <!-- Site settings Add Exception dialog -->

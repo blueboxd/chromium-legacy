@@ -94,6 +94,10 @@ void MediaRouterBase::GetMediaController(
     const MediaRoute::Id& route_id,
     mojo::PendingReceiver<mojom::MediaController> controller,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer) {}
+
+base::Value MediaRouterBase::GetLogs() const {
+  return base::Value();
+}
 #endif  // !defined(OS_ANDROID)
 
 MediaRouterBase::MediaRouterBase() : initialized_(false) {}

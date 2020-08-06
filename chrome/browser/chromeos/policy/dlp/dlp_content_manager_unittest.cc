@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 
+#include "ash/public/cpp/privacy_screen_dlp_helper.h"
+#include "base/test/task_environment.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -16,6 +19,14 @@ namespace {
 const DlpContentRestrictionSet kEmptyRestrictionSet;
 const DlpContentRestrictionSet kNonEmptyRestrictionSet(
     DlpContentRestriction::kScreenshot);
+const DlpContentRestrictionSet kPrivacyScreenEnforced(
+    DlpContentRestriction::kPrivacyScreen);
+
+class MockPrivacyScreenHelper : public ash::PrivacyScreenDlpHelper {
+ public:
+  MOCK_METHOD1(SetEnforced, void(bool));
+};
+
 }  // namespace
 
 class DlpContentManagerTest : public testing::Test {
@@ -49,10 +60,15 @@ class DlpContentManagerTest : public testing::Test {
     manager_.OnWebContentsDestroyed(web_contents);
   }
 
+  base::TimeDelta GetPrivacyScreenOffDelay() {
+    return manager_.GetPrivacyScreenOffDelayForTesting();
+  }
+
   DlpContentManager manager_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<TestingProfile> profile_;
 };
@@ -167,6 +183,32 @@ TEST_F(DlpContentManagerTest,
   EXPECT_EQ(manager_.GetConfidentialRestrictions(web_contents2.get()),
             kEmptyRestrictionSet);
   EXPECT_EQ(manager_.GetOnScreenPresentRestrictions(), kEmptyRestrictionSet);
+}
+
+TEST_F(DlpContentManagerTest, PrivacyScreenEnforcement) {
+  MockPrivacyScreenHelper mock_privacy_screen_helper;
+  EXPECT_CALL(mock_privacy_screen_helper, SetEnforced(testing::_)).Times(0);
+  std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_privacy_screen_helper);
+  EXPECT_CALL(mock_privacy_screen_helper, SetEnforced(true)).Times(1);
+  ChangeConfidentiality(web_contents.get(), kPrivacyScreenEnforced);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_privacy_screen_helper);
+  EXPECT_CALL(mock_privacy_screen_helper, SetEnforced(false)).Times(1);
+  web_contents->WasHidden();
+  ChangeVisibility(web_contents.get(), /*visible=*/false);
+  task_environment_.FastForwardBy(GetPrivacyScreenOffDelay());
+
+  testing::Mock::VerifyAndClearExpectations(&mock_privacy_screen_helper);
+  EXPECT_CALL(mock_privacy_screen_helper, SetEnforced(true)).Times(1);
+  web_contents->WasShown();
+  ChangeVisibility(web_contents.get(), /*visible=*/true);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_privacy_screen_helper);
+  EXPECT_CALL(mock_privacy_screen_helper, SetEnforced(false)).Times(1);
+  DestroyWebContents(web_contents.get());
+  task_environment_.FastForwardBy(GetPrivacyScreenOffDelay());
 }
 
 }  // namespace policy

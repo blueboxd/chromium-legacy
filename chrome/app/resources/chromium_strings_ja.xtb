@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">保存されているパスワードがありません。パスワードを保存すると、Chromium で確認できるようになります。</translation>
 <translation id="5277894862589591112">変更を適用するには Chromium を再起動してください</translation>
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Chromium でデバイスのソフトウェアの確認中にエラーが発生しました</translation>
 <translation id="5386450000063123300">Chromium を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="538767207339317086">Chromium へのログインを許可する</translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">このサイトで現在地を共有するには、Chromium で位置情報の使用を許可する必要があります</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="5496810170689441661">Chromium でパスワードを編集しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
-<translation id="5556694182460963866">Chromium による有害なソフトウェアの確認は、管理者によって無効にされています</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium のアップデートが利用可能です}=1{Chromium のアップデートが利用可能です}other{Chromium のアップデートが利用可能になってから # 日経過しています}}</translation>
 <translation id="5631814766731275228">Chromium の名前と画像</translation>
 <translation id="5634636535844844681">Chromium のご利用には Windows 7 以上が必要です。</translation>

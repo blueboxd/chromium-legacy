@@ -181,6 +181,16 @@ Polymer({
   },
 
   /**
+   * Handles requests to open the feedback report dialog. The provided string
+   * in the event will be sent as a part of the feedback report.
+   * @param {!Event<string>} event
+   * @private
+   */
+  onOpenFeedbackDialog_(event) {
+    chrome.send('OpenFeedbackDialog', [event.detail]);
+  },
+
+  /**
    * @param {!Event<!{detail:{customData: string}}>} event
    * @private
    */

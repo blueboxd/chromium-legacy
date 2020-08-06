@@ -110,7 +110,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5224391634244552924">No hay ninguna contraseña guardada. Chromium puede comprobar tus contraseñas si las guardas.</translation>
 <translation id="5277894862589591112">Reinicia Chromium para aplicar los cambios</translation>
 <translation id="5358375970380395591">Vas a iniciar sesión con una cuenta gestionada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">Chromium no ha podido comprobar el software del dispositivo</translation>
 <translation id="5386450000063123300">Actualizando Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Permitir el inicio de sesión en Chromium</translation>
 <translation id="5398878173008909840">Hay una nueva versión de Chromium disponible.</translation>
@@ -121,7 +120,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5480860683791598150">Chromium necesita acceder a tu ubicación para compartirla con este sitio web</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
 <translation id="5496810170689441661">Chromium está intentando cambiar contraseñas. Para permitirlo, escribe tu contraseña de Windows.</translation>
-<translation id="5556694182460963866">Tu administrador ha inhabilitado la comprobación de Chromium de software dañino</translation>
 <translation id="5623402015214259806">{0,plural, =0{Hay una actualización de Chromium disponible}=1{Hay una actualización de Chromium disponible}other{Hay una actualización de Chromium disponible desde hace # días}}</translation>
 <translation id="5631814766731275228">Nombre y foto de Chromium</translation>
 <translation id="5634636535844844681">Chromium requiere Windows 7 o una versión posterior.</translation>

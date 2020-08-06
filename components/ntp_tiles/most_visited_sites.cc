@@ -379,8 +379,7 @@ void MostVisitedSites::UndoCustomLinkAction() {
     BuildCurrentTiles();
 }
 
-void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
-                                                 bool add_url) {
+void MostVisitedSites::AddOrRemoveBlockedUrl(const GURL& url, bool add_url) {
   if (add_url) {
     base::RecordAction(base::UserMetricsAction("Suggestions.Site.Removed"));
   } else {
@@ -404,14 +403,13 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
   }
 }
 
-void MostVisitedSites::ClearBlacklistedUrls() {
+void MostVisitedSites::ClearBlockedUrls() {
   if (top_sites_)
     top_sites_->ClearBlockedUrls();
 
   // Only update the server-side blocklist if it's active.
-  if (mv_source_ == TileSource::SUGGESTIONS_SERVICE) {
+  if (mv_source_ == TileSource::SUGGESTIONS_SERVICE)
     suggestions_service_->ClearBlocklist();
-  }
 }
 
 void MostVisitedSites::OnBlockedSitesChanged() {

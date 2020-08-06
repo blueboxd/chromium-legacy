@@ -108,7 +108,6 @@
 <translation id="5224391634244552924">No hi ha cap contrasenya desada. Chromium pot comprovar les teves contrasenyes quan les deses.</translation>
 <translation id="5277894862589591112">Torna a iniciar Chromium perquè s'apliquin els canvis</translation>
 <translation id="5358375970380395591">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. <ph name="LEARN_MORE" /></translation>
-<translation id="5374145464979633459">S'ha produït un error mentre Chromium estava comprovant el programari del dispositiu</translation>
 <translation id="5386450000063123300">S'està actualitzant Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Permet l'inici de sessió a Chromium</translation>
 <translation id="5398878173008909840">Hi ha disponible una versió nova de Chromium.</translation>
@@ -119,7 +118,6 @@
 <translation id="5480860683791598150">Chromium necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
 <translation id="5496810170689441661">Chromium està provant d'editar les contrasenyes. Escriu la teva contrasenya de Windows per permetre-ho.</translation>
-<translation id="5556694182460963866">L'administrador ha desactivat la comprovació de programari maliciós de Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Hi ha una actualització de Chromium disponible}=1{Hi ha una actualització de Chromium disponible}other{Fa # dies que hi ha una actualització de Chromium disponible}}</translation>
 <translation id="5631814766731275228">Nom i foto de Chromium</translation>
 <translation id="5634636535844844681">Chromium requereix Windows 7 o una versió posterior.</translation>
@@ -215,7 +213,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7975919845073681630">Aquesta és una instal·lació secundària de Chromium i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8013436988911883588">Un cop Chromium tingui accés, els llocs web et podran demanar accés.</translation>
-<translation id="8022442821873033760">Configura el teu espai de Chrome nou</translation>
+<translation id="8022442821873033760">Configura el teu espai de Chromium nou</translation>
 <translation id="81770708095080097">Chromium ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8248265253516264921">Si una imatge no té una descripció útil, Chromium provarà d'oferir-te'n una. Per crear les descripcions, les imatges s'envien a Google. Pots desactivar aquesta funció en qualsevol moment a la configuració.</translation>
 <translation id="8266560134891435528">Chromium no pot comprovar les teves contrasenyes perquè no tens la sessió iniciada</translation>

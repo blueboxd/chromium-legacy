@@ -87,6 +87,31 @@ depending on their platform availability (e.g., an API may be only available on
 ChromeOS) and whether they need to be included in various compilation steps
 (e.g., an API may not need generated function registration).
 
+### Adding to GN Files
+
+The GN targets that you include the file in depend on which
+[applications](#applications) it should be used in. Unfortunately, the targets
+aren't as standardized as they should be, so you'll have to trace them to their
+GN action usage. (We'd like to fix this at some point.)
+
+The GN actions correspond as below:
+
+`generated_json_strings`: This action generates the bundled JSON strings for
+APIs, which are used to set up the extension bindings in the renderer.
+
+`function_registration`: This action generates code to automatically register
+the extension function implementations with the ExtensionFunctionRegistry.
+
+`generated_types`: This action generates the strong types used in the browser
+process and the conversion to and from these types and `base::Value`s.
+
+Most APIs leverage all of these (and are typically called `schema_sources` or
+`schema_files` in the .gni files). Others want to omit certain steps; these
+are added to other groups in the .gn files.
+
+If in doubt, you probably want to add yours to the "basic" group. Feel free to
+reach out to an extensions OWNER with any questions.
+
 ## IDL vs JSON
 Extension APIs can be specified in either IDL or JSON.  During
 compilation, all files are converted to JSON objects.  The benefit to using a

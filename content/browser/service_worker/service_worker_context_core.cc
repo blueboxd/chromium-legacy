@@ -959,7 +959,8 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
       observer_list_->Notify(
           FROM_HERE, &ServiceWorkerContextCoreObserver::OnStarted,
           version->version_id(), version->scope(),
-          version->embedded_worker()->process_id(), version->script_url());
+          version->embedded_worker()->process_id(), version->script_url(),
+          version->embedded_worker()->token().value());
       break;
     case EmbeddedWorkerStatus::STOPPING:
       observer_list_->Notify(FROM_HERE,

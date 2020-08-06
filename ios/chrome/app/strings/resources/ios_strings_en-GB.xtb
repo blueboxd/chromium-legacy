@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">Accept &amp; Continue</translation>
 <translation id="1112015203684611006">Printing failed.</translation>
 <translation id="1125564390852150847">Create new tab.</translation>
+<translation id="1134509371063488162">Open ${urls} in Incognito</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Next field</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">Add Account</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2273327106802955778">More menu</translation>
+<translation id="2302742851632557585">Change password on website</translation>
 <translation id="2316709634732130529">Use suggested password</translation>
 <translation id="2320166752086256636">Hide keyboard</translation>
 <translation id="2339560363438331454">Sync and Google Services</translation>
@@ -183,6 +185,8 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="298306318844797842">Add Payment Method...</translation>
 <translation id="2989805286512600854">Open in New Tab</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
+<translation id="3080525922482950719">You can save pages to read later or offline</translation>
+<translation id="3081338492074632642">Make sure that the password that you are saving matches your password for <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Mark…</translation>
 <translation id="3131206671572504478">Block all</translation>
 <translation id="3153862085237805241">Save Card</translation>
@@ -201,6 +205,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> of <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Open Tabs</translation>
+<translation id="3272527697863656322">Cancel</translation>
 <translation id="3277021493514034324">Site address copied</translation>
 <translation id="3290875554372353449">Choose an Account</translation>
 <translation id="3311748811247479259">Off</translation>
@@ -211,6 +216,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="3371831930909698441">Translate is available. Options available near bottom of the screen.</translation>
 <translation id="3393920035788932672">Pop-ups Allowed</translation>
 <translation id="3425644765244388016">Card nickname</translation>
+<translation id="3433057996795775706">Deleting this password will not delete your account on <ph name="WEBSITE" />. Change your password on <ph name="WEBSITE" /> to keep it safe from others.</translation>
 <translation id="3443810440409579745">Tab received.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -239,6 +245,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3670030362669914947">Number</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
+<translation id="3740397331642243698">Opens the inputted URLs in Google Chrome in Incognito.</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3775743491439407556">Sync isn't working</translation>
 <translation id="3779810277399252432">No Internet connection.</translation>
@@ -306,6 +313,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659126640776004816">When you sign in to your Google account, this feature is turned on.</translation>
 <translation id="4659667755519643272">Enter Tab Switcher</translation>
+<translation id="46614316059270592">Save password</translation>
 <translation id="4666531726415300315">Signed in as <ph name="EMAIL" />.
 
 Your data is encrypted with your sync passphrase. Enter it to start sync.</translation>
@@ -402,6 +410,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5857090052475505287">New Folder</translation>
 <translation id="5857770089550859117">Passphrase required to start sync.</translation>
+<translation id="5860033963881614850">Off</translation>
 <translation id="5869029295770560994">OK, got it</translation>
 <translation id="5871497086027727873">1 item moved</translation>
 <translation id="5897956970858271241">Visit copied link</translation>
@@ -502,7 +511,6 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6841409746189899007">Link to text</translation>
 <translation id="6851516051005285358">Request Desktop Site</translation>
-<translation id="6856384753476268833">Managed by your organisation.</translation>
 <translation id="6858855187367714033">Scanned</translation>
 <translation id="6859944681507688231">To scan a QR code or credit card, enable the camera from settings.</translation>
 <translation id="6869389390665537774">You can see the pages that you've visited or clear them from your history</translation>
@@ -524,7 +532,6 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="7006788746334555276">Content Settings</translation>
 <translation id="7015203776128479407">Initial sync setup was not finished. Sync is off.</translation>
 <translation id="7029809446516969842">Passwords</translation>
-<translation id="7030675613184250187">You can save pages to your reading list to find them again or read offline</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7062545763355031412">Accept and switch accounts</translation>
 <translation id="7099761977003084116">Recent Tabs</translation>
@@ -587,12 +594,12 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="7856733331829174190">Couldn't download</translation>
 <translation id="7859704718976024901">Browsing history</translation>
 <translation id="7887198238286927132">To protect your privacy, Chrome will not auto-fill this field.</translation>
-<translation id="791251013315685175">Managed by <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />, then <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export Passwords…</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="794799177247607889">Stop logging</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{No compromised passwords}=1{{COUNT} compromised password}other{{COUNT} compromised passwords}}</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7966516440812255683">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
 
@@ -606,6 +613,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8023878949384262191">Expands the section.</translation>
 <translation id="804427445359061970">You'll find your tabs from other devices here</translation>
 <translation id="8059533439631660104">Collapses the section.</translation>
+<translation id="8065292699993359127">Open URLs in Chrome in Incognito</translation>
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8073670137947914548">Download finished</translation>
 <translation id="8073872304774253879">Make searches and browsing better</translation>

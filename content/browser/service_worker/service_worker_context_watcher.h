@@ -89,7 +89,8 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnStarted(int64_t version_id,
                  const GURL& scope,
                  int process_id,
-                 const GURL& script_url) override;
+                 const GURL& script_url,
+                 const blink::ServiceWorkerToken& token) override;
   void OnStopping(int64_t version_id) override;
   void OnStopped(int64_t version_id) override;
   void OnVersionStateChanged(int64_t version_id,

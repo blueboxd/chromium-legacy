@@ -297,7 +297,6 @@
       'linux-perfetto-rel': 'perfetto_release_bot',
       'linux-upload-perfetto': 'release_bot',
       'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',
-      'mac-arm64': 'mac_arm64_release_bot',
       'mac-code-coverage': 'clang_code_coverage',
       'mac-hermetic-upgrade-rel': 'release_bot',
       'mac-mojo-rel': 'release_trybot',
@@ -497,6 +496,7 @@
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
       'ios-simulator-noncq': 'ios_simulator_debug_static_rbe_bot',
       'mac-arm64': 'mac_arm64_release_bot',
+      'mac-arm64-rel': 'mac_arm64_release_bot',
     },
 
     'chromium.memory': {

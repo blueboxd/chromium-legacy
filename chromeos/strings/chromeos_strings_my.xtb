@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">စကားဝှက်အသစ်</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> သည် ဤကိရိယာကို စီမံခန့်ခွဲပြီး ဝင်ကြည့်ထားသည့် ဝဘ်စာမျက်နှာများ၊ စကားဝှက်များနှင့် အီးမေးလ်အပါအဝင် အသုံးပြုသူ လုပ်ဆောင်ချက်အားလုံးကို အသုံးပြုခွင့်ရှိပါသည်။</translation>
 <translation id="4003384961948020559">မအောင်မြင်ပါ - စာရွက်ထုတ်သည့်နေရာ ပြည့်နေသည်</translation>
+<translation id="4027485274696301677">ဤ <ph name="DEVICE_TYPE" /> ကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံသည်။ စီမံခန့်ခွဲသူများက ဤစက်ကို အဝေးမှ စီစဉ်နိုင်သည်။</translation>
 <translation id="4034824040120875894">ပုံနှိပ်စက်</translation>
 <translation id="4227825898293920515">စကားဝှက်သည် <ph name="TIME" /> တွင် သက်တမ်းကုန်ပါမည်</translation>
 <translation id="4238516577297848345">ပရင့်ထုတ်ရန် ဖိုင်များ လုပ်ဆောင်မနေပါ</translation>
@@ -72,7 +73,6 @@
 <translation id="808894953321890993">စကားဝှက် ပြောင်းရန်</translation>
 <translation id="8208861521865154048">ခံစားခွင့်များ</translation>
 <translation id="8347227221149377169">ပရင့်ထုတ်ရန် ဖိုင်များ</translation>
-<translation id="8623849191266582420">ဤ <ph name="DEVICE_TYPE" /> ကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံသည်။ စီမံခန့်ခွဲသူများက စက်ကို အဝေးမှစီစဉ်သတ်မှတ်ပြီး စောင့်ကြည့်နိုင်သည်။</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> က ဤအသုံးပြုသူကို စီမံသည်။ ၎င်းက ဆက်တင်များကို အဝေးထိန်းစီမံပြီး အသုံးပြုသူ လုပ်ဆောင်ချက်ကို စောင့်ကြည့်နိုင်သည်။</translation>
 <translation id="871560550817059752">မအောင်မြင်ပါ - မင်ကုန်နေသည်</translation>
 <translation id="8747900814994928677">ပြောင်းလဲမှုကို အတည်ပြုခြင်း</translation>

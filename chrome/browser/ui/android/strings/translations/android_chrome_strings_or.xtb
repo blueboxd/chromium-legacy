@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">ପ୍ରସାରଣ କରିବା ପାଇଁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="1291207594882862231">ଇତିବୃତ୍ତି, କୁକୀ, ସାଇଟ୍ ଡାଟା, କ୍ୟାଚିକୁ ଖାଲି କରନ୍ତୁ…</translation>
 <translation id="129553762522093515">ବର୍ତ୍ତମାନ ବନ୍ଦ ହୋଇଛି</translation>
+<translation id="1298077576058087471">60% ପର୍ଯ୍ୟନ୍ତ ଡାଟା ସେଭ୍ କରି, ଆଜିର ସମାଚାର ପଢ଼ନ୍ତୁ</translation>
 <translation id="1303339473099049190">ସେହି ପାସୱାର୍ଡ ମିଳୁନାହିଁ। ଆପଣଙ୍କର ବନାନ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="1303507811548703290"><ph name="DEVICE_NAME" />ରୁ <ph name="DOMAIN" /> - ପଠାଯାଇଛି</translation>
 <translation id="1310482092992808703">ଗୋଷ୍ଠୀ ଟାବ୍‌ଗୁଡ଼ିକ</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">ଲାଇଟ୍‌ ମୋଡ୍‌ ରିସେଟ୍‌ କରିବେ?</translation>
 <translation id="1868024384445905608">ପୂର୍ବାପେକ୍ଷା Chrome ବର୍ତ୍ତମାନ ଦ୍ରୁତତର ଭାବେ ଫାଇଲ୍‌ଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍‌ କରୁଛି</translation>
 <translation id="1874760110381325409">ଆପଣ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ ହେବେ\n(ଏହା Chrome ସିଙ୍କ୍ ଚାଲୁ କରିବ ନାହିଁ)</translation>
+<translation id="1877026089748256423">Chromeର ସମୟସୀମା ଶେଷ ହୋଇଛି</translation>
 <translation id="1883903952484604915">ମୋ ଫାଇଲ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="1919950603503897840">ଯୋଗାଯୋଗଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="1925021887439448749">ଏକ କଷ୍ଟମ୍ ୱେବ୍ ଠିକଣା ଲେଖନ୍ତୁ</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">ନୂତନତର ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="2593272815202181319">ମୋନୋସ୍ପେସ୍</translation>
 <translation id="2612676031748830579">କାର୍ଡ ସଂଖ୍ୟା</translation>
-<translation id="2622559029861875898">Chrome ଅପଡେଟଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। ଆପଣଙ୍କର ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="2625189173221582860">ପାସ୍‍ୱର୍ଡ କପି ହୋଇଛି</translation>
 <translation id="2631006050119455616">ସେଭ୍‌ ହୋଇଗଲା</translation>
 <translation id="2647434099613338025">ଭାଷା ଯୋଗ କରନ୍ତୁ</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">ଲୋକେସନ୍‍ ବନ୍ଦ ଅଛି; ଏହାକୁ <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍‌<ph name="END_LINK" />ରେ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="3058498974290601450">ଯେକୌଣସି ସମୟରେ ସେଟିଂସ୍‌ରେ ଆପଣ ସିଙ୍କ୍‌ ଚାଲୁ କରିପାରିବେ</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />ଟି ବୁକ୍‌ମାର୍କ}other{<ph name="BOOKMARKS_COUNT_MANY" />ଟି ବୁକ୍‌ମାର୍କ}}</translation>
+<translation id="3062802207422175757">Chromeରେ ଆପଣଙ୍କ ଆଗ୍ରହଗୁଡ଼ିକ ବିଷୟରେ ଆର୍ଟିକିଲ୍</translation>
 <translation id="3089395242580810162">ଇନ୍‌କଗ୍‌ନିଟୋ ଟାବ୍‌ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="3114012059975132928">ଭିଡିଓ ପ୍ଲେଆର୍</translation>
+<translation id="3114507951000454849">ଆଜିର ସମାଚାର ପଢ଼ନ୍ତୁ <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">ଘୋଷଣାଗୁଡ଼ିକ</translation>
 <translation id="3137521801621304719">ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍ ଛାଡ଼ନ୍ତୁ</translation>
 <translation id="3143515551205905069">ସିଙ୍କ୍‌ ବାତିଲ୍‍ କରନ୍ତୁ</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome ଏବେ ମଧ୍ୟ VR ପାଇଁ ପ୍ରସ୍ତୁତ ହେଉଛି। ପରେ Chrome ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ।</translation>
 <translation id="3568688522516854065">ଆପଣଙ୍କର ଅନ୍ୟ ଡିଭାଇସ୍‍ଗୁଡ଼ିକରୁ ନିଜର ଟାବ୍ ପ୍ରାପ୍ତ କରିବା ପାଇଁ, ସାଇନ୍ ଇନ୍ କରି ସିଙ୍କ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="3587482841069643663">ସମସ୍ତ</translation>
+<translation id="3587596251841506391">ୱେବରେ ସୁରକ୍ଷାକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ</translation>
 <translation id="3590487821116122040">Chromeକୁ ସାଇଟ୍ ସଂଗ୍ରହ ମହତ୍ବପୂର୍ଣ୍ଣ ଲାଗୁ ନାହିଁ (ଉ.ଦା. ସାଇଟ୍, ଯେଉଁଥିରେ କୌଣସି ସେଟିଂସ୍ ସେଭ୍ ନାହିଁ ବା ଯେଉଁ ସାଇଟ୍‌କୁ ଆପଣ ପ୍ରାୟତଃ ଯାଉନଥିବା)</translation>
 <translation id="3594780231884063836">ଭିଡିଓ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="3599863153486145794">ସମସ୍ତ ସାଇନ୍‌-ଇନ୍‍ ହୋ‍ଇଥିବା ଡିଭାଇସ୍‍ରୁ ଇତିବୃତ୍ତି ଖାଲି କରେ। ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟର <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ରେ ଅନ୍ୟ ପ୍ରକାରର ବ୍ରାଉଜିଂ ଇତିବୃତ୍ତି ଥାଇପାରେ।</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">ଆଡ୍ରେସ୍ ବାର୍‌କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="5447201525962359567">କୁକୀ ଏବଂ ସ୍ଥାନୀୟ ଭାବେ ଷ୍ଟୋର୍ ହୋଇଥିବା ଅନ୍ୟ ଡାଟା ସହ, ସମସ୍ତ ସାଇଟ୍ ଷ୍ଟୋରେଜ୍</translation>
 <translation id="545042621069398927">ଆପଣଙ୍କ ଡାଇନ୍‌ଲୋଡ୍‌ର ଗତି ବଢ଼ାଯାଉଛି।</translation>
-<translation id="5454513945794364671">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟର୍ ସୁରକ୍ଷିତ ବ୍ରାଉଜିଂ ବନ୍ଦ କରିଦେଇଛନ୍ତି</translation>
 <translation id="5456381639095306749">ପୃଷ୍ଠା ଡାଉନ୍‌ଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="548278423535722844">ମ୍ୟାପ୍ସ ଆପ୍‌ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="5487521232677179737">ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">ସେଟ୍ ଅପ୍ ପ୍ରକ୍ରିୟା ଚାଲିଛି…</translation>
 <translation id="6111020039983847643">ବ୍ୟବହୃତ ଡାଟା</translation>
 <translation id="6112702117600201073">ପୃଷ୍ଠା ରିଫ୍ରେସ୍ ହେଉଛି</translation>
+<translation id="6122831415929794347">ସେଫ୍ ବ୍ରାଉଜିଂ ବନ୍ଦ କରିବେ?</translation>
 <translation id="6127379762771434464">ଆଇଟମ୍‌ କଢ଼ାଗଲା</translation>
 <translation id="6140709049082532940">ଉନ୍ନତ ସୁରକ୍ଷା:</translation>
 <translation id="6140912465461743537">ଦେଶ/ଅଞ୍ଚଳ</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">ଏହି ଡିଭାଇସ୍‌ରୁ ଆପଣଙ୍କର ପାସ୍‌ୱର୍ଡ ଏକ୍ସପୋର୍ଟ କରିବାକୁ ସେଟିଂସ୍‌ରେ ସ୍କ୍ରିନ୍‌ ଲକ୍‌ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> ବାଛନ୍ତୁ</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ଡାଟା ସେଭ୍ ହେଉଛି</translation>
+<translation id="6186394685773237175">କୌଣସି ଚୋରି ହୋଇଯାଇଥିବା ପାସୱାର୍ଡ ମିଳିଲା ନାହିଁ</translation>
 <translation id="6201345951596836663">ଲିଙ୍କ୍ କପି କରାଯାଇଛି</translation>
 <translation id="6206830853671714236">କେତେବେଳେ ଡାଉନଲୋଡ୍ କରିବେ ତାହା ବାଛନ୍ତୁ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ନୁହେଁ?</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">ଏଠାରେ ଆପଣଙ୍କର ଅନ୍ୟ ଡିଭାଇସ୍‌ର Chromeରେ ଯେଉଁ ଟାବ୍‌ ଖୋଲିଛନ୍ତି ତାହା ଦେଖାଯିବ।</translation>
 <translation id="6583199322650523874">ସାମ୍ପ୍ରତିକ ପୃଷ୍ଠାକୁ ବୁକ୍‍ମାର୍କ କରନ୍ତୁ</translation>
 <translation id="6588043302623806746">ସୁରକ୍ଷିତ DNS ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="6590471736817333463">60% ପର୍ଯ୍ୟନ୍ତ ଡାଟା ସେଭ୍ କରନ୍ତୁ</translation>
 <translation id="6593061639179217415">ଡେସ୍କଟପ୍ ସାଇଟ୍</translation>
 <translation id="6597891566292541626">ଏହି ଫ୍ରେମରେ QR/ବାରକୋଡର ସ୍ଥିତି।</translation>
 <translation id="6600954340915313787">କପି କରାଯାଇ Chromeକୁ ନିଆଗଲା</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">ପାସ୍‌ୱର୍ଡ</translation>
 <translation id="6659594942844771486">ଟାବ୍</translation>
 <translation id="6663079968236414793">ଟେକ୍ସଟର ଲିଙ୍କ୍</translation>
-<translation id="666573598175432848">Chromeର ଏକ ନୂଆ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି। Play Storeକୁ ଯିବାକୁ ଏହି ଉପାଦାନରେ ଟାପ୍ କରନ୍ତୁ।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="666981079809192359">Chrome ଗୋପନୀୟତା ବିଜ୍ଞପ୍ତି</translation>
 <translation id="6671495933530132209">ଛବି କପି କରନ୍ତୁ</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">1 ଦିନ ବାକି ଅଛି</translation>
 <translation id="8200772114523450471">ସାରାଶଂ</translation>
 <translation id="8209050860603202033">ଛବି ଖୋଲନ୍ତୁ</translation>
+<translation id="8218052821161047641">ଶୀଘ୍ର ଲୋଡ୍ ହେଉଥିବା ପୃଷ୍ଠା</translation>
 <translation id="8218622182176210845">ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="8223642481677794647">ଫିଡ୍ କାର୍ଡ ମେନୁ</translation>
 <translation id="8224471946457685718">ୱାଇ-ଫାଇରେ ଆପଣଙ୍କ ପାଇଁ ଆର୍ଟିକଲ୍‌ଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍ କରନ୍ତୁ</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ଟାବ୍‍</translation>
 <translation id="8854223127042600341">ଆପଣଙ୍କ ଅଫଲାଇନ୍ ଫାଇଲଗୁଡ଼ିକୁ ଦେଖନ୍ତୁ</translation>
 <translation id="889338405075704026">Chrome ସେଟିଂସ୍‍କୁ ଯାଆନ୍ତୁ</translation>
-<translation id="8893398027601469503">ଆପଣ Chromeର ନବୀନତମ ସଂସ୍କରଣ ବ୍ୟବହାର କରୁଛନ୍ତି</translation>
 <translation id="8898822736010347272">ନୂଆ ବିପଦଗୁଡ଼ିକୁ ଖୋଜି ପାଇବାରେ ଏବଂ ୱେବରେ ସମସ୍ତଙ୍କୁ ସୁରକ୍ଷା ଦେବାରେ ସାହାଯ୍ୟ କରିବାକୁ, ଆପଣ ଭିଜିଟ୍ କରୁଥିବା କିଛି ୱେବପୃଷ୍ଠାର URLଗୁଡ଼ିକ, ସୀମିତ ସିଷ୍ଟମ୍ ସୂଚନା ଏବଂ କିଛି ୱେବପୃଷ୍ଠାର ବିଷୟବସ୍ତୁ Googleକୁ ପଠାଏ।</translation>
 <translation id="8909135823018751308">ସେୟାର୍ କରନ୍ତୁ…</translation>
 <translation id="8912362522468806198">Google ଆକାଉଣ୍ଟ</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">କଲ୍ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="9219103736887031265">ଛବିଗୁଡ଼ିକ</translation>
 <translation id="926205370408745186">ଡିଜିଟାଲ୍ ୱେଲ୍‍ବିଂରୁ ଆପଣଙ୍କର Chrome କାର୍ଯ୍ୟକଳାପଗୁଡ଼ିକୁ କାଢ଼ନ୍ତୁ</translation>
+<translation id="927968626442779827">Google Chromeରେ ଲାଇଟ୍ ମୋଡ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="93753284658583800">ମୂଳପୃଷ୍ଠା ପରିବର୍ତ୍ତନ କରାଯାଇଛି</translation>
 <translation id="938850635132480979">ତ୍ରୁଟି: <ph name="ERROR_CODE" /></translation>

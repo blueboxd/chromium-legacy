@@ -12,7 +12,7 @@
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <uses-feature android:name="android.software.leanback" android:required="false"/>
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
-  <application  # DIFF-ANCHOR: db395d2d
+  <application  # DIFF-ANCHOR: d9433e23
       android:extractNativeLibs="True"
       android:icon="@$PACKAGE:drawable/icon_webview"
       android:label="Android System WebView"
@@ -23,7 +23,7 @@
         android:exported="false"
         android:name="com.google.android.gms.common.api.GoogleApiActivity"
         android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
-    <activity  # DIFF-ANCHOR: 46008f92
+    <activity  # DIFF-ANCHOR: c5a36874
         android:icon="@drawable/icon_webview"
         android:label="WebView DevTools"
         android:launchMode="singleTask"
@@ -31,12 +31,13 @@
         android:process=":webview_apk"
         android:taskAffinity="$PACKAGE.org.chromium.android_webview.devui"
         android:theme="@style/Theme.DevUi.DayNight"
-        android:visibleToInstantApps="true">
+        android:visibleToInstantApps="true"
+        android:windowSoftInputMode="adjustPan">
       <intent-filter>  # DIFF-ANCHOR: 76367aac
         <action android:name="$PACKAGE.SHOW_DEV_UI"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>  # DIFF-ANCHOR: 76367aac
-    </activity>  # DIFF-ANCHOR: 46008f92
+    </activity>  # DIFF-ANCHOR: c5a36874
     <activity  # DIFF-ANCHOR: a003fb0a
         android:label="@string/license_activity_title"
         android:name="org.chromium.android_webview.nonembedded.LicenseActivity"
@@ -415,5 +416,5 @@
         android:process=":sandboxed_process9"
         android:visibleToInstantApps="true"
         tools:ignore="ExportedService"/>
-  </application>  # DIFF-ANCHOR: db395d2d
+  </application>  # DIFF-ANCHOR: d9433e23
 </manifest>

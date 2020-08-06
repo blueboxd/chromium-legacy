@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -223,22 +224,6 @@ bool IsSandboxedProcess() {
       reinterpret_cast<IsSandboxedProcessFunc>(
           GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
   return is_sandboxed_process_func && is_sandboxed_process_func();
-}
-
-bool UseHooks() {
-#if defined(ARCH_CPU_64_BITS)
-  return false;
-#elif defined(NDEBUG)
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    return true;
-  }
-
-  return false;
-#else  // NDEBUG
-  return true;
-#endif
 }
 
 void SetUpExtendedCrashReporting(bool is_browser_process) {
@@ -719,12 +704,16 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     return true;
   }
 
-  if (UseHooks())
-    base::debug::InstallHandleHooks();
-  else
-    base::win::DisableHandleVerifier();
-
+// HandleVerifier detects and reports incorrect handle manipulations. It tracks
+// handle operations on builds that support DCHECK only.
+// TODO(crbug/1104358): Support 64-bit handle hooks.
+#if DCHECK_IS_ON() && !defined(ARCH_CPU_64_BITS)
+  base::debug::InstallHandleHooks();
+#else
+  base::win::DisableHandleVerifier();
 #endif
+
+#endif  // defined(OS_WIN)
 
   chrome::RegisterPathProvider();
 #if defined(OS_CHROMEOS)

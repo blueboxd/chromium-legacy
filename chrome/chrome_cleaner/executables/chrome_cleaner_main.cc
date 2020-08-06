@@ -13,6 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -358,6 +359,10 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   chrome_cleaner::EnableSecureDllLoading();
 
   base::AtExitManager at_exit;
+
+#if !DCHECK_IS_ON()
+  base::win::DisableHandleVerifier();
+#endif
 
   // This must be done BEFORE constructing ScopedLogging, which call InitLogging
   // to set the name of the log file, which needs to read from the command line.

@@ -15,6 +15,8 @@ namespace policy {
 enum DlpContentRestriction {
   // Do not allow any screenshots of the corresponding content.
   kScreenshot = 1 << 0,
+  // Enforce ePrivacy screen when content is visible.
+  kPrivacyScreen = 1 << 1,
 };
 
 // Represents set of restrictions applied to on-screen content.

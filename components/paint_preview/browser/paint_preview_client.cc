@@ -101,7 +101,7 @@ base::flat_set<base::UnguessableToken> CreateAcceptedTokenList(
 }
 
 mojom::PaintPreviewCaptureParamsPtr CreateRecordingRequestParams(
-    mojom::Persistence persistence,
+    RecordingPersistence persistence,
     const RecordingParams& capture_params,
     base::File file) {
   mojom::PaintPreviewCaptureParamsPtr mojo_params =
@@ -141,20 +141,20 @@ void OnSerializedRecordingFileCreated(
   } else {
     std::move(callback).Run(
         mojom::PaintPreviewStatus::kOk,
-        CreateRecordingRequestParams(mojom::Persistence::kFileSystem,
+        CreateRecordingRequestParams(RecordingPersistence::kFileSystem,
                                      capture_params, std::move(file)));
   }
 }
 
 // Prepare the PaintPreviewRecorder mojo params request object. If |persistence|
-// is |Persistence::kFileSystem|, this will create the file that will act as the
-// sink for the recording.
+// is |RecordingPersistence::kFileSystem|, this will create the file that will
+// act as the sink for the recording.
 void PrepareRecordingRequestParams(
-    mojom::Persistence persistence,
+    RecordingPersistence persistence,
     const base::FilePath& frame_filepath,
     const RecordingParams& capture_params,
     RecordingRequestParamsReadyCallback callback) {
-  if (persistence == mojom::Persistence::kFileSystem) {
+  if (persistence == RecordingPersistence::kFileSystem) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&CreateOrOverwriteFileForWriting, frame_filepath),
@@ -170,7 +170,7 @@ void PrepareRecordingRequestParams(
 }  // namespace
 
 PaintPreviewClient::PaintPreviewParams::PaintPreviewParams(
-    mojom::Persistence persistence)
+    RecordingPersistence persistence)
     : persistence(persistence),
       inner(RecordingParams(base::UnguessableToken::Create())) {}
 
@@ -181,7 +181,8 @@ PaintPreviewClient::InProgressDocumentCaptureState::
 
 PaintPreviewClient::InProgressDocumentCaptureState::
     ~InProgressDocumentCaptureState() {
-  if (persistence == mojom::Persistence::kFileSystem && should_clean_up_files) {
+  if (persistence == RecordingPersistence::kFileSystem &&
+      should_clean_up_files) {
     for (const auto& subframe_guid : awaiting_subframes) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -229,7 +230,7 @@ void PaintPreviewClient::InProgressDocumentCaptureState::RecordSuccessfulFrame(
     frame_proto->set_is_main_frame(false);
   }
 
-  if (persistence == mojom::Persistence::kFileSystem) {
+  if (persistence == RecordingPersistence::kFileSystem) {
     // Safe since |filename| is always in the form: "{hexadecimal}.skp".
     frame_proto->set_file_path(FilePathForFrame(frame_guid).AsUTF8Unsafe());
   } else {

@@ -2866,9 +2866,9 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!data_source_);
 
     chunk_demuxer_ =
-        new ChunkDemuxer(BindToCurrentLoop(base::Bind(
+        new ChunkDemuxer(BindToCurrentLoop(base::BindOnce(
                              &WebMediaPlayerImpl::OnDemuxerOpened, weak_this_)),
-                         BindToCurrentLoop(base::Bind(
+                         BindToCurrentLoop(base::BindRepeating(
                              &WebMediaPlayerImpl::OnProgress, weak_this_)),
                          encrypted_media_init_data_cb, media_log_.get());
     SetDemuxer(std::unique_ptr<Demuxer>(chunk_demuxer_));

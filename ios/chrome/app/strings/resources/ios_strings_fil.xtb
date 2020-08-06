@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">Tanggapin at Magpatuloy</translation>
 <translation id="1112015203684611006">Hindi na-print.</translation>
 <translation id="1125564390852150847">Gumawa ng bagong tab.</translation>
+<translation id="1134509371063488162">Buksan ang ${urls} sa Incognito</translation>
 <translation id="1145536944570833626">I-delete ang kasalukuyang data.</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Susunod na field</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">Magdagdag ng Account</translation>
 <translation id="2268044343513325586">Pinuhin</translation>
 <translation id="2273327106802955778">Higit pang menu</translation>
+<translation id="2302742851632557585">Palitan ang Password sa Website</translation>
 <translation id="2316709634732130529">Gamitin ang Iminumungkahing Password</translation>
 <translation id="2320166752086256636">Itago ang keyboard</translation>
 <translation id="2339560363438331454">Sync at Mga Serbisyo ng Google</translation>
@@ -183,6 +185,7 @@ Hindi magagamit ng mga site ang cookies para makita ang iyong aktibidad sa pag-b
 <translation id="298306318844797842">Magdagdag ng Paraan ng Pagbabayad...</translation>
 <translation id="2989805286512600854">Buksan sa Bagong Tab</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
+<translation id="3081338492074632642">Tiyaking tumutugma ang password na sine-save mo sa iyong password para sa <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Markahan…</translation>
 <translation id="3131206671572504478">I-block Lahat</translation>
 <translation id="3153862085237805241">I-save ang Card</translation>
@@ -201,6 +204,7 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> ng <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Mga Bukas na Tab</translation>
+<translation id="3272527697863656322">Kanselahin</translation>
 <translation id="3277021493514034324">Nakopya ang address ng site</translation>
 <translation id="3290875554372353449">Pumili ng Account</translation>
 <translation id="3311748811247479259">Naka-off</translation>
@@ -211,6 +215,7 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="3371831930909698441">Available ang pagsasalin. May mga opsyon malapit sa ibaba ng screen.</translation>
 <translation id="3393920035788932672">Pinapayagan ang Mga Pop-up</translation>
 <translation id="3425644765244388016">Nickname ng Card</translation>
+<translation id="3433057996795775706">Kapag na-delete ang password na ito, hindi ide-delete ang iyong account sa <ph name="WEBSITE" />. Palitan ang iyong password sa <ph name="WEBSITE" /> para mapanatili itong ligtas mula sa iba.</translation>
 <translation id="3443810440409579745">Natanggap ang tab.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> (na) min</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -239,6 +244,7 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="3638472932233958418">Mag-preload ng Mga Webpage</translation>
 <translation id="3670030362669914947">Numero</translation>
 <translation id="3691593122358196899">Na-bookmark sa <ph name="FOLDER_TITLE" /></translation>
+<translation id="3740397331642243698">Bubuksan sa Incognito ang mga inilagay na URL sa Google Chrome.</translation>
 <translation id="3771033907050503522">Mga Tab na Incognito</translation>
 <translation id="3775743491439407556">Hindi Gumagana ang Pag-sync</translation>
 <translation id="3779810277399252432">Walang koneksyon sa internet.</translation>
@@ -306,6 +312,7 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="4636930964841734540">Impormasyon</translation>
 <translation id="4659126640776004816">Kapag nag-sign in ka sa iyong Google Account, mao-on ang feature na ito.</translation>
 <translation id="4659667755519643272">Pumasok sa Tagalipat ng Tab</translation>
+<translation id="46614316059270592">I-save ang Password</translation>
 <translation id="4666531726415300315">Naka-sign in bilang <ph name="EMAIL" />.
 
 Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upang simulan ang pag-sync.</translation>
@@ -402,6 +409,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5854790677617711513">Mas matagal sa 30 araw</translation>
 <translation id="5857090052475505287">Bagong Folder</translation>
 <translation id="5857770089550859117">Kinakailangan ang passphrase upang masimulan ang pag-sync.</translation>
+<translation id="5860033963881614850">Naka-off</translation>
 <translation id="5869029295770560994">OK, Nakuha Ko</translation>
 <translation id="5871497086027727873">1 item ang inilipat</translation>
 <translation id="5897956970858271241">Bisitahin ang Kinopyang Link</translation>
@@ -502,7 +510,6 @@ Hindi magagamit ng mga site ang cookies para makita ang iyong aktibidad sa pag-b
 <translation id="6831043979455480757">Isalin</translation>
 <translation id="6841409746189899007">Link sa Text</translation>
 <translation id="6851516051005285358">Hilingin ang Site sa Desktop</translation>
-<translation id="6856384753476268833">Pinapamahalaan ng iyong organisasyon.</translation>
 <translation id="6858855187367714033">Na-scan</translation>
 <translation id="6859944681507688231">Para mag-scan ng QR code o credit card, i-enable ang camera mula sa mga setting.</translation>
 <translation id="6869389390665537774">Makikita mo ang mga page na binisita mo o maki-clear mo ang mga ito sa iyong history</translation>
@@ -524,7 +531,6 @@ Hindi magagamit ng mga site ang cookies para makita ang iyong aktibidad sa pag-b
 <translation id="7006788746334555276">Mga Setting ng Nilalaman</translation>
 <translation id="7015203776128479407">Hindi natapos ang pag-set up ng unang pag-sync. Naka-off ang pag-sync.</translation>
 <translation id="7029809446516969842">Mga Password</translation>
-<translation id="7030675613184250187">Puwede kang mag-save ng mga page sa iyong listahan ng babasahin para mahanap ulit o mabasa nang offline ang mga iyon</translation>
 <translation id="7053983685419859001">I-block</translation>
 <translation id="7062545763355031412">Tanggapin at lumipat ng account</translation>
 <translation id="7099761977003084116">Mga Kamakailang Tab</translation>
@@ -587,12 +593,12 @@ Dahil pinapamahalaan ng <ph name="HOSTED_DOMAIN" /> ang iyong account, made-dele
 <translation id="7856733331829174190">Hindi Ma-download</translation>
 <translation id="7859704718976024901">History ng Pag-browse</translation>
 <translation id="7887198238286927132">Para protektahan ang iyong privacy, hindi io-autofill ng Chrome ang field na ito.</translation>
-<translation id="791251013315685175">Pinapamahalaan ng <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Available ang iyong listahan ng babasahin offline. Para magdagdag ng page sa iyong listahan ng babasahin, i-tap ang <ph name="SHARE_OPENING_ICON" /> pagkatapos ay i-tap ang <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">I-export Password...</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="794799177247607889">Ihinto ang Pag-log</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{Walang nakompromisong password}=1{{COUNT} Nakompromisong password}one{{COUNT} Nakompromisong password}other{{COUNT} na Nakompromisong password}}</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="7966516440812255683">Puwedeng gumamit ng cookies ang mga site para pahusayin ang iyong karanasan sa pag-browse, halimbawa, para mapanatili kang naka-sign in o para maalala ang mga item sa shopping cart mo.
 
@@ -606,6 +612,7 @@ Puwedeng gumamit ng cookies ang mga site para makita ang iyong aktibidad sa pag-
 <translation id="8023878949384262191">Pinapalawak ang seksyon.</translation>
 <translation id="804427445359061970">Makikita mo rito ang iyong mga tab mula sa iba pang device</translation>
 <translation id="8059533439631660104">Kino-collapse ang seksyon.</translation>
+<translation id="8065292699993359127">Buksan ang mga URL sa Chrome sa Incognito</translation>
 <translation id="806745655614357130">Panatilihing hiwalay ang aking data</translation>
 <translation id="8073670137947914548">Tapos na ang pag-download</translation>
 <translation id="8073872304774253879">Mas Pahusayin ang Mga Paghahanap at Pagba-browse</translation>

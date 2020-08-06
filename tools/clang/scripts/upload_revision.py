@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import sys
 
-from build import GetCommitCount, CheckoutLLVM, LLVM_DIR
+from build import CheckoutLLVM, GetCommitDescription, LLVM_DIR
 from update import CHROMIUM_DIR
 
 # Path constants.
@@ -49,28 +49,25 @@ Cq-Include-Trybots: chrome/try:win-chrome,win64-chrome,mac-chrome
 
 is_win = sys.platform.startswith('win32')
 
-def PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision):
+
+def PatchRevision(clang_git_revision, clang_sub_revision):
   with open(UPDATE_PY_PATH, 'rb') as f:
     content = f.read()
-  m = re.search("CLANG_REVISION = '([0-9a-f]+)'", content)
+  m = re.search("CLANG_REVISION = '([0-9a-f-]+)'", content)
   clang_old_git_revision = m.group(1)
-  m = re.search("CLANG_SVN_REVISION = '(n[0-9]+)'", content)
-  clang_old_svn_revision = m.group(1)
   m = re.search("CLANG_SUB_REVISION = ([0-9]+)", content)
   clang_old_sub_revision = m.group(1)
 
-  content = re.sub("CLANG_REVISION = '[0-9a-f]+'",
+  content = re.sub("CLANG_REVISION = '[0-9a-f-]+'",
                    "CLANG_REVISION = '{}'".format(clang_git_revision),
-                   content, count=1)
-  content = re.sub("CLANG_SVN_REVISION = 'n[0-9]+'",
-                   "CLANG_SVN_REVISION = '{}'".format(clang_svn_revision),
-                   content, count=1)
+                   content,
+                   count=1)
   content = re.sub("CLANG_SUB_REVISION = [0-9]+",
                    "CLANG_SUB_REVISION = {}".format(clang_sub_revision),
                    content, count=1)
   with open(UPDATE_PY_PATH, 'wb') as f:
     f.write(content)
-  return clang_old_git_revision, clang_old_svn_revision, clang_old_sub_revision
+  return "{}-{}" % (clang_old_git_revision, clang_old_sub_revision)
 
 
 def Git(args):
@@ -87,30 +84,23 @@ def main():
 
   args = parser.parse_args()
 
-  clang_git_revision = args.clang_git_revision[0]
+  clang_raw_git_revision = args.clang_git_revision[0]
 
-  # To get the commit count, we need a checkout.
-  CheckoutLLVM(clang_git_revision, LLVM_DIR);
-  clang_svn_revision = 'n' + GetCommitCount(clang_git_revision)
+  # To `git describe`, we need a checkout.
+  CheckoutLLVM(clang_raw_git_revision, LLVM_DIR)
+  clang_git_revision = GetCommitDescription(clang_raw_git_revision)
   clang_sub_revision = args.clang_sub_revision
 
   os.chdir(CHROMIUM_DIR)
 
-  print("Making a patch for Clang {}-{}-{}".format(
-      clang_svn_revision, clang_git_revision[:8], clang_sub_revision))
+  print("Making a patch for Clang {}-{}".format(clang_git_revision,
+                                                clang_sub_revision))
 
-  clang_old_git_revision, clang_old_svn_revision, clang_old_sub_revision = \
-      PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision)
+  old_rev_string = PatchRevision(clang_git_revision, clang_sub_revision)
 
-  rev_string = "{}-{}-{}".format(clang_svn_revision,
-                                 clang_git_revision[:8],
-                                 clang_sub_revision)
+  rev_string = "{}-{}".format(clang_git_revision, clang_sub_revision)
   Git(["checkout", "origin/master", "-b", "clang-{}".format(rev_string)])
   Git(["add", UPDATE_PY_PATH])
-
-  old_rev_string = "{}-{}-{}".format(clang_old_svn_revision,
-                                     clang_old_git_revision[:8],
-                                     clang_old_sub_revision)
 
   commit_message = 'Ran `{}`.'.format(' '.join(sys.argv)) + COMMIT_FOOTER
   Git(["commit", "-m", "Roll clang {} : {}.\n\n{}".format(

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -51,14 +52,14 @@ public class VideoTest {
             mActivityTestRule.loadUrl(
                     testServer.getURL("/chrome/test/data/android/media/video-play.html"));
             titleObserver.waitForTitleUpdate(5);
-            Assert.assertEquals("ready_to_play", tab.getTitle());
+            Assert.assertEquals("ready_to_play", ChromeTabUtils.getTitleOnUiThread(tab));
 
             titleObserver = new TabTitleObserver(tab, "ended");
             DOMUtils.clickNode(tab.getWebContents(), "button1");
             // Now the video will play for 5 secs.
             // Makes sure that the video ends and title was changed.
             titleObserver.waitForTitleUpdate(15);
-            Assert.assertEquals("ended", tab.getTitle());
+            Assert.assertEquals("ended", ChromeTabUtils.getTitleOnUiThread(tab));
         } finally {
             testServer.stopAndDestroyServer();
         }

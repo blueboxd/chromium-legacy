@@ -42,6 +42,7 @@
 <translation id="1283039547216852943">Допрете за да се прошири</translation>
 <translation id="1291207594882862231">Исчистете ги историјата, колачињата, податоците на сајтот, кешот…</translation>
 <translation id="129553762522093515">Неодамна затворено</translation>
+<translation id="1298077576058087471">Заштедете до 60 % од сообраќајот, читајте ги денешните вести</translation>
 <translation id="1303339473099049190">Лозинката не може да се најде. Проверете дали ја внесувате правилно и обидете се повторно.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Испратено од <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Групирај картички</translation>
@@ -105,6 +106,7 @@
 <translation id="1856325424225101786">Дали да се ресетира „Лесниот режим“?</translation>
 <translation id="1868024384445905608">Отсега Chrome побрзо презема датотеки</translation>
 <translation id="1874760110381325409">Ќе ве најавиме со вашата сметка на Google\n(ова нема да вклучи „Синхронизација на Chrome“)</translation>
+<translation id="1877026089748256423">Chrome е застарен</translation>
 <translation id="1883903952484604915">Мои датотеки</translation>
 <translation id="1919950603503897840">Изберете контакти</translation>
 <translation id="1925021887439448749">Внесете приспособена веб-адреса</translation>
@@ -204,7 +206,6 @@
 <translation id="2587052924345400782">Достапна е понова верзија</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">Број на картичка</translation>
-<translation id="2622559029861875898">Chrome не може да провери дали се достапни ажурирања. Проверете ја интернет-врската.</translation>
 <translation id="2625189173221582860">Лозинката е копирана</translation>
 <translation id="2631006050119455616">Заштедено</translation>
 <translation id="2647434099613338025">Додајте јазик</translation>
@@ -219,7 +220,7 @@
 <translation id="2744248271121720757">Допрете даден збор за да пребарувате веднаш или за да видите слични дејства</translation>
 <translation id="2760989362628427051">Вклучува темна тема кога е вклучена темната тема или „Штедачот на батерија“ на уредот</translation>
 <translation id="2762000892062317888">пред малку</translation>
-<translation id="2771869497727323769">Не може да се создаде линк до текстот. Споделете го линкот до страницата во апликација.</translation>
+<translation id="2771869497727323769">Не може да се создаде линк до текстот. Споделете го линкот до страницата во некоја апликација.</translation>
 <translation id="2777555524387840389">Останаа <ph name="SECONDS" /> секунди</translation>
 <translation id="2779651927720337254">не успеа</translation>
 <translation id="2781151931089541271">Остана 1 секунда</translation>
@@ -261,8 +262,10 @@
 <translation id="305593374596241526">Локацијата е исклучена, вклучете ја во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Може да ја исклучите синхронизацијата во секое време во „Поставки“</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> обележувач}one{<ph name="BOOKMARKS_COUNT_MANY" /> обележувач}other{<ph name="BOOKMARKS_COUNT_MANY" /> обележувачи}}</translation>
+<translation id="3062802207422175757">Статии за вашите интереси на Chrome</translation>
 <translation id="3089395242580810162">Отвори во инкогнито картичка</translation>
 <translation id="3114012059975132928">Видеоплеер</translation>
+<translation id="3114507951000454849">Читајте ги денешните вести <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Соопштенија</translation>
 <translation id="3137521801621304719">Напушти го инкогнито-режимот</translation>
 <translation id="3143515551205905069">Откажи ја синхронизацијата</translation>
@@ -326,6 +329,7 @@
 <translation id="3566923219790363270">Chrome сѐ уште се подготвува за VR. Рестартирајте го Chrome подоцна.</translation>
 <translation id="3568688522516854065">За да ги добиете вашите картички од другите уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="3587482841069643663">Сите</translation>
+<translation id="3587596251841506391">Подобра безбедноста на интернет</translation>
 <translation id="3590487821116122040">Достапен простор на сајтот за кој Chrome смета дека не е важен (на пр., сајтови без зачувани поставки или коишто не ги посетувате често)</translation>
 <translation id="3594780231884063836">Исклучете звук на видео</translation>
 <translation id="3599863153486145794">Ја чисти историјата од сите најавени уреди. Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -460,7 +464,7 @@
 <translation id="4732120983431207637">Модул за продолжување претходни задачи</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4738836084190194332">Последна синхронизација: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA грешка: <ph name="ERROR_CODE" /> на <ph name="VIOLATED_URL" /></translation>
+<translation id="474698142248234220">TWA-грешка: <ph name="ERROR_CODE" /> на <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Отворете нова картичка</translation>
 <translation id="4759238208242260848">Преземања</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 преземање е завршено.}one{# преземање е завршено.}other{# преземања се завршени.}}</translation>
@@ -510,7 +514,7 @@
 <translation id="5040262127954254034">Приватност</translation>
 <translation id="5087580092889165836">Додај картичка</translation>
 <translation id="509429900233858213">Настана грешка.</translation>
-<translation id="5100748015044654621">Споделете го линкот до нагласениот текст во апликација</translation>
+<translation id="5100748015044654621">Споделете го линкот до нагласениот текст во некоја апликација</translation>
 <translation id="510275257476243843">Остана 1 час</translation>
 <translation id="5123685120097942451">Картичка инкогнито</translation>
 <translation id="5127805178023152808">Синхронизацијата е исклучена</translation>
@@ -556,7 +560,6 @@
 <translation id="5441522332038954058">Скокнете на лентата за адреса</translation>
 <translation id="5447201525962359567">Целиот простор на сајтот, вклучувајќи ги колачињата и другите локално зачувани податоци</translation>
 <translation id="545042621069398927">Го забрзуваме вашето преземање.</translation>
-<translation id="5454513945794364671">Администраторот го исклучил „Безбедното прелистување“</translation>
 <translation id="5456381639095306749">Преземете ја страницата</translation>
 <translation id="548278423535722844">Отвори во апликацијата „Карти“</translation>
 <translation id="5487521232677179737">Избриши податоци</translation>
@@ -649,6 +652,7 @@
 <translation id="6108923351542677676">Поставувањето е во тек…</translation>
 <translation id="6111020039983847643">искористен сообраќај</translation>
 <translation id="6112702117600201073">Страницата се освежува</translation>
+<translation id="6122831415929794347">Да се исклучи „Безбедно прелистување“?</translation>
 <translation id="6127379762771434464">Ставката е отстранета</translation>
 <translation id="6140709049082532940">Подобрена заштита:</translation>
 <translation id="6140912465461743537">Држава/регион</translation>
@@ -656,6 +660,7 @@
 <translation id="6154478581116148741">Вклучете го заклучувањето на екранот во „Поставки“ за да ги извезете лозинките од уредов</translation>
 <translation id="6157392216611456285">Изберете <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> заштеда на податоци</translation>
+<translation id="6186394685773237175">Не се најдени компромитирани лозинки</translation>
 <translation id="6201345951596836663">Линкот е копиран</translation>
 <translation id="6206830853671714236">Изберете кога да се преземе</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
@@ -718,6 +723,7 @@
 <translation id="6573431926118603307">Картичките што сте ги отвориле во Chrome на другите уреди ќе се појават тука.</translation>
 <translation id="6583199322650523874">Ставете обележувач на тековната страница</translation>
 <translation id="6588043302623806746">Користете безбеден DNS</translation>
+<translation id="6590471736817333463">Заштедете до 60 % од сообраќајот</translation>
 <translation id="6593061639179217415">Сајт за десктоп</translation>
 <translation id="6597891566292541626">Ставете го QR/линискиот код во оваа рамка.</translation>
 <translation id="6600954340915313787">Копирано на Chrome</translation>
@@ -731,7 +737,6 @@
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6659594942844771486">Картичка</translation>
 <translation id="6663079968236414793">Линк до текстот</translation>
-<translation id="666573598175432848">Достапна е понова верзија на Chrome. Допрете го елементов за да одите во Play Store.</translation>
 <translation id="666731172850799929">Отвори во <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Известување за приватност на Chrome</translation>
 <translation id="6671495933530132209">Копирај слика</translation>
@@ -927,6 +932,7 @@
 <translation id="8190358571722158785">Остана 1 ден</translation>
 <translation id="8200772114523450471">Продолжи</translation>
 <translation id="8209050860603202033">отвори слика</translation>
+<translation id="8218052821161047641">Брза страница</translation>
 <translation id="8218622182176210845">Управувајте со сметката</translation>
 <translation id="8223642481677794647">Мени на картичката за активност</translation>
 <translation id="8224471946457685718">Преземање статии за вас преку Wi-Fi</translation>
@@ -1005,7 +1011,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, картичка</translation>
 <translation id="8854223127042600341">Погледнете ги вашите офлајн датотеки</translation>
 <translation id="889338405075704026">Одете во „Поставки за Chrome“</translation>
-<translation id="8893398027601469503">Ја користите најновата верзија на Chrome</translation>
 <translation id="8898822736010347272">Испраќа URL-адреси до Google од некои страници што ги посетувате, како и ограничени податоци за системот и некои содржини од страниците за да помогне да се откријат нови закани и да се заштитат сите на интернет.</translation>
 <translation id="8909135823018751308">Сподели…</translation>
 <translation id="8912362522468806198">Сметка на Google</translation>
@@ -1021,7 +1026,7 @@
 <translation id="8988028529677883095">Користете го телефонот како безбедносен клуч</translation>
 <translation id="8990209962746788689">Не може да се создаде QR-код</translation>
 <translation id="8993760627012879038">Отворете нова картичка во режим инкогнито</translation>
-<translation id="8996847606757455498">Изберете друг оператор</translation>
+<translation id="8996847606757455498">Изберете друг одредувач</translation>
 <translation id="8998729206196772491">Се најавувате со сметка управувана од <ph name="MANAGED_DOMAIN" /> и му давате контрола над податоците на Chrome на нејзиниот администратор. Вашите податоци ќе бидат трајно врзани за оваа сметка. Одјавувањето од Chrome ќе ги избрише податоците од уредов, но тие ќе останат зачувани на сметката на Google.</translation>
 <translation id="9028914725102941583">Вклучете ја синхронизацијата за да споделувате на сите уреди</translation>
 <translation id="9040142327097499898">Дозволени се известувања. Локацијата е исклучена за уредов.</translation>
@@ -1052,6 +1057,7 @@
 <translation id="9209888181064652401">Не може да се упатуваат повици</translation>
 <translation id="9219103736887031265">Слики</translation>
 <translation id="926205370408745186">Отстранете ја вашата активност на Chrome од „Дигитална благосостојба“</translation>
+<translation id="927968626442779827">Користете „Лесен режим“ на Google Chrome</translation>
 <translation id="932327136139879170">Дома</translation>
 <translation id="93753284658583800">Почетната страница се промени</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>

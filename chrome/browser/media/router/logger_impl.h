@@ -50,6 +50,7 @@ class LoggerImpl : mojom::Logger {
   void Bind(mojo::PendingReceiver<mojom::Logger> receiver);
 
   std::string GetLogsAsJson() const;
+  base::Value GetLogsAsValue() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LoggerImplTest, RecordAndGetLogs);
@@ -93,7 +94,6 @@ class LoggerImpl : mojom::Logger {
            const std::string& session_id);
 
   static base::Value AsValue(const Entry& entry);
-  base::Value GetLogsAsValue() const;
 
   mojo::ReceiverSet<mojom::Logger> receivers_;
   base::circular_deque<Entry> entries_;

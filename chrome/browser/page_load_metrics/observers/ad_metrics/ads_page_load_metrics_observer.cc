@@ -54,7 +54,7 @@
 
 namespace features {
 
-// Enables of disabled the restricted navigation ad tagging feature. When
+// Enables or disables the restricted navigation ad tagging feature. When
 // enabled, the AdTagging heuristic is modified to additional information to
 // determine if a frame is an ad. If the frame's navigation url matches an allow
 // list rule, it is not an ad.

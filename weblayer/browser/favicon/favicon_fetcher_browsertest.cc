@@ -11,6 +11,7 @@
 #include "weblayer/browser/favicon/favicon_service_impl.h"
 #include "weblayer/browser/favicon/favicon_service_impl_factory.h"
 #include "weblayer/browser/favicon/favicon_service_impl_observer.h"
+#include "weblayer/browser/favicon/test_favicon_fetcher_delegate.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/favicon_fetcher_delegate.h"
 #include "weblayer/public/navigation_controller.h"
@@ -21,40 +22,6 @@
 
 namespace weblayer {
 namespace {
-
-// Records calls to OnFaviconChanged().
-class FaviconFetcherDelegateImpl : public FaviconFetcherDelegate {
- public:
-  void WaitForFavicon() {
-    ASSERT_EQ(nullptr, run_loop_.get());
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  void ClearLastImage() {
-    last_image_ = gfx::Image();
-    on_favicon_changed_call_count_ = 0;
-  }
-
-  const gfx::Image& last_image() const { return last_image_; }
-  int on_favicon_changed_call_count() const {
-    return on_favicon_changed_call_count_;
-  }
-
-  // FaviconFetcherDelegate:
-  void OnFaviconChanged(const gfx::Image& image) override {
-    last_image_ = image;
-    ++on_favicon_changed_call_count_;
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-  gfx::Image last_image_;
-  int on_favicon_changed_call_count_ = 0;
-};
 
 // FaviconServiceImplObserver used to wait for download to fail.
 class TestFaviconServiceImplObserver : public FaviconServiceImplObserver {
@@ -82,7 +49,7 @@ using FaviconFetcherBrowserTest = WebLayerBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  FaviconFetcherDelegateImpl fetcher_delegate;
+  TestFaviconFetcherDelegate fetcher_delegate;
   auto fetcher = shell()->tab()->CreateFaviconFetcher(&fetcher_delegate);
   NavigateAndWaitForCompletion(
       embedded_test_server()->GetURL("/simple_page_with_favicon.html"),
@@ -113,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, Basic) {
 
 IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, NavigateToPageWithNoFavicon) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  FaviconFetcherDelegateImpl fetcher_delegate;
+  TestFaviconFetcherDelegate fetcher_delegate;
   auto fetcher = shell()->tab()->CreateFaviconFetcher(&fetcher_delegate);
   NavigateAndWaitForCompletion(
       embedded_test_server()->GetURL("/simple_page_with_favicon.html"),
@@ -147,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest,
             favicon::ContentFaviconDriver::FromWebContents(web_contents));
 
   // Request a fetcher, which should trigger creating ContentFaviconDriver.
-  FaviconFetcherDelegateImpl fetcher_delegate;
+  TestFaviconFetcherDelegate fetcher_delegate;
   auto fetcher = shell()->tab()->CreateFaviconFetcher(&fetcher_delegate);
   EXPECT_NE(nullptr,
             favicon::ContentFaviconDriver::FromWebContents(web_contents));

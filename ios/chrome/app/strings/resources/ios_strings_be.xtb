@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">Прыняць і працягнуць</translation>
 <translation id="1112015203684611006">Памылка друкавання.</translation>
 <translation id="1125564390852150847">Стварыць новую ўкладку.</translation>
+<translation id="1134509371063488162">Адкрыць ${urls} у рэжыме інкогніта</translation>
 <translation id="1145536944570833626">Выдаліць існуючыя даныя.</translation>
 <translation id="1165039591588034296">Памылка</translation>
 <translation id="1172898394251786223">Наступнае поле</translation>
@@ -116,6 +117,7 @@
 <translation id="2267753748892043616">Дадаць уліковы запіс</translation>
 <translation id="2268044343513325586">Удакладніць</translation>
 <translation id="2273327106802955778">Меню "Дадаткова"</translation>
+<translation id="2302742851632557585">Змяніць пароль на вэб-сайце</translation>
 <translation id="2316709634732130529">Выкарыстаць прапанаваны пароль</translation>
 <translation id="2320166752086256636">Схаваць клавіятуру</translation>
 <translation id="2339560363438331454">Сінхранізацыя і сэрвісы Google</translation>
@@ -183,6 +185,7 @@
 <translation id="298306318844797842">Дадаць спосаб аплаты...</translation>
 <translation id="2989805286512600854">Адкрыць у новай укладцы</translation>
 <translation id="3037605927509011580">Якая неспадзяванка!</translation>
+<translation id="3081338492074632642">Праверце, ці супадае пароль, які вы захоўваеце, з паролем для сайта <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Пазначыць…</translation>
 <translation id="3131206671572504478">Блакіруюцца ўсе</translation>
 <translation id="3153862085237805241">Захаваць картку</translation>
@@ -201,6 +204,7 @@
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> з <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Адкрытыя ўкладкі</translation>
+<translation id="3272527697863656322">Скасаваць</translation>
 <translation id="3277021493514034324">Адрас сайта скапіраваны</translation>
 <translation id="3290875554372353449">Выберыце ўлік. запіс</translation>
 <translation id="3311748811247479259">Выключана</translation>
@@ -211,6 +215,7 @@
 <translation id="3371831930909698441">Пераклад гатовы. Параметры знаходзяцца ў ніжняй частцы экрана.</translation>
 <translation id="3393920035788932672">Усплывальныя вокны дазволены</translation>
 <translation id="3425644765244388016">Псеўданім карткі</translation>
+<translation id="3433057996795775706">Пры выдаленні гэтага пароля ўліковы запіс на сайце <ph name="WEBSITE" /> не выдаліцца. Змяніце свой пароль да ўліковага запісу на <ph name="WEBSITE" />, каб абараніць яго.</translation>
 <translation id="3443810440409579745">Атрымана ўкладка.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Раздзелены кадр</translation>
@@ -239,6 +244,7 @@
 <translation id="3638472932233958418">Перадзагрузка старонак</translation>
 <translation id="3670030362669914947">Нумар</translation>
 <translation id="3691593122358196899">Закладка дададзена ў папку "<ph name="FOLDER_TITLE" />"</translation>
+<translation id="3740397331642243698">Адкрывае ўведзеныя URL-адрасы ў Google Chrome у рэжыме інкогніта.</translation>
 <translation id="3771033907050503522">Укладкі інкогніта</translation>
 <translation id="3775743491439407556">Сінхранізацыя не працуе</translation>
 <translation id="3779810277399252432">Няма падключэння да інтэрнэту.</translation>
@@ -306,6 +312,7 @@
 <translation id="4636930964841734540">Інфармацыя</translation>
 <translation id="4659126640776004816">Гэта функцыя будзе ўключацца пры ўваходзе ва Уліковы запіс Google.</translation>
 <translation id="4659667755519643272">Перайсці да пераключальніка ўкладак</translation>
+<translation id="46614316059270592">Захаваць пароль</translation>
 <translation id="4666531726415300315">Вы ўвайшлі як <ph name="EMAIL" />.
 
 Вашы даныя зашыфраваны з дапамогай фразы-пароля для сінхранізацыі. Увядзіце яе, каб пачаць сінхранізацыю.</translation>
@@ -402,6 +409,7 @@
 <translation id="5854790677617711513">Даныя, старэйшыя за 30 дзён</translation>
 <translation id="5857090052475505287">Новая папка</translation>
 <translation id="5857770089550859117">Фраза-пароль для запуску сінхранізацыі.</translation>
+<translation id="5860033963881614850">Выключана</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 элемент перамешчаны</translation>
 <translation id="5897956970858271241">Наведаць скапіраваную спасылку</translation>
@@ -502,7 +510,6 @@
 <translation id="6831043979455480757">Перакласці</translation>
 <translation id="6841409746189899007">Стварыць спасылку на тэкст</translation>
 <translation id="6851516051005285358">Запытаць версію для настольнага камп'ютара</translation>
-<translation id="6856384753476268833">Пад кіраваннем вашай арганізацыі.</translation>
 <translation id="6858855187367714033">Сканіраваны</translation>
 <translation id="6859944681507688231">Каб сканіраваць QR-код ці крэдытную картку, уключыце ў наладах камеру.</translation>
 <translation id="6869389390665537774">Вы можаце прагледзець наведаныя старонкі або выдаліць іх з гісторыі</translation>
@@ -524,7 +531,6 @@
 <translation id="7006788746334555276">Налады змесціва</translation>
 <translation id="7015203776128479407">Першапачатковая наладка сінхранізацыі не завершана. Сінхранізацыя выключана.</translation>
 <translation id="7029809446516969842">Паролі</translation>
-<translation id="7030675613184250187">Захоўвайце старонкі ў спісе чытання, каб вярнуцца да іх пазней або чытаць без падключэння да інтэрнэту</translation>
 <translation id="7053983685419859001">Заблакіраваць</translation>
 <translation id="7062545763355031412">Прыняць і пераключыцца на іншы ўліковы запіс</translation>
 <translation id="7099761977003084116">Нядаўнія ўкладкі</translation>
@@ -587,12 +593,12 @@
 <translation id="7856733331829174190">Не ўдалося спампаваць</translation>
 <translation id="7859704718976024901">Гісторыя прагляду сайтаў</translation>
 <translation id="7887198238286927132">У мэтах аховы вашай прыватнасці Chrome не будзе выкарыстоўваць аўтазапаўненне ў гэтым полі.</translation>
-<translation id="791251013315685175">Пад кіраваннем кампаніі "<ph name="COMPANY" />".</translation>
 <translation id="7918293828610777738">Спіс чытання даступны ў пазасеткавым рэжыме. Каб дадаць старонку ў спіс чытання, націсніце значок <ph name="SHARE_OPENING_ICON" />, затым <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Экспарт пароляў...</translation>
 <translation id="7947953824732555851">Прыняць і ўвайсці</translation>
 <translation id="794799177247607889">Спыніць вядзенне журнала</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{Раскрытых пароляў няма}=1{{COUNT} раскрыты пароль}one{{COUNT} раскрыты пароль}few{{COUNT} раскрытыя паролі}many{{COUNT} раскрытых пароляў}other{{COUNT} раскрытага пароля}}</translation>
 <translation id="7961015016161918242">Ніколі</translation>
 <translation id="7966516440812255683">Сайты могуць выкарыстоўваць файлы cookie для паляпшэння сваёй функцыянальнасці: напрыклад, для захавання інфармацыі пра тое, што вы ўвайшлі ва ўліковы запіс, або каб запамінаць тавары ў кошыку.
 
@@ -606,6 +612,7 @@
 <translation id="8023878949384262191">Разгортвае раздзел.</translation>
 <translation id="804427445359061970">Вашы ўкладкі з іншых прылад знаходзяцца тут</translation>
 <translation id="8059533439631660104">Згортвае раздзел.</translation>
+<translation id="8065292699993359127">Адкрыць URL-адрасы ў Chrome у рэжыме інкогніта</translation>
 <translation id="806745655614357130">Захоўваць мае даныя асобна</translation>
 <translation id="8073670137947914548">Спампоўванне завершана</translation>
 <translation id="8073872304774253879">Паскорыць пошук і прагляд</translation>

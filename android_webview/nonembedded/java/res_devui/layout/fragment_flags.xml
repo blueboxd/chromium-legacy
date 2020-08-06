@@ -33,6 +33,7 @@
             android:singleLine="true"
             android:drawablePadding="4dp"
             android:drawableStart="@drawable/ic_search"
+            android:imeOptions="actionDone|actionSearch"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
         <!--suppress HardcodedText -->

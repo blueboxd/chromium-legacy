@@ -67,6 +67,7 @@
 <translation id="1070705170564860382">Odpiranje v nadomestnem brskalniku čez <ph name="COUNTDOWN_SECONDS" /> s</translation>
 <translation id="1071917609930274619">Šifriranje podatkov</translation>
 <translation id="1072700771426194907">Zaznana je naprava USB</translation>
+<translation id="1076176485976385390">Premikanje po straneh s kazalcem besedila</translation>
 <translation id="1076698951459398590">Omogoči temo</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Vedno prepreči dostop do kamere</translation>
@@ -205,6 +206,7 @@
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1239594683407221485">Vsebino naprave raziščite v aplikaciji Datoteke.</translation>
 <translation id="124116460088058876">Več jezikov</translation>
+<translation id="1241639418100230264">Morda boste morali plačati stroške prenosa podatkov v mobilnem omrežju.</translation>
 <translation id="1241753985463165747">Branje in spreminjanje vseh vaših podatkov na trenutnem spletnem mestu, če je zagnano</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> želi ponastaviti nastavitve.</translation>
 <translation id="1243314992276662751">Prenesi</translation>
@@ -256,6 +258,7 @@
 <translation id="130491383855577612">Aplikacije in datoteke za Linux so bile uspešno nadomeščene</translation>
 <translation id="1306606229401759371">Spremeni nastavitve</translation>
 <translation id="1307165550267142340">Koda PIN je bila ustvarjena</translation>
+<translation id="1307431692088049276">Ne sprašuj me več</translation>
 <translation id="1307559529304613120">Ojoj, sistem za to napravo ni shranil žetona za dolgoročni dostop do API-ja.</translation>
 <translation id="1313162974556054106">Ime naprave</translation>
 <translation id="1313405956111467313">Samodejna konfiguracija strežnika proxy</translation>
@@ -384,6 +387,7 @@
 <translation id="1465827627707997754">Rezina pice</translation>
 <translation id="1468571364034902819">Tega profila ni mogoče uporabiti</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Dodaj zavihek novi skupini}one{Dodaj zavihke novi skupini}two{Dodaj zavihke novi skupini}few{Dodaj zavihke novi skupini}other{Dodaj zavihke novi skupini}}</translation>
+<translation id="1470946456740188591">Če želite vklopiti ali izklopiti brskanje s kazalko, uporabite bližnjico Ctrl + Search + 7</translation>
 <translation id="1472675084647422956">Pokaži več</translation>
 <translation id="1474785664565228650">Sprememba nastavitve mikrofona zahteva vnovičen zagon programa Parallels Desktop. Znova zaženite program Parallels Desktop, če želite nadaljevati.</translation>
 <translation id="1475502736924165259">V dokumentu so potrdila, ki ne sodijo v nobeno od drugih kategorij</translation>
@@ -407,6 +411,7 @@
 <translation id="1500297251995790841">Neznana naprava [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">V seji prijave z več računi mora biti ta račun lastnika prvi prijavljeni račun.</translation>
 <translation id="150411034776756821">Odstrani <ph name="SITE" /></translation>
+<translation id="1504311855864906891">Prikaz podnapisov za predstavnost</translation>
 <translation id="1504551620756424144">Mape, deljene z drugimi, so na voljo v sistemu Windows na lokaciji <ph name="BASE_DIR" />.</translation>
 <translation id="1506061864768559482">Iskalnik</translation>
 <translation id="1507170440449692343">Tej strani je onemogočen dostop do kamere.</translation>
@@ -466,7 +471,6 @@
 <translation id="1567387640189251553">Od zadnjega vnosa gesla je bila priklopljena druga tipkovnica, ki morda poskuša beležiti vse, kar natipkate.</translation>
 <translation id="1567993339577891801">Konzola JavaScript</translation>
 <translation id="1568323446248056064">Odpiranje nastavitev zaslona v napravi</translation>
-<translation id="1569265916989458435">Omogočanje Wi-Fi-ja v stanju nedejavnosti</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (gost)</translation>
 <translation id="1572266655485775982">Omogočanje Wi-Fi-ja</translation>
 <translation id="1572876035008611720">Vnesite e-poštni naslov</translation>
@@ -528,6 +532,7 @@
 <translation id="1633947793238301227">Izklop Pomočnika Google</translation>
 <translation id="1634783886312010422">Ali ste že spremenili geslo na spletnem mestu <ph name="WEBSITE" />?</translation>
 <translation id="1637224376458524414">Prejemanje tega zaznamka v iPhonu</translation>
+<translation id="1637246113959718501">Zahtevanih datotek ni mogoče prenesti. Poskusite pozneje.</translation>
 <translation id="1637350598157233081">Geslo je shranjeno v tej napravi</translation>
 <translation id="1637765355341780467">Pri odpiranju profila je prišlo do težave. Nekatere funkcije morda niso na voljo.</translation>
 <translation id="1639239467298939599">Nalaganje</translation>
@@ -570,6 +575,7 @@
 <translation id="1680849702532889074">Med namestitvijo aplikacije za Linux je prišlo do napake.</translation>
 <translation id="16815041330799488">Spletnim mestom ne dovoli ogleda besedila in slik, kopiranih v odložišče</translation>
 <translation id="1682548588986054654">Novo &amp;okno brez beleženja zgodovine</translation>
+<translation id="1682867089915960590">Želite vklopiti brskanje s kazalko?</translation>
 <translation id="1686550358074589746">Omogoči pisanje z drsenjem</translation>
 <translation id="168715261339224929">Če želite dostopati do zaznamkov v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="1688867105868176567">Ali želite izbrisati podatke spletnega mesta?</translation>
@@ -722,6 +728,7 @@
 <translation id="1856715684130786728">Dodaj lokacijo ...</translation>
 <translation id="1858585891038687145">Zaupaj temu potrdilu za prepoznavanje proizvajalcev programske opreme</translation>
 <translation id="1861262398884155592">Ta mapa je prazna</translation>
+<translation id="1862231313113525466">Domena <ph name="DOMAIN" /> zahteva, da varnostno kopirate podatke in vrnete to napravo v enem tednu. <ph name="LINK_BEGIN" />Prikaz podrobnosti<ph name="LINK_END" /></translation>
 <translation id="1863182668524159459">Ni serijskih vrat</translation>
 <translation id="1863316578636157783">Razširitev »<ph name="EXTENSION_NAME" />« je onemogočena, ker vsebuje zlonamerno programsko opremo</translation>
 <translation id="1864111464094315414">Prijava</translation>
@@ -950,6 +957,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2150661552845026580">Želite dodati »<ph name="EXTENSION_NAME" />«?</translation>
 <translation id="2151576029659734873">Vneseni tabulatorski indeks ni veljaven.</translation>
 <translation id="2152281589789213846">Dodajanje tiskalnikov v profil</translation>
+<translation id="2152882202543497059">Št. fotografij: <ph name="NUMBER" /></translation>
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2154697841132053118">Zaznavanje govora …</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
@@ -1014,6 +1022,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2224551243087462610">Uredi ime mape</translation>
 <translation id="2225864335125757863">Zaradi varnosti računa takoj spremenite ta gesla:</translation>
 <translation id="2226449515541314767">Temu spletnemu mestu je preprečen popolni nadzor nad napravami MIDI.</translation>
+<translation id="2226907662744526012">Samodejno odkleni, ko je vnesena koda PIN</translation>
 <translation id="222704500187107962">Ta razširitev bo samodejno odstranjena, ko zaprete trenutno sejo brez beleženja dejavnosti</translation>
 <translation id="2227179592712503583">Odstrani predlog</translation>
 <translation id="2229161054156947610">Še več kot ena ura</translation>
@@ -1089,6 +1098,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2322318151094136999">Vprašaj, ko želi spletno mesto dostop do serijskih vrat (priporočljivo)</translation>
 <translation id="2323018538045954000">Shranjena omrežja Wi-Fi</translation>
 <translation id="2325444234681128157">Zapomni si geslo</translation>
+<translation id="2326188115274135041">Potrdite kodo PIN za vklop samodejnega odklepanja</translation>
 <translation id="2326931316514688470">&amp;Znova naloži aplikacijo</translation>
 <translation id="2327492829706409234">Omogoči aplikacijo</translation>
 <translation id="2328561734797404498">Znova zaženite napravo, če želite uporabljati aplikacijo <ph name="APP_NAME" />.</translation>
@@ -1111,6 +1121,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2347644257713614136">Uporabo aplikacije Hangouts in razširitve Cast for Education ureja Googlov pravilnik o zasebnosti.</translation>
 <translation id="2348176352564285430">Aplikacija: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">Napaka pri nalaganju podatkov</translation>
+<translation id="2349065708974079577">Osebno prilagodite nedejaven zaslon. Med polnjenjem naprave naj bo zaslon vklopljen.</translation>
 <translation id="2349896577940037438">Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu Google. Na account.google.com si lahko ogledate podatke in jih izbrišete ter spremenite nastavitve računa.</translation>
 <translation id="2350133097354918058">Znova naložena</translation>
 <translation id="2350182423316644347">Inicializiranje aplikacije ...</translation>
@@ -1295,6 +1306,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> ni uspel vzpostaviti povezave z omrežjem <ph name="NETWORK_ID" />. Izberite drugo omrežje ali poskusite znova.</translation>
 <translation id="2553440850688409052">Skrij ta vtičnik</translation>
 <translation id="2554553592469060349">Izbrana datoteka je prevelika (največja velikost: 3 MB).</translation>
+<translation id="255668164821384692">Domena <ph name="DOMAIN" /> zahteva, da varnostno kopirate podatke in vrnete to napravo še danes.<ph name="LINK_BEGIN" />Prikaz podrobnosti<ph name="LINK_END" /></translation>
 <translation id="2558896001721082624">Vedno pokaži možnosti funkcij za ljudi s posebnimi potrebami v sistemskem meniju</translation>
 <translation id="2562743677925229011">Niste prijavljeni v <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2564520396658920462">Izvajanje JavaScripta z AppleScriptom je izklopljeno. Če ga želite vklopiti, v menijski vrstici odprite »Ogled &gt; Razvijalec &gt; Dovoli JavaScript v Applovih dogodkih«. Če želite več informacij: https://support.google.com/chrome/?p=applescript</translation>
@@ -1505,6 +1517,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2805770823691782631">Dodatne podrobnosti</translation>
 <translation id="2807517655263062534">Tu so prikazane datoteke, ki jih prenesete</translation>
 <translation id="2809586584051668049">in še <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
+<translation id="2810024255621914659">Ustvarjena bo diaprojekcija izbranih spominov. Če želite spremeniti obstoječe albume, odprite <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" />.</translation>
 <translation id="2810390687497823527">Če razširitve ne prepoznate ali če brskalnik ne deluje po pričakovanjih, lahko tukaj izklopite ali prilagodite razširitve.</translation>
 <translation id="2812049959647166806">Thunderbolt ni podprt</translation>
 <translation id="2812989263793994277">Ne pokaži slik</translation>
@@ -1627,6 +1640,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="296026337010986570">Končano. Škodljiva programska oprema je odstranjena. Če želite znova vklopiti razširitve, obiščite &lt;a href="chrome://extensions"&gt;Razširitve&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (zagotavlja razširitev)</translation>
 <translation id="2961695502793809356">Kliknite, če želite nadaljevati, za ogled zgodovine pa zadržite</translation>
+<translation id="2961724270791352705">Izberite: <ph name="TOPIC_SOURCE" /></translation>
 <translation id="2962131322798295505">Izbirnik zaslonskega ozadja</translation>
 <translation id="2963151496262057773">Ta vtičnik se ne odziva: <ph name="PLUGIN_NAME" />. Ali ga želite ustaviti?</translation>
 <translation id="2964193600955408481">Onemogoči Wi-Fi</translation>
@@ -1838,6 +1852,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3254715652085014625">Odprite Chrome v telefonu Android, pojdite v meni »Nastavitve &gt; Gesla &gt; Uporaba telefona kot varnostnega ključa« in upoštevajte navodila, ki so navedena tam.</translation>
 <translation id="3255355328033513170">Izbrisani bodo vsi podatki, ki jih shrani skupina <ph name="SITE_GROUP_NAME" /> in vsa spletna mesta v njej. To vključuje piškotke. Odjavljeni boste s teh spletnih mest, vključno s tistimi na odprtih zavihkih.</translation>
 <translation id="3259723213051400722">Poskusite znova.</translation>
+<translation id="3261268979727295785">Za starejše otroke lahko starševski nadzor dodate po koncu nastavitve. Informacije o starševskem nadzoru so na voljo v aplikaciji Raziskovanje.</translation>
 <translation id="3264544094376351444">Neserifna pisava</translation>
 <translation id="3264582393905923483">Kontekst</translation>
 <translation id="3265459715026181080">Zapri okno</translation>
@@ -1937,6 +1952,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="338583716107319301">Ločilo</translation>
 <translation id="338691029516748599">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, upravlja ga vaš skrbnik, vzpostavitev povezave</translation>
 <translation id="3387614642886316601">Uporaba izboljšanega preverjanja črkovanja</translation>
+<translation id="3388763036782654406">Chrome samodejno ustvari angleške podnapise s samodejnimi podnapisi</translation>
 <translation id="3388788256054548012">Ta datoteka je šifrirana. Lastnika datoteke prosite, da jo dešifrira.</translation>
 <translation id="3390013585654699824">Podrobnosti o aplikaciji</translation>
 <translation id="3390741581549395454">Aplikacije in datoteke za Linux so uspešno varnostno kopirane. Nadgradnja se bo začela v kratkem.</translation>
@@ -2017,6 +2033,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3475843873335999118">Prstni odtis še vedno ni prepoznan. Vnesite geslo.</translation>
 <translation id="3476303763173086583">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati otrokovo izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Teh podatkov ne bomo uporabljali, da bi prepoznali vašega otroka, temveč za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To <ph name="BEGIN_LINK1" />nastavitev<ph name="END_LINK1" /> je uveljavil lastnik naprave. Lastnik bo morda izbral, da se za to napravo pošiljajo diagnostični podatki in podatki o uporabi Googlu. Če ste za otroka vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v njegovem računu za Google. <ph name="BEGIN_LINK2" />Več o tem<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">Ojoj. Sistemu ni uspelo prenesti pravilnika za napravo.</translation>
+<translation id="3476903331946078194">Najboljše samodejno izbrane fotografije</translation>
 <translation id="347785443197175480">Še naprej omogočaj gostitelju <ph name="HOST" /> dostop do kamere in mikrofona</translation>
 <translation id="3478685642445675458">Preden odstranite osebo, odklenite profil.</translation>
 <translation id="3479552764303398839">Ne zdaj</translation>
@@ -2028,6 +2045,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3487007233252413104">anonimna funkcija</translation>
 <translation id="348780365869651045">Čakanje na AppCache ...</translation>
 <translation id="3488065109653206955">Delno aktivirano</translation>
+<translation id="3491669675709357988">Otrokov račun ni nastavljen za starševski nadzor Family Linka. Starševski nadzor lahko dodate po koncu nastavitve. Informacije o starševskem nadzoru so na voljo v aplikaciji Raziskovanje.</translation>
 <translation id="3492788708641132712">Sinhronizacija ne deluje. Poskusite se znova prijaviti.</translation>
 <translation id="3493486281776271508">Potrebujete povezavo z internetom</translation>
 <translation id="3493881266323043047">Veljavnost</translation>
@@ -2411,6 +2429,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3919145445993746351">Če želite dostopati do razširitev v vseh računalnikih, vklopite sinhronizacijo</translation>
 <translation id="3920504717067627103">Pravilniki potrdila</translation>
 <translation id="392089482157167418">Omogoči ChromeVox (izgovarjava povratnih informacij)</translation>
+<translation id="3923184630988645767">Prenesena količina podatkov</translation>
 <translation id="3923676227229836009">Ta stran ima dovoljenje za ogled datotek</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3924487862883651986">Pošlje URL-je Varnemu brskanju, da jih ta preveri. Prav tako pošlje manjši vzorec strani, prenosov, dejavnosti razširitev in podatkov o sistemu zaradi pomoči pri odkrivanju novih groženj. Te podatke začasno poveže z vašim računom Google, če ste prijavljeni, zaradi zagotavljanja zaščite v Googlovih aplikacijah.</translation>
@@ -2718,6 +2737,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4336434711095810371">Izbriši vse podatke</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> želi vzpostaviti povezavo z aplikacijo »<ph name="EXTENSION_NAME" />«</translation>
 <translation id="4340575312453649552">Ta oglas je uporabljal preveč sredstev za napravo, zato ga je Chrome odstranil.</translation>
+<translation id="4341577178275615435">Če želite vklopiti ali izklopiti brskanje s kazalko, uporabite bližnjico F7</translation>
 <translation id="434404122609091467">Prek trenutnega ponudnika storitve</translation>
 <translation id="4345587454538109430">Konfiguracija ...</translation>
 <translation id="4345732373643853732">Strežnik ne pozna tega uporabniškega imena</translation>
@@ -2809,6 +2829,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4451479197788154834">Geslo je shranjeno v tej napravi in računu Google</translation>
 <translation id="4451757071857432900">Blokirano na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase (priporočljivo)</translation>
 <translation id="4453946976636652378">Uporabite <ph name="SEARCH_ENGINE_NAME" /> za iskanje ali vnesite URL</translation>
+<translation id="4456630844127311743">Priloge (<ph name="ATTACHMENTS" />), prejete iz naprave <ph name="DEVICE_NAME" /></translation>
 <translation id="4459169140545916303">Aktivno pred toliko dnevi: <ph name="DEVICE_LAST_ACTIVATED_TIME" /></translation>
 <translation id="4460014764210899310">Razdruži</translation>
 <translation id="4462159676511157176">Imenski strežniki po meri</translation>
@@ -2817,6 +2838,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4469477701382819144">Blokirano na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase</translation>
 <translation id="4469762931504673593">Spletno mesto <ph name="ORIGIN" /> lahko ureja datoteke v mapi <ph name="FOLDERNAME" /></translation>
 <translation id="4470957202018033307">Nastavitve zunanjih naprav za shranjevanje</translation>
+<translation id="4471354919263203780">Prenašanje datotek za prepoznavanje govora … <ph name="PERCENT" /> %</translation>
 <translation id="447252321002412580">Pomagajte izboljšati funkcije in delovanje Chroma</translation>
 <translation id="4472575034687746823">Kako začeti</translation>
 <translation id="4474155171896946103">Dodaj vse zavihke med zaznamke ...</translation>
@@ -2893,6 +2915,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4562155214028662640">Dodaj prstni odtis</translation>
 <translation id="4562494484721939086">Ni storitve</translation>
 <translation id="4563210852471260509">Prvotni jezik vnosa je kitajščina</translation>
+<translation id="4563404051166505887">1 fotografija</translation>
 <translation id="4563880231729913339">Prst 3</translation>
 <translation id="4565377596337484307">Skrij geslo</translation>
 <translation id="4565917129334815774">Shrani sistemske dnevnike</translation>
@@ -2933,6 +2956,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4611114513649582138">Podatkovna povezava je na voljo</translation>
 <translation id="4613144866899789710">Preklic namestitve Linuxa …</translation>
 <translation id="4613271546271159013">Razširitev je spremenila stran, ki se prikaže, ko odprete nov zavihek.</translation>
+<translation id="4613829655642011036">Albumi še niso nastavljeni</translation>
 <translation id="4615586811063744755">ni izbranih piškotkov</translation>
 <translation id="461661862154729886">Vir energije</translation>
 <translation id="4617001782309103936">Prekratko</translation>
@@ -2940,6 +2964,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4619615317237390068">Zavihki iz drugih naprav</translation>
 <translation id="4620809267248568679">To nastavitev je vsilila razširitev.</translation>
 <translation id="4623189117674524348">Sistemu za to napravo ni uspelo pooblastiti dostop do API-ja.</translation>
+<translation id="4624190781974168453">Vprašaj ob zagonu</translation>
 <translation id="4625078469366263107">Omogoči aplikacijo</translation>
 <translation id="4627427111733173920">Piškotki so blokirani</translation>
 <translation id="4627442949885028695">Nadaljevanje iz druge naprave</translation>
@@ -3004,6 +3029,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4699172675775169585">Predpomnjene slike in datoteke</translation>
 <translation id="4699357559218762027">(samodejno zagnana)</translation>
 <translation id="4701025263201366865">Prijava starša</translation>
+<translation id="4703523551945129413">Domena <ph name="DOMAIN" /> zahteva, da varnostno kopirate podatke in vrnete to napravo v toliko dnevih: <ph name="DAYS_COUNT" />. <ph name="LINK_BEGIN" />Prikaz podrobnosti<ph name="LINK_END" /></translation>
 <translation id="4707302005824653064">Upravitelj (<ph name="CUSTODIAN_EMAIL" />) lahko na chrome.com pregleduje uporabo in zgodovino.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + uporabniško potrdilo</translation>
 <translation id="4708794300267213770">Prikaži zaklenjen zaslon pri preklopu iz stanja pripravljenosti</translation>
@@ -3045,6 +3071,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Trgovina Play</translation>
 <translation id="4777943778632837590">Konfiguriranje imenskih strežnikov omrežja</translation>
+<translation id="4778644898150334464">Uporaba drugega gesla</translation>
 <translation id="4779083564647765204">Povečaj</translation>
 <translation id="4779136857077979611">Onigiri</translation>
 <translation id="4780321648949301421">Shrani stran &amp;kot ...</translation>
@@ -3229,6 +3256,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5015344424288992913">Razrešujem proxy ...</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Zapomni si</translation>
+<translation id="5017643436812738274">Po straneh se lahko premikate s kazalcem besedila. Pritisnite Ctrl + Search + 7 za izklop.</translation>
 <translation id="5018207570537526145">Odpri spletno mesto razširitve</translation>
 <translation id="5018526990965779848">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Te podatke uporabljamo za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu Google.</translation>
 <translation id="5021750053540820849">Še ni posodobljeno</translation>
@@ -3313,6 +3341,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5123433949759960244">Košarkarska žoga</translation>
 <translation id="5125751979347152379">Neveljaven spletni naslov.</translation>
 <translation id="5126611267288187364">Ogled sprememb</translation>
+<translation id="5127620150973591153">ID varne povezave: <ph name="TOKEN" /></translation>
 <translation id="5127805178023152808">Sinhroniziranje je izklopljeno</translation>
 <translation id="5127881134400491887">Upravljanje omrežnih povezav</translation>
 <translation id="512903556749061217">priključena</translation>
@@ -3582,6 +3611,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5464660706533281090">Otroški uporabnik te nastavitve ne more spremeniti.</translation>
 <translation id="5466374726908360271">&amp;Prilepi in poišči »<ph name="SEARCH_TERMS" />«</translation>
 <translation id="5468173180030470402">Iskanje datotečnih sredstev v skupni rabi</translation>
+<translation id="5469852975082458401">Po straneh se lahko premikate s kazalcem besedila. Pritisnite F7 za izklop.</translation>
 <translation id="5470735824776589490">Pred ponastavitvijo naprave s funkcijo Powerwash je potreben vnovičen zagon. <ph name="LINK_BEGIN" />Več o tem<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Pozdravljeni! Jaz sem glas za pretvorbo besedila v govor.</translation>
 <translation id="5472627187093107397">Shrani gesla za to spletno mesto</translation>
@@ -3660,7 +3690,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5554720593229208774">Overitelj potrdil za e-pošto</translation>
 <translation id="5554931805291741487">Izhodno območje je skoraj polno</translation>
 <translation id="5556459405103347317">Znova naloži</translation>
-<translation id="5557991081552967863">Omogočanje Wi-Fi-ja v stanju pripravjenosti</translation>
 <translation id="5558125320634132440">To spletno mesto je blokirano, ker morda vsebuje neprimerno vsebino za otroke</translation>
 <translation id="5558129378926964177">Po&amp;večaj</translation>
 <translation id="55601339223879446">Prilagodite meje namizja na zaslonu</translation>
@@ -3675,6 +3704,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5575473780076478375">Razširitev brez beleženja zgodovine: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Prišlo je do težave z zahtevo za registracijo predstavitve.</translation>
 <translation id="557722062034137776">Ponastavitev naprave ne bo vplivala na vaše Google Račune ali kakršne koli druge podatke, sinhronizirane s temi računi. Izbrisani pa bodo vsi podatki, shranjeni lokalno v napravi.</translation>
+<translation id="5578016818170236660">Izberite spomine</translation>
 <translation id="5578059481725149024">Samodejna prijava</translation>
 <translation id="558170650521898289">Preverjanje gonilnikov strojne opreme za sistem Microsoft Windows</translation>
 <translation id="5581972110672966454">Naprave ni mogoče pridružiti domeni. Poskusite znova ali se obrnite na lastnika ali skrbnika naprave. Koda napake: <ph name="ERROR_CODE" />.</translation>
@@ -3738,7 +3768,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5642508497713047">Podpisnik seznama ukinjenih potrdil</translation>
 <translation id="5643321261065707929">Omrežje z omejenim prenosom podatkov</translation>
 <translation id="5643620609347735571">Počisti in nadaljuj</translation>
-<translation id="5646376287012673985">Lokacija</translation>
 <translation id="5646558797914161501">Poslovnež</translation>
 <translation id="5648166631817621825">Zadnjih 7 dni</translation>
 <translation id="5649053991847567735">Samodejni prenosi</translation>
@@ -3863,6 +3892,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="5805697420284793859">Upravitelj oken</translation>
 <translation id="5806773519584576205">0° (privzeto)</translation>
+<translation id="5810809306422959727">Ta račun ni primeren za starševski nadzor</translation>
 <translation id="5812674658566766066">Razširi vse</translation>
 <translation id="5814126672212206791">Vrsta povezave</translation>
 <translation id="5815645614496570556">Naslov X.400</translation>
@@ -3881,6 +3911,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5833726373896279253">Te nastavitve lahko spreminja samo lastnik:</translation>
 <translation id="5834581999798853053">Še približno <ph name="TIME" /> min</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – snemanje fotoaparata ali mikrofona</translation>
+<translation id="5840680448799937675">Datoteke bodo vedno deljene brez internetne povezave</translation>
 <translation id="5841270259333717135">Konfiguriranje etherneta</translation>
 <translation id="5842497610951477805">Omogočanje Bluetootha</translation>
 <translation id="5844574845205796324">Predlagaj nove vsebine za raziskovanje</translation>
@@ -4008,6 +4039,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5984222099446776634">Nedavno obiskano</translation>
 <translation id="598472838394900788">{0,plural, =1{Brez beleženja zgodovine}one{Brez beleženja zgodovine (#)}two{Brez beleženja zgodovine (#)}few{Brez beleženja zgodovine (#)}other{Brez beleženja zgodovine (#)}}</translation>
 <translation id="5985458664595100876">Neveljavna oblika URL-ja. Podprti obliki sta \\server\share in smb://server/share.</translation>
+<translation id="5990266201903445068">Samo Wi-Fi</translation>
 <translation id="5990386583461751448">Prevedeno</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani to aplikacijo.}one{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}two{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}few{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}other{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}}</translation>
 <translation id="5997337190805127100">Več o dostopu do spletnih mest</translation>
@@ -4179,6 +4211,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6209908325007204267">Vaša naprava vključuje nadgradnjo za Chrome za podjetja, vendar vaše uporabniško ime ni povezano z računom za podjetje. Ustvarite račun za podjetje, tako da v drugi napravi obiščete g.co/ChromeEnterpriseAccount.</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: sinhronizacija ne deluje</translation>
 <translation id="6212039847102026977">Prikaži dodatne lastnosti omrežja</translation>
+<translation id="621215966665094453">Prejemanje prilog (<ph name="ATTACHMENTS" />) iz naprave <ph name="DEVICE_NAME" /> ni bilo uspešno</translation>
 <translation id="6212168817037875041">Izklop zaslona</translation>
 <translation id="6212752530110374741">Pošlji povezavo po e-pošti</translation>
 <translation id="6213230117190778270">Sprejmi</translation>
@@ -4360,6 +4393,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6429384232893414837">Napaka glede posodobitve</translation>
 <translation id="6430814529589430811">Base64 kodiran ASCII, enojno potrdilo</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> nastavi samodejne posodobitve za vse uporabnike tega računalnika.</translation>
+<translation id="6433095543510643909">Prilog (<ph name="ATTACHMENTS" />) ni bilo mogoče poslati v napravo <ph name="DEVICE_NAME" /></translation>
 <translation id="6434309073475700221">Zavrzi</translation>
 <translation id="6434325376267409267">Preden lahko začnete uporabljati aplikacijo <ph name="APP_NAME" />, morate posodobiti napravo.</translation>
 <translation id="6436164536244065364">Ogled v spletni trgovini</translation>
@@ -4386,6 +4420,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6460601847208524483">Poišči naslednje</translation>
 <translation id="6461170143930046705">Iskanje omrežij ...</translation>
 <translation id="6463795194797719782">&amp;Urejanje</translation>
+<translation id="6465841119675156448">Brez interneta</translation>
 <translation id="6466988389784393586">&amp;Odpri vse zaznamke</translation>
 <translation id="6467304607960172345">Optimiziranje celozaslonskih videoposnetkov</translation>
 <translation id="6468485451923838994">Pisave</translation>
@@ -4411,6 +4446,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6498249116389603658">&amp;Vsi jeziki</translation>
 <translation id="6499143127267478107">Razreševanje gostitelja v skriptu proxy ...</translation>
 <translation id="6499681088828539489">Ne dovoli proxyjev za omrežja v skupni rabi</translation>
+<translation id="650266656685499220">Če želite ustvariti albume, odprite Google Foto</translation>
 <translation id="6503077044568424649">Najpogostejše</translation>
 <translation id="6504611359718185067">Povežite se v internet, če želite dodati tiskalnik</translation>
 <translation id="6506374932220792071">Podpis X9.62 ECDSA z algoritmom SHA-256</translation>
@@ -4432,6 +4468,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6528513914570774834">Omogoči drugim uporabnikom te naprave uporabo tega omrežja</translation>
 <translation id="652948702951888897">Zgodovina v Chromu</translation>
 <translation id="6530186581263215931">Te nastavitve je uveljavil skrbnik</translation>
+<translation id="6530972340914163124">Izbrali ste <ph name="TOPIC_SOURCE" />, pritisnite Enter, da izberete albume <ph name="TOPIC_SOURCE" /></translation>
 <translation id="6531282281159901044">Obdrži nevarno datoteko</translation>
 <translation id="6532101170117367231">Shrani v Google Drive</translation>
 <translation id="6532106788206463496">Shrani spremembe</translation>
@@ -4440,6 +4477,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6532527800157340614">Prijava ni uspela, ker ni bilo mogoče pridobiti žetona za dostop. Preverite omrežno povezavo in poskusite znova.</translation>
 <translation id="6532663472409656417">Včlanjeno v poslovnem okolju</translation>
 <translation id="6535331821390304775">Vedno dovoli, da <ph name="ORIGIN" /> odpre povezave te vrste v povezani aplikaciji</translation>
+<translation id="6538635548667167211">Trenutna nastavitev za preneseno količina podatkov je »Prenos podatkov«</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Opomba:<ph name="END_BOLD" /> Omogočite samo, če veste, kaj delate, ali če je bilo to zahtevano od vas, ker lahko zbiranje podatkov zmanjša učinkovitost delovanja.</translation>
 <translation id="6541638731489116978">Temu spletnemu mestu je preprečen dostop do tipal gibanja.</translation>
 <translation id="6545407738986370057">{0,plural, =1{Napravo vrnite v 1 tednu}one{Napravo vrnite v # tednu}two{Napravo vrnite v # tednih}few{Napravo vrnite v # tednih}other{Napravo vrnite v # tednih}}</translation>
@@ -4447,6 +4485,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6545864417968258051">Iskanje naprav Bluetooth</translation>
 <translation id="6545867563032584178">Mikrofon je izklopljen v nastavitvah sistema macOS</translation>
 <translation id="6547354035488017500">Sprostite najmanj 512 MB prostora, sicer bo postala naprava neodzivna. Če želite sprostiti prostor, izbrišite datoteke iz shrambe v napravi.</translation>
+<translation id="654871471440386944">Želite vklopiti brskanje s kazalko?</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6551508934388063976">Ukaz ni na voljo. Odprite novo okno s pritiskom tipk CTRL + N.</translation>
 <translation id="6551612971599078809">Spletno mesto uporablja USB</translation>
@@ -4488,7 +4527,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6602956230557165253">Pomikate se s puščicama levo in desno.</translation>
 <translation id="6605847144724004692">Še ni ocen uporabnikov.</translation>
 <translation id="6607831829715835317">Več orodij</translation>
-<translation id="6608012008902909398">Prikaz podrobnosti preverjanja programske opreme naprave</translation>
+<translation id="6607890859198268021">Račun <ph name="USER_EMAIL" /> že upravlja <ph name="DOMAIN" />. Če želite uporabiti starševski nadzor v drugem računu Google, se po nastavitvi odjavite, nato na zaslonu za prijavo izberite »Dodajanje osebe«.</translation>
 <translation id="6611972847767394631">Poiščite svoje zavihke tukaj</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
@@ -4619,6 +4658,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6781284683813954823">Povezava do priložnostnega logotipa</translation>
 <translation id="6781978626986383437">Varnostno kopiranje vsebnika za Linux je bilo preklicano</translation>
 <translation id="6782067259631821405">Neveljavna koda PIN</translation>
+<translation id="6785518634832172390">Koda PIN ima lahko največ 12 števk</translation>
 <translation id="6785915470941880363">Obratno pomikanje <ph name="LINK_BEGIN" />Več o tem<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Razširitve</translation>
 <translation id="6787839852456839824">Bližnjične tipke</translation>
@@ -5231,6 +5271,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7543525346216957623">Prosi starša</translation>
 <translation id="7547317915858803630">Opozorilo: Nastavitve za <ph name="PRODUCT_NAME" /> so shranjene v omrežnem pogonu, zaradi česa lahko pride do upočasnitev, zrušitev ali celo izgube podatkov.</translation>
 <translation id="7548856833046333824">Limonada</translation>
+<translation id="755047330066644486">Priloge (<ph name="ATTACHMENTS" />) so bile uspešno poslane v napravo <ph name="DEVICE_NAME" /></translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Prenos datoteke <ph name="FILE_NAME" /> ni uspel</translation>
 <translation id="7551643184018910560">Pripenjanje na polico</translation>
@@ -5310,6 +5351,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7647403192093989392">Ni nedavnih dejavnosti</translation>
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7650511557061837441">»<ph name="TRIGGERING_EXTENSION_NAME" />« želi odstraniti »<ph name="EXTENSION_NAME" />«.</translation>
+<translation id="7650677314924139716">Trenutna nastavitev za preneseno količina podatkov je »Samo Wi-Fi«</translation>
 <translation id="7652808307838961528">Urejanje osebe, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Aplikacij, razširitev in uporabniških skriptov ni mogoče dodati s tega spletnega mesta</translation>
 <translation id="7652954539215530680">Ustvarjanje kode PIN</translation>
@@ -5640,7 +5682,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Bližnjica je bila urejena</translation>
 <translation id="8018313076035239964">Nadzirajte, katere podatke lahko uporabijo spletna mesta in katero vsebino vam lahko pokažejo</translation>
-<translation id="8022688469248132790">Pregled podrobnosti o napaki</translation>
 <translation id="8023801379949507775">Posodobi razširitve</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8028060951694135607">Microsoftova obnovitev ključa</translation>
@@ -5783,6 +5824,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8198323535106903877">Namestili bomo toliko aplikacij: <ph name="NUMBER_OF_APPS" /></translation>
 <translation id="8199300056570174101">Nastavitve omrežja (storitve) in naprav</translation>
 <translation id="8200772114523450471">Nadaljuj</translation>
+<translation id="8201717382574620700">Izbira albumov <ph name="TOPIC_SOURCE" /></translation>
 <translation id="8202160505685531999">Znova vnesite geslo, če želite posodobiti profil v napravi <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8203732864715032075">Pošlje vam obvestila in si privzeto zapomni ta računalnik za Sporočila. <ph name="LINK_BEGIN" />Več o tem<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">Najbolj obiskana spletna mesta</translation>
@@ -5804,6 +5846,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8227119283605456246">Prilaganje datoteke</translation>
 <translation id="8229943166551236192">Podatki v napravi bodo izbrisani v 24 urah</translation>
 <translation id="8230134520748321204">Želite shraniti geslo za <ph name="ORIGIN" />?</translation>
+<translation id="8233874515683663066">Izbrane slike in slikovni material</translation>
 <translation id="8234795456569844941">Pomagajte našim tehnikom odpraviti to težavo. Opišite, kaj se je zgodilo, tik preden se je prikazalo sporočilo o napaki profila:</translation>
 <translation id="8236917170563564587">Deli ta zavihek</translation>
 <translation id="8237647586961940482">Temno rožnata in rdeča</translation>
@@ -6015,6 +6058,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8500234928660943538">Napačna koda PUK. Še toliko vnovičnih poskusov: <ph name="RETRIES" />.</translation>
 <translation id="8502536196501630039">Če želite uporabljati aplikacije iz Googla Play, morate najprej obnoviti aplikacije. Nekateri podatki so bili morda izgubljeni.</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
+<translation id="8504640708321980506">Prenos podatkov v mobilnem omrežju</translation>
 <translation id="8507227974644337342">Ločljivost zaslona</translation>
 <translation id="850875081535031620">Najdena ni bila nobena škodljiva programska oprema</translation>
 <translation id="8509177919508253835">Ponastavitev varnostnih ključev in ustvarjanje kod PIN</translation>
@@ -6088,6 +6132,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8602851771975208551">Drug program v računalniku je dodal aplikacijo, ki lahko spremeni način delovanja Chroma.</translation>
 <translation id="8605428685123651449">Pomnilnik za SQLite</translation>
 <translation id="8608618451198398104">Dodajanje kartončka za Kerberos</translation>
+<translation id="860909219589324847">Za prenašanje nikoli ne uporabi prenosa podatkov v mobilnem omrežju</translation>
 <translation id="8609465669617005112">Premakni navzgor</translation>
 <translation id="8610103157987623234">Nepravilna oblika, poskusite znova</translation>
 <translation id="8613164732773110792">Samo majhni znaki, števke, podčrtaji ali pomišljaji</translation>
@@ -6161,6 +6206,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8688579245973331962">Ali ne vidite svojega imena?</translation>
 <translation id="8688591111840995413">Napačno geslo</translation>
 <translation id="8688672835843460752">Na voljo</translation>
+<translation id="8695139659682234808">Dodajanje starševskega nadzora po nastavitvi</translation>
 <translation id="8695825812785969222">Odpri &amp;mesto ...</translation>
 <translation id="8698269656364382265">Če se želite vrniti na prejšnji zaslon, s prstom povlecite od leve strani.</translation>
 <translation id="869884720829132584">Meni programov</translation>
@@ -6211,6 +6257,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8746654918629346731">Razširitev »<ph name="EXTENSION_NAME" />« ste že zahtevali</translation>
 <translation id="874689135111202667">{0,plural, =1{Ali želite naložiti eno datoteko na to spletno mesto?}one{Ali želite naložiti # datoteko na to spletno mesto?}two{Ali želite naložiti # datoteki na to spletno mesto?}few{Ali želite naložiti # datoteke na to spletno mesto?}other{Ali želite naložiti # datotek na to spletno mesto?}}</translation>
 <translation id="8749556627204742888">To omrežje si delite z drugimi uporabniki te naprave.</translation>
+<translation id="8749805710397399240">Zaslona ni mogoče predvajati. V nastavitvah sistema označite dovoljenje za snemanje zaslona »Screen Recording«.</translation>
 <translation id="8749863574775030885">Dostop do naprav USB neznanega prodajalca</translation>
 <translation id="8750133148106010815">Če želite zagnati Google Play, <ph name="ORGANIZATION_NAME" /> zahteva, da varnostno kopirate podatke in ta Chromebook ponastavite na tovarniške nastavitve.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> se želi povezati z zaporednimi vrati</translation>
@@ -6502,6 +6549,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9088234649737575428">Vtičnik <ph name="PLUGIN_NAME" /> blokira pravilnik podjetja</translation>
 <translation id="9088446193279799727">Linuxa ni bilo mogoče konfigurirati. Vzpostavite internetno povezavo in poskusite znova.</translation>
 <translation id="9088917181875854783">Potrdite, da je geslo prikazano v napravi »<ph name="DEVICE_NAME" />«:</translation>
+<translation id="9093429538970210897">Priporočamo varnostno kopiranje datotek, če nadgradnje ne bi bilo mogoče dokončati. Če začnete nadgradnjo, se bo Linux (beta) zaustavil. Pred nadaljevanjem shranite odprte datoteke.</translation>
 <translation id="9094033019050270033">Posodobi geslo</translation>
 <translation id="9094038138851891550">Neveljavno uporabniško ime</translation>
 <translation id="9094982973264386462">Odstrani</translation>
@@ -6511,6 +6559,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9101691533782776290">Zažene aplikacijo</translation>
 <translation id="9102610709270966160">Omogoči razširitev</translation>
 <translation id="9103868373786083162">Pritisnite, če želite nazaj, s kontekstnim menijem pa prikažete zgodovino</translation>
+<translation id="9108072915170399168">Trenutna nastavitev za preneseno količina podatkov je »Brez interneta«</translation>
 <translation id="9108692355621501797">Namen <ph name="LINK_BEGIN" />obvestila o zasebnosti za G Suite for Education<ph name="LINK_END" /> je, da uporabnikom storitve G Suite for Education in staršem pomagamo razumeti, katere podatke storitev zbira, zakaj jih zbira in kako jih uporablja.</translation>
 <translation id="9108808586816295166">Varni DNS morda ni na voljo ves čas</translation>
 <translation id="9109122242323516435">Če želite sprostiti prostor, izbrišite datoteke iz shrambe v napravi.</translation>

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Naujas slaptažodis</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> tvarko šį įrenginį ir gali pasiekti visus naudotojo veiklos duomenis, įskaitant tinklalapius, kuriuose lankėsi, slaptažodžius ir el. paštą.</translation>
 <translation id="4003384961948020559">Nepavyko – išvestis pilna</translation>
+<translation id="4027485274696301677">Šį „<ph name="DEVICE_TYPE" />“ valdo <ph name="ENROLLMENT_DOMAIN" />. Administratoriai gali nuotoliniu būdu konfigūruoti įrenginį.</translation>
 <translation id="4034824040120875894">Spausdintuvas</translation>
 <translation id="4227825898293920515">Slaptažodžio galiojimas baigsis už <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nėra vykstančių spausdinimo užduočių</translation>
@@ -73,7 +74,6 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="808894953321890993">Keisti slaptažodį</translation>
 <translation id="8208861521865154048">Privilegijos</translation>
 <translation id="8347227221149377169">Spausdinimo užduotys</translation>
-<translation id="8623849191266582420">Šį „<ph name="DEVICE_TYPE" />“ valdo <ph name="ENROLLMENT_DOMAIN" />. Administratoriai gali nuotoliniu būdu konfigūruoti ir stebėti įrenginį.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> valdo šį naudotoją. Jis gali nuotoliniu būdu valdyti nustatymus ir stebėti naudotojo veiklą.</translation>
 <translation id="871560550817059752">Nepavyko – baigėsi rašalas</translation>
 <translation id="8747900814994928677">Patvirtinti pakeitimą</translation>

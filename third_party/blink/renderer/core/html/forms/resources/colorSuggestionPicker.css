@@ -151,3 +151,35 @@ body.controls-refresh {
         background-color: WindowText;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    .controls-refresh .color-suggestion-picker-main {
+        background: #3B3B3B;
+        color: #FFFFFF;
+        border: 1px solid #858585;
+        box-shadow: none;
+    }
+
+    .controls-refresh .color-swatch {
+        border-color: #858585;
+    }
+
+    .controls-refresh .color-swatch:focus {
+        outline-color: Highlight;
+    }
+
+    .controls-refresh .other-color,
+    .controls-refresh .other-color:hover {
+        background: #3B3B3B;
+        color: #FFFFFF;
+        border: 1px solid #858585;
+    }
+
+    .controls-refresh .other-color:hover{
+        border: 1px solid #ACACAC;
+    }
+
+    .controls-refresh .color-swatch-container::-webkit-scrollbar-thumb {
+        background-color: WindowText;
+    }
+}

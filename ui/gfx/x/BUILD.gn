@@ -105,7 +105,7 @@ component("xprotos") {
   ]
 }
 
-jumbo_component("x") {
+component("x") {
   output_name = "gfx_x11"
 
   sources = [

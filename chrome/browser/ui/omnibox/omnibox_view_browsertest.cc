@@ -887,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SearchDisabledDontCrashOnQuestionMark) {
   policy::PolicyMap policies;
   policies.Set("DefaultSearchProviderEnabled", policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-               base::Value(false), nullptr);
+               std::make_unique<base::Value>(false), nullptr);
   policy_provider()->UpdateChromePolicy(policies);
   base::RunLoop().RunUntilIdle();
 

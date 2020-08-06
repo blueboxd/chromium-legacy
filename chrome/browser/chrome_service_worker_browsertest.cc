@@ -576,8 +576,9 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchPPAPITest);
 };
 
+// Flaky on Windows and Linux ASan. https://crbug.com/1113802
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
-                       NotInterceptedByServiceWorker) {
+                       DISABLED_NotInterceptedByServiceWorker) {
   // Only the navigation to the iframe should be intercepted by the service
   // worker. The request for the PNaCl manifest ("/pnacl_url_loader.nmf"),
   // the request for the compiled code ("/pnacl_url_loader_newlib_pnacl.pexe"),

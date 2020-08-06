@@ -1009,17 +1009,17 @@ def _GenerateDefaultValue(value):
 
   |value|: The deserialized value to convert to base::Value."""
   if type(value) == bool or type(value) == int:
-    return [], 'base::Value(%s)' % json.dumps(value)
+    return [], 'std::make_unique<base::Value>(%s)' % json.dumps(value)
   elif type(value) == str:
-    return [], 'base::Value("%s")' % value
+    return [], 'std::make_unique<base::Value>("%s")' % value
   elif type(value) == list:
-    setup = ['base::Value default_value(base::Value::Type::LIST);']
+    setup = ['auto default_value = std::make_unique<base::ListValue>();']
     for entry in value:
       decl, fetch = _GenerateDefaultValue(entry)
       # Nested lists are not supported.
       if decl:
         return [], None
-      setup.append('default_value.Append(%s);' % fetch)
+      setup.append('default_value->Append(%s);' % fetch)
     return setup, 'std::move(default_value)'
   return [], None
 

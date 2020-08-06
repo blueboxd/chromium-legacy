@@ -544,8 +544,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
                                      fakeIdentity.userEmail)];
 
   // Remove the fake identity.
-  [SigninEarlGrey removeFakeIdentity:fakeIdentity];
-  [ChromeEarlGreyUI waitForAppToIdle];
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
 
   // Check that the identity has been removed.
   [[EarlGrey selectElementWithMatcher:identityChooserButtonMatcherWithEmail(

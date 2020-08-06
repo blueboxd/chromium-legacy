@@ -282,7 +282,7 @@ class BookmarkMenuButtonBase : public MenuButton {
  public:
   BookmarkMenuButtonBase(const base::string16& title,
                          BookmarkBarView::MenuButtonListener* button_listener)
-      : MenuButton(title, button_listener) {
+      : MenuButton(button_listener, title) {
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
     views::InstallPillHighlightPathGenerator(this);

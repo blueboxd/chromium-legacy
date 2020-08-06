@@ -75,7 +75,7 @@ static_library("vector_icons") {
   ]
 }
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "answers_cache.cc",
     "answers_cache.h",
@@ -386,7 +386,7 @@ proto_library("in_memory_url_index_cache_proto") {
   sources = [ "in_memory_url_index_cache.proto" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "fake_autocomplete_provider_client.cc",

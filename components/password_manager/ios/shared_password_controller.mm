@@ -421,7 +421,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 #pragma mark - PasswordManagerDriverDelegate
 
 - (const GURL&)lastCommittedURL {
-  return self.formHelper.lastCommittedURL;
+  return _webState ? _webState->GetLastCommittedURL() : GURL::EmptyGURL();
 }
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData

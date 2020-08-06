@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 
 # Implementations of media C++ interfaces using corresponding mojo services.
-jumbo_source_set("clients") {
+source_set("clients") {
   visibility = [
     "//chromecast/*",
 

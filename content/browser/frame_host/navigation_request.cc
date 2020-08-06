@@ -122,6 +122,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -545,13 +546,6 @@ void RecordReadyToCommitMetrics(
                                       delta);
     }
   }
-}
-
-// Use this to get a new unique ID for a NavigationHandle during construction.
-// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
-int64_t CreateUniqueHandleID() {
-  static int64_t unique_id_counter = 0;
-  return ++unique_id_counter;
 }
 
 // Given an net::IPAddress and a CSP set, this function calculates the
@@ -1058,6 +1052,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   return navigation_request;
 }
 
+// static class variable used to generate unique navigation ids for
+// NavigationRequest.
+int64_t NavigationRequest::unique_id_counter_ = 0;
+
 NavigationRequest::NavigationRequest(
     FrameTreeNode* frame_tree_node,
     mojom::CommonNavigationParamsPtr common_params,
@@ -1548,7 +1546,7 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
 
   DCHECK(!IsNavigationStarted());
   SetState(WILL_START_REQUEST);
-  navigation_handle_id_ = CreateUniqueHandleID();
+  is_navigation_started_ = true;
 
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
@@ -1614,8 +1612,8 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // Reset the state of the NavigationRequest, and the navigation_handle_id.
   StopCommitTimeout();
   SetState(NOT_STARTED);
+  is_navigation_started_ = false;
   processing_navigation_throttle_ = false;
-  navigation_handle_id_ = 0;
 
 #if defined(OS_ANDROID)
   if (navigation_handle_proxy_)
@@ -4182,6 +4180,14 @@ void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
                        : empty_csp);
     commit_params_->ip_address_space = ip_address_space;
     client_security_state_->ip_address_space = ip_address_space;
+
+    // TODO(crbug.com/986744): Check whether this is the correct way of
+    // detecting a secure context, amend if not. The current origin being
+    // trustworthy is a necessary condition for secure contexts, but it might
+    // not be sufficient.
+    client_security_state_->is_web_secure_context =
+        network::IsOriginPotentiallyTrustworthy(
+            url::Origin::Create(common_params_->url));
   }
 
   if (appcache_handle_) {
@@ -4450,7 +4456,7 @@ bool NavigationRequest::HasPrefetchedAlternativeSubresourceSignedExchange() {
 }
 
 int64_t NavigationRequest::GetNavigationId() {
-  return navigation_handle_id_;
+  return navigation_id_;
 }
 
 const GURL& NavigationRequest::GetURL() {
@@ -4723,7 +4729,7 @@ ReloadType NavigationRequest::NavigationTypeToReloadType(
 }
 
 bool NavigationRequest::IsNavigationStarted() const {
-  return navigation_handle_id_;
+  return is_navigation_started_;
 }
 
 bool NavigationRequest::RequiresSourceSiteInstance() const {

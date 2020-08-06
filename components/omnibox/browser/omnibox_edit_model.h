@@ -550,6 +550,13 @@ class OmniboxEditModel {
   // there was no focus event.
   bool user_input_since_focus_;
 
+  // Indicates whether the current interaction with the Omnibox resulted in
+  // navigation (true), or user leaving the omnibox without taking any action
+  // (false).
+  // The value is initialized when the Omnibox receives focus and available for
+  // use when the focus is about to be cleared.
+  bool focus_resulted_in_navigation_;
+
   // We keep track of when the user began modifying the omnibox text.
   // This should be valid whenever user_input_in_progress_ is true.
   base::TimeTicks time_user_first_modified_omnibox_;

@@ -573,6 +573,7 @@ class PdfAccessibilityTreeBuilder {
     ui::AXNodeData* static_text_node = CreateNode(
         ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
+    static_text_node->SetNameFrom(ax::mojom::NameFrom::kContents);
     node_id_to_page_char_index_->emplace(static_text_node->id, page_char_index);
     return static_text_node;
   }
@@ -583,6 +584,7 @@ class PdfAccessibilityTreeBuilder {
     ui::AXNodeData* inline_text_box_node = CreateNode(
         ax::mojom::Role::kInlineTextBox, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
+    inline_text_box_node->SetNameFrom(ax::mojom::NameFrom::kContents);
 
     std::string chars__utf8 =
         GetTextRunCharsAsUTF8(text_run, chars_, page_char_index.char_index);
@@ -690,6 +692,7 @@ class PdfAccessibilityTreeBuilder {
         ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
 
+    static_popup_note_text_node->SetNameFrom(ax::mojom::NameFrom::kContents);
     static_popup_note_text_node->AddStringAttribute(
         ax::mojom::StringAttribute::kName, highlight.note_text);
     static_popup_note_text_node->relative_bounds.bounds =

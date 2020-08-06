@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -130,6 +131,13 @@ void OmniboxPopupViewIOS::OnMatchSelected(
   // extension, |match| and its contents.  So copy the relevant match out to
   // make sure it stays alive until the call completes.
   AutocompleteMatch match = selectedMatch;
+
+  if (match.type == AutocompleteMatchType::CLIPBOARD_URL ||
+      match.type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+    // A search using clipboard link or text is activity that should indicate a
+    // user that would be interested in setting Chrome as the default browser.
+    LogLikelyInterestedDefaultBrowserUserActivity();
+  }
 
   if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
     base::RecordAction(UserMetricsAction("MobileOmniboxClipboardToURL"));

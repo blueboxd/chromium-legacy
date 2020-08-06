@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -550,6 +551,9 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)visitCopiedLink:(id)sender {
+  // A search using clipboard link is activity that should indicate a user
+  // that would be interested in setting Chrome as the default browser.
+  LogLikelyInterestedDefaultBrowserUserActivity();
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
@@ -566,6 +570,9 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)searchCopiedText:(id)sender {
+  // A search using clipboard text is activity that should indicate a user
+  // that would be interested in setting Chrome as the default browser.
+  LogLikelyInterestedDefaultBrowserUserActivity();
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(

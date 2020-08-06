@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 
 assert(is_fuchsia)
 
-jumbo_component("fuchsia") {
+component("fuchsia") {
   output_name = "ui_base_ime_fuchsia"
 
   sources = [

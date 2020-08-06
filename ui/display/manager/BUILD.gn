@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//ui/display/display.gni")
 
-jumbo_component("manager") {
+component("manager") {
   sources = [
     "display_layout_store.cc",
     "display_layout_store.h",

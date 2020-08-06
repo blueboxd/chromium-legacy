@@ -9,7 +9,7 @@ import("//ui/ozone/ozone.gni")
 
 assert(use_x11 || ozone_platform_x11)
 
-jumbo_component("x") {
+component("x") {
   output_name = "ui_base_x"
 
   sources = [

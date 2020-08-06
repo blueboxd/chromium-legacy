@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//ui/gl/features.gni")
 
-jumbo_component("init") {
+component("init") {
   output_name = "gl_init"
 
   public = [

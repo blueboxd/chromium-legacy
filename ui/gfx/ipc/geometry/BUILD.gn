@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("geometry") {
+component("geometry") {
   output_name = "gfx_ipc_geometry"
 
   sources = [

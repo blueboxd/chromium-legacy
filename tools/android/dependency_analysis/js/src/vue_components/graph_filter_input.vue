@@ -9,6 +9,7 @@
         id="filter-input"
         ref="autocomplete"
         :search="search"
+        :get-result-value="getResultValue"
         @submit="onSelectOption"/>
   </div>
 </template>
@@ -24,17 +25,35 @@ const GraphFilterInput = {
     Autocomplete,
   },
   props: {
-    'nodeIds': Array,
+    nodeIds: Array,
+    shortenName: Function,
+  },
+  data: function() {
+    return {
+      // Sorts the nodes by their shortened names, which will be displayed.
+      // this.shortenName() is cached to improve performance (~150 ms at load).
+      nodeIdsSortedByShortNames: this.nodeIds
+          .map(name => ({
+            realName: name,
+            shortName: this.shortenName(name),
+          }))
+          .sort((a, b) => a.shortName.localeCompare(b.shortName))
+          .map(nameObj => nameObj.realName),
+    };
   },
   methods: {
+    getResultValue: function(result) {
+      return this.shortenName(result);
+    },
+
     search: function(searchTerm) {
-      return this.nodeIds.filter(name => {
+      return this.nodeIdsSortedByShortNames.filter(name => {
         return name.toLowerCase().includes(searchTerm.toLowerCase());
       });
     },
 
     onSelectOption(nodeNameToAdd) {
-      if (!this.nodeIds.includes(nodeNameToAdd)) {
+      if (!this.nodeIdsSortedByShortNames.includes(nodeNameToAdd)) {
         return;
       }
       this.$emit(CUSTOM_EVENTS.FILTER_SUBMITTED, nodeNameToAdd);

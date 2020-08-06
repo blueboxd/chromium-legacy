@@ -34,43 +34,66 @@ namespace settings {
 namespace {
 
 const std::vector<SearchConcept>& GetMultiDeviceOptedInSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS,
-       mojom::kSmartLockSubpagePath,
-       mojom::SearchResultIcon::kLock,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kSmartLock}},
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET,
-       mojom::kMultiDeviceFeaturesSubpagePath,
-       mojom::SearchResultIcon::kPhone,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kForgetPhone},
-       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET_ALT1,
-        SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES,
-       mojom::kMultiDeviceFeaturesSubpagePath,
-       mojom::SearchResultIcon::kMessages,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kMessagesOnOff},
-       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES_ALT1,
-        SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE,
-       mojom::kMultiDeviceFeaturesSubpagePath,
-       mojom::SearchResultIcon::kPhone,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kMultiDeviceFeatures},
-       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1, SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK,
-       mojom::kMultiDeviceFeaturesSubpagePath,
-       mojom::SearchResultIcon::kLock,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kSmartLock}},
-  });
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS,
+        mojom::kSmartLockSubpagePath,
+        mojom::SearchResultIcon::kLock,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSubpage,
+        {.subpage = mojom::Subpage::kSmartLock}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kForgetPhone},
+        {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET_ALT1,
+         SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kMessages,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kMessagesOnOff},
+        {IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES_ALT1,
+         SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSubpage,
+        {.subpage = mojom::Subpage::kMultiDeviceFeatures},
+        {IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1, SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kLock,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSubpage,
+        {.subpage = mojom::Subpage::kSmartLock}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_PHONE_HUB,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kPhoneHubOnOff}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_PHONE_HUB_NOTIFICATIONS,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kPhoneHubNotificationsOnOff}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_PHONE_HUB_NOTIFICATION_BADGE,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kPhoneHubNotificationBadgeOnOff}},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_PHONE_HUB_TASK_CONTINUATION,
+        mojom::kMultiDeviceFeaturesSubpagePath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kPhoneHubTaskContinuationOnOff}}});
   return *tags;
 }
 
@@ -91,8 +114,21 @@ const std::vector<SearchConcept>& GetMultiDeviceOptedOutSearchConcepts() {
          IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK, SearchConcept::kAltTagEnd},
     };
 
-    // If Instant Tethering is available, also include that in the list.
-    if (base::FeatureList::IsEnabled(features::kInstantTethering)) {
+    bool is_phone_hub_enabled = features::IsPhoneHubEnabled();
+    bool is_instant_tether_enabled =
+        base::FeatureList::IsEnabled(features::kInstantTethering);
+
+    // If Phone Hub and/or Instant Tethering is available, also include them in
+    // the list.
+    if (is_phone_hub_enabled) {
+      set_up_concept.alt_tag_ids[3] = IDS_OS_SETTINGS_TAG_MULTIDEVICE_PHONE_HUB;
+
+      if (is_instant_tether_enabled) {
+        set_up_concept.alt_tag_ids[4] = IDS_OS_SETTINGS_TAG_INSTANT_TETHERING;
+      } else {
+        set_up_concept.alt_tag_ids[4] = SearchConcept::kAltTagEnd;
+      }
+    } else if (is_instant_tether_enabled) {
       set_up_concept.alt_tag_ids[3] = IDS_OS_SETTINGS_TAG_INSTANT_TETHERING;
       set_up_concept.alt_tag_ids[4] = SearchConcept::kAltTagEnd;
     }
@@ -199,6 +235,14 @@ void MultiDeviceSection::AddLoadTimeData(
       {"multideviceEnabled", IDS_SETTINGS_MULTIDEVICE_ENABLED},
       {"multideviceDisabled", IDS_SETTINGS_MULTIDEVICE_DISABLED},
       {"multideviceSmartLockItemTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
+      {"multidevicePhoneHubItemTitle",
+       IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_SECTION_TITLE},
+      {"multidevicePhoneHubNotificationsItemTitle",
+       IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_NOTIFICATIONS_SECTION_TITLE},
+      {"multidevicePhoneHubNotificationBadgeItemTitle",
+       IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_NOTIFICATION_BADGE_SECTION_TITLE},
+      {"multidevicePhoneHubTaskContinuationItemTitle",
+       IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_TASK_CONTINUATION_SECTION_TITLE},
       {"multideviceInstantTetheringItemTitle",
        IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING},
       {"multideviceInstantTetheringItemSummary",
@@ -315,6 +359,10 @@ void MultiDeviceSection::RegisterHierarchy(
       mojom::Setting::kMessagesSetUp,
       mojom::Setting::kMessagesOnOff,
       mojom::Setting::kForgetPhone,
+      mojom::Setting::kPhoneHubOnOff,
+      mojom::Setting::kPhoneHubNotificationsOnOff,
+      mojom::Setting::kPhoneHubNotificationBadgeOnOff,
+      mojom::Setting::kPhoneHubTaskContinuationOnOff,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kMultiDeviceFeatures,
                             kMultiDeviceFeaturesSettings, generator);

@@ -292,7 +292,7 @@ public class SignInPreference
 
         PersonalizedSigninPromoView signinPromoView =
                 (PersonalizedSigninPromoView) holder.findViewById(R.id.signin_promo_view_container);
-        SigninPromoUtil.setupPromoViewFromCache(
+        SigninPromoUtil.setupSigninPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, signinPromoView, () -> {
                     SharedPreferencesManager.getInstance().writeBoolean(
                             ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,

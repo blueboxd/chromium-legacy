@@ -439,6 +439,8 @@ ABSL_ATTRIBUTE_ALWAYS_INLINE inline double ValgrindSlowdown() { return 1.0; }
 ABSL_NAMESPACE_END
 }  // namespace absl
 
+using absl::base_internal::RunningOnValgrind;
+using absl::base_internal::ValgrindSlowdown;
 #endif
 #endif
 

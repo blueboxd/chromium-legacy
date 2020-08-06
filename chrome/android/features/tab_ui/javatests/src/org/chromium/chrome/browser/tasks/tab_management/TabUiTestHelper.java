@@ -284,7 +284,7 @@ public class TabUiTestHelper {
      * Merge all normal tabs into a single tab group.
      * @param cta   The current running activity.
      */
-    static void mergeAllNormalTabsToAGroup(ChromeTabbedActivity cta) {
+    public static void mergeAllNormalTabsToAGroup(ChromeTabbedActivity cta) {
         mergeAllTabsToAGroup(cta, false);
     }
 

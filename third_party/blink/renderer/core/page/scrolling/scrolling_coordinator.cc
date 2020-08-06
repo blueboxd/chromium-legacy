@@ -167,7 +167,7 @@ static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
     return;
   }
 
-  if (layer.PaintsContentOrHitTest())
+  if (layer.PaintsContentOrHitTest() && layer.HasLayerState())
     function(layer);
 
   for (auto* child : layer.Children())

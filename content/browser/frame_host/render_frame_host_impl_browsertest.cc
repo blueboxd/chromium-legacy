@@ -55,6 +55,8 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "net/base/features.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/dns/mock_host_resolver.h"
@@ -3784,12 +3786,31 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(LifecycleState::kActive, current_rfh->lifecycle_state());
 }
 
-class RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked
+// It is hard to test this feature fully at the integration test level. Indeed,
+// there is no good way to inject a fake endpoint value into the URLLoader code
+// that performs the CORS-RFC1918 checks. The most intrusive injection
+// primitive, URLLoaderInterceptor, cannot be made to work as it bypasses the
+// network service entirely. Intercepted subresource requests therefore do not
+// execute the code under test and are never blocked.
+//
+// We are able to intercept top-level navigations, which allows us to test that
+// the correct address space is committed in the client security state for
+// local, private and public IP addresses.
+//
+// We further test that given a client security state with each IP address
+// space, subresource requests served by local IP addresses fail unless
+// initiated from the same address space. This provides integration testing
+// coverage for both success and failure cases of the code under test.
+//
+// Finally, we have unit tests that test all possible combinations of source and
+// destination IP address spaces in services/network/url_loader_unittest.cc.
+// Those cover fetches to other address spaces than local.
+class RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked
     : public RenderFrameHostImplBrowserTest {
  public:
-  RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked() {
+  RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked() {
     feature_list_.InitAndEnableFeature(
-        network::features::kBlockNonSecureExternalRequests);
+        network::features::kBlockInsecurePrivateNetworkRequests);
   }
 
  private:
@@ -3798,7 +3819,7 @@ class RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked
 
 // TODO(https://crbug.com/1014325): Flaky on multiple bots.
 IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
     DISABLED_ComputeMainFrameIPAddressSpace) {
   // TODO(mkwst): `about:`, `file:`, `data:`, `blob:`, and `filesystem:` URLs
   // are all treated as `kUnknown` today. This is ~incorrect, but safe, as their
@@ -3831,7 +3852,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
     ComputeIFrameLoopbackIPAddressSpace) {
   {
     base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
@@ -3922,6 +3943,258 @@ IN_PROC_BROWSER_TEST_F(
       }
     }
   }
+}
+
+namespace {
+
+// Returns a snippet of Javascript that fetch()es the given URL.
+//
+// The snippet evaluates to a boolean promise which resolves to true iff the
+// fetch was successful. The promise never rejects, as doing so makes it hard
+// to assert failure.
+std::string FetchSubresourceScript(const std::string& url_spec) {
+  return base::ReplaceStringPlaceholders(
+      R"(fetch("$1").then(
+           response => response.ok,
+           error => {
+             console.log('Error fetching "$1"', error);
+             return false;
+           });
+      )",
+      {url_spec}, nullptr);
+}
+
+// Returns an IP address in the private address space.
+net::IPAddress PrivateAddress() {
+  return net::IPAddress(10, 0, 1, 2);
+}
+
+// Returns an IP address in the public address space.
+net::IPAddress PublicAddress() {
+  return net::IPAddress(40, 0, 1, 2);
+}
+
+// Minimal response headers for an intercepted response to be successful.
+constexpr base::StringPiece kMinimalResponseHeaders =  // force line break
+    R"(HTTP/1.0 200 OK
+Content-type: text/html
+
+)";
+
+// Minimal response body containing an HTML document.
+constexpr base::StringPiece kMinimalHtmlBody = R"(
+<html>
+<head></head>
+<body></body>
+</html>
+)";
+
+// Wraps the URLLoaderInterceptor method of the same name, asserts success.
+//
+// NOTE: ASSERT_* macros can only be used in functions returning void.
+void WriteResponseBody(base::StringPiece body,
+                       network::mojom::URLLoaderClient* client) {
+  ASSERT_EQ(content::URLLoaderInterceptor::WriteResponseBody(body, client),
+            MOJO_RESULT_OK);
+}
+
+// Helper for InterceptorWithFakeEndpoint.
+bool MaybeInterceptWithFakeEndpoint(
+    const GURL& intercepted_url,
+    const net::IPEndPoint& endpoint,
+    content::URLLoaderInterceptor::RequestParams* params) {
+  const GURL& request_url = params->url_request.url;
+  if (request_url != intercepted_url) {
+    LOG(INFO) << "MaybeInterceptWithFakeEndpoint: ignoring request to "
+              << request_url;
+    return false;
+  }
+
+  LOG(INFO) << "MaybeInterceptWithFakeEndpoint: intercepting request to "
+            << request_url;
+
+  auto response = network::mojom::URLResponseHead::New();
+  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(kMinimalResponseHeaders));
+  response->headers->GetMimeType(&response->mime_type);
+  response->remote_endpoint = endpoint;
+  params->client->OnReceiveResponse(std::move(response));
+
+  WriteResponseBody(kMinimalHtmlBody, params->client.get());
+  return true;
+}
+
+// The returned interceptor intercepts requests to |url|, fakes its network
+// endpoint to reflect the value of |endpoint|, and responds OK with a minimal
+// HTML body.
+std::unique_ptr<content::URLLoaderInterceptor> InterceptorWithFakeEndpoint(
+    const GURL& url,
+    const net::IPEndPoint& endpoint) {
+  LOG(INFO) << "Starting to intercept requests to " << url
+            << " with fake endpoint " << endpoint.ToString();
+  return std::make_unique<content::URLLoaderInterceptor>(
+      base::BindRepeating(&MaybeInterceptWithFakeEndpoint, url, endpoint));
+}
+
+}  // namespace
+
+// This test mimics the tests below, with the blocking feature disabled. It
+// verifies that by default requests:
+//  - from an insecure page with the "treat-as-public-address" CSP directive
+//  - to a local IP address
+// are not blocked.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       PrivateNetworkRequestIsNotBlockedByDefault) {
+  // Unfortunately for us, http://localhost is considered secure. Fortunately,
+  // the host resolver in these tests is set to resolve anything to 127.0.0.1.
+  // We use http://foo.test, which is not considered secure.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "foo.test", "/empty-treat-as-public-address.html")));
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            security_state->ip_address_space);
+
+  // Check that the page can load a local resource.
+  EXPECT_EQ(true,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that when the right feature is enabled, requests:
+//  - from a secure page with the "treat-as-public-address" CSP directive
+//  - to a local IP address
+// are not blocked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
+    FromSecureTreatAsPublicToLocalIsNotBlocked) {
+  // Localhost is treated as secure, even when loaded over naked HTTP.
+  // This is easier than using the HTTPS test server, since that server cannot
+  // lie about its domain name, so we have to use localhost anyway.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/empty-treat-as-public-address.html")));
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_TRUE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            security_state->ip_address_space);
+
+  // Check that the page can load a local resource.
+  EXPECT_EQ(true,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that when the right feature is enabled, requests:
+//  - from an insecure page with the "treat-as-public-address" CSP directive
+//  - to a local IP address
+// are blocked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
+    FromInsecureTreatAsPublicToLocalIsBlocked) {
+  // Unfortunately for us, http://localhost is considered secure. Fortunately,
+  // the host resolver in these tests is set to resolve anything to 127.0.0.1.
+  // We use http://foo.test, which is not considered secure.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "foo.test", "/empty-treat-as-public-address.html")));
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            security_state->ip_address_space);
+
+  // Check that the page cannot load a local resource.
+  EXPECT_EQ(false,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that when the right feature is enabled, requests:
+//  - from an insecure page served by a public IP address
+//  - to local IP addresses
+//  are blocked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
+    FromInsecurePublicToLocalIsBlocked) {
+  // Intercept the page load and pretend it came from a public IP.
+
+  const GURL url = embedded_test_server()->GetURL("foo.test", "/index.html");
+
+  // Use the same port as the server, so that the fetch is not cross-origin.
+  auto interceptor = InterceptorWithFakeEndpoint(
+      url, net::IPEndPoint(PublicAddress(), embedded_test_server()->port()));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            security_state->ip_address_space);
+
+  // Check that the page cannot load a local resource.
+  EXPECT_EQ(false,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that when the right feature is enabled, requests:
+//  - from an insecure page served by a private IP address
+//  - to local IP addresses
+//  are blocked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
+    FromInsecurePrivateToLocalIsBlocked) {
+  // Intercept the page load and pretend it came from a private IP.
+
+  const GURL url = embedded_test_server()->GetURL("foo.test", "/index.html");
+
+  // Use the same port as the server, so that the fetch is not cross-origin.
+  auto interceptor = InterceptorWithFakeEndpoint(
+      url, net::IPEndPoint(PrivateAddress(), embedded_test_server()->port()));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
+            security_state->ip_address_space);
+
+  // Check that the page cannot load a local resource.
+  EXPECT_EQ(false,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that when the right feature is enabled, requests:
+//  - from an insecure page served by a local IP address
+//  - to local IP addresses
+//  are not blocked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
+    FromInsecureLocalToLocalIsNotBlocked) {
+  const GURL url = embedded_test_server()->GetURL("foo.test", "/empty.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+            security_state->ip_address_space);
+
+  // Check that the page can load a local resource.
+  EXPECT_EQ(true,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
 }
 
 namespace {

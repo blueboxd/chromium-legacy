@@ -297,7 +297,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void RequestNewWindowPermission(
       WindowOpenDisposition disposition,
       const gfx::Rect& initial_bounds,
-      bool user_gesture,
       content::WebContents* new_contents);
 
   // Requests resolution of a potentially relative URL.

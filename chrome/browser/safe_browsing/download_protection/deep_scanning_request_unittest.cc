@@ -644,7 +644,7 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
           enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
       auto* malware_rule = malware_result->add_triggered_rules();
       malware_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
-      malware_rule->set_rule_name("MALWARE");
+      malware_rule->set_rule_name("malware");
 
       auto* dlp_result = response.add_results();
       dlp_result->set_tag("dlp");
@@ -709,7 +709,7 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
           enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
       auto* malware_rule = malware_result->add_triggered_rules();
       malware_rule->set_action(enterprise_connectors::TriggeredRule::WARN);
-      malware_rule->set_rule_name("UWS");
+      malware_rule->set_rule_name("uws");
 
       auto* dlp_result = response.add_results();
       dlp_result->set_tag("dlp");

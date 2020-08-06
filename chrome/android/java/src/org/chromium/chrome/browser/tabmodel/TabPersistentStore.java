@@ -350,6 +350,7 @@ public class TabPersistentStore extends TabPersister {
         waitForMigrationToFinish();
         logExecutionTime("LoadStateTime", time);
 
+        Log.i(TAG, "#loadState, ignoreIncognitoFiles? " + ignoreIncognitoFiles);
         initializeRestoreVars(ignoreIncognitoFiles);
 
         try {
@@ -428,6 +429,7 @@ public class TabPersistentStore extends TabPersister {
             return;
         }
 
+        Log.i(TAG, "Merging state");
         // Initialize variables.
         initializeRestoreVars(false);
 
@@ -585,6 +587,12 @@ public class TabPersistentStore extends TabPersister {
         }
 
         TabModel model = mTabModelSelector.getModel(isIncognito);
+
+        if (model.isIncognito() != isIncognito) {
+            throw new IllegalStateException("Incognito state mismatch. Restored tab state: "
+                    + isIncognito + ". Model: " + model.isIncognito());
+        }
+
         SparseIntArray restoredTabs = isIncognito ? mIncognitoTabsRestored : mNormalTabsRestored;
         int restoredIndex = 0;
         if (tabToRestore.fromMerge) {
@@ -1064,6 +1072,9 @@ public class TabPersistentStore extends TabPersister {
 
         final int count = stream.readInt();
         final int incognitoCount = skipIncognitoCount ? -1 : stream.readInt();
+        Log.i(TAG,
+                "Tab metadata, skipIncognitoCount? " + skipIncognitoCount
+                        + " incognitoCount: " + incognitoCount + " totalCount: " + count);
         final int incognitoActiveIndex = stream.readInt();
         final int standardActiveIndex = stream.readInt();
         if (count < 0 || incognitoActiveIndex >= count || standardActiveIndex >= count) {
@@ -1077,6 +1088,7 @@ public class TabPersistentStore extends TabPersister {
             if (tabIds != null) tabIds.append(id, true);
 
             Boolean isIncognito = (incognitoCount < 0) ? null : i < incognitoCount;
+
             if (callback != null) {
                 callback.onDetailsRead(i, id, tabUrl, isIncognito,
                         i == standardActiveIndex, i == incognitoActiveIndex);
@@ -1320,6 +1332,11 @@ public class TabPersistentStore extends TabPersister {
             if (mDestroyed || isCancelled()) return;
 
             boolean isIncognito = isIncognitoTabBeingRestored(mTabToRestore, tabState);
+            if (isIncognito) {
+                Log.i(TAG,
+                        "Finishing tab restore, isIncognito: " + isIncognito
+                                + " cancelIncognito: " + mCancelIncognitoTabLoads);
+            }
             boolean isLoadCancelled = (isIncognito && mCancelIncognitoTabLoads)
                     || (!isIncognito && mCancelNormalTabLoads);
             if (!isLoadCancelled) restoreTab(mTabToRestore, tabState, false);
@@ -1364,13 +1381,16 @@ public class TabPersistentStore extends TabPersister {
      */
     private boolean isIncognitoTabBeingRestored(TabRestoreDetails tabDetails, TabState tabState) {
         if (tabState != null) {
+            Log.i(TAG, "#isIncognitoTabBeingRestored from tabState:  " + tabState.isIncognito());
             // The Tab's previous state was completely restored.
             return tabState.isIncognito();
         } else if (tabDetails.isIncognito != null) {
+            Log.i(TAG, "#isIncognitoTabBeingRestored from tabDetails:  " + tabDetails.isIncognito);
             // The TabState couldn't be restored, but we have some information about the tab.
             return tabDetails.isIncognito;
         } else {
-            // The tab's type is undecideable.
+            Log.i(TAG, "#isIncognitoTabBeingRestored defaulting to false");
+            // The tab's type is undecidable.
             return false;
         }
     }

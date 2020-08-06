@@ -149,13 +149,13 @@ void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
   }
 }
 
-base::Value PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
+std::unique_ptr<base::Value> PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
     const std::string& key,
     const base::Value& value) {
   const Schema schema = policy_schema_->GetKnownProperty(key);
 
   if (!schema.valid()) {
-    return value.Clone();
+    return value.CreateDeepCopy();
   }
 
   // Handle the case of a JSON-encoded string for a dict policy.
@@ -163,12 +163,12 @@ base::Value PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
     base::Optional<base::Value> decoded_value = base::JSONReader::Read(
         value.GetString(), base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
     if (decoded_value.has_value()) {
-      return std::move(decoded_value.value());
+      return base::Value::ToUniquePtrValue(std::move(decoded_value.value()));
     }
   }
 
   // Otherwise return an unchanged value.
-  return value.Clone();
+  return value.CreateDeepCopy();
 }
 
 }  // namespace policy

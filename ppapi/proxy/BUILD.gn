@@ -9,14 +9,8 @@ config("proxy_implementation") {
   defines = [ "PPAPI_PROXY_IMPLEMENTATION" ]
 }
 
-jumbo_component("proxy") {
+component("proxy") {
   output_name = "ppapi_proxy"
-
-  if (is_nacl) {
-    # The nacl toolchain has template related bugs that are triggered
-    # in jumbo builds. https://crbug.com/912152
-    never_build_jumbo = true
-  }
 
   sources = [
     # Take some standalone files from the C++ wrapper allowing us to more
@@ -362,7 +356,7 @@ source_set("ipc_sources") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Define _GNU_SOURCE to ensure that <error.h> defines
+// program_invocation_short_name. Keep this at the top of the file since some
+// system headers might include <error.h> and the header could be skipped on
+// subsequent includes.
+#if defined(OS_LINUX) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
 #include "services/service_manager/embedder/set_process_title.h"
 
 #include <stddef.h>
@@ -19,6 +27,7 @@
 #endif  // defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_SOLARIS)
 
 #if defined(OS_LINUX)
+#include <error.h>  // Get program_invocation_short_name declaration.
 #include <sys/prctl.h>
 
 #include "base/files/file_path.h"
@@ -64,11 +73,17 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
     if (base::EndsWith(title, kDeletedSuffix, base::CompareCase::SENSITIVE))
       title.resize(title.size() - kDeletedSuffix.size());
 
+    base::FilePath::StringType base_name =
+        base::FilePath(title).BaseName().value();
     // PR_SET_NAME is available in Linux 2.6.9 and newer.
     // When available at run time, this sets the short process name that shows
     // when the full command line is not being displayed in most process
     // listings.
-    prctl(PR_SET_NAME, base::FilePath(title).BaseName().value().c_str());
+    prctl(PR_SET_NAME, base_name.c_str());
+
+    // This prevents program_invocation_short_name from being broken by
+    // setproctitle().
+    program_invocation_short_name = strdup(base_name.c_str());
   }
 #endif  // defined(OS_LINUX)
 

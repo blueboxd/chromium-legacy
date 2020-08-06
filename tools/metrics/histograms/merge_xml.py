@@ -45,9 +45,9 @@ def GetEnumsNodes(doc, trees):
   enums_list = GetElementsByTagName(trees, 'enums')
   ukm_events = GetElementsByTagName(
       GetElementsByTagName(trees, 'ukm-configuration'), 'event')
-  # Early return if there are not ukm events provided. MergeFiles have callers
+  # Early return if there are no ukm events provided. MergeFiles have callers
   # that do not pass ukm events so, in that case, we don't need to iterate
-  # the enum list.
+  # through the enum list.
   if not ukm_events:
     return enums_list
   for enums in enums_list:

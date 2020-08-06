@@ -77,7 +77,7 @@ public class StatusIndicatorTest {
     private StatusIndicatorCoordinator mStatusIndicatorCoordinator;
     private StatusIndicatorSceneLayer mStatusIndicatorSceneLayer;
     private View mStatusIndicatorContainer;
-    private ViewGroup.MarginLayoutParams mControlContainerLayoutParams;
+    private View mControlContainer;
     private BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     @Before
@@ -90,10 +90,7 @@ public class StatusIndicatorTest {
         mStatusIndicatorSceneLayer = mStatusIndicatorCoordinator.getSceneLayer();
         mStatusIndicatorContainer =
                 mActivityTestRule.getActivity().findViewById(R.id.status_indicator);
-        final View controlContainer =
-                mActivityTestRule.getActivity().findViewById(R.id.control_container);
-        mControlContainerLayoutParams =
-                (ViewGroup.MarginLayoutParams) controlContainer.getLayoutParams();
+        mControlContainer = mActivityTestRule.getActivity().findViewById(R.id.control_container);
         mBrowserControlsStateProvider = mActivityTestRule.getActivity().getBrowserControlsManager();
     }
 
@@ -112,7 +109,7 @@ public class StatusIndicatorTest {
         Assert.assertFalse("Wrong initial composited view visibility.",
                 mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
         Assert.assertEquals("Wrong initial control container top margin.", 0,
-                mControlContainerLayoutParams.topMargin);
+                getTopMarginOf(mControlContainer));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.show(
         "Status", null, Color.BLACK, Color.WHITE, Color.WHITE));
@@ -167,7 +164,6 @@ public class StatusIndicatorTest {
     @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
             "force-fieldtrials=Study/Group",
             "force-fieldtrial-params=Study.Group:start_surface_variation/single"})
-    @DisabledTest(message = "https://crbug.com/1109965")
     public void testShowAndHideOnStartSurface() {
         // clang-format on
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
@@ -211,8 +207,7 @@ public class StatusIndicatorTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.hide());
 
         CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(
-                    mBrowserControlsStateProvider.getTopControlsMinHeightOffset(), Matchers.is(0));
+            Criteria.checkThat(mStatusIndicatorContainer.getVisibility(), Matchers.is(View.GONE));
         });
 
         onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
@@ -317,7 +312,7 @@ public class StatusIndicatorTest {
             private int mActual;
             @Override
             public boolean matchesSafely(final View view) {
-                mActual = ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).topMargin;
+                mActual = getTopMarginOf(view);
                 return mActual == expected;
             }
             @Override
@@ -330,5 +325,11 @@ public class StatusIndicatorTest {
                         .appendText("but actually has " + mActual);
             }
         };
+    }
+
+    private static int getTopMarginOf(View view) {
+        final ViewGroup.MarginLayoutParams layoutParams =
+                (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        return layoutParams.topMargin;
     }
 }

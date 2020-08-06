@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("types") {
+component("types") {
   output_name = "display_types"
   sources = [
     "display_configuration_params.cc",

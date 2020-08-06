@@ -359,7 +359,7 @@ void SetProviderPolicy(MockConfigurationPolicyProvider* provider,
     ASSERT_TRUE(policy_details);
     policy_map.Set(
         it.first, level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-        it.second.Clone(),
+        it.second.CreateDeepCopy(),
         policy_details->max_external_data_size
             ? std::make_unique<ExternalDataFetcher>(nullptr, it.first)
             : nullptr);

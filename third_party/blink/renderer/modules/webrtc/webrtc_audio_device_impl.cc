@@ -360,6 +360,8 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(
     blink::WebRtcAudioRenderer* renderer) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(renderer);
+  SendLogMessage(base::StringPrintf("%s() [id=%s]", __func__,
+                                    GetAudioProcessingId().ToString().c_str()));
 
   // Here we acquire |lock_| in order to protect the internal state.
   {

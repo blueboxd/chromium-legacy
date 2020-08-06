@@ -69,6 +69,10 @@ API_AVAILABLE(ios(13.0))
                              activityOrigin:(WindowActivityOrigin)activityOrigin
                                  completion:(ProceduralBlock)completion;
 
+// Creates a UIAction instance configured for suppression which will invoke
+// the given delete |block| when executed.
+- (UIAction*)actionToRemoveWithBlock:(ProceduralBlock)block;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_ACTION_FACTORY_H_

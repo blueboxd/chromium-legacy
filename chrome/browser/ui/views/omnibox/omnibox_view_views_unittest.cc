@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #endif
 
+using FeatureAndParams = base::test::ScopedFeatureList::FeatureAndParams;
 using gfx::Range;
 using metrics::OmniboxEventProto;
 
@@ -245,10 +246,12 @@ void CheckEqualsWithMarginOne(int a, int b) {
 // Base class that ensures ScopedFeatureList is initialized first.
 class OmniboxViewViewsTestBase : public ChromeViewsTestBase {
  public:
-  OmniboxViewViewsTestBase(const std::vector<base::Feature>& enabled_features,
-                           const std::vector<base::Feature>& disabled_features,
-                           bool is_rtl_ui_test = false) {
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  OmniboxViewViewsTestBase(
+      const std::vector<FeatureAndParams>& enabled_features,
+      const std::vector<base::Feature>& disabled_features,
+      bool is_rtl_ui_test = false) {
+    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                       disabled_features);
     base::i18n::SetRTLForTesting(is_rtl_ui_test);
   }
 
@@ -272,12 +275,12 @@ const base::string16 kSimplifiedDomainDisplayUrlScheme =
 
 class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
  public:
-  OmniboxViewViewsTest(const std::vector<base::Feature>& enabled_features,
+  OmniboxViewViewsTest(const std::vector<FeatureAndParams>& enabled_features,
                        const std::vector<base::Feature>& disabled_features,
                        bool is_rtl_ui_test = false);
 
   OmniboxViewViewsTest()
-      : OmniboxViewViewsTest(std::vector<base::Feature>(),
+      : OmniboxViewViewsTest(std::vector<FeatureAndParams>(),
                              std::vector<base::Feature>()) {}
 
   TestLocationBarModel* location_bar_model() { return &location_bar_model_; }
@@ -352,7 +355,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 };
 
 OmniboxViewViewsTest::OmniboxViewViewsTest(
-    const std::vector<base::Feature>& enabled_features,
+    const std::vector<FeatureAndParams>& enabled_features,
     const std::vector<base::Feature>& disabled_features,
     bool is_rtl_ui_test)
     : OmniboxViewViewsTestBase(enabled_features,
@@ -1611,11 +1614,15 @@ class OmniboxViewViewsRevealOnHoverTest
   OmniboxViewViewsRevealOnHoverTest()
       : OmniboxViewViewsTest(
             GetParam().first
-                ? std::vector<base::Feature>(
-                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::kElideToRegistrableDomain})
-                : std::vector<base::Feature>(
-                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
+                ? std::vector<FeatureAndParams>(
+                      {{omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                        {}},
+                       {omnibox::kMaybeElideToRegistrableDomain,
+                        // Ensure all domains are elidable by policy.
+                        {{"max_unelided_host_length", "0"}}}})
+                : std::vector<FeatureAndParams>(
+                      {{omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                        {}}}),
             {},
             GetParam().second) {}
 
@@ -1711,14 +1718,21 @@ class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest()
       : OmniboxViewViewsTest(
             GetParam().first
-                ? std::vector<base::Feature>(
-                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-                       omnibox::kElideToRegistrableDomain})
-                : std::vector<base::Feature>(
-                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::
-                           kHideSteadyStateUrlPathQueryAndRefOnInteraction}),
+                ? std::vector<FeatureAndParams>(
+                      {{omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                        {}},
+                       {omnibox::
+                            kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                        {}},
+                       {omnibox::kMaybeElideToRegistrableDomain,
+                        // Ensure all domains are elidable by policy.
+                        {{"max_unelided_host_length", "0"}}}})
+                : std::vector<FeatureAndParams>(
+                      {{omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                        {}},
+                       {omnibox::
+                            kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                        {}}}),
             {},
             GetParam().second) {}
 
@@ -2072,12 +2086,17 @@ class OmniboxViewViewsHideOnInteractionTest
   OmniboxViewViewsHideOnInteractionTest()
       : OmniboxViewViewsTest(
             GetParam().first
-                ? std::vector<base::Feature>(
-                      {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-                       omnibox::kElideToRegistrableDomain})
-                : std::vector<base::Feature>(
-                      {omnibox::
-                           kHideSteadyStateUrlPathQueryAndRefOnInteraction}),
+                ? std::vector<FeatureAndParams>(
+                      {{omnibox::
+                            kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                        {}},
+                       {omnibox::kMaybeElideToRegistrableDomain,
+                        // Ensure all domains are elidable by policy.
+                        {{"max_unelided_host_length", "0"}}}})
+                : std::vector<FeatureAndParams>(
+                      {{omnibox::
+                            kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                        {}}}),
             {},
             GetParam().second) {}
   OmniboxViewViewsHideOnInteractionTest(
@@ -2159,15 +2178,18 @@ class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
   OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest()
       : OmniboxViewViewsTest(
             GetParam().first
-                ? std::vector<base::Feature>(
-                      {omnibox::kOmniboxContextMenuShowFullUrls,
-                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::
-                           kHideSteadyStateUrlPathQueryAndRefOnInteraction})
-                : std::vector<base::Feature>(
-                      {omnibox::kOmniboxContextMenuShowFullUrls,
-                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
-            {omnibox::kElideToRegistrableDomain},
+                ? std::vector<FeatureAndParams>(
+                      {{omnibox::kOmniboxContextMenuShowFullUrls, {}},
+                       {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                        {}},
+                       {omnibox::
+                            kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                        {}}})
+                : std::vector<FeatureAndParams>(
+                      {{omnibox::kOmniboxContextMenuShowFullUrls, {}},
+                       {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                        {}}}),
+            {omnibox::kMaybeElideToRegistrableDomain},
             GetParam().second) {}
 
   OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest(
@@ -2191,8 +2213,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 // Tests that unsetting the "Always show full URLs" option begins showing/hiding
 // the full URL appropriately when simplified domain field trials are enabled.
-// This test has kElideToRegistrableDomain disabled so that we can check that
-// www is elided when the option is unset but other subdomains are not.
+// This test has kMaybeElideToRegistrableDomain disabled so that we can check
+// that www is elided when the option is unset but other subdomains are not.
 TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
        UnsetAlwaysShowFullURLs) {
   // This test does setup itself and doesn't call SetUpSimplifiedDomainTest()
@@ -2239,8 +2261,8 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
     ASSERT_TRUE(elide_animation);
     EXPECT_TRUE(elide_animation->IsAnimating());
   } else {
-    // Even though kElideToRegistrableDomain is disabled, we expect to be elided
-    // to the registrable domain because the www subdomain is considered
+    // Even though kMaybeElideToRegistrableDomain is disabled, we expect to be
+    // elided to the registrable domain because the www subdomain is considered
     // trivial.
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
         omnibox_view(), base::ASCIIToUTF16("https://"),

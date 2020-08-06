@@ -212,6 +212,7 @@ absl_source_set("spinlock_test_common") {
   deps = [
     ":base",
     ":base_internal",
+    ":config",
     ":core_headers",
     "//third_party/abseil-cpp/absl/synchronization",
     "//third_party/googletest:gtest",

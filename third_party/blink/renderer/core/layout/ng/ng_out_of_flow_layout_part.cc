@@ -680,8 +680,6 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
   wtf_size_t fragmentainer_index = 0;
   const NGBlockBreakToken* break_token = nullptr;
   do {
-    // TODO(almaher): Create proxy fragment(s) to add the result to if we
-    // surpass the number of child fragments of the fragmentation context.
     if (break_token)
       fragmentainer_index++;
 
@@ -1026,9 +1024,26 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
 void NGOutOfFlowLayoutPart::AddOOFResultsToFragmentainer(
     const Vector<scoped_refptr<const NGLayoutResult>>& results,
     const wtf_size_t index) {
-  DCHECK_LT(index, container_builder_->Children().size());
+  wtf_size_t num_children = container_builder_->Children().size();
+  bool is_new_fragment = index >= num_children;
 
-  const auto& fragmentainer = container_builder_->Children()[index];
+  // If |index| is greater than the number of current children, we need to add
+  // empty column fragments at all of the indexes leading up to |index|.
+  if (index > num_children) {
+    const Vector<scoped_refptr<const NGLayoutResult>> empty_results;
+    while (index > num_children) {
+      AddOOFResultsToFragmentainer(empty_results, /*index */ num_children);
+      num_children++;
+    }
+    DCHECK_EQ(index, container_builder_->Children().size());
+  }
+
+  // TODO(almaher): Ensure that we are skipping over spanning fragments when
+  // creating new fragmentainers and when calculating |num_children|.
+  const auto& fragmentainer =
+      is_new_fragment ? container_builder_->Children()[num_children - 1]
+                      : container_builder_->Children()[index];
+
   DCHECK(fragmentainer.fragment->IsFragmentainerBox());
   const NGBlockNode& node = container_builder_->Node();
   const auto& fragment =
@@ -1043,7 +1058,7 @@ void NGOutOfFlowLayoutPart::AddOOFResultsToFragmentainer(
   // |algorithm| corresponds to the "mutable copy" of our original
   // fragmentainer. As long as this "copy" hasn't been laid out via
   // NGSimplifiedOOFLayoutAlgorithm::Layout, we can append new items to it.
-  NGSimplifiedOOFLayoutAlgorithm algorithm(params, fragment);
+  NGSimplifiedOOFLayoutAlgorithm algorithm(params, fragment, is_new_fragment);
 
   for (const auto& result : results) {
     // TODO(bebeaudr): Is the offset returned by OutOfFlowPositionedOffset the
@@ -1051,14 +1066,32 @@ void NGOutOfFlowLayoutPart::AddOOFResultsToFragmentainer(
     algorithm.AppendOutOfFlowResult(result,
                                     result->OutOfFlowPositionedOffset());
   }
-  container_builder_->ReplaceChild(
-      index, algorithm.Layout()->PhysicalFragment(), fragmentainer.offset);
+
+  if (is_new_fragment) {
+    // Calculate the column inline progression in order to calculate the inline
+    // offset of any newly added column fragments.
+    if (column_inline_progression_ == kIndefiniteSize) {
+      LayoutUnit available_size =
+          container_builder_->ChildAvailableSize().inline_size;
+      const ComputedStyle& style = container_builder_->Style();
+      LayoutUnit column_inline_size =
+          ResolveUsedColumnInlineSize(available_size, style);
+      column_inline_progression_ =
+          column_inline_size + ResolveUsedColumnGap(available_size, style);
+    }
+
+    LogicalOffset offset = fragmentainer.offset;
+    offset.inline_offset += column_inline_progression_;
+    container_builder_->AddChild(algorithm.Layout()->PhysicalFragment(),
+                                 offset);
+  } else {
+    container_builder_->ReplaceChild(
+        index, algorithm.Layout()->PhysicalFragment(), fragmentainer.offset);
+  }
 }
 
 const NGConstraintSpace& NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
     const wtf_size_t index) {
-  DCHECK_LT(index, container_builder_->Children().size());
-
   // Increase the index by 1 to avoid a key of 0.
   wtf_size_t stored_index = index + 1;
 
@@ -1066,14 +1099,23 @@ const NGConstraintSpace& NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
   if (it != fragmentainer_constraint_space_map_.end())
     return it->value;
 
-  // TODO(bebeaudr): Need to handle different fragmentation types. It won't
-  // always be multi-column.
-  const auto& fragmentainer = container_builder_->Children()[index];
+  wtf_size_t num_children = container_builder_->Children().size();
+  bool is_new_fragment = index >= num_children;
+
+  // TODO(almaher): Ensure that we are skipping over spanning fragments when
+  // creating the constraint space for new fragmentainers and when calculating
+  // |num_children|.
+  const auto& fragmentainer =
+      is_new_fragment ? container_builder_->Children()[num_children - 1]
+                      : container_builder_->Children()[index];
   DCHECK(fragmentainer.fragment->IsFragmentainerBox());
   const auto& fragment =
       To<NGPhysicalBoxFragment>(*fragmentainer.fragment.get());
   const WritingMode container_writing_mode =
       container_builder_->Style().GetWritingMode();
+
+  // TODO(bebeaudr): Need to handle different fragmentation types. It won't
+  // always be multi-column.
   NGConstraintSpace fragmentainer_constraint_space =
       CreateConstraintSpaceForColumns(
           *container_builder_->ConstraintSpace(), container_writing_mode,
@@ -1088,8 +1130,6 @@ const NGConstraintSpace& NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
 void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainerResults(
     const scoped_refptr<const NGLayoutResult> result,
     const wtf_size_t index) {
-  DCHECK_LT(index, container_builder_->Children().size());
-
   // Increase the index by 1 to avoid a key of 0.
   wtf_size_t stored_index = index + 1;
   Vector<scoped_refptr<const NGLayoutResult>> results;

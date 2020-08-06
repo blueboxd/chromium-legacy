@@ -130,6 +130,10 @@ class MetricsServiceClient {
   // Returns whether cellular logic is enabled for metrics reporting.
   virtual bool IsUMACellularUploadLogicEnabled();
 
+  // Returns whether the allowlist for external experiment ids is enabled. Some
+  // embedders like WebLayer disable it. For Chrome, it should be enabled.
+  virtual bool IsExternalExperimentAllowlistEnabled();
+
   // Returns true iff UKM is allowed for all profiles.
   // See //components/ukm/observers/ukm_consent_state_observer.h for details.
   virtual bool IsUkmAllowedForAllProfiles();

@@ -289,8 +289,10 @@ v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {
     LEAK_SANITIZER_DISABLED_SCOPE;
     v8::Local<v8::Context> context(v8::Context::New(GetIsolate()));
     script_regexp_script_state_ = MakeGarbageCollected<ScriptState>(
-        context, DOMWrapperWorld::Create(GetIsolate(),
-                                         DOMWrapperWorld::WorldType::kRegExp));
+        context,
+        DOMWrapperWorld::Create(GetIsolate(),
+                                DOMWrapperWorld::WorldType::kRegExp),
+        /* execution_context = */ nullptr);
   }
   return script_regexp_script_state_->GetContext();
 }

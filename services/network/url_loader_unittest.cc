@@ -43,10 +43,12 @@
 #include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/transport_info.h"
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cookies/cookie_access_result.h"
@@ -61,6 +63,7 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/gtest_util.h"
 #include "net/test/quic_simple_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -79,6 +82,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
+#include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -101,7 +105,10 @@ namespace network {
 
 namespace {
 
+using ::net::test::IsError;
+using ::net::test::IsOk;
 using ::testing::Optional;
+using ::testing::ValuesIn;
 
 // Returns a URLLoader::DeleteCallback that destroys |url_loader| and quits
 // |run_loop| when invoked. Tests must wait on the RunLoop to ensure nothing is
@@ -381,6 +388,79 @@ class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(SimulatedCacheInterceptor);
 };
 
+// Fakes the TransportInfo passed to URLRequest::Delegate::OnConnected().
+class URLRequestFakeTransportInfoJob : public net::URLRequestJob {
+ public:
+  // |transport_info| is subsequently passed to the OnConnected() callback.
+  URLRequestFakeTransportInfoJob(net::URLRequest* request,
+                                 net::NetworkDelegate* network_delegate,
+                                 const net::TransportInfo& transport_info)
+      : URLRequestJob(request, network_delegate),
+        transport_info_(transport_info) {}
+
+  URLRequestFakeTransportInfoJob(const URLRequestFakeTransportInfoJob&) =
+      delete;
+  URLRequestFakeTransportInfoJob& operator=(
+      const URLRequestFakeTransportInfoJob&) = delete;
+
+  // net::URLRequestJob implementation:
+  void Start() override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLRequestFakeTransportInfoJob::StartAsync,
+                                  weak_factory_.GetWeakPtr()));
+  }
+
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override { return 0; }
+
+ private:
+  ~URLRequestFakeTransportInfoJob() override = default;
+
+  void StartAsync() {
+    const int result = NotifyConnected(transport_info_);
+    if (result != net::OK) {
+      NotifyStartError(result);
+      return;
+    }
+
+    NotifyHeadersComplete();
+  }
+
+  // The fake transport info we pass to OnConnected().
+  const net::TransportInfo transport_info_;
+
+  base::WeakPtrFactory<URLRequestFakeTransportInfoJob> weak_factory_{this};
+};
+
+// Intercepts URLRequestJob creation to a specific URL. All requests to this
+// URL will report being connected with a fake TransportInfo struct.
+class FakeTransportInfoInterceptor : public net::URLRequestInterceptor {
+ public:
+  // All intercepted requests will claim to be connected via |transport_info|.
+  explicit FakeTransportInfoInterceptor(
+      const net::TransportInfo& transport_info)
+      : transport_info_(transport_info) {}
+
+  ~FakeTransportInfoInterceptor() override = default;
+
+  FakeTransportInfoInterceptor(const FakeTransportInfoInterceptor&) = delete;
+  FakeTransportInfoInterceptor& operator=(const FakeTransportInfoInterceptor&) =
+      delete;
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    // NOTE: We cannot use make_unique() because
+    // URLRequestFakeTransportInfoJob's destructor is private, which prevents
+    // use of unique_ptr.
+    return new URLRequestFakeTransportInfoJob(request, network_delegate,
+                                              transport_info_);
+  }
+
+ private:
+  const net::TransportInfo transport_info_;
+};
+
 // Returns whether monitoring was successfully set up. If yes,
 // StopMonitorBodyReadFromNetBeforePausedHistogram() needs to be called later to
 // stop monitoring.
@@ -493,9 +573,12 @@ class URLLoaderTest : public testing::Test {
     base::RunLoop delete_run_loop;
     mojo::Remote<mojom::URLLoader> loader;
     std::unique_ptr<URLLoader> url_loader;
-    static mojom::URLLoaderFactoryParams params;
+
+    mojom::URLLoaderFactoryParams params;
     params.process_id = mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
+    params.client_security_state.Swap(&client_security_state_);
+
     url::Origin origin = url::Origin::Create(url);
     params.isolation_info =
         net::IsolationInfo::CreateForInternalRequest(origin);
@@ -670,6 +753,9 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     expect_redirect_ = true;
   }
+  void set_client_security_state(mojom::ClientSecurityStatePtr state) {
+    client_security_state_ = std::move(state);
+  }
   void set_request_body(scoped_refptr<ResourceRequestBody> request_body) {
     request_body_ = request_body;
   }
@@ -793,6 +879,7 @@ class URLLoaderTest : public testing::Test {
   bool send_ssl_with_response_ = false;
   bool send_ssl_for_cert_error_ = false;
   bool expect_redirect_ = false;
+  mojom::ClientSecurityStatePtr client_security_state_;
   scoped_refptr<ResourceRequestBody> request_body_;
 
   // Used to ensure that methods are called either before or after a request is
@@ -839,6 +926,306 @@ TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
   EXPECT_EQ(net::OK, Load(url));
   ASSERT_FALSE(!!ssl_info());
 }
+
+// This test establishes a baseline for comparison against
+// URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked. When the feature is
+// disabled (default setting), requests from an insecure public website to a
+// local network resource are not blocked.
+TEST_F(URLLoaderTest, InsecurePrivateNetworkRequestIsOk) {
+  net::EmbeddedTestServer http_server;
+  http_server.ServeFilesFromSourceDirectory(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(http_server.Start());
+
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = false;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(http_server.GetURL("/empty.html")), IsOk());
+}
+
+// URLLoader test suite with the network kBlockInsecurePrivateNetworkRequests
+// feature enabled.
+class URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked
+    : public URLLoaderTest {
+ public:
+  URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked() {
+    feature_list_.InitAndEnableFeature(
+        network::features::kBlockInsecurePrivateNetworkRequests);
+  }
+
+  // Convenience alias.
+  static constexpr int kBlocked = net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// This test verifies that when the URLLoaderFactory's parameters are missing
+// a client security state, requests to local network resources are authorized.
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       MissingClientSecurityStateIsOk) {
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+// These tests verify that requests from an secure page to an IP in the
+// "local" address space are never blocked.
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       SecureUnknownToLocalIsOk) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       SecurePublicToLocalIsOk) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       SecurePrivateToLocalIsBlocked) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       SecureLocalToLocalIsOk) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+// These tests verify that requests from an insecure page to an IP in the
+// "local" address space are blocked unless the page came from the same address
+// space. In practice, the local address space contains only localhost.
+//
+// NOTE: These tests exercise the same codepath as
+// URLLoaderFakeTransportInfoTest below, except they use real URLRequestJob and
+// HttpTransaction implementations for higher confidence in the correctness of
+// the whole stack. OTOH, using an embedded test server prevents us from mocking
+// out the endpoint IP address.
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       InsecureRequestToLocalResource) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = false;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsError(kBlocked));
+}
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       InsecurePublicToLocalIsBlocked) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = false;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsError(kBlocked));
+}
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       InsecurePrivateToLocalIsBlocked) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = false;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsError(kBlocked));
+}
+
+TEST_F(URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+       InsecureLocalToLocalIsOk) {
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = false;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
+  set_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+// Bundles together the inputs to a parameterized private network request test.
+struct URLLoaderFakeTransportInfoTestParams {
+  // The address space of the client.
+  mojom::IPAddressSpace client_address_space;
+
+  // The address space of the endpoint serving the request.
+  mojom::IPAddressSpace endpoint_address_space;
+
+  // The expected request result.
+  int expected_result;
+};
+
+// For clarity when debugging parameterized test failures.
+std::ostream& operator<<(std::ostream& out,
+                         const URLLoaderFakeTransportInfoTestParams& params) {
+  return out << "{ client_address_space: " << params.client_address_space
+             << ", endpoint_address_space: " << params.endpoint_address_space
+             << ", expected_result: "
+             << net::ErrorToString(params.expected_result) << " }";
+}
+
+class URLLoaderFakeTransportInfoTest
+    : public URLLoaderTestWithInsecurePrivateNetworkRequestsBlocked,
+      public testing::WithParamInterface<URLLoaderFakeTransportInfoTestParams> {
+ protected:
+  // Returns an address in the given IP address space.
+  static net::IPAddress FakeAddress(mojom::IPAddressSpace space) {
+    switch (space) {
+      case mojom::IPAddressSpace::kUnknown:
+        return net::IPAddress();
+      case mojom::IPAddressSpace::kPublic:
+        return net::IPAddress(42, 0, 1, 2);
+      case mojom::IPAddressSpace::kPrivate:
+        return net::IPAddress(10, 0, 1, 2);
+      case mojom::IPAddressSpace::kLocal:
+        return net::IPAddress::IPv4Localhost();
+    }
+  }
+
+  // Returns an endpoint in the given IP address space.
+  static net::IPEndPoint FakeEndpoint(mojom::IPAddressSpace space) {
+    return net::IPEndPoint(FakeAddress(space), 80);
+  }
+
+  // Returns a transport info with an endpoint in the given IP address space.
+  static net::TransportInfo FakeTransportInfo(mojom::IPAddressSpace space) {
+    return net::TransportInfo(net::TransportType::kDirect, FakeEndpoint(space));
+  }
+};
+
+// This test verifies that requests made from insecure contexts are handled
+// appropriately when they go from a less-private address space to a
+// more-private address space or not. The test is parameterized by
+// (client address space, server address space, expected result) tuple.
+TEST_P(URLLoaderFakeTransportInfoTest, PrivateNetworkRequestLoadsCorrectly) {
+  const auto params = GetParam();
+
+  auto client_security_state = mojom::ClientSecurityState::New();
+  client_security_state->is_web_secure_context = false;
+  client_security_state->ip_address_space = params.client_address_space;
+  set_client_security_state(std::move(client_security_state));
+
+  const GURL url("http://fake-endpoint");
+
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::make_unique<FakeTransportInfoInterceptor>(
+               FakeTransportInfo(params.endpoint_address_space)));
+
+  // Despite its name, IsError(OK) asserts that the matched value is OK.
+  EXPECT_THAT(Load(url), IsError(params.expected_result));
+}
+
+// Lists all combinations we want to test in URLLoaderFakeTransportInfoTest.
+constexpr URLLoaderFakeTransportInfoTestParams
+    kURLLoaderFakeTransportInfoTestParamsList[] = {
+        // Client: kUnknown
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kUnknown,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kPublic,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kPrivate,
+            net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST,
+        },
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kLocal,
+            net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST,
+        },
+        // Client: kPublic
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kUnknown,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kPublic,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kPrivate,
+            net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kLocal,
+            net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST,
+        },
+        // Client: kPrivate
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kUnknown,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kPublic,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kPrivate,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kLocal,
+            net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST,
+        },
+        // Client: kLocal
+        {
+            mojom::IPAddressSpace::kLocal,
+            mojom::IPAddressSpace::kUnknown,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kLocal,
+            mojom::IPAddressSpace::kPublic,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kLocal,
+            mojom::IPAddressSpace::kPrivate,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kLocal,
+            mojom::IPAddressSpace::kLocal,
+            net::OK,
+        },
+};
+
+INSTANTIATE_TEST_SUITE_P(Parameterized,
+                         URLLoaderFakeTransportInfoTest,
+                         ValuesIn(kURLLoaderFakeTransportInfoTestParamsList));
 
 // Tests that auth challenge info is present on the response when a request
 // receives an authentication challenge.

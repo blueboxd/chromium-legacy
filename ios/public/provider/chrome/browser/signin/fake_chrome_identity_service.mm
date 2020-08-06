@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -19,6 +20,8 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
@@ -327,19 +330,15 @@ void FakeChromeIdentityService::AddIdentity(ChromeIdentity* identity) {
   FireIdentityListChanged();
 }
 
-void FakeChromeIdentityService::RemoveIdentity(ChromeIdentity* identity) {
-  if ([identities_ indexOfObject:identity] != NSNotFound) {
-    [identities_ removeObject:identity];
-    FireIdentityListChanged();
-  }
-}
-
 void FakeChromeIdentityService::SetFakeMDMError(bool fakeMDMError) {
   _fakeMDMError = fakeMDMError;
 }
 
-bool FakeChromeIdentityService::HasPendingCallback() {
-  return _pendingCallback > 0;
+bool FakeChromeIdentityService::WaitForServiceCallbacksToComplete() {
+  ConditionBlock condition = ^() {
+    return _pendingCallback == 0;
+  };
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
 }
 
 }  // namespace ios

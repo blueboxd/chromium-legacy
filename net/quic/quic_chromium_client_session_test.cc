@@ -1553,9 +1553,13 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
 
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
-  session_->connection()->OnGoAwayFrame(
-      quic::QuicGoAwayFrame(quic::kInvalidControlFrameId,
-                            quic::QUIC_PEER_GOING_AWAY, 1u, "Going away."));
+  if (VersionUsesHttp3(version_.transport_version)) {
+    session_->OnHttp3GoAway(0);
+  } else {
+    session_->connection()->OnGoAwayFrame(
+        quic::QuicGoAwayFrame(quic::kInvalidControlFrameId,
+                              quic::QUIC_PEER_GOING_AWAY, 1u, "Going away."));
+  }
   EXPECT_EQ(nullptr, QuicChromiumClientSessionPeer::CreateOutgoingStream(
                          session_.get()));
 }

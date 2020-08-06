@@ -933,7 +933,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 // This tests that opening multiple profiles with session restore enabled,
 // shutting down, and then launching with kNoStartupWindow doesn't restore
 // the previously opened profiles.
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, RestoreWithNoStartupWindow) {
+#if defined(OS_CHROMEOS)
+// TODO(http://crbug.com/1113700): flaky on ChromeOS.
+#define MAYBE_RestoreWithNoStartupWindow DISABLED_RestoreWithNoStartupWindow
+#else
+#define MAYBE_RestoreWithNoStartupWindow RestoreWithNoStartupWindow
+#endif
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
+                       MAYBE_RestoreWithNoStartupWindow) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1528,8 +1535,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   policy_map_.Set(policy::key::kRestoreOnStartup,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                   policy::POLICY_SOURCE_CLOUD, base::Value(4), nullptr);
-  base::Value url_list(base::Value::Type::LIST);
-  url_list.Append(embedded_test_server()->GetURL("/title1.html").spec());
+  auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
+  url_list->Append(
+      base::Value(embedded_test_server()->GetURL("/title1.html").spec()));
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                   policy::POLICY_SOURCE_CLOUD, std::move(url_list), nullptr);

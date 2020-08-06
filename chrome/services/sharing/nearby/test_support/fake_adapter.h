@@ -29,8 +29,12 @@ class FakeAdapter : public mojom::Adapter {
       const device::BluetoothUUID& service_uuid,
       ConnectToServiceInsecurelyCallback callback) override;
 
-  mojo::Receiver<mojom::Adapter> adapter{this};
-  bool present = true;
+  mojo::Receiver<mojom::Adapter> adapter_{this};
+  std::string name_ = "AdapterName";
+  bool present_ = true;
+  bool powered_ = true;
+  bool discoverable_ = false;
+  bool discovering_ = false;
 };
 
 }  // namespace bluetooth

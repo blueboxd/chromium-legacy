@@ -42,6 +42,7 @@ source_set("test_support") {
     ":fake_chrome_identity",
     ":signin",
     "//base",
+    "//base/test:test_support",
     "//components/signin/public/identity_manager",
     "//google_apis",
     "//ios/public/provider/chrome/browser",
@@ -60,6 +61,7 @@ source_set("fake_chrome_identity") {
   deps = [
     ":signin",
     "//base",
+    "//base/test:test_support",
   ]
 }
 

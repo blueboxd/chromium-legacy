@@ -22,7 +22,7 @@ group("browser") {
   }
 }
 
-jumbo_source_set("browser_sources") {
+source_set("browser_sources") {
   # External code should depend on via ":browser" above.
   visibility = [ "//content/*" ]
   sources = [

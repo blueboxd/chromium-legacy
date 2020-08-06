@@ -19,7 +19,7 @@ grit("autofill_address_rewriter_resources") {
   output_dir = "$root_gen_dir/components/autofill/core/browser"
 }
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "address_normalization_manager.cc",
     "address_normalization_manager.h",
@@ -418,7 +418,7 @@ jumbo_static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "autofill_test_utils.cc",

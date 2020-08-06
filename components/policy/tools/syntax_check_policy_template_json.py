@@ -35,7 +35,7 @@ TYPE_TO_SCHEMA = {
 
 # List of boolean policies that have been introduced with negative polarity in
 # the past and should not trigger the negative polarity check.
-LEGACY_INVERTED_POLARITY_WHITELIST = [
+LEGACY_INVERTED_POLARITY_ALLOWLIST = [
     'DeveloperToolsDisabled',
     'DeviceAutoUpdateDisabled',
     'Disable3DAPIs',
@@ -55,7 +55,7 @@ LEGACY_INVERTED_POLARITY_WHITELIST = [
 
 # List of policies where the 'string' part of the schema is actually a JSON
 # string which has its own schema.
-LEGACY_EMBEDDED_JSON_WHITELIST = [
+LEGACY_EMBEDDED_JSON_ALLOWLIST = [
     'ArcPolicy',
     'AutoSelectCertificateForUrls',
     'DefaultPrinterSelection',
@@ -72,7 +72,7 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
 # List of policies where not all properties are required to be presented in the
 # example value. This could be useful e.g. in case of mutually exclusive fields.
 # See crbug.com/1068257 for the details.
-OPTIONAL_PROPERTIES_POLICIES_WHITELIST = []
+OPTIONAL_PROPERTIES_POLICIES_ALLOWLIST = []
 
 # 100 MiB upper limit on the total device policy external data max size limits
 # due to the security reasons.
@@ -349,24 +349,24 @@ class PolicyTemplateChecker(object):
 
     # Checks that boolean policies are not negated (which makes them harder to
     # reason about).
-    if (policy_type == 'main' and 'disable' in policy.get('name').lower() and
-        policy.get('name') not in LEGACY_INVERTED_POLARITY_WHITELIST):
+    if (policy_type == 'main' and 'disable' in policy.get('name').lower()
+        and policy.get('name') not in LEGACY_INVERTED_POLARITY_ALLOWLIST):
       self._Error(('Boolean policy %s uses negative polarity, please make ' +
                    'new boolean policies follow the XYZEnabled pattern. ' +
                    'See also http://crbug.com/85687') % policy.get('name'))
 
     # Checks that the policy doesn't have a validation_schema - the whole
-    # schema should be defined in 'schema'- unless whitelisted as legacy.
-    if ('validation_schema' in policy and
-        policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
+    # schema should be defined in 'schema'- unless listed as legacy.
+    if ('validation_schema' in policy
+        and policy.get('name') not in LEGACY_EMBEDDED_JSON_ALLOWLIST):
       self._Error(('"validation_schema" is defined for new policy %s - ' +
                    'entire schema data should be contained in "schema"') %
                   policy.get('name'))
 
     # Try to make sure that any policy with a complex schema is storing it as
-    # a 'dict', not embedding it inside JSON strings - unless whitelisted.
-    if (self._AppearsToContainEmbeddedJson(policy.get('example_value')) and
-        policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
+    # a 'dict', not embedding it inside JSON strings - unless listed as legacy.
+    if (self._AppearsToContainEmbeddedJson(policy.get('example_value'))
+        and policy.get('name') not in LEGACY_EMBEDDED_JSON_ALLOWLIST):
       self._Error(('Example value for new policy %s looks like JSON. Do ' +
                    'not store complex data as stringified JSON - instead, ' +
                    'store it in a dict and define it in "schema".') %
@@ -785,7 +785,7 @@ class PolicyTemplateChecker(object):
       schema = policy.get('schema')
       example = policy.get('example_value')
       enforce_use_entire_schema = policy.get(
-          'name') not in OPTIONAL_PROPERTIES_POLICIES_WHITELIST
+          'name') not in OPTIONAL_PROPERTIES_POLICIES_ALLOWLIST
       if not self.has_schema_error:
         if not self.schema_validator.ValidateValue(schema, example,
                                                    enforce_use_entire_schema):

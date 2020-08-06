@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
   ShowEulaScreen();
 
   test::OobeJS().TapLinkOnPath(kSecuritySettingsLink);
-  test::OobeJS().ExpectVisiblePath(kSecuritySettingsDialog);
+  test::OobeJS().CreateVisibilityWaiter(true, kSecuritySettingsDialog)->Wait();
 
   test::OobeJS()
       .CreateWaiter(

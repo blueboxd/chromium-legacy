@@ -123,6 +123,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     // Set to true when the user has started typing new input in the omnibox, set to false
     // when the omnibox loses focus or becomes empty.
     private boolean mHasStartedNewOmniboxEditSession;
+    // Set at the end of the Omnibox interaction to indicate whether the user selected an item
+    // from the list (true) or left the Omnibox and suggestions list with no action taken (false).
+    private boolean mOmniboxFocusResultedInNavigation;
 
     /**
      * The text shown in the URL bar (user text + inline autocomplete) after the most recent set of
@@ -395,6 +398,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
     void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
+            mOmniboxFocusResultedInNavigation = false;
             mUrlFocusTime = System.currentTimeMillis();
             setSuggestionVisibilityState(SuggestionVisibilityState.PENDING_ALLOW);
 
@@ -417,6 +421,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         } else {
             if (mNativeInitialized) mDropdownViewInfoListManager.recordSuggestionsShown();
 
+            SuggestionsMetrics.recordOmniboxFocusResultedInNavigation(
+                    mOmniboxFocusResultedInNavigation);
             setSuggestionVisibilityState(SuggestionVisibilityState.DISALLOWED);
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
@@ -925,6 +931,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         RecordHistogram.recordMediumTimesHistogram(
                 "Omnibox.FocusToOpenTimeAnyPopupState3", activationTime - mUrlFocusTime);
 
+        mOmniboxFocusResultedInNavigation = true;
         GURL url = updateSuggestionUrlIfNeeded(suggestion, matchPosition, !inVisibleSuggestionList);
 
         // loadUrl modifies AutocompleteController's state clearing the native

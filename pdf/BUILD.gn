@@ -46,6 +46,7 @@ if (enable_pdf) {
       ":internal",
       ":out_of_process_instance",
       ":pdf",
+      ":pdf_view_web_plugin",
       "//base",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
@@ -227,6 +228,25 @@ if (enable_pdf) {
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//ui/base",
+    ]
+  }
+
+  # Eventual replacement for out_of_process_instance.
+  source_set("pdf_view_web_plugin") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "pdf_view_web_plugin.cc",
+      "pdf_view_web_plugin.h",
+    ]
+
+    configs += [ ":pdf_common_config" ]
+
+    deps = [
+      "//base",
+      "//cc/paint",
+      "//third_party/blink/public:blink_headers",
+      "//ui/base/cursor:cursor_base",
     ]
   }
 

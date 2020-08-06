@@ -12,21 +12,24 @@
 suite('nearby-onboarding-page', function() {
   /** @type {!NearbyOnboardingPageElement} */
   let element;
-  /** @type {!nearbyShare.mojom.NearbyShareSettingsInterface} */
-  let fakeSettings;
+  /** @type {!string} */
+  const deviceName = 'Test\'s Device';
 
   setup(function() {
     document.body.innerHTML = '';
 
-    fakeSettings = new nearby_share.FakeNearbyShareSettings();
-    nearby_share.setNearbyShareSettingsForTesting(fakeSettings);
-
     element = /** @type {!NearbyOnboardingPageElement} */ (
         document.createElement('nearby-onboarding-page'));
+    element.settings = {
+      enabled: false,
+      deviceName: deviceName,
+    };
     document.body.appendChild(element);
   });
 
   test('Renders onboarding page', async function() {
     assertEquals('NEARBY-ONBOARDING-PAGE', element.tagName);
+    // Verify the device name is shown correctly.
+    assertEquals(deviceName, element.$$('#link-row').$$('#label').innerText);
   });
 });

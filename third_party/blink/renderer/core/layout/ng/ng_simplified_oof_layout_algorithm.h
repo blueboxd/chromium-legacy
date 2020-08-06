@@ -26,7 +26,8 @@ class CORE_EXPORT NGSimplifiedOOFLayoutAlgorithm
                                NGBlockBreakToken> {
  public:
   NGSimplifiedOOFLayoutAlgorithm(const NGLayoutAlgorithmParams&,
-                                 const NGPhysicalBoxFragment&);
+                                 const NGPhysicalBoxFragment&,
+                                 bool is_new_fragment);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override {

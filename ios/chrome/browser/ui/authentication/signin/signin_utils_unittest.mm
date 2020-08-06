@@ -199,7 +199,7 @@ TEST_F(SigninUtilsTest, TestWillNotShowWithAccountRemoved) {
   }
   ASSERT_NE(nil, foo1Identity);
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->RemoveIdentity(foo1Identity);
+      ->ForgetIdentity(foo1Identity, nil);
   EXPECT_FALSE(
       SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }

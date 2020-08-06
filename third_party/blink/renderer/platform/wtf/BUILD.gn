@@ -33,7 +33,7 @@ config("wtf_config") {
   }
 }
 
-jumbo_component("wtf") {
+component("wtf") {
   sources = [
     "allocator/allocator.cc",
     "allocator/allocator.h",
@@ -256,7 +256,7 @@ test("wtf_unittests") {
   deps = [ ":wtf_unittests_sources" ]
 }
 
-jumbo_source_set("wtf_unittests_sources") {
+source_set("wtf_unittests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true

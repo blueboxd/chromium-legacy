@@ -20,7 +20,7 @@ group("common") {
   }
 }
 
-jumbo_source_set("internal") {
+source_set("internal") {
   visibility = [ "//components/policy/*" ]
 
   configs += [ "//components/policy:component_implementation" ]
@@ -285,7 +285,7 @@ jumbo_source_set("internal") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "cloud/mock_cloud_external_data_manager.cc",

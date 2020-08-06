@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("platform_window_handler") {
+component("platform_window_handler") {
   output_name = "platform_window_handler_libs"
 
   sources = [

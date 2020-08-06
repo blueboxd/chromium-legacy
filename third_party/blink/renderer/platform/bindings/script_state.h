@@ -9,6 +9,7 @@
 
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_cross_origin_callback_info.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -20,6 +21,7 @@
 namespace blink {
 
 class DOMWrapperWorld;
+class ExecutionContext;
 class ScriptValue;
 class V8PerContextData;
 
@@ -121,7 +123,11 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
     v8::Local<v8::Context> context_;
   };
 
-  ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
+  // If this ScriptState is associated with an ExecutionContext then it must be
+  // provided here, otherwise providing nullptr is fine.
+  ScriptState(v8::Local<v8::Context>,
+              scoped_refptr<DOMWrapperWorld>,
+              ExecutionContext* execution_context);
   ~ScriptState();
 
   void Trace(Visitor*) const {}
@@ -173,6 +179,7 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   DOMWrapperWorld& World() const { return *world_; }
+  const V8ContextToken& GetToken() const { return token_; }
 
   // This can return an empty handle if the v8::Context is gone.
   v8::Local<v8::Context> GetContext() const {
@@ -218,6 +225,10 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   // lifetime of |reference_from_v8_context_| and the internal field must match
   // exactly.
   SelfKeepAlive<ScriptState> reference_from_v8_context_;
+
+  // Serves as a unique ID for this context, which can be used to name the
+  // context in browser/renderer communications.
+  V8ContextToken token_;
 
   static constexpr int kV8ContextPerContextDataIndex =
       static_cast<int>(gin::kPerContextDataStartIndex) +

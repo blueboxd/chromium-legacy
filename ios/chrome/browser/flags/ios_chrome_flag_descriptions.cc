@@ -503,12 +503,17 @@ const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";
 
+const char kWebPageDefaultZoomFromDynamicTypeName[] =
+    "Use dynamic type size for default text zoom level";
+const char kWebPageDefaultZoomFromDynamicTypeDescription[] =
+    "When enabled, the default text zoom level for a website comes from the "
+    "current dynamic type setting.";
+
 const char kWebPageTextAccessibilityName[] =
     "Enable text accessibility in web pages";
 const char kWebPageTextAccessibilityDescription[] =
     "When enabled, text in web pages will respect the user's Dynamic Type "
     "setting.";
-
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions

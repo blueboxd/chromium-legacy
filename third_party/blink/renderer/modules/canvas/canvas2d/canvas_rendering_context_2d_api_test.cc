@@ -7,6 +7,8 @@
 #include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_hit_region_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -374,6 +376,170 @@ TEST_F(CanvasRenderingContext2DAPITest,
   EXPECT_EQ(25, ax_bounds.Y().ToInt());
   EXPECT_EQ(40, ax_bounds.Width().ToInt());
   EXPECT_EQ(40, ax_bounds.Height().ToInt());
+}
+
+// A IdentifiabilityStudySettingsProvider implementation that opts-into study
+// participation.
+class ActiveSettingsProvider : public IdentifiabilityStudySettingsProvider {
+ public:
+  bool IsActive() const override { return true; }
+
+  // The following return values don't matter.
+  bool IsAnyTypeOrSurfaceBlocked() const override { return true; }
+  bool IsSurfaceAllowed(IdentifiableSurface surface) const override {
+    return false;
+  }
+  bool IsTypeAllowed(IdentifiableSurface::Type type) const override {
+    return false;
+  }
+};
+
+// An RAII class that opts into study participation using
+// ActiveSettingsProvider.
+class StudyParticipationRaii {
+ public:
+  StudyParticipationRaii() {
+    IdentifiabilityStudySettings::SetGlobalProvider(
+        std::make_unique<ActiveSettingsProvider>());
+  }
+  ~StudyParticipationRaii() {
+    IdentifiabilityStudySettings::ResetStateForTesting();
+  }
+};
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyMaxOperations) {
+  StudyParticipationRaii study_participation_raii;
+  constexpr int kMaxOperations = 5;
+  IdentifiabilityStudyHelper::ScopedMaxOperationsSetter max_operations_setter(
+      kMaxOperations);
+  CreateContext(kNonOpaque);
+
+  int64_t last_digest = INT64_C(0);
+  for (int i = 0; i < kMaxOperations; i++) {
+    Context2D()->setFont("Arial");
+    EXPECT_NE(last_digest,
+              Context2D()->IdentifiableTextToken().ToUkmMetricValue())
+        << i;
+    last_digest = Context2D()->IdentifiableTextToken().ToUkmMetricValue();
+  }
+
+  Context2D()->setFont("Arial");
+  EXPECT_EQ(last_digest,
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_TRUE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyDigest_Font) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  Context2D()->setFont("Arial");
+  EXPECT_EQ(INT64_C(4260982106376580867),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyDigest_StrokeText) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  Context2D()->strokeText("Sensitive message", 1.0, 1.0);
+  EXPECT_EQ(INT64_C(-2943272460643878232),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_TRUE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyDigest_FillText) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  Context2D()->fillText("Sensitive message", 1.0, 1.0);
+  EXPECT_EQ(INT64_C(8733208206881150098),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_TRUE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyDigest_TextAlign) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  Context2D()->setTextAlign("center");
+  EXPECT_EQ(INT64_C(-4778938416456134710),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest,
+       IdentifiabilityStudyDigest_TextBaseline) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  Context2D()->setTextBaseline("top");
+  EXPECT_EQ(INT64_C(-3065573128425485855),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest,
+       IdentifiabilityStudyDigest_StrokeStyle) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  StringOrCanvasGradientOrCanvasPattern style;
+  style.SetString("blue");
+  Context2D()->setStrokeStyle(style);
+  EXPECT_EQ(INT64_C(2059186787917525779),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyDigest_FillStyle) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  StringOrCanvasGradientOrCanvasPattern style;
+  style.SetString("blue");
+  Context2D()->setFillStyle(style);
+  EXPECT_EQ(INT64_C(-6322980727372024031),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, IdentifiabilityStudyDigest_Combo) {
+  StudyParticipationRaii study_participation_raii;
+  CreateContext(kNonOpaque);
+
+  Context2D()->fillText("Sensitive message", 1.0, 1.0);
+  EXPECT_EQ(INT64_C(8733208206881150098),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+  Context2D()->setFont("Helvetica");
+  Context2D()->setTextBaseline("bottom");
+  Context2D()->setTextAlign("right");
+  StringOrCanvasGradientOrCanvasPattern style;
+  style.SetString("red");
+  Context2D()->setFillStyle(style);
+  Context2D()->fillText("Bye", 4.0, 3.0);
+  EXPECT_EQ(INT64_C(2368400155273386771),
+            Context2D()->IdentifiableTextToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(Context2D()->IdentifiabilityEncounteredSkippedOps());
+  EXPECT_TRUE(Context2D()->IdentifiabilityEncounteredSensitiveOps());
 }
 
 }  // namespace blink

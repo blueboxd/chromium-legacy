@@ -81,6 +81,9 @@ using ExecutionContextAttributionToken = MultiToken<LocalFrameToken,
 // renderer process, and a content::Portal in the browser process.
 using PortalToken = util::TokenType<class PortalTokenTypeMarker>;
 
+// Identifies a v8::Context / blink::ScriptState.
+using V8ContextToken = util::TokenType<class V8ContextTokenTypeMarker>;
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_TOKENS_TOKENS_H_

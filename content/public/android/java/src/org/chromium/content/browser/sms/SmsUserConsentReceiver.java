@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.auth.api.phone.SmsRetriever;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 
 import org.chromium.base.ContextUtils;
@@ -32,7 +33,7 @@ import org.chromium.ui.base.WindowAndroid;
 @JNINamespace("content")
 @JNIAdditionalImport(Wrappers.class)
 public class SmsUserConsentReceiver extends BroadcastReceiver {
-    private static final String TAG = "SmsUserConsentReceiver";
+    private static final String TAG = "SmsUserConsentRcvr";
     private static final boolean DEBUG = false;
     private final long mSmsProviderAndroid;
     private boolean mDestroyed;
@@ -130,6 +131,13 @@ public class SmsUserConsentReceiver extends BroadcastReceiver {
     private void listen(WindowAndroid windowAndroid) {
         mWindowAndroid = windowAndroid;
         Task<Void> task = getClient().startSmsUserConsent(null);
+
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "Task failed to start", e);
+            }
+        });
         if (DEBUG) Log.d(TAG, "Installed task");
     }
 

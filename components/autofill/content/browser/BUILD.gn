@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "autofill_log_router_factory.cc",
     "autofill_log_router_factory.h",

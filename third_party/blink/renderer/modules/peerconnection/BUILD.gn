@@ -175,7 +175,7 @@ blink_modules_sources("peerconnection") {
   deps = [ "//third_party/abseil-cpp:absl" ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [

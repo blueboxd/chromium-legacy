@@ -29,7 +29,7 @@ group("test_support") {
 
 # TODO(crbug.com/947443): This target should be split up into "engine", "model"
 # etc, but currently they all depend on each other.
-jumbo_static_library("rest_of_sync") {
+static_library("rest_of_sync") {
   sources = [
     "engine/commit_queue.cc",
     "engine/commit_queue.h",

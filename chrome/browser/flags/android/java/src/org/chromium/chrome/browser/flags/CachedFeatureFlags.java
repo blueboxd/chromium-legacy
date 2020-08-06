@@ -77,6 +77,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);
             put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true);
             put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
+            put(ChromeFeatureList.INTEREST_FEED_V2, false);
         }
     };
 

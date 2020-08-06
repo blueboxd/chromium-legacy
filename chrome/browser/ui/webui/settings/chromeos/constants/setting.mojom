@@ -52,6 +52,10 @@ enum Setting {
   kMessagesOnOff = 206,
   kForgetPhone = 207,
   kNearbyShareOnOff = 208,
+  kPhoneHubOnOff = 209,
+  kPhoneHubNotificationsOnOff = 210,
+  kPhoneHubNotificationBadgeOnOff = 211,
+  kPhoneHubTaskContinuationOnOff = 212,
 
   // People section.
   kAddAccount = 300,

@@ -14,7 +14,7 @@ source_set("text_input_types") {
   ]
 }
 
-jumbo_component("ime_types") {
+component("ime_types") {
   output_name = "ui_base_ime_types"
   sources = [
     "candidate_window.cc",
@@ -52,7 +52,7 @@ jumbo_component("ime_types") {
   }
 }
 
-jumbo_component("ime") {
+component("ime") {
   output_name = "ui_base_ime"
   sources = [
     "constants.cc",

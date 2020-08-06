@@ -282,7 +282,7 @@ using translate_infobar_overlays::TranslateModalRequestConfig;
   // check or not show.
   base::string16 targetLanguageName =
       self.newTargetLanguageIndex != kInvalidLanguageIndex
-          ? self.config->language_names().at(self.newSourceLanguageIndex)
+          ? self.config->language_names().at(self.newTargetLanguageIndex)
           : self.config->target_language_name();
 
   NSMutableArray<TableViewTextItem*>* items = [NSMutableArray array];

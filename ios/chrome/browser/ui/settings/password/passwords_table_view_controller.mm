@@ -676,6 +676,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
   EnterpriseInfoPopoverViewController* bubbleViewController =
       [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  bubbleViewController.delegate = self;
   [self presentViewController:bubbleViewController animated:YES completion:nil];
 
   // Disable the button when showing the bubble.

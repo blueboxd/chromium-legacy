@@ -214,17 +214,9 @@ FidoCableDiscovery::CreateHandshakeHandler(
       if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
         return base::nullopt;
       }
-      if (!pairing_callback_) {
-        FIDO_LOG(DEBUG) << "Discarding caBLE v2 handshake because of missing "
-                           "pairing callback";
-        return base::nullopt;
-      }
-
-      handler.reset(new FidoCableV2HandshakeHandler(
-          device, discovery_data.v2->psk_gen_key, nonce, eid,
-          discovery_data.v2->peer_identity,
-          discovery_data.v2->local_identity_seed, *pairing_callback_));
-      break;
+      FIDO_LOG(DEBUG)
+          << "Discarding unsupported caBLEv2 advert during transition.";
+      return base::nullopt;
     }
 
     case CableDiscoveryData::Version::INVALID:

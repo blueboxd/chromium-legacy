@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 
 assert(is_mac)
 
-jumbo_component("mac") {
+component("mac") {
   output_name = "ui_base_ime_mac"
 
   sources = [

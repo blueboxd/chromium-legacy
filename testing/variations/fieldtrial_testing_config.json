@@ -1044,6 +1044,21 @@
             ]
         }
     ],
+    "BackgroundPurgeOnMac": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "BackgrounPurgeOnMac",
+                    "enable_features": [
+                        "PurgeRendererMemoryWhenBackgrounded"
+                    ]
+                }
+            ]
+        }
+    ],
     "BackgroundSync": [
         {
             "platforms": [
@@ -5123,6 +5138,25 @@
                     },
                     "enable_features": [
                         "ParallelDownloading"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ParkableStringsToDisk": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "ParkableStringsToDisk",
+                    "enable_features": [
+                        "ParkableStringsToDisk"
                     ]
                 }
             ]

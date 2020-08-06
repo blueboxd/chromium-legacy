@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("ipc") {
+component("ipc") {
   output_name = "ui_events_ipc"
 
   sources = [

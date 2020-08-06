@@ -21,11 +21,14 @@
 // Returns a second fake identity.
 + (FakeChromeIdentity*)fakeIdentity2;
 
+// Returns a fake managed identity.
++ (FakeChromeIdentity*)fakeManagedIdentity;
+
 // Adds |fakeIdentity| to the fake identity service.
 + (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
-// Removes |fakeIdentity| from the fake chrome identity service, to simulate
-// identity removal from the device.
+// Removes |fakeIdentity| from the fake chrome identity service asynchronously
+// to simulate identity removal from the device.
 + (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
 // Returns the gaia ID of the signed-in account.
@@ -36,9 +39,6 @@
 
 // Returns a matcher for an identity picker cell for |email|.
 + (id<GREYMatcher>)identityCellMatcherForEmail:(NSString*)email;
-
-// Removes |fakeIdentity| from the fake identity service.
-+ (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
 // Checks if any identity is currently authenticated.
 + (BOOL)isAuthenticated;

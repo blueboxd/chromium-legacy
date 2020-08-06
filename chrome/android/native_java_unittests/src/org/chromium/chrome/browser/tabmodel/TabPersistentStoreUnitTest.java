@@ -70,6 +70,7 @@ public class TabPersistentStoreUnitTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        when(mIncognitoTabModel.isIncognito()).thenReturn(true);
         when(mTabModelSelector.getModel(false)).thenReturn(mNormalTabModel);
         when(mTabModelSelector.getModel(true)).thenReturn(mIncognitoTabModel);
 

@@ -348,7 +348,7 @@ blink_core_sources("editing") {
   }
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "commands/apply_block_element_command_test.cc",

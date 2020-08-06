@@ -11,7 +11,6 @@
 #include "components/leveldb_proto/public/proto_database.h"
 
 class NearbySharePrivateCertificate;
-class PrefRegistrySimple;
 class PrefService;
 
 namespace nearbyshare {
@@ -48,9 +47,6 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   };
 
   using ExpirationList = std::vector<std::pair<std::string, base::Time>>;
-
-  // Registers the prefs used by this class to the given |registry|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   ~NearbyShareCertificateStorageImpl() override;
   NearbyShareCertificateStorageImpl(NearbyShareCertificateStorageImpl&) =

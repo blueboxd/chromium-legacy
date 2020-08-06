@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -593,6 +594,9 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)visitCopiedLink:(id)sender {
+  // A search using clipboard link is activity that should indicate a user
+  // that would be interested in setting Chrome as the default browser.
+  LogLikelyInterestedDefaultBrowserUserActivity();
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
       base::BindOnce(^(base::Optional<GURL> optionalURL) {
@@ -608,6 +612,9 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)searchCopiedText:(id)sender {
+  // A search using clipboard text is activity that should indicate a user
+  // that would be interested in setting Chrome as the default browser.
+  LogLikelyInterestedDefaultBrowserUserActivity();
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(
       base::BindOnce(^(base::Optional<base::string16> optionalText) {

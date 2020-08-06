@@ -1224,8 +1224,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   DCHECK(challenge);
   DCHECK(decisionHandler);
 
-  // If the legacy TLS interstitial is not enabled, don't cause errors.
-  if (!base::FeatureList::IsEnabled(web::features::kIOSLegacyTLSInterstitial)) {
+  // If the legacy TLS interstitial is not enabled, don't cause errors. The
+  // interstitial is also dependent on committed interstitials being enabled.
+  if (!base::FeatureList::IsEnabled(
+          web::features::kSSLCommittedInterstitials) ||
+      !base::FeatureList::IsEnabled(web::features::kIOSLegacyTLSInterstitial)) {
     decisionHandler(YES);
     return;
   }

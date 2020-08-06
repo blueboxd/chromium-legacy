@@ -143,9 +143,8 @@ std::unique_ptr<HttpResponse> LargeHeadersAndResponseSize(
     return nullptr;
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  response->AddCustomHeader(
-      "X-Large-Header",
-      std::string(DetachedResourceRequest::kMaxResponseSize, 'b'));
+  // Maximum header size ios 256kB, stay below it.
+  response->AddCustomHeader("X-Large-Header", std::string(100 * 1024, 'b'));
   response->set_code(net::HTTP_OK);
 
   uint32_t length;
@@ -163,9 +162,8 @@ std::unique_ptr<HttpResponse> LargeResponseAndCookie(
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
   response->AddCustomHeader("Set-Cookie", kCookieFromLargeResponse);
-  response->AddCustomHeader(
-      "X-Large-Header",
-      std::string(DetachedResourceRequest::kMaxResponseSize, 'b'));
+  // Maximum header size ios 256kB, stay below it.
+  response->AddCustomHeader("X-Large-Header", std::string(100 * 1024, 'b'));
   response->set_code(net::HTTP_OK);
   response->set_content(
       std::string(DetachedResourceRequest::kMaxResponseSize + 1, 'a'));

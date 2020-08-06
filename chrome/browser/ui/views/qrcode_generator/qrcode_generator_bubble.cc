@@ -70,7 +70,6 @@ gfx::ImageSkia GetPlaceholderImageSkia(const SkColor color) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
   bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  // TODO(skare): rounded rect
   bitmap.eraseColor(color);
   return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
 }
@@ -297,8 +296,9 @@ void QRCodeGeneratorBubble::Init() {
   bottom_error_label->SetEnabledColor(
       bottom_error_label->GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_LabelSecondaryColor));
+  // User-facing limit rounded down for readability.
   int maxUrlLength = base::GetFieldTrialParamByFeatureAsInt(
-      kSharingQRCodeGenerator, "max_url_length", 122);
+      kSharingQRCodeGenerator, "max_url_length", 250);
   bottom_error_label->SetText(l10n_util::GetStringFUTF16Int(
       IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_TOO_LONG, maxUrlLength));
   bottom_error_label->SetVisible(false);

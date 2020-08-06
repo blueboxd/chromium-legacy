@@ -20,9 +20,9 @@ group("gpu") {
 }
 
 if (is_component_build) {
-  link_target_type = "jumbo_source_set"
+  link_target_type = "source_set"
 } else {
-  link_target_type = "jumbo_static_library"
+  link_target_type = "static_library"
 }
 
 target(link_target_type, "gpu_sources") {

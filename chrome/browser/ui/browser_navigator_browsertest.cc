@@ -789,7 +789,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
 
 // This test verifies that "switch to tab" prefers the latest used browser,
 // if multiple exist.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabLatestWindow) {
+#if defined(OS_CHROMEOS)
+// TODO(http://crbug.com/1113694): flaky on ChromeOS.
+#define MAYBE_SwitchToTabLatestWindow DISABLED_SwitchToTabLatestWindow
+#else
+#define MAYBE_SwitchToTabLatestWindow SwitchToTabLatestWindow
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SwitchToTabLatestWindow) {
   // Navigate to a site.
   NavigateHelper(GURL("http://maps.google.com/"), browser(),
                  WindowOpenDisposition::CURRENT_TAB, true);

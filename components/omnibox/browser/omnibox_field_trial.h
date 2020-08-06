@@ -436,7 +436,7 @@ bool ShouldRevealPathQueryRefOnHover();
 bool ShouldHidePathQueryRefOnInteraction();
 // If true, the above two features elide subdomains beyond the registrable
 // domain, as well as the path, query, and ref.
-bool ShouldElideToRegistrableDomain();
+bool ShouldMaybeElideToRegistrableDomain();
 int UnelideURLOnHoverThresholdMs();
 
 // ---------------------------------------------------------

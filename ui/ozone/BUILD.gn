@@ -64,7 +64,7 @@ platform_list_h_file = "$target_gen_dir/platform_list.h"
 platform_list_txt_file = "$target_gen_dir/platform_list.txt"
 constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
 
-jumbo_component("ozone_base") {
+component("ozone_base") {
   sources = [
     "public/gl_ozone.h",
     "public/gpu_platform_support_host.cc",
@@ -200,7 +200,7 @@ source_set("platform") {
   visibility += ozone_external_platform_visibility
 }
 
-jumbo_component("ozone") {
+component("ozone") {
   visibility = []
   visibility = [ "*" ]
   public_deps = [
@@ -210,7 +210,7 @@ jumbo_component("ozone") {
   ]
 }
 
-jumbo_source_set("test_support_internal") {
+source_set("test_support_internal") {
   testonly = true
 
   sources = [
@@ -233,7 +233,14 @@ jumbo_source_set("test_support_internal") {
   public_deps = [ "//base/test:test_support" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
+  visibility = []
+  visibility = [
+    ":*",
+    "platform/wayland:wayland_unittests",
+    "platform/x11:x11_unittests",
+  ]
+
   testonly = true
   public_deps = [ ":test_support_internal" ]
 }

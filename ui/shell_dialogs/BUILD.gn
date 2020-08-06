@@ -19,7 +19,7 @@ if (is_mac) {
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_component("shell_dialogs") {
+component("shell_dialogs") {
   sources = [
     "base_shell_dialog.cc",
     "base_shell_dialog.h",

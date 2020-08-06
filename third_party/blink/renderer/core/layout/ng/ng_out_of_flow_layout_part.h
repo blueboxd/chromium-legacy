@@ -156,6 +156,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   HashMap<wtf_size_t, Vector<scoped_refptr<const NGLayoutResult>>>
       fragmentainer_descendant_results_;
   const WritingMode writing_mode_;
+  LayoutUnit column_inline_progression_ = kIndefiniteSize;
   bool is_absolute_container_;
   bool is_fixed_container_;
   bool allow_first_tier_oof_cache_;

@@ -234,11 +234,13 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   return (it == all_tabs.end()) ? nullptr : it.browser();
 }
 
-Browser* FindBrowserWithGroup(Profile* profile, tab_groups::TabGroupId group) {
+Browser* FindBrowserWithGroup(tab_groups::TabGroupId group, Profile* profile) {
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() == profile && browser->tab_strip_model() &&
-        browser->tab_strip_model()->group_model()->ContainsTabGroup(group))
+    if ((!profile || browser->profile() == profile) &&
+        browser->tab_strip_model() &&
+        browser->tab_strip_model()->group_model()->ContainsTabGroup(group)) {
       return browser;
+    }
   }
   return nullptr;
 }

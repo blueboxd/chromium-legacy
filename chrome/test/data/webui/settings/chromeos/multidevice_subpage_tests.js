@@ -56,6 +56,22 @@ suite('Multidevice', function() {
                               settings.MultiDeviceFeature.SMART_LOCK) ?
               settings.MultiDeviceFeatureState.ENABLED_BY_USER :
               settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          phoneHubState: supportedFeatures.includes(
+                        settings.MultiDeviceFeature.PHONE_HUB) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          phoneHubNotificationsState: supportedFeatures.includes(
+                  settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          phoneHubNotificationBadgeState: supportedFeatures.includes(
+                  settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
+          phoneHubTaskContinuationState: supportedFeatures.includes(
+                  settings.MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION) ?
+              settings.MultiDeviceFeatureState.ENABLED_BY_USER :
+              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
         });
     Polymer.dom.flush();
   }
@@ -112,6 +128,18 @@ suite('Multidevice', function() {
       assertEquals(
           !!multideviceSubpage.$$('#messagesItem'),
           mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(
+          !!multideviceSubpage.$$('#phoneHubItem'),
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(
+          !!multideviceSubpage.$$('#phoneHubNotificationsItem'),
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(
+            !!multideviceSubpage.$$('#phoneHubNotificationBadgeItem'),
+            mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(
+            !!multideviceSubpage.$$('#phoneHubTaskContinuationItem'),
+            mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
     }
   });
 
@@ -121,24 +149,44 @@ suite('Multidevice', function() {
         assertTrue(!!multideviceSubpage.$$('#smartLockItem'));
         assertTrue(!!multideviceSubpage.$$('#instantTetheringItem'));
         assertTrue(!!multideviceSubpage.$$('#messagesItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubNotificationsItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubNotificationBadgeItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubTaskContinuationItem'));
 
         setSupportedFeatures([
           settings.MultiDeviceFeature.SMART_LOCK,
           settings.MultiDeviceFeature.MESSAGES,
+          settings.MultiDeviceFeature.PHONE_HUB,
+          settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS,
+          settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE,
+          settings.MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION,
         ]);
         assertTrue(!!multideviceSubpage.$$('#smartLockItem'));
         assertFalse(!!multideviceSubpage.$$('#instantTetheringItem'));
         assertTrue(!!multideviceSubpage.$$('#messagesItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubNotificationsItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubNotificationBadgeItem'));
+        assertTrue(!!multideviceSubpage.$$('#phoneHubTaskContinuationItem'));
 
         setSupportedFeatures([settings.MultiDeviceFeature.INSTANT_TETHERING]);
         assertFalse(!!multideviceSubpage.$$('#smartLockItem'));
         assertTrue(!!multideviceSubpage.$$('#instantTetheringItem'));
         assertFalse(!!multideviceSubpage.$$('#messagesItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubNotificationsItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubNotificationBadgeItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubTaskContinuationItem'));
 
         setSupportedFeatures([]);
         assertFalse(!!multideviceSubpage.$$('#smartLockItem'));
         assertFalse(!!multideviceSubpage.$$('#instantTetheringItem'));
         assertFalse(!!multideviceSubpage.$$('#messagesItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubNotificationsItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubNotificationBadgeItem'));
+        assertFalse(!!multideviceSubpage.$$('#phoneHubTaskContinuationItem'));
       });
 
   test('clicking SmartLock item routes to SmartLock subpage', function() {

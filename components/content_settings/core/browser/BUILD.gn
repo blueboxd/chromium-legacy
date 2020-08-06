@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//ppapi/buildflags/buildflags.gni")
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "content_settings_constraints.h",
     "content_settings_default_provider.cc",
@@ -86,7 +86,7 @@ jumbo_static_library("browser") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "content_settings_ephemeral_provider_unittest.cc",

@@ -97,8 +97,8 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
   // Returns the LiveTabContext of the Browser containing the group with ID
   // |group| if such a Browser exists within the given |profile|.
   static sessions::LiveTabContext* FindContextWithGroup(
-      Profile* profile,
-      tab_groups::TabGroupId group);
+      tab_groups::TabGroupId group,
+      Profile* profile);
 
  private:
   Browser* const browser_;

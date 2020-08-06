@@ -43,11 +43,9 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   void TearDown() override {
     // All callbacks should be triggered to make sure tests are working
-    // correctly. If this test fails,
-    // |WaitUntilFakeChromeIdentityServiceCallbackCompleted| should be called
-    // in the test.
-    EXPECT_FALSE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-                     ->HasPendingCallback());
+    // correctly.
+    EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                    ->WaitForServiceCallbacksToComplete());
     [mediator_ signinPromoViewIsRemoved];
     EXPECT_EQ(ios::SigninPromoViewState::Invalid,
               mediator_.signinPromoViewState);
@@ -175,20 +173,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   void CheckForImageNotification() {
     configurator_ = nil;
     ExpectConfiguratorNotification(NO /* identity changed */);
-    WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+    EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                    ->WaitForServiceCallbacksToComplete());
     // Check the configurator received by the consumer.
     CheckWarmStateConfigurator(configurator_);
-  }
-
-  // Runs the runloop until all callback from FakeChromeIdentityService are
-  // called.
-  void WaitUntilFakeChromeIdentityServiceCallbackCompleted() {
-    ConditionBlock condition = ^() {
-      return !ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-                  ->HasPendingCallback();
-    };
-    EXPECT_TRUE(
-        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
   }
 
   // Mediator used for the tests.
@@ -261,7 +249,7 @@ TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
   // configureSigninPromoWithConfigurator:identityChanged:].
   ExpectConfiguratorNotification(YES /* identity changed */);
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->RemoveIdentity(expected_default_identity_);
+      ->ForgetIdentity(expected_default_identity_, nil);
   expected_default_identity_ = nil;
   // Check the received configurator.
   CheckColdStateConfigurator(configurator_);
@@ -334,7 +322,8 @@ TEST_F(SigninPromoViewMediatorTest,
   // Adds an identity while doing sign-in.
   AddDefaultIdentity();
   // No consumer notification should be expected.
-  WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+  EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                  ->WaitForServiceCallbacksToComplete());
   // Finishs the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
   completion(YES);
@@ -367,7 +356,8 @@ TEST_F(SigninPromoViewMediatorTest,
   // Simulates an identity update.
   [chromeIdentityServiceObserver profileUpdate:expected_default_identity_];
   // Spins the run loop to wait for the profile image update.
-  WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+  EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                  ->WaitForServiceCallbacksToComplete());
   // Finishs the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
   completion(YES);

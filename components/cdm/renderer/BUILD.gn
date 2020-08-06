@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
-jumbo_static_library("renderer") {
+static_library("renderer") {
   sources = [
     "external_clear_key_key_system_properties.cc",
     "external_clear_key_key_system_properties.h",

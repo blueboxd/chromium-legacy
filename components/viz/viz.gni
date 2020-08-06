@@ -14,7 +14,7 @@ if (!is_debug) {
 }
 
 template("viz_source_set") {
-  jumbo_source_set(target_name) {
+  source_set(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs
@@ -25,7 +25,7 @@ template("viz_source_set") {
 }
 
 template("viz_component") {
-  jumbo_component(target_name) {
+  component(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs
@@ -36,7 +36,7 @@ template("viz_component") {
 }
 
 template("viz_static_library") {
-  jumbo_static_library(target_name) {
+  static_library(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs

@@ -92,6 +92,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_event.h"
@@ -1103,6 +1104,10 @@ void AXObjectCacheImpl::ChildrenChanged(Node* node) {
   if (!node)
     return;
 
+  // Don't enqueue a deferred event on the same node more than once.
+  if (!nodes_with_pending_children_changed_.insert(node).is_new_entry)
+    return;
+
   DeferTreeUpdate(&AXObjectCacheImpl::ChildrenChangedWithCleanLayout, node);
 }
 
@@ -1113,6 +1118,10 @@ void AXObjectCacheImpl::ChildrenChanged(const LayoutObject* layout_object) {
   Node* node = GetClosestNodeForLayoutObject(layout_object);
 
   if (node) {
+    // Don't enqueue a deferred event on the same node more than once.
+    if (!nodes_with_pending_children_changed_.insert(node).is_new_entry)
+      return;
+
     DeferTreeUpdate(&AXObjectCacheImpl::ChildrenChangedWithCleanLayout, node);
     return;
   }
@@ -1170,6 +1179,8 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* optional_node,
 }
 
 void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
+  TRACE_EVENT0("accessibility", "ProcessDeferredAccessibilityEvents");
+
   if (document.Lifecycle().GetState() != DocumentLifecycle::kInAccessibility) {
     DCHECK(false) << "Deferred events should only be processed during the "
                      "accessibility document lifecycle";
@@ -1200,6 +1211,8 @@ void AXObjectCacheImpl::ProcessUpdates(Document& document) {
 
   TreeUpdateCallbackQueue old_tree_update_callback_queue;
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
+  nodes_with_pending_children_changed_.clear();
+
   for (auto& tree_update : old_tree_update_callback_queue) {
     Node* node = tree_update->node;
     AXID axid = tree_update->axid;
@@ -2290,6 +2303,7 @@ void AXObjectCacheImpl::Trace(Visitor* visitor) const {
   visitor->Trace(permission_observer_receiver_);
   visitor->Trace(documents_);
   visitor->Trace(tree_update_callback_queue_);
+  visitor->Trace(nodes_with_pending_children_changed_);
   AXObjectCache::Trace(visitor);
 }
 

@@ -228,8 +228,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
-      UIViewController* controller = [[BlockPopupsTableViewController alloc]
-          initWithBrowserState:_browserState];
+      BlockPopupsTableViewController* controller =
+          [[BlockPopupsTableViewController alloc]
+              initWithBrowserState:_browserState];
+      controller.dispatcher = self.dispatcher;
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }

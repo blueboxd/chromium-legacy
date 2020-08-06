@@ -844,8 +844,8 @@ bool OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() {
       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction);
 }
 
-bool OmniboxFieldTrial::ShouldElideToRegistrableDomain() {
-  return base::FeatureList::IsEnabled(omnibox::kElideToRegistrableDomain);
+bool OmniboxFieldTrial::ShouldMaybeElideToRegistrableDomain() {
+  return base::FeatureList::IsEnabled(omnibox::kMaybeElideToRegistrableDomain);
 }
 
 int OmniboxFieldTrial::UnelideURLOnHoverThresholdMs() {

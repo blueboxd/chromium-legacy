@@ -124,32 +124,26 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 #pragma mark - Helpers
 
-- (BOOL)isMobileByDefault {
-  return web::features::UseWebClientDefaultUserAgent()
-             ? ![ChromeEarlGrey isIPadIdiom]
-             : YES;
-}
-
 - (GREYElementInteraction*)defaultRequestButton {
-  if ([self isMobileByDefault])
+  if ([ChromeEarlGrey isMobileModeByDefault])
     return RequestDesktopButton();
   return RequestMobileButton();
 }
 
 - (GREYElementInteraction*)nonDefaultRequestButton {
-  if ([self isMobileByDefault])
+  if ([ChromeEarlGrey isMobileModeByDefault])
     return RequestMobileButton();
   return RequestDesktopButton();
 }
 
 - (std::string)defaultLabel {
-  if ([self isMobileByDefault])
+  if ([ChromeEarlGrey isMobileModeByDefault])
     return kMobileSiteLabel;
   return kDesktopSiteLabel;
 }
 
 - (std::string)nonDefaultLabel {
-  if ([self isMobileByDefault])
+  if ([ChromeEarlGrey isMobileModeByDefault])
     return kDesktopSiteLabel;
   return kMobileSiteLabel;
 }
@@ -416,7 +410,7 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   std::string defaultPlatform;
   std::string nonDefaultPlatform;
-  if ([self isMobileByDefault]) {
+  if ([ChromeEarlGrey isMobileModeByDefault]) {
     defaultPlatform = base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
     if (@available(iOS 13, *)) {
       nonDefaultPlatform = kDesktopPlatformLabel;

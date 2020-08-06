@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 
-jumbo_source_set("browser") {
+source_set("browser") {
   sources = [
     "safe_browsing_url_checker_impl.cc",
     "safe_browsing_url_checker_impl.h",

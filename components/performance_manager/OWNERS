@@ -1,6 +1,7 @@
 chrisha@chromium.org
 fdoray@chromium.org
 siggi@chromium.org
+joenotcharles@google.com
 
 # For IPC security review
 per-file *.mojom=set noparent

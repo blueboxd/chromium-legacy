@@ -8,23 +8,22 @@
  *  @enum {number}
  */
 export const PrinterStatusReason = {
-  CONNECTING_TO_DEVICE: 0,
-  DEVICE_ERROR: 1,
-  DOOR_OPEN: 2,
-  LOW_ON_INK: 3,
-  LOW_ON_PAPER: 4,
-  NO_ERROR: 5,
-  OUT_OF_INK: 6,
-  OUT_OF_PAPER: 7,
-  OUTPUT_ALMOST_FULL: 8,
-  OUTPUT_FULL: 9,
-  PAPER_JAM: 10,
-  PAUSED: 11,
-  PRINTER_QUEUE_FULL: 12,
-  PRINTER_UNREACHABLE: 13,
-  STOPPED: 14,
-  TRAY_MISSING: 15,
-  UNKNOWN_REASON: 16,
+  DEVICE_ERROR: 0,
+  DOOR_OPEN: 1,
+  LOW_ON_INK: 2,
+  LOW_ON_PAPER: 3,
+  NO_ERROR: 4,
+  OUT_OF_INK: 5,
+  OUT_OF_PAPER: 6,
+  OUTPUT_ALMOST_FULL: 7,
+  OUTPUT_FULL: 8,
+  PAPER_JAM: 9,
+  PAUSED: 10,
+  PRINTER_QUEUE_FULL: 11,
+  PRINTER_UNREACHABLE: 12,
+  STOPPED: 13,
+  TRAY_MISSING: 14,
+  UNKNOWN_REASON: 15,
 };
 
 /**
@@ -57,7 +56,6 @@ export let PrinterStatus;
 
 /** @const {!Map<!PrinterStatusReason, string>} */
 export const ERROR_STRING_KEY_MAP = new Map([
-  [PrinterStatusReason.CONNECTING_TO_DEVICE, 'printerStatusConnectingToDevice'],
   [PrinterStatusReason.DEVICE_ERROR, 'printerStatusDeviceError'],
   [PrinterStatusReason.DOOR_OPEN, 'printerStatusDoorOpen'],
   [PrinterStatusReason.LOW_ON_INK, 'printerStatusLowOnInk'],

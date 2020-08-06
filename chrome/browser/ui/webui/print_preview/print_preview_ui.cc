@@ -328,8 +328,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"pinErrorMessage", IDS_PRINT_PREVIEW_PIN_ERROR_MESSAGE},
     {"pinPlaceholder", IDS_PRINT_PREVIEW_PIN_PLACEHOLDER},
     {"printerEulaURL", IDS_PRINT_PREVIEW_EULA_URL},
-    {"printerStatusConnectingToDevice",
-     IDS_PRINT_PREVIEW_PRINTER_STATUS_CONNECTING_TO_DEVICE},
     {"printerStatusDeviceError", IDS_PRINT_PREVIEW_PRINTER_STATUS_DEVICE_ERROR},
     {"printerStatusDoorOpen", IDS_PRINT_PREVIEW_PRINTER_STATUS_DOOR_OPEN},
     {"printerStatusLowOnInk", IDS_PRINT_PREVIEW_PRINTER_STATUS_LOW_ON_INK},

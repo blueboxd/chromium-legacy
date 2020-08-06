@@ -106,6 +106,14 @@ const MultiDeviceFeatureBehaviorImpl = {
         return this.i18n('multideviceAndroidMessagesItemTitle');
       case settings.MultiDeviceFeature.SMART_LOCK:
         return this.i18n('multideviceSmartLockItemTitle');
+      case settings.MultiDeviceFeature.PHONE_HUB:
+        return this.i18n('multidevicePhoneHubItemTitle');
+      case settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS:
+        return this.i18n('multidevicePhoneHubNotificationsItemTitle');
+      case settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE:
+        return this.i18n('multidevicePhoneHubNotificationBadgeItemTitle');
+      case settings.MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION:
+        return this.i18n('multidevicePhoneHubTaskContinuationItemTitle');
       default:
         return '';
     }
@@ -125,6 +133,12 @@ const MultiDeviceFeatureBehaviorImpl = {
         return 'os-settings:multidevice-messages';
       case settings.MultiDeviceFeature.SMART_LOCK:
         return 'os-settings:multidevice-smart-lock';
+      // TODO(https://crbug.com/1106937): Use real Phone Hub asset.
+      case settings.MultiDeviceFeature.PHONE_HUB:
+      case settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS:
+      case settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE:
+      case settings.MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION:
+        return 'os-settings:multidevice-better-together-suite';
       default:
         return '';
     }
@@ -170,6 +184,14 @@ const MultiDeviceFeatureBehaviorImpl = {
         return this.pageContentData.messagesState;
       case settings.MultiDeviceFeature.SMART_LOCK:
         return this.pageContentData.smartLockState;
+      case settings.MultiDeviceFeature.PHONE_HUB:
+        return this.pageContentData.phoneHubState;
+      case settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS:
+        return this.pageContentData.phoneHubNotificationsState;
+      case settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE:
+        return this.pageContentData.phoneHubNotificationBadgeState;
+      case settings.MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION:
+        return this.pageContentData.phoneHubTaskContinuationState;
       default:
         return null;
     }

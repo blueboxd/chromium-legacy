@@ -203,7 +203,7 @@ inspector_protocol_generate("protocol_sources") {
 }
 
 # Compiles the sources generated above.
-jumbo_source_set("generated") {
+source_set("generated") {
   sources = get_target_outputs(":protocol_sources")
 
   configs -= core_config_remove

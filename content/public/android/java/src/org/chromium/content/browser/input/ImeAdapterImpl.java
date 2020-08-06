@@ -312,9 +312,10 @@ public class ImeAdapterImpl
         }
         if (mInputConnectionFactory == null) return null;
         View containerView = getContainerView();
+        if (DEBUG_LOGS) Log.i(TAG, "Last text: " + mLastText);
         setInputConnection(mInputConnectionFactory.initializeAndGet(containerView, this,
                 mTextInputType, mTextInputFlags, mTextInputMode, mTextInputAction,
-                mLastSelectionStart, mLastSelectionEnd, outAttrs));
+                mLastSelectionStart, mLastSelectionEnd, mLastText, outAttrs));
         if (DEBUG_LOGS) Log.i(TAG, "onCreateInputConnection: " + mInputConnection);
 
         if (mCursorAnchorInfoController != null) {

@@ -89,6 +89,7 @@ interface Adapter {
   GetDevices() => (array<DeviceInfo> devices);
 
   // Gets basic information about the adapter.
+  [Sync]
   GetInfo() => (AdapterInfo info);
 
   // Sets the client that listens for the adapter's events.

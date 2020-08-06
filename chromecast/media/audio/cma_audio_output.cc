@@ -187,5 +187,10 @@ CmaBackend::AudioDecoder::RenderingDelay CmaAudioOutput::GetRenderingDelay() {
   return audio_decoder_->GetRenderingDelay();
 }
 
+int64_t CmaAudioOutput::GetTotalFrames() {
+  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  return timestamp_helper_.frame_count();
+}
+
 }  // namespace media
 }  // namespace chromecast

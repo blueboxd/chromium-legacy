@@ -40,6 +40,12 @@
                                           name:@"Fake Foo 2"];
 }
 
++ (FakeChromeIdentity*)fakeManagedIdentity {
+  return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
+                                        gaiaID:@"fooManagedID"
+                                          name:@"Fake Managed"];
+}
+
 + (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       fakeIdentity);
@@ -72,11 +78,6 @@
   return grey_allOf(grey_accessibilityID(email),
                     grey_kindOfClass([IdentityChooserCell class]),
                     grey_sufficientlyVisible(), nil);
-}
-
-+ (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->RemoveIdentity(fakeIdentity);
 }
 
 + (BOOL)isAuthenticated {

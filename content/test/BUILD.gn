@@ -27,7 +27,7 @@ if (is_android) {
 
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -685,7 +685,7 @@ group("telemetry_gpu_integration_test_support") {
 
 # browsertest_support can be used by targets that run content_shell based
 # browser tests.
-jumbo_static_library("browsertest_support") {
+static_library("browsertest_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in

@@ -175,6 +175,20 @@ static inline void ConvertCanvasStyleToUnionType(
   return_value.SetString(style->GetColor());
 }
 
+void BaseRenderingContext2D::IdentifiabilityMaybeUpdateForStyleUnion(
+    const StringOrCanvasGradientOrCanvasPattern& style) {
+  if (style.IsString()) {
+    identifiability_study_helper_.MaybeUpdateBuilder(
+        IdentifiabilityBenignStringToken(style.GetAsString()));
+  } else if (style.IsCanvasPattern()) {
+    identifiability_study_helper_.MaybeUpdateBuilder(
+        style.GetAsCanvasPattern()->GetIdentifiableToken());
+  } else if (style.IsCanvasGradient()) {
+    identifiability_study_helper_.MaybeUpdateBuilder(
+        style.GetAsCanvasGradient()->GetIdentifiableToken());
+  }
+}
+
 void BaseRenderingContext2D::strokeStyle(
     StringOrCanvasGradientOrCanvasPattern& return_value) const {
   ConvertCanvasStyleToUnionType(GetState().StrokeStyle(), return_value);
@@ -183,6 +197,8 @@ void BaseRenderingContext2D::strokeStyle(
 void BaseRenderingContext2D::setStrokeStyle(
     const StringOrCanvasGradientOrCanvasPattern& style) {
   DCHECK(!style.IsNull());
+  identifiability_study_helper_.MaybeUpdateBuilder(CanvasOps::kSetStrokeStyle);
+  IdentifiabilityMaybeUpdateForStyleUnion(style);
 
   String color_string;
   CanvasStyle* canvas_style = nullptr;
@@ -226,6 +242,9 @@ void BaseRenderingContext2D::setFillStyle(
     const StringOrCanvasGradientOrCanvasPattern& style) {
   DCHECK(!style.IsNull());
   ValidateStateStack();
+  identifiability_study_helper_.MaybeUpdateBuilder(CanvasOps::kSetFillStyle);
+  IdentifiabilityMaybeUpdateForStyleUnion(style);
+
   String color_string;
   CanvasStyle* canvas_style = nullptr;
   if (style.IsString()) {
@@ -2022,6 +2041,8 @@ String BaseRenderingContext2D::textAlign() const {
 }
 
 void BaseRenderingContext2D::setTextAlign(const String& s) {
+  identifiability_study_helper_.MaybeUpdateBuilder(
+      CanvasOps::kSetTextAlign, IdentifiabilityBenignStringToken(s));
   TextAlign align;
   if (!ParseTextAlign(s, align))
     return;
@@ -2035,6 +2056,8 @@ String BaseRenderingContext2D::textBaseline() const {
 }
 
 void BaseRenderingContext2D::setTextBaseline(const String& s) {
+  identifiability_study_helper_.MaybeUpdateBuilder(
+      CanvasOps::kSetTextBaseline, IdentifiabilityBenignStringToken(s));
   TextBaseline baseline;
   if (!ParseTextBaseline(s, baseline))
     return;

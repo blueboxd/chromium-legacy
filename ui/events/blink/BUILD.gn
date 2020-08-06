@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
-jumbo_component("blink_features") {
+component("blink_features") {
   defines = [ "IS_BLINK_FEATURES_IMPL" ]
 
   sources = [
@@ -16,7 +16,7 @@ jumbo_component("blink_features") {
   deps = [ "//base" ]
 }
 
-jumbo_source_set("blink") {
+source_set("blink") {
   sources = [
     "blink_event_util.cc",
     "blink_event_util.h",

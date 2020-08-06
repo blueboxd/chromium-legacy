@@ -139,4 +139,14 @@
                          }];
 }
 
+- (UIAction*)actionToRemoveWithBlock:(ProceduralBlock)block {
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_REMOVE_ACTION_TITLE)
+                      image:[UIImage systemImageNamed:@"trash"]
+                       type:MenuActionType::Remove
+                      block:block];
+  action.attributes = UIMenuElementAttributesDestructive;
+  return action;
+}
+
 @end

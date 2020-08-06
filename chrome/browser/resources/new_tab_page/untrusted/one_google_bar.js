@@ -72,6 +72,9 @@ const overlayUpdater = (() => {
 
   /** @param {!Element} potentialNewOverlays */
   const addOverlay = overlay => {
+    if (overlays.has(overlay)) {
+      return;
+    }
     // If an overlay starts a transition, the updated bounding rects need to
     // be sent to the top frame during the transition. The MutationObserver
     // will only handle new elements and changes to the element attributes.
@@ -89,6 +92,23 @@ const overlayUpdater = (() => {
         el.target = '_top';
       }
     });
+    if (!modalOverlays) {
+      const {transition} = getComputedStyle(overlay);
+      const opacityTransition = 'opacity 0.1s ease 0.02s';
+      // Check if the transition is the default computed transition style. If it
+      // is not, append to the existing transitions.
+      if (transition === 'all 0s ease 0s') {
+        overlay.style.transition = opacityTransition;
+      } else if (!transition.includes('opacity')) {
+        overlay.style.transition = transition + ', ' + opacityTransition;
+      }
+    }
+    // The element has an initial opacity of 1. If the element is being added to
+    // |overlays| and shown in the same |update()| call, the opacity transition
+    // will not work since the opacity is already 1. For this reason the
+    // 'fade-in' class is added to the element which runs an initial fade-in
+    // animation.
+    overlay.classList.add('fade-in');
     overlays.add(overlay);
   };
 
@@ -126,9 +146,14 @@ const overlayUpdater = (() => {
     overlays.forEach(overlay => {
       const {display, visibility} = window.getComputedStyle(overlay);
       const rect = overlay.getBoundingClientRect();
-      if (display !== 'none' && visibility !== 'hidden' &&
-          rect.bottom > barRect.bottom) {
+      const shown = display !== 'none' && visibility !== 'hidden' &&
+          rect.bottom > barRect.bottom;
+      if (shown) {
         overlayRects.push(rect);
+      }
+      if (!modalOverlays) {
+        // Setting the style here avoids triggering the mutation observer.
+        overlay.style.opacity = shown ? '1' : '0';
       }
     });
     if (!modalOverlays) {

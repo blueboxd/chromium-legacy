@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/android/chrome_jni_headers/UmaSessionStats_jni.h"
@@ -28,8 +27,6 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/ukm_service.h"
-#include "components/variations/hashing.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -188,14 +185,6 @@ void UmaSessionStats::RegisterSyntheticFieldTrial(
                                                             group_name);
 }
 
-// static
-void UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(
-    const std::string& trial_name,
-    const std::vector<uint32_t>& group_name_hashes) {
-  ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
-      trial_name, group_name_hashes);
-}
-
 bool UmaSessionStats::IsBackgroundSessionStartForTesting() {
   return !GetInstance()
               ->session_time_tracker_.background_session_start_time()
@@ -286,9 +275,10 @@ static void JNI_UmaSessionStats_UpdateMetricsServiceState(
 
 static void JNI_UmaSessionStats_RegisterExternalExperiment(
     JNIEnv* env,
-    const JavaParamRef<jstring>& jtrial_name,
+    const JavaParamRef<jstring>& jfallback_study_name,
     const JavaParamRef<jintArray>& jexperiment_ids) {
-  const std::string trial_name_utf8(ConvertJavaStringToUTF8(env, jtrial_name));
+  std::string fallback_study_name(
+      ConvertJavaStringToUTF8(env, jfallback_study_name));
   std::vector<int> experiment_ids;
   // A null |jexperiment_ids| is the same as an empty list.
   if (jexperiment_ids) {
@@ -296,28 +286,11 @@ static void JNI_UmaSessionStats_RegisterExternalExperiment(
                                            &experiment_ids);
   }
 
-  UMA_HISTOGRAM_COUNTS_100("UMA.ExternalExperiment.GroupCount",
-                           experiment_ids.size());
-
-  std::vector<uint32_t> group_name_hashes;
-  group_name_hashes.reserve(experiment_ids.size());
-
-  variations::ActiveGroupId active_group;
-  active_group.name = variations::HashName(trial_name_utf8);
-  for (int experiment_id : experiment_ids) {
-    active_group.group =
-        variations::HashName(base::NumberToString(experiment_id));
-    // Since external experiments are not based on Chrome's low entropy source,
-    // they are only sent to Google web properties for signed in users to make
-    // sure that this couldn't be used to identify a user that's not signed in.
-    variations::AssociateGoogleVariationIDForceHashes(
-        variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN, active_group,
-        static_cast<variations::VariationID>(experiment_id));
-    group_name_hashes.push_back(active_group.group);
-  }
-
-  UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(trial_name_utf8,
-                                                         group_name_hashes);
+  g_browser_process->metrics_service()
+      ->synthetic_trial_registry()
+      ->RegisterExternalExperiments(
+          fallback_study_name, experiment_ids,
+          variations::SyntheticTrialRegistry::kOverrideExistingIds);
 }
 
 static void JNI_UmaSessionStats_RegisterSyntheticFieldTrial(

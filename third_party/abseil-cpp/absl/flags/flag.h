@@ -379,11 +379,12 @@ ABSL_NAMESPACE_END
 //
 // `default_value` is only used as a double check on the type. `explanation` is
 // unused.
-// TODO(rogeeff): Return an anonymous struct instead of bool, and place it into
-// the unnamed namespace.
-#define ABSL_RETIRED_FLAG(type, flagname, default_value, explanation) \
-  ABSL_ATTRIBUTE_UNUSED static const bool ignored_##flagname =        \
-      ([] { return type(default_value); },                            \
-       absl::flags_internal::RetiredFlag<type>(#flagname))
+// TODO(rogeeff): replace RETIRED_FLAGS with FLAGS once forward declarations of
+// retired flags are cleaned up.
+#define ABSL_RETIRED_FLAG(type, name, default_value, explanation)      \
+  static absl::flags_internal::RetiredFlag<type> RETIRED_FLAGS_##name; \
+  ABSL_ATTRIBUTE_UNUSED static const auto RETIRED_FLAGS_REG_##name =   \
+      (RETIRED_FLAGS_##name.Retire(#name),                             \
+       ::absl::flags_internal::FlagRegistrarEmpty{})
 
 #endif  // ABSL_FLAGS_FLAG_H_

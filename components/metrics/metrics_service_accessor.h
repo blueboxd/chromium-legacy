@@ -41,16 +41,6 @@ class MetricsServiceAccessor {
                                           base::StringPiece trial_name,
                                           base::StringPiece group_name);
 
-  // Registers a field trial name and set of groups with |metrics_service| (if
-  // not null), to be used to annotate a UMA report with a particular
-  // configuration state. Returns true on success.
-  // See the comment on MetricsService::RegisterSyntheticMultiGroupFieldTrial()
-  // for details.
-  static bool RegisterSyntheticMultiGroupFieldTrial(
-      MetricsService* metrics_service,
-      base::StringPiece trial_name,
-      const std::vector<uint32_t>& group_name_hashes);
-
   // Same as RegisterSyntheticFieldTrial above, but takes in the trial and group
   // names as hashes rather than computing those hashes from the strings.
   static bool RegisterSyntheticFieldTrialWithNameAndGroupHash(

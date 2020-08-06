@@ -40,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
@@ -383,9 +384,7 @@ IncidentReportingService::IncidentReportingService(
     SafeBrowsingService* safe_browsing_service,
     base::TimeDelta delayed_task_interval,
     const scoped_refptr<base::TaskRunner>& delayed_task_runner)
-    : url_loader_factory_(safe_browsing_service
-                              ? safe_browsing_service->GetURLLoaderFactory()
-                              : nullptr),
+    : url_loader_factory_(nullptr),
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(GetBackgroundTaskRunner()),
       collation_timer_(FROM_HERE,
@@ -393,6 +392,11 @@ IncidentReportingService::IncidentReportingService(
                        this,
                        &IncidentReportingService::OnCollationTimeout),
       delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner) {
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
+    url_loader_factory_ = g_browser_process->shared_url_loader_factory();
+  } else if (safe_browsing_service) {
+    url_loader_factory_ = safe_browsing_service->GetURLLoaderFactory();
+  }
   if (g_browser_process->profile_manager())
     g_browser_process->profile_manager()->AddObserver(this);
 }

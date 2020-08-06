@@ -13,7 +13,7 @@ group("browser") {
   }
 }
 
-jumbo_source_set("internal") {
+source_set("internal") {
   visibility = [ "//components/policy/*" ]
   sources = [
     "browser_policy_connector.cc",
@@ -84,7 +84,7 @@ jumbo_source_set("internal") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "configuration_policy_pref_store_test.cc",

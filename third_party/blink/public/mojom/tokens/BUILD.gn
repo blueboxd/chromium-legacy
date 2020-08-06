@@ -61,6 +61,10 @@ mojom_component("tokens") {
           mojom = "blink.mojom.PortalToken"
           cpp = "::blink::PortalToken"
         },
+        {
+          mojom = "blink.mojom.V8ContextToken"
+          cpp = "::blink::V8ContextToken"
+        },
       ]
       traits_headers =
           [ "//third_party/blink/public/common/tokens/tokens_mojom_traits.h" ]

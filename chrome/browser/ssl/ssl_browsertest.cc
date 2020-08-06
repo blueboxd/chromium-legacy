@@ -6278,7 +6278,8 @@ IN_PROC_BROWSER_TEST_F(MixedFormsPolicyTest, NoWarningOptOutPolicy) {
   policy::PolicyMap policies;
   policies.Set(policy::key::kInsecureFormsWarningsEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
+               policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
   // Pref should now be set to false.
   EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(

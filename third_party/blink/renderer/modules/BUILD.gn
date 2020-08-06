@@ -27,7 +27,7 @@ make_names("module_names") {
   deps = []  # Don't use default deps (otherwise it will be circular).
 }
 
-jumbo_component("modules") {
+component("modules") {
   output_name = "blink_modules"
 
   visibility = []  # Allow re-assignment of list.
@@ -199,7 +199,7 @@ jumbo_component("modules") {
   configs += blink_symbols_config
 }
 
-jumbo_source_set("modules_testing") {
+source_set("modules_testing") {
   testonly = true
 
   sources = [
@@ -261,7 +261,7 @@ group("make_modules_generated") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
 
   sources = [

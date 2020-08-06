@@ -472,7 +472,7 @@ public class ImeTest {
         Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(4)));
         // search1.
         Assert.assertEquals(EditorInfo.IME_ACTION_SEARCH, getImeAction(editorInfoList.get(5)));
-        // input_text1.
+        // input_text3.
         Assert.assertEquals(EditorInfo.IME_ACTION_GO, getImeAction(editorInfoList.get(6)));
 
         mRule.resetAllStates();
@@ -1708,5 +1708,38 @@ public class ImeTest {
         Assert.assertEquals(0,
                 mRule.getConnectionFactory().getOutAttrs().inputType
                         & EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testLastText() throws Exception {
+        // Hide the keyboard first.
+        DOMUtils.focusNode(mRule.getWebContents(), "input_radio");
+        mRule.assertWaitForKeyboardStatus(false);
+        mRule.verifyNoUpdateSelection();
+
+        // Focus on input_text1 which has 'sometext' in it.
+        DOMUtils.focusNode(mRule.getWebContents(), "input_text1");
+
+        mRule.assertWaitForKeyboardStatus(true);
+
+        // By the time the keyboard is shown, we should have the correct last text to pass to
+        // EditorInfo in onCreateInputConnection(...).
+        Assert.assertArrayEquals(new String[] {"sometext"}, mRule.getLastTextHistory());
+
+        // Hide the keyboard again.
+        DOMUtils.focusNode(mRule.getWebContents(), "input_radio");
+        mRule.assertWaitForKeyboardStatus(false);
+
+        // Focus on input_text2 which has 'othertext' in it.
+        DOMUtils.focusNode(mRule.getWebContents(), "input_text2");
+
+        mRule.assertWaitForKeyboardStatus(true);
+
+        // By the time the keyboard is shown, we should have the correct last text to pass to
+        // EditorInfo in onCreateInputConnection(...).
+        Assert.assertArrayEquals(
+                new String[] {"sometext", "othertext"}, mRule.getLastTextHistory());
     }
 }

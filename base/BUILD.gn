@@ -149,14 +149,7 @@ if (is_android) {
 # to be linked in where they wouldn't have otherwise. This does not include
 # test code (test support and anything in the test directory) which should use
 # source_set as is recommended for GN targets).
-jumbo_component("base") {
-  if (is_nacl || is_ios) {
-    # Link errors related to malloc functions if libbase for nacl is
-    # compiled with jumbo: https://crbug.com/775959.
-    # Same for ios: https://crbug.com/776313.
-    never_build_jumbo = true
-  }
-
+component("base") {
   sources = [
     "allocator/allocator_check.cc",
     "allocator/allocator_check.h",
@@ -2312,6 +2305,8 @@ static_library("base_static") {
     "base_switches.cc",
     "base_switches.h",
   ]
+
+  deps = [ "//build:lacros_buildflags" ]
 
   if (is_win) {
     sources += [

@@ -6,17 +6,20 @@
 
 #include <stddef.h>
 
-#include <set>
+#include <algorithm>
+#include <iterator>
 
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_event_details.h"
@@ -34,110 +37,111 @@ namespace {
 // The default list of languages the Google translation server supports.
 // We use this list until we receive the list that the server exposes.
 // Server also supports "hmm" (Hmong) and "jw" (Javanese), but these are
-// excluded because Chrome l10n library does not support it.
+// excluded because Chrome l10n library does not support it. This list must be
+// sorted in alphabetical order and contain no duplicates.
 const char* const kDefaultSupportedLanguages[] = {
-  "af",     // Afrikaans
-  "am",     // Amharic
-  "ar",     // Arabic
-  "az",     // Azerbaijani
-  "be",     // Belarusian
-  "bg",     // Bulgarian
-  "bn",     // Bengali
-  "bs",     // Bosnian
-  "ca",     // Catalan
-  "ceb",    // Cebuano
-  "co",     // Corsican
-  "cs",     // Czech
-  "cy",     // Welsh
-  "da",     // Danish
-  "de",     // German
-  "el",     // Greek
-  "en",     // English
-  "eo",     // Esperanto
-  "es",     // Spanish
-  "et",     // Estonian
-  "eu",     // Basque
-  "fa",     // Persian
-  "fi",     // Finnish
-  "fy",     // Frisian
-  "fr",     // French
-  "ga",     // Irish
-  "gd",     // Scots Gaelic
-  "gl",     // Galician
-  "gu",     // Gujarati
-  "ha",     // Hausa
-  "haw",    // Hawaiian
-  "hi",     // Hindi
-  "hr",     // Croatian
-  "ht",     // Haitian Creole
-  "hu",     // Hungarian
-  "hy",     // Armenian
-  "id",     // Indonesian
-  "ig",     // Igbo
-  "is",     // Icelandic
-  "it",     // Italian
-  "iw",     // Hebrew
-  "ja",     // Japanese
-  "ka",     // Georgian
-  "kk",     // Kazakh
-  "km",     // Khmer
-  "kn",     // Kannada
-  "ko",     // Korean
-  "ku",     // Kurdish
-  "ky",     // Kyrgyz
-  "la",     // Latin
-  "lb",     // Luxembourgish
-  "lo",     // Lao
-  "lt",     // Lithuanian
-  "lv",     // Latvian
-  "mg",     // Malagasy
-  "mi",     // Maori
-  "mk",     // Macedonian
-  "ml",     // Malayalam
-  "mn",     // Mongolian
-  "mr",     // Marathi
-  "ms",     // Malay
-  "mt",     // Maltese
-  "my",     // Burmese
-  "ne",     // Nepali
-  "nl",     // Dutch
-  "no",     // Norwegian
-  "ny",     // Nyanja
-  "pa",     // Punjabi
-  "pl",     // Polish
-  "ps",     // Pashto
-  "pt",     // Portuguese
-  "ro",     // Romanian
-  "ru",     // Russian
-  "sd",     // Sindhi
-  "si",     // Sinhala
-  "sk",     // Slovak
-  "sl",     // Slovenian
-  "sm",     // Samoan
-  "sn",     // Shona
-  "so",     // Somali
-  "sq",     // Albanian
-  "sr",     // Serbian
-  "st",     // Southern Sotho
-  "su",     // Sundanese
-  "sv",     // Swedish
-  "sw",     // Swahili
-  "ta",     // Tamil
-  "te",     // Telugu
-  "tg",     // Tajik
-  "th",     // Thai
-  "tl",     // Tagalog
-  "tr",     // Turkish
-  "uk",     // Ukrainian
-  "ur",     // Urdu
-  "uz",     // Uzbek
-  "vi",     // Vietnamese
-  "yi",     // Yiddish
-  "xh",     // Xhosa
-  "yo",     // Yoruba
-  "zh-CN",  // Chinese (Simplified)
-  "zh-TW",  // Chinese (Traditional)
-  "zu",     // Zulu
+    "af",     // Afrikaans
+    "am",     // Amharic
+    "ar",     // Arabic
+    "az",     // Azerbaijani
+    "be",     // Belarusian
+    "bg",     // Bulgarian
+    "bn",     // Bengali
+    "bs",     // Bosnian
+    "ca",     // Catalan
+    "ceb",    // Cebuano
+    "co",     // Corsican
+    "cs",     // Czech
+    "cy",     // Welsh
+    "da",     // Danish
+    "de",     // German
+    "el",     // Greek
+    "en",     // English
+    "eo",     // Esperanto
+    "es",     // Spanish
+    "et",     // Estonian
+    "eu",     // Basque
+    "fa",     // Persian
+    "fi",     // Finnish
+    "fr",     // French
+    "fy",     // Frisian
+    "ga",     // Irish
+    "gd",     // Scots Gaelic
+    "gl",     // Galician
+    "gu",     // Gujarati
+    "ha",     // Hausa
+    "haw",    // Hawaiian
+    "hi",     // Hindi
+    "hr",     // Croatian
+    "ht",     // Haitian Creole
+    "hu",     // Hungarian
+    "hy",     // Armenian
+    "id",     // Indonesian
+    "ig",     // Igbo
+    "is",     // Icelandic
+    "it",     // Italian
+    "iw",     // Hebrew
+    "ja",     // Japanese
+    "ka",     // Georgian
+    "kk",     // Kazakh
+    "km",     // Khmer
+    "kn",     // Kannada
+    "ko",     // Korean
+    "ku",     // Kurdish
+    "ky",     // Kyrgyz
+    "la",     // Latin
+    "lb",     // Luxembourgish
+    "lo",     // Lao
+    "lt",     // Lithuanian
+    "lv",     // Latvian
+    "mg",     // Malagasy
+    "mi",     // Maori
+    "mk",     // Macedonian
+    "ml",     // Malayalam
+    "mn",     // Mongolian
+    "mr",     // Marathi
+    "ms",     // Malay
+    "mt",     // Maltese
+    "my",     // Burmese
+    "ne",     // Nepali
+    "nl",     // Dutch
+    "no",     // Norwegian
+    "ny",     // Nyanja
+    "pa",     // Punjabi
+    "pl",     // Polish
+    "ps",     // Pashto
+    "pt",     // Portuguese
+    "ro",     // Romanian
+    "ru",     // Russian
+    "sd",     // Sindhi
+    "si",     // Sinhala
+    "sk",     // Slovak
+    "sl",     // Slovenian
+    "sm",     // Samoan
+    "sn",     // Shona
+    "so",     // Somali
+    "sq",     // Albanian
+    "sr",     // Serbian
+    "st",     // Southern Sotho
+    "su",     // Sundanese
+    "sv",     // Swedish
+    "sw",     // Swahili
+    "ta",     // Tamil
+    "te",     // Telugu
+    "tg",     // Tajik
+    "th",     // Thai
+    "tl",     // Tagalog
+    "tr",     // Turkish
+    "uk",     // Ukrainian
+    "ur",     // Urdu
+    "uz",     // Uzbek
+    "vi",     // Vietnamese
+    "xh",     // Xhosa
+    "yi",     // Yiddish
+    "yo",     // Yoruba
+    "zh-CN",  // Chinese (Simplified)
+    "zh-TW",  // Chinese (Traditional)
+    "zu",     // Zulu
 };
 
 // Constant URL string to fetch server supporting language list.
@@ -154,12 +158,20 @@ const int kMaxRetryOn5xx = 5;
 const char TranslateLanguageList::kTargetLanguagesKey[] = "tl";
 
 TranslateLanguageList::TranslateLanguageList()
-    : resource_requests_allowed_(false), request_pending_(false) {
-  // We default to our hard coded list of languages in
-  // |kDefaultSupportedLanguages|. This list will be overridden by a server
-  // providing supported languages list.
-  for (size_t i = 0; i < base::size(kDefaultSupportedLanguages); ++i)
-    supported_languages_.insert(kDefaultSupportedLanguages[i]);
+    : resource_requests_allowed_(false),
+      request_pending_(false),
+      // We default to our hard coded list of languages in
+      // |kDefaultSupportedLanguages|. This list will be overridden by a server
+      // providing supported languages list.
+      supported_languages_(std::begin(kDefaultSupportedLanguages),
+                           std::end(kDefaultSupportedLanguages)) {
+  // |kDefaultSupportedLanguages| should be sorted alphabetically and contain no
+  // duplicates.
+  DCHECK(
+      std::is_sorted(supported_languages_.begin(), supported_languages_.end()));
+  DCHECK(supported_languages_.end() ==
+         std::adjacent_find(supported_languages_.begin(),
+                            supported_languages_.end()));
 
   if (update_is_disabled)
     return;
@@ -174,9 +186,7 @@ void TranslateLanguageList::GetSupportedLanguages(
     bool translate_allowed,
     std::vector<std::string>* languages) {
   DCHECK(languages && languages->empty());
-  auto iter = supported_languages_.begin();
-  for (; iter != supported_languages_.end(); ++iter)
-    languages->push_back(*iter);
+  *languages = supported_languages_;
 
   // Update language lists if they are not updated after Chrome was launched
   // for later requests.
@@ -184,23 +194,20 @@ void TranslateLanguageList::GetSupportedLanguages(
     RequestLanguageList();
 }
 
-std::string TranslateLanguageList::GetLanguageCode(
-    const std::string& language) {
+std::string TranslateLanguageList::GetLanguageCode(base::StringPiece language) {
   // Only remove the country code for country specific languages we don't
   // support specifically yet.
   if (IsSupportedLanguage(language))
-    return language;
-
-  size_t hypen_index = language.find('-');
-  if (hypen_index == std::string::npos)
-    return language;
-  return language.substr(0, hypen_index);
+    return std::string(language);
+  return std::string(language::ExtractBaseLanguage(language));
 }
 
-bool TranslateLanguageList::IsSupportedLanguage(const std::string& language) {
-  return supported_languages_.count(language) != 0;
+bool TranslateLanguageList::IsSupportedLanguage(base::StringPiece language) {
+  return std::binary_search(supported_languages_.begin(),
+                            supported_languages_.end(), language);
 }
 
+// static
 GURL TranslateLanguageList::TranslateLanguageUrl() {
   std::string url = translate::GetTranslateSecurityOrigin().spec() +
       kLanguageListFetchPath;
@@ -223,9 +230,9 @@ void TranslateLanguageList::RequestLanguageList() {
     url = AddHostLocaleToUrl(url);
     url = AddApiKeyToUrl(url);
 
-    std::string message = base::StringPrintf(
-        "Language list fetch starts (URL: %s)", url.spec().c_str());
-    NotifyEvent(__LINE__, message);
+    NotifyEvent(__LINE__,
+                base::StringPrintf("Language list fetch starts (URL: %s)",
+                                   url.spec().c_str()));
 
     bool result = language_list_fetcher_->Request(
         url,
@@ -288,36 +295,33 @@ void TranslateLanguageList::OnLanguageListFetchComplete(
     last_updated_ = base::Time::Now();
 }
 
-void TranslateLanguageList::NotifyEvent(int line, const std::string& message) {
-  TranslateEventDetails details(__FILE__, line, message);
+void TranslateLanguageList::NotifyEvent(int line, std::string message) {
+  TranslateEventDetails details(__FILE__, line, std::move(message));
   callback_list_.Notify(details);
 }
 
 bool TranslateLanguageList::SetSupportedLanguages(
-    const std::string& language_list) {
+    base::StringPiece language_list) {
   // The format is in JSON as:
   // {
   //   "sl": {"XX": "LanguageName", ...},
   //   "tl": {"XX": "LanguageName", ...}
   // }
   // Where "tl" is set in kTargetLanguagesKey.
-  std::unique_ptr<base::Value> json_value = base::JSONReader::ReadDeprecated(
-      language_list, base::JSON_ALLOW_TRAILING_COMMAS);
+  base::Optional<base::Value> json_value =
+      base::JSONReader::Read(language_list, base::JSON_ALLOW_TRAILING_COMMAS);
 
   if (!json_value || !json_value->is_dict()) {
     NotifyEvent(__LINE__, "Language list is invalid");
     NOTREACHED();
     return false;
   }
-  // The first level dictionary contains three sub-dict, first for source
-  // languages and second for target languages, we want to use the target
+  // The first level dictionary contains two sub-dicts, first for source
+  // languages and second for target languages. We want to use the target
   // languages.
-  base::DictionaryValue* language_dict =
-      static_cast<base::DictionaryValue*>(json_value.get());
-  base::DictionaryValue* target_languages = nullptr;
-  if (!language_dict->GetDictionary(TranslateLanguageList::kTargetLanguagesKey,
-                                    &target_languages) ||
-      target_languages == nullptr) {
+  base::Value* target_languages =
+      json_value->FindDictPath(TranslateLanguageList::kTargetLanguagesKey);
+  if (!target_languages) {
     NotifyEvent(__LINE__, "Target languages are not found in the response");
     NOTREACHED();
     return false;
@@ -328,23 +332,25 @@ bool TranslateLanguageList::SetSupportedLanguages(
 
   // Now we can clear language list.
   supported_languages_.clear();
-  std::string message;
   // ... and replace it with the values we just fetched from the server.
-  for (base::DictionaryValue::Iterator iter(*target_languages);
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    const std::string& lang = iter.key();
+  for (const auto& kv_pair : target_languages->DictItems()) {
+    const std::string& lang = kv_pair.first;
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale)) {
       TranslateBrowserMetrics::ReportUndisplayableLanguage(lang);
       continue;
     }
-    supported_languages_.insert(lang);
-    if (message.empty())
-      message += lang;
-    else
-      message += ", " + lang;
+    supported_languages_.push_back(lang);
   }
-  NotifyEvent(__LINE__, message);
+
+  // Since the DictionaryValue was sorted by key, |supported_languages_| should
+  // already be sorted and have no duplicate values.
+  DCHECK(
+      std::is_sorted(supported_languages_.begin(), supported_languages_.end()));
+  DCHECK(supported_languages_.end() ==
+         std::adjacent_find(supported_languages_.begin(),
+                            supported_languages_.end()));
+
+  NotifyEvent(__LINE__, base::JoinString(supported_languages_, ", "));
   return true;
 }
 

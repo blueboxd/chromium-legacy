@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/win/scoped_handle.h"
-#include "base/trace_event/base_tracing.h"
 #include "base/win/scoped_handle_verifier.h"
 #include "base/win/windows_types.h"
 
@@ -14,7 +13,6 @@ using base::win::internal::ScopedHandleVerifier;
 
 // Static.
 bool HandleTraits::CloseHandle(HANDLE handle) {
-  TRACE_EVENT0("base", "HandleTraits::CloseHandle");
   return ScopedHandleVerifier::Get()->CloseHandle(handle);
 }
 
@@ -23,7 +21,6 @@ void VerifierTraits::StartTracking(HANDLE handle,
                                    const void* owner,
                                    const void* pc1,
                                    const void* pc2) {
-  TRACE_EVENT0("base", "VerifierTraits::StartTracking");
   return ScopedHandleVerifier::Get()->StartTracking(handle, owner, pc1, pc2);
 }
 
@@ -32,7 +29,6 @@ void VerifierTraits::StopTracking(HANDLE handle,
                                   const void* owner,
                                   const void* pc1,
                                   const void* pc2) {
-  TRACE_EVENT0("base", "VerifierTraits::StopTracking");
   return ScopedHandleVerifier::Get()->StopTracking(handle, owner, pc1, pc2);
 }
 
@@ -41,7 +37,6 @@ void DisableHandleVerifier() {
 }
 
 void OnHandleBeingClosed(HANDLE handle) {
-  TRACE_EVENT0("base", "base::win::OnHandleBeingClosed");
   return ScopedHandleVerifier::Get()->OnHandleBeingClosed(handle);
 }
 

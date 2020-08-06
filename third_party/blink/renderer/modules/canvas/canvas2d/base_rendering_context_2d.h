@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 
@@ -395,6 +396,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual bool IsPaint2D() const { return false; }
   virtual void WillOverwriteCanvas() = 0;
 
+  IdentifiabilityStudyHelper identifiability_study_helper_;
+
  private:
   void RealizeSaves();
 
@@ -465,6 +468,9 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   int getScaledElapsedTime(float width,
                            float height,
                            base::TimeTicks start_time);
+
+  void IdentifiabilityMaybeUpdateForStyleUnion(
+      const StringOrCanvasGradientOrCanvasPattern& style);
 
   bool origin_tainted_by_content_;
 

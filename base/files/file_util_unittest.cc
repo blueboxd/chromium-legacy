@@ -42,6 +42,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 #include "testing/platform_test.h"
@@ -1116,7 +1117,7 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   ASSERT_TRUE(GetPosixFilePermissions(file_name_to, &mode));
 #if defined(OS_APPLE)
   expected_mode = 0755;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1126,7 +1127,7 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   ASSERT_TRUE(GetPosixFilePermissions(file2_name_to, &mode));
 #if defined(OS_APPLE)
   expected_mode = 0755;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1136,7 +1137,7 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   ASSERT_TRUE(GetPosixFilePermissions(file3_name_to, &mode));
 #if defined(OS_APPLE)
   expected_mode = 0600;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1286,7 +1287,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   int expected_mode;
 #if defined(OS_APPLE)
   expected_mode = 0755;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1304,7 +1305,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
 #if defined(OS_APPLE)
   expected_mode = 0755;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1322,7 +1323,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
 #if defined(OS_APPLE)
   expected_mode = 0600;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;

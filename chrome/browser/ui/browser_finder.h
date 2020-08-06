@@ -63,8 +63,9 @@ Browser* FindBrowserWithActiveWindow();
 Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 
 // Find the browser containing the group with ID |group| or nullptr if none is
-// found within the given |profile|.
-Browser* FindBrowserWithGroup(Profile* profile, tab_groups::TabGroupId group);
+// found within the given |profile|. If the profile is not specified, find any
+// browser containing the group.
+Browser* FindBrowserWithGroup(tab_groups::TabGroupId group, Profile* profile);
 
 // Returns the Browser object owned by |profile| whose window was most recently
 // active. If no such Browsers exist, returns NULL.

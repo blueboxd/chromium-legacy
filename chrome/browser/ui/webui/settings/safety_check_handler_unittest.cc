@@ -1146,11 +1146,24 @@ TEST_P(SafetyCheckHandlerChromeCleanerIdleTest, CheckChromeCleanerIdleStates) {
   safe_browsing::ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
       idle_reason_);
   safety_check_->PerformSafetyCheck();
+  // Ensure WebUI event is sent.
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(
           kChromeCleaner, static_cast<int>(expected_cct_status_));
   ASSERT_TRUE(event);
   VerifyDisplayString(event, expected_display_string_);
+  // Ensure UMA is logged.
+  if (expected_cct_status_ ==
+          SafetyCheckHandler::ChromeCleanerStatus::kHidden ||
+      expected_cct_status_ ==
+          SafetyCheckHandler::ChromeCleanerStatus::kChecking) {
+    // Hidden and checking state should not get recorded.
+    histogram_tester_.ExpectTotalCount(
+        "Settings.SafetyCheck.ChromeCleanerResult", 0);
+  } else {
+    histogram_tester_.ExpectBucketCount(
+        "Settings.SafetyCheck.ChromeCleanerResult", expected_cct_status_, 1);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

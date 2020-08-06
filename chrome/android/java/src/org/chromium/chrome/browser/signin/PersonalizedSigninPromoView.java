@@ -23,8 +23,8 @@ public class PersonalizedSigninPromoView extends LinearLayout {
     private ImageButton mDismissButton;
     private TextView mStatus;
     private TextView mDescription;
-    private ButtonCompat mSigninButton;
-    private Button mChooseAccountButton;
+    private ButtonCompat mPrimaryButton;
+    private Button mSecondaryButton;
 
     public PersonalizedSigninPromoView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -38,8 +38,8 @@ public class PersonalizedSigninPromoView extends LinearLayout {
         mDismissButton = findViewById(R.id.signin_promo_close_button);
         mStatus = findViewById(R.id.signin_promo_status_message);
         mDescription = findViewById(R.id.signin_promo_description);
-        mSigninButton = findViewById(R.id.signin_promo_signin_button);
-        mChooseAccountButton = findViewById(R.id.signin_promo_choose_account_button);
+        mPrimaryButton = findViewById(R.id.signin_promo_signin_button);
+        mSecondaryButton = findViewById(R.id.signin_promo_choose_account_button);
     }
 
     /**
@@ -73,14 +73,14 @@ public class PersonalizedSigninPromoView extends LinearLayout {
     /**
      * @return A reference to the signin button.
      */
-    public ButtonCompat getSigninButton() {
-        return mSigninButton;
+    public ButtonCompat getPrimaryButton() {
+        return mPrimaryButton;
     }
 
     /**
      * @return A reference to the choose account button.
      */
-    public Button getChooseAccountButton() {
-        return mChooseAccountButton;
+    public Button getSecondaryButton() {
+        return mSecondaryButton;
     }
 }

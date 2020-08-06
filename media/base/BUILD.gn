@@ -15,7 +15,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_source_set("base") {
+source_set("base") {
   # Do not expand the visibility here without double-checking with OWNERS, this
   # is a roll-up target which is part of the //media component. Most other DEPs
   # should be using //media and not directly DEP this roll-up target.

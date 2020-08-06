@@ -161,6 +161,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(RequestExitPictureInPicture, void());
   MOCK_METHOD0(GetFeatures, Features(void));
   MOCK_METHOD0(OnRequestVideoFrameCallback, void());
+  MOCK_METHOD0(GetTextTrackMetadata, std::vector<blink::TextTrackMetadata>());
 
   bool was_always_muted_ = false;
 

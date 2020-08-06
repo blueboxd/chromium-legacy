@@ -147,6 +147,9 @@ class LogoElement extends PolymerElement {
       },
 
       /** @private */
+      expanded_: Boolean,
+
+      /** @private */
       showShareDialog_: Boolean,
     };
   }
@@ -182,6 +185,7 @@ class LogoElement extends PolymerElement {
         this.duration_ = assert(data.duration);
         this.height_ = assert(data.height);
         this.width_ = assert(data.width);
+        this.expanded_ = true;
       } else if (data['cmd'] === 'sendMode') {
         this.sendMode_();
       }

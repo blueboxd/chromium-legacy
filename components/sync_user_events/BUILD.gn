@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("sync_user_events") {
+static_library("sync_user_events") {
   sources = [
     "global_id_mapper.h",
     "no_op_user_event_service.cc",

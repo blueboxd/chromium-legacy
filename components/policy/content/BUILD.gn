@@ -7,7 +7,7 @@ import("//build/config/jumbo.gni")
 
 assert(!is_ios, "Policy Throttle should not be referenced on iOS")
 
-jumbo_source_set("content") {
+source_set("content") {
   sources = [
     "policy_blocklist_navigation_throttle.cc",
     "policy_blocklist_navigation_throttle.h",

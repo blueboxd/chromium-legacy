@@ -27,8 +27,8 @@ namespace device {
 
 class FidoCableDevice;
 
-// FidoCableHandshakeHandler abstracts over the different versions of caBLE
-// handshakes.
+// FidoCableHandshakeHandler abstracts FidoCableV1HandshakeHandler to allow
+// tests to inject fake handshake handlers.
 class FidoCableHandshakeHandler {
  public:
   virtual ~FidoCableHandshakeHandler() = 0;
@@ -72,37 +72,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV1HandshakeHandler
   base::WeakPtrFactory<FidoCableV1HandshakeHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoCableV1HandshakeHandler);
-};
-
-// FidoCableV2HandshakeHandler implements an NNpsk0[1] handshake that provides
-// forward secrecy.
-//
-// [1] https://noiseexplorer.com/patterns/NNpsk0/
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV2HandshakeHandler
-    : public FidoCableHandshakeHandler {
- public:
-  FidoCableV2HandshakeHandler(
-      FidoCableDevice* device,
-      base::span<const uint8_t, 32> psk_gen_key,
-      base::span<const uint8_t, 8> nonce,
-      base::span<const uint8_t, kCableEphemeralIdSize> eid,
-      base::Optional<base::span<const uint8_t, 65>> peer_identity,
-      base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
-          local_seed,
-      base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
-          pairing_callback);
-  ~FidoCableV2HandshakeHandler() override;
-
-  // FidoCableHandshakeHandler:
-  void InitiateCableHandshake(FidoDevice::DeviceCallback callback) override;
-  bool ValidateAuthenticatorHandshakeMessage(
-      base::span<const uint8_t> response) override;
-
- private:
-  FidoCableDevice* const cable_device_;
-  base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
-      pairing_callback_;
-  cablev2::HandshakeInitiator handshake_;
 };
 
 }  // namespace device

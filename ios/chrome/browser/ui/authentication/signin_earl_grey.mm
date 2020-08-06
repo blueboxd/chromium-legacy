@@ -16,21 +16,15 @@
 @implementation SigninEarlGreyImpl
 
 - (FakeChromeIdentity*)fakeIdentity1 {
-  return [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
-                                        gaiaID:@"foo1ID"
-                                          name:@"Fake Foo 1"];
+  return [SigninEarlGreyAppInterface fakeIdentity1];
 }
 
 - (FakeChromeIdentity*)fakeIdentity2 {
-  return [FakeChromeIdentity identityWithEmail:@"foo2@gmail.com"
-                                        gaiaID:@"foo2ID"
-                                          name:@"Fake Foo 2"];
+  return [SigninEarlGreyAppInterface fakeIdentity2];
 }
 
 - (FakeChromeIdentity*)fakeManagedIdentity {
-  return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
-                                        gaiaID:@"fooManagedID"
-                                          name:@"Fake Managed"];
+  return [SigninEarlGreyAppInterface fakeManagedIdentity];
 }
 
 - (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
@@ -77,10 +71,6 @@
 
   EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyAppInterface isSignedOut],
                              @"Unexpected signed in user");
-}
-
-- (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
-  [SigninEarlGreyAppInterface removeFakeIdentity:fakeIdentity];
 }
 
 - (void)waitForMatcher:(id<GREYMatcher>)matcher {

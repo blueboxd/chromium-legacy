@@ -42,6 +42,25 @@ class IdentifiableSurface {
   // {Type::kReservedInternal, 0} which is not possible for a valid surface.
   static constexpr uint64_t kInvalidHash = 0;
 
+  // HTML canvas readback -- bits [0-3] of the 64-bit input are the context type
+  // (Type::kCanvasReadback), bits [4-6] are skipped ops, sensitive ops, and
+  // partial image ops bits, respectively. The remaining bits are for the canvas
+  // operations digest. If the digest wasn't calculated (there's no digest for
+  // webgl, for instance), the digest field is 0.
+  enum CanvasTaintBit : uint64_t {
+    // At least one drawing operation didn't update the digest -- this is ether
+    // due to performance or resource consumption reasons.
+    kSkipped = UINT64_C(0x10),
+
+    // At least one drawing operation operated on a sensitive string. Sensitive
+    // strings use a 16-bit hash digest.
+    kSensitive = UINT64_C(0x20),
+
+    // At least one drawing operation was only partially digested, for
+    // performance reasons.
+    kPartiallyDigested = UINT64_C(0x40)
+  };
+
   // Type of identifiable surface.
   //
   // Even though the data type is uint64_t, we can only use 8 bits due to how we

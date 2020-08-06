@@ -167,7 +167,7 @@ if (!use_static_angle) {
   }
 }  # if (!use_static_angle)
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "command_buffer/client/client_test_helper.cc",

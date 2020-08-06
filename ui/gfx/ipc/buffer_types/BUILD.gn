@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("buffer_types") {
+component("buffer_types") {
   output_name = "gfx_ipc_buffer_types"
 
   sources = [

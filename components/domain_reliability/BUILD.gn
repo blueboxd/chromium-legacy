@@ -45,7 +45,7 @@ action("bake_in_configs") {
   ]
 }
 
-jumbo_component("domain_reliability") {
+component("domain_reliability") {
   sources = [
     "baked_in_configs.h",
     "beacon.cc",
@@ -85,7 +85,7 @@ jumbo_component("domain_reliability") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "config_unittest.cc",

@@ -96,7 +96,7 @@ extern const base::Feature kOmniboxContextMenuShowFullUrls;
 // some circumstances in the steady-state omnibox.
 extern const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover;
 extern const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction;
-extern const base::Feature kElideToRegistrableDomain;
+extern const base::Feature kMaybeElideToRegistrableDomain;
 
 }  // namespace omnibox
 

@@ -39,6 +39,7 @@ absl_source_set("test_util") {
   public = [ "internal/test_util.h" ]
   deps = [
     ":time",
+    "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",
     "//third_party/abseil-cpp/absl/time/internal/cctz:time_zone",
     "//third_party/googletest:gtest",

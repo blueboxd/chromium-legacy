@@ -31,7 +31,7 @@ constexpr char kUpdatesSuppressedStartMinute[] = "UpdatesSuppressedStartMinute";
 // Adds the |value| of |policy_name| to |policies| using a "Mandatory" level,
 // "Machine" scope and "Platform" source.
 void AddPolicy(const char* policy_name,
-               base::Value value,
+               std::unique_ptr<base::Value> value,
                policy::PolicyMap* policies) {
   DCHECK(policies);
   policies->Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
@@ -83,7 +83,7 @@ std::unique_ptr<policy::PolicyMap> GetGoogleUpdatePolicies() {
       &auto_update_check_period_minutes);
   if (SUCCEEDED(last_com_res)) {
     AddPolicy(kAutoUpdateCheckPeriodMinutes,
-              base::Value(
+              std::make_unique<base::Value>(
                   base::saturated_cast<int>(auto_update_check_period_minutes)),
               policies.get());
   }
@@ -93,9 +93,10 @@ std::unique_ptr<policy::PolicyMap> GetGoogleUpdatePolicies() {
       download_preference_group_policy.Receive());
   if (SUCCEEDED(last_com_res) &&
       download_preference_group_policy.Length() > 0) {
-    AddPolicy(kDownloadPreference,
-              base::Value(download_preference_group_policy.Get()),
-              policies.get());
+    AddPolicy(
+        kDownloadPreference,
+        std::make_unique<base::Value>(download_preference_group_policy.Get()),
+        policies.get());
   }
 
   DWORD effective_policy_for_app_installs;
@@ -103,7 +104,7 @@ std::unique_ptr<policy::PolicyMap> GetGoogleUpdatePolicies() {
       app_id.Get(), &effective_policy_for_app_installs);
   if (SUCCEEDED(last_com_res)) {
     AddPolicy(kInstallPolicy,
-              base::Value(
+              std::make_unique<base::Value>(
                   base::saturated_cast<int>(effective_policy_for_app_installs)),
               policies.get());
   }
@@ -113,7 +114,7 @@ std::unique_ptr<policy::PolicyMap> GetGoogleUpdatePolicies() {
       app_id.Get(), &effective_policy_for_app_updates);
   if (SUCCEEDED(last_com_res)) {
     AddPolicy(kUpdatePolicy,
-              base::Value(
+              std::make_unique<base::Value>(
                   base::saturated_cast<int>(effective_policy_for_app_updates)),
               policies.get());
   }
@@ -126,35 +127,36 @@ std::unique_ptr<policy::PolicyMap> GetGoogleUpdatePolicies() {
       &updates_suppressed_start_hour, &updates_suppressed_start_minute,
       &updates_suppressed_duration, &are_updates_suppressed);
   if (SUCCEEDED(last_com_res)) {
-    AddPolicy(
-        kUpdatesSuppressedDurationMin,
-        base::Value(base::saturated_cast<int>(updates_suppressed_duration)),
-        policies.get());
-    AddPolicy(
-        kUpdatesSuppressedStartHour,
-        base::Value(base::saturated_cast<int>(updates_suppressed_start_hour)),
-        policies.get());
-    AddPolicy(
-        kUpdatesSuppressedStartMinute,
-        base::Value(base::saturated_cast<int>(updates_suppressed_start_minute)),
-        policies.get());
+    AddPolicy(kUpdatesSuppressedDurationMin,
+              std::make_unique<base::Value>(
+                  base::saturated_cast<int>(updates_suppressed_duration)),
+              policies.get());
+    AddPolicy(kUpdatesSuppressedStartHour,
+              std::make_unique<base::Value>(
+                  base::saturated_cast<int>(updates_suppressed_start_hour)),
+              policies.get());
+    AddPolicy(kUpdatesSuppressedStartMinute,
+              std::make_unique<base::Value>(
+                  base::saturated_cast<int>(updates_suppressed_start_minute)),
+              policies.get());
   }
 
   VARIANT_BOOL is_rollback_to_target_version_allowed;
   last_com_res = policy_status->get_isRollbackToTargetVersionAllowed(
       app_id.Get(), &is_rollback_to_target_version_allowed);
   if (SUCCEEDED(last_com_res)) {
-    AddPolicy(
-        kRollbackToTargetVersion,
-        base::Value(is_rollback_to_target_version_allowed == VARIANT_TRUE),
-        policies.get());
+    AddPolicy(kRollbackToTargetVersion,
+              std::make_unique<base::Value>(
+                  is_rollback_to_target_version_allowed == VARIANT_TRUE),
+              policies.get());
   }
 
   base::win::ScopedBstr target_version_prefix;
   last_com_res = policy_status->get_targetVersionPrefix(
       app_id.Get(), target_version_prefix.Receive());
   if (SUCCEEDED(last_com_res) && target_version_prefix.Length() > 0) {
-    AddPolicy(kTargetVersionPrefix, base::Value(target_version_prefix.Get()),
+    AddPolicy(kTargetVersionPrefix,
+              std::make_unique<base::Value>(target_version_prefix.Get()),
               policies.get());
   }
 

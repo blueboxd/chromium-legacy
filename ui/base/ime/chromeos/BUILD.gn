@@ -10,7 +10,7 @@ source_set("ime_types") {
   sources = [ "ime_keyset.h" ]
 }
 
-jumbo_component("chromeos") {
+component("chromeos") {
   output_name = "ui_base_ime_chromeos"
 
   sources = [

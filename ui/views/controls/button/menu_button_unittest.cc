@@ -42,7 +42,7 @@ using test::TestInkDrop;
 class TestMenuButton : public MenuButton {
  public:
   explicit TestMenuButton(ButtonListener* button_listener)
-      : MenuButton(base::string16(ASCIIToUTF16("button")), button_listener) {}
+      : MenuButton(button_listener, base::string16(ASCIIToUTF16("button"))) {}
 
   ~TestMenuButton() override = default;
 
@@ -675,7 +675,7 @@ TEST_F(MenuButtonTest,
 class DestroyButtonInGestureListener : public ButtonListener {
  public:
   DestroyButtonInGestureListener() {
-    menu_button_ = std::make_unique<MenuButton>(base::string16(), this);
+    menu_button_ = std::make_unique<MenuButton>();
   }
 
   ~DestroyButtonInGestureListener() override = default;

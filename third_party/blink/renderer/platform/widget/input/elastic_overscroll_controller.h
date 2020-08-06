@@ -96,7 +96,8 @@ class PLATFORM_EXPORT ElasticOverscrollController {
   virtual gfx::Vector2d AccumulatedOverscrollForStretchAmount(
       const gfx::Vector2dF& stretch_amount) const = 0;
 
-  gfx::Size GetScrollBounds() const { return helper_->ScrollBounds(); }
+  gfx::Size scroll_bounds() const { return helper_->ScrollBounds(); }
+  gfx::Vector2dF scroll_velocity() const { return scroll_velocity_; }
 
   // TODO (arakeri): Need to be cleared when we leave MomentumAnimated.
   // Momentum animation state. This state is valid only while the state is
@@ -106,7 +107,9 @@ class PLATFORM_EXPORT ElasticOverscrollController {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ElasticOverscrollControllerBezierTest,
-                           VerifyAnimationTick);
+                           VerifyBackwardAnimationTick);
+  FRIEND_TEST_ALL_PREFIXES(ElasticOverscrollControllerBezierTest,
+                           VerifyForwardAnimationTick);
 
   enum State {
     // The initial state, during which the overscroll amount is zero and

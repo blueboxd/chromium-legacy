@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("cast_certificate") {
+static_library("cast_certificate") {
   sources = [
     "cast_cert_validator.cc",
     "cast_cert_validator.h",
@@ -20,7 +20,7 @@ jumbo_static_library("cast_certificate") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "cast_cert_validator_test_helpers.cc",
@@ -35,7 +35,7 @@ jumbo_static_library("test_support") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "cast_cert_validator_unittest.cc",

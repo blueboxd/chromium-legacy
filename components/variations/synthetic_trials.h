@@ -25,6 +25,9 @@ struct SyntheticTrialGroup {
 
   ActiveGroupId id;
   base::TimeTicks start_time;
+
+  // If this is an external experiment.
+  bool is_external = false;
 };
 
 // Interface class to observe changes to synthetic trials in MetricsService.

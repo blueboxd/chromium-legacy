@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/observer_list.h"
 #include "components/variations/synthetic_trials.h"
 
@@ -19,9 +20,22 @@ namespace variations {
 struct ActiveGroupId;
 class FieldTrialsProvider;
 class FieldTrialsProviderTest;
+class SyntheticTrialRegistryTest;
+
+namespace internal {
+extern const base::Feature kExternalExperimentAllowlist;
+}  // namespace internal
 
 class SyntheticTrialRegistry {
  public:
+  // Constructor that specifies whether the SyntheticTrialRegistry should use
+  // an allowlist for external experiments. Some embedders such as WebLayer
+  // do not run as Chrome and do not use the allowlist.
+  // Note: The allowlist is enabled only if |kExternalExperimentAllowlist| is
+  // also enabled, even if the parameter value is true. The default constructor
+  // defaults to the feature state.
+  explicit SyntheticTrialRegistry(bool enable_external_experiment_allowlist);
+
   SyntheticTrialRegistry();
   ~SyntheticTrialRegistry();
 
@@ -31,13 +45,41 @@ class SyntheticTrialRegistry {
   // Removes an existing observer of synthetic trials list changes.
   void RemoveSyntheticTrialObserver(SyntheticTrialObserver* observer);
 
+  // Specifies the mode of RegisterExternalExperiments() operation.
+  enum OverrideMode {
+    // Previously-registered external experiment ids are overridden (replaced)
+    // with the new list.
+    kOverrideExistingIds,
+    // Previously-registered external experiment ids are not overridden, but
+    // new experiment ids may be added.
+    kDoNotOverrideExistingIds,
+  };
+
+  // Registers a list of experiment ids coming from an external application.
+  // The input ids are in the VariationID format.
+  //
+  // When |enable_external_experiment_allowlist| is true, the supplied ids must
+  // have corresponding entries in the "ExternalExperimentAllowlist" (coming via
+  // a feature param) to be applied. The allowlist also supplies the
+  // corresponding trial name that should be used for reporting to UMA.
+  //
+  // When |enable_external_experiment_allowlist| is false, |fallback_study_name|
+  // will be used as the trial name for all provided experiment ids.
+  //
+  // If |mode| is kOverrideExistingIds, this API clears previously-registered
+  // external experiment ids, replacing them with the new list (which may be
+  // empty). If |mode| is kDoNotOverrideExistingIds, any new ids that are not
+  // already registered will be added, but existing ones will not be replaced.
+  void RegisterExternalExperiments(const std::string& fallback_study_name,
+                                   const std::vector<int>& experiment_ids,
+                                   OverrideMode mode);
+
  private:
   friend metrics::MetricsServiceAccessor;
   friend FieldTrialsProvider;
   friend FieldTrialsProviderTest;
+  friend SyntheticTrialRegistryTest;
   FRIEND_TEST_ALL_PREFIXES(SyntheticTrialRegistryTest, RegisterSyntheticTrial);
-  FRIEND_TEST_ALL_PREFIXES(SyntheticTrialRegistryTest,
-                           RegisterSyntheticMultiGroupFieldTrial);
   FRIEND_TEST_ALL_PREFIXES(SyntheticTrialRegistryTest,
                            GetSyntheticFieldTrialActiveGroups);
   FRIEND_TEST_ALL_PREFIXES(VariationsCrashKeysTest, BasicFunctionality);
@@ -50,23 +92,28 @@ class SyntheticTrialRegistry {
   // is registered for a given trial name will be recorded. The values passed
   // in must not correspond to any real field trial in the code.
   // Note: Should not be used to replace trials that were registered with
-  // RegisterSyntheticMultiGroupFieldTrial().
+  // RegisterExternalExperiments().
   void RegisterSyntheticFieldTrial(const SyntheticTrialGroup& trial_group);
 
-  // Similar to RegisterSyntheticFieldTrial(), but registers a synthetic trial
-  // that has multiple active groups for a given trial name hash. Any previous
-  // groups registered for |trial_name_hash| will be replaced.
-  void RegisterSyntheticMultiGroupFieldTrial(
-      uint32_t trial_name_hash,
-      const std::vector<uint32_t>& group_name_hashes);
+  // Returns the study name corresponding to |experiment_id| from the allowlist
+  // contained in |params| if the allowlist is enabled, otherwise returns
+  // |fallback_study_name|. An empty string piece is returned when the
+  // experiment is not in the allowlist.
+  base::StringPiece GetStudyNameForExpId(const std::string& fallback_study_name,
+                                         const base::FieldTrialParams& params,
+                                         const std::string& experiment_id);
 
   // Returns a list of synthetic field trials that are older than |time|.
   void GetSyntheticFieldTrialsOlderThan(
       base::TimeTicks time,
-      std::vector<ActiveGroupId>* synthetic_trials);
+      std::vector<ActiveGroupId>* synthetic_trials) const;
 
   // Notifies observers on a synthetic trial list change.
   void NotifySyntheticTrialObservers();
+
+  // Whether the allowlist is enabled. Some configurations, like WebLayer
+  // do not use the allowlist.
+  bool enable_external_experiment_allowlist_ = true;
 
   // Field trial groups that map to Chrome configuration states.
   std::vector<SyntheticTrialGroup> synthetic_trial_groups_;

@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("host") {
+component("host") {
   output_name = "ppapi_host"
 
   sources = [

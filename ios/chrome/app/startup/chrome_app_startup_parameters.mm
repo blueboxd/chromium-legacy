@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/x_callback_url.h"
 #include "ios/components/webui/web_ui_url_constants.h"
@@ -186,6 +187,11 @@ NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
     }
     UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartActionHistogram, action,
                               MOBILE_SESSION_START_ACTION_COUNT);
+    // An HTTP(S) URL open that opened Chrome (e.g. default browser open) should
+    // be logged as siginficnat activity for a potential user that would want
+    // Chrome as their default browser in case the user changes away from
+    // Chrome. This will leave a trace of this activity for re-prompting.
+    LogLikelyInterestedDefaultBrowserUserActivity();
 
     if (action == START_ACTION_OPEN_HTTP_FROM_OS ||
         action == START_ACTION_OPEN_HTTPS_FROM_OS) {
@@ -390,6 +396,13 @@ NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
     [params setLaunchInIncognito:YES];
     [params setPostOpeningAction:FOCUS_OMNIBOX];
     action = ACTION_NEW_INCOGNITO_SEARCH;
+  }
+
+  if (action != ACTION_NO_ACTION) {
+    // An external action that opened Chrome (i.e. GrowthKit link open, open
+    // Search, search clipboard content) is activity that should indicate a user
+    // that would be interested in setting Chrome as the default browser.
+    LogLikelyInterestedDefaultBrowserUserActivity();
   }
 
   if ([secureSourceApp

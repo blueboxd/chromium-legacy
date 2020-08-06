@@ -54,6 +54,7 @@ if (optimize_webui) {
       "chrome://resources/mojo/skia/public/mojom/image_info.mojom-lite.js",
       "chrome://resources/mojo/url/mojom/url.mojom-lite.js",
       "shared/nearby_share_settings.html",
+      "shared/nearby_share_settings_behavior.html",
     ]
 
     deps = [ ":unpak" ]
@@ -97,6 +98,7 @@ if (optimize_webui) {
       "search/search_result_icon.mojom-lite.js",
       "search/user_action_recorder.mojom-lite.js",
       "shared/nearby_share_settings.m.js",
+      "shared/nearby_share_settings_behavior.m.js",
     ]
   }
 

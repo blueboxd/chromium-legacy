@@ -146,13 +146,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   static bool RegisterSyntheticFieldTrial(base::StringPiece trial_name,
                                           base::StringPiece group_name);
 
-  // Calls MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial() with
-  // g_browser_process->metrics_service(). See that function's declaration for
-  // details.
-  static bool RegisterSyntheticMultiGroupFieldTrial(
-      base::StringPiece trial_name,
-      const std::vector<uint32_t>& group_name_hashes);
-
   // Cover for function of same name in MetricsServiceAccssor. See
   // ChromeMetricsServiceAccessor for details.
   static void SetForceIsMetricsReportingEnabledPrefLookup(bool value);

@@ -107,7 +107,7 @@ class NearbyConnectionsTest : public testing::Test {
         webrtc_dependencies_.ice_config_fetcher_.BindNewPipeAndPassRemote(),
         webrtc_dependencies_.messenger_.BindNewPipeAndPassRemote());
     auto dependencies = mojom::NearbyConnectionsDependencies::New(
-        bluetooth_adapter_.adapter.BindNewPipeAndPassRemote(),
+        bluetooth_adapter_.adapter_.BindNewPipeAndPassRemote(),
         std::move(webrtc_dependencies));
     service_controller_ =
         std::make_unique<testing::NiceMock<MockServiceController>>();
@@ -141,7 +141,7 @@ TEST_F(NearbyConnectionsTest, RemoteDisconnect) {
 }
 
 TEST_F(NearbyConnectionsTest, BluetoothDisconnect) {
-  bluetooth_adapter_.adapter.reset();
+  bluetooth_adapter_.adapter_.reset();
   disconnect_run_loop_.Run();
 }
 

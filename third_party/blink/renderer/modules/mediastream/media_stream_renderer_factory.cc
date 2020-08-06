@@ -42,7 +42,7 @@ base::UnguessableToken GetSessionIdForWebRtcAudioRenderer() {
 }
 
 void SendLogMessage(const WTF::String& message) {
-  WebRtcLogMessage("MSRFI::" + message.Utf8());
+  WebRtcLogMessage("MSRF::" + message.Utf8());
 }
 
 }  // namespace

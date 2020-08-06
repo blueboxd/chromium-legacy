@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 
 assert(is_apple)
 
-jumbo_source_set("mac") {
+source_set("mac") {
   # Note: This source_set is depended on only by //media. In the component
   # build, if other component targets also depend on it, multiple copies of
   # the ObjC classes declared in the files below will cause warnings at

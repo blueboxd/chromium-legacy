@@ -10,7 +10,7 @@ import("//build/config/jumbo.gni")
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_component("webview") {
+component("webview") {
   sources = [
     "unhandled_keyboard_event_handler.cc",
     "unhandled_keyboard_event_handler.h",

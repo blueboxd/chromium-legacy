@@ -46,6 +46,8 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -187,7 +189,8 @@ void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   }
   DCHECK(!context.IsEmpty());
 
-  script_state_ = MakeGarbageCollected<ScriptState>(context, world_);
+  script_state_ =
+      MakeGarbageCollected<ScriptState>(context, world_, global_scope_);
 
   ScriptState::Scope scope(script_state_);
 

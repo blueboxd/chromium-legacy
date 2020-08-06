@@ -214,8 +214,16 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
-  IdentifiableToken IdentifiableTextToken() override {
+  IdentifiableToken IdentifiableTextToken() const override {
     return identifiability_study_helper_.GetToken();
+  }
+
+  bool IdentifiabilityEncounteredSkippedOps() const override {
+    return identifiability_study_helper_.encountered_skipped_ops();
+  }
+
+  bool IdentifiabilityEncounteredSensitiveOps() const override {
+    return identifiability_study_helper_.encountered_sensitive_ops();
   }
 
  protected:
@@ -290,8 +298,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   static constexpr float kRasterMetricProbability = 0.01;
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
-
-  IdentifiabilityStudyHelper identifiability_study_helper_;
 
   ukm::UkmRecorder* ukm_recorder_;
   ukm::SourceId ukm_source_id_;

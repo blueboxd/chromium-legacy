@@ -131,7 +131,7 @@ TEST_F(SharingImplTest, NearbyConnections_Create) {
   bluetooth::FakeAdapter bluetooth_adapter;
   sharing::MockWebRtcDependencies webrtc_dependencies;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
-      bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -144,7 +144,7 @@ TEST_F(SharingImplTest, NearbyConnections_CreateMultiple) {
   bluetooth::FakeAdapter bluetooth_adapter_1;
   sharing::MockWebRtcDependencies webrtc_dependencies_1;
   mojo::Remote<NearbyConnectionsMojom> connections_1 = CreateNearbyConnections(
-      bluetooth_adapter_1.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter_1.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies_1.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies_1.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies_1.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -155,7 +155,7 @@ TEST_F(SharingImplTest, NearbyConnections_CreateMultiple) {
   bluetooth::FakeAdapter bluetooth_adapter_2;
   sharing::MockWebRtcDependencies webrtc_dependencies_2;
   mojo::Remote<NearbyConnectionsMojom> connections_2 = CreateNearbyConnections(
-      bluetooth_adapter_2.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter_2.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies_2.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies_2.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies_2.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -172,7 +172,7 @@ TEST_F(SharingImplTest, NearbyConnections_BluetoothDisconnects) {
   bluetooth::FakeAdapter bluetooth_adapter;
   sharing::MockWebRtcDependencies webrtc_dependencies;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
-      bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -181,7 +181,7 @@ TEST_F(SharingImplTest, NearbyConnections_BluetoothDisconnects) {
 
   // Disconnecting the |bluetooth_adapter| interface should also
   // disconnect and destroy the |connections| interface.
-  bluetooth_adapter.adapter.reset();
+  bluetooth_adapter.adapter_.reset();
 
   // Run mojo disconnect handlers.
   base::RunLoop().RunUntilIdle();
@@ -193,7 +193,7 @@ TEST_F(SharingImplTest, NearbyConnections_WebRtcSignalingMessengerDisconnects) {
   bluetooth::FakeAdapter bluetooth_adapter;
   sharing::MockWebRtcDependencies webrtc_dependencies;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
-      bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -214,7 +214,7 @@ TEST_F(SharingImplTest, NearbyConnections_WebRtcMdnsResponderDisconnects) {
   bluetooth::FakeAdapter bluetooth_adapter;
   sharing::MockWebRtcDependencies webrtc_dependencies;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
-      bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -235,7 +235,7 @@ TEST_F(SharingImplTest, NearbyConnections_WebRtcP2PSocketManagerDisconnects) {
   bluetooth::FakeAdapter bluetooth_adapter;
   sharing::MockWebRtcDependencies webrtc_dependencies;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
-      bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.ice_config_fetcher_.BindNewPipeAndPassRemote(),
@@ -256,7 +256,7 @@ TEST_F(SharingImplTest, NearbyConnections_WebRtcIceConfigFetcherDisconnects) {
   bluetooth::FakeAdapter bluetooth_adapter;
   sharing::MockWebRtcDependencies webrtc_dependencies;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
-      bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
+      bluetooth_adapter.adapter_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.socket_manager_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.mdns_responder_.BindNewPipeAndPassRemote(),
       webrtc_dependencies.ice_config_fetcher_.BindNewPipeAndPassRemote(),

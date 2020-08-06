@@ -23,7 +23,7 @@
           <input
               v-model="node.checked"
               type="checkbox">
-          <div>{{ node.name }}</div>
+          <div>{{ shortenName(node.name) }}</div>
         </div>
       </li>
     </ul>
@@ -37,6 +37,7 @@ import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 const GraphFilterItems = {
   props: {
     nodeFilterData: Object,
+    shortenName: Function,
   },
   data: function() {
     return this.nodeFilterData;

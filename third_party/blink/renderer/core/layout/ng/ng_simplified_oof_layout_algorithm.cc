@@ -14,7 +14,8 @@ namespace blink {
 
 NGSimplifiedOOFLayoutAlgorithm::NGSimplifiedOOFLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params,
-    const NGPhysicalBoxFragment& fragment)
+    const NGPhysicalBoxFragment& fragment,
+    bool is_new_fragment)
     : NGLayoutAlgorithm(params),
       writing_direction_(Style().GetWritingDirection()) {
   DCHECK(fragment.IsFragmentainerBox());
@@ -27,6 +28,10 @@ NGSimplifiedOOFLayoutAlgorithm::NGSimplifiedOOFLayoutAlgorithm(
   // We need the previous physical container size to calculate the position of
   // any child fragments.
   previous_physical_container_size_ = fragment.Size();
+
+  // Don't apply children to new fragments.
+  if (is_new_fragment)
+    return;
 
   // The OOF fragments need to be added after the already existing child
   // fragments. Add them now so they are added before we append the OOF results.

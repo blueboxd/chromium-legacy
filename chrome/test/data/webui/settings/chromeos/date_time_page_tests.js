@@ -2,7 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+// clang-format off
+// #import {CrSettingsPrefs} from 'chrome://os-settings/chromeos/os_settings.js'
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {flush} from'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {TimeZoneAutoDetectMethod, TimeZoneBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+// clang-format on
 
 /** @implements {settings.TimeZoneBrowserProxy} */
 class TestTimeZoneBrowserProxy extends TestBrowserProxy {
@@ -140,8 +148,7 @@ function initializeDateTime(prefs, hasPolicy, opt_autoDetectPolicyValue) {
     isChild: false,
   };
 
-  window.loadTimeData = new LoadTimeData;
-  loadTimeData.data = data;
+  loadTimeData.overrideValues(data);
 
   const dateTime =
       prefs.cros.flags.fine_grained_time_zone_detection_enabled.value ?
@@ -508,4 +515,3 @@ suite('settings-date-time-page', function() {
     });
   });
 });
-})();

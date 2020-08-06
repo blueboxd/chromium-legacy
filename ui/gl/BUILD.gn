@@ -53,7 +53,7 @@ config("gl_config") {
   }
 }
 
-jumbo_component("gl") {
+component("gl") {
   output_name = "gl_wrapper"  # Avoid colliding with OS X"s libGL.dylib.
 
   sources = [
@@ -446,7 +446,7 @@ if (is_mac && use_egl) {
   }
 }
 
-jumbo_static_library("gl_unittest_utils") {
+static_library("gl_unittest_utils") {
   testonly = true
   sources = [
     "egl_bindings_autogen_mock.cc",
@@ -472,7 +472,7 @@ jumbo_static_library("gl_unittest_utils") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/gl_image_bind_test_template.h",

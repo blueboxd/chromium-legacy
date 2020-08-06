@@ -215,9 +215,9 @@ channel-label {
 
 @media (prefers-color-scheme: dark) {
   color-picker {
-    background: #4A4A4A;
+    background: #3B3B3B;
     color: #FFFFFF;
-    border: 1px solid #000000;
+    border: 1px solid #858585;
   }
 
   format-toggler:hover {
@@ -225,13 +225,16 @@ channel-label {
   }
 
   input {
-    background: #4A4A4A;
+    background: #3B3B3B;
     color: #FFFFFF;
-    border: 1px solid #FFFFFF;
+    border: 1px solid #858585;
+  }
+
+  input:hover {
+    border: 1px solid #ACACAC;
   }
 
   .up-down-icon path {
     fill: #FFFFFF;
   }
-
  }

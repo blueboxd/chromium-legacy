@@ -122,9 +122,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
-// Enables the Supervised User Deprecation notices.
-ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
-
 // Enables side volume button control based on screen orientation feature.
 // TODO(https://crbug.com/937907): Remove this after the feature is fully
 // launched.
@@ -199,8 +196,6 @@ ASH_PUBLIC_EXPORT bool IsPipRoundedCornersEnabled();
 ASH_PUBLIC_EXPORT bool IsSeparateNetworkIconsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
-
-ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
 

@@ -288,7 +288,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopGetNextTextMatch) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, LocationInWebView) {
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+// TODO(http://crbug.com/1113853): flaky on ChromeOS.
+#define MAYBE_LocationInWebView DISABLED_LocationInWebView
+#else
+#define MAYBE_LocationInWebView LocationInWebView
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_LocationInWebView) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunPlatformAppTest("automation/tests/webview")) << message_;
 }

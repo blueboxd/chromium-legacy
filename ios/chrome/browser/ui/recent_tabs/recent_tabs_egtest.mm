@@ -168,7 +168,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                                         closeButton:NO];
   [self closeRecentTabs];
-  [SigninEarlGrey removeFakeIdentity:fakeIdentity];
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
 }
 
 // Tests that the sign-in promo can be reloaded correctly while being hidden.
@@ -198,7 +198,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                                         closeButton:NO];
   [self closeRecentTabs];
-  [SigninEarlGrey removeFakeIdentity:fakeIdentity];
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
 }
 
 // Tests that the VC can be dismissed by swiping down.

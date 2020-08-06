@@ -177,7 +177,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
   std::unique_ptr<views::View> CreateContentsView() override {
     auto button = std::make_unique<views::MenuButton>(
-        base::ASCIIToUTF16("Menu Adapter Test"), this);
+        this, base::ASCIIToUTF16("Menu Adapter Test"));
     button_ = button.get();
     return button;
   }

@@ -33,12 +33,11 @@ class WebLayerMetricsServiceClient
   WebLayerMetricsServiceClient();
   ~WebLayerMetricsServiceClient() override;
 
-  void RegisterSyntheticMultiGroupFieldTrial(
-      base::StringPiece trial_name,
-      const std::vector<int>& experiment_ids);
+  void RegisterExternalExperiments(const std::vector<int>& experiment_ids);
 
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
+  bool IsExternalExperimentAllowlistEnabled() override;
   bool IsUkmAllowedForAllProfiles() override;
   std::string GetUploadSigningKey() override;
 

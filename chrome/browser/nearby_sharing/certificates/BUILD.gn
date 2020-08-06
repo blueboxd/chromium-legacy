@@ -27,6 +27,7 @@ source_set("certificates") {
   deps = [
     "//base",
     "//base/util/values:values_util",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/logging",
     "//chrome/browser/nearby_sharing/proto",
     "//components/leveldb_proto",
@@ -73,6 +74,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//base/util/values:values_util",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/proto",
     "//components/leveldb_proto:test_support",
     "//components/prefs:test_support",

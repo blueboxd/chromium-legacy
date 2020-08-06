@@ -80,10 +80,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
 // Returns the platform name of the current device.
 std::string platform() {
-  BOOL isMobileByDefault = web::features::UseWebClientDefaultUserAgent()
-                               ? ![ChromeEarlGrey isIPadIdiom]
-                               : YES;
-  return isMobileByDefault
+  return [ChromeEarlGrey isMobileModeByDefault]
              ? base::SysNSStringToUTF8([[UIDevice currentDevice] model])
              : "MacIntel";
 }

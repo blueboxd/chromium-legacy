@@ -627,6 +627,10 @@ class WebMediaPlayerMSTest
     background_rendering_ = background_rendering;
   }
 
+  std::vector<blink::TextTrackMetadata> GetTextTrackMetadata() override {
+    return {};
+  }
+
   void SetGpuMemoryBufferVideoForTesting() {
 #if defined(OS_WIN)
     render_factory_->provider()->set_standard_size(

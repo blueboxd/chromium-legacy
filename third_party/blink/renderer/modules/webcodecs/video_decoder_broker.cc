@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ class MediaVideoTaskWrapper {
       media::GpuVideoAcceleratorFactories* gpu_factories,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-      : weak_client_(weak_client),
+      : weak_client_(std::move(weak_client)),
         media_task_runner_(std::move(media_task_runner)),
         main_task_runner_(std::move(main_task_runner)),
         gpu_factories_(gpu_factories) {
@@ -148,7 +148,7 @@ class MediaVideoTaskWrapper {
       return;
     }
 
-    decoder_->Decode(buffer,
+    decoder_->Decode(std::move(buffer),
                      WTF::Bind(&MediaVideoTaskWrapper::OnDecodeDone,
                                WTF::Unretained(this), std::move(decode_cb)));
   }
@@ -173,7 +173,8 @@ class MediaVideoTaskWrapper {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     media_interface_factory_.Bind(std::move(interface_factory));
 
-    // This setup is blocked on the Bind() above.
+    // Bind the |interface_factory_| above before passing to
+    // |external_decoder_factory|.
     std::unique_ptr<media::DecoderFactory> external_decoder_factory;
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
     external_decoder_factory = std::make_unique<media::MojoDecoderFactory>(

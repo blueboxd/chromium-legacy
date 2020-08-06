@@ -8,6 +8,7 @@
 #define BASE_BASE_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 
 namespace switches {
 
@@ -38,7 +39,7 @@ extern const char kDisableHighResTimer[];
 extern const char kDisableUsbKeyboardDetect[];
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
 extern const char kDisableDevShmUsage[];
 #endif
 

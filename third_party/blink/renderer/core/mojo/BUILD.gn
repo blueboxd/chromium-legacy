@@ -26,7 +26,7 @@ blink_core_sources("mojo") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [ "tests/js_to_cpp_test.cc" ]
 

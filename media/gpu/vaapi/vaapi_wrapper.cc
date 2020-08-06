@@ -1075,11 +1075,9 @@ bool IsLowPowerEncSupported(VAProfile va_profile) {
     return false;
   }
 
-  for (const VAProfile va_profile : kSupportedLowPowerEncodeProfiles) {
-    if (VASupportedProfiles::Get().IsProfileSupported(
-            VaapiWrapper::kEncode, va_profile, VAEntrypointEncSliceLP)) {
-      return true;
-    }
+  if (VASupportedProfiles::Get().IsProfileSupported(
+          VaapiWrapper::kEncode, va_profile, VAEntrypointEncSliceLP)) {
+    return true;
   }
   return false;
 }

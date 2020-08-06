@@ -529,6 +529,7 @@ void WebRtcAudioRenderer::Stop() {
 void WebRtcAudioRenderer::SetVolume(float volume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(volume >= 0.0f && volume <= 1.0f);
+  SendLogMessage(String::Format("%s({volume=%.2f})", __func__, volume));
 
   playing_state_.set_volume(volume);
   OnPlayStateChanged(media_stream_descriptor_, &playing_state_);
@@ -772,6 +773,8 @@ bool WebRtcAudioRenderer::AddPlayingState(webrtc::AudioSourceInterface* source,
     return false;
 
   array.push_back(state);
+  SendLogMessage(String::Format("%s => (number of playing audio sources=%d)",
+                                __func__, static_cast<int>(array.size())));
 
   return true;
 }
@@ -849,6 +852,7 @@ void WebRtcAudioRenderer::OnPlayStateRemoved(PlayingState* state) {
 
 void WebRtcAudioRenderer::PrepareSink() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SendLogMessage(String::Format("%s()", __func__));
   media::AudioParameters new_sink_params;
   {
     base::AutoLock lock(lock_);

@@ -170,7 +170,7 @@ bool TtsControllerImpl::StopCurrentUtteranceIfMatches(const GURL& source_url) {
   if (current_utterance_ && !current_utterance_->GetEngineId().empty()) {
     if (engine_delegate_)
       engine_delegate_->Stop(current_utterance_.get());
-  } else {
+  } else if (GetTtsPlatform()->PlatformImplAvailable()) {
     GetTtsPlatform()->ClearError();
     GetTtsPlatform()->StopSpeaking();
   }

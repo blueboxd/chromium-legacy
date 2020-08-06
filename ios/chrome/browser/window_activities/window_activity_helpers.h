@@ -34,8 +34,10 @@ typedef NS_ENUM(NSInteger, WindowActivityOrigin) {
   WindowActivityRecentTabsOrigin,
   // The command origin comes from the location bar steady view.
   WindowActivityLocationBarSteadyViewOrigin,
+  // The command origin comes from the NTP content suggestions.
+  WindowActivityContentSuggestionsOrigin,
   // Size of enum.
-  kMaxValue = WindowActivityToolsOrigin
+  kMaxValue = WindowActivityContentSuggestionsOrigin
 };
 
 // Helper functions to create NSUserActivity instances that encode specific

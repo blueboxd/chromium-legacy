@@ -10,7 +10,7 @@ declare_args() {
   sync_user_agent_product = "Chrome"
 }
 
-jumbo_static_library("base") {
+static_library("base") {
   sources = [
     "bind_to_task_runner.h",
     "cancelation_observer.cc",

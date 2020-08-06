@@ -28,8 +28,7 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
  public:
   TestToolbarActionViewDelegate()
       : shown_in_menu_(false),
-        overflow_reference_view_(
-            std::make_unique<views::MenuButton>(base::string16(), nullptr)),
+        overflow_reference_view_(std::make_unique<views::MenuButton>()),
         web_contents_(nullptr) {}
   TestToolbarActionViewDelegate(const TestToolbarActionViewDelegate&) = delete;
   TestToolbarActionViewDelegate& operator=(

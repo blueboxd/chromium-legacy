@@ -4,11 +4,12 @@
       confirmation-token="[[confirmationToken_]]"
       share-target="[[selectedShareTarget_]]">
   </nearby-confirmation-page>
-  <nearby-discovery-page id="[[Page.DISCOVERY]]" slot="view" class="active"
+  <nearby-discovery-page id="[[Page.DISCOVERY]]" slot="view"
       confirmation-manager="{{confirmationManager_}}"
       confirmation-token="{{confirmationToken_}}"
       selected-share-target="{{selectedShareTarget_}}">
   </nearby-discovery-page>
-  <nearby-onboarding-page id="[[Page.ONBOARDING]]" slot="view">
+  <nearby-onboarding-page id="[[Page.ONBOARDING]]" settings="{{settings}}"
+      slot="view">
   </nearby-onboarding-page>
 </cr-view-manager>

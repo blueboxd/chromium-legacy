@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "content_settings_mock_provider.cc",

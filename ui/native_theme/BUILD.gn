@@ -12,7 +12,7 @@ import("//testing/test.gni")
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_component("native_theme") {
+component("native_theme") {
   sources = [
     "caption_style.cc",
     "caption_style.h",
@@ -88,7 +88,7 @@ jumbo_component("native_theme") {
 }
 
 if (is_win) {
-  jumbo_component("native_theme_browser") {
+  component("native_theme_browser") {
     defines = [ "NATIVE_THEME_IMPLEMENTATION" ]
 
     # These files cannot work in the renderer on Windows.
@@ -109,11 +109,11 @@ if (is_win) {
     libs = [ "uxtheme.lib" ]
   }
 } else {
-  jumbo_source_set("native_theme_browser") {
+  source_set("native_theme_browser") {
   }
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
 
   deps = [

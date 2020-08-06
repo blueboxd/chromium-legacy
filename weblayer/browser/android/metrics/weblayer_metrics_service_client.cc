@@ -10,16 +10,12 @@
 
 #include "base/base64.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_number_conversions.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/variations/hashing.h"
-#include "components/variations/variations_associated_data.h"
 #include "components/version_info/android/channel_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "google_apis/google_api_keys.h"
-#include "weblayer/browser/android/metrics/weblayer_metrics_service_accessor.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
 #include "weblayer/browser/system_network_context_manager.h"
@@ -87,42 +83,31 @@ WebLayerMetricsServiceClient::~WebLayerMetricsServiceClient() {
   ProfileImpl::RemoveProfileObserver(this);
 }
 
-void WebLayerMetricsServiceClient::RegisterSyntheticMultiGroupFieldTrial(
-    base::StringPiece trial_name,
+void WebLayerMetricsServiceClient::RegisterExternalExperiments(
     const std::vector<int>& experiment_ids) {
   if (!GetMetricsService()) {
     if (!IsConsentDetermined()) {
       post_start_tasks_.push_back(base::BindOnce(
-          &WebLayerMetricsServiceClient::RegisterSyntheticMultiGroupFieldTrial,
-          base::Unretained(this), trial_name, experiment_ids));
+          &WebLayerMetricsServiceClient::RegisterExternalExperiments,
+          base::Unretained(this), experiment_ids));
     }
     return;
   }
 
-  std::vector<uint32_t> group_name_hashes;
-  group_name_hashes.reserve(experiment_ids.size());
-
-  variations::ActiveGroupId active_group;
-  active_group.name = variations::HashName(trial_name);
-  for (int experiment_id : experiment_ids) {
-    active_group.group =
-        variations::HashName(base::NumberToString(experiment_id));
-
-    // Since external experiments are not based on Chrome's low entropy source,
-    // they are only sent to Google web properties for signed in users to make
-    // sure that this couldn't be used to identify a user that's not signed in.
-    variations::AssociateGoogleVariationIDForceHashes(
-        variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN, active_group,
-        static_cast<variations::VariationID>(experiment_id));
-    group_name_hashes.push_back(active_group.group);
-  }
-
-  WebLayerMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
-      GetMetricsService(), trial_name, group_name_hashes);
+  GetMetricsService()->synthetic_trial_registry()->RegisterExternalExperiments(
+      "WebLayerExperiments", experiment_ids,
+      variations::SyntheticTrialRegistry::kOverrideExistingIds);
 }
 
 int32_t WebLayerMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBLAYER;
+}
+
+bool WebLayerMetricsServiceClient::IsExternalExperimentAllowlistEnabled() {
+  // RegisterExternalExperiments() is actually used to register experiment ids
+  // coming from the app embedding WebLayer itself, rather than externally. So
+  // the allowlist shouldn't be applied.
+  return false;
 }
 
 bool WebLayerMetricsServiceClient::IsUkmAllowedForAllProfiles() {

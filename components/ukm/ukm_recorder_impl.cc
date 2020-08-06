@@ -88,6 +88,16 @@ bool HasSupportedScheme(const GURL& url) {
          url.SchemeIs(kExtensionScheme) || url.SchemeIs(kAppScheme);
 }
 
+void LogEventHashAsUmaHistogram(const std::string& histogram_name,
+                                uint64_t event_hash) {
+  // The enum for this histogram gets populated by the PopulateEnumWithUkmEvents
+  // function in populate_enums.py when producing the merged XML.
+  base::UmaHistogramSparse(histogram_name,
+                           // Truncate the unsigned 64-bit hash to 31 bits, to
+                           // make it a suitable histogram sample.
+                           event_hash & 0x7fffffff);
+}
+
 enum class DroppedDataReason {
   NOT_DROPPED = 0,
   RECORDING_DISABLED = 1,
@@ -110,12 +120,8 @@ void RecordDroppedSource(DroppedDataReason reason) {
 }
 
 void RecordDroppedEntry(uint64_t event_hash, DroppedDataReason reason) {
-  // The enum for this histogram gets populated by the PopulateEnumWithUkmEvents
-  // function in populate_enums.py when producing the merged XML.
-  base::UmaHistogramSparse("UKM.Entries.Dropped.ByEntryHash",
-                           // Truncate the unsigned 64-bit hash to 31 bits, to
-                           // make it a suitable histogram sample.
-                           event_hash & 0x7fffffff);
+  LogEventHashAsUmaHistogram("UKM.Entries.Dropped.ByEntryHash", event_hash);
+
   UMA_HISTOGRAM_ENUMERATION(
       "UKM.Entries.Dropped", static_cast<int>(reason),
       static_cast<int>(DroppedDataReason::NUM_DROPPED_DATA_REASONS));
@@ -745,6 +751,11 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
       event_aggregate.metrics[metric.first].dropped_due_to_limits++;
     return;
   }
+
+  // Log a corresponding entry to UMA so we get a per-metric breakdown of UKM
+  // entry counts.
+  LogEventHashAsUmaHistogram("UKM.Entries.Recorded.ByEntryHash",
+                             entry->event_hash);
 
   recordings_.entries.push_back(std::move(entry));
 }

@@ -1,9 +1,10 @@
 <style include="cr-hidden-style">
   :host {
-    --ntp-logo-height: 230px;
+    --ntp-logo-height: 200px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    justify-content: flex-end;
     min-height: var(--ntp-logo-height);
   }
 
@@ -13,7 +14,6 @@
 
   #logo {
     height: 92px;
-    margin-top: 108px;
     width: 272px;
   }
 
@@ -36,7 +36,6 @@
   :host([doodle-boxed_]) #imageDoodle {
     background-color: var(--ntp-logo-box-color);
     border-radius: 20px;
-    margin-bottom: 30px;
     padding: 16px 24px;
   }
 
@@ -92,10 +91,14 @@
 
   #iframe {
     border: none;
-    height: var(--height, --ntp-logo-height);
+    height: var(--height, var(--ntp-logo-height));
     transition-duration: var(--duration, 100ms);
     transition-property: height, width;
     width: var(--width, 100%);
+  }
+
+  #iframe:not([expanded]) {
+    max-height: var(--ntp-logo-height);
   }
 </style>
 
@@ -124,7 +127,8 @@
       </div>
     </div>
     <template is="dom-if" if="[[iframeUrl_]]" restamp>
-      <ntp-iframe id="iframe" src="[[iframeUrl_]]"></ntp-iframe>
+      <ntp-iframe id="iframe" src="[[iframeUrl_]]" expanded$="[[expanded_]]">
+      </ntp-iframe>
     </template>
   </div>
 </template>

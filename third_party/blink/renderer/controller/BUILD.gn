@@ -12,7 +12,7 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 visibility = [ "//third_party/blink/*" ]
 
-jumbo_component("controller") {
+component("controller") {
   output_name = "blink_controller"
 
   deps = [
@@ -142,7 +142,7 @@ test("blink_perf_tests") {
   deps = [ ":blink_perf_tests_sources" ]
 }
 
-jumbo_source_set("blink_perf_tests_sources") {
+source_set("blink_perf_tests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true
@@ -163,7 +163,7 @@ jumbo_source_set("blink_perf_tests_sources") {
   ]
 }
 
-jumbo_source_set("blink_unittests_sources") {
+source_set("blink_unittests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true

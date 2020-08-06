@@ -23,7 +23,7 @@ if (is_ios) {
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_static_library("dom_keycode_converter") {
+static_library("dom_keycode_converter") {
   public = [
     "keycodes/dom/dom_code.h",
     "keycodes/dom/dom_codes.h",
@@ -99,7 +99,7 @@ source_set("platform_event") {
   sources = [ "platform_event.h" ]
 }
 
-jumbo_component("events_base") {
+component("events_base") {
   sources = [
     "base_event_utils.cc",
     "base_event_utils.h",
@@ -187,7 +187,7 @@ jumbo_component("events_base") {
   }
 }
 
-jumbo_component("events") {
+component("events") {
   public = [
     "cocoa/cocoa_event_utils.h",
     "event.h",
@@ -393,7 +393,7 @@ jumbo_component("events") {
   }
 }
 
-jumbo_component("gesture_detection") {
+component("gesture_detection") {
   sources = [
     "gesture_detection/bitset_32.h",
     "gesture_detection/filtered_gesture_provider.cc",
@@ -457,7 +457,7 @@ jumbo_component("gesture_detection") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   sources = [
     "test/event_generator.cc",
     "test/event_generator.h",

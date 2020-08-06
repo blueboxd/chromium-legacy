@@ -828,10 +828,10 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
         util::GetStoragePartitionForExtensionId(extension_id(),
                                                 browser_context())
             ->GetFileSystemContext();
-    const GURL origin =
-        util::GetSiteForExtensionId(extension_id(), browser_context());
+
     const storage::FileSystemURL url = context->CreateCrackedFileSystemURL(
-        url::Origin::Create(origin), storage::kFileSystemTypeIsolated,
+        url::Origin::Create(extension()->url()),
+        storage::kFileSystemTypeIsolated,
         storage::IsolatedContext::GetInstance()
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path)));

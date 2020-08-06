@@ -189,8 +189,7 @@ class MetricsRecorder {
 }  // namespace
 
 TEST(TranslateBrowserMetricsTest, ReportInitiationStatus) {
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_INITIATION_STATUS));
+  MetricsRecorder recorder("Translate.InitiationStatus.v2");
 
   recorder.CheckInitiationStatus(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   translate::TranslateBrowserMetrics::ReportInitiationStatus(
@@ -246,8 +245,7 @@ TEST(TranslateBrowserMetricsTest, ReportInitiationStatus) {
 }
 
 TEST(TranslateBrowserMetricsTest, ReportLanguageDetectionError) {
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_LANGUAGE_DETECTION_ERROR));
+  MetricsRecorder recorder("Translate.ReportLanguageDetectionError");
   EXPECT_EQ(0, recorder.GetTotalCount());
   translate::TranslateBrowserMetrics::ReportLanguageDetectionError();
   EXPECT_EQ(1, recorder.GetTotalCount());
@@ -256,8 +254,7 @@ TEST(TranslateBrowserMetricsTest, ReportLanguageDetectionError) {
 TEST(TranslateBrowserMetricsTest, ReportedLocalesOnDisabledByPrefs) {
   const int ENGLISH = 25966;
 
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_LOCALES_ON_DISABLED_BY_PREFS));
+  MetricsRecorder recorder("Translate.LocalesOnDisabledByPrefs");
   EXPECT_EQ(0, recorder.GetTotalCount());
   translate::TranslateBrowserMetrics::ReportLocalesOnDisabledByPrefs("en");
   EXPECT_EQ(1, recorder.GetCount(ENGLISH));
@@ -266,8 +263,7 @@ TEST(TranslateBrowserMetricsTest, ReportedLocalesOnDisabledByPrefs) {
 TEST(TranslateBrowserMetricsTest, ReportedUndisplayableLanguage) {
   const int ENGLISH = 25966;
 
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_UNDISPLAYABLE_LANGUAGE));
+  MetricsRecorder recorder("Translate.UndisplayableLanguage");
   EXPECT_EQ(0, recorder.GetTotalCount());
   translate::TranslateBrowserMetrics::ReportUndisplayableLanguage("en");
   EXPECT_EQ(1, recorder.GetCount(ENGLISH));
@@ -276,9 +272,7 @@ TEST(TranslateBrowserMetricsTest, ReportedUndisplayableLanguage) {
 TEST(TranslateBrowserMetricsTest, ReportedUnsupportedLanguageAtInitiation) {
   const int ENGLISH = 25966;
 
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::
-          UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION));
+  MetricsRecorder recorder("Translate.UnsupportedLanguageAtInitiation");
   EXPECT_EQ(0, recorder.GetTotalCount());
   translate::TranslateBrowserMetrics::ReportUnsupportedLanguageAtInitiation(
       "en");
@@ -289,8 +283,7 @@ TEST(TranslateBrowserMetricsTest, ReportedTranslateSourceLanguage) {
   const int ENGLISH = -74147910;
   const int FRENCH = 1704315002;
 
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_TRANSLATE_SOURCE_LANGUAGE));
+  MetricsRecorder recorder("Translate.SourceLanguage");
   EXPECT_EQ(0, recorder.GetTotalCount());
 
   translate::TranslateBrowserMetrics::ReportTranslateSourceLanguage("en");
@@ -305,8 +298,7 @@ TEST(TranslateBrowserMetricsTest, ReportedTranslateTargetLanguage) {
   const int ENGLISH = -74147910;
   const int FRENCH = 1704315002;
 
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_TRANSLATE_TARGET_LANGUAGE));
+  MetricsRecorder recorder("Translate.TargetLanguage");
   EXPECT_EQ(0, recorder.GetTotalCount());
 
   translate::TranslateBrowserMetrics::ReportTranslateTargetLanguage("en");
@@ -318,8 +310,7 @@ TEST(TranslateBrowserMetricsTest, ReportedTranslateTargetLanguage) {
 }
 
 TEST(TranslateBrowserMetricsTest, ReportTranslateHrefHintStatus) {
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS));
+  MetricsRecorder recorder("Translate.HrefHint.Status");
   recorder.CheckTranslateHrefHintStatus(0, 0, 0);
   translate::TranslateBrowserMetrics::ReportTranslateHrefHintStatus(
       translate::TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated);
@@ -335,9 +326,7 @@ TEST(TranslateBrowserMetricsTest, ReportTranslateHrefHintStatus) {
 }
 
 TEST(TranslateBrowserMetricsTest, ReportTranslateTargetLanguageOrigin) {
-  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
-      translate::TranslateBrowserMetrics::
-          UMA_TRANSLATE_TARGET_LANGUAGE_ORIGIN));
+  MetricsRecorder recorder("Translate.TargetLanguage.Origin");
   recorder.CheckTranslateTargetLanugageOrigin(0, 0, 0, 0, 0);
   translate::TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
       translate::TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget);

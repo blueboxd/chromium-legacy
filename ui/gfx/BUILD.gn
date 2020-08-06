@@ -28,7 +28,7 @@ source_set("gfx_export") {
 }
 
 # Used for color generation at build time without importing all the gfx.
-jumbo_component("color_utils") {
+component("color_utils") {
   sources = [
     "color_palette.h",
     "color_utils.cc",
@@ -43,7 +43,7 @@ jumbo_component("color_utils") {
   ]
 }
 
-jumbo_component("geometry_skia") {
+component("geometry_skia") {
   sources = [
     "geometry_skia_export.h",
     "rrect_f.cc",
@@ -66,7 +66,7 @@ jumbo_component("geometry_skia") {
   defines = [ "GEOMETRY_SKIA_IMPLEMENTATION" ]
 }
 
-jumbo_component("gfx") {
+component("gfx") {
   sources = [
     "break_list.h",
     "color_analysis.cc",
@@ -412,7 +412,7 @@ jumbo_component("gfx") {
   }
 }
 
-jumbo_component("color_space") {
+component("color_space") {
   sources = [
     "color_space.cc",
     "color_space.h",
@@ -519,7 +519,7 @@ group("memory_buffer") {
 }
 
 # Cannot be a static_library in component builds due to exported functions
-jumbo_source_set("memory_buffer_sources") {
+source_set("memory_buffer_sources") {
   visibility = [ ":*" ]  # Depend on through ":memory_buffer".
 
   # TODO(brettw) refactor this so these sources are in a coherent directory
@@ -605,7 +605,7 @@ jumbo_source_set("memory_buffer_sources") {
 }
 
 # TODO(ccameron): This can be moved into a separate source_set.
-jumbo_component("gfx_switches") {
+component("gfx_switches") {
   sources = [
     "switches.cc",
     "switches.h",
@@ -617,7 +617,7 @@ jumbo_component("gfx_switches") {
   deps = [ "//base" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "animation/animation_test_api.cc",

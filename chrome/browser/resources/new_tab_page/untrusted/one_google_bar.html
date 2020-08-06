@@ -8,6 +8,19 @@
         overflow: hidden;
       }
 
+      .fade-in {
+        animation: fadeIn 200ms;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
       $i18nRaw{inHeadStyle}
     </style>
     <script>$i18nRaw{inHeadScript}</script>

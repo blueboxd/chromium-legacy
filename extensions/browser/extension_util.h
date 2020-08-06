@@ -42,11 +42,6 @@ bool IsIncognitoEnabled(const std::string& extension_id,
 bool CanCrossIncognito(const extensions::Extension* extension,
                        content::BrowserContext* context);
 
-// Returns the site of the |extension_id|, given the associated |context|.
-// Suitable for use with BrowserContext::GetStoragePartitionForSite().
-GURL GetSiteForExtensionId(const std::string& extension_id,
-                           content::BrowserContext* context);
-
 // Returns the StoragePartition domain for |extension|.
 // Note: The reference returned has the same lifetime as |extension|.
 const std::string& GetPartitionDomainForExtension(const Extension* extension);

@@ -250,7 +250,13 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest,
 }
 
 // Check the custom tab bar is not instantiated for a popup window.
-IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, IsNotCreatedInPopup) {
+#if defined(OS_CHROMEOS)
+// TODO(http://crbug.com/1113821): flaky on ChromeOS.
+#define MAYBE_IsNotCreatedInPopup DISABLED_IsNotCreatedInPopup
+#else
+#define MAYBE_IsNotCreatedInPopup IsNotCreatedInPopup
+#endif
+IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, MAYBE_IsNotCreatedInPopup) {
   Browser* popup = OpenPopup(browser_view_->GetActiveWebContents(),
                              GURL("http://example.com"));
   EXPECT_TRUE(popup);

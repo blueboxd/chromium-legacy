@@ -70,15 +70,11 @@ class ElasticOverscrollControllerBezierTest : public testing::Test {
   }
 
   void SendGestureScrollUpdate(PhaseState inertialPhase,
-                               const Vector2dF& scroll_delta,
                                const Vector2dF& unused_scroll_delta) {
     blink::WebGestureEvent event(WebInputEvent::Type::kGestureScrollUpdate,
                                  WebInputEvent::kNoModifiers, base::TimeTicks(),
                                  blink::WebGestureDevice::kTouchpad);
     event.data.scroll_update.inertial_phase = inertialPhase;
-    event.data.scroll_update.delta_x = -scroll_delta.x();
-    event.data.scroll_update.delta_y = -scroll_delta.y();
-
     cc::InputHandlerScrollResult scroll_result;
     scroll_result.did_overscroll_root = !unused_scroll_delta.IsZero();
     scroll_result.unused_scroll_delta = unused_scroll_delta;
@@ -103,22 +99,18 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyOverscrollStretch) {
   // Test vertical overscroll.
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -10),
-                          Vector2dF(0, -100));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
   EXPECT_EQ(Vector2dF(0, -19), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, 10),
-                          Vector2dF(0, 100));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, 100));
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
   SendGestureScrollEnd();
 
   // Test horizontal overscroll.
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-10, 0),
-                          Vector2dF(-100, 0));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-100, 0));
   EXPECT_EQ(Vector2dF(-19, 0), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(10, 0),
-                          Vector2dF(100, 0));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(100, 0));
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
   SendGestureScrollEnd();
 }
@@ -129,8 +121,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, ReconcileStretchAndScroll) {
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
                                             gfx::ScrollOffset(100, 100));
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -50),
-                          Vector2dF(0, -100));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
   EXPECT_EQ(Vector2dF(0, -19), helper_.StretchAmount());
   helper_.ScrollBy(Vector2dF(0, 1));
   controller_.ReconcileStretchAndScroll();
@@ -144,8 +135,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, ReconcileStretchAndScroll) {
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
                                             gfx::ScrollOffset(100, 100));
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-50, 0),
-                          Vector2dF(-100, 0));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-100, 0));
   EXPECT_EQ(Vector2dF(-19, 0), helper_.StretchAmount());
   helper_.ScrollBy(Vector2dF(1, 0));
   controller_.ReconcileStretchAndScroll();
@@ -168,13 +158,12 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyOverscrollBounceDistance) {
 // successfully created, the call to OverscrollBounceController::Animate should
 // tick the animation as expected. When the stretch amount is near 0, the
 // scroller should treat the bounce as "completed".
-TEST_F(ElasticOverscrollControllerBezierTest, VerifyAnimationTick) {
+TEST_F(ElasticOverscrollControllerBezierTest, VerifyBackwardAnimationTick) {
   // Test vertical overscroll.
   EXPECT_EQ(controller_.state_, ElasticOverscrollController::kStateInactive);
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -50),
-                          Vector2dF(0, -100));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
 
   // This signals that the finger has lifted off which triggers the bounce back
   // animation.
@@ -200,8 +189,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyAnimationTick) {
   // Test horizontal overscroll.
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-25, 0),
-                          Vector2dF(-80, 0));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-80, 0));
   SendGestureScrollEnd(now);
 
   // Frame 2.
@@ -220,14 +208,40 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyAnimationTick) {
   EXPECT_EQ(controller_.state_, ElasticOverscrollController::kStateInactive);
 }
 
+// Tests that the bounce forward animation ticks as expected.
+TEST_F(ElasticOverscrollControllerBezierTest, VerifyForwardAnimationTick) {
+  EXPECT_EQ(controller_.state_, ElasticOverscrollController::kStateInactive);
+  SendGestureScrollBegin(PhaseState::kNonMomentum);
+  EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
+  controller_.scroll_velocity_ = gfx::Vector2dF(0.f, -500.f);
+
+  // This signals that the finger has lifted off which triggers a fling.
+  const base::TimeTicks now = base::TimeTicks::Now();
+  SendGestureScrollEnd(now);
+
+  const int SAMPLES = 7;
+  const int frames[SAMPLES] = {1, 2, 3, 4, 5, 8, 19};
+  const int stretch_amount[SAMPLES] = {-33, -40, -43, -40, -26, -11, 0};
+
+  for (int i = 0; i < SAMPLES; i++) {
+    controller_.Animate(now +
+                        base::TimeDelta::FromMilliseconds(frames[i] * 16));
+    EXPECT_EQ(controller_.state_,
+              (stretch_amount[i] == 0
+                   ? ElasticOverscrollController::kStateInactive
+                   : ElasticOverscrollController::kStateMomentumAnimated));
+    ASSERT_FLOAT_EQ(helper_.StretchAmount().y(), stretch_amount[i]);
+  }
+}
+
 // Tests initiating a scroll when a bounce back animation is in progress works
 // as expected.
 TEST_F(ElasticOverscrollControllerBezierTest, VerifyScrollDuringBounceBack) {
   // Test vertical overscroll.
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(),
-                          Vector2dF(0, -100));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
 
   // This signals that the finger has lifted off which triggers the bounce back
   // animation.
@@ -245,8 +259,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyScrollDuringBounceBack) {
 
   // While the animation is still ticking, initiate a scroll.
   SendGestureScrollBegin(PhaseState::kNonMomentum);
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(),
-                          Vector2dF(0, -50));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -50));
   ASSERT_FLOAT_EQ(helper_.StretchAmount().y(), -13);
 }
 
@@ -258,8 +271,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyAnimationNotCreated) {
 
   // state_ is kStateActiveScroll. unused_delta is 0 so overscroll should not
   // take place.
-  Vector2dF delta(-25, -50);
-  SendGestureScrollUpdate(PhaseState::kNonMomentum, delta, Vector2dF(0, 0));
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, 0));
 
   // This signals that the finger has lifted off which triggers the bounce back
   // animation.

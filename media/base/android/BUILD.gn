@@ -14,7 +14,7 @@ if (is_android) {
   # This is bundled into //media, so all dependencies should be on //media.
   # APK targets that depend on this indirectly, should also
   # depend on :media_java to get the corresponding Java classes.
-  jumbo_source_set("android") {
+  source_set("android") {
     visibility = [
       "//media",
       "//media/filters",

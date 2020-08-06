@@ -155,7 +155,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     ::features::kWebPayments,
     // TODO(crbug.com/1025627): make webauth work with WebLayer.
     ::features::kWebAuth,
-    ::features::kSmsReceiver,
     // TODO(crbug.com/1057106): make web-xr work with WebLayer.
     ::features::kWebXr,
     ::features::kWebXrArModule,
@@ -168,7 +167,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     ::features::kNotificationTriggers,
     // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
     ::features::kPeriodicBackgroundSync,
-    ::features::kSmsReceiver,
     media::kOverlayFullscreenVideo,
 #if defined(OS_ANDROID)
     media::kPictureInPictureAPI,

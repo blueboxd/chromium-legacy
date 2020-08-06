@@ -29,4 +29,19 @@ bool TextTrackConfig::Matches(const TextTrackConfig& config) const {
          config.id() == id_;
 }
 
+// static
+TextKind TextTrackConfig::ConvertKind(const std::string& str) {
+  if (str == "subtitles")
+    return kTextSubtitles;
+  if (str == "captions")
+    return kTextCaptions;
+  if (str == "descriptions")
+    return kTextDescriptions;
+  if (str == "chapters")
+    return kTextChapters;
+  if (str == "metadata")
+    return kTextMetadata;
+  return kTextNone;
+}
+
 }  // namespace media

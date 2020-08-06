@@ -22,7 +22,7 @@ source_set("leak_detection_interface_headers") {
   ]
 }
 
-jumbo_source_set("leak_detection") {
+source_set("leak_detection") {
   sources = [
     "authenticated_leak_check.cc",
     "authenticated_leak_check.h",
@@ -60,7 +60,7 @@ jumbo_source_set("leak_detection") {
   ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "mock_leak_detection_check_factory.cc",
@@ -78,7 +78,7 @@ jumbo_source_set("test_support") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "authenticated_leak_check_unittest.cc",

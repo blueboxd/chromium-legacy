@@ -17,19 +17,14 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
+#include "chrome/browser/nearby_sharing/certificates/constants.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
-const size_t kMaxNumInitializeAttempts = 3;
-
-const char kNearbySharePublicCertificateExpirationDictPref[] =
-    "nearbyshare.public_certificate_expiration_dict";
-const char kNearbySharePrivateCertificateListPref[] =
-    "nearbyshare.private_certificate_list";
-
 std::string EncodeString(const std::string& unencoded_string) {
   std::string encoded_string;
   base::Base64UrlEncode(unencoded_string,
@@ -114,20 +109,13 @@ NearbyShareCertificateStorageImpl::NearbyShareCertificateStorageImpl(
 NearbyShareCertificateStorageImpl::~NearbyShareCertificateStorageImpl() =
     default;
 
-// static
-void NearbyShareCertificateStorageImpl::RegisterPrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(
-      kNearbySharePublicCertificateExpirationDictPref);
-  registry->RegisterListPref(kNearbySharePrivateCertificateListPref);
-}
-
 void NearbyShareCertificateStorageImpl::Initialize() {
   switch (init_status_) {
     case InitStatus::kUninitialized:
     case InitStatus::kFailed:
       num_initialize_attempts_++;
-      if (num_initialize_attempts_ > kMaxNumInitializeAttempts) {
+      if (num_initialize_attempts_ >
+          kNearbyShareCertificateStorageMaxNumInitializeAttempts) {
         FinishInitialization(false);
         break;
       }
@@ -294,8 +282,7 @@ NearbyShareCertificateStorageImpl::GetPublicCertificateIds() const {
 void NearbyShareCertificateStorageImpl::GetPublicCertificates(
     PublicCertificateCallback callback) {
   if (init_status_ == InitStatus::kFailed) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
+    std::move(callback).Run(false, nullptr);
     return;
   }
 
@@ -312,7 +299,7 @@ void NearbyShareCertificateStorageImpl::GetPublicCertificates(
 base::Optional<std::vector<NearbySharePrivateCertificate>>
 NearbyShareCertificateStorageImpl::GetPrivateCertificates() const {
   const base::Value* list =
-      pref_service_->Get(kNearbySharePrivateCertificateListPref);
+      pref_service_->Get(prefs::kNearbySharingPrivateCertificateListPrefName);
   std::vector<NearbySharePrivateCertificate> certs;
   for (const base::Value& cert_dict : list->GetList()) {
     base::Optional<NearbySharePrivateCertificate> cert(
@@ -329,7 +316,7 @@ base::Optional<base::Time>
 NearbyShareCertificateStorageImpl::NextPrivateCertificateExpirationTime()
     const {
   const base::Value* list =
-      pref_service_->Get(kNearbySharePrivateCertificateListPref);
+      pref_service_->Get(prefs::kNearbySharingPrivateCertificateListPrefName);
   if (!list || list->GetList().empty())
     return base::nullopt;
 
@@ -359,7 +346,7 @@ void NearbyShareCertificateStorageImpl::ReplacePrivateCertificates(
   for (const NearbySharePrivateCertificate& cert : private_certificates) {
     list.Append(cert.ToDictionary());
   }
-  pref_service_->Set(kNearbySharePrivateCertificateListPref, list);
+  pref_service_->Set(prefs::kNearbySharingPrivateCertificateListPrefName, list);
 }
 
 void NearbyShareCertificateStorageImpl::ReplacePublicCertificates(
@@ -367,8 +354,7 @@ void NearbyShareCertificateStorageImpl::ReplacePublicCertificates(
         public_certificates,
     ResultCallback callback) {
   if (init_status_ == InitStatus::kFailed) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
+    std::move(callback).Run(false);
     return;
   }
 
@@ -401,8 +387,7 @@ void NearbyShareCertificateStorageImpl::AddPublicCertificates(
         public_certificates,
     ResultCallback callback) {
   if (init_status_ == InitStatus::kFailed) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
+    std::move(callback).Run(false);
     return;
   }
 
@@ -436,8 +421,7 @@ void NearbyShareCertificateStorageImpl::RemoveExpiredPublicCertificates(
     base::Time now,
     ResultCallback callback) {
   if (init_status_ == InitStatus::kFailed) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
+    std::move(callback).Run(false);
     return;
   }
 
@@ -475,14 +459,13 @@ void NearbyShareCertificateStorageImpl::RemoveExpiredPublicCertificates(
 }
 
 void NearbyShareCertificateStorageImpl::ClearPrivateCertificates() {
-  pref_service_->ClearPref(kNearbySharePrivateCertificateListPref);
+  pref_service_->ClearPref(prefs::kNearbySharingPrivateCertificateListPrefName);
 }
 
 void NearbyShareCertificateStorageImpl::ClearPublicCertificates(
     ResultCallback callback) {
   if (init_status_ == InitStatus::kFailed) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
+    std::move(callback).Run(false);
     return;
   }
 
@@ -499,8 +482,8 @@ void NearbyShareCertificateStorageImpl::ClearPublicCertificates(
 }
 
 bool NearbyShareCertificateStorageImpl::FetchPublicCertificateExpirations() {
-  const base::Value* dict =
-      pref_service_->Get(kNearbySharePublicCertificateExpirationDictPref);
+  const base::Value* dict = pref_service_->Get(
+      prefs::kNearbySharingPublicCertificateExpirationDictPrefName);
   public_certificate_expirations_.clear();
   if (!dict) {
     return false;
@@ -526,5 +509,6 @@ void NearbyShareCertificateStorageImpl::SavePublicCertificateExpirations() {
     dict.SetKey(EncodeString(pair.first), util::TimeToValue(pair.second));
   }
 
-  pref_service_->Set(kNearbySharePublicCertificateExpirationDictPref, dict);
+  pref_service_->Set(
+      prefs::kNearbySharingPublicCertificateExpirationDictPrefName, dict);
 }

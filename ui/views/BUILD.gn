@@ -59,7 +59,7 @@ buildflag_header("buildflags") {
   flags = [ "ENABLE_DESKTOP_AURA=$enable_desktop_aura" ]
 }
 
-jumbo_component("views") {
+component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
@@ -857,7 +857,7 @@ jumbo_component("views") {
   }
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "animation/test/flood_fill_ink_drop_ripple_test_api.cc",

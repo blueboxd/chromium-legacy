@@ -76,12 +76,6 @@ SVGPointTearOff* SVGPathElement::getPointAtLength(
     ExceptionState& exception_state) {
   GetDocument().UpdateStyleAndLayoutForNode(this,
                                             DocumentUpdateReason::kJavaScript);
-  if (!EnsureComputedStyle()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "The element is in an inactive document.");
-    return nullptr;
-  }
 
   const SVGPathByteStream& byte_stream = PathByteStream();
   if (byte_stream.IsEmpty()) {

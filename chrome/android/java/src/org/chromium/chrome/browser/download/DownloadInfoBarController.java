@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.infobars.InfoBar;
@@ -753,12 +754,15 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         if (offlineItem.schedule.onlyOnWifi) {
             return getContext().getString(R.string.download_scheduled_on_wifi);
         } else {
-            String dateTimeString =
-                    DateUtils
-                            .formatSameDayTime(offlineItem.schedule.startTimeMs,
-                                    new Date().getTime(), DateFormat.MEDIUM, DateFormat.SHORT)
-                            .toString();
-            return getContext().getString(R.string.download_scheduled_on_date, dateTimeString);
+            long now = new Date().getTime();
+            String dateTimeString = DateUtils
+                                            .formatSameDayTime(offlineItem.schedule.startTimeMs,
+                                                    now, DateFormat.MEDIUM, DateFormat.SHORT)
+                                            .toString();
+            int stringId = CalendarUtils.isSameDay(now, offlineItem.schedule.startTimeMs)
+                    ? R.string.download_scheduled_on_time
+                    : R.string.download_scheduled_on_date;
+            return getContext().getString(stringId, dateTimeString);
         }
     }
 

@@ -5,7 +5,7 @@ import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-jumbo_component("browser") {
+component("browser") {
   output_name = "storage_browser"
   sources = [
     "blob/blob_builder_from_stream.cc",
@@ -327,7 +327,7 @@ source_set("unittests") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

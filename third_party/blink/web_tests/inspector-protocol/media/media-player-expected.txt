@@ -5,6 +5,6 @@ Received creation event for 1 player
 All IDs match
 events length: 2
 messages length: 0
-properties length: 2
+properties length: 3
 errors length: 0
 

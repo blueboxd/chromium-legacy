@@ -11,7 +11,7 @@ if (is_nacl) {
 if (is_nacl && is_nacl_glibc) {
   cpp_target_type = "shared_library"
 } else {
-  cpp_target_type = "jumbo_static_library"
+  cpp_target_type = "static_library"
 }
 
 # Link to this target to get the PPAPI C++ wrapper objects and plugin startup
@@ -52,7 +52,7 @@ target(cpp_target_type, "cpp") {
 # Link to this target to get only the PPAPI C++ wrapper objects but not the
 # plugin startup code. Some plugins need special startup code that they supply
 # themselves.
-jumbo_source_set("objects") {
+source_set("objects") {
   sources = [
     "array_output.cc",
     "array_output.h",

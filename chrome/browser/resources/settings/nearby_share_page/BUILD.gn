@@ -47,6 +47,7 @@ js_library("nearby_share_subpage") {
     ":nearby_share_data_usage_dialog",
     ":nearby_share_device_name_dialog",
     ":types",
+    "..:router",
     "../prefs",
     "../prefs:prefs_behavior",
     "../prefs:prefs_types",
@@ -115,6 +116,7 @@ js_library("nearby_share_subpage.m") {
     ":nearby_share_data_usage_dialog.m",
     ":nearby_share_device_name_dialog.m",
     ":types.m",
+    "..:router.m",
     "../prefs:prefs.m",
     "../prefs:prefs_behavior.m",
     "../prefs:prefs_types.m",
@@ -156,5 +158,7 @@ polymer_modulizer("nearby_share_subpage") {
   html_file = "nearby_share_subpage.html"
   html_type = "dom-module"
   namespace_rewrites = settings_namespace_rewrites
-  auto_imports = settings_auto_imports
+  auto_imports =
+      settings_auto_imports +
+      [ "chrome/browser/resources/settings/chromeos/os_route.html|routes" ]
 }

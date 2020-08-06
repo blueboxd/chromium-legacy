@@ -8,7 +8,7 @@ import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_extensions)
 
-jumbo_source_set("renderer") {
+source_set("renderer") {
   sources = [
     "activity_log_converter_strategy.cc",
     "activity_log_converter_strategy.h",
@@ -311,7 +311,7 @@ jumbo_source_set("renderer") {
   }
 }
 
-jumbo_static_library("unit_test_support") {
+static_library("unit_test_support") {
   # Sources that are shared between chrome-based renderer unit tests and
   # top-level extensions renderer unit tests.
   testonly = true

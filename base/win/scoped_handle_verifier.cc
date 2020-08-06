@@ -15,6 +15,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/synchronization/lock_impl.h"
+#include "base/trace_event/base_tracing.h"
 #include "base/win/base_win_buildflags.h"
 #include "base/win/current_module.h"
 

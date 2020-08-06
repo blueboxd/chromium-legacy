@@ -29,7 +29,7 @@ blink_core_sources("fileapi") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "file_list_test.cc",

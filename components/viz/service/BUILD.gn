@@ -448,8 +448,6 @@ viz_source_set("gpu_service_dependencies") {
 }
 
 viz_source_set("unit_tests") {
-  # Not ready for jumbo compilation. Too much repeated test code.
-  never_build_jumbo = true
   testonly = true
   sources = [
     "display/bsp_tree_unittest.cc",
@@ -590,8 +588,6 @@ viz_source_set("unit_tests") {
 }
 
 viz_source_set("perf_tests") {
-  # Not ready for jumbo compilation. Too much repeated test code.
-  never_build_jumbo = true
   testonly = true
   sources = [
     "display/bsp_tree_perftest.cc",

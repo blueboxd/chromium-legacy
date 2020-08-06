@@ -441,6 +441,7 @@ class CORE_EXPORT HTMLMediaElement
   WebRemotePlaybackClient* RemotePlaybackClient() final {
     return remote_playback_client_;
   }
+  std::vector<TextTrackMetadata> GetTextTrackMetadata() override;
   gfx::ColorSpace TargetColorSpace() override;
   bool WasAutoplayInitiated() override;
   bool IsInAutoPIP() const override { return false; }

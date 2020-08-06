@@ -31,18 +31,6 @@ ukm::UkmService* MetricsServiceClient::GetUkmService() {
   return nullptr;
 }
 
-bool MetricsServiceClient::IsReportingPolicyManaged() {
-  return false;
-}
-
-EnableMetricsDefault MetricsServiceClient::GetMetricsReportingDefaultState() {
-  return EnableMetricsDefault::DEFAULT_UNKNOWN;
-}
-
-bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
-  return false;
-}
-
 GURL MetricsServiceClient::GetMetricsServerUrl() {
   return GURL(kNewMetricsServerUrl);
 }
@@ -72,6 +60,22 @@ base::TimeDelta MetricsServiceClient::GetUploadInterval() {
 
 bool MetricsServiceClient::ShouldStartUpFastForTesting() const {
   return false;
+}
+
+bool MetricsServiceClient::IsReportingPolicyManaged() {
+  return false;
+}
+
+EnableMetricsDefault MetricsServiceClient::GetMetricsReportingDefaultState() {
+  return EnableMetricsDefault::DEFAULT_UNKNOWN;
+}
+
+bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
+  return false;
+}
+
+bool MetricsServiceClient::IsExternalExperimentAllowlistEnabled() {
+  return true;
 }
 
 bool MetricsServiceClient::IsUkmAllowedForAllProfiles() {

@@ -49,7 +49,7 @@ base::Time TranslateDownloadManager::GetSupportedLanguagesLastUpdated() {
 
 // static
 std::string TranslateDownloadManager::GetLanguageCode(
-    const std::string& language) {
+    base::StringPiece language) {
   TranslateLanguageList* language_list = GetInstance()->language_list();
   DCHECK(language_list);
 
@@ -57,8 +57,7 @@ std::string TranslateDownloadManager::GetLanguageCode(
 }
 
 // static
-bool TranslateDownloadManager::IsSupportedLanguage(
-    const std::string& language) {
+bool TranslateDownloadManager::IsSupportedLanguage(base::StringPiece language) {
   TranslateLanguageList* language_list = GetInstance()->language_list();
   DCHECK(language_list);
 

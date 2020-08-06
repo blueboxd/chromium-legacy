@@ -13,7 +13,7 @@ import("//ui/display/display.gni")
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_component("display") {
+component("display") {
   sources = [
     "display.cc",
     "display.h",
@@ -139,7 +139,7 @@ component("display_manager_test_api") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/display_matchers.cc",

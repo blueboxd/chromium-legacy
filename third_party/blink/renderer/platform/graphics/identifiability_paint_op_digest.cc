@@ -64,8 +64,12 @@ constexpr size_t IdentifiabilityPaintOpDigest::kInfiniteOps;
 void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
     const sk_sp<const cc::PaintRecord>& paint_record,
     const size_t num_ops_to_visit) {
-  if (!IsUserInIdentifiabilityStudy() || total_ops_digested_ >= max_digest_ops_)
+  if (!IsUserInIdentifiabilityStudy())
     return;
+  if (total_ops_digested_ >= max_digest_ops_) {
+    encountered_skipped_ops_ = true;
+    return;
+  }
 
   // Determine how many PaintOps we'll need to digest after the initial digests
   // that are skipped.
@@ -104,8 +108,10 @@ void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
                                             serialize_options_)) == 0) {
       constexpr size_t kMaxBufferSize =
           gpu::raster::RasterInterface::kDefaultMaxOpSizeHint << 2;
-      if (SerializationBuffer().size() >= kMaxBufferSize)
+      if (SerializationBuffer().size() >= kMaxBufferSize) {
+        encountered_skipped_ops_ = true;
         return;
+      }
       SerializationBuffer().Grow(SerializationBuffer().size() << 1);
     }
     digest_ ^= IdentifiabilityDigestOfBytes(base::as_bytes(
@@ -120,6 +126,7 @@ cc::ImageProvider::ScopedResult
 IdentifiabilityPaintOpDigest::IdentifiabilityImageProvider::GetRasterContent(
     const cc::DrawImage& draw_image) {
   // TODO(crbug.com/973801): Compute digests on images.
+  outer_->encountered_partially_digested_image_ = true;
   return ScopedResult();
 }
 

@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("core") {
+static_library("core") {
   sources = [
     "lookalike_url_ui_util.cc",
     "lookalike_url_ui_util.h",
@@ -28,7 +28,7 @@ jumbo_static_library("core") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [ "lookalike_url_util_unittest.cc" ]
 

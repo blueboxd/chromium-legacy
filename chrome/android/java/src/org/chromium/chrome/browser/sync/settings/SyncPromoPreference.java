@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.sync.settings;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -177,17 +176,13 @@ public class SyncPromoPreference extends Preference
 
         PersonalizedSigninPromoView syncPromoView =
                 (PersonalizedSigninPromoView) holder.findViewById(R.id.signin_promo_view_container);
-        // TODO(https://crbug.com/1095628): Use setupPersonalizedSyncPromo here.
-        SigninPromoUtil.setupPromoViewFromCache(
+        SigninPromoUtil.setupSyncPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, syncPromoView, () -> {
                     SharedPreferencesManager.getInstance().writeBoolean(
                             ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
                             true);
                     setupPromoHidden();
                 });
-        syncPromoView.getStatusMessage().setVisibility(View.VISIBLE);
-        syncPromoView.getChooseAccountButton().setVisibility(View.GONE);
-        syncPromoView.getSigninButton().setText(R.string.sync_promo_turn_on_sync);
     }
 
     // ProfileSyncServiceListener implementation.

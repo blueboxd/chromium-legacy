@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//ui/ozone/ozone.gni")
 
-jumbo_component("util") {
+component("util") {
   output_name = "display_util"
   sources = [
     "display_util.cc",

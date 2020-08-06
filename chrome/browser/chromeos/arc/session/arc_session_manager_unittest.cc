@@ -1424,47 +1424,55 @@ struct ArcSessionRetryTestParam {
 
   // Whether data is removed on error.
   bool data_removed;
+
+  base::Optional<arc::mojom::CloudProvisionFlowError> cpf_error;
 };
 
 constexpr ArcSessionRetryTestParam kRetryTestCases[] = {
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::UNKNOWN_ERROR, true, true},
+     ProvisioningResult::UNKNOWN_ERROR, true, true, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_NETWORK_ERROR, true, false},
+     ProvisioningResult::GMS_NETWORK_ERROR, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SERVICE_UNAVAILABLE, true, false},
+     ProvisioningResult::GMS_SERVICE_UNAVAILABLE, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_BAD_AUTHENTICATION, true, false},
+     ProvisioningResult::GMS_BAD_AUTHENTICATION, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::DEVICE_CHECK_IN_FAILED, true, false},
+     ProvisioningResult::DEVICE_CHECK_IN_FAILED, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::SKIPPED,
-     ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED, true, true},
+     ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR, true, true,
+     arc::mojom::CloudProvisionFlowError::ERROR_OTHER},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::MOJO_VERSION_MISMATCH, true, false},
+     ProvisioningResult::MOJO_VERSION_MISMATCH, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::MOJO_CALL_TIMEOUT, true, false},
+     ProvisioningResult::MOJO_CALL_TIMEOUT, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT, true, false},
+     ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR, true, false},
+     ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR, true, false,
+     base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SIGN_IN_FAILED, true, false},
+     ProvisioningResult::GMS_SIGN_IN_FAILED, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SIGN_IN_TIMEOUT, true, false},
+     ProvisioningResult::GMS_SIGN_IN_TIMEOUT, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SIGN_IN_INTERNAL_ERROR, true, false},
+     ProvisioningResult::GMS_SIGN_IN_INTERNAL_ERROR, true, false,
+     base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::SKIPPED,
-     ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT, true, true},
+     ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR, true, true,
+     arc::mojom::CloudProvisionFlowError::ERROR_TIMEOUT},
     {ArcSessionRetryTestParam::Negotiation::SKIPPED,
-     ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR, true, true},
+     ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR, true, true,
+     arc::mojom::CloudProvisionFlowError::ERROR_JSON},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::ARC_STOPPED, false, false},
+     ProvisioningResult::ARC_STOPPED, false, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT, true, true},
+     ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT, true, true, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, false, false},
+     ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, false, false,
+     base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::NO_NETWORK_CONNECTION, true, false},
+     ProvisioningResult::NO_NETWORK_CONNECTION, true, false, base::nullopt},
 };
 
 class ArcSessionRetryTest
@@ -1534,7 +1542,13 @@ TEST_P(ArcSessionRetryTest, ContainerRestarted) {
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  arc_session_manager()->OnProvisioningFinished(GetParam().error, nullptr);
+  arc::mojom::ArcSignInErrorPtr signin_error =
+      GetParam().cpf_error
+          ? arc::mojom::ArcSignInError::NewCloudProvisionFlowError(
+                GetParam().cpf_error.value())
+          : nullptr;
+  arc_session_manager()->OnProvisioningFinished(GetParam().error,
+                                                std::move(signin_error));
 
   // In case of permanent error data removal request is scheduled.
   EXPECT_EQ(GetParam().data_removed,

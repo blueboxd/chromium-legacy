@@ -21,6 +21,8 @@ extern const char kNearbySharingIconUrlPrefName[];
 extern const char kNearbySharingOnboardingDismissedTimePrefName[];
 extern const char kNearbySharingSchedulerDownloadDeviceDataPrefName[];
 extern const char kNearbySharingSchedulerUploadDeviceNamePrefName[];
+extern const char kNearbySharingPublicCertificateExpirationDictPrefName[];
+extern const char kNearbySharingPrivateCertificateListPrefName[];
 
 }  // namespace prefs
 

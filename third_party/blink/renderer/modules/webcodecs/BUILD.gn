@@ -8,6 +8,8 @@ blink_modules_sources("webcodecs") {
   sources = [
     "audio_decoder.cc",
     "audio_decoder.h",
+    "audio_decoder_broker.cc",
+    "audio_decoder_broker.h",
     "audio_frame.cc",
     "audio_frame.h",
     "decoder_selector.cc",
@@ -46,6 +48,7 @@ blink_modules_sources("webcodecs") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "audio_decoder_broker_test.cc",
     "audio_decoder_test.cc",
     "decoder_selector_test.cc",
     "encoded_video_chunk_test.cc",

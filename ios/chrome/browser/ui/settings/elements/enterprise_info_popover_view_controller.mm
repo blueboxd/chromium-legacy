@@ -21,6 +21,8 @@ namespace {
 
 NSString* const kEnterpriseIconName = @"enterprise_icon";
 
+NSString* const kChromeManagementURL = @"chrome://management";
+
 NSAttributedString* PrimaryMessage() {
   NSString* fullText =
       l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE);
@@ -47,6 +49,9 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName) {
   // Add a space to have a distanse with the leading icon.
   NSString* fullText = [@" " stringByAppendingString:message];
 
+  NSRange range;
+  fullText = ParseStringWithLink(fullText, &range);
+
   NSDictionary* generalAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
     NSFontAttributeName :
@@ -56,8 +61,13 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName) {
       [[NSMutableAttributedString alloc] initWithString:fullText
                                              attributes:generalAttributes];
 
-  // TODO(crbug.com/1092544): add "Learn more" link when the link page is
-  // ready.
+  NSDictionary* linkAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+    NSLinkAttributeName : kChromeManagementURL,
+  };
+  [attributedString setAttributes:linkAttributes range:range];
 
   // Create the leading enterprise icon.
   NSTextAttachment* attachment = [[NSTextAttachment alloc] init];

@@ -12,7 +12,7 @@ import("//testing/test.gni")
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_component("compositor") {
+component("compositor") {
   sources = [
     "animation_metrics_recorder.cc",
     "animation_metrics_recorder.h",
@@ -125,7 +125,7 @@ jumbo_component("compositor") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/direct_layer_tree_frame_sink.cc",

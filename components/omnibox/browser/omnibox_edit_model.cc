@@ -72,6 +72,9 @@ namespace {
 // OnAfterPossibleChange()).
 const char kOmniboxUserTextClearedHistogram[] = "Omnibox.UserTextCleared";
 
+const char kOmniboxFocusResultedInNavigation[] =
+    "Omnibox.FocusResultedInNavigation";
+
 enum UserTextClearedType {
   OMNIBOX_USER_TEXT_CLEARED_BY_EDITING = 0,
   OMNIBOX_USER_TEXT_CLEARED_WITH_ESCAPE = 1,
@@ -140,6 +143,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       focus_state_(OMNIBOX_FOCUS_NONE),
       user_input_in_progress_(false),
       user_input_since_focus_(true),
+      focus_resulted_in_navigation_(false),
       just_deleted_text_(false),
       has_temporary_text_(false),
       paste_state_(NONE),
@@ -725,6 +729,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   autocomplete_controller()->UpdateMatchDestinationURLWithQueryFormulationTime(
       elapsed_time_since_user_first_modified_omnibox, &match);
 
+  // Save the result of the interaction, but do not record the histogram yet.
+  focus_resulted_in_navigation_ = true;
+
   // Matches with |pedal| may be opened normally or executed, but when a match
   // is a dedicated Pedal suggestion, it should always be executed. This only
   // happens when the button row feature is disabled.
@@ -1069,6 +1076,7 @@ void OmniboxEditModel::ClearKeyword() {
 void OmniboxEditModel::OnSetFocus(bool control_down) {
   last_omnibox_focus_ = base::TimeTicks::Now();
   user_input_since_focus_ = false;
+  focus_resulted_in_navigation_ = false;
 
   // If the omnibox lost focus while the caret was hidden and then regained
   // focus, OnSetFocus() is called and should restore visibility. Note that
@@ -1131,6 +1139,8 @@ void OmniboxEditModel::OnWillKillFocus() {
 }
 
 void OmniboxEditModel::OnKillFocus() {
+  UMA_HISTOGRAM_BOOLEAN(kOmniboxFocusResultedInNavigation,
+                        focus_resulted_in_navigation_);
   SetFocusState(OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   focus_source_ = OmniboxFocusSource::INVALID;
   last_omnibox_focus_ = base::TimeTicks();

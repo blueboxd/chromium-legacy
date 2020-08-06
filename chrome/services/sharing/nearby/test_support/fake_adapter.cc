@@ -17,7 +17,11 @@ void FakeAdapter::GetDevices(GetDevicesCallback callback) {}
 
 void FakeAdapter::GetInfo(GetInfoCallback callback) {
   mojom::AdapterInfoPtr adapter_info = mojom::AdapterInfo::New();
-  adapter_info->present = present;
+  adapter_info->name = name_;
+  adapter_info->present = present_;
+  adapter_info->powered = powered_;
+  adapter_info->discoverable = discoverable_;
+  adapter_info->discovering = discovering_;
   std::move(callback).Run(std::move(adapter_info));
 }
 

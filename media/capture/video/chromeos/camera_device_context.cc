@@ -87,8 +87,7 @@ int CameraDeviceContext::GetRotationForDisplay() {
 }
 
 int CameraDeviceContext::GetRotationFromSensorOrientation() {
-  // We need to rotate the frame back to 0 degree.
-  return (360 - sensor_orientation_);
+  return sensor_orientation_;
 }
 
 bool CameraDeviceContext::ReserveVideoCaptureBufferFromPool(

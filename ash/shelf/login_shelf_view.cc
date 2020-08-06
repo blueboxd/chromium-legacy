@@ -270,7 +270,7 @@ class KioskAppsButton : public views::MenuButton,
                         public ui::SimpleMenuModel::Delegate {
  public:
   KioskAppsButton()
-      : MenuButton(l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON), this),
+      : MenuButton(this, l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON)),
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);

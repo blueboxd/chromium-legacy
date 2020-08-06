@@ -2441,7 +2441,7 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
                                     frame_origin, candidate_site_for_cookies);
 }
 
-void RenderFrameHostImpl::SetOriginAndIsolationInfoOfNewFrame(
+void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
     const url::Origin& new_frame_creator) {
   // This method should only be called for *new* frames, that haven't committed
   // a navigation yet.
@@ -2460,6 +2460,13 @@ void RenderFrameHostImpl::SetOriginAndIsolationInfoOfNewFrame(
   isolation_info_ = ComputeIsolationInfoInternal(
       new_frame_origin, net::IsolationInfo::RedirectMode::kUpdateNothing);
   SetLastCommittedOrigin(new_frame_origin);
+
+  // Construct the frame's feature policy only once we know its initial
+  // committed origin. It's necessary to wait for the origin because the feature
+  // policy's state depends on the origin, so the FeaturePolicy object could be
+  // configured incorrectly if it were initialized before knowing the value of
+  // |last_committed_origin_|. More at crbug.com/1112959.
+  ResetFeaturePolicy();
 }
 
 FrameTreeNode* RenderFrameHostImpl::AddChild(
@@ -2485,7 +2492,7 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // When the child is added, it hasn't committed any navigation yet - its
   // initial empty document should inherit the origin of its parent (the origin
   // may change after the first commit). See also https://crbug.com/932067.
-  child->current_frame_host()->SetOriginAndIsolationInfoOfNewFrame(
+  child->current_frame_host()->SetOriginDependentStateOfNewFrame(
       GetLastCommittedOrigin());
 
   children_.push_back(std::move(child));
@@ -4846,7 +4853,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   // Checking sandbox flags of the new frame should be safe at this point,
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
-  main_frame->SetOriginAndIsolationInfoOfNewFrame(GetLastCommittedOrigin());
+  main_frame->SetOriginDependentStateOfNewFrame(GetLastCommittedOrigin());
   main_frame->cross_origin_opener_policy_ = popup_coop;
   main_frame->cross_origin_embedder_policy_ = popup_coep;
   main_frame->virtual_browsing_context_group_ =

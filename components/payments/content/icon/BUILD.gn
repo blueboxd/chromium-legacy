@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("icon") {
+static_library("icon") {
   sources = [
     "icon_size.cc",
     "icon_size.h",

@@ -9,7 +9,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_static_library("core") {
+static_library("core") {
   sources = [
     "insecure_input_event_data.h",
     "security_state.cc",
@@ -37,7 +37,7 @@ if (is_android) {
   }
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [ "security_state_unittest.cc" ]
 

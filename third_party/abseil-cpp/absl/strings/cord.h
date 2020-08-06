@@ -71,7 +71,6 @@
 #include <type_traits>
 
 #include "absl/base/internal/endian.h"
-#include "absl/base/internal/invoke.h"
 #include "absl/base/internal/per_thread_tls.h"
 #include "absl/base/macros.h"
 #include "absl/base/port.h"
@@ -126,9 +125,9 @@ class Cord {
       absl::enable_if_t<std::is_same<T, std::string>::value, int>;
 
  public:
-  // Cord::Cord() Constructors
+  // Cord::Cord() Constructors.
 
-  // Creates an empty Cord
+  // Creates an empty Cord.
   constexpr Cord() noexcept;
 
   // Creates a Cord from an existing Cord. Cord is copyable and efficiently
@@ -154,7 +153,7 @@ class Cord {
 
   // Cord::~Cord()
   //
-  // Destructs the Cord
+  // Destructs the Cord.
   ~Cord() {
     if (contents_.is_tree()) DestroyCordSlow();
   }
@@ -173,10 +172,6 @@ class Cord {
   //
   //   * be move constructible
   //   * support `void operator()(absl::string_view) const` or `void operator()`
-  //   * not have alignment requirement greater than what is guaranteed by
-  //     `::operator new`. This alignment is dictated by
-  //     `alignof(std::max_align_t)` (pre-C++17 code) or
-  //     `__STDCPP_DEFAULT_NEW_ALIGNMENT__` (C++17 code).
   //
   // Example:
   //
@@ -592,7 +587,7 @@ class Cord {
 
   // Cord::operator[]
   //
-  // Get the "i"th character of the Cord and returns it, provided that
+  // Gets the "i"th character of the Cord and returns it, provided that
   // 0 <= i < Cord.size().
   //
   // NOTE: This routine is reasonably efficient. It is roughly
@@ -604,8 +599,8 @@ class Cord {
 
   // Cord::TryFlat()
   //
-  // If this cord's representation is a single flat array, return a
-  // string_view referencing that array.  Otherwise return nullopt.
+  // If this cord's representation is a single flat array, returns a
+  // string_view referencing that array.  Otherwise returns nullopt.
   absl::optional<absl::string_view> TryFlat() const;
 
   // Cord::Flatten()
@@ -615,7 +610,7 @@ class Cord {
   // If the cord was already flat, the contents are not modified.
   absl::string_view Flatten();
 
-  // Support absl::Cord as a sink object for absl::Format().
+  // Supports absl::Cord as a sink object for absl::Format().
   friend void AbslFormatFlush(absl::Cord* cord, absl::string_view part) {
     cord->Append(part);
   }
@@ -634,7 +629,7 @@ class Cord {
   friend bool operator==(const Cord& lhs, const Cord& rhs);
   friend bool operator==(const Cord& lhs, absl::string_view rhs);
 
-  // Call the provided function once for each cord chunk, in order.  Unlike
+  // Calls the provided function once for each cord chunk, in order.  Unlike
   // Chunks(), this API will not allocate memory.
   void ForEachChunk(absl::FunctionRef<void(absl::string_view)>) const;
 
@@ -678,7 +673,7 @@ class Cord {
     void replace_tree(absl::cord_internal::CordRep* rep);
     // Returns non-null iff was holding a pointer
     absl::cord_internal::CordRep* clear();
-    // Convert to pointer if necessary
+    // Converts to pointer if necessary.
     absl::cord_internal::CordRep* force_tree(size_t extra_hint);
     void reduce_size(size_t n);  // REQUIRES: holding data
     void remove_prefix(size_t n);  // REQUIRES: holding data
@@ -736,14 +731,14 @@ class Cord {
   };
   InlineRep contents_;
 
-  // Helper for MemoryUsage()
+  // Helper for MemoryUsage().
   static size_t MemoryUsageAux(const absl::cord_internal::CordRep* rep);
 
-  // Helper for GetFlat() and TryFlat()
+  // Helper for GetFlat() and TryFlat().
   static bool GetFlatAux(absl::cord_internal::CordRep* rep,
                          absl::string_view* fragment);
 
-  // Helper for ForEachChunk()
+  // Helper for ForEachChunk().
   static void ForEachChunkAux(
       absl::cord_internal::CordRep* rep,
       absl::FunctionRef<void(absl::string_view)> callback);
@@ -772,11 +767,11 @@ class Cord {
   absl::cord_internal::CordRep* TakeRep() const&;
   absl::cord_internal::CordRep* TakeRep() &&;
 
-  // Helper for Append()
+  // Helper for Append().
   template <typename C>
   void AppendImpl(C&& src);
 
-  // Helper for AbslHashValue()
+  // Helper for AbslHashValue().
   template <typename H>
   H HashFragmented(H hash_state) const {
     typename H::AbslInternalPiecewiseCombiner combiner;
@@ -842,47 +837,15 @@ inline void SmallMemmove(char* dst, const char* src, size_t n,
   }
 }
 
-struct ExternalRepReleaserPair {
-  CordRep* rep;
-  void* releaser_address;
-};
-
-// Allocates a new external `CordRep` and returns a pointer to it and a pointer
-// to `releaser_size` bytes where the desired releaser can be constructed.
+// Does non-template-specific `CordRepExternal` initialization.
 // Expects `data` to be non-empty.
-ExternalRepReleaserPair NewExternalWithUninitializedReleaser(
-    absl::string_view data, ExternalReleaserInvoker invoker,
-    size_t releaser_size);
-
-struct Rank1 {};
-struct Rank0 : Rank1 {};
-
-template <typename Releaser, typename = ::absl::base_internal::invoke_result_t<
-                                 Releaser, absl::string_view>>
-void InvokeReleaser(Rank0, Releaser&& releaser, absl::string_view data) {
-  ::absl::base_internal::invoke(std::forward<Releaser>(releaser), data);
-}
-
-template <typename Releaser,
-          typename = ::absl::base_internal::invoke_result_t<Releaser>>
-void InvokeReleaser(Rank1, Releaser&& releaser, absl::string_view) {
-  ::absl::base_internal::invoke(std::forward<Releaser>(releaser));
-}
+void InitializeCordRepExternal(absl::string_view data, CordRepExternal* rep);
 
 // Creates a new `CordRep` that owns `data` and `releaser` and returns a pointer
 // to it, or `nullptr` if `data` was empty.
 template <typename Releaser>
 // NOLINTNEXTLINE - suppress clang-tidy raw pointer return.
 CordRep* NewExternalRep(absl::string_view data, Releaser&& releaser) {
-  static_assert(
-#if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
-      alignof(Releaser) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__,
-#else
-      alignof(Releaser) <= alignof(max_align_t),
-#endif
-      "Releasers with alignment requirement greater than what is returned by "
-      "default `::operator new()` are not supported.");
-
   using ReleaserType = absl::decay_t<Releaser>;
   if (data.empty()) {
     // Never create empty external nodes.
@@ -891,18 +854,10 @@ CordRep* NewExternalRep(absl::string_view data, Releaser&& releaser) {
     return nullptr;
   }
 
-  auto releaser_invoker = [](void* type_erased_releaser, absl::string_view d) {
-    auto* my_releaser = static_cast<ReleaserType*>(type_erased_releaser);
-    InvokeReleaser(Rank0{}, std::move(*my_releaser), d);
-    my_releaser->~ReleaserType();
-    return sizeof(Releaser);
-  };
-
-  ExternalRepReleaserPair external = NewExternalWithUninitializedReleaser(
-      data, releaser_invoker, sizeof(releaser));
-  ::new (external.releaser_address)
-      ReleaserType(std::forward<Releaser>(releaser));
-  return external.rep;
+  CordRepExternal* rep = new CordRepExternalImpl<ReleaserType>(
+      std::forward<Releaser>(releaser), 0);
+  InitializeCordRepExternal(data, rep);
+  return rep;
 }
 
 // Overload for function reference types that dispatches using a function

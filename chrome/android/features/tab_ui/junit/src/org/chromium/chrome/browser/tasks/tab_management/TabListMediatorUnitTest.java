@@ -323,9 +323,13 @@ public class TabListMediatorUnitTest {
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, false, null, mGridCardOnClickListenerProvider, null,
                 getClass().getSimpleName(), UiType.CLOSABLE);
-        mMediator.initWithNative(mProfile);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
+
+        // TabModelObserver is registered when native is ready.
+        assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(true));
+        mMediator.initWithNative(mProfile);
+        assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(false));
     }
 
     @After
@@ -2283,7 +2287,11 @@ public class TabListMediatorUnitTest {
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, actionOnRelatedTabs, null, null, handler,
                 getClass().getSimpleName(), uiType);
+
+        // TabGroupModelFilterObserver is registered when native is ready.
+        assertThat(mTabGroupModelFilterObserverCaptor.getAllValues().isEmpty(), equalTo(true));
         mMediator.initWithNative(mProfile);
+        assertThat(mTabGroupModelFilterObserverCaptor.getAllValues().isEmpty(), equalTo(false));
 
         // There are two TabModelObserver and two TabGroupModelFilter.Observer added when
         // initializing TabListMediator, one set from TabListMediator and the other from

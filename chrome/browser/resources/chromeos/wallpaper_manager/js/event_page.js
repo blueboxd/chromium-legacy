@@ -194,8 +194,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
   }
 
   var options = {
+    frame: 'none',
     innerBounds: {width: 768, height: 512, minWidth: 768, minHeight: 512},
     resizable: true,
+    alphaEnabled: true
   };
 
   chrome.app.window.create('main.html', options, function(window) {

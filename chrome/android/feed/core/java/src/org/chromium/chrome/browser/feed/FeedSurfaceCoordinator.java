@@ -310,6 +310,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mScrollViewResizer = null;
         }
 
+        boolean isPlaceholderShownInV1 = mIsPlaceholderShown && !mV2Enabled;
+
         if (mV2Enabled) {
             mStream = new FeedStream(mActivity, mShowDarkBackground, mSnackbarManager,
                     mPageNavigationDelegate, mBottomSheetController);
@@ -324,14 +326,14 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
                     FeedProcessScopeFactory.getFeedConsumptionObserver(),
                     FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity, mProfile);
             mStream = FeedV1StreamCreator.createStream(mActivity, mImageLoader, actionApi,
-                    mUiConfig, mSnackbarManager, mShowDarkBackground, mIsPlaceholderShown);
+                    mUiConfig, mSnackbarManager, mShowDarkBackground, isPlaceholderShownInV1);
         }
 
         mStreamLifecycleManager = mDelegate.createStreamLifecycleManager(mStream, mActivity);
 
         View view = mStream.getView();
         view.setBackgroundResource(R.color.default_bg_color);
-        if (mIsPlaceholderShown) {
+        if (isPlaceholderShownInV1) {
             // Set recyclerView as transparent until first patch of articles are loaded. Before
             // that, the placeholder is shown.
             view.getBackground().setAlpha(0);

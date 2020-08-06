@@ -19,24 +19,6 @@ RangeF RangeF::Intersect(const Range& range) const {
   return Intersect(range_f);
 }
 
-Range RangeF::Floor() const {
-  uint32_t start = start_ > 0 ? static_cast<uint32_t>(std::floor(start_)) : 0;
-  uint32_t end = end_ > 0 ? static_cast<uint32_t>(std::floor(end_)) : 0;
-  return Range(start, end);
-}
-
-Range RangeF::Ceil() const {
-  uint32_t start = start_ > 0 ? static_cast<uint32_t>(std::ceil(start_)) : 0;
-  uint32_t end = end_ > 0 ? static_cast<uint32_t>(std::ceil(end_)) : 0;
-  return Range(start, end);
-}
-
-Range RangeF::Round() const {
-  uint32_t start = start_ > 0 ? static_cast<uint32_t>(std::round(start_)) : 0;
-  uint32_t end = end_ > 0 ? static_cast<uint32_t>(std::round(end_)) : 0;
-  return Range(start, end);
-}
-
 std::string RangeF::ToString() const {
   return base::StringPrintf("{%f,%f}", start(), end());
 }

@@ -29,7 +29,7 @@ blink_modules_sources("native_file_system") {
   deps = [ "//third_party/blink/renderer/platform" ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [ "global_native_file_system_test.cc" ]
 

@@ -33,11 +33,24 @@ class PLATFORM_EXPORT ElasticOverscrollControllerBezier
   gfx::Vector2d AccumulatedOverscrollForStretchAmount(
       const gfx::Vector2dF& delta) const override;
   gfx::Vector2dF OverscrollBoundary(const gfx::Size& scroller_bounds) const;
+  double StretchAmountForForwardBounce(
+      const base::TimeDelta& delta,
+      const base::TimeDelta& bounce_forwards_duration,
+      const double velocity,
+      const double initial_stretch,
+      const double bounce_forwards_distance) const;
+  double StretchAmountForBackwardBounce(
+      const base::TimeDelta& delta,
+      const base::TimeDelta& bounce_backwards_duration,
+      const double bounce_forwards_distance) const;
 
  private:
-  const gfx::CubicBezier bounce_backwards_curve_;
+  const gfx::CubicBezier bounce_forwards_curve_;
+  base::TimeDelta bounce_forwards_duration_x_;
+  base::TimeDelta bounce_forwards_duration_y_;
+  gfx::Vector2dF bounce_forwards_distance_;
 
-  // The following are used to track the duration of the bounce back animation.
+  const gfx::CubicBezier bounce_backwards_curve_;
   base::TimeDelta bounce_backwards_duration_x_;
   base::TimeDelta bounce_backwards_duration_y_;
   DISALLOW_COPY_AND_ASSIGN(ElasticOverscrollControllerBezier);

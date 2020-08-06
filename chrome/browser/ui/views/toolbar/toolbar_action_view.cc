@@ -57,9 +57,7 @@ const char ToolbarActionView::kClassName[] = "ToolbarActionView";
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     ToolbarActionView::Delegate* delegate)
-    : MenuButton(base::string16(), this),
-      view_controller_(view_controller),
-      delegate_(delegate) {
+    : MenuButton(this), view_controller_(view_controller), delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_hide_ink_drop_when_showing_context_menu(false);

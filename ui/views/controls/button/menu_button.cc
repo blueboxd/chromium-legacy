@@ -13,8 +13,8 @@
 
 namespace views {
 
-MenuButton::MenuButton(const base::string16& text,
-                       ButtonListener* button_listener,
+MenuButton::MenuButton(ButtonListener* button_listener,
+                       const base::string16& text,
                        int button_context)
     : LabelButton(nullptr, text, button_context) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);

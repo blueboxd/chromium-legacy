@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 
 namespace blink {
@@ -27,10 +28,20 @@ namespace blink {
 // **Don't renumber after the privacy budget study has started to ensure
 // consistency.**
 enum class CanvasOps {
+  // BaseRenderingContext2D methods.
+  kSetStrokeStyle,
+  kSetFillStyle,
+  kCreateLinearGradient,
+  kCreateRadialGradient,
+  kCreatePattern,
+  kSetTextAlign,
+  kSetTextBaseline,
   // CanvasRenderingContext2D / OffscreenCanvasRenderingContext2D methods.
   kSetFont,
   kFillText,
   kStrokeText,
+  // CanvasGradient methods.
+  kAddColorStop,
 };
 
 // A helper class to simplify maintaining the current text digest for the canvas
@@ -40,15 +51,39 @@ class IdentifiabilityStudyHelper {
  public:
   template <typename... Ts>
   void MaybeUpdateBuilder(Ts... tokens) {
-    constexpr int kMaxOperations = 1 << 20;
-    if (!IsUserInIdentifiabilityStudy() || operation_count_ > kMaxOperations) {
+    if (!IsUserInIdentifiabilityStudy())
+      return;
+    if (operation_count_ >= max_operations_) {
+      encountered_skipped_ops_ = true;
       return;
     }
     AddTokens(tokens...);
     operation_count_++;
   }
 
-  IdentifiableToken GetToken() { return builder_.GetToken(); }
+  IdentifiableToken GetToken() const { return builder_.GetToken(); }
+
+  bool encountered_skipped_ops() const { return encountered_skipped_ops_; }
+
+  bool encountered_sensitive_ops() const { return encountered_sensitive_ops_; }
+
+  void set_encountered_sensitive_ops() { encountered_sensitive_ops_ = true; }
+
+  // For testing, allows scoped changing the max number of operations for all
+  // IdentifiabilityStudyHelper instances.
+  class ScopedMaxOperationsSetter {
+   public:
+    explicit ScopedMaxOperationsSetter(int new_value)
+        : old_max_operations_(IdentifiabilityStudyHelper::max_operations_) {
+      IdentifiabilityStudyHelper::max_operations_ = new_value;
+    }
+    ~ScopedMaxOperationsSetter() {
+      IdentifiabilityStudyHelper::max_operations_ = old_max_operations_;
+    }
+
+   private:
+    const int old_max_operations_;
+  };
 
  private:
   // Note that primitives are implicitly converted to IdentifiableTokens
@@ -59,8 +94,19 @@ class IdentifiabilityStudyHelper {
   }
   void AddTokens() {}
 
+  static MODULES_EXPORT int max_operations_;
+
   IdentifiableTokenBuilder builder_;
   int operation_count_ = 0;
+
+  // If true, at least one op was skipped completely, for performance reasons.
+  bool encountered_skipped_ops_ = false;
+
+  // If true, encountered at least one "sensitive" operation -- for instance,
+  // strings may contain PII, so we only use a 16-bit digest for such strings.
+  //
+  // This must be set manually by calling set_encountered_sensitive_ops().
+  bool encountered_sensitive_ops_ = false;
 };
 
 }  // namespace blink

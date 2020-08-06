@@ -659,7 +659,6 @@ crbug.com/882385 external/wpt/css/css-contain/quote-scoping-004.html [ Failure ]
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
-crbug.com/880802 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
 
 # [css-align]
 
@@ -1014,6 +1013,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-b
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-003.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-004.html [ Pass ]
 crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragmentainer-000.html [ Pass ]
@@ -1023,6 +1023,9 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailin
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-002.html [ Pass ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-002.html [ Failure ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-004.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-breaks-001.html [ Crash Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-monolithic-001.html [ Crash Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
 crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Failure Pass ]
@@ -1078,7 +1081,11 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Pass ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-after-break-after.html [ Crash Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-multicol.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/1066616 virtual/layout_ng_block_frag/fast/multicol/abspos-in-overflow-hidden-in-2nd-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/balance-float-after-forced-break.html [ Failure ]
@@ -1125,8 +1132,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-mo
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block.html [ Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure ]
-crbug.com/1100849 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-block-with-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-empty-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-in-nested-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-too-short-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/hit-test-above-or-below.html [ Failure ]
@@ -1143,7 +1148,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/line-too-tall-for-se
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/many-lines-overflow-in-single-row-inner.html [ Failure ]
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.html [ Crash Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/mixed-positioning-stacking-order.html [ Crash Failure ]
+crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/nested-auto-height-short-first-row.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/nested-columns.html [ Failure ]
@@ -1294,6 +1299,7 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 #
 
 ## Fieldseet in NG - Passing reference tests
+crbug.com/875235 virtual/layout_ng_block_frag/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Pass ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Pass ]
 
 
@@ -3555,6 +3561,7 @@ crbug.com/829028 external/wpt/css/css-break/break-between-avoid-000.html [ Failu
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-004.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/tall-line-in-short-fragmentainer-000.html [ Failure ]
@@ -6841,3 +6848,6 @@ crbug.com/1112771 external/wpt/css/css-grid/grid-definition/grid-inline-template
 # Sheriff 2020-08-05
 crbug.com/1113050 fast/borders/border-radius-mask-video-ratio.html [ Pass Failure ]
 crbug.com/1113127 fast/canvas/downsample-quality.html [ Pass Failure Crash ]
+
+# Sheriff 2020-08-06
+crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]

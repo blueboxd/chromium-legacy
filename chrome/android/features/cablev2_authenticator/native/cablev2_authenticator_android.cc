@@ -300,11 +300,8 @@ class BLEClient {
                                  bool is_transaction_complete) = 0;
   };
 
-  BLEClient(uint64_t addr,
-            uint16_t mtu,
-            const AuthenticatorState* auth_state,
-            Delegate* delegate)
-      : addr_(addr), mtu_(mtu), auth_state_(auth_state), delegate_(delegate) {}
+  BLEClient(uint64_t addr, uint16_t mtu, Delegate* delegate)
+      : addr_(addr), mtu_(mtu), delegate_(delegate) {}
 
   bool Process(
       base::span<const uint8_t> fragment,
@@ -384,26 +381,6 @@ class BLEClient {
 
         base::Optional<std::unique_ptr<device::cablev2::Crypter>>
             handshake_result;
-        if (requested_eid == auth_state_->pairing_advert.second) {
-          handshake_result = device::cablev2::RespondToHandshake(
-              auth_state_->pairing_data.v2->psk_gen_key,
-              auth_state_->pairing_advert, auth_state_->identity_key.get(),
-              /*peer_identity=*/nullptr, /*pairing_data=*/nullptr,
-              message->second, &response);
-        } else if (auth_state_->qr_advert.has_value() &&
-                   requested_eid == auth_state_->qr_advert->second) {
-          // TODO: QR handshakes currently always send pairing data, but it's
-          // optional in the protocol.
-          handshake_result = device::cablev2::RespondToHandshake(
-              *auth_state_->qr_psk_gen_key, *auth_state_->qr_advert,
-              /*identity=*/nullptr, auth_state_->qr_peer_identity->get(),
-              &auth_state_->pairing_data, message->second, &response);
-        } else {
-          FIDO_LOG(ERROR) << "Peer is connecting to unknown EID "
-                          << base::HexEncode(requested_eid);
-          return false;
-        }
-
         if (!handshake_result) {
           FIDO_LOG(ERROR) << "Handshake failed";
           return false;
@@ -502,7 +479,6 @@ class BLEClient {
 
   const uint64_t addr_;
   const uint16_t mtu_;
-  const AuthenticatorState* const auth_state_;
   State state_ = State::kHandshake;
   Defragmenter defrag_;
   std::unique_ptr<device::cablev2::Crypter> crypter_;
@@ -595,8 +571,7 @@ class CableInterface : public BLEClient::Delegate {
     // only permissible client for the lifetime of this instance. The Java side
     // filters writes from all other clients.
     if (ble_client_ == nullptr) {
-      ble_client_ =
-          std::make_unique<BLEClient>(client_addr, mtu, &auth_state_, this);
+      ble_client_ = std::make_unique<BLEClient>(client_addr, mtu, this);
     } else if (ble_client_->addr() != static_cast<uint64_t>(client_addr)) {
       NOTREACHED() << "Write from unknown client " << ble_client_->addr();
       return nullptr;

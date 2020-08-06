@@ -483,7 +483,7 @@ TEST_F(ButtonTest, AsButton) {
   RadioButton radio_button(text, 0);
   EXPECT_TRUE(Button::AsButton(&radio_button));
 
-  MenuButton menu_button(text, nullptr);
+  MenuButton menu_button(nullptr, text);
   EXPECT_TRUE(Button::AsButton(&menu_button));
 
   ToggleButton toggle_button;

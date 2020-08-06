@@ -90,9 +90,9 @@ void AddAnalysisConnectorVerdictToEvent(
 }
 
 std::string MalwareRuleToThreatType(const std::string& rule_name) {
-  if (rule_name == "UWS") {
+  if (rule_name == "uws") {
     return "POTENTIALLY_UNWANTED";
-  } else if (rule_name == "MALWARE") {
+  } else if (rule_name == "malware") {
     return "DANGEROUS";
   } else {
     return "UNKNOWN";

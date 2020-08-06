@@ -71,6 +71,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
+#include "third_party/blink/public/platform/web_texttrack_metadata.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
@@ -755,6 +756,14 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   media_log_->AddEvent<MediaLogEvent::kLoad>(
       url.GetString().Substring(0, kMaxUrlLength + 1).Utf8());
   load_start_time_ = base::TimeTicks::Now();
+
+  std::vector<TextTrackConfig> text_configs;
+  for (const auto& metadata : client_->GetTextTrackMetadata()) {
+    text_configs.emplace_back(TextTrackConfig::ConvertKind(metadata.kind()),
+                              metadata.label(), metadata.language(),
+                              metadata.id());
+  }
+  media_log_->SetProperty<MediaLogProperty::kTextTracks>(text_configs);
 
   // If we're adapting, then restart the smoothness experiment.
   if (smoothness_helper_)

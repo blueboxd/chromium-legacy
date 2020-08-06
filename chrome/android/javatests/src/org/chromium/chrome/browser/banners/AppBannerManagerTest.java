@@ -39,6 +39,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -535,6 +536,7 @@ public class AppBannerManagerTest {
     @Test
     @SmallTest
     @Feature({"AppBanners"})
+    @FlakyTest(message = "crbug.com/1062843")
     public void testModalNativeAppBannerCanBeTriggeredMultipleTimesCustomTab() throws Exception {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(

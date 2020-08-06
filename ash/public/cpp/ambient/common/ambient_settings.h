@@ -50,6 +50,13 @@ struct ASH_PUBLIC_EXPORT ArtSetting {
   std::string preview_image_url;
 };
 
+enum class AmbientModeTemperatureUnit {
+  kMinValue = 0,
+  kFahrenheit = kMinValue,
+  kCelsius = 1,
+  kMaxValue = kCelsius
+};
+
 struct ASH_PUBLIC_EXPORT AmbientSettings {
   AmbientSettings();
   AmbientSettings(const AmbientSettings&);
@@ -58,13 +65,16 @@ struct ASH_PUBLIC_EXPORT AmbientSettings {
   AmbientSettings& operator=(AmbientSettings&&);
   ~AmbientSettings();
 
-  AmbientModeTopicSource topic_source;
+  AmbientModeTopicSource topic_source = AmbientModeTopicSource::kArtGallery;
 
   // Only a subset Settings of Art gallery.
   std::vector<ArtSetting> art_settings;
 
   // Only selected album.
   std::vector<std::string> selected_album_ids;
+
+  AmbientModeTemperatureUnit temperature_unit =
+      AmbientModeTemperatureUnit::kFahrenheit;
 };
 
 struct ASH_PUBLIC_EXPORT PersonalAlbum {

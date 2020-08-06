@@ -54,6 +54,8 @@ public class ChromeTabCreator extends TabCreator {
         boolean handleCreateNTPIfNeeded(boolean isNTP, boolean isIncognito);
     }
 
+    private static final String TAG = "ChromeTabCreator";
+
     private final ChromeActivity mActivity;
     private final StartupTabPreloader mStartupTabPreloader;
     private final boolean mIncognito;
@@ -385,7 +387,8 @@ public class ChromeTabCreator extends TabCreator {
             TabReparentingParams params = (TabReparentingParams) asyncParams;
             tab = params.getTabToReparent();
             if (tab.isIncognito() != state.isIncognito()) {
-                throw new IllegalStateException("Incognito state mismatch");
+                throw new IllegalStateException("Incognito state mismatch. TabState: "
+                        + state.isIncognito() + ". Tab: " + tab.isIncognito());
             }
             ReparentingTask.from(tab).finish(
                     ReparentingDelegateFactory.createReparentingTaskDelegate(
@@ -409,7 +412,12 @@ public class ChromeTabCreator extends TabCreator {
                           .setTabState(state)
                           .build();
         }
-        assert state.isIncognito() == mIncognito;
+
+        if (state.isIncognito() != mIncognito) {
+            throw new IllegalStateException("Incognito state mismatch. TabState: "
+                    + state.isIncognito() + ". Creator: " + mIncognito);
+        }
+
         mTabModel.addTab(tab, index, launchType, creationState);
         return tab;
     }

@@ -24,8 +24,7 @@ class CHROMEOS_EXPORT CupsPrinterStatus {
   class CHROMEOS_EXPORT CupsPrinterStatusReason {
    public:
     enum class Reason {
-      kConnectingToDevice = 0,
-      kDeviceError,
+      kDeviceError = 0,
       kDoorOpen,
       kLowOnInk,
       kLowOnPaper,

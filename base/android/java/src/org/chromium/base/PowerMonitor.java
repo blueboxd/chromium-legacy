@@ -44,7 +44,13 @@ public class PowerMonitor {
         sInstance = new PowerMonitor();
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatusIntent = context.registerReceiver(null, ifilter);
-        if (batteryStatusIntent != null) onBatteryChargingChanged(batteryStatusIntent);
+        if (batteryStatusIntent != null) {
+            // Default to 0, which the EXTRA_PLUGGED docs indicate means "on battery power".  There
+            // is no symbolic constant.  Nonzero values indicate we have some external power source.
+            int chargePlug = batteryStatusIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+            // If we're not plugged, assume we're running on battery power.
+            onBatteryChargingChanged(chargePlug == 0);
+        }
 
         IntentFilter powerConnectedFilter = new IntentFilter();
         powerConnectedFilter.addAction(Intent.ACTION_POWER_CONNECTED);
@@ -52,7 +58,8 @@ public class PowerMonitor {
         context.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                PowerMonitor.onBatteryChargingChanged(intent);
+                PowerMonitor.onBatteryChargingChanged(
+                        intent.getAction().equals(Intent.ACTION_POWER_DISCONNECTED));
             }
         }, powerConnectedFilter);
     }
@@ -60,12 +67,9 @@ public class PowerMonitor {
     private PowerMonitor() {
     }
 
-    private static void onBatteryChargingChanged(Intent intent) {
+    private static void onBatteryChargingChanged(boolean isBatteryPower) {
         assert sInstance != null;
-        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-        // If we're not plugged, assume we're running on battery power.
-        sInstance.mIsBatteryPower = chargePlug != BatteryManager.BATTERY_PLUGGED_USB
-                && chargePlug != BatteryManager.BATTERY_PLUGGED_AC;
+        sInstance.mIsBatteryPower = isBatteryPower;
         PowerMonitorJni.get().onBatteryChargingChanged();
     }
 

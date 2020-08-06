@@ -147,7 +147,7 @@ blink_platform_sources("loader") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   # This target defines test files for blink_platform_unittests and only the
   # blink_platform_unittests target should depend on it.
   visibility = [ "//third_party/blink/renderer/platform:*" ]
@@ -196,7 +196,7 @@ jumbo_source_set("unit_tests") {
   ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   # This target defines test files for platform:test_support that
   # blink_platform_unittests and blink_unittests can use.
   visibility = [ "//third_party/blink/renderer/platform:test_support" ]

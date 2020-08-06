@@ -171,9 +171,10 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
  public:
   bool ConvertTimingForCompositor(const Timing& t,
-                                  CompositorAnimations::CompositorTiming& out) {
+                                  CompositorAnimations::CompositorTiming& out,
+                                  double playback_rate = 1) {
     return CompositorAnimations::ConvertTimingForCompositor(
-        t, base::TimeDelta(), out, 1);
+        t, base::TimeDelta(), out, playback_rate);
   }
 
   CompositorAnimations::FailureReasons CanStartEffectOnCompositor(
@@ -719,15 +720,25 @@ TEST_P(AnimationCompositorAnimationsTest,
 
 TEST_P(AnimationCompositorAnimationsTest,
        ConvertTimingForCompositorStartDelay) {
+  const double play_forward = 1;
+  const double play_reverse = -1;
   timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(20);
 
   timing_.start_delay = 2.0;
-  EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
+  EXPECT_TRUE(
+      ConvertTimingForCompositor(timing_, compositor_timing_, play_forward));
   EXPECT_DOUBLE_EQ(-2.0, compositor_timing_.scaled_time_offset.InSecondsF());
+  EXPECT_TRUE(
+      ConvertTimingForCompositor(timing_, compositor_timing_, play_reverse));
+  EXPECT_DOUBLE_EQ(0.0, compositor_timing_.scaled_time_offset.InSecondsF());
 
   timing_.start_delay = -2.0;
-  EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
+  EXPECT_TRUE(
+      ConvertTimingForCompositor(timing_, compositor_timing_, play_forward));
   EXPECT_DOUBLE_EQ(2.0, compositor_timing_.scaled_time_offset.InSecondsF());
+  EXPECT_TRUE(
+      ConvertTimingForCompositor(timing_, compositor_timing_, play_reverse));
+  EXPECT_DOUBLE_EQ(0.0, compositor_timing_.scaled_time_offset.InSecondsF());
 }
 
 TEST_P(AnimationCompositorAnimationsTest,

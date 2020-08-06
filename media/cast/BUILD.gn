@@ -14,7 +14,7 @@ proto_library("logging_proto") {
 }
 
 # Common code shared by all cast components.
-jumbo_source_set("common") {
+source_set("common") {
   sources = [
     "cast_config.cc",
     "cast_config.h",
@@ -65,7 +65,7 @@ jumbo_source_set("common") {
   ]
 }
 
-jumbo_source_set("net") {
+source_set("net") {
   sources = [
     "net/cast_transport.h",
     "net/cast_transport_config.cc",
@@ -117,7 +117,7 @@ jumbo_source_set("net") {
   public_deps = [ ":common" ]
 }
 
-jumbo_source_set("sender") {
+source_set("sender") {
   sources = [
     "cast_sender.h",
     "cast_sender_impl.cc",
@@ -184,7 +184,7 @@ jumbo_source_set("sender") {
   }
 }
 
-jumbo_source_set("receiver") {
+source_set("receiver") {
   sources = [
     "cast_receiver.h",
     "net/rtp/cast_message_builder.cc",

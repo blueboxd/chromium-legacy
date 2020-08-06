@@ -542,8 +542,8 @@ URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
 }
 
 void URLLoaderInterceptor::WriteResponse(
-    const std::string& headers,
-    const std::string& body,
+    base::StringPiece headers,
+    base::StringPiece body,
     network::mojom::URLLoaderClient* client,
     base::Optional<net::SSLInfo> ssl_info) {
   net::HttpResponseInfo info;
@@ -555,17 +555,7 @@ void URLLoaderInterceptor::WriteResponse(
   response->ssl_info = std::move(ssl_info);
   client->OnReceiveResponse(std::move(response));
 
-  uint32_t bytes_written = body.size();
-  mojo::DataPipe data_pipe(body.size());
-  CHECK_EQ(MOJO_RESULT_OK,
-           data_pipe.producer_handle->WriteData(
-               body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-  client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-  network::URLLoaderCompletionStatus status;
-  status.decoded_body_length = body.size();
-  status.error_code = net::OK;
-  client->OnComplete(status);
+  CHECK_EQ(WriteResponseBody(body, client), MOJO_RESULT_OK);
 }
 
 void URLLoaderInterceptor::WriteResponse(
@@ -597,6 +587,41 @@ void URLLoaderInterceptor::WriteResponse(
     }
   }
   WriteResponse(headers_str, ReadFile(file_path), client, std::move(ssl_info));
+}
+
+MojoResult URLLoaderInterceptor::WriteResponseBody(
+    base::StringPiece body,
+    network::mojom::URLLoaderClient* client) {
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = body.size();
+
+  MojoResult result =
+      CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  if (result != MOJO_RESULT_OK) {
+    return result;
+  }
+
+  uint32_t bytes_written = body.size();
+  result = producer_handle->WriteData(body.data(), &bytes_written,
+                                      MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+  if (result != MOJO_RESULT_OK) {
+    return result;
+  }
+
+  client->OnStartLoadingResponseBody(std::move(consumer_handle));
+
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = body.size();
+  status.error_code = net::OK;
+  client->OnComplete(status);
+
+  return MOJO_RESULT_OK;
 }
 
 void URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost(

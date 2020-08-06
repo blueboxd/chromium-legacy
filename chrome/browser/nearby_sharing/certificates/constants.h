@@ -88,4 +88,7 @@ extern const char kNearbyShareSenderVerificationPrefix;
 // signing.
 extern const char kNearbyShareReceiverVerificationPrefix;
 
+// The maximum number of attempts to initialize LevelDB in Certificate Storage.
+extern const size_t kNearbyShareCertificateStorageMaxNumInitializeAttempts;
+
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_CONSTANTS_H_

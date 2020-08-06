@@ -2118,6 +2118,18 @@
   <message name="IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY" desc="Description of for the 'Android Messages' setting. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
     Send and receive text messages from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_SECTION_TITLE" translateable="false" desc="The title of the Phone Hub section on the settings page.">
+    Phone Hub
+  </message>
+  <message name="IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_NOTIFICATIONS_SECTION_TITLE" translateable="false" desc="The title of the Phone Hub Notifications section on the settings page.">
+    Notifications
+  </message>
+  <message name="IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_NOTIFICATION_BADGE_SECTION_TITLE" translateable="false" desc="The title of the Phone Hub Notifications Badge section on the settings page.">
+    Notifications Badge
+  </message>
+  <message name="IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_TASK_CONTINUATION_SECTION_TITLE" translateable="false" desc="The title of the Phone Hub Task Continuation section on the settings page.">
+    Task Continuation
+  </message>
 
   <!-- Lock Screen Page (OS settings) -->
   <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_TITLE" desc="The title of options to change the behavior of notifications on the lock screen.">

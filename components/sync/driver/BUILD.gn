@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 
-jumbo_static_library("driver") {
+static_library("driver") {
   sources = [
     "about_sync_util.cc",
     "about_sync_util.h",

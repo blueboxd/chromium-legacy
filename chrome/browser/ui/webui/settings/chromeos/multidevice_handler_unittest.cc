@@ -53,6 +53,14 @@ GenerateDefaultFeatureStatesMap() {
       {multidevice_setup::mojom::Feature::kMessages,
        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
       {multidevice_setup::mojom::Feature::kSmartLock,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHub,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHubNotifications,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHubNotificationBadge,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation,
        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost}};
 }
 
@@ -93,6 +101,32 @@ void VerifyPageContentDict(
       page_content_dict->GetInteger("smartLockState", &smart_lock_state));
   it = feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
   EXPECT_EQ(static_cast<int>(it->second), smart_lock_state);
+
+  int phone_hub_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("phoneHubState", &phone_hub_state));
+  it = feature_states_map.find(multidevice_setup::mojom::Feature::kPhoneHub);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_state);
+
+  int phone_hub_notifications_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("phoneHubNotificationsState",
+                                            &phone_hub_notifications_state));
+  it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kPhoneHubNotifications);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_notifications_state);
+
+  int phone_hub_notification_badge_state;
+  EXPECT_TRUE(page_content_dict->GetInteger(
+      "phoneHubNotificationBadgeState", &phone_hub_notification_badge_state));
+  it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kPhoneHubNotificationBadge);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_notification_badge_state);
+
+  int phone_hub_task_continuation_state;
+  EXPECT_TRUE(page_content_dict->GetInteger(
+      "phoneHubTaskContinuationState", &phone_hub_task_continuation_state));
+  it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_task_continuation_state);
 
   std::string host_device_name;
   if (expected_host_device) {

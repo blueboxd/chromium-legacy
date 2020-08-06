@@ -442,6 +442,11 @@ extern const char kUseJSForErrorPageDescription[];
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
+// Title and description for the flag to tie the default text zoom level to
+// the dynamic type setting.
+extern const char kWebPageDefaultZoomFromDynamicTypeName[];
+extern const char kWebPageDefaultZoomFromDynamicTypeDescription[];
+
 // Title and description for the flag to enable text accessibility in webpages.
 extern const char kWebPageTextAccessibilityName[];
 extern const char kWebPageTextAccessibilityDescription[];

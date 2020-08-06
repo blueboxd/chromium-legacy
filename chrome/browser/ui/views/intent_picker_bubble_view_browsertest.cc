@@ -104,9 +104,17 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 // Tests that clicking a link from an app browser to either within or outside
 // the scope of an installed app does not show the intent picker, even when an
 // outside of scope link is opened within the context of the PWA.
+#if defined(OS_CHROMEOS)
+// TODO(http://crbug.com/1113821): flaky on ChromeOS.
+#define MAYBE_NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker \
+  DISABLED_NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker
+#else
+#define MAYBE_NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker \
+  NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker
+#endif
 IN_PROC_BROWSER_TEST_P(
     IntentPickerBubbleViewBrowserTest,
-    NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker) {
+    MAYBE_NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker) {
   InstallTestWebApp();
 
   // No intent picker should be seen when first opening the web app.

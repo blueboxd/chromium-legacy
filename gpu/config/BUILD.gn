@@ -107,7 +107,7 @@ if (enable_vulkan) {
   }
 }
 
-jumbo_source_set("config_sources") {
+source_set("config_sources") {
   # External code should depend on this via //gpu/config above rather than
   # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]

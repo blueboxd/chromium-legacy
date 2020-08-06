@@ -185,6 +185,19 @@ function createSuite(themeModeDoodlesEnabled) {
   [[1000, 500] /* too large */,
    [100, 50] /* too small */,
   ].forEach(([width, height]) => {
+    test(`${width}x${height} doodle aligned correctly`, async () => {
+      // Act.
+      const logo = await createLogo(createImageDoodle(width, height));
+      logo.backgroundColor = {value: 0xffffffff};
+
+      // Assert.
+      assertEquals(200, logo.offsetHeight);
+      assertGE(200, $$(logo, '#image').offsetHeight);
+      const pos = getRelativePosition($$(logo, '#imageDoodle'), logo);
+      assertLE(0, pos.top);
+      assertEquals(0, pos.bottom);
+    });
+
     test(`${width}x${height} boxed doodle aligned correctly`, async () => {
       // Act.
       const logo = await createLogo(createImageDoodle(width, height));
@@ -192,11 +205,11 @@ function createSuite(themeModeDoodlesEnabled) {
       logo.backgroundColor = {value: 0xff0000ff};
 
       // Assert.
-      assertEquals(230, logo.offsetHeight);
+      assertEquals(200, logo.offsetHeight);
       assertGE(160, $$(logo, '#image').offsetHeight);
       const pos = getRelativePosition($$(logo, '#imageDoodle'), logo);
       assertGE(pos.top, 8);
-      assertEquals(-30, pos.bottom);
+      assertEquals(0, pos.bottom);
     });
   });
 
@@ -224,14 +237,14 @@ function createSuite(themeModeDoodlesEnabled) {
     const logo = await createLogo(doodle);
 
     // Assert.
-    assertEquals(460, $$(logo, '#image').offsetWidth);
-    assertEquals(230, $$(logo, '#image').offsetHeight);
+    assertEquals(400, $$(logo, '#image').offsetWidth);
+    assertEquals(200, $$(logo, '#image').offsetHeight);
     const shareButtonPosition =
         getRelativePosition($$(logo, '#shareButton'), $$(logo, '#image'));
-    assertEquals(5, Math.round(shareButtonPosition.left));
-    assertEquals(9, Math.round(shareButtonPosition.top));
-    assertEquals(12, $$(logo, '#shareButton').offsetWidth);
-    assertEquals(12, $$(logo, '#shareButton').offsetHeight);
+    assertEquals(4, Math.round(shareButtonPosition.left));
+    assertEquals(8, Math.round(shareButtonPosition.top));
+    assertEquals(10, $$(logo, '#shareButton').offsetWidth);
+    assertEquals(10, $$(logo, '#shareButton').offsetHeight);
   });
 
   test('setting animated doodle shows image', async () => {
@@ -376,7 +389,7 @@ function createSuite(themeModeDoodlesEnabled) {
 
     // Assert.
     const pos = getRelativePosition($$(logo, '#logo'), logo);
-    assertEquals(108, pos.top);
+    assertEquals(0, pos.bottom);
     assertEquals(92, $$(logo, '#logo').offsetHeight);
   });
 
@@ -386,7 +399,24 @@ function createSuite(themeModeDoodlesEnabled) {
 
     // Assert.
     const pos = getRelativePosition($$(logo, '#doodle'), logo);
-    assertEquals(0, pos.top);
+    assertEquals(0, pos.bottom);
+  });
+
+  test('too large interactive doodle sized correctly', async () => {
+    // Arrange.
+    const logo = await createLogo({
+      interactive: {
+        url: {url: 'https://foo.com'},
+        width: 1000,
+        height: 500,
+      }
+    });
+
+    // Assert.
+    assertEquals(200, logo.offsetHeight);
+    assertEquals(200, $$(logo, '#iframe').offsetHeight);
+    const pos = getRelativePosition($$(logo, '#doodle'), logo);
+    assertEquals(0, pos.bottom);
   });
 
   test('receiving resize message resizes doodle', async () => {

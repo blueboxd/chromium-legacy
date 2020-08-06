@@ -22,7 +22,7 @@ source_set("color_headers") {
   ]
 }
 
-jumbo_component("color") {
+component("color") {
   sources = [
     "color_mixer.cc",
     "color_provider.cc",
@@ -65,7 +65,7 @@ test("color_unittests") {
   ]
 }
 
-jumbo_component("mixers") {
+component("mixers") {
   sources = [
     "color_mixers.h",
     "core_default_color_mixer.cc",

@@ -21,7 +21,7 @@ component("gtk_ui_delegate") {
   defines = [ "IS_GTK_IMPL" ]
 }
 
-jumbo_component("gtk") {
+component("gtk") {
   public = [ "gtk_ui.h" ]
   sources = [
     "gtk_key_bindings_handler.cc",

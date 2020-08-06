@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_source_set("common") {
+source_set("common") {
   sources = [
     "media_type_converters.cc",
     "media_type_converters.h",

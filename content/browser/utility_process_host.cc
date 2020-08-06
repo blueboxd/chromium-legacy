@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/lacros_buildflags.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -229,7 +230,7 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kNetLogCaptureMode,
       network::switches::kExplicitlyAllowedPorts,
       sandbox::policy::switches::kNoSandbox,
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
       switches::kDisableDevShmUsage,
 #endif
 #if defined(OS_MAC)

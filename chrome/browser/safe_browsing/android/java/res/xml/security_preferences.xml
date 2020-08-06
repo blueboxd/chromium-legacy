@@ -6,10 +6,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory
-        android:key="safe_browsing_section"
-        android:title="@string/prefs_section_safe_browsing_title"/>
-
     <org.chromium.components.browser_ui.settings.TextMessagePreference
         android:key="text_managed" />
 

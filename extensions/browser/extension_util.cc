@@ -79,14 +79,6 @@ bool CanCrossIncognito(const Extension* extension,
          !IncognitoInfo::IsSplitMode(extension);
 }
 
-GURL GetSiteForExtensionId(const std::string& extension_id,
-                           content::BrowserContext* context) {
-  GURL site = content::SiteInstance::GetSiteForURL(
-      context, Extension::GetBaseURLFromExtensionId(extension_id));
-  DCHECK_EQ(extension_id, site.host());
-  return site;
-}
-
 const std::string& GetPartitionDomainForExtension(const Extension* extension) {
   // Extensions use their own ID for a partition domain.
   return extension->id();

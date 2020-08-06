@@ -3039,6 +3039,18 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   return text_track;
 }
 
+std::vector<TextTrackMetadata> HTMLMediaElement::GetTextTrackMetadata() {
+  TextTrackList* tracks = textTracks();
+  std::vector<TextTrackMetadata> result;
+  for (unsigned i = 0; i < tracks->length(); i++) {
+    TextTrack* track = tracks->AnonymousIndexedGetter(i);
+    result.emplace_back(track->language().GetString().Utf8(),
+                        track->kind().GetString().Utf8(),
+                        track->label().GetString().Utf8(), track->id().Utf8());
+  }
+  return result;
+}
+
 TextTrackList* HTMLMediaElement::textTracks() {
   if (!text_tracks_) {
     UseCounter::Count(GetDocument(), WebFeature::kMediaElementTextTrackList);

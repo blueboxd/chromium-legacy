@@ -116,6 +116,7 @@ settings_namespace_rewrites = [
   "settings.SystemPageBrowserProxy|SystemPageBrowserProxy",
   "settings.RouteObserverBehavior|RouteObserverBehavior",
   "settings.WebsiteUsageBrowserProxy|WebsiteUsageBrowserProxy",
+  "nearby_share.NearbyShareSettingsBehavior|NearbyShareSettingsBehavior",
 
   "action_link.m.js|action_link.js",
 
@@ -137,6 +138,7 @@ settings_auto_imports = [
   "chrome/browser/resources/settings/prefs/prefs_behavior.html|PrefsBehavior",
   "chrome/browser/resources/settings/prefs/prefs_types.html|CrSettingsPrefs",
   "chrome/browser/resources/settings/printing_page/printing_browser_proxy.html|PrintingBrowserProxyImpl",
+  "chrome/browser/resources/settings/router.html|Router,Route,RouteObserverBehavior",
 ]
 
 settings_closure_flags =

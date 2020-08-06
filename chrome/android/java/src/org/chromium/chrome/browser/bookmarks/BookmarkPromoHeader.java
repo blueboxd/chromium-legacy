@@ -163,15 +163,13 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
      * @param view The view to be configured.
      */
     void setupPersonalizedSigninPromo(PersonalizedSigninPromoView view) {
-        SigninPromoUtil.setupPromoViewFromCache(mSigninPromoController, mProfileDataCache, view,
-                this::setPersonalizedSigninPromoDeclined);
+        SigninPromoUtil.setupSigninPromoViewFromCache(mSigninPromoController, mProfileDataCache,
+                view, this::setPersonalizedSigninPromoDeclined);
     }
 
     void setupPersonalizedSyncPromo(PersonalizedSigninPromoView view) {
-        setupPersonalizedSigninPromo(view);
-        view.getStatusMessage().setVisibility(View.VISIBLE);
-        view.getChooseAccountButton().setVisibility(View.GONE);
-        view.getSigninButton().setText(R.string.sync_promo_turn_on_sync);
+        SigninPromoUtil.setupSyncPromoViewFromCache(mSigninPromoController, mProfileDataCache, view,
+                this::setPersonalizedSigninPromoDeclined);
     }
 
     /**

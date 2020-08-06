@@ -751,6 +751,17 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return IsCollectionsCardPresentationStyleEnabled();
 }
 
++ (BOOL)isMobileModeByDefault {
+  if (!web::features::UseWebClientDefaultUserAgent())
+    return YES;
+
+  web::UserAgentType webClientUserAgent =
+      web::GetWebClient()->GetDefaultUserAgent(
+          chrome_test_util::GetCurrentWebState()->GetView(), GURL());
+
+  return webClientUserAgent == web::UserAgentType::MOBILE;
+}
+
 #pragma mark - ScopedBlockPopupsPref
 
 + (ContentSetting)popupPrefValue {

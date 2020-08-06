@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("common") {
+static_library("common") {
   sources = [
     "credential_manager_types.cc",
     "credential_manager_types.h",

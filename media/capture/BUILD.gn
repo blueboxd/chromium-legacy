@@ -27,7 +27,7 @@ component("capture_switches") {
 }
 
 # Things needed by //media/capture/mojom/video_capture_types.mojom.
-jumbo_component("capture_base") {
+component("capture_base") {
   defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
     "capture_export.h",
@@ -47,7 +47,7 @@ jumbo_component("capture_base") {
 }
 
 # Target which allows breakout of Android BUILD.gn files.
-jumbo_source_set("capture_device_specific") {
+source_set("capture_device_specific") {
   visibility = [
     ":capture_lib",
     "//media/capture/content/android",
@@ -103,7 +103,7 @@ jumbo_source_set("capture_device_specific") {
   ]
 }
 
-jumbo_component("capture_lib") {
+component("capture_lib") {
   defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
     "video/create_video_capture_device_factory.cc",

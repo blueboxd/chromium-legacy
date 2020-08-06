@@ -80,6 +80,7 @@ public class TabListCoordinator implements Destroyable {
     private final Rect mThumbnailLocationOfCurrentTab = new Rect();
     private final Context mContext;
     private final TabListModel mModel;
+    private final @UiType int mItemType;
 
     private boolean mIsInitialized;
     private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
@@ -115,6 +116,7 @@ public class TabListCoordinator implements Destroyable {
             @Nullable TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
             @NonNull ViewGroup parentView, boolean attachToParent, String componentName) {
         mMode = mode;
+        mItemType = itemType;
         mContext = context;
         mModel = new TabListModel();
         mAdapter = new SimpleRecyclerViewAdapter(mModel);
@@ -256,18 +258,6 @@ public class TabListCoordinator implements Destroyable {
                     false));
         }
 
-        // TODO(crbug.com/1004570) : Support drag and drop, and swipe to dismiss when
-        // CLOSE_TAB_SUGGESTIONS is enabled.
-        if ((mMode == TabListMode.GRID || mMode == TabListMode.LIST)
-                && selectionDelegateProvider == null) {
-            ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
-                    context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
-                    context.getResources().getDimension(R.dimen.tab_grid_merge_threshold),
-                    context.getResources().getDimension(R.dimen.bottom_sheet_peek_height),
-                    tabModelSelector.getCurrentModel().getProfile()));
-            touchHelper.attachToRecyclerView(mRecyclerView);
-        }
-
         if (mMode == TabListMode.GRID && selectionDelegateProvider == null) {
             // TODO(crbug.com/964406): unregister the listener when we don't need it.
             mGlobalLayoutListener = this::updateThumbnailLocation;
@@ -293,9 +283,20 @@ public class TabListCoordinator implements Destroyable {
 
         mIsInitialized = true;
 
-        mMediator.initWithNative(Profile.getLastUsedRegularProfile());
+        Profile profile = Profile.getLastUsedRegularProfile();
+        mMediator.initWithNative(profile);
         if (dynamicResourceLoader != null) {
             mRecyclerView.createDynamicView(dynamicResourceLoader);
+        }
+
+        if ((mMode == TabListMode.GRID || mMode == TabListMode.LIST)
+                && mItemType != UiType.SELECTABLE) {
+            ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
+                    mContext.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
+                    mContext.getResources().getDimension(R.dimen.tab_grid_merge_threshold),
+                    mContext.getResources().getDimension(R.dimen.bottom_sheet_peek_height),
+                    profile));
+            touchHelper.attachToRecyclerView(mRecyclerView);
         }
     }
 

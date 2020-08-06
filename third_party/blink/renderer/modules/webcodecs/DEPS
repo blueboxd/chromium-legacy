@@ -29,4 +29,8 @@ specific_include_rules = {
     "+base/threading/thread.h",
     "+gpu/command_buffer/common/mailbox_holder.h",
   ],
+  "audio_decoder_broker_test\.cc": [
+    "+base/run_loop.h",
+    "+base/files/file_util.h",
+  ],
 }

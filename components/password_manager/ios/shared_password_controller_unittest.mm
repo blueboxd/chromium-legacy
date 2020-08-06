@@ -32,42 +32,6 @@
 using ::testing::_;
 using ::testing::Return;
 
-@interface MockSharedPasswordControllerDelegate
-    : NSObject <SharedPasswordControllerDelegate>
-@end
-
-@implementation MockSharedPasswordControllerDelegate {
-  password_manager::StubPasswordManagerClient password_manager_client_;
-  password_manager::StubPasswordManagerDriver password_manager_driver_;
-}
-
-- (void)mockGenerationEnabled:(BOOL)generationEnabled {
-  EXPECT_CALL(*password_manager_client_.GetPasswordFeatureManager(),
-              IsGenerationEnabled)
-      .WillOnce(Return(generationEnabled));
-}
-
-- (password_manager::PasswordManagerClient*)passwordManagerClient {
-  return &password_manager_client_;
-}
-
-- (password_manager::PasswordManagerDriver*)passwordManagerDriver {
-  return &password_manager_driver_;
-}
-
-- (void)sharedPasswordController:(SharedPasswordController*)controller
-    showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
-                   decisionHandler:(void (^)(BOOL))decisionHandler {
-  // TODO(crbug.com/1097353): Test this delegate method.
-}
-
-- (void)sharedPasswordController:(SharedPasswordController*)controller
-             didAcceptSuggestion:(FormSuggestion*)suggestion {
-  // TODO(crbug.com/1097353): Test this delegate method.
-}
-
-@end
-
 namespace password_manager {
 
 class MockPasswordManager : public PasswordManagerInterface {
@@ -126,7 +90,15 @@ class MockPasswordManager : public PasswordManagerInterface {
 class SharedPasswordControllerTest : public PlatformTest {
  public:
   SharedPasswordControllerTest() : PlatformTest() {
-    delegate_ = [[MockSharedPasswordControllerDelegate alloc] init];
+    delegate_ = OCMProtocolMock(@protocol(SharedPasswordControllerDelegate));
+    password_manager::PasswordManagerClient* client_ptr =
+        &password_manager_client_;
+    password_manager::PasswordManagerDriver* driver_ptr =
+        &password_manager_driver_;
+    [[[delegate_ stub] andReturnValue:OCMOCK_VALUE(client_ptr)]
+        passwordManagerClient];
+    [[[delegate_ stub] andReturnValue:OCMOCK_VALUE(driver_ptr)]
+        passwordManagerDriver];
     form_helper_ = OCMStrictClassMock([PasswordFormHelper class]);
     suggestion_helper_ = OCMStrictClassMock([PasswordSuggestionHelper class]);
     OCMExpect([form_helper_ setDelegate:[OCMArg any]]);
@@ -147,7 +119,9 @@ class SharedPasswordControllerTest : public PlatformTest {
   testing::StrictMock<MockPasswordManager> password_manager_;
   id form_helper_;
   id suggestion_helper_;
-  MockSharedPasswordControllerDelegate* delegate_;
+  password_manager::StubPasswordManagerClient password_manager_client_;
+  password_manager::StubPasswordManagerDriver password_manager_driver_;
+  id delegate_;
   SharedPasswordController* controller_;
 };
 
@@ -336,7 +310,9 @@ TEST_F(SharedPasswordControllerTest,
       retrieveSuggestionsWithFormID:form_query.uniqueFormID
                     fieldIdentifier:form_query.uniqueFieldID
                           fieldType:form_query.fieldType];
-  [delegate_ mockGenerationEnabled:YES];
+  EXPECT_CALL(*password_manager_client_.GetPasswordFeatureManager(),
+              IsGenerationEnabled)
+      .WillOnce(Return(true));
 
   autofill::PasswordFormGenerationData form_generation_data(
       form_query.uniqueFormID, form_query.uniqueFieldID,
@@ -356,6 +332,93 @@ TEST_F(SharedPasswordControllerTest,
                  completion_was_called = YES;
                }];
   EXPECT_TRUE(completion_was_called);
+}
+
+// Tests that accepting a "Suggest a password" suggestion will give a suggested
+// password to the delegate.
+TEST_F(SharedPasswordControllerTest, SuggestsGeneratedPassword) {
+  autofill::FormRendererId form_id(0);
+  autofill::FieldRendererId field_id(1);
+  autofill::PasswordFormGenerationData form_generation_data(form_id, field_id,
+                                                            field_id);
+  [controller_ formEligibleForGenerationFound:form_generation_data];
+
+  FormSuggestion* suggestion = [FormSuggestion
+      suggestionWithValue:@"test-value"
+       displayDescription:@"test-description"
+                     icon:nil
+               identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY];
+
+  [[delegate_ expect] sharedPasswordController:controller_
+                showGeneratedPotentialPassword:[OCMArg isNotNil]
+                               decisionHandler:[OCMArg any]];
+
+  [controller_ didSelectSuggestion:suggestion
+                              form:@"test-form-name"
+                      uniqueFormID:form_id
+                   fieldIdentifier:@"test-field-id"
+                     uniqueFieldID:field_id
+                           frameID:@"test-frame-id"
+                 completionHandler:nil];
+
+  [delegate_ verify];
+}
+
+// Tests that generated passwords are presaved.
+TEST_F(SharedPasswordControllerTest, PresavesGeneratedPassword) {
+  autofill::FormRendererId form_id(0);
+  autofill::FieldRendererId field_id(1);
+  autofill::PasswordFormGenerationData form_generation_data(form_id, field_id,
+                                                            field_id);
+  [controller_ formEligibleForGenerationFound:form_generation_data];
+
+  FormSuggestion* suggestion = [FormSuggestion
+      suggestionWithValue:@"test-value"
+       displayDescription:@"test-description"
+                     icon:nil
+               identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY];
+
+  id decision_handler_arg =
+      [OCMArg checkWithBlock:^(void (^decision_handler)(BOOL)) {
+        decision_handler(/*accept=*/YES);
+        return YES;
+      }];
+  [[delegate_ expect] sharedPasswordController:controller_
+                showGeneratedPotentialPassword:[OCMArg isNotNil]
+                               decisionHandler:decision_handler_arg];
+
+  id fill_completion_handler_arg =
+      [OCMArg checkWithBlock:^(void (^completion_handler)(BOOL)) {
+        completion_handler(/*success=*/YES);
+        return YES;
+      }];
+  [[form_helper_ expect] fillPasswordForm:form_id
+                    newPasswordIdentifier:field_id
+                confirmPasswordIdentifier:field_id
+                        generatedPassword:[OCMArg isNotNil]
+                        completionHandler:fill_completion_handler_arg];
+
+  autofill::FormData form_data = test_helpers::MakeSimpleFormData();
+  id extract_completion_handler_arg = [OCMArg
+      checkWithBlock:^(void (^completion_handler)(BOOL, autofill::FormData)) {
+        completion_handler(/*found=*/YES, form_data);
+        return YES;
+      }];
+  [[form_helper_ expect]
+      extractPasswordFormData:form_id
+            completionHandler:extract_completion_handler_arg];
+
+  EXPECT_CALL(password_manager_, PresaveGeneratedPassword);
+
+  [controller_ didSelectSuggestion:suggestion
+                              form:@"test-form-name"
+                      uniqueFormID:form_id
+                   fieldIdentifier:@"test-field-id"
+                     uniqueFieldID:field_id
+                           frameID:@"test-frame-id"
+                 completionHandler:nil];
+
+  [delegate_ verify];
 }
 
 // TODO(crbug.com/1097353): Finish unit testing the rest of the public API.

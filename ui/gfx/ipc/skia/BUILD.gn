@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("skia") {
+component("skia") {
   output_name = "gfx_ipc_skia"
 
   sources = [

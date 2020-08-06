@@ -489,8 +489,11 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // The main document, plus any page popups.
   HeapHashSet<WeakMember<Document>> documents_;
+
+  // Queued callbacks.
   typedef HeapVector<Member<TreeUpdateParams>> TreeUpdateCallbackQueue;
   TreeUpdateCallbackQueue tree_update_callback_queue_;
+  HeapHashSet<WeakMember<Node>> nodes_with_pending_children_changed_;
 
   // If tree_update_callback_queue_ gets improbably large, stop
   // enqueueing updates and fire a single ChildrenChanged event on the

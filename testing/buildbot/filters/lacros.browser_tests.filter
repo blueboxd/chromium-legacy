@@ -1,6 +1,10 @@
 # TODO(crbug.com/1111979) Enable all tests on lacros.
 -AccessContextAuditBrowserTest.CheckSessionOnly
+-AdsPageLoadMetricsObserverBrowserTest.PageAdDensityIgnoreDisplayNoneFrame
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityMultipleFrames
+-AdsPageLoadMetricsObserverBrowserTest.PageAdDensityRecordsPageMax
+-All/CustomTabBarViewBrowserTest.IsNotCreatedInPopup/BookmarkApps
+-All/CustomTabBarViewBrowserTest.IsNotCreatedInPopup/WebApps
 -All/HostedOrWebAppTest.CtrlClickLink/BookmarkApp
 -All/HostedOrWebAppTest.CtrlClickLink/HostedApp
 -All/HostedOrWebAppTest.CtrlClickLink/WebApp
@@ -50,8 +54,10 @@
 -BluetoothPrivateApiTest.PincodePairing
 -BluetoothPrivateApiTest.SetAdapterState
 -BrowserActionApiTest.BrowserActionOpenPopupOnPopup
+-BrowserNavigatorTest.NavigateFromNoTabStripWindowToOptions
 -BrowserNavigatorTest.NavigateFromNTPToOptionsPageInSameTab
 -BrowserNavigatorTest.NavigateFromNTPToOptionsSingleton
+-BrowserNavigatorTest.SwitchToTabLatestWindow
 -BrowserTest.RestorePinnedTabs
 -BrowserViewTest.DevToolsUpdatesBrowserWindow
 -BrowserViewTest.F6CyclesThroughCaptionBubbleToo
@@ -60,8 +66,10 @@
 -BrowsingDataRemoverBrowserTest.StorageRemovedFromDisk
 -ClientHintsBrowserTest.ClientHintsClearSession
 -ClipboardApiTest.Extension
+-ContextMenuBrowserTest.GifImageDownscaleToJpeg
 -ContextMenuBrowserTest.OpenLinkInProfile
 -ContextMenuBrowserTest.OpenLinkInProfileEntryPresent
+-ContextMenuBrowserTest.PngImageDownscaleToPng
 -CrComponentsCertificateManagerV3Test.All
 -CrComponentsManagedFootnoteV3Test.All
 -CrSettingsAdvancedPageV3Test.Load
@@ -90,11 +98,13 @@
 -FeedbackTest.ShowLoginFeedback
 -FeedbackTest.SubmissionTest
 -FindInPageControllerTest.FindMovesOnTabClose_Issue1343052
+-FolderUploadConfirmationViewTest.InitiallyFocusesCancel
 -GlobalErrorBubbleTest.InvokeUi_ExternalInstallBubbleAlert
 -IconLoaderBrowserTest.LoadGroup
 -KeepAliveDevToolsTest.KeepsAliveUntilBrowserClose
 -MediaRouterUIBrowserTest.OpenDialogFromAppMenu
 -OmniboxPopupContentsViewTest.ClickOmnibox
+-OmniboxPopupContentsViewTest.PopupMatchesLocationBarBackground
 -OutOfProcessPPAPITest.FlashClipboard
 -OutOfProcessPPAPITest.Printing
 -PageInfoBubbleViewBrowserTest.FocusDoesNotReturnToContentsOnReloadPrompt
@@ -113,6 +123,7 @@
 -ProfileManagerBrowserTest.EphemeralProfile
 -ProfileManagerBrowserTest.SwitchToProfile
 -RunInBackgroundTest.RunInBackgroundBasicTest
+-SearchByImageBrowserTest.ImageSearchWithCorruptImage
 -SessionRestoreTest.RestoredTabsHaveCorrectInitialSize
 -SettingsA11yAccessibilityV3.Accessibility_accesskeys
 -SettingsA11yAccessibilityV3.Accessibility_area_alt
@@ -385,6 +396,8 @@
 -SettingsA11ySignoutV3.Signout_video_caption
 -SettingsA11ySignoutV3.Signout_video_description
 -StartupBrowserCreatorExtensionsCheckupExperimentTest.ExtensionsCheckup
+-StartupBrowserCreatorTest.RestoreWithNoStartupWindow
+-TabActivityWatcherTest.AllWindowMetricsArePopulated
 -TabGroupEditorBubbleViewDialogBrowserTest.InvokeUi_default
 -TabHoverCardBubbleViewBrowserTest.WidgetNotVisibleOnMousePressAfterTabFocus
 -TabHoverCardBubbleViewBrowserTest.WidgetVisibleOnKeyPressAfterTabFocus

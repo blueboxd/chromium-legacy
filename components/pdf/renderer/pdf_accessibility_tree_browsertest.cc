@@ -546,6 +546,8 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   ASSERT_TRUE(static_popup_note_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText,
             static_popup_note_text_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            static_popup_note_text_node->data().GetNameFrom());
   EXPECT_EQ(kPopupNoteText, static_popup_note_text_node->GetStringAttribute(
                                 ax::mojom::StringAttribute::kName));
   EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
@@ -1389,17 +1391,23 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   ui::AXNode* static_text_node = paragraph_node->children()[0];
   ASSERT_TRUE(static_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            static_text_node->data().GetNameFrom());
   ASSERT_EQ(2u, static_text_node->children().size());
 
   ui::AXNode* previous_inline_node = static_text_node->children()[0];
   ASSERT_TRUE(previous_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            previous_inline_node->data().GetNameFrom());
   ASSERT_FALSE(previous_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kPreviousOnLineId));
 
   ui::AXNode* next_inline_node = static_text_node->children()[1];
   ASSERT_TRUE(next_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            next_inline_node->data().GetNameFrom());
   ASSERT_TRUE(next_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kNextOnLineId));
 
@@ -1420,11 +1428,15 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   static_text_node = link_node->children()[0];
   ASSERT_TRUE(static_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            static_text_node->data().GetNameFrom());
   ASSERT_EQ(2u, static_text_node->children().size());
 
   previous_inline_node = static_text_node->children()[0];
   ASSERT_TRUE(previous_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            previous_inline_node->data().GetNameFrom());
   ASSERT_TRUE(previous_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kPreviousOnLineId));
   // Test that text and link on the same line are connected.
@@ -1435,6 +1447,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   next_inline_node = static_text_node->children()[1];
   ASSERT_TRUE(next_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            next_inline_node->data().GetNameFrom());
   ASSERT_FALSE(next_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kNextOnLineId));
 

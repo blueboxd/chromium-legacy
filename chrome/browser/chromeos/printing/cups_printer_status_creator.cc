@@ -27,8 +27,6 @@ CupsPrinterStatus PrinterStatusToCupsPrinterStatus(
 
 CupsReason PrinterReasonToCupsReason(const ReasonFromPrinter& reason) {
   switch (reason) {
-    case ReasonFromPrinter::CONNECTING_TO_DEVICE:
-      return CupsReason::kConnectingToDevice;
     case ReasonFromPrinter::FUSER_OVER_TEMP:
     case ReasonFromPrinter::FUSER_UNDER_TEMP:
     case ReasonFromPrinter::INTERPRETER_RESOURCE_UNAVAILABLE:
@@ -67,6 +65,7 @@ CupsReason PrinterReasonToCupsReason(const ReasonFromPrinter& reason) {
       return CupsReason::kPaused;
     case ReasonFromPrinter::SPOOL_AREA_FULL:
       return CupsReason::kPrinterQueueFull;
+    case ReasonFromPrinter::CONNECTING_TO_DEVICE:
     case ReasonFromPrinter::SHUTDOWN:
     case ReasonFromPrinter::TIMED_OUT:
       return CupsReason::kPrinterUnreachable;

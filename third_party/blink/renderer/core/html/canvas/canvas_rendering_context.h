@@ -204,10 +204,14 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   void Trace(Visitor*) const override;
   virtual void Stop() = 0;
 
-  virtual IdentifiableToken IdentifiableTextToken() {
+  virtual IdentifiableToken IdentifiableTextToken() const {
     // Token representing no bytes.
     return IdentifiableToken(base::span<const uint8_t>());
   }
+
+  virtual bool IdentifiabilityEncounteredSkippedOps() const { return false; }
+
+  virtual bool IdentifiabilityEncounteredSensitiveOps() const { return false; }
 
  protected:
   CanvasRenderingContext(CanvasRenderingContextHost*,

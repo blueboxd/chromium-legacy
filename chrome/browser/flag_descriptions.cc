@@ -968,6 +968,13 @@ const char kEnableSyncTrustedVaultName[] =
 const char kEnableSyncTrustedVaultDescription[] =
     "Enables the new, experimental passphrase type for sync data";
 
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+const char kEnableTabSearchName[] = "Enable Tab Search";
+const char kEnableTabSearchDescription[] =
+    "Enable the Tab Search feature in Top Chrome UI, which will show a popup"
+    "bubble that allows users to search over their currently open tabs.";
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)";
+
 const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
 const char kEnableTextFragmentAnchorDescription[] =
     "Enables scrolling to text specified in URL's fragment.";
@@ -1601,11 +1608,13 @@ const char
         "In the omnibox, hide the path, query and ref from steady state "
         "displayed URLs when the user interacts with the page.";
 
-const char kOmniboxUIElideToRegistrableDomainName[] =
-    "Omnibox UI Hide Steady-State URL Subdomains Beyond Registrable Domain";
-const char kOmniboxUIElideToRegistrableDomainDescription[] =
-    "In the omnibox, hide subdomains as well as path, query and ref from "
-    "steady state displayed URLs. Has no effect unless at least one of "
+const char kOmniboxUIMaybeElideToRegistrableDomainName[] =
+    "Omnibox UI Sometimes Hide Steady-State URL Subdomains Beyond Registrable "
+    "Domain";
+const char kOmniboxUIMaybeElideToRegistrableDomainDescription[] =
+    "In the omnibox, occasionally hide subdomains as well as path, query and "
+    "ref from steady state displayed URLs, depending on heuristics. Has no "
+    "effect unless at least one of "
     "#omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover or "
     "#omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction is "
     "enabled.";

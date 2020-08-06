@@ -8,7 +8,7 @@ import("//ui/ozone/ozone.gni")
 
 assert(use_x11 || ozone_platform_x11)
 
-jumbo_component("x11") {
+component("x11") {
   output_name = "x11_events_platform"
 
   sources = [

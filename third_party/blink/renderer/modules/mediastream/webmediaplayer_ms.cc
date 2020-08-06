@@ -351,9 +351,10 @@ WebMediaPlayerMS::WebMediaPlayerMS(
   DCHECK(delegate_);
   weak_this_ = weak_factory_.GetWeakPtr();
   delegate_id_ = delegate_->AddObserver(this);
-  SendLogMessage(String::Format("%s({delegate_id=%d}, {is_audio_element=%s})",
-                                __func__, delegate_id_,
-                                client->IsAudioElement() ? "true" : "false"));
+  SendLogMessage(String::Format(
+      "%s({delegate_id=%d}, {is_audio_element=%s}, {sink_id=%s})", __func__,
+      delegate_id_, client->IsAudioElement() ? "true" : "false",
+      sink_id.Utf8().c_str()));
 
   // TODO(tmathmeyer) WebMediaPlayerImpl gets the URL from the WebLocalFrame.
   // doing that here causes a nullptr deref.
@@ -362,6 +363,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
 
 WebMediaPlayerMS::~WebMediaPlayerMS() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SendLogMessage(
+      String::Format("%s() [delegate_id=%d]", __func__, delegate_id_));
 
   if (!web_stream_.IsNull())
     web_stream_.RemoveObserver(this);

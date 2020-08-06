@@ -506,11 +506,11 @@ ContentAnalysisScanResult MalwareVerdictToResult(
     switch (verdict.verdict()) {
       case MalwareDeepScanningVerdict::UWS:
         trigger.action = enterprise_connectors::TriggeredRule::BLOCK;
-        trigger.name = "UWS";
+        trigger.name = "uws";
         break;
       case MalwareDeepScanningVerdict::MALWARE:
         trigger.action = enterprise_connectors::TriggeredRule::BLOCK;
-        trigger.name = "MALWARE";
+        trigger.name = "malware";
         break;
       default:
         NOTREACHED();

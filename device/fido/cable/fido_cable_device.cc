@@ -135,8 +135,7 @@ FidoTransportProtocol FidoCableDevice::DeviceTransport() const {
 FidoDevice::CancelToken FidoCableDevice::DeviceTransact(
     std::vector<uint8_t> command,
     DeviceCallback callback) {
-  if ((!encryption_data_ && !v2_crypter_) ||
-      !EncryptOutgoingMessage(&command)) {
+  if (!encryption_data_ || !EncryptOutgoingMessage(&command)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     state_ = State::kDeviceError;
@@ -156,8 +155,7 @@ void FidoCableDevice::OnResponseFrame(FrameCallback callback,
   state_ = frame ? State::kReady : State::kDeviceError;
 
   if (frame && frame->command() != FidoBleDeviceCommand::kControl) {
-    if ((!encryption_data_ && !v2_crypter_) ||
-        !DecryptIncomingMessage(&frame.value())) {
+    if (!encryption_data_ || !DecryptIncomingMessage(&frame.value())) {
       state_ = State::kDeviceError;
       frame = base::nullopt;
     }
@@ -233,18 +231,10 @@ void FidoCableDevice::SetV1EncryptionData(
     base::span<const uint8_t, 8> nonce) {
   // Encryption data must be set at most once during Cable handshake protocol.
   DCHECK(!encryption_data_);
-  DCHECK(!v2_crypter_);
   encryption_data_.emplace();
   encryption_data_->read_key = fido_parsing_utils::Materialize(session_key);
   encryption_data_->write_key = fido_parsing_utils::Materialize(session_key);
   encryption_data_->nonce = fido_parsing_utils::Materialize(nonce);
-}
-
-void FidoCableDevice::SetV2EncryptionData(
-    std::unique_ptr<cablev2::Crypter> crypter) {
-  DCHECK(!encryption_data_);
-  DCHECK(!v2_crypter_);
-  v2_crypter_.emplace(std::move(crypter));
 }
 
 void FidoCableDevice::SetSequenceNumbersForTesting(uint32_t read_seq,
@@ -377,40 +367,14 @@ void FidoCableDevice::ProcessBleDeviceError(base::span<const uint8_t> data) {
 
 bool FidoCableDevice::EncryptOutgoingMessage(
     std::vector<uint8_t>* message_to_encrypt) {
-  if (v2_crypter_) {
-    return v2_crypter_.value()->Encrypt(message_to_encrypt);
-  }
-
-  return EncryptV1OutgoingMessage(&encryption_data_.value(),
-                                  message_to_encrypt);
-}
-
-bool FidoCableDevice::DecryptIncomingMessage(FidoBleFrame* incoming_frame) {
-  if (v2_crypter_) {
-    std::vector<uint8_t> plaintext;
-    if (!v2_crypter_.value()->Decrypt(incoming_frame->command(),
-                                      incoming_frame->data(), &plaintext)) {
-      return false;
-    }
-    incoming_frame->data().swap(plaintext);
-    return true;
-  }
-
-  return DecryptV1IncomingMessage(&encryption_data_.value(), incoming_frame);
-}
-
-// static
-bool FidoCableDevice::EncryptV1OutgoingMessage(
-    EncryptionData* encryption_data,
-    std::vector<uint8_t>* message_to_encrypt) {
   const auto nonce =
-      ConstructV1Nonce(encryption_data->nonce, /*is_sender_client=*/true,
-                       encryption_data->write_sequence_num++);
+      ConstructV1Nonce(encryption_data_->nonce, /*is_sender_client=*/true,
+                       encryption_data_->write_sequence_num++);
   if (!nonce)
     return false;
 
   crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
-  aes_key.Init(encryption_data->write_key);
+  aes_key.Init(encryption_data_->write_key);
   DCHECK_EQ(nonce->size(), aes_key.NonceLength());
 
   const uint8_t additional_data[1] = {
@@ -421,17 +385,15 @@ bool FidoCableDevice::EncryptV1OutgoingMessage(
   return true;
 }
 
-// static
-bool FidoCableDevice::DecryptV1IncomingMessage(EncryptionData* encryption_data,
-                                               FidoBleFrame* incoming_frame) {
+bool FidoCableDevice::DecryptIncomingMessage(FidoBleFrame* incoming_frame) {
   const auto nonce =
-      ConstructV1Nonce(encryption_data->nonce, /*is_sender_client=*/false,
-                       encryption_data->read_sequence_num);
+      ConstructV1Nonce(encryption_data_->nonce, /*is_sender_client=*/false,
+                       encryption_data_->read_sequence_num);
   if (!nonce)
     return false;
 
   crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
-  aes_key.Init(encryption_data->read_key);
+  aes_key.Init(encryption_data_->read_key);
   DCHECK_EQ(nonce->size(), aes_key.NonceLength());
 
   const uint8_t additional_data[1] = {
@@ -443,7 +405,7 @@ bool FidoCableDevice::DecryptV1IncomingMessage(EncryptionData* encryption_data,
     return false;
   }
 
-  encryption_data->read_sequence_num++;
+  encryption_data_->read_sequence_num++;
   incoming_frame->data().swap(*plaintext);
   return true;
 }

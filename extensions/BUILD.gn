@@ -60,7 +60,7 @@ grit("extensions_renderer_resources") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "browser/api/declarative/test_rules_registry.cc",

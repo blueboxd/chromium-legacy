@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -109,8 +110,8 @@ class URLLoaderInterceptor {
   // Helper methods for use when intercepting.
   // Writes the given response body, header, and SSL Info to |client|.
   static void WriteResponse(
-      const std::string& headers,
-      const std::string& body,
+      base::StringPiece headers,
+      base::StringPiece body,
       network::mojom::URLLoaderClient* client,
       base::Optional<net::SSLInfo> ssl_info = base::nullopt);
 
@@ -134,6 +135,11 @@ class URLLoaderInterceptor {
       network::mojom::URLLoaderClient* client,
       const std::string* headers = nullptr,
       base::Optional<net::SSLInfo> ssl_info = base::nullopt);
+
+  // Attempts to write |body| to |client| and complete the load with status OK.
+  // client->OnReceiveResponse() must have been called prior to this.
+  static MojoResult WriteResponseBody(base::StringPiece body,
+                                      network::mojom::URLLoaderClient* client);
 
   // Returns an interceptor that (as long as it says alive) will intercept
   // requests to |url| and fail them using the provided |error|.

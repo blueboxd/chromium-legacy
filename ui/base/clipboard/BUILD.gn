@@ -13,7 +13,7 @@ import("//build/config/ui.gni")
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
-jumbo_component("clipboard_types") {
+component("clipboard_types") {
   output_name = "ui_base_clipboard_types"
   sources = [
     "clipboard_buffer.h",
@@ -60,7 +60,7 @@ jumbo_component("clipboard_types") {
   }
 }
 
-jumbo_component("clipboard") {
+component("clipboard") {
   output_name = "ui_base_clipboard"
 
   sources = [
@@ -183,7 +183,7 @@ jumbo_component("clipboard") {
   }
 }
 
-jumbo_source_set("clipboard_test_support") {
+source_set("clipboard_test_support") {
   testonly = true
 
   if (!is_ios) {

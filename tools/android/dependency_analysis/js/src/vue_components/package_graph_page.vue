@@ -7,9 +7,11 @@
     <div id="page-controls">
       <GraphFilterInput
           :node-ids="pageModel.getNodeIds()"
+          :shorten-name="filterShortenName"
           @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
       <GraphFilterItems
           :node-filter-data="displaySettingsData.nodeFilterData"
+          :shorten-name="filterShortenName"
           @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
           @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
           @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
@@ -26,7 +28,6 @@
       <GraphVisualization
           :graph-update-triggers="[
             displaySettingsData,
-            displaySettingsData.nodeFilterData.filterList,
           ]"
           :page-model="pageModel"
           :display-settings-data="displaySettingsData"
@@ -54,6 +55,7 @@ import {GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
 import {PackageDisplaySettingsData} from '../display_settings_data.js';
 import {parsePackageGraphModelFromJson} from '../process_graph_json.js';
+import {shortenPackageName} from '../chrome_hooks.js';
 
 import GraphDisplaySettings from './graph_display_settings.vue';
 import GraphFilterInput from './graph_filter_input.vue';
@@ -139,6 +141,7 @@ const PackageGraphPage = {
       const pageUrl = urlProcessor.getUrl(document.URL, PagePathName.PACKAGE);
       history.replaceState(null, '', pageUrl);
     },
+    filterShortenName: shortenPackageName,
     filterRemoveNode: function(nodeName) {
       this.displaySettingsData.nodeFilterData.removeNode(nodeName);
     },

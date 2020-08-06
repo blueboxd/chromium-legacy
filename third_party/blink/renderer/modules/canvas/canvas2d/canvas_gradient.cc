@@ -38,7 +38,10 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0, const FloatPoint& p1)
                                  p1,
                                  kSpreadMethodPad,
                                  Gradient::ColorInterpolation::kUnpremultiplied,
-                                 Gradient::DegenerateHandling::kDisallow)) {}
+                                 Gradient::DegenerateHandling::kDisallow)) {
+  identifiability_study_helper_.MaybeUpdateBuilder(
+      CanvasOps::kCreateLinearGradient, p0.X(), p0.Y(), p1.X(), p1.Y());
+}
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0,
                                float r0,
@@ -52,7 +55,10 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0,
                                  1,
                                  kSpreadMethodPad,
                                  Gradient::ColorInterpolation::kUnpremultiplied,
-                                 Gradient::DegenerateHandling::kDisallow)) {}
+                                 Gradient::DegenerateHandling::kDisallow)) {
+  identifiability_study_helper_.MaybeUpdateBuilder(
+      CanvasOps::kCreateRadialGradient, p0.X(), p0.Y(), r0, p1.X(), p1.Y(), r1);
+}
 
 // CanvasRenderingContext2D.createConicGradient only takes one angle argument
 // it makes sense to make that rotation here and always make the angles 0 -> 2pi
@@ -84,8 +90,14 @@ void CanvasGradient::addColorStop(double value,
                                           "') could not be parsed as a color.");
     return;
   }
+  identifiability_study_helper_.MaybeUpdateBuilder(CanvasOps::kAddColorStop,
+                                                   value, color.Rgb());
 
   gradient_->AddColorStop(value, color);
+}
+
+IdentifiableToken CanvasGradient::GetIdentifiableToken() const {
+  return identifiability_study_helper_.GetToken();
 }
 
 }  // namespace blink

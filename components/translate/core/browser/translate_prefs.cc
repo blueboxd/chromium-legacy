@@ -54,6 +54,30 @@ bool ContainsSameBaseLanguage(const std::vector<std::string>& list,
   return false;
 }
 
+// Removes from the language list any language that isn't supported as an
+// Accept-Language (it's not in kAcceptLanguageList) if and only if there
+// aren't any other languages from the same family in the list that are
+// supported.
+void PurgeUnsupportedLanguagesInLanguageFamily(base::StringPiece language,
+                                               std::vector<std::string>* list) {
+  base::StringPiece base_language = language::ExtractBaseLanguage(language);
+  for (const auto& lang : *list) {
+    // This method only operates on languages in the same family as |language|.
+    if (base_language != language::ExtractBaseLanguage(lang))
+      continue;
+    // If at least one of these same-family languages in |list| is supported by
+    // Accept-Languages, then that means that none of the languages in this
+    // family should be purged.
+    if (TranslateAcceptLanguages::CanBeAcceptLanguage(lang))
+      return;
+  }
+
+  // Purge all languages in the same family as |language|.
+  base::EraseIf(*list, [base_language](const std::string& lang) {
+    return base_language == language::ExtractBaseLanguage(lang);
+  });
+}
+
 }  // namespace
 
 const char kForceTriggerTranslateCount[] =
@@ -403,11 +427,14 @@ void TranslatePrefs::GetLanguageInfoList(
         std::move(code);
   }
 
-  // Get the list of translatable languages and sort it for fast searching.
+  // Get the sorted list of translatable languages.
   std::vector<std::string> translate_languages;
   translate::TranslateDownloadManager::GetSupportedLanguages(
       translate_allowed, &translate_languages);
-  std::sort(translate_languages.begin(), translate_languages.end());
+  // |translate_languages| should already be sorted alphabetically for fast
+  // searching.
+  DCHECK(
+      std::is_sorted(translate_languages.begin(), translate_languages.end()));
 
   // Build the language list from the language map.
   for (auto& entry : language_map) {
@@ -923,27 +950,6 @@ size_t TranslatePrefs::GetListSize(const char* pref_id) const {
 bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {
   const base::DictionaryValue* dict = prefs_->GetDictionary(pref_id);
   return (dict == nullptr || dict->empty());
-}
-
-void TranslatePrefs::PurgeUnsupportedLanguagesInLanguageFamily(
-    base::StringPiece language,
-    std::vector<std::string>* list) {
-  base::StringPiece base_language = language::ExtractBaseLanguage(language);
-  for (const auto& lang : *list) {
-    // This method only operates on languages in the same family as |language|.
-    if (base_language != language::ExtractBaseLanguage(lang))
-      continue;
-    // If at least one of these same-family languages in |list| is supported by
-    // Accept-Languages, then that means that none of the languages in this
-    // family should be purged.
-    if (TranslateAcceptLanguages::CanBeAcceptLanguage(lang))
-      return;
-  }
-
-  // Purge all languages in the same family as |language|.
-  base::EraseIf(*list, [base_language](const std::string& lang) {
-    return base_language == language::ExtractBaseLanguage(lang);
-  });
 }
 
 }  // namespace translate

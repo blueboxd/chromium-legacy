@@ -21,6 +21,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/reputation/url_elision_policy.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -2387,14 +2388,15 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   base::string16 text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
 
-  if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain()) {
+  GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(text), std::string());
+  if (!OmniboxFieldTrial::ShouldMaybeElideToRegistrableDomain() ||
+      !ShouldElideToRegistrableDomain(url)) {
     ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
     ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
     return gfx::Range(host.begin, host.end());
   }
 
   // TODO(estark): push this inside ParseForEmphasizeComponents()?
-  GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(text), std::string());
   std::string simplified_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);

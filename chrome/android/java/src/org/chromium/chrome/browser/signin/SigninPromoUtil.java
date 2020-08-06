@@ -7,11 +7,13 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.app.Activity;
 import android.text.TextUtils;
+import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArraySet;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -105,7 +107,7 @@ public class SigninPromoUtil {
      * @param view The {@link PersonalizedSigninPromoView} that should be set up.
      * @param listener The {@link SigninPromoController.OnDismissListener} to be set to the view.
      */
-    public static void setupPromoViewFromCache(SigninPromoController signinPromoController,
+    public static void setupSigninPromoViewFromCache(SigninPromoController signinPromoController,
             ProfileDataCache profileDataCache, PersonalizedSigninPromoView view,
             SigninPromoController.OnDismissListener listener) {
         DisplayableProfileData profileData = null;
@@ -117,6 +119,21 @@ public class SigninPromoUtil {
         }
         signinPromoController.detach();
         signinPromoController.setupPromoView(view.getContext(), view, profileData, listener);
+    }
+
+    /**
+     * @param signinPromoController The {@link SigninPromoController} that maintains the view.
+     * @param profileDataCache The {@link ProfileDataCache} that stores profile data.
+     * @param view The {@link PersonalizedSigninPromoView} that should be set up.
+     * @param listener The {@link SigninPromoController.OnDismissListener} to be set to the view.
+     */
+    public static void setupSyncPromoViewFromCache(SigninPromoController signinPromoController,
+            ProfileDataCache profileDataCache, PersonalizedSigninPromoView view,
+            SigninPromoController.OnDismissListener listener) {
+        setupSigninPromoViewFromCache(signinPromoController, profileDataCache, view, listener);
+        view.getStatusMessage().setVisibility(View.VISIBLE);
+        view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
+        view.getSecondaryButton().setVisibility(View.GONE);
     }
 
     /**

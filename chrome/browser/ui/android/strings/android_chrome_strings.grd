@@ -910,19 +910,34 @@ Your Google account may have other forms of browsing history like searches and a
         Enhanced Protection is on
       </message>
       <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_ADMIN" desc="Text to display when Safe Browsing is disabled by admin.">
-        Your administrator has turned off Safe Browsing
+        Turned off by your administrator
+      </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_SAFE" desc="Text to display when no passwords are compromised.">
+        No compromised passwords found
       </message>
       <message name="IDS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="Text to display when no passwords are saved.">
         No saved passwords
       </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_ERROR" desc="Text to display when the password check has an unknown error.">
+        Chrome can’t check your passwords
+      </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_ERROR_OFFLINE" desc="Text to display when the password check has an unknown error.">
+        Offline. Chrome can’t check your passwords.
+      </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_ERROR_SIGNED_OUT" desc="Text to display when the password check is unable to run because the usere is signed out.">
+        Sign in to your Google account to check your passwords
+      </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT" desc="Text to display when the password check hits the daily quota limit.">
+        Chrome couldn’t check all passwords
+      </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_UPDATED" desc="Text to display when the updates check confirms that the latest version is already installed.">
-        You are running the latest version of Chrome
+        Chrome is up to date
       </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_OUTDATED" desc="Text to display when the updates check detects a new version.">
-        A newer version of Chrome is available. Tap this element to go to the Play Store.
+        Chrome is out of date
       </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_OFFLINE" desc="Text to display when the updates check failed because of no connectivity.">
-        Chrome can't check for updates. Try checking your internet connection.
+        Offline. Chrome can’t check for updates.
       </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_ERROR" desc="Text to display when the updates check failed for some reason.">
         Chrome can’t check for updates
@@ -949,12 +964,12 @@ Your Google account may have other forms of browsing history like searches and a
         other {Checked # days ago}}
       </message>
 
-       <!-- Security preferences -->
-      <message name="IDS_PREFS_SECURITY_TITLE" desc="Title for the Security preferences. [CHAR-LIMIT=32]">
-        Security
+       <!-- Safe Browsing preferences -->
+      <message name="IDS_PREFS_SAFE_BROWSING_TITLE" desc="Title for the Safe Browsing preferences. [CHAR-LIMIT=32]">
+        Safe Browsing
       </message>
-      <message name="IDS_PREFS_SECURITY_SUMMARY" desc="Summary for the Security preferences.">
-        Safe Browsing (protection from dangerous sites) and other security settings
+      <message name="IDS_PREFS_SAFE_BROWSING_SUMMARY" desc="Summary for the Safe Browsing preferences.">
+        <ph name="SAFE_BROWSING_MODE">%1$s<ex>Enhanced protection</ex></ph> is on
       </message>
       <message name="IDS_PREFS_SECTION_SAFE_BROWSING_TITLE" desc="Title for the Safe Browsing section. [CHAR-LIMIT=32]">
         Safe Browsing
@@ -1783,8 +1798,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_SCHEDULED_ON_WIFI" desc="Label describing that the download was scheduled to start on Wi-Fi.">
         Download will start on Wi-Fi.
       </message>
-      <message name="IDS_DOWNLOAD_SCHEDULED_ON_DATE" desc="Label describing that the download was scheduled to start at a later date or time.">
-        Download will start on <ph name="date">%1$s<ex>Feb 28</ex></ph>.
+      <message name="IDS_DOWNLOAD_SCHEDULED_ON_DATE" desc="Label describing that the download was scheduled to start at a later date.">
+        Download will start on <ph name="date">%1$s<ex>Feb 28 2020</ex></ph>.
+      </message>
+      <message name="IDS_DOWNLOAD_SCHEDULED_ON_TIME" desc="Label describing that the download was scheduled to start at a later time.">
+        Download will start at <ph name="time">%1$s<ex>8:30PM</ex></ph>.
       </message>
 
       <!-- Inline Update Infobar -->

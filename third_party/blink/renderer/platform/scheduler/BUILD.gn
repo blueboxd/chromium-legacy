@@ -176,7 +176,7 @@ blink_platform_sources("scheduler") {
   ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [
@@ -204,7 +204,7 @@ jumbo_source_set("test_support") {
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
 
   sources = [
@@ -250,7 +250,7 @@ jumbo_source_set("unit_tests") {
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 }
 
-jumbo_source_set("scheduler_fuzzer_tests") {
+source_set("scheduler_fuzzer_tests") {
   testonly = true
 
   sources = []

@@ -316,7 +316,7 @@ class CupsPrintersManagerImpl
       CupsPrinterStatus printer_status(printer_id);
       printer_status.AddStatusReason(
           CupsPrinterStatus::CupsPrinterStatusReason::Reason::
-              kConnectingToDevice,
+              kPrinterUnreachable,
           CupsPrinterStatus::CupsPrinterStatusReason::Severity::kError);
       std::move(cb).Run(std::move(printer_status));
       return;

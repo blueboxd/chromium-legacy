@@ -8,7 +8,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_static_library("skeleton_generator") {
+static_library("skeleton_generator") {
   sources = [
     "spoof_checks/skeleton_generator.cc",
     "spoof_checks/skeleton_generator.h",
@@ -19,7 +19,7 @@ jumbo_static_library("skeleton_generator") {
   ]
 }
 
-jumbo_static_library("url_formatter") {
+static_library("url_formatter") {
   sources = [
     "elide_url.cc",
     "elide_url.h",
@@ -67,7 +67,7 @@ if (is_android) {
   }
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "elide_url_unittest.cc",

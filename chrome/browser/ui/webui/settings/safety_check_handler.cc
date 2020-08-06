@@ -432,7 +432,11 @@ void SafetyCheckHandler::OnChromeCleanerCheckResult(
   event.SetIntKey(kNewState, static_cast<int>(status));
   event.SetStringKey(kDisplayString, GetStringForChromeCleaner(status));
   FireWebUIListener(kChromeCleanerEvent, event);
-  // TODO(crbug.com/1087263): Add metrics for the CCT result.
+  if (status != ChromeCleanerStatus::kHidden &&
+      status != ChromeCleanerStatus::kChecking) {
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.ChromeCleanerResult",
+                                  status);
+  }
   chrome_cleaner_status_ = status;
   CompleteParentIfChildrenCompleted();
 }

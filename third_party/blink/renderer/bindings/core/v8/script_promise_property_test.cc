@@ -132,7 +132,8 @@ class ScriptPromisePropertyTestBase {
     v8::HandleScope handle_scope(GetIsolate());
     other_script_state_ = MakeGarbageCollected<ScriptState>(
         v8::Context::New(GetIsolate()),
-        DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), 1));
+        DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), 1),
+        /* execution_context = */ nullptr);
   }
 
   virtual ~ScriptPromisePropertyTestBase() { DestroyContext(); }

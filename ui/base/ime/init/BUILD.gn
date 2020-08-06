@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
-jumbo_component("init") {
+component("init") {
   output_name = "ui_base_ime_init"
 
   sources = [

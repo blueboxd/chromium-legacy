@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-jumbo_component("aura") {
+component("aura") {
   public = [
     "client/aura_constants.h",
     "client/capture_client.h",
@@ -175,7 +175,7 @@ jumbo_component("aura") {
   configs += [ "//build/config/compiler:noshadowing" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/aura_test_base.cc",

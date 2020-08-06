@@ -45,7 +45,7 @@ extern const base::Feature kCrossOriginEmbedderPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginIsolated;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kBlockNonSecureExternalRequests;
+extern const base::Feature kBlockInsecurePrivateNetworkRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kSplitAuthCacheByNetworkIsolationKey;
 COMPONENT_EXPORT(NETWORK_CPP)

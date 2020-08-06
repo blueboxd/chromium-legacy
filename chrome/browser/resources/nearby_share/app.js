@@ -14,6 +14,7 @@ import './nearby_confirmation_page.js';
 import './nearby_discovery_page.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {NearbyShareSettingsBehavior} from './shared/nearby_share_settings_behavior.m.js';
 
 /** @enum {string} */
 const Page = {
@@ -24,6 +25,8 @@ const Page = {
 
 Polymer({
   is: 'nearby-share-app',
+
+  behaviors: [NearbyShareSettingsBehavior],
 
   _template: html`{__html_template__}`,
 
@@ -68,7 +71,29 @@ Polymer({
     },
   },
 
-  listeners: {'change-page': 'onChangePage_'},
+  listeners: {
+    'change-page': 'onChangePage_',
+    'close': 'onClose_',
+  },
+
+  /**
+   * @return {!CrViewManagerElement} the view manager
+   * @private
+   */
+  getViewManager_() {
+    return /** @type {!CrViewManagerElement} */ (this.$.viewManager);
+  },
+
+  /**
+   * Called when all settings values have been retrieved.
+   */
+  onSettingsRetrieved() {
+    if (this.settings.enabled) {
+      this.getViewManager_().switchView(Page.DISCOVERY);
+    } else {
+      this.getViewManager_().switchView(Page.ONBOARDING);
+    }
+  },
 
   /**
    * Handler for the change-page event.
@@ -76,7 +101,15 @@ Polymer({
    * @private
    */
   onChangePage_(event) {
-    /** @type {CrViewManagerElement} */ (this.$.viewManager)
-        .switchView(event.detail.page);
+    this.getViewManager_().switchView(event.detail.page);
   },
+
+  /**
+   * Handler for the close event.
+   * @param {!Event} event
+   * @private
+   */
+  onClose_(event) {
+    // TODO(vecore): handle closing when share sheet is hooked up
+  }
 });

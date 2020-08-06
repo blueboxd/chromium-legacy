@@ -541,6 +541,8 @@ def main():
       '-DCOMPILER_RT_USE_LIBCXX=NO',
       # Don't run Go bindings tests; PGO makes them confused.
       '-DLLVM_INCLUDE_GO_TESTS=OFF',
+      # TODO(crbug.com/1113475): Update binutils.
+      '-DENABLE_X86_RELAX_RELOCATIONS=NO',
   ]
 
   if args.gcc_toolchain:

@@ -48,7 +48,7 @@ blink_platform_sources("instrumentation") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
 
   sources = [

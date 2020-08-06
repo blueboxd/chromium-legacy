@@ -9,7 +9,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_static_library("internal") {
+static_library("internal") {
   visibility = [
     ":*",
     "//components/feature_engagement",
@@ -86,7 +86,7 @@ jumbo_static_library("internal") {
   }
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
 
   visibility = [ "//components/feature_engagement:unit_tests" ]

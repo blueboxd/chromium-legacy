@@ -10,7 +10,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_component("touch_selection") {
+component("touch_selection") {
   output_name = "ui_touch_selection"
 
   sources = [

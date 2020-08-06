@@ -11,7 +11,7 @@ import("//tools/grit/grit_rule.gni")
 
 assert(is_chromeos)
 
-jumbo_component("ui") {
+component("ui") {
   sources = [
     "container_behavior.cc",
     "container_behavior.h",

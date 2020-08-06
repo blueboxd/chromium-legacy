@@ -22,7 +22,7 @@ blink_modules_sources("webtransport") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "bidirectional_stream_test.cc",

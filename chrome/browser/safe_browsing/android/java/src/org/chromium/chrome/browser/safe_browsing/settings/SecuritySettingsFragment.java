@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.safe_browsing.settings;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
@@ -22,6 +23,7 @@ import org.chromium.components.browser_ui.settings.TextMessagePreference;
 
 /**
  * Fragment containing security settings.
+ * TODO(crbug.com/1097310): Rename it to SafeBrowsingSettingsFragment.
  */
 public class SecuritySettingsFragment extends PreferenceFragmentCompat
         implements FragmentSettingsLauncher,
@@ -34,13 +36,33 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
 
     // An instance of SettingsLauncher that is used to launch Safe Browsing subsections.
     private SettingsLauncher mSettingsLauncher;
-
     private RadioButtonGroupSafeBrowsingPreference mSafeBrowsingPreference;
+
+    /**
+     * @return A summary that describes the current Safe Browsing state.
+     */
+    public static String getSafeBrowsingSummaryString(Context context) {
+        @SafeBrowsingState
+        int safeBrowsingState = SafeBrowsingBridge.getSafeBrowsingState();
+        String safeBrowsingStateString = "";
+        if (safeBrowsingState == SafeBrowsingState.ENHANCED_PROTECTION) {
+            safeBrowsingStateString =
+                    context.getString(R.string.safe_browsing_enhanced_protection_title);
+        } else if (safeBrowsingState == SafeBrowsingState.STANDARD_PROTECTION) {
+            safeBrowsingStateString =
+                    context.getString(R.string.safe_browsing_standard_protection_title);
+        } else if (safeBrowsingState == SafeBrowsingState.NO_SAFE_BROWSING) {
+            safeBrowsingStateString = context.getString(R.string.safe_browsing_no_protection_title);
+        } else {
+            assert false : "Should not be reached";
+        }
+        return context.getString(R.string.prefs_safe_browsing_summary, safeBrowsingStateString);
+    }
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         SettingsUtils.addPreferencesFromResource(this, R.xml.security_preferences);
-        getActivity().setTitle(R.string.prefs_security_title);
+        getActivity().setTitle(R.string.prefs_safe_browsing_title);
 
         ManagedPreferenceDelegate managedPreferenceDelegate = createManagedPreferenceDelegate();
 

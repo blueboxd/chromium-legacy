@@ -8,7 +8,7 @@ import("//net/features.gni")
 import("//services/network/public/cpp/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-jumbo_component("network_service") {
+component("network_service") {
   sources = [
     "chunked_data_pipe_upload_data_stream.cc",
     "chunked_data_pipe_upload_data_stream.h",
@@ -409,7 +409,7 @@ source_set("tests") {
   }
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [

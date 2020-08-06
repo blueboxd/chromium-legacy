@@ -69,7 +69,8 @@ enum AXTextEditType {
 NSString* const NSAccessibilityAutocorrectionOccurredNotification =
     @"AXAutocorrectionOccurred";
 NSString* const NSAccessibilityLayoutCompleteNotification = @"AXLayoutComplete";
-NSString* const NSAccessibilityLoadCompleteNotification = @"AXLoadComplete";
+NSString* const NSAccessibilityNewDocumentLoadCompleteNotification =
+    @"AXNewDocumentLoadComplete";
 NSString* const NSAccessibilityInvalidStatusChangedNotification =
     @"AXInvalidStatusChanged";
 NSString* const NSAccessibilityLiveRegionCreatedNotification =
@@ -221,18 +222,23 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       }
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
-      // This notification should only be fired on the top document.
-      // Iframes should use |ax::mojom::Event::kLayoutComplete| to signify that
-      // they have finished loading.
+      // |NSAccessibilityNewDocumentLoadCompleteNotification| should only be
+      // fired on the top document. Iframes should use
+      // |ax::mojom::Event::kLayoutComplete| to signify that they have finished
+      // loading. |NSAccessibilityNewDocumentLoadCompleteNotification| is the
+      // event that Webkit notifies VoiceOver that a page load has completed.
+      // TODO(crbug.com/1049320): Verify in MacOS 10.16 that the "Automatically
+      // speak the webpage" option in the VoiceOver utility is triggered upon
+      // observing this event.
       if (IsRootTree()) {
-        mac_notification = NSAccessibilityLoadCompleteNotification;
+        mac_notification = NSAccessibilityNewDocumentLoadCompleteNotification;
       } else {
         mac_notification = NSAccessibilityLayoutCompleteNotification;
       }
       break;
     case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
       DCHECK(IsRootTree());
-      mac_notification = NSAccessibilityLoadCompleteNotification;
+      mac_notification = NSAccessibilityLayoutCompleteNotification;
       break;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;

@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("prediction") {
+component("prediction") {
   sources = [
     "empty_filter.cc",
     "empty_filter.h",

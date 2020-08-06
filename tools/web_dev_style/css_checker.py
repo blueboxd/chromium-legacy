@@ -82,10 +82,9 @@ class CSSChecker(object):
 
     mixin_shim_reg = r'[\w-]+_-_[\w-]+'
 
-    def _remove_mixins_and_valid_vars(s):
-      valid_vars = r'--(?!' + mixin_shim_reg + r')[\w-]+:\s*'
-      mixin_or_value = r'({.*?}|[^;}]+);?\s*'
-      return re.sub(valid_vars + mixin_or_value, '', s, flags=re.DOTALL)
+    def _remove_valid_vars(s):
+      valid_vars = r'--(?!' + mixin_shim_reg + r')[\w-]+:\s*([^;{}}]+);\s*'
+      return re.sub(valid_vars, '', s, flags=re.DOTALL)
 
     def _remove_disable(content, lstrip=False):
       prefix_reg = ('\s*' if lstrip else '')
@@ -383,6 +382,10 @@ class CSSChecker(object):
           errors.append('    ' + first_line)
       return errors
 
+    def mixins(line):
+      return re.search(r'--[\w-]+:\s*({.*?)', line) or re.search(
+          r'@apply', line)
+
     # NOTE: Currently multi-line checks don't support 'after'. Instead, add
     # suggestions while parsing the file so another pass isn't necessary.
     added_or_modified_files_checks = [
@@ -460,6 +463,10 @@ class CSSChecker(object):
           'test': zero_width_lengths,
           'multiline': True,
         },
+        { 'desc': 'Avoid using CSS mixins. Use CSS shadow parts, CSS ' \
+                  'variables, or common CSS classes instead.',
+          'test': mixins,
+        },
     ]
 
     results = []
@@ -490,7 +497,7 @@ class CSSChecker(object):
       if not is_html:
         file_contents = _remove_comments_except_for_disables(file_contents)
 
-      file_contents = _remove_mixins_and_valid_vars(file_contents)
+      file_contents = _remove_valid_vars(file_contents)
       file_contents = _remove_template_expressions(file_contents)
 
       files.append((path, file_contents))

@@ -6,7 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
-jumbo_component("cert_net_url_loader") {
+component("cert_net_url_loader") {
   sources = [
     "cert_net_fetcher_url_loader.cc",
     "cert_net_fetcher_url_loader.h",

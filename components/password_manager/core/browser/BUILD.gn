@@ -31,7 +31,7 @@ config("password_reuse_detection_config") {
   }
 }
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "android_affiliation/affiliated_match_helper.cc",
     "android_affiliation/affiliated_match_helper.h",
@@ -415,7 +415,7 @@ fuzzable_proto_library("proto") {
   sources = [ "android_affiliation/affiliation_api.proto" ]
 }
 
-jumbo_static_library("password_hash_data") {
+static_library("password_hash_data") {
   sources = [
     "password_hash_data.cc",
     "password_hash_data.h",
@@ -441,7 +441,7 @@ static_library("hash_password_manager") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "android_affiliation/fake_affiliation_api.cc",

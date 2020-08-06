@@ -267,10 +267,10 @@ public class SigninPromoController {
 
         view.getDescription().setText(mDescriptionStringIdNoAccount);
 
-        view.getSigninButton().setText(R.string.sign_in_to_chrome);
-        view.getSigninButton().setOnClickListener(v -> signinWithNewAccount(context));
+        view.getPrimaryButton().setText(R.string.sign_in_to_chrome);
+        view.getPrimaryButton().setOnClickListener(v -> signinWithNewAccount(context));
 
-        view.getChooseAccountButton().setVisibility(View.GONE);
+        view.getSecondaryButton().setVisibility(View.GONE);
     }
 
     private void setupHotState(final Context context, PersonalizedSigninPromoView view) {
@@ -282,12 +282,12 @@ public class SigninPromoController {
 
         String signinButtonText = context.getString(
                 R.string.signin_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail());
-        view.getSigninButton().setText(signinButtonText);
-        view.getSigninButton().setOnClickListener(v -> signinWithDefaultAccount(context));
+        view.getPrimaryButton().setText(signinButtonText);
+        view.getPrimaryButton().setOnClickListener(v -> signinWithDefaultAccount(context));
 
-        view.getChooseAccountButton().setText(R.string.signin_promo_choose_another_account);
-        view.getChooseAccountButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
-        view.getChooseAccountButton().setVisibility(View.VISIBLE);
+        view.getSecondaryButton().setText(R.string.signin_promo_choose_another_account);
+        view.getSecondaryButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
+        view.getSecondaryButton().setVisibility(View.VISIBLE);
     }
 
     private int getNumImpressions() {

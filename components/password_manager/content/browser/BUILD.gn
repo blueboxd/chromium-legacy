@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "bad_message.cc",
     "bad_message.h",

@@ -219,7 +219,9 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       test_mode_active_(false),
       state_(INITIALIZED),
       idle_since_last_transmission_(false),
-      session_id_(-1) {
+      session_id_(-1),
+      synthetic_trial_registry_(
+          client->IsExternalExperimentAllowlistEnabled()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_manager_);
   DCHECK(client_);

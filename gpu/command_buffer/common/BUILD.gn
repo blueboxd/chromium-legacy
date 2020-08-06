@@ -46,7 +46,7 @@ group("webgpu") {
   public_deps = [ ":webgpu_sources" ]
 }
 
-jumbo_source_set("common_sources") {
+source_set("common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [

@@ -99,6 +99,42 @@
             </template>
           </settings-multidevice-feature-item>
         </template>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.PHONE_HUB, pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-item id="phoneHubItem"
+              feature="[[MultiDeviceFeature.PHONE_HUB]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-item>
+        </template>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS, pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-item id="phoneHubNotificationsItem"
+              feature="[[MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-item>
+        </template>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE, pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-item id="phoneHubNotificationBadgeItem"
+              feature="[[MultiDeviceFeature.PHONE_HUB_NOTIFICATION_BADGE]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-item>
+        </template>
+        <template is="dom-if"
+            if="[[isFeatureSupported(
+                MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION, pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-item id="phoneHubTaskContinuationItem"
+              feature="[[MultiDeviceFeature.PHONE_HUB_TASK_CONTINUATION]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-item>
+        </template>
       </div>
     </template>
     <div class="settings-box two-line">

@@ -77,7 +77,7 @@ class IdleWakeups {
   static ULONG DiffContextSwitches(const ProcessData& prev_process_data,
                                    const ProcessData& process_data);
 
-  std::map<ProcessId, HANDLE> process_id_to_hanle_map;
+  std::map<ProcessId, HANDLE> process_id_to_handle_map;
 
   IdleWakeups& operator=(const IdleWakeups&) = delete;
   IdleWakeups(const IdleWakeups&) = delete;
@@ -96,25 +96,25 @@ void IdleWakeups::OpenProcesses(const ProcessDataSnapshot& snapshot) {
 }
 
 void IdleWakeups::CloseProcesses() {
-  for (auto& pair : process_id_to_hanle_map) {
+  for (auto& pair : process_id_to_handle_map) {
     CloseHandle(pair.second);
   }
-  process_id_to_hanle_map.clear();
+  process_id_to_handle_map.clear();
 }
 
 HANDLE IdleWakeups::GetProcessHandle(ProcessId process_id) {
-  return process_id_to_hanle_map[process_id];
+  return process_id_to_handle_map[process_id];
 }
 
 void IdleWakeups::OpenProcess(ProcessId process_id) {
-  process_id_to_hanle_map[process_id] = ::OpenProcess(
+  process_id_to_handle_map[process_id] = ::OpenProcess(
       PROCESS_QUERY_LIMITED_INFORMATION, FALSE, (DWORD)(ULONGLONG)process_id);
 }
 
 void IdleWakeups::CloseProcess(ProcessId process_id) {
   HANDLE handle = GetProcessHandle(process_id);
   CloseHandle(handle);
-  process_id_to_hanle_map.erase(process_id);
+  process_id_to_handle_map.erase(process_id);
 }
 
 ULONG IdleWakeups::CountContextSwitches(const ProcessData& process_data) {

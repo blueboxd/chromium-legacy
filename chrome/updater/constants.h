@@ -53,6 +53,9 @@ extern const char kCrashMeSwitch[];
 // Runs as the Crashpad handler.
 extern const char kCrashHandlerSwitch[];
 
+// Updates the updater.
+extern const char kUpdateSwitch[];
+
 // Installs the updater.
 extern const char kInstallSwitch[];
 

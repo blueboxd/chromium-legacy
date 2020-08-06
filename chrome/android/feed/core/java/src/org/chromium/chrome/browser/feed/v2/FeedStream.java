@@ -219,6 +219,12 @@ public class FeedStream implements Stream {
                     listener.onScrolled(dx, dy);
                 }
             }
+            @Override
+            public void onScrollStateChanged(RecyclerView v, int newState) {
+                for (ScrollListener listener : mScrollListeners) {
+                    listener.onScrollStateChanged(newState);
+                }
+            }
         });
     }
 

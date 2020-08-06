@@ -168,6 +168,14 @@ Once it is built, you can simply run the browser:
 $ out/Default/Chromium.app/Contents/MacOS/Chromium
 ```
 
+## Avoiding the "incoming network connections" dialog
+
+Every time you start a new developer build of Chrome you get a system dialog
+asking "Do you want the application Chromium.app to accept incoming
+network connections?" - to avoid this, run with this command-line flag:
+
+--disable-features="MediaRouter"
+
 ## Running test targets
 
 You can run the tests in the same way. You can also limit which tests are

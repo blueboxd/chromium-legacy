@@ -528,6 +528,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void UpdateStreamPriority(
       quic::QuicStreamId id,
       const spdy::SpdyStreamPrecedence& new_precedence) override;
+  void OnHttp3GoAway(uint64_t id) override;
 
   // quic::QuicSession methods:
   QuicChromiumClientStream* CreateOutgoingBidirectionalStream() override;

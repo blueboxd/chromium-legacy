@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/base_paths.h"
@@ -1436,15 +1435,13 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
   os_sync_util::MigrateOsSyncPreferences(profile->GetPrefs());
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
-  if (ash::features::IsSupervisedUserDeprecationNoticeEnabled()) {
-    bool is_supervised_user =
-        user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
-    bool is_manager = ChromeUserManager::Get()
-                          ->GetSupervisedUserManager()
-                          ->HasSupervisedUsers(account_id.GetUserEmail());
-    if (is_manager || is_supervised_user)
-      ShowSupervisedUserDeprecationNotification(profile, is_manager);
-  }
+  bool is_supervised_user =
+      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
+  bool is_manager =
+      ChromeUserManager::Get()->GetSupervisedUserManager()->HasSupervisedUsers(
+          account_id.GetUserEmail());
+  if (is_manager || is_supervised_user)
+    ShowSupervisedUserDeprecationNotification(profile, is_manager);
 
   // Demo user signed in.
   if (is_incognito_profile) {
@@ -1754,9 +1751,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
       ActivateWizard(TermsOfServiceScreenView::kScreenId);
       return false;
-    } else if (base::FeatureList::IsEnabled(
-                   chromeos::features::kEnableSupervisionTransitionScreens) &&
-               !user_manager->IsCurrentUserNew() &&
+    } else if (!user_manager->IsCurrentUserNew() &&
                arc::GetSupervisionTransition(profile) !=
                    arc::ArcSupervisionTransition::NO_TRANSITION) {
       ActivateWizard(SupervisionTransitionScreenView::kScreenId);

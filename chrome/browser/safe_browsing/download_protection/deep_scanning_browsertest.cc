@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     auto* malware_rule = result->add_triggered_rules();
     malware_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
-    malware_rule->set_rule_name("MALWARE");
+    malware_rule->set_rule_name("malware");
     SendFcmMessage(async_response);
   }
 

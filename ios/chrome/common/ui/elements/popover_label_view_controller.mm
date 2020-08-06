@@ -115,18 +115,24 @@ constexpr CGFloat kVerticalDistance = 24;
 
   [_scrollView addSubview:textView];
 
-  UILabel* secondaryLabel = [[UILabel alloc] init];
-  secondaryLabel.numberOfLines = 0;
-  secondaryLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  secondaryLabel.textAlignment = NSTextAlignmentNatural;
-  secondaryLabel.adjustsFontForContentSizeCategory = YES;
-  if (self.secondaryAttributedString) {
-    secondaryLabel.attributedText = self.secondaryAttributedString;
-  }
-  secondaryLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  secondaryLabel.font =
+  UITextView* secondaryTextView = [[UITextView alloc] init];
+  secondaryTextView.scrollEnabled = NO;
+  secondaryTextView.editable = NO;
+  secondaryTextView.delegate = self;
+  secondaryTextView.backgroundColor = [UIColor clearColor];
+  secondaryTextView.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
-  [_scrollView addSubview:secondaryLabel];
+  secondaryTextView.adjustsFontForContentSizeCategory = YES;
+  secondaryTextView.translatesAutoresizingMaskIntoConstraints = NO;
+  secondaryTextView.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  secondaryTextView.linkTextAttributes =
+      @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
+
+  if (self.secondaryAttributedString) {
+    secondaryTextView.attributedText = self.secondaryAttributedString;
+  }
+
+  [_scrollView addSubview:secondaryTextView];
 
   NSLayoutConstraint* heightConstraint = [_scrollView.heightAnchor
       constraintEqualToAnchor:_scrollView.contentLayoutGuide.heightAnchor
@@ -139,9 +145,9 @@ constexpr CGFloat kVerticalDistance = 24;
   heightConstraint.active = YES;
 
   CGFloat verticalOffset =
-      (secondaryLabel.attributedText) ? -kVerticalDistance : 0;
+      (secondaryTextView.attributedText) ? -kVerticalDistance : 0;
   NSLayoutConstraint* verticalConstraint =
-      [textView.bottomAnchor constraintEqualToAnchor:secondaryLabel.topAnchor
+      [textView.bottomAnchor constraintEqualToAnchor:secondaryTextView.topAnchor
                                             constant:verticalOffset];
 
   [NSLayoutConstraint activateConstraints:@[
@@ -151,19 +157,19 @@ constexpr CGFloat kVerticalDistance = 24;
         constraintEqualToAnchor:textView.leadingAnchor
                        constant:-kHorizontalInsetValue],
     [textContainerView.leadingAnchor
-        constraintEqualToAnchor:secondaryLabel.leadingAnchor
+        constraintEqualToAnchor:secondaryTextView.leadingAnchor
                        constant:-kHorizontalInsetValue],
     [textContainerView.trailingAnchor
         constraintEqualToAnchor:textView.trailingAnchor
                        constant:kHorizontalInsetValue],
     [textContainerView.trailingAnchor
-        constraintEqualToAnchor:secondaryLabel.trailingAnchor
+        constraintEqualToAnchor:secondaryTextView.trailingAnchor
                        constant:kHorizontalInsetValue],
     verticalConstraint,
     [textContainerView.topAnchor constraintEqualToAnchor:textView.topAnchor
                                                 constant:-kVerticalInsetValue],
     [textContainerView.bottomAnchor
-        constraintEqualToAnchor:secondaryLabel.bottomAnchor
+        constraintEqualToAnchor:secondaryTextView.bottomAnchor
                        constant:kVerticalInsetValue],
   ]];
 }

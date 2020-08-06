@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
-import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
@@ -391,17 +390,14 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     void setupPersonalizedSigninPromo(PersonalizedSigninPromoView view) {
         mProfileDataCache.updateBadgeConfig(0);
-        SigninPromoUtil.setupPromoViewFromCache(
+        SigninPromoUtil.setupSigninPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, view, null);
     }
 
     void setupPersonalizedSyncPromo(PersonalizedSigninPromoView view) {
         mProfileDataCache.updateBadgeConfig(R.drawable.ic_sync_badge_off_20dp);
-        SigninPromoUtil.setupPromoViewFromCache(
+        SigninPromoUtil.setupSyncPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, view, null);
-        view.getStatusMessage().setVisibility(View.VISIBLE);
-        view.getChooseAccountButton().setVisibility(View.GONE);
-        view.getSigninButton().setText(R.string.sync_promo_turn_on_sync);
     }
 
     // SignInStateObserver implementation.

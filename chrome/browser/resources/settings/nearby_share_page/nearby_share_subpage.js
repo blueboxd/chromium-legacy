@@ -13,6 +13,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     PrefsBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -96,10 +97,10 @@ Polymer({
   },
 
   /**
-   *    * @param {string} dataUsageValue enum value of data usage setting.
-   *       * @return {string} localized string
-   *          * @private
-   *             */
+   * @param {string} dataUsageValue enum value of data usage setting.
+   * @return {string} localized string
+   * @private
+   */
   getDataUsageLabel_(dataUsageValue) {
     if (dataUsageStringToEnum(dataUsageValue) === NearbyShareDataUsage.ONLINE) {
       return this.i18n('nearbyShareDataUsageDataLabel');
@@ -113,10 +114,10 @@ Polymer({
   },
 
   /**
-   *    * @param {string} dataUsageValue enum value of data usage setting.
-   *       * @return {string} localized string
-   *          * @private
-   *             */
+   * @param {string} dataUsageValue enum value of data usage setting.
+   * @return {string} localized string
+   * @private
+   */
   getDataUsageSubLabel_(dataUsageValue) {
     if (dataUsageStringToEnum(dataUsageValue) === NearbyShareDataUsage.ONLINE) {
       return this.i18n('nearbyShareDataUsageDataDescription');
@@ -130,10 +131,10 @@ Polymer({
   },
 
   /**
-   *    * @param {string} dataUsageValue enum value of data usage setting.
-   *       * @return {string} localized string
-   *          * @private
-   *             */
+   * @param {string} dataUsageValue enum value of data usage setting.
+   * @return {string} localized string
+   * @private
+   */
   getEditDataUsageButtonAriaDescription_(dataUsageValue) {
     if (dataUsageStringToEnum(dataUsageValue) === NearbyShareDataUsage.ONLINE) {
       return this.i18n('nearbyShareDataUsageDataEditButtonDescription');
@@ -143,6 +144,19 @@ Polymer({
       return this.i18n('nearbyShareDataUsageOfflineEditButtonDescription');
     } else {
       return this.i18n('nearbyShareDataUsageWifiOnlyEditButtonDescription');
+    }
+  },
+
+  /**
+   * @param {!settings.Route} route
+   */
+  currentRouteChanged(route) {
+    const router = settings.Router.getInstance();
+    if (router.getCurrentRoute().path.endsWith('nearbyshare')) {
+      const queryParams = router.getQueryParameters();
+      if (queryParams.has('deviceName')) {
+        this.showDeviceNameDialog_ = true;
+      }
     }
   },
 });

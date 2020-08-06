@@ -19,8 +19,11 @@ js_modulizer("modulize") {
 
 js_type_check("closure_compile") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [ "browser_resolver_prefix_replacements=\"chrome://nearby/=../../chrome/browser/resources/nearby_share/\"" ]
-
+  closure_flags = default_closure_args + [
+                    "browser_resolver_prefix_replacements=\"chrome://nearby/=../../chrome/browser/resources/nearby_share/\"",
+                    "js_module_root=../../chrome/browser/resources/nearby_share/",
+                    "js_module_root=./gen/chrome/browser/resources/nearby_share/",
+                  ]
   deps = [
     ":fake_nearby_share_settings.m",
     ":nearby_onboarding_page_test.m",

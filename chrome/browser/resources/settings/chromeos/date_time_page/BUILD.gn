@@ -22,7 +22,6 @@ js_library("date_time_page") {
     "..:os_route",
     "../..:router",
     "../../prefs:prefs_behavior",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
@@ -43,7 +42,6 @@ js_library("timezone_selector") {
     "../../controls:settings_dropdown_menu",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
@@ -60,7 +58,7 @@ js_library("timezone_subpage") {
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
-    #   ":date_time_page.m",
+    ":date_time_page.m",
     ":date_time_types.m",
     ":timezone_browser_proxy.m",
     ":timezone_selector.m",
@@ -71,7 +69,14 @@ js_type_check("closure_compile_module") {
 js_library("date_time_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/date_time_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "..:os_settings_routes.m",
+    "../../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":date_time_page_module" ]
 }
@@ -111,8 +116,10 @@ js_library("timezone_subpage.m") {
     ":date_time_types.m",
     ":timezone_browser_proxy.m",
     "..:os_settings_routes.m",
+    "../../prefs:prefs_behavior.m",
     "../..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":timezone_subpage_module" ]
@@ -133,6 +140,9 @@ polymer_modulizer("date_time_page") {
   js_file = "date_time_page.js"
   html_file = "date_time_page.html"
   html_type = "dom-module"
+  migrated_imports = os_settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+  auto_imports = os_settings_auto_imports
 }
 
 polymer_modulizer("timezone_selector") {

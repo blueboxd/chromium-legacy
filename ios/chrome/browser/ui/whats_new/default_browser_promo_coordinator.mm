@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_coordinator.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_view_controller.h"
@@ -21,8 +22,9 @@ namespace {
 // Enum actions for the IOS.DefaultBrowserFullscreenPromo UMA metric.
 enum IOSDefaultBrowserFullscreenPromoAction {
   ACTION_BUTTON = 0,
-  CANCEL,
-}
+  CANCEL = 1,
+  kMaxValue = CANCEL,
+};
 
 }  // namespace
 

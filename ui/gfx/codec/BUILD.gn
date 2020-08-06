@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
-jumbo_component("codec") {
+component("codec") {
   sources = [
     "codec_export.h",
     "jpeg_codec.cc",

@@ -28,10 +28,10 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
+#include "net/base/transport_info.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/cookies/canonical_cookie.h"
@@ -54,6 +54,7 @@
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/empty_url_loader_client.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/origin_policy.h"
@@ -979,6 +980,56 @@ void URLLoader::ResumeReadingBodyFromNet() {
     paused_reading_body_ = false;
     ReadMore();
   }
+}
+
+int URLLoader::OnConnected(net::URLRequest* url_request,
+                           const net::TransportInfo& info) {
+  DCHECK_EQ(url_request, url_request_.get());
+
+  DVLOG(1) << "Connection obtained for URL request to " << url_request->url()
+           << ": " << info;
+
+  // We use this opportunity to check if the request initiator should be allowed
+  // to make requests to the remote endpoint.
+  // See the CORS-RFC1918 spec: https://wicg.github.io/cors-rfc1918.
+
+  const mojom::ClientSecurityStatePtr& security_state =
+      factory_params_->client_security_state;
+  if (!security_state) {
+    DVLOG(1) << "Skipping CORS-RFC1918 check: missing client security state.";
+    return net::OK;
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          network::features::kBlockInsecurePrivateNetworkRequests)) {
+    DVLOG(1) << "Skipping CORS-RFC1918 check: feature disabled.";
+    return net::OK;
+  }
+
+  // Now that the request endpoint's address has been resolved, check if this
+  // request should be blocked. We block requests to subresources in IP address
+  // spaces less public than that of the parent resource, when those requests
+  // are initiated from insecure contexts. This prevents malicious public
+  // websites from making requests to someone's printer, for example.
+
+  const mojom::IPAddressSpace remote_address_space =
+      IPAddressToIPAddressSpace(info.endpoint.address());
+  const bool is_endpoint_less_public = IsLessPublicAddressSpace(
+      remote_address_space, security_state->ip_address_space);
+
+  DVLOG(1) << "Performing CORS-RFC1918 check: client address space: "
+           << security_state->ip_address_space
+           << ", is_secure_context: " << security_state->is_web_secure_context
+           << ", remote address space: " << remote_address_space;
+
+  if (is_endpoint_less_public && !security_state->is_web_secure_context) {
+    DVLOG(1) << "CORS-RFC1918 check failed: "
+             << "blocking insecure private network request.";
+    return net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
+  }
+
+  DVLOG(1) << "CORS-RFC1918 check succeeded.";
+  return net::OK;
 }
 
 void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,

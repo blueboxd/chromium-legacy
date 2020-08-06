@@ -389,7 +389,7 @@ void MediaRouterIntegrationBrowserTest::SetEnableMediaRouter(bool enable) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kEnableMediaRouter, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::Value(enable), nullptr);
+             std::make_unique<base::Value>(enable), nullptr);
   provider_.UpdateChromePolicy(policy);
   base::RunLoop().RunUntilIdle();
 }
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 #endif
 // Tests that failed route creation of local file does not enter fullscreen.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       OpenLocalMediaFileCastFailNoFullscreen) {
+                       MAYBE_OpenLocalMediaFileCastFailNoFullscreen) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.

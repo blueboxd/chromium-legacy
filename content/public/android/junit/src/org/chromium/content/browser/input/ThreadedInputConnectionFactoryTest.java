@@ -163,7 +163,7 @@ public class ThreadedInputConnectionFactoryTest {
             @Override
             public InputConnection call() {
                 return mFactory.initializeAndGet(
-                        mContainerView, mImeAdapter, 1, 0, 0, 0, 0, 0, mEditorInfo);
+                        mContainerView, mImeAdapter, 1, 0, 0, 0, 0, 0, "", mEditorInfo);
             }
         };
         when(mProxyView.onCreateInputConnection(any(EditorInfo.class)))
@@ -206,7 +206,7 @@ public class ThreadedInputConnectionFactoryTest {
             @Override
             public void run() {
                 assertNull(mFactory.initializeAndGet(
-                        mContainerView, mImeAdapter, 1, 0, 0, 0, 0, 0, mEditorInfo));
+                        mContainerView, mImeAdapter, 1, 0, 0, 0, 0, 0, "", mEditorInfo));
             }
         });
     }

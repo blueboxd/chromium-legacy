@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-jumbo_component("wm") {
+component("wm") {
   sources = [
     "core/accelerator_delegate.h",
     "core/accelerator_filter.cc",
@@ -94,7 +94,7 @@ jumbo_component("wm") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/testing_cursor_client_observer.cc",

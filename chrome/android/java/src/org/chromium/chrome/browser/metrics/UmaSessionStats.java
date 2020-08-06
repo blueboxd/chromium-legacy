@@ -208,9 +208,9 @@ public class UmaSessionStats {
         prefManager.syncUsageAndCrashReportingPrefs();
     }
 
-    public static void registerExternalExperiment(String studyName, int[] experimentIds) {
+    public static void registerExternalExperiment(String fallbackStudyName, int[] experimentIds) {
         assert isMetricsServiceAvailable();
-        UmaSessionStatsJni.get().registerExternalExperiment(studyName, experimentIds);
+        UmaSessionStatsJni.get().registerExternalExperiment(fallbackStudyName, experimentIds);
     }
 
     public static void registerSyntheticFieldTrial(String trialName, String groupName) {

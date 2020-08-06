@@ -21,7 +21,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
-jumbo_source_set("browser") {
+source_set("browser") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
   visibility = [

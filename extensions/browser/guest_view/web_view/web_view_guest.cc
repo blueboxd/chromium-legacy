@@ -661,7 +661,6 @@ void WebViewGuest::NewGuestWebViewCallback(const content::OpenURLParams& params,
   // Request permission to show the new window.
   RequestNewWindowPermission(params.disposition,
                              gfx::Rect(),
-                             params.user_gesture,
                              new_guest->web_contents());
 }
 
@@ -1324,8 +1323,7 @@ void WebViewGuest::AddNewContents(WebContents* source,
   // https://crbug.com/832879.
   if (was_blocked)
     *was_blocked = false;
-  RequestNewWindowPermission(disposition, initial_rect, user_gesture,
-                             new_contents.release());
+  RequestNewWindowPermission(disposition, initial_rect, new_contents.release());
 }
 
 WebContents* WebViewGuest::OpenURLFromTab(
@@ -1499,7 +1497,6 @@ void WebViewGuest::LoadURLWithParams(
 
 void WebViewGuest::RequestNewWindowPermission(WindowOpenDisposition disposition,
                                               const gfx::Rect& initial_bounds,
-                                              bool user_gesture,
                                               WebContents* new_contents) {
   auto* guest = WebViewGuest::FromWebContents(new_contents);
   if (!guest)

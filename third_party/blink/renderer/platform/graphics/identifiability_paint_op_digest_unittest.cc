@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/identifiability_paint_op_digest.h"
 
+#include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings_provider.h"
@@ -65,6 +66,10 @@ TEST(IdentifiabilityPaintOpDigestTest, InitialDigestIsZero) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, SimpleDigest) {
@@ -75,6 +80,10 @@ TEST(IdentifiabilityPaintOpDigestTest, SimpleDigest) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, DigestIsZeroIfNotInStudy) {
@@ -84,6 +93,10 @@ TEST(IdentifiabilityPaintOpDigestTest, DigestIsZeroIfNotInStudy) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, SkipsTextOps) {
@@ -96,6 +109,10 @@ TEST(IdentifiabilityPaintOpDigestTest, SkipsTextOps) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, SkPathDigestStability) {
@@ -122,6 +139,13 @@ TEST(IdentifiabilityPaintOpDigestTest, SkPathDigestStability) {
             identifiability_paintop_digest2.digest());
   EXPECT_EQ(UINT64_C(154630961637231072),
             identifiability_paintop_digest1.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest1.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest1.encountered_partially_digested_image());
+  EXPECT_FALSE(identifiability_paintop_digest2.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest2.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, PaintShaderStability) {
@@ -180,6 +204,13 @@ TEST(IdentifiabilityPaintOpDigestTest, BufferLeftoversDontAffectFutureDigests) {
   EXPECT_EQ(UINT64_C(15080511244712756058),
             identifiability_paintop_digest1.digest());
   EXPECT_EQ(kScaleDigest, identifiability_paintop_digest2.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest1.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest1.encountered_partially_digested_image());
+  EXPECT_FALSE(identifiability_paintop_digest2.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest2.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest,
@@ -202,6 +233,10 @@ TEST(IdentifiabilityPaintOpDigestTest,
                                                    /*num_ops_to_visit=*/2);
   EXPECT_EQ(UINT64_C(11133276391926094139),
             identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, IgnoresPrefixAndSuffix) {
@@ -219,6 +254,10 @@ TEST(IdentifiabilityPaintOpDigestTest, IgnoresPrefixAndSuffix) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/2);
   EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, IgnoresPrefixAndSuffix_MultipleOps) {
@@ -240,6 +279,10 @@ TEST(IdentifiabilityPaintOpDigestTest, IgnoresPrefixAndSuffix_MultipleOps) {
                                                    /*num_ops_to_visit=*/2);
   EXPECT_EQ(UINT64_C(5461154373811575393),
             identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, RecursesIntoDrawRecords) {
@@ -252,6 +295,10 @@ TEST(IdentifiabilityPaintOpDigestTest, RecursesIntoDrawRecords) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record_outer,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, RecursesIntoDrawRecords_TwoLevels) {
@@ -266,6 +313,10 @@ TEST(IdentifiabilityPaintOpDigestTest, RecursesIntoDrawRecords_TwoLevels) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record_outer,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, StopsUpdatingDigestAfterThreshold) {
@@ -288,6 +339,46 @@ TEST(IdentifiabilityPaintOpDigestTest, StopsUpdatingDigestAfterThreshold) {
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
   EXPECT_EQ(last_digest, identifiability_paintop_digest.digest());
+
+  EXPECT_TRUE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, MassiveOpSkipped) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  SkPath path;
+  // Build a massive PaintOp.
+  constexpr size_t kMaxIterations = 1 << 22;
+  for (size_t i = 0; i < kMaxIterations; i++)
+    path.rLineTo(1.0f, 1.0f);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::DrawPathOp>(path, cc::PaintFlags());
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+
+  EXPECT_TRUE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, DigestImageOp) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::DrawImageOp>(
+      cc::CreateDiscardablePaintImage(gfx::Size(10, 10)), 10.0f, 10.0f,
+      nullptr);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(17562263210018091295),
+            identifiability_paintop_digest.digest());
+
+  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_TRUE(
+      identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
 }  // namespace

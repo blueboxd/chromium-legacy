@@ -90,7 +90,7 @@ source_set("static_features") {
   }
 }
 
-jumbo_source_set("common_sources") {
+source_set("common_sources") {
   # External code should depend on via ":common" above.
   visibility = [ "//content/*" ]
 

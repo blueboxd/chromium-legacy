@@ -215,9 +215,14 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   void OnDestroyResource();
 
-  // Returns the identifiability digest computed from the set of PaintOps
-  // flushed from FlushCanvas().
-  uint64_t GetIdentifiabilityDigest();
+  // Gets an immutable reference to the IdentifiabilityPaintOpDigest, which
+  // contains the current PaintOp digest, and taint bits (encountered
+  // partially-digested images, encountered skipped ops).
+  //
+  // The digest is updated based on the results of every FlushCanvas(); this
+  // method also calls FlushCanvas() to ensure that all operations are accounted
+  // for in the digest.
+  const IdentifiabilityPaintOpDigest& GetIdentifiablityPaintOpDigest();
 
  protected:
   class CanvasImageProvider;
@@ -263,7 +268,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
   virtual bool UseOopRasterization() { return false; }
-  bool use_hardware_decode_cache() const {
+  bool UseHardwareDecodeCache() const {
     return IsAccelerated() && context_provider_wrapper_;
   }
   // Notifies before any drawing will be done on the resource used by this

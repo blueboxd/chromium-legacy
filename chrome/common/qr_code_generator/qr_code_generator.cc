@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <ostream>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/notreached.h"
@@ -97,7 +98,7 @@ struct QRVersionInfo {
     return group2_bytes / group2_num_blocks;
   }
 
-  constexpr size_t block_ec_bytes_1() const {
+  constexpr size_t group2_block_ec_bytes() const {
     return group2_block_bytes() - group2_block_data_bytes;
   }
 
@@ -177,6 +178,48 @@ constexpr QRVersionInfo version_infos[] = {
 
         // Alignment locations
         {6, 22, 38},
+    },
+
+    // 9-M
+    // 292 bytes, as 3 blocks of 58 plus 2 blocks of 59.
+    {
+        9,                     // version
+        0b001001101010011001,  // encoded version
+        53,                    // size (num tiles in each axis)
+
+        // Block group 1:
+        174,  // Total bytes in group
+        3,    // Number of blocks
+        36,   // Data bytes per block
+
+        // Block group 2:
+        118,
+        2,
+        37,
+
+        // Alignment locations
+        {6, 26, 46},
+    },
+
+    // 12-M
+    // 466 bytes, as 6 blocks of 58 and 2 blocks of 59.
+    {
+        12,                    // version
+        0b001100011101100010,  // encoded version
+        65,                    // size (num tiles in each axis)
+
+        // Block group 1:
+        348,  // Total bytes in group
+        6,    // Number of blocks
+        36,   // Data bytes per block
+
+        // Block group 2:
+        118,
+        2,
+        37,
+
+        // Alignment locations
+        {6, 32, 58},
     },
 };
 
@@ -308,7 +351,7 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
   // Each block of input data is expanded with error correcting
   // information and then interleaved.
 
-  // Error Correction for Group 0, present for all versions.
+  // Error Correction for Group 1, present for all versions.
   const size_t group1_num_blocks = version_info_->group1_num_blocks;
   const size_t group1_block_bytes = version_info_->group1_block_bytes();
   const size_t group1_block_ec_bytes = version_info_->group1_block_ec_bytes();
@@ -320,26 +363,25 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
         group1_block_bytes, group1_block_ec_bytes);
   }
 
-  // Error Correction for Group 1, present for some versions.
+  // Error Correction for Group 2, present for some versions.
   // Factor out the number of bytes written by the prior group.
+  const size_t group_data_offset = group1_block_bytes * group1_num_blocks;
   const size_t group2_num_blocks = version_info_->group2_num_blocks;
   const size_t group2_block_bytes = version_info_->group2_block_bytes();
-  // TODO(skare): Reenable when extendiong to v13.
-  // Additionally do not use a zero-length array; nonstandard.
-  /*
-  int group_data_offset = version_info_->block_data_bytes * num_blocks;
-  size_t block_ec_bytes_1 = version_info_->block_ec_bytes_1();
-  uint8_t expanded_blocks_1[num_blocks_1][block_bytes_1];
-  if (version_info_->num_blocks_1 > 0) {
-    for (size_t i = 0; i < num_blocks_1; i++) {
+  const size_t group2_block_ec_bytes = version_info_->group2_block_ec_bytes();
+
+  std::vector<std::vector<uint8_t>> expanded_blocks_2;
+  if (group2_num_blocks > 0) {
+    expanded_blocks_2.resize(group2_num_blocks);
+    for (size_t i = 0; i < group2_num_blocks; i++) {
+      expanded_blocks_2[i].resize(group2_block_bytes);
       AddErrorCorrection(
-          &expanded_blocks_1[i][0],
+          &expanded_blocks_2[i][0],
           &prefixed_data[group_data_offset +
-                         version_info_->block_data_bytes_1 * i],
-          block_bytes_1, block_ec_bytes_1);
+                         version_info_->group2_block_data_bytes * i],
+          group2_block_bytes, group2_block_ec_bytes);
     }
   }
-  */
 
   const size_t total_bytes = version_info_->total_bytes();
   uint8_t interleaved_data[total_bytes];
@@ -351,10 +393,18 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
   // Interleave data from all blocks.
   // If we have multiple groups, the later groups may have more bytes in their
   // blocks after we exhaust data in the first group.
-  // TODO(skare): Extend when enabling v13.
-  for (size_t j = 0; j < group1_block_bytes; j++) {
-    for (size_t i = 0; i < group1_num_blocks; i++) {
-      interleaved_data[k++] = expanded_blocks[i][j];
+  size_t max_group_block_bytes =
+      std::max(group1_block_bytes, group2_block_bytes);
+  for (size_t j = 0; j < max_group_block_bytes; j++) {
+    if (j < group1_block_bytes) {
+      for (size_t i = 0; i < group1_num_blocks; i++) {
+        interleaved_data[k++] = expanded_blocks[i][j];
+      }
+    }
+    if (j < group2_block_bytes) {
+      for (size_t i = 0; i < group2_num_blocks; i++) {
+        interleaved_data[k++] = expanded_blocks_2[i][j];
+      }
     }
   }
 
@@ -656,7 +706,7 @@ void QRCodeGenerator::AddErrorCorrection(uint8_t out[],
       215, 199, 175, 149, 113, 183, 251, 239, 1,
   };
 
-  // Used for 13-M; 22 error correction codewords per block.
+  // Used for 9-M and 12-M; 22 error correction codewords per block.
   static const uint8_t kGenerator22[] = {
       245, 145, 26,  230, 218, 86,  253, 67,  123, 29, 137, 28,
       40,  69,  189, 19,  244, 182, 176, 131, 179, 89, 1,

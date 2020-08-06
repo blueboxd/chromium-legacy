@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//build/nocompile.gni")
 
-# Change this target's type to jumbo_component if it starts to contain more than
+# Change this target's type to component if it starts to contain more than
 # just headers. Header-only targets cannot be compiled to libraries, so it must
 # remain a source_set for now.
 source_set("type_safety") {

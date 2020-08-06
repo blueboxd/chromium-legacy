@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-jumbo_static_library("common") {
+static_library("common") {
   sources = [
     "content_settings.cc",
     "content_settings.h",
@@ -41,7 +41,7 @@ jumbo_static_library("common") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "content_settings_pattern_parser_unittest.cc",

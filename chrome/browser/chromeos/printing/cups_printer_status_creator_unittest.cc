@@ -57,9 +57,6 @@ TEST(CupsPrinterStatusCreatorTest, PrinterSeverityToCupsSeverity) {
 }
 
 TEST(CupsPrinterStatusCreatorTest, PrinterReasonToCupsReason) {
-  EXPECT_EQ(CupsReason::kConnectingToDevice,
-            PrinterReasonToCupsReason(ReasonFromPrinter::CONNECTING_TO_DEVICE));
-
   EXPECT_EQ(CupsReason::kDeviceError,
             PrinterReasonToCupsReason(ReasonFromPrinter::FUSER_OVER_TEMP));
   EXPECT_EQ(CupsReason::kDeviceError,
@@ -127,6 +124,8 @@ TEST(CupsPrinterStatusCreatorTest, PrinterReasonToCupsReason) {
   EXPECT_EQ(CupsReason::kPrinterQueueFull,
             PrinterReasonToCupsReason(ReasonFromPrinter::SPOOL_AREA_FULL));
 
+  EXPECT_EQ(CupsReason::kPrinterUnreachable,
+            PrinterReasonToCupsReason(ReasonFromPrinter::CONNECTING_TO_DEVICE));
   EXPECT_EQ(CupsReason::kPrinterUnreachable,
             PrinterReasonToCupsReason(ReasonFromPrinter::SHUTDOWN));
   EXPECT_EQ(CupsReason::kPrinterUnreachable,

@@ -99,6 +99,11 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 #endif
   }
 
+#if defined(OS_MAC)
+  if (command_line->HasSwitch(kUpdateSwitch))
+    return MakeAppInstall()->Run();
+#endif  // OS_MAC
+
 #if defined(OS_WIN)
   if (command_line->HasSwitch(kComServiceSwitch))
     return ServiceMain::RunComService(command_line);

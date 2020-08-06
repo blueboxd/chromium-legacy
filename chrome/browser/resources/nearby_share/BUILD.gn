@@ -7,6 +7,11 @@ import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
+  closure_flags =
+      default_closure_args + [
+        "js_module_root=../../chrome/browser/resources/nearby_share/",
+        "js_module_root=./gen/chrome/browser/resources/nearby_share/",
+      ]
   deps = [
     ":app",
     ":discovery_manager",
@@ -24,9 +29,11 @@ js_library("app") {
     ":nearby_confirmation_page",
     ":nearby_discovery_page",
     "./shared:nearby_onboarding_page.m",
+    "./shared:nearby_share_settings_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager.m",
   ]
+  extra_deps = [ "./shared:modulize" ]
 }
 
 js_library("discovery_manager") {

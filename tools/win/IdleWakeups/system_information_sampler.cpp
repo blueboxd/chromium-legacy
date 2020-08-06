@@ -221,6 +221,41 @@ SystemInformationSampler::SystemInformationSampler(
 
 SystemInformationSampler::~SystemInformationSampler() {}
 
+// Collect enough data to be able to do a diff between two snapshots. Some
+// threads might stop or new threads might be created between two snapshots. If
+// a thread with a large number of context switches gets terminated the total
+// number of context switches for the process might go down and the delta would
+// be negative. To avoid that we need to compare thread IDs between two
+// snapshots and not count context switches for threads that are missing in the
+// most recent snapshot.
+ProcessData GetProcessData(const SYSTEM_PROCESS_INFORMATION* const pi) {
+  ProcessData process_data;
+  process_data.cpu_time = pi->KernelTime + pi->UserTime;
+  process_data.working_set = pi->WorkingSetPrivateSize;
+
+  // Iterate over threads and store each thread's ID and number of context
+  // switches.
+  for (ULONG thread_index = 0; thread_index < pi->NumberOfThreads;
+       ++thread_index) {
+    const SYSTEM_THREAD_INFORMATION* ti = &pi->Threads[thread_index];
+    if (ti->ClientId.UniqueProcess != pi->ProcessId)
+      continue;
+
+    ThreadData thread_data;
+    thread_data.thread_id = ti->ClientId.UniqueThread;
+    thread_data.context_switches = ti->ContextSwitchCount;
+    process_data.threads.push_back(thread_data);
+  }
+
+  // Order thread data by thread ID to help diff two snapshots.
+  std::sort(process_data.threads.begin(), process_data.threads.end(),
+            [](const ThreadData& l, const ThreadData r) {
+              return l.thread_id < r.thread_id;
+            });
+
+  return process_data;
+}
+
 std::unique_ptr<ProcessDataSnapshot> SystemInformationSampler::TakeSnapshot() {
   // Preallocate the buffer with the size determined on the previous call to
   // QuerySystemProcessInformation. This should be sufficient most of the time.
@@ -241,64 +276,38 @@ std::unique_ptr<ProcessDataSnapshot> SystemInformationSampler::TakeSnapshot() {
       perf_frequency_.QuadPart);
 
   for (size_t offset = 0; offset < data_buffer.size();) {
+    // Validate that the offset is valid.
+    if (offset + sizeof(SYSTEM_PROCESS_INFORMATION) > data_buffer.size())
+      break;
+
     auto pi = reinterpret_cast<const SYSTEM_PROCESS_INFORMATION*>(
         data_buffer.data() + offset);
 
-    // Validate that the offset is valid and all needed data is within
-    // the buffer boundary.
-    if (offset + sizeof(SYSTEM_PROCESS_INFORMATION) > data_buffer.size())
-      break;
-    if (offset + sizeof(SYSTEM_PROCESS_INFORMATION) +
-            (pi->NumberOfThreads - 1) * sizeof(SYSTEM_THREAD_INFORMATION) >
-        data_buffer.size())
-      break;
-
-    if (pi->ImageName.Buffer) {
-      // Validate that the image name is within the buffer boundary.
-      // ImageName.Length seems to be in bytes rather than characters.
-      size_t image_name_offset =
-          reinterpret_cast<BYTE*>(pi->ImageName.Buffer) - data_buffer.data();
-      if (image_name_offset + pi->ImageName.Length > data_buffer.size())
+    // Skip processes that report zero threads (e.g., the "Secure System"
+    // process, which does not disclose its thread count).
+    if (pi->NumberOfThreads > 0) {
+      // Validate that |pi| and any additional SYSTEM_THREAD_INFORMATION structs
+      // that it may have are all within the buffer boundary.
+      if (offset + sizeof(SYSTEM_PROCESS_INFORMATION) +
+              (pi->NumberOfThreads - 1) * sizeof(SYSTEM_THREAD_INFORMATION) >
+          data_buffer.size()) {
         break;
+      }
 
-      // Check if this is a chrome process. Ignore all other processes.
-      if (wcsncmp(target_process_name_filter(), pi->ImageName.Buffer,
-                  lstrlen(target_process_name_filter())) == 0) {
-        // Collect enough data to be able to do a diff between two snapshots.
-        // Some threads might stop or new threads might be created between two
-        // snapshots. If a thread with a large number of context switches gets
-        // terminated the total number of context switches for the process might
-        // go down and the delta would be negative.
-        // To avoid that we need to compare thread IDs between two snapshots and
-        // not count context switches for threads that are missing in the most
-        // recent snapshot.
-        ProcessData process_data;
+      if (pi->ImageName.Buffer) {
+        // Validate that the image name is within the buffer boundary.
+        // ImageName.Length seems to be in bytes rather than characters.
+        size_t image_name_offset =
+            reinterpret_cast<BYTE*>(pi->ImageName.Buffer) - data_buffer.data();
+        if (image_name_offset + pi->ImageName.Length > data_buffer.size())
+          break;
 
-        process_data.cpu_time = pi->KernelTime + pi->UserTime;
-        process_data.working_set = pi->WorkingSetPrivateSize;
-
-        // Iterate over threads and store each thread's ID and number of context
-        // switches.
-        for (ULONG thread_index = 0; thread_index < pi->NumberOfThreads;
-             ++thread_index) {
-          const SYSTEM_THREAD_INFORMATION* ti = &pi->Threads[thread_index];
-          if (ti->ClientId.UniqueProcess != pi->ProcessId)
-            continue;
-
-          ThreadData thread_data;
-          thread_data.thread_id = ti->ClientId.UniqueThread;
-          thread_data.context_switches = ti->ContextSwitchCount;
-          process_data.threads.push_back(thread_data);
+        // If |pi| is the targeted process, add its data to the snapshot.
+        if (wcsncmp(target_process_name_filter(), pi->ImageName.Buffer,
+                    lstrlen(target_process_name_filter())) == 0) {
+          snapshot->processes.insert(
+              std::make_pair(pi->ProcessId, GetProcessData(pi)));
         }
-
-        // Order thread data by thread ID to help diff two snapshots.
-        std::sort(process_data.threads.begin(), process_data.threads.end(),
-                  [](const ThreadData& l, const ThreadData r) {
-                    return l.thread_id < r.thread_id;
-                  });
-
-        snapshot->processes.insert(
-            std::make_pair(pi->ProcessId, std::move(process_data)));
       }
     }
 

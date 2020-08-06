@@ -222,11 +222,6 @@ const base::Feature kClipboardHistory{"ClipboardHistory",
 const base::Feature kEnableImeSandbox{"EnableImeSandbox",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, will display blocking screens during re-authentication after a
-// supervision transition occurred.
-const base::Feature kEnableSupervisionTransitionScreens{
-    "EnableSupervisionTransitionScreens", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable restriction of symlink traversal on user-supplied filesystems.
 const base::Feature kFsNosymfollow{"FsNosymfollow",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

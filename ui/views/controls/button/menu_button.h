@@ -26,9 +26,9 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   METADATA_HEADER(MenuButton);
 
   // Create a Button.
-  MenuButton(const base::string16& text,
-             ButtonListener* button_listener,
-             int button_context = style::CONTEXT_BUTTON);
+  explicit MenuButton(ButtonListener* button_listener = nullptr,
+                      const base::string16& text = base::string16(),
+                      int button_context = style::CONTEXT_BUTTON);
   ~MenuButton() override;
 
   MenuButtonController* button_controller() const {

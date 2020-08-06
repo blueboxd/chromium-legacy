@@ -3818,10 +3818,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMemlogStackModeDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogStackModeChoices)},
 
-    {"omnibox-ui-elide-to-registrable-domain",
-     flag_descriptions::kOmniboxUIElideToRegistrableDomainName,
-     flag_descriptions::kOmniboxUIElideToRegistrableDomainDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kElideToRegistrableDomain)},
+    {"omnibox-ui-sometimes-elide-to-registrable-domain",
+     flag_descriptions::kOmniboxUIMaybeElideToRegistrableDomainName,
+     flag_descriptions::kOmniboxUIMaybeElideToRegistrableDomainDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kMaybeElideToRegistrableDomain)},
 
     {"omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
      flag_descriptions::
@@ -6192,7 +6192,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"content-settings-redesign",
      flag_descriptions::kContentSettingsRedesignName,
      flag_descriptions::kContentSettingsRedesignDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kContentSettingsRedesign)}
+     FEATURE_VALUE_TYPE(features::kContentSettingsRedesign)},
+
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+    {"enable-tab-search", flag_descriptions::kEnableTabSearchName,
+     flag_descriptions::kEnableTabSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTabSearch)},
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

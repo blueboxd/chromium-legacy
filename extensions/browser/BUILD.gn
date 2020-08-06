@@ -38,7 +38,7 @@ source_set("browser_context_keyed_service_factories") {
   ]
 }
 
-jumbo_source_set("browser_sources") {
+source_set("browser_sources") {
   visibility = [ "./*" ]
 
   sources = [
@@ -540,7 +540,7 @@ source_set("browser_tests") {
   }
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "browsertest_util.cc",
@@ -593,7 +593,7 @@ jumbo_source_set("test_support") {
   }
 }
 
-jumbo_source_set("value_store_test_support") {
+source_set("value_store_test_support") {
   testonly = true
   sources = [
     "value_store/value_store_unittest.cc",

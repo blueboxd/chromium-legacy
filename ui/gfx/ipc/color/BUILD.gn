@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("color") {
+component("color") {
   output_name = "gfx_ipc_color"
 
   sources = [

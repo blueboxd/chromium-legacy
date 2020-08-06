@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("webauthn") {
+static_library("webauthn") {
   if (is_component_build) {
     check_includes = false
   }

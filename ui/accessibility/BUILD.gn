@@ -41,7 +41,7 @@ mojom_component("ax_enums_mojo") {
 # included by Blink. The rule of thumb (for now) is that it's
 # anything platform-neutral (no platform/ directory) that
 # relates to a single accessibility node (no trees, etc.).
-jumbo_component("ax_base") {
+component("ax_base") {
   defines = [ "AX_BASE_IMPLEMENTATION" ]
 
   sources = [
@@ -89,7 +89,7 @@ jumbo_component("ax_base") {
 #  }
 #}
 
-jumbo_component("accessibility") {
+component("accessibility") {
   defines = [ "AX_IMPLEMENTATION" ]
 
   sources = [

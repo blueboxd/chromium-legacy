@@ -15,6 +15,7 @@
 #include "media/base/media_serializers_base.h"
 #include "media/base/status.h"
 #include "media/base/status_codes.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -290,6 +291,40 @@ struct MediaSerializer<VideoDecoderConfig> {
     FIELD_SERIALIZE("color space", value.color_space_info());
     FIELD_SERIALIZE("hdr metadata", value.hdr_metadata());
     return result;
+  }
+};
+
+// Class (complex)
+template <>
+struct MediaSerializer<TextTrackConfig> {
+  static base::Value Serialize(const TextTrackConfig& value) {
+    base::Value result(base::Value::Type::DICTIONARY);
+    FIELD_SERIALIZE("kind", value.kind());
+    FIELD_SERIALIZE("language", value.language());
+    if (value.label().length())
+      FIELD_SERIALIZE("label", value.label());
+    return result;
+  }
+};
+
+// enum (simple)
+template <>
+struct MediaSerializer<TextKind> {
+  static base::Value Serialize(const TextKind value) {
+    switch (value) {
+      case kTextSubtitles:
+        return base::Value("Subtitles");
+      case kTextCaptions:
+        return base::Value("Captions");
+      case kTextDescriptions:
+        return base::Value("Descriptions");
+      case kTextMetadata:
+        return base::Value("Metadata");
+      case kTextChapters:
+        return base::Value("Chapters");
+      case kTextNone:
+        return base::Value("None");
+    }
   }
 };
 

@@ -101,8 +101,8 @@ AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
   AddNotification(@"AXInvalidStatusChanged");
   AddNotification(@"AXLiveRegionChanged");
   AddNotification(@"AXLiveRegionCreated");
-  AddNotification(@"AXLoadComplete");
   AddNotification(@"AXMenuItemSelected");
+  AddNotification(@"AXNewDocumentLoadComplete");
   AddNotification(@"AXRowCollapsed");
   AddNotification(@"AXRowExpanded");
   AddNotification(NSAccessibilityFocusedUIElementChangedNotification);

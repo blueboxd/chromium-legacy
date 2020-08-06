@@ -101,7 +101,7 @@ blink_modules_sources("mediastream") {
   ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [

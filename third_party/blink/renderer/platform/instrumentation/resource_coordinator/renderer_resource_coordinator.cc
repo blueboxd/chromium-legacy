@@ -64,4 +64,20 @@ void RendererResourceCoordinator::SetMainThreadTaskLoadIsLow(
   service_->SetMainThreadTaskLoadIsLow(main_thread_task_load_is_low);
 }
 
+void RendererResourceCoordinator::OnScriptStateCreated(
+    ScriptState* script_state,
+    ExecutionContext* execution_context) {
+  // TODO(chrisha): Extract tokens and forward this to the browser!
+}
+
+void RendererResourceCoordinator::OnScriptStateDetached(
+    ScriptState* script_state) {
+  // TODO(chrisha): Extract tokens and forward this to the browser!
+}
+
+void RendererResourceCoordinator::OnScriptStateDestroyed(
+    ScriptState* script_state) {
+  // TODO(chrisha): Extract tokens and forward this to the browser!
+}
+
 }  // namespace blink

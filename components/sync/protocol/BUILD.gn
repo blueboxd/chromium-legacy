@@ -12,7 +12,7 @@ proto_library("protocol") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-jumbo_static_library("util") {
+static_library("util") {
   sources = [
     "proto_enum_conversions.cc",
     "proto_enum_conversions.h",

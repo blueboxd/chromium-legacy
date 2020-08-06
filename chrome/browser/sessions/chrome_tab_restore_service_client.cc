@@ -75,7 +75,7 @@ ChromeTabRestoreServiceClient::FindLiveTabContextWithGroup(
 #if defined(OS_ANDROID)
   return nullptr;
 #else
-  return BrowserLiveTabContext::FindContextWithGroup(profile_, group);
+  return BrowserLiveTabContext::FindContextWithGroup(group, profile_);
 #endif
 }
 

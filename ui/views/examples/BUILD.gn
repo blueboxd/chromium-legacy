@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
-jumbo_component("views_examples_lib") {
+component("views_examples_lib") {
   testonly = true
 
   sources = [
@@ -193,7 +193,7 @@ executable("views_examples") {
   ]
 }
 
-jumbo_component("views_examples_with_content_lib") {
+component("views_examples_with_content_lib") {
   testonly = true
   sources = [
     "examples_window_with_content.cc",

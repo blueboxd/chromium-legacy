@@ -720,8 +720,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, ApplyConstraintsVideo) {
   ExecuteJavascriptAndWaitForOk("applyConstraintsVideo()");
 }
 
+// Flaky due to https://crbug.com/1113820
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       ApplyConstraintsVideoTwoStreams) {
+                       DISABLED_ApplyConstraintsVideoTwoStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));

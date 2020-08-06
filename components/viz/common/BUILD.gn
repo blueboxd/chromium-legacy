@@ -338,8 +338,6 @@ viz_component("common") {
 }
 
 viz_source_set("unit_tests") {
-  # Not ready for jumbo compilation. Too much repeated test code.
-  never_build_jumbo = true
   testonly = true
   sources = [
     "display/overlay_strategy_unittest.cc",

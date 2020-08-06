@@ -100,8 +100,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kClipboardHistory;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableImeSandbox;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kEnableSupervisionTransitionScreens;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGaiaActionButtons;

@@ -57,13 +57,11 @@ enum ArcSignInStatus {
   GMS_SIGN_IN_TIMEOUT = 11,
   GMS_SIGN_IN_INTERNAL_ERROR = 12,
 
-  // Cloud provisioning errors.
-  // TODO(mhasank) replace usage with CLOUD_PROVISION_FLOW_ERROR
-  // and prepend DEPRECATED
+  // Please use CLOUD_PROVISION_FLOW_ERROR
   // [Deprecated in version 25]
-  CLOUD_PROVISION_FLOW_FAILED = 5,
-  CLOUD_PROVISION_FLOW_TIMEOUT = 13,
-  CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 14,
+  DEPRECATED_CLOUD_PROVISION_FLOW_FAILED = 5,
+  DEPRECATED_CLOUD_PROVISION_FLOW_TIMEOUT = 13,
+  DEPRECATED_CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 14,
 
   // Top level error for all CloudDPC errors
   // additional details are provided by CloudProvisionFlowError

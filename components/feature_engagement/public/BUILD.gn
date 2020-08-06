@@ -9,7 +9,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_source_set("public") {
+source_set("public") {
   sources = [
     "configuration.cc",
     "configuration.h",
@@ -32,7 +32,7 @@ jumbo_source_set("public") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
 
   visibility = [ "//components/feature_engagement:unit_tests" ]

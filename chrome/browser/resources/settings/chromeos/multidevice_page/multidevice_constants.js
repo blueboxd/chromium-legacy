@@ -40,6 +40,10 @@ cr.define('settings', function() {
     INSTANT_TETHERING: 1,
     MESSAGES: 2,
     SMART_LOCK: 3,
+    PHONE_HUB: 4,
+    PHONE_HUB_NOTIFICATIONS: 5,
+    PHONE_HUB_NOTIFICATION_BADGE: 6,
+    PHONE_HUB_TASK_CONTINUATION: 7,
   };
 
   /**
@@ -58,6 +62,7 @@ cr.define('settings', function() {
     UNAVAILABLE_INSUFFICIENT_SECURITY: 6,
     UNAVAILABLE_SUITE_DISABLED: 7,
     FURTHER_SETUP_REQUIRED: 8,
+    UNAVAILABLE_TOP_LEVEL_FEATURE_DISABLED: 9,
   };
 
   /**
@@ -80,6 +85,10 @@ cr.define('settings', function() {
    *   instantTetheringState: !settings.MultiDeviceFeatureState,
    *   messagesState: !settings.MultiDeviceFeatureState,
    *   smartLockState: !settings.MultiDeviceFeatureState,
+   *   phoneHubState: !settings.MultiDeviceFeatureState,
+   *   phoneHubNotificationsState: !settings.MultiDeviceFeatureState,
+   *   phoneHubNotificationBadgeState: !settings.MultiDeviceFeatureState,
+   *   phoneHubTaskContinuationState: !settings.MultiDeviceFeatureState,
    *   isAndroidSmsPairingComplete: boolean
    * }}
    */

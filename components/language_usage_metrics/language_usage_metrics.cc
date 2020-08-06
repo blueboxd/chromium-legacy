@@ -4,56 +4,58 @@
 
 #include "components/language_usage_metrics/language_usage_metrics.h"
 
-#include <algorithm>
+#include <stddef.h>
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/strings/string_util.h"
-
-namespace {
-void RecordAcceptLanguage(int language_code) {
-  base::UmaHistogramSparse("LanguageUsage.AcceptLanguage", language_code);
-}
-void RecordLanguageCount(int language_count) {
-  UMA_HISTOGRAM_COUNTS_100("LanguageUsage.AcceptLanguage.Count",
-                           language_count);
-}
-}  // namespace
 
 namespace language_usage_metrics {
 
 // static
 void LanguageUsageMetrics::RecordAcceptLanguages(
-    const std::string& accept_languages) {
+    base::StringPiece accept_languages) {
   std::set<int> languages;
   ParseAcceptLanguages(accept_languages, &languages);
-  RecordLanguageCount(languages.size());
-  std::for_each(languages.begin(), languages.end(), RecordAcceptLanguage);
+
+  UMA_HISTOGRAM_COUNTS_100("LanguageUsage.AcceptLanguage.Count",
+                           languages.size());
+  for (int language_code : languages) {
+    base::UmaHistogramSparse("LanguageUsage.AcceptLanguage", language_code);
+  }
 }
 
 // static
 void LanguageUsageMetrics::RecordApplicationLanguage(
-    const std::string& application_locale) {
+    base::StringPiece application_locale) {
   const int language_code = ToLanguageCode(application_locale);
-  if (language_code != 0)
+  if (language_code != 0) {
     base::UmaHistogramSparse("LanguageUsage.ApplicationLanguage",
                              language_code);
+  }
 }
 
 // static
-int LanguageUsageMetrics::ToLanguageCode(const std::string& locale) {
-  base::StringTokenizer parts(locale, "-_");
-  if (!parts.GetNext())
-    return 0;
-
-  std::string language_part = base::ToLowerASCII(parts.token());
+int LanguageUsageMetrics::ToLanguageCode(base::StringPiece locale) {
+  base::StringPiece language_part =
+      locale.substr(0U, locale.find_first_of("-_"));
 
   int language_code = 0;
-  for (std::string::iterator it = language_part.begin();
-       it != language_part.end(); ++it) {
-    char ch = *it;
-    if (ch < 'a' || 'z' < ch)
+  for (size_t i = 0U; i < language_part.size(); ++i) {
+    // It's undefined behavior in C++ to left-shift a signed int past its sign
+    // bit, so only shift until the int's sign bit is reached. Note that it's
+    // safe to shift up to sizeof(int) times because each character is only
+    // added if it's between 'a' and 'z', which all have a 0 in their 7th bit.
+    // For example, for 4-byte ints, "zzzz" would be converted to 0x7A7A7A7A,
+    // which doesn't quite reach the sign bit, making it safe to insert up to 4
+    // characters.
+    if (i == sizeof(language_code))
+      return 0;
+
+    char ch = language_part[i];
+    if ('A' <= ch && ch <= 'Z')
+      ch += ('a' - 'A');
+    else if (ch < 'a' || 'z' < ch)
       return 0;
 
     language_code <<= 8;
@@ -65,12 +67,14 @@ int LanguageUsageMetrics::ToLanguageCode(const std::string& locale) {
 
 // static
 void LanguageUsageMetrics::ParseAcceptLanguages(
-    const std::string& accept_languages,
+    base::StringPiece accept_languages,
     std::set<int>* languages) {
   languages->clear();
-  base::StringTokenizer locales(accept_languages, ",");
+  base::CStringTokenizer locales(
+      accept_languages.data(),
+      accept_languages.data() + accept_languages.size(), ",");
   while (locales.GetNext()) {
-    const int language_code = ToLanguageCode(locales.token());
+    const int language_code = ToLanguageCode(locales.token_piece());
     if (language_code != 0)
       languages->insert(language_code);
   }

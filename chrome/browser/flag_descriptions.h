@@ -564,6 +564,11 @@ extern const char kEnableSubresourceRedirectDescription[];
 extern const char kEnableSyncTrustedVaultName[];
 extern const char kEnableSyncTrustedVaultDescription[];
 
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+extern const char kEnableTabSearchName[];
+extern const char kEnableTabSearchDescription[];
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
+
 extern const char kEnableTextFragmentAnchorName[];
 extern const char kEnableTextFragmentAnchorDescription[];
 
@@ -932,8 +937,8 @@ extern const char
 extern const char
     kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionDescription[];
 
-extern const char kOmniboxUIElideToRegistrableDomainName[];
-extern const char kOmniboxUIElideToRegistrableDomainDescription[];
+extern const char kOmniboxUIMaybeElideToRegistrableDomainName[];
+extern const char kOmniboxUIMaybeElideToRegistrableDomainDescription[];
 
 extern const char kOmniboxMaxZeroSuggestMatchesName[];
 extern const char kOmniboxMaxZeroSuggestMatchesDescription[];

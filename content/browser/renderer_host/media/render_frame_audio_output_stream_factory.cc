@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 
+#include <inttypes.h>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
@@ -32,6 +34,25 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
+
+namespace {
+
+const char* OutputDeviceStatusToString(media::OutputDeviceStatus status) {
+  switch (status) {
+    case media::OUTPUT_DEVICE_STATUS_OK:
+      return "OK";
+    case media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND:
+      return "ERROR_NOT_FOUND";
+    case media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED:
+      return "ERROR_NOT_AUTHORIZED";
+    case media::OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT:
+      return "ERROR_TIMED_OUT";
+    case media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL:
+      return "ERROR_INTERNAL";
+  }
+}
+
+}  // namespace
 
 class RenderFrameAudioOutputStreamFactory::Core final
     : public blink::mojom::RendererAudioOutputStreamFactory {
@@ -135,6 +156,9 @@ class RenderFrameAudioOutputStreamFactory::Core final
 
   void DeleteProvider(media::mojom::AudioOutputStreamProvider* stream_provider);
 
+  // Helper method for storing native logs.
+  void SendLogMessage(const std::string& message) const;
+
   const int process_id_;
   const int frame_id_;
   AudioOutputAuthorizationHandler authorization_handler_;
@@ -202,6 +226,7 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
       frame_id_(frame->GetRoutingID()),
       authorization_handler_(audio_system, media_stream_manager, process_id_) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SendLogMessage(base::StringPrintf("%s()", __func__));
 
   ForwardingAudioStreamFactory::Core* tmp_factory =
       ForwardingAudioStreamFactory::CoreForFrame(frame);
@@ -248,6 +273,8 @@ void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(
       "RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization",
       "device id", device_id, "session_id",
       session_id.value_or(base::UnguessableToken()).ToString());
+  SendLogMessage(
+      base::StringPrintf("%s({device_id=%s})", __func__, device_id.c_str()));
 
   const base::TimeTicks auth_start_time = base::TimeTicks::Now();
 
@@ -274,6 +301,13 @@ void RenderFrameAudioOutputStreamFactory::Core::AuthorizationCompleted(
   TRACE_EVENT2("audio",
                "RenderFrameAudioOutputStreamFactory::AuthorizationCompleted",
                "raw device id", raw_device_id, "status", status);
+  SendLogMessage(base::StringPrintf(
+      "%s({status=%s}, {params=%s}, {device_id=%s})", __func__,
+      OutputDeviceStatusToString(status),
+      params.AsHumanReadableString().c_str(), raw_device_id.c_str()));
+  SendLogMessage(base::StringPrintf(
+      "%s => (authorization time=%" PRId64 " ms)", __func__,
+      (base::TimeTicks::Now() - auth_start_time).InMilliseconds()));
 
   AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
       auth_start_time);
@@ -285,6 +319,9 @@ void RenderFrameAudioOutputStreamFactory::Core::AuthorizationCompleted(
   if (status == media::OUTPUT_DEVICE_STATUS_OK) {
     stream_providers_.insert(std::make_unique<ProviderImpl>(
         std::move(receiver), this, std::move(raw_device_id)));
+  } else {
+    SendLogMessage(base::StringPrintf("%s => (ERROR: %s)", __func__,
+                                      OutputDeviceStatusToString(status)));
   }
 }
 
@@ -293,6 +330,14 @@ void RenderFrameAudioOutputStreamFactory::Core::DeleteProvider(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   size_t deleted = stream_providers_.erase(stream_provider);
   DCHECK_EQ(1u, deleted);
+}
+
+void RenderFrameAudioOutputStreamFactory::Core::SendLogMessage(
+    const std::string& message) const {
+  MediaStreamManager::SendMessageToNativeLog(
+      "RFAOSF::" + message +
+      base::StringPrintf(" [process_id=%d, frame_id=%d]", process_id_,
+                         frame_id_));
 }
 
 }  // namespace content

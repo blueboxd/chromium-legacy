@@ -218,6 +218,9 @@ static const char kTestScriptLoadError[] =
     "})();"
     "cr.googleTranslate.onTranslateElementLoad();";
 
+static const char kTranslateHrefHintStatusHistogram[] =
+    "Translate.HrefHint.Status";
+
 }  // namespace
 
 class TranslateManagerBrowserTest : public InProcessBrowserTest {
@@ -526,12 +529,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
                    browser()->profile())
                    ->IsAcceptLanguage("ja"));
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
@@ -581,10 +580,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
   EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 0);
+  histograms.ExpectTotalCount(kTranslateHrefHintStatusHistogram, 0);
 }
 
 // Test that hrefTranslate with an unsupported language doesn't trigger.
@@ -633,12 +629,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
 
   EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kNotAutoTranslated),
       1);
@@ -691,12 +683,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().current_language());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
@@ -751,12 +739,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().current_language());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
@@ -815,12 +799,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   EXPECT_EQ("zh-CN",
             chrome_translate_client->GetLanguageState().current_language());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kAutoTranslatedDifferentTargetLanguage),
       1);
@@ -1384,12 +1364,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
                    browser()->profile())
                    ->IsAcceptLanguage("ja"));
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
@@ -1431,10 +1407,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 0);
+  histograms.ExpectTotalCount(kTranslateHrefHintStatusHistogram, 0);
 }
 
 // Test that hrefTranslate with an unsupported language doesn't trigger.
@@ -1476,12 +1449,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kNotAutoTranslated),
       1);
@@ -1527,12 +1496,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().current_language());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
@@ -1578,12 +1543,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().current_language());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
@@ -1632,12 +1593,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   EXPECT_EQ("zh-CN",
             chrome_translate_client->GetLanguageState().current_language());
 
-  const char* translate_href_hint_status_name =
-      TranslateBrowserMetrics::GetMetricsName(
-          TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS);
-  histograms.ExpectTotalCount(translate_href_hint_status_name, 1);
-  histograms.ExpectBucketCount(
-      translate_href_hint_status_name,
+  histograms.ExpectUniqueSample(
+      kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kAutoTranslatedDifferentTargetLanguage),
       1);

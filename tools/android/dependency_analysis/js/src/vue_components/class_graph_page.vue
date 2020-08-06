@@ -7,9 +7,11 @@
     <div id="page-controls">
       <GraphFilterInput
           :node-ids="pageModel.getNodeIds()"
+          :shorten-name="filterShortenName"
           @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
       <GraphFilterItems
           :node-filter-data="displaySettingsData.nodeFilterData"
+          :shorten-name="filterShortenName"
           @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
           @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
           @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
@@ -58,6 +60,7 @@ import {ClassNode, GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
 import {ClassDisplaySettingsData} from '../display_settings_data.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
+import {shortenClassNameWithPackage} from '../chrome_hooks.js';
 
 import ClassDetailsPanel from './class_details_panel.vue';
 import ClassGraphHullSettings from './class_graph_hull_settings.vue';
@@ -163,6 +166,7 @@ const ClassGraphPage = {
       const pageUrl = urlProcessor.getUrl(document.URL, PagePathName.CLASS);
       history.replaceState(null, '', pageUrl);
     },
+    filterShortenName: shortenClassNameWithPackage,
     filterRemoveNode: function(nodeName) {
       this.displaySettingsData.nodeFilterData.removeNode(nodeName);
     },

@@ -75,6 +75,30 @@ std::unique_ptr<base::trace_event::TracedValue> FirstInputDelayTraceData(
   return data;
 }
 
+// TODO(crbug/1097328): Remove collecting visits to support.google.com after
+// language settings update fully launches.
+#if defined(OS_CHROMEOS)
+void RecordVisitToLanguageSettingsSupportPage(const GURL& url) {
+  if (url.is_empty() || !url.DomainIs("support.google.com"))
+    return;
+
+  // Keep these pages in order with SettingsLanguagesSupportPage in enums.xml
+  std::vector<std::string> kSupportPages = {
+      "chrome/answer/173424?co=GENIE.Platform%3DDesktop",
+      "chromebook/answer/1059490",
+      "chromebook/answer/1059492",
+  };
+  const size_t num_pages = 3;
+  for (size_t i = 0; i < num_pages; ++i) {
+    if (url.spec().find(kSupportPages[i]) != std::string::npos) {
+      UMA_HISTOGRAM_ENUMERATION("ChromeOS.Settings.Languages.SupportPageVisits",
+                                i, num_pages);
+      return;
+    }
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 namespace internal {
@@ -396,6 +420,12 @@ CorePageLoadMetricsObserver::OnCommit(
   UMA_HISTOGRAM_COUNTS_100("PageLoad.Navigation.RedirectChainLength",
                            redirect_chain_size_);
   navigation_handle_timing_ = navigation_handle->GetNavigationHandleTiming();
+
+  // TODO(crbug/1097328): Remove collecting visits to support.google.com after
+  // language settings update fully launches.
+#if defined(OS_CHROMEOS)
+  RecordVisitToLanguageSettingsSupportPage(navigation_handle->GetURL());
+#endif  // defined(OS_CHROMEOS)
   return CONTINUE_OBSERVING;
 }
 

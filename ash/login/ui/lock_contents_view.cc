@@ -29,7 +29,6 @@
 #include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
@@ -1881,8 +1880,7 @@ void LockContentsView::OnBigUserChanged() {
   UpdateEasyUnlockIconForUser(big_user_account_id);
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
-  if (features::IsSupervisedUserDeprecationNoticeEnabled() &&
-      big_user.basic_user_info.type == user_manager::USER_TYPE_SUPERVISED) {
+  if (big_user.basic_user_info.type == user_manager::USER_TYPE_SUPERVISED) {
     base::string16 message = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING);
     // Shows supervised user deprecation message as a persistent error bubble.

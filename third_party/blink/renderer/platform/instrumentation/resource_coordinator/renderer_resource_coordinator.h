@@ -13,6 +13,9 @@
 
 namespace blink {
 
+class ExecutionContext;
+class ScriptState;
+
 class PLATFORM_EXPORT RendererResourceCoordinator {
   USING_FAST_MALLOC(RendererResourceCoordinator);
 
@@ -28,6 +31,22 @@ class PLATFORM_EXPORT RendererResourceCoordinator {
   ~RendererResourceCoordinator();
 
   void SetMainThreadTaskLoadIsLow(bool);
+
+  // Used for tracking content javascript contexts (frames, workers, worklets,
+  // etc). These functions are thread-safe.
+
+  // Called when a |script_state| is created. Note that |execution_context| may
+  // be nullptr if the |script_state| is not associated with an
+  // |execution_context|.
+  void OnScriptStateCreated(ScriptState* script_state,
+                            ExecutionContext* execution_context);
+  // Called when the |script_state| has been detached from the v8::Context
+  // (and ExecutionContext, if applicable) it was associated with at creation.
+  // At this point the associated v8::Context is considered "detached" until it
+  // is garbage collected.
+  void OnScriptStateDetached(ScriptState* script_state);
+  // Called when the |script_state| itself is garbage collected.
+  void OnScriptStateDestroyed(ScriptState* script_state);
 
  protected:
   RendererResourceCoordinator();

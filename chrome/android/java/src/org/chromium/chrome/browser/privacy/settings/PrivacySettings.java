@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.safe_browsing.settings.SecuritySettingsFragment;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -44,7 +45,7 @@ public class PrivacySettings
     private static final String PREF_SECURE_DNS = "secure_dns";
     private static final String PREF_USAGE_STATS = "usage_stats_reporting";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
-    private static final String PREF_SECURITY = "security";
+    private static final String PREF_SAFE_BROWSING = "safe_browsing";
     private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
@@ -60,9 +61,12 @@ public class PrivacySettings
         // See (go/esb-clank-dd) for more context.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)) {
             getActivity().setTitle(R.string.prefs_privacy_security);
+            findPreference(PREF_SAFE_BROWSING)
+                    .setSummary(
+                            SecuritySettingsFragment.getSafeBrowsingSummaryString(getContext()));
         } else {
             getActivity().setTitle(R.string.prefs_privacy);
-            getPreferenceScreen().removePreference(findPreference(PREF_SECURITY));
+            getPreferenceScreen().removePreference(findPreference(PREF_SAFE_BROWSING));
         }
         setHasOptionsMenu(true);
 
@@ -136,6 +140,12 @@ public class PrivacySettings
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
         if (secureDnsPref != null && secureDnsPref.isVisible()) {
             secureDnsPref.setSummary(SecureDnsSettings.getSummary(getContext()));
+        }
+
+        Preference safeBrowsingPreference = findPreference(PREF_SAFE_BROWSING);
+        if (safeBrowsingPreference != null && safeBrowsingPreference.isVisible()) {
+            safeBrowsingPreference.setSummary(
+                    SecuritySettingsFragment.getSafeBrowsingSummaryString(getContext()));
         }
 
         Preference usageStatsPref = findPreference(PREF_USAGE_STATS);

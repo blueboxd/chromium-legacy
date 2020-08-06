@@ -1,8 +1,11 @@
 include_rules = [
+  "+cc/paint",
   "+net",
   "+ppapi",
   "+printing/units.h",
+  "+third_party/blink/public",
   "+third_party/skia/include/core",
+  "+ui/base/cursor/cursor.h",
   "+ui/base/window_open_disposition.h",
   "+ui/events/keycodes/keyboard_codes.h",
   "+ui/gfx/geometry",

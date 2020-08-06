@@ -7751,6 +7751,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Using native notifications"/>
 </enum>
 
+<enum name="BooleanNavigated">
+  <int value="0" label="Navigation did not occur"/>
+  <int value="1" label="Navigation occurred"/>
+</enum>
+
 <enum name="BooleanNavPreloadFinishedFirst">
   <int value="0" label="Worker preparation finished first"/>
   <int value="1" label="Navigation preload response arrived first"/>
@@ -16830,6 +16835,7 @@ Called by update_document_policy_enum.py.-->
   <int value="5" label="UnoptimizedLossyImages"/>
   <int value="6" label="OversizedImages"/>
   <int value="7" label="UnsizedMedia"/>
+  <int value="8" label="LayoutAnimations"/>
 </enum>
 
 <enum name="DocumentScanSaneBackend">
@@ -37189,6 +37195,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Open in New Tab"/>
   <int value="3" label="Open in New Incognito Tab"/>
   <int value="4" label="Open in New Window"/>
+  <int value="5" label="Remove"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -40591,6 +40598,7 @@ from previous Chrome versions.
   <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
+  <int value="-1368913664" label="TabSearch:disabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
   <int value="-1365795470"
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
@@ -41844,6 +41852,7 @@ from previous Chrome versions.
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
   <int value="-36234530" label="PluginVmShowMicrophonePermissions:enabled"/>
+  <int value="-35745997" label="TabSearch:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-31444029" label="MediaInspectorLogging:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
@@ -52360,6 +52369,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="206" label="Messages: On/Off"/>
   <int value="207" label="Forget Phone"/>
   <int value="208" label="Nearby Share: On/Off"/>
+  <int value="209" label="Phone Hub: On/Off"/>
+  <int value="210" label="Phone Hub Notifications: On/Off"/>
+  <int value="211" label="Phone Hub Notification Badge: On/Off"/>
+  <int value="212" label="Phone Hub Task Continuation: On/Off"/>
   <int value="300" label="Add Account"/>
   <int value="301" label="Remove Account"/>
   <int value="302" label="Split Sync On/Off"/>
@@ -61420,6 +61433,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="NOT_SUPPORTED"/>
 </enum>
 
+<enum name="SafetyCheckChromeCleanerStatus">
+  <int value="0" label="HIDDEN"/>
+  <int value="1" label="CHECKING"/>
+  <int value="2" label="INFECTED"/>
+  <int value="3" label="REBOOT_REQUIRED"/>
+</enum>
+
 <enum name="SafetyCheckExtensionsStatus">
   <int value="0" label="CHECKING"/>
   <int value="1" label="ERROR"/>
@@ -63535,6 +63555,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Restart now"/>
   <int value="3" label="Restart later"/>
   <int value="4" label="Open custom spell check"/>
+</enum>
+
+<enum name="SettingsLanguagesSupportPage">
+  <int value="0"
+      label="Change Chrome languages &amp; translate webpages id:173424"/>
+  <int value="1" label="Change language id:1059490"/>
+  <int value="2"
+      label="Change keyboard languages &amp; special characters id:1059492"/>
 </enum>
 
 <enum name="SettingsNavigationSources">

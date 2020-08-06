@@ -24,7 +24,7 @@ aggregate_vector_icons("message_center_vector_icons") {
 }
 
 # TODO(msw|mukai|dewittj): Move ash-specific files: crbug.com/585175
-jumbo_component("message_center") {
+component("message_center") {
   deps = [
     "//base",
     "//ui/base",

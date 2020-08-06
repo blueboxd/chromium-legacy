@@ -46,7 +46,9 @@
 
 namespace net {
 class HttpResponseHeaders;
+class IPEndPoint;
 struct RedirectInfo;
+struct TransportInfo;
 class URLRequestContext;
 }  // namespace net
 
@@ -134,6 +136,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void ResumeReadingBodyFromNet() override;
 
   // net::URLRequest::Delegate implementation:
+  int OnConnected(net::URLRequest* url_request,
+                  const net::TransportInfo& info) override;
   void OnReceivedRedirect(net::URLRequest* url_request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;

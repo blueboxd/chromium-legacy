@@ -10,6 +10,8 @@ js_type_check("closure_compile") {
                     "browser_resolver_prefix_replacements=\"chrome://nearby/=../../chrome/browser/resources/nearby_share/\"",
                     "js_module_root=../../chrome/test/data/webui/",
                     "js_module_root=./gen/chrome/test/data/webui/",
+                    "js_module_root=../../chrome/browser/resources/nearby_share/",
+                    "js_module_root=./gen/chrome/browser/resources/nearby_share/",
                   ]
   deps = [
     ":fake_mojo_interfaces",

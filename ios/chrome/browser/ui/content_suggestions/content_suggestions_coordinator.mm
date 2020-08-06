@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -517,11 +518,46 @@
             initWithBrowser:strongSelf.browser
                    scenario:MenuScenario::kContentSuggestionsEntry];
 
-        UIAction* copyAction = [actionFactory actionToCopyURL:item.URL];
+        NSMutableArray<UIMenuElement*>* menuElements =
+            [[NSMutableArray alloc] init];
 
-        return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+        NSIndexPath* indexPath =
+            [self.suggestionsViewController.collectionViewModel
+                indexPathForItem:item];
+
+        [menuElements addObject:[actionFactory actionToOpenInNewTabWithBlock:^{
+                        [weakSelf.NTPMediator
+                            openNewTabWithMostVisitedItem:item
+                                                incognito:NO
+                                                  atIndex:indexPath.item];
+                      }]];
+
+        [menuElements
+            addObject:[actionFactory actionToOpenInNewIncognitoTabWithBlock:^{
+              [weakSelf.NTPMediator
+                  openNewTabWithMostVisitedItem:item
+                                      incognito:YES
+                                        atIndex:indexPath.item];
+            }]];
+
+        if (IsMultipleScenesSupported()) {
+          [menuElements
+              addObject:
+                  [actionFactory
+                      actionToOpenInNewWindowWithURL:item.URL
+                                      activityOrigin:
+                                          WindowActivityContentSuggestionsOrigin
+                                          completion:nil]];
+        }
+
+        [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
+
+        [menuElements addObject:[actionFactory actionToRemoveWithBlock:^{
+                        [weakSelf.NTPMediator removeMostVisited:item];
+                      }]];
+
+        return [UIMenu menuWithTitle:@"" children:menuElements];
       };
-
   return
       [UIContextMenuConfiguration configurationWithIdentifier:nil
                                               previewProvider:nil

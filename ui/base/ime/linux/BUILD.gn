@@ -14,7 +14,7 @@ import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/toolchain/kythe.gni")
 assert((is_linux && !is_chromeos) || enable_kythe_annotations)
 
-jumbo_component("linux") {
+component("linux") {
   output_name = "ui_base_ime_linux"
   sources = [
     "fake_input_method_context.cc",

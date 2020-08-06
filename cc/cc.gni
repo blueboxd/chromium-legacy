@@ -18,7 +18,7 @@ if (!is_debug) {
 }
 
 template("cc_component") {
-  jumbo_component(target_name) {
+  component(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs
@@ -29,7 +29,7 @@ template("cc_component") {
 }
 
 template("cc_test_static_library") {
-  jumbo_static_library(target_name) {
+  static_library(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs

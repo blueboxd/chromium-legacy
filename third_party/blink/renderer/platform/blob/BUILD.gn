@@ -11,7 +11,7 @@ import("//third_party/blink/renderer/platform/platform.gni")
 # There is no tool to detect missing indirect generated header dependency today
 # and this is easy to be broken when mojom files are updated to depend on
 # another.
-jumbo_source_set("generator") {
+source_set("generator") {
   public_deps = [
     "//third_party/blink/public/mojom:mojom_platform_blink_headers",
     "//url/mojom:url_mojom_gurl_blink_headers",
@@ -36,7 +36,7 @@ blink_platform_sources("blob") {
   deps = [ "//services/network/public/mojom:mojom_blink" ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   visibility = [ "//third_party/blink/renderer/platform:*" ]
   testonly = true
 
@@ -55,7 +55,7 @@ jumbo_source_set("unit_tests") {
   ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   # This target defines test files for platform:test_support that
   # blink_platform_unittests and blink_unittests can use.
   visibility = [ "//third_party/blink/renderer/platform:test_support" ]

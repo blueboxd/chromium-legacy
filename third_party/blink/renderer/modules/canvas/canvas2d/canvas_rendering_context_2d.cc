@@ -871,6 +871,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
           : CanvasOps::kStrokeText,
       IdentifiabilitySensitiveStringToken(text), x, y,
       max_width ? *max_width : -1);
+  identifiability_study_helper_.set_encountered_sensitive_ops();
 
   const Font& font = AccessFont();
   const SimpleFontData* font_data = font.PrimaryFont();

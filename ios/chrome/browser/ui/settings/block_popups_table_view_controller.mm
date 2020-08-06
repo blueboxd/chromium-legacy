@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -50,7 +51,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface BlockPopupsTableViewController ()<BooleanObserver> {
+@interface BlockPopupsTableViewController () <
+    BooleanObserver,
+    PopoverLabelViewControllerDelegate> {
   ChromeBrowserState* _browserState;  // weak
 
   // List of url patterns that are allowed to display popups.
@@ -257,6 +260,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
   EnterpriseInfoPopoverViewController* bubbleViewController =
       [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  bubbleViewController.delegate = self;
   [self presentViewController:bubbleViewController animated:YES completion:nil];
 
   // Disable the button when showing the bubble.
@@ -403,6 +407,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
                              completion:nil];
   }
+}
+
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  [self view:nil didTapLinkURL:convertedURL];
 }
 
 @end

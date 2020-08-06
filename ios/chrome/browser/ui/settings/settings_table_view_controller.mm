@@ -87,6 +87,7 @@
 #import "ios/public/provider/chrome/browser/signin/signin_presenter.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -167,6 +168,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     ChromeIdentityServiceObserver,
     GoogleServicesSettingsCoordinatorDelegate,
     IdentityManagerObserverBridgeDelegate,
+    PopoverLabelViewControllerDelegate,
     PrefObserverDelegate,
     PrivacyCoordinatorDelegate,
     SafetyCheckCoordinatorDelegate,
@@ -965,6 +967,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
   EnterpriseInfoPopoverViewController* bubbleViewController =
       [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  bubbleViewController.delegate = self;
 
   // Disable the button when showing the bubble.
   // The button will be enabled when close the bubble in
@@ -1473,6 +1476,13 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
   base::RecordAction(base::UserMetricsAction("IOSSettingsCloseWithSwipe"));
+}
+
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  [self view:nil didTapLinkURL:convertedURL];
 }
 
 @end

@@ -14,7 +14,7 @@ declare_args() {
   subpixel_font_rendering_disabled = false
 }
 
-jumbo_component("service") {
+component("service") {
   output_name = "gpu_ipc_service"
   sources = [
     "command_buffer_stub.cc",

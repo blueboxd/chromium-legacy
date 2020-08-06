@@ -17,7 +17,7 @@ platform_config_add = [
 platform_config_remove = []
 
 template("blink_platform_sources") {
-  jumbo_source_set(target_name) {
+  source_set(target_name) {
     # Only platform can directly depend on this.
     # Any target outside platform should instead depend on platform.
     visibility = [ "//third_party/blink/renderer/platform" ]

@@ -6,7 +6,7 @@ import("//build/config/jumbo.gni")
 
 assert(is_win)
 
-jumbo_component("win") {
+component("win") {
   output_name = "ui_base_ime_win"
   sources = [
     "imm32_manager.cc",

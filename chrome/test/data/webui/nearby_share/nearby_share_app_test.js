@@ -7,7 +7,10 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://nearby/app.js';
 
 import {setNearbyShareSettingsForTesting} from 'chrome://nearby/shared/nearby_share_settings.m.js';
+
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {waitAfterNextRender} from '../test_util.m.js';
+
 import {FakeNearbyShareSettings} from './shared/fake_nearby_share_settings.m.js';
 
 suite('ShareAppTest', function() {
@@ -20,34 +23,72 @@ suite('ShareAppTest', function() {
         .classList.contains('active');
   }
 
-  setup(function() {
-    setNearbyShareSettingsForTesting(new FakeNearbyShareSettings());
+  /**
+   * This allows both sub-suites to share the same setup logic but with a
+   * different enabled state which changes the routing of the first view.
+   * @param {boolean} enabled The value of the enabled setting.
+   */
+  function sharedSetup(enabled) {
+    /** @type {!nearbyShare.mojom.NearbyShareSettingsInterface} */
+    let fakeSettings = new FakeNearbyShareSettings();
+    fakeSettings.setEnabled(enabled);
+    setNearbyShareSettingsForTesting(fakeSettings);
     shareAppElement = /** @type {!NearbyShareAppElement} */ (
         document.createElement('nearby-share-app'));
     document.body.appendChild(shareAppElement);
-  });
+  }
 
-  teardown(function() {
+  /** Shared teardown for both sub-suites. */
+  function sharedTeardown() {
     shareAppElement.remove();
+  }
+
+  suite('EnabledTests', function() {
+    setup(function() {
+      sharedSetup(true);
+    });
+
+    teardown(sharedTeardown);
+
+    test('renders discovery page when enabled', async function() {
+      assertEquals('NEARBY-SHARE-APP', shareAppElement.tagName);
+      assertEquals(null, shareAppElement.$$('.active'));
+      // We have to wait for settings to return from the mojo after which
+      // the app will route to the correct page.
+      await waitAfterNextRender();
+      assertTrue(isPageActive('discovery'));
+    });
   });
 
-  test('renders component', function() {
-    assertEquals('NEARBY-SHARE-APP', shareAppElement.tagName);
-  });
+  suite('DisabledTests', function() {
+    setup(function() {
+      sharedSetup(false);
+    });
 
-  test('renders nearby-discovery-page by default', function() {
-    assertTrue(isPageActive('discovery'));
-  });
+    teardown(sharedTeardown);
 
-  test('changes page on event', function() {
-    // Discovery page should be active by default, other pages should not.
-    assertTrue(isPageActive('discovery'));
-    assertFalse(isPageActive('onboarding'));
+    test('renders onboarding page when disabled', async function() {
+      assertEquals('NEARBY-SHARE-APP', shareAppElement.tagName);
+      assertEquals(null, shareAppElement.$$('.active'));
+      // We have to wait for settings to return from the mojo after which
+      // the app will route to the correct page.
+      await waitAfterNextRender();
+      assertTrue(isPageActive('onboarding'));
+    });
 
-    shareAppElement.fire('change-page', {page: 'onboarding'});
+    test('changes page on event', async function() {
+      assertEquals('NEARBY-SHARE-APP', shareAppElement.tagName);
+      assertEquals(null, shareAppElement.$$('.active'));
+      // We have to wait for settings to return from the mojo after which
+      // the app will route to the correct page.
+      await waitAfterNextRender();
+      assertTrue(isPageActive('onboarding'));
 
-    // Onboarding page should now be active, other pages should not.
-    assertTrue(isPageActive('onboarding'));
-    assertFalse(isPageActive('discovery'));
+      shareAppElement.fire('change-page', {page: 'discovery'});
+
+      // Discovery page should now be active, other pages should not.
+      assertTrue(isPageActive('discovery'));
+      assertFalse(isPageActive('onboarding'));
+    });
   });
 });

@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
     bad_result->set_tag("malware");
     auto* bad_rule = bad_result->add_triggered_rules();
     bad_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
-    bad_rule->set_rule_name("MALWARE");
+    bad_rule->set_rule_name("malware");
 
     FakeBinaryUploadServiceStorage()->SetResponseForFile(
         "ok.doc", BinaryUploadService::Result::SUCCESS, ok_response);
@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
     malware_result->set_tag("malware");
     auto* malware_rule = malware_result->add_triggered_rules();
     malware_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
-    malware_rule->set_rule_name("MALWARE");
+    malware_rule->set_rule_name("malware");
 
     auto* dlp_result = response.add_results();
     dlp_result->set_status(

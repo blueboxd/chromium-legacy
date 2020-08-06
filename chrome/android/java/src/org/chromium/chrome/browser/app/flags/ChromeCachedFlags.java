@@ -61,6 +61,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
                 ChromeFeatureList.INSTANT_START,
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+                ChromeFeatureList.INTEREST_FEED_V2,
                 ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW,
                 ChromeFeatureList.PAINT_PREVIEW_DEMO,
                 ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,

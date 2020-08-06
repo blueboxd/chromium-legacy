@@ -999,6 +999,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_REMOVE_ACCOUNT_LABEL" desc="Button label for removing an account.">
       Remove
       </message>
+      <message name="IDS_IOS_REMOVE_ACTION_TITLE" desc="Title of the action used to remove a selected item. [iOS only]">
+        Remove
+      </message>
       <message name="IDS_IOS_MANAGE_SYNC_ENCRYPTION" desc="Title for the cell to open the encryption dialog.">
         Encryption
       </message>

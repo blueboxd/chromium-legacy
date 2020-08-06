@@ -580,6 +580,7 @@ struct ClientSecurityState {
   CrossOriginEmbedderPolicy cross_origin_embedder_policy;
 
   // Whether the initiator of the requests is in a web secure context.
+  // See: https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts
   bool is_web_secure_context = false;
 
   // The initiator's IP AddressSpace.

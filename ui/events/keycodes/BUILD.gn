@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
-jumbo_source_set("xkb") {
+source_set("xkb") {
   sources = [
     "keyboard_code_conversion_xkb.cc",
     "keyboard_code_conversion_xkb.h",
@@ -28,7 +28,7 @@ jumbo_source_set("xkb") {
 }
 
 if (use_x11 || ozone_platform_x11) {
-  jumbo_component("x11") {
+  component("x11") {
     output_name = "keycodes_x11"
 
     sources = [

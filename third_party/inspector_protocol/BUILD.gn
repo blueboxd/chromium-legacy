@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("crdtp") {
+component("crdtp") {
   sources = [
     "crdtp/cbor.cc",
     "crdtp/cbor.h",

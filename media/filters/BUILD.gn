@@ -7,7 +7,7 @@ import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//third_party/libaom/options.gni")
 
-jumbo_source_set("filters") {
+source_set("filters") {
   # Do not expand the visibility here without double-checking with OWNERS, this
   # is a roll-up target which is part of the //media component. Most other DEPs
   # should be using //media and not directly DEP this roll-up target.

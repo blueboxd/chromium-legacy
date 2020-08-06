@@ -864,7 +864,7 @@ template("mojom") {
   }
 
   shared_cpp_sources_target_name = "${target_name}_shared_cpp_sources"
-  jumbo_source_set(shared_cpp_sources_target_name) {
+  source_set(shared_cpp_sources_target_name) {
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
     }
@@ -1415,7 +1415,7 @@ template("mojom") {
     js_data_deps_target_name = target_name + "_js_data_deps"
     not_needed([ "js_data_deps_target_name" ])
 
-    target("jumbo_" + output_target_type, "${target_name}${variant_suffix}") {
+    target(output_target_type, "${target_name}${variant_suffix}") {
       if (defined(output_name_override)) {
         output_name = output_name_override
       }

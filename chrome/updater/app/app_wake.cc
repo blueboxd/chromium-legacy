@@ -20,7 +20,7 @@ namespace updater {
 // ControlService interface.
 class AppWake : public App {
  public:
-  AppWake() : service_(CreateControlService()) {}
+  AppWake() = default;
 
  private:
   ~AppWake() override = default;
@@ -32,6 +32,12 @@ class AppWake : public App {
 };
 
 void AppWake::FirstTaskRun() {
+  // The service creation might need task runners and the control service needs
+  // to be instantiated after the base class has initialized the thread pool.
+  //
+  // TODO(crbug.com/1113448) - consider initializing the thread pool in the
+  // constructor of the base class or earlier, in the updater main.
+  service_ = CreateControlService();
   service_->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
 }
 
@@ -39,6 +45,6 @@ scoped_refptr<App> MakeAppWake() {
   return base::MakeRefCounted<AppWake>();
 }
 
-#endif
+#endif  // OS_WIN
 
 }  // namespace updater

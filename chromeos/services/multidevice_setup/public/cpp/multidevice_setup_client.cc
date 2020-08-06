@@ -24,7 +24,14 @@ MultiDeviceSetupClient::GenerateDefaultFeatureStatesMap() {
       {mojom::Feature::kInstantTethering,
        mojom::FeatureState::kProhibitedByPolicy},
       {mojom::Feature::kMessages, mojom::FeatureState::kProhibitedByPolicy},
-      {mojom::Feature::kSmartLock, mojom::FeatureState::kProhibitedByPolicy}};
+      {mojom::Feature::kSmartLock, mojom::FeatureState::kProhibitedByPolicy},
+      {mojom::Feature::kPhoneHub, mojom::FeatureState::kProhibitedByPolicy},
+      {mojom::Feature::kPhoneHubNotifications,
+       mojom::FeatureState::kProhibitedByPolicy},
+      {mojom::Feature::kPhoneHubNotificationBadge,
+       mojom::FeatureState::kProhibitedByPolicy},
+      {mojom::Feature::kPhoneHubTaskContinuation,
+       mojom::FeatureState::kProhibitedByPolicy}};
 }
 
 MultiDeviceSetupClient::MultiDeviceSetupClient() = default;

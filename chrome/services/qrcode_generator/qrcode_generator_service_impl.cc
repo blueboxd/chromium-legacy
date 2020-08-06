@@ -232,27 +232,29 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
     return;
   }
 
-  // These lengths account for the dino we superimpose, which
-  // cuts into error correction bits.
-  constexpr size_t kLengthSmall = 84;
-  constexpr size_t kLengthMedium = 122;
-  // TODO(skare): Test very large codes with readers:
-  // constexpr size_t kLengthLarge = 331;
-  constexpr size_t kLengthMax = kLengthMedium;
+  // Possible QR version lengths, which we round up to with space-padding vs.
+  // null-padding.
+  // TODO(skare): ideally this shouldn't have any insight into supported
+  // versions.
+  constexpr size_t version_sizes[] = {84, 122, 180, 288};
+  constexpr size_t kLengthMax = 288;
   if (request->data.length() > kLengthMax) {
     response->error_code = mojom::QRCodeGeneratorError::INPUT_TOO_LONG;
     std::move(callback).Run(std::move(response));
     return;
   }
 
-  // TODO(skare): cap string length with message in the UI.
   uint8_t input[kLengthMax + 1] = {0};
   base::strlcpy(reinterpret_cast<char*>(input), request->data.c_str(),
                 kLengthMax);
-  size_t data_size =
-      request->data.length() <= kLengthSmall ? kLengthSmall : kLengthMedium;
+  size_t data_size = 0;
+  for (const size_t& version_size : version_sizes) {
+    if (request->data.length() <= version_size) {
+      data_size = version_size;
+      break;
+    }
+  }
 
-  // Pad with spaces rather than null for better reader compatibility.
   for (size_t i = request->data.length(); i < data_size; i++)
     input[i] = 0x20;
   input[data_size - 1] = 0;

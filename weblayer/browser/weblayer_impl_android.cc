@@ -47,7 +47,6 @@ static void JNI_WebLayerImpl_RegisterExternalExperimentIDs(
     JNIEnv* env,
     const JavaParamRef<jstring>& jtrial_name,
     const JavaParamRef<jintArray>& jexperiment_ids) {
-  const std::string trial_name_utf8(ConvertJavaStringToUTF8(env, jtrial_name));
   std::vector<int> experiment_ids;
   // A null |jexperiment_ids| is the same as an empty list.
   if (jexperiment_ids) {
@@ -55,8 +54,8 @@ static void JNI_WebLayerImpl_RegisterExternalExperimentIDs(
                                            &experiment_ids);
   }
 
-  WebLayerMetricsServiceClient::GetInstance()
-      ->RegisterSyntheticMultiGroupFieldTrial(trial_name_utf8, experiment_ids);
+  WebLayerMetricsServiceClient::GetInstance()->RegisterExternalExperiments(
+      experiment_ids);
 }
 
 base::string16 GetClientApplicationName() {

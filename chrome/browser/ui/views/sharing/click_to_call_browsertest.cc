@@ -509,7 +509,7 @@ class ClickToCallPolicyTest
       policies.Set(policy::key::kClickToCallEnabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                   base::Value(policy_bool), nullptr);
+                   std::make_unique<base::Value>(policy_bool), nullptr);
     }
 
     provider_.UpdateChromePolicy(policies);

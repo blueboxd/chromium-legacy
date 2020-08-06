@@ -20,7 +20,7 @@ group("child") {
   }
 }
 
-jumbo_source_set("child_sources") {
+source_set("child_sources") {
   # External code should depend in via ":child" above.
   visibility = [ "//content/*" ]
 

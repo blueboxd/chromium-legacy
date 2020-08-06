@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("stub") {
+component("stub") {
   output_name = "stub_window"
 
   deps = [

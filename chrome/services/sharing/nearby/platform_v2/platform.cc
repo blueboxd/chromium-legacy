@@ -9,6 +9,7 @@
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_boolean.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_uint32.h"
+#include "chrome/services/sharing/nearby/platform_v2/bluetooth_adapter.h"
 #include "chrome/services/sharing/nearby/platform_v2/condition_variable.h"
 #include "chrome/services/sharing/nearby/platform_v2/count_down_latch.h"
 #include "chrome/services/sharing/nearby/platform_v2/log_message.h"
@@ -17,6 +18,7 @@
 #include "chrome/services/sharing/nearby/platform_v2/scheduled_executor.h"
 #include "chrome/services/sharing/nearby/platform_v2/submittable_executor.h"
 #include "chrome/services/sharing/nearby/platform_v2/webrtc.h"
+#include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/atomic_boolean.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/atomic_reference.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/ble.h"
@@ -78,7 +80,14 @@ std::unique_ptr<AtomicUint32> ImplementationPlatform::CreateAtomicUint32(
 
 std::unique_ptr<BluetoothAdapter>
 ImplementationPlatform::CreateBluetoothAdapter() {
-  return nullptr;
+  auto& connections = connections::NearbyConnections::GetInstance();
+  bluetooth::mojom::Adapter* bluetooth_adapter =
+      connections.GetBluetoothAdapter();
+
+  if (!bluetooth_adapter)
+    return nullptr;
+
+  return std::make_unique<chrome::BluetoothAdapter>(bluetooth_adapter);
 }
 
 std::unique_ptr<CountDownLatch> ImplementationPlatform::CreateCountDownLatch(

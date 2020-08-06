@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
-jumbo_source_set("latency") {
+source_set("latency") {
   sources = [
     "latency_histogram_macros.h",
     "latency_info.cc",
@@ -23,7 +23,7 @@ jumbo_source_set("latency") {
   public_deps = [ "//services/metrics/public/cpp:metrics_cpp" ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [ "latency_info_test_support.cc" ]
 

@@ -1388,11 +1388,10 @@ void PaintArtifactCompositor::Update(
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
   scrollbar_layers_.swap(new_scrollbar_layers);
 
-  auto pos = std::remove_if(synthesized_clip_cache_.begin(),
-                            synthesized_clip_cache_.end(),
-                            [](const auto& entry) { return !entry.in_use; }) -
-             synthesized_clip_cache_.begin();
-  synthesized_clip_cache_.EraseAt(pos, synthesized_clip_cache_.size() - pos);
+  auto* new_end = std::remove_if(
+      synthesized_clip_cache_.begin(), synthesized_clip_cache_.end(),
+      [](const auto& entry) { return !entry.in_use; });
+  synthesized_clip_cache_.Shrink(new_end - synthesized_clip_cache_.begin());
 
   // This should be done before UpdateRenderSurfaceForEffects() for which to
   // get property tree node ids from the layers.

@@ -25,7 +25,7 @@ static_library("demographic_metrics_provider") {
   ]
 }
 
-jumbo_static_library("metrics") {
+static_library("metrics") {
   sources = [
     "android_metrics_provider.cc",
     "android_metrics_provider.h",
@@ -246,7 +246,7 @@ source_set("library_support") {
   ]
 }
 
-jumbo_static_library("net") {
+static_library("net") {
   sources = [
     "net/cellular_logic_helper.cc",
     "net/cellular_logic_helper.h",
@@ -363,7 +363,7 @@ source_set("call_stack_profile_collector") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/test_enabled_state_provider.cc",

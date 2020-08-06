@@ -60,7 +60,7 @@
 // Coordinator for displaying a modal overlay with native activity indicator to
 // prevent the user from interacting with the page.
 @property(nonatomic, strong)
-    ChromeActivityOverlayCoordinator* chromeActivityOverlayCoordinator;
+    ChromeActivityOverlayCoordinator* overlayCoordinator;
 
 @property(nonatomic, readonly, strong)
     UIBarButtonItem* clearBrowsingDataBarButton;
@@ -312,14 +312,16 @@
       base::UserMetricsAction("MobileClearBrowsingDataTriggeredFromUIRefresh"));
 
   // Show activity indicator modal while removal is happening.
-  self.chromeActivityOverlayCoordinator =
-      [[ChromeActivityOverlayCoordinator alloc]
-          initWithBaseViewController:self.navigationController
-                             browser:_browser];
-  self.chromeActivityOverlayCoordinator.messageText =
-      l10n_util::GetNSStringWithFixup(
-          IDS_IOS_CLEAR_BROWSING_DATA_ACTIVITY_MODAL);
-  [self.chromeActivityOverlayCoordinator start];
+  self.overlayCoordinator = [[ChromeActivityOverlayCoordinator alloc]
+      initWithBaseViewController:self.navigationController
+                         browser:_browser];
+
+  self.overlayCoordinator.messageText = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_CLEAR_BROWSING_DATA_ACTIVITY_MODAL);
+
+  self.overlayCoordinator.blockAllWindows = YES;
+
+  [self.overlayCoordinator start];
 
   __weak ClearBrowsingDataTableViewController* weakSelf = self;
   dispatch_time_t timeOneSecondLater =
@@ -333,7 +335,7 @@
     // (<1sec), so ensure that overlay displays for at
     // least 1 second instead of looking like a glitch.
     dispatch_after(timeOneSecondLater, dispatch_get_main_queue(), ^{
-      [self.chromeActivityOverlayCoordinator stop];
+      [self.overlayCoordinator stop];
       if (completionBlock)
         completionBlock();
     });
@@ -389,7 +391,7 @@
 
 - (BOOL)presentationControllerShouldDismiss:
     (UIPresentationController*)presentationController {
-  return !self.chromeActivityOverlayCoordinator.started;
+  return !self.overlayCoordinator.started;
 }
 
 #pragma mark - Private Helpers

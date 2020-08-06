@@ -7,7 +7,7 @@ import("//build/config/jumbo.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
-jumbo_component("services") {
+component("services") {
   output_name = "media_mojo_services"
   sources = [
     "deferred_destroy_unique_receiver_set.h",

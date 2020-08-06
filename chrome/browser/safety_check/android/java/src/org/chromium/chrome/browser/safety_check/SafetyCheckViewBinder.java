@@ -32,11 +32,15 @@ class SafetyCheckViewBinder {
             case PasswordsState.NO_PASSWORDS:
                 return R.string.safety_check_passwords_no_passwords;
             case PasswordsState.SIGNED_OUT:
+                return R.string.safety_check_passwords_error_signed_out;
             case PasswordsState.QUOTA_LIMIT:
+                return R.string.safety_check_passwords_error_quota_limit;
             case PasswordsState.OFFLINE:
+                return R.string.safety_check_passwords_error_offline;
             case PasswordsState.ERROR:
-                return R.string.safety_check_error;
+                return R.string.safety_check_passwords_error;
             case PasswordsState.SAFE:
+                return R.string.safety_check_passwords_safe;
             case PasswordsState.COMPROMISED_EXIST:
                 // TODO(crbug.com/1070620): update the strings for all states once available.
                 return 0;

@@ -89,8 +89,6 @@ public class OfflinePageDownloadBridge {
     @CalledByNative
     private static void openItem(final String url, final long offlineId, final int location,
             final boolean isIncognito, final boolean openInCct) {
-        Profile profile = isIncognito ? Profile.getLastUsedRegularProfile().getPrimaryOTRProfile()
-                                      : Profile.getLastUsedRegularProfile();
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
                 url, offlineId, location, (params) -> {
                     if (params == null) return;
@@ -104,7 +102,7 @@ public class OfflinePageDownloadBridge {
                     } else {
                         openItemInNewTab(offlineId, params, isIncognito);
                     }
-                }, profile);
+                }, Profile.getLastUsedRegularProfile());
     }
 
     /**

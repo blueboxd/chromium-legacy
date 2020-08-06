@@ -1108,6 +1108,7 @@ class CONTENT_EXPORT NavigationRequest
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory_;
 
   NavigationState state_;
+  bool is_navigation_started_ = false;
 
   std::unique_ptr<NavigationURLLoader> loader_;
 
@@ -1317,8 +1318,11 @@ class CONTENT_EXPORT NavigationRequest
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
 
-  // The unique id to identify the NavigationHandle with.
-  int64_t navigation_handle_id_ = 0;
+  // Unique id that identifies the navigation for which this NavigationRequest
+  // is created.
+  const int64_t navigation_id_ = ++unique_id_counter_;
+  // static member for generating the unique id above.
+  static int64_t unique_id_counter_;
 
   // Manages the lifetime of a pre-created ServiceWorkerContainerHost until a
   // corresponding container is created in the renderer.

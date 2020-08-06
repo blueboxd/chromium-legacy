@@ -36,10 +36,6 @@ class UmaSessionStats {
   static void RegisterSyntheticFieldTrial(const std::string& trial_name,
                                           const std::string& group_name);
 
-  static void RegisterSyntheticMultiGroupFieldTrial(
-      const std::string& trial_name,
-      const std::vector<uint32_t>& group_name_hashes);
-
   static bool IsBackgroundSessionStartForTesting();
 
  private:

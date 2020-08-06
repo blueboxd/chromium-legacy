@@ -5,6 +5,10 @@
 #ifndef IOS_WEB_NAVIGATION_TEXT_FRAGMENT_UTILS_H_
 #define IOS_WEB_NAVIGATION_TEXT_FRAGMENT_UTILS_H_
 
+#include "base/values.h"
+
+class GURL;
+
 namespace web {
 
 class NavigationContext;
@@ -23,6 +27,23 @@ bool AreTextFragmentsAllowed(NavigationContext* context);
 // matching text, highlights the text, and scrolls the first into view.
 void HandleTextFragments(NavigationContext* context);
 
+// Exposed for testing only.
+namespace internal {
+
+// Checks the fragment portion of the URL for Text Fragments. Returns zero or
+// more dictionaries containing the parsed parameters used by the fragment-
+// finding algorithm, as defined in the spec.
+std::vector<base::Value> ParseTextFragments(const GURL& url);
+
+// Extracts the text fragments, if any, from a ref string.
+std::vector<std::string> ExtractTextFragments(std::string ref_string);
+
+// Breaks a text fragment into its component parts, as needed for the algorithm
+// described in the spec. Returns a dictionary Value, or a None Value if the
+// fragment is malformed.
+base::Value TextFragmentToValue(std::string fragment);
+
+}  // namespace internal
 }  // namespace web
 
 #endif  // IOS_WEB_NAVIGATION_TEXT_FRAGMENT_UTILS_H_

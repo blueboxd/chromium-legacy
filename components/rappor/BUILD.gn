@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
-jumbo_static_library("rappor") {
+static_library("rappor") {
   sources = [
     "bloom_filter.cc",
     "bloom_filter.h",
@@ -47,7 +47,7 @@ jumbo_static_library("rappor") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test_log_uploader.cc",
@@ -63,7 +63,7 @@ jumbo_static_library("test_support") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "bloom_filter_unittest.cc",

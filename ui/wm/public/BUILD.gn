@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-jumbo_component("public") {
+component("public") {
   output_name = "wm_public"
 
   public = [

@@ -538,10 +538,11 @@ bool CompositorAnimations::ConvertTimingForCompositor(
 
   // Compositor's time offset is positive for seeking into the animation.
   DCHECK(animation_playback_rate);
-  out.scaled_time_offset = -base::TimeDelta::FromSecondsD(
-                               timing.start_delay / animation_playback_rate) +
-                           time_offset;
-  // Start delay is effectively +/- infinity.
+  double delay = animation_playback_rate > 0 ? timing.start_delay : 0;
+  out.scaled_time_offset =
+      -base::TimeDelta::FromSecondsD(delay / animation_playback_rate) +
+      time_offset;
+  // Delay is effectively +/- infinity.
   if (out.scaled_time_offset.is_max() || out.scaled_time_offset.is_min())
     return false;
 

@@ -384,11 +384,12 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction{
     "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to elide not just the path, query, and ref from steady state
-// URLs, but also subdomains beyond the registrable domain. Has no effect unless
+// Feature used to possibly elide not just the path, query, and ref from steady
+// state URLs, but also subdomains beyond the registrable domain, depending on
+// whether the hostname fails lookalike checks. Has no effect unless
 // kRevealSteadyStateUrlPathQueryAndRefOnHover and/or
 // kHideSteadyStateUrlPathQueryAndRefOnInteraction are enabled.
-const base::Feature kElideToRegistrableDomain{
+const base::Feature kMaybeElideToRegistrableDomain{
     "OmniboxUIExperimentElideToRegistrableDomain",
     base::FEATURE_DISABLED_BY_DEFAULT};
 

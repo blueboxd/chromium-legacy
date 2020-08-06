@@ -52,9 +52,9 @@ core_config_add += blink_symbols_config
 #      Normal meaning if defined. If undefined, defaults to everything in core.
 template("blink_core_sources") {
   if (is_component_build) {
-    target_type = "jumbo_source_set"
+    target_type = "source_set"
   } else {
-    target_type = "jumbo_static_library"
+    target_type = "static_library"
   }
   target(target_type, target_name) {
     # The visibility will get overridden by forward_variables_from below if the
@@ -89,7 +89,7 @@ set_defaults("blink_core_sources") {
 }
 
 template("blink_core_tests") {
-  jumbo_source_set(target_name) {
+  source_set(target_name) {
     # The visibility will get overridden by forward_variables_from below if the
     # invoker defined it.
     visibility = [ "//third_party/blink/renderer/core/*" ]

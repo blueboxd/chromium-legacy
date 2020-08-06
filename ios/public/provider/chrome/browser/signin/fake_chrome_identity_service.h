@@ -87,14 +87,12 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // is already added.
   void AddIdentity(ChromeIdentity* identity);
 
-  // Removes |identity| from the available identities. No-op if the identity
-  // is unknown.
-  void RemoveIdentity(ChromeIdentity* identity);
-
   // When set to true, call to GetAccessToken() fakes a MDM error.
   void SetFakeMDMError(bool fakeMDMError);
 
-  bool HasPendingCallback();
+  // Waits until all asynchronous callbacks have been completed by the service.
+  // Returns true on successful completion.
+  bool WaitForServiceCallbacksToComplete();
 
  private:
   NSMutableArray* identities_;

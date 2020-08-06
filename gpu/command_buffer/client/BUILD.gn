@@ -49,7 +49,7 @@ group("webgpu") {
   }
 }
 
-jumbo_source_set("client_sources") {
+source_set("client_sources") {
   # External code should depend on this via //gpu/client above rather than
   # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
@@ -224,7 +224,7 @@ source_set("webgpu_interface") {
 }
 
 # Library emulates GLES2 using command_buffers.
-jumbo_component("gles2_implementation") {
+component("gles2_implementation") {
   sources = gles2_implementation_source_files
 
   defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
@@ -322,7 +322,7 @@ source_set("webgpu_sources") {
 }
 
 # Library emulates GLES2 using command_buffers.
-jumbo_component("gles2_implementation_no_check") {
+component("gles2_implementation_no_check") {
   sources = gles2_implementation_source_files
 
   defines = [
@@ -368,7 +368,7 @@ component("gles2_c_lib") {
 
 # Same as gles2_c_lib except with no parameter checking. Required for
 # OpenGL ES 2.0 conformance tests.
-jumbo_component("gles2_c_lib_nocheck") {
+component("gles2_c_lib_nocheck") {
   sources = gles2_c_lib_source_files
 
   defines = [

@@ -187,8 +187,8 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
   } else if (name == html_names::kFaceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value = CreateFontFaceValueWithPool(
             value, GetExecutionContext()->GetSecureContextMode())) {
-      style->SetProperty(
-          CSSPropertyValue(GetCSSPropertyFontFamily(), *font_face_value));
+      style->SetProperty(CSSPropertyValue(
+          CSSPropertyName(CSSPropertyID::kFontFamily), *font_face_value));
     }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);

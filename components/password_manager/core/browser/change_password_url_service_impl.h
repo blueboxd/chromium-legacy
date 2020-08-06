@@ -14,8 +14,10 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/password_manager/core/browser/change_password_url_service.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 class GURL;
+class PrefService;
 
 namespace url {
 class Origin;
@@ -31,7 +33,8 @@ class ChangePasswordUrlServiceImpl
     : public password_manager::ChangePasswordUrlService {
  public:
   explicit ChangePasswordUrlServiceImpl(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service);
   ~ChangePasswordUrlServiceImpl() override;
 
   void Initialize() override;
@@ -39,6 +42,10 @@ class ChangePasswordUrlServiceImpl
   // url for the given |url|. If no override is there the origin is returned.
   void GetChangePasswordUrl(const url::Origin& origin,
                             UrlCallback callback) override;
+
+  static constexpr char kChangePasswordUrlOverrideUrl[] =
+      "https://www.gstatic.com/chrome/password-manager/"
+      "change_password_urls.json";
 
  private:
   // Callback for the the request to gstatic.
@@ -56,9 +63,14 @@ class ChangePasswordUrlServiceImpl
   // Stores the callbacks that are waiting for the request to finish.
   std::vector<std::pair<url::Origin, base::OnceCallback<void(GURL)>>>
       url_callbacks_;
+  // URL loader object for the gstatic request.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   // SharedURLLoaderFactory for the gstatic request, argument in the
   // constructor.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  // We are only fetching the gstatic file if PasswordManager is enabled.
+  // We use the PrefService to check if the PasswordManager is enabled.
+  PrefService* pref_service_;
 };
 
 }  // namespace password_manager

@@ -12,11 +12,17 @@
   </outputs>
   <release seq="1">
     <includes>
-    <include name="IDR_PROFILE_PICKER_LEFT_BANNER_IMAGE"
-               file="left_banner_image.svg"
+    <include name="IDR_PROFILE_PICKER_IMAGES_LEFT_BANNER_IMAGE"
+               file="images/left_banner_image.svg"
                type="BINDATA" />
-    <include name="IDR_PROFILE_PICKER_RIGHT_BANNER_IMAGE"
-               file="right_banner_image.svg"
+    <include name="IDR_PROFILE_PICKER_IMAGES_RIGHT_BANNER_IMAGE"
+               file="images/right_banner_image.svg"
+               type="BINDATA" />
+    <include name="IDR_PROFILE_PICKER_IMAGES_DARK_MODE_LEFT_BANNER_IMAGE"
+               file="images/dark_mode_left_banner_image.svg"
+               type="BINDATA" />
+    <include name="IDR_PROFILE_PICKER_IMAGES_DARK_MODE_RIGHT_BANNER_IMAGE"
+               file="images/dark_mode_right_banner_image.svg"
                type="BINDATA" />
     <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_LIGHT_IMAGE"
                file="profile_creation_flow/images/banner_light_image.svg"

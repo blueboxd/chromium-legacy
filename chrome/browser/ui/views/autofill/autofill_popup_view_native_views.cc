@@ -1227,7 +1227,7 @@ bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
 
   int item_height =
-      body_container_->children().size() > 0
+      body_container_ && body_container_->children().size() > 0
           ? body_container_->children()[0]->GetPreferredSize().height()
           : 0;
   if (!HasEnoughHeightForOneRow(item_height, GetContentAreaBounds(),
@@ -1242,7 +1242,7 @@ bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   // Adjust the width to compensate for a scroll bar, if necessary, and for
   // other rules.
   int scroll_width = 0;
-  if (preferred_size.height() > popup_bounds.height()) {
+  if (scroll_view_ && preferred_size.height() > popup_bounds.height()) {
     preferred_size.set_height(popup_bounds.height());
 
     // Because the preferred size is greater than the bounds available, the

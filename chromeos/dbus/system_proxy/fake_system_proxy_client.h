@@ -45,6 +45,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   GetLastAuthenticationDetailsRequest() const override;
   void SendAuthenticationRequiredSignal(
       const system_proxy::AuthenticationRequiredDetails& details) override;
+  void SendWorkerActiveSignal(
+      const system_proxy::WorkerActiveSignalDetails& details) override;
 
  private:
   system_proxy::SetAuthenticationDetailsRequest last_set_auth_details_request_;

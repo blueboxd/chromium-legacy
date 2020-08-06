@@ -29,7 +29,7 @@ class FacetManagerHost;
 // interface to provide shared functionality needed by all FacetManagers.
 class FacetManager {
  public:
-  using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
+  using StrategyOnCacheMiss = AndroidAffiliationService::StrategyOnCacheMiss;
 
   // Both the |backend| and |clock| must outlive this object.
   FacetManager(const FacetURI& facet_uri,
@@ -37,11 +37,12 @@ class FacetManager {
                base::Clock* clock);
   ~FacetManager();
 
-  // Facet-specific implementations for methods in AffiliationService of the
-  // same name. See documentation in android_affiliation_service.h for details:
+  // Facet-specific implementations for methods in AndroidAffiliationService of
+  // the same name. See documentation in android_affiliation_service.h for
+  // details:
   void GetAffiliationsAndBranding(
       StrategyOnCacheMiss cache_miss_strategy,
-      AffiliationService::ResultCallback callback,
+      AndroidAffiliationService::ResultCallback callback,
       const scoped_refptr<base::TaskRunner>& callback_task_runner);
   void Prefetch(const base::Time& keep_fresh_until);
   void CancelPrefetch(const base::Time& keep_fresh_until);

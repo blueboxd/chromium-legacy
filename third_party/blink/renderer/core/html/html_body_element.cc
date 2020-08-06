@@ -70,8 +70,8 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
                    GetExecutionContext()->GetReferrerPolicy()),
           OriginClean::kTrue, false /* is_ad_related */);
       image_value->SetInitiator(localName());
-      style->SetProperty(
-          CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
+      style->SetProperty(CSSPropertyValue(
+          CSSPropertyName(CSSPropertyID::kBackgroundImage), *image_value));
     }
   } else if (name == html_names::kMarginwidthAttr ||
              name == html_names::kLeftmarginAttr) {

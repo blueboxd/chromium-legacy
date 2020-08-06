@@ -429,11 +429,16 @@ void EncodeRandomizedValue(const RandomizedEncoder& encoder,
                            FieldSignature field_signature,
                            base::StringPiece data_type,
                            base::StringPiece data_value,
+                           bool include_checksum,
                            AutofillRandomizedValue* output) {
   DCHECK(output);
   output->set_encoding_type(encoder.encoding_type());
   output->set_encoded_bits(
       encoder.Encode(form_signature, field_signature, data_type, data_value));
+  if (include_checksum) {
+    DCHECK(data_type == RandomizedEncoder::FORM_URL);
+    output->set_checksum(StrToHash32Bit(data_value.data()));
+  }
 }
 
 void EncodeRandomizedValue(const RandomizedEncoder& encoder,
@@ -441,9 +446,11 @@ void EncodeRandomizedValue(const RandomizedEncoder& encoder,
                            FieldSignature field_signature,
                            base::StringPiece data_type,
                            base::StringPiece16 data_value,
+                           bool include_checksum,
                            AutofillRandomizedValue* output) {
   EncodeRandomizedValue(encoder, form_signature, field_signature, data_type,
-                        base::UTF16ToUTF8(data_value), output);
+                        base::UTF16ToUTF8(data_value), include_checksum,
+                        output);
 }
 
 void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
@@ -455,12 +462,12 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
   if (!form.id_attribute().empty()) {
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
                           RandomizedEncoder::FORM_ID, form.id_attribute(),
-                          metadata->mutable_id());
+                          /*include_checksum=*/false, metadata->mutable_id());
   }
   if (!form.name_attribute().empty()) {
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
                           RandomizedEncoder::FORM_NAME, form.name_attribute(),
-                          metadata->mutable_name());
+                          /*include_checksum=*/false, metadata->mutable_name());
   }
 
   for (const ButtonTitleInfo& e : form.button_titles()) {
@@ -468,6 +475,7 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
     DCHECK(!e.first.empty());
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
                           RandomizedEncoder::FORM_BUTTON_TITLES, e.first,
+                          /*include_checksum=*/false,
                           button_title->mutable_title());
     button_title->set_type(static_cast<ButtonTitleType>(e.second));
   }
@@ -475,8 +483,7 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
   if (encoder.AnonymousUrlCollectionIsEnabled() && !full_source_url.empty()) {
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
                           RandomizedEncoder::FORM_URL, full_source_url,
-                          metadata->mutable_url());
-    metadata->set_checksum_for_url(StrToHash32Bit(full_source_url));
+                          /*include_checksum=*/true, metadata->mutable_url());
   }
 }
 
@@ -490,43 +497,48 @@ void PopulateRandomizedFieldMetadata(
   if (!field.id_attribute.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_ID, field.id_attribute,
-                          metadata->mutable_id());
+                          /*include_checksum=*/false, metadata->mutable_id());
   }
   if (!field.name_attribute.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_NAME, field.name_attribute,
-                          metadata->mutable_name());
+                          /*include_checksum=*/false, metadata->mutable_name());
   }
   if (!field.form_control_type.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_CONTROL_TYPE,
-                          field.form_control_type, metadata->mutable_type());
+                          field.form_control_type, /*include_checksum=*/false,
+                          metadata->mutable_type());
   }
   if (!field.label.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_LABEL, field.label,
+                          /*include_checksum=*/false,
                           metadata->mutable_label());
   }
   if (!field.aria_label.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label,
+                          /*include_checksum=*/false,
                           metadata->mutable_aria_label());
   }
   if (!field.aria_description.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
-                          field.aria_description,
+                          field.aria_description, /*include_checksum=*/false,
                           metadata->mutable_aria_description());
   }
   if (!field.css_classes.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes,
+                          /*include_checksum=*/false,
                           metadata->mutable_css_class());
   }
   if (!field.placeholder.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_PLACEHOLDER,
-                          field.placeholder, metadata->mutable_placeholder());
+                          field.placeholder, /*include_checksum=*/false,
+                          metadata->mutable_placeholder());
   }
 }
 

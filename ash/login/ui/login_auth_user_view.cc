@@ -834,26 +834,12 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   password_view_->SetDisplayPasswordButtonVisible(
       user.show_display_password_button);
 
-  std::unique_ptr<LoginPinView> pin_view;
-  // If the display password button feature is disabled, the PIN view does not
-  // need a submit button as the password view already has one.
-  if (chromeos::features::IsLoginDisplayPasswordButtonEnabled()) {
-    pin_view = std::make_unique<LoginPinView>(
-        LoginPinView::Style::kAlphanumeric,
-        base::BindRepeating(&LoginPasswordView::InsertNumber,
-                            base::Unretained(password_view.get())),
-        base::BindRepeating(&LoginPasswordView::Backspace,
-                            base::Unretained(password_view.get())),
-        base::BindRepeating(&LoginPasswordView::SubmitPassword,
-                            base::Unretained(password_view.get())));
-  } else {
-    pin_view = std::make_unique<LoginPinView>(
-        LoginPinView::Style::kAlphanumeric,
-        base::BindRepeating(&LoginPasswordView::InsertNumber,
-                            base::Unretained(password_view.get())),
-        base::BindRepeating(&LoginPasswordView::Backspace,
-                            base::Unretained(password_view.get())));
-  }
+  auto pin_view = std::make_unique<LoginPinView>(
+      LoginPinView::Style::kAlphanumeric,
+      base::BindRepeating(&LoginPasswordView::InsertNumber,
+                          base::Unretained(password_view.get())),
+      base::BindRepeating(&LoginPasswordView::Backspace,
+                          base::Unretained(password_view.get())));
   pin_view_ = pin_view.get();
   DCHECK(pin_view_->layer());
 

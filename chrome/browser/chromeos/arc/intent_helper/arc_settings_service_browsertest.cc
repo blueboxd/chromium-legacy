@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
@@ -512,6 +513,79 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ONCProxyPolicyTest) {
   expected_proxy_config.SetKey(
       "mode", base::Value(ProxyPrefs::kPacScriptProxyModeName));
   expected_proxy_config.SetKey("pacUrl", base::Value(kONCPacUrl));
+
+  EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),
+                                 {&expected_proxy_config}),
+            1);
+}
+
+// Test to verify that, when enabled, the local proxy address is synced instead
+// of the real proxy set via policy.
+IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest,
+                       SystemProxyAddressForwardedTest) {
+  fake_intent_helper_instance_->clear_broadcasts();
+
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kOpenNetworkConfiguration,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD, base::Value(kONCPolicy), nullptr);
+  UpdatePolicy(policy);
+
+  base::Value expected_proxy_config(base::Value::Type::DICTIONARY);
+  expected_proxy_config.SetKey(
+      "mode", base::Value(ProxyPrefs::kPacScriptProxyModeName));
+  expected_proxy_config.SetKey("pacUrl", base::Value(kONCPacUrl));
+
+  // Set the user preference to indicate that ARC should connect to
+  // System-proxy.
+  browser()->profile()->GetPrefs()->Set(
+      ::prefs::kSystemProxyUserTrafficHostAndPort,
+      base::Value("local_proxy:3128"));
+  RunUntilIdle();
+
+  base::Value expected_proxy_config_system_proxy(base::Value::Type::DICTIONARY);
+  expected_proxy_config_system_proxy.SetKey(
+      "mode", base::Value(ProxyPrefs::kFixedServersProxyModeName));
+  expected_proxy_config_system_proxy.SetKey("host", base::Value("local_proxy"));
+  expected_proxy_config_system_proxy.SetIntKey("port", 3128);
+
+  // Unset the System-proxy preference to verify that ARC syncs proxy configs
+  // correctly when System-proxy is disabled.
+  browser()->profile()->GetPrefs()->Set(
+      ::prefs::kSystemProxyUserTrafficHostAndPort, base::Value(""));
+  RunUntilIdle();
+
+  EXPECT_EQ(CountProxyBroadcasts(
+                fake_intent_helper_instance_->broadcasts(),
+                {&expected_proxy_config, &expected_proxy_config_system_proxy,
+                 &expected_proxy_config}),
+            3);
+}
+
+// Test to verify that the address of the local proxy is not forwarded if
+// there's no proxy set in the browser.
+IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest,
+                       SystemProxyAddressNotForwardedForDirectMode) {
+  fake_intent_helper_instance_->clear_broadcasts();
+
+  policy::PolicyMap policy;
+  // Apply ONC policy with direct proxy.
+  policy.Set(policy::key::kDeviceOpenNetworkConfiguration,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_CLOUD, base::Value(kDeviceONCPolicy),
+             nullptr);
+  UpdatePolicy(policy);
+
+  // Set the user preference to indicate that ARC should connect to
+  // System-proxy.
+  browser()->profile()->GetPrefs()->Set(
+      ::prefs::kSystemProxyUserTrafficHostAndPort,
+      base::Value("local_proxy:3128"));
+  RunUntilIdle();
+
+  base::Value expected_proxy_config(base::Value::Type::DICTIONARY);
+  expected_proxy_config.SetKey("mode",
+                               base::Value(ProxyPrefs::kDirectProxyModeName));
 
   EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),
                                  {&expected_proxy_config}),

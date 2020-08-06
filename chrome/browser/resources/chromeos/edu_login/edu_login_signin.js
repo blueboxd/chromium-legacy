@@ -6,6 +6,7 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './edu_login_css.js';
 import './edu_login_template.js';
 import './edu_login_button.js';
+import './gaia_action_buttons.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -38,16 +39,19 @@ Polymer({
       type: Boolean,
       value: true,
     },
-  },
 
-  /**
-   * The auth extension host instance.
-   * @private {?Authenticator}
-   */
-  authExtHost_: null,
+    /**
+     * The auth extension host instance.
+     * @private {?Authenticator}
+     */
+    authExtHost_: Object,
+  },
 
   /** @private {?EduAccountLoginBrowserProxy} */
   browserProxy_: null,
+
+  /** @private {boolean} */
+  enableGaiaActionButtons_: false,
 
   /** @override */
   created() {
@@ -133,6 +137,7 @@ Polymer({
   loadAuthExtension_(data) {
     this.authExtHost_.load(data.authMode, data);
     this.loading_ = true;
+    this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
   },
 
   /**

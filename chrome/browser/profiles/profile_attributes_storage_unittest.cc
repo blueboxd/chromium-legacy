@@ -751,9 +751,12 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
             entry->GetHighResAvatar());
 
   // Since we are not using GAIA image, |GetAvatarIcon| should return the same
-  // image as |GetHighResAvatar| in desktop.
-  EXPECT_EQ(&storage()->cached_avatar_images_[icon_filename],
-            &entry->GetAvatarIcon());
+  // image as |GetHighResAvatar| in desktop. Since it returns a copy, the
+  // backing object needs to get checked.
+  const gfx::ImageSkia* avatar_icon = entry->GetAvatarIcon().ToImageSkia();
+  const gfx::ImageSkia* cached_icon =
+      storage()->cached_avatar_images_[icon_filename].ToImageSkia();
+  EXPECT_TRUE(avatar_icon->BackedBySameObjectAs(*cached_icon));
 
   // Finish the async calls that save the image to the disk.
   EXPECT_CALL(observer(), OnProfileHighResAvatarLoaded(profile_path)).Times(1);

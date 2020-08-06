@@ -122,7 +122,7 @@ void CascadeExpansion::AdvanceNormal() {
     return;
   auto reference = PropertyAt(index_);
   const auto& metadata = reference.PropertyMetadata();
-  id_ = metadata.property_->PropertyID();
+  id_ = metadata.PropertyID();
   priority_ = CascadePriority(
       matched_properties_.types_.origin, metadata.important_,
       matched_properties_.types_.tree_order,
@@ -143,7 +143,7 @@ void CascadeExpansion::AdvanceNormal() {
       DCHECK(IsAffectedByAll(id_));
       break;
     default:
-      property_ = metadata.property_;
+      property_ = &CSSProperty::Get(id_);
       break;
   }
 

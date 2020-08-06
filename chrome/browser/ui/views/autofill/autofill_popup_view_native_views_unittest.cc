@@ -124,6 +124,19 @@ TEST_F(AutofillPopupViewNativeViewsTest, ShowHideTest) {
   view()->Hide();
 }
 
+// This is a regression test for crbug.com/1113255
+TEST_F(AutofillPopupViewNativeViewsTest,
+       ShowViewWithOnlyFooterItemsShouldNotCrash) {
+  // Set suggestions to have only a footer item.
+  autofill_popup_controller_.set_suggestions(
+      {autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM});
+  view_ = std::make_unique<autofill::AutofillPopupViewNativeViews>(
+      &autofill_popup_controller_, widget_.get());
+  widget_->SetContentsView(view_.get());
+  widget_->Show();
+  view_->Show();
+}
+
 TEST_F(AutofillPopupViewNativeViewsTest, AccessibilitySelectedEvent) {
   TestAXEventObserver observer;
   CreateAndShowView({autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,

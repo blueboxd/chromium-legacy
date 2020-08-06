@@ -464,10 +464,18 @@ bool IsModernAvatarIconIndex(size_t icon_index) {
 }
 
 int GetPlaceholderAvatarIconResourceID() {
+  // TODO(crbug.com/1100835): Replace with the new icon. Consider coloring the
+  // icon (i.e. providing the image through
+  // ProfileAttributesEntry::GetAvatarIcon(), instead) which would require more
+  // refactoring.
   return IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE;
 }
 
 std::string GetPlaceholderAvatarIconUrl() {
+  // TODO(crbug.com/1100835): Replace with the new icon. Consider coloring the
+  // icon (i.e. providing the image through
+  // ProfileAttributesEntry::GetAvatarIcon(), instead) which would require more
+  // refactoring.
   return "chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE";
 }
 

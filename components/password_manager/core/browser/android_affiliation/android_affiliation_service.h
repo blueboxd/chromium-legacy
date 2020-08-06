@@ -62,7 +62,7 @@ class AffiliationBackend;
 //       class ExampleAffiliatedCredentialFiller
 //           : public base::SupportsWeakPtr<...> {
 //        public:
-//         ExampleAffiliatedCredentialFiller(AffiliationService* service,
+//         ExampleAffiliatedCredentialFiller(AndroidAffiliationService* service,
 //                                           const FacetURI& y)
 //             : service_(service), y_(y) {
 //           cancel_handle_ = service_->Prefetch(y_, base::Time::Max());
@@ -86,11 +86,11 @@ class AffiliationBackend;
 //         }
 //
 //        private:
-//         AffiliationService* service_;
+//         AndroidAffiliationService* service_;
 //         const FacetURI& y_;
 //         CancelPrefetchingHandle cancel_handle_;
 //       };
-class AffiliationService : public KeyedService {
+class AndroidAffiliationService : public KeyedService {
  public:
   using ResultCallback =
       base::OnceCallback<void(const AffiliatedFacets& /* results */,
@@ -101,9 +101,9 @@ class AffiliationService : public KeyedService {
 
   // The |backend_task_runner| should be a task runner corresponding to a thread
   // that can take blocking I/O, and is normally Chrome's DB thread.
-  explicit AffiliationService(
+  explicit AndroidAffiliationService(
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
-  ~AffiliationService() override;
+  ~AndroidAffiliationService() override;
 
   // Initializes the service by creating its backend and transferring it to the
   // thread corresponding to |backend_task_runner_|.
@@ -153,18 +153,18 @@ class AffiliationService : public KeyedService {
   virtual void TrimCacheForFacetURI(const FacetURI& facet_uri);
 
  private:
-  // The backend, owned by this AffiliationService instance, but living on the
-  // DB thread. It will be deleted asynchronously during shutdown on the DB
-  // thread, so it will outlive |this| along with all its in-flight tasks.
+  // The backend, owned by this AndroidAffiliationService instance, but living
+  // on the DB thread. It will be deleted asynchronously during shutdown on the
+  // DB thread, so it will outlive |this| along with all its in-flight tasks.
   AffiliationBackend* backend_;
 
   // TaskRunner to be used to run the |backend_|.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<AffiliationService> weak_ptr_factory_{this};
+  base::WeakPtrFactory<AndroidAffiliationService> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(AffiliationService);
+  DISALLOW_COPY_AND_ASSIGN(AndroidAffiliationService);
 };
 
 }  // namespace password_manager

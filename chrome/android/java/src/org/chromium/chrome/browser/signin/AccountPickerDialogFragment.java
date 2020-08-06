@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerCoordinator;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerCoordinator.AccountPickerAccessPoint;
 
 /**
  * This class implements dialog-based account picker that is used by SigninFragmentBase. This
@@ -55,7 +56,8 @@ public class AccountPickerDialogFragment extends DialogFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mCoordinator = new AccountPickerCoordinator(recyclerView,
                 (AccountPickerCoordinator.Listener) getTargetFragment(),
-                getArguments().getString(ARGUMENT_SELECTED_ACCOUNT_NAME));
+                getArguments().getString(ARGUMENT_SELECTED_ACCOUNT_NAME),
+                AccountPickerAccessPoint.SETTING);
         return builder.setTitle(R.string.signin_account_picker_dialog_title)
                 .setView(recyclerView)
                 .create();

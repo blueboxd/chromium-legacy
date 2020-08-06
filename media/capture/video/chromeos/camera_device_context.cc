@@ -60,8 +60,8 @@ void CameraDeviceContext::SubmitCapturedGpuMemoryBuffer(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   client_->OnIncomingCapturedGfxBuffer(buffer, frame_format,
-                                       GetCameraFrameOrientation(),
-                                       reference_time, timestamp);
+                                       GetCameraFrameRotation(), reference_time,
+                                       timestamp);
 }
 
 void CameraDeviceContext::SetSensorOrientation(int sensor_orientation) {
@@ -78,8 +78,17 @@ void CameraDeviceContext::SetScreenRotation(int screen_rotation) {
   screen_rotation_ = screen_rotation;
 }
 
-int CameraDeviceContext::GetCameraFrameOrientation() {
+int CameraDeviceContext::GetCameraFrameRotation() {
   return (sensor_orientation_ + screen_rotation_) % 360;
+}
+
+int CameraDeviceContext::GetRotationForDisplay() {
+  return screen_rotation_;
+}
+
+int CameraDeviceContext::GetRotationFromSensorOrientation() {
+  // We need to rotate the frame back to 0 degree.
+  return (360 - sensor_orientation_);
 }
 
 bool CameraDeviceContext::ReserveVideoCaptureBufferFromPool(

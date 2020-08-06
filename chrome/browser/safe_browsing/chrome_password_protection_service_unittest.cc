@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -211,16 +212,11 @@ class MockChromePasswordProtectionService
 class ChromePasswordProtectionServiceTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  ChromePasswordProtectionServiceTest() {}
+  ChromePasswordProtectionServiceTest() = default;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    // Use MockPasswordStore to remove a possible race. Normally the
-    // PasswordStore does its database manipulation on the DB thread, which
-    // creates a possible race during navigation. Specifically the
-    // PasswordManager will ignore any forms in a page if the load from the
-    // PasswordStore has not completed.
     password_store_ =
         base::WrapRefCounted(static_cast<password_manager::MockPasswordStore*>(
             PasswordStoreFactory::GetInstance()
@@ -230,6 +226,19 @@ class ChromePasswordProtectionServiceTest
                                         content::BrowserContext,
                                         password_manager::MockPasswordStore>))
                 .get()));
+
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kEnablePasswordsAccountStorage)) {
+      account_password_store_ = base::WrapRefCounted(
+          static_cast<password_manager::MockPasswordStore*>(
+              AccountPasswordStoreFactory::GetInstance()
+                  ->SetTestingFactoryAndUse(
+                      profile(),
+                      base::BindRepeating(&password_manager::BuildPasswordStore<
+                                          content::BrowserContext,
+                                          password_manager::MockPasswordStore>))
+                  .get()));
+    }
 
     profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
     profile()->GetPrefs()->SetInteger(
@@ -273,6 +282,8 @@ class ChromePasswordProtectionServiceTest
     base::RunLoop().RunUntilIdle();
     service_.reset();
     request_ = nullptr;
+    if (account_password_store_)
+      account_password_store_->ShutdownOnUIThread();
     password_store_->ShutdownOnUIThread();
     identity_test_env_profile_adaptor_.reset();
     cache_manager_.reset();
@@ -387,6 +398,7 @@ class ChromePasswordProtectionServiceTest
       identity_test_env_profile_adaptor_;
   MockSecurityEventRecorder* security_event_recorder_;
   scoped_refptr<password_manager::MockPasswordStore> password_store_;
+  scoped_refptr<password_manager::MockPasswordStore> account_password_store_;
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
 #if !defined(OS_ANDROID)

@@ -51,6 +51,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "net/base/url_util.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
@@ -63,6 +64,7 @@ constexpr char kSetFontScaleAction[] =
     "org.chromium.arc.intent_helper.SET_FONT_SCALE";
 constexpr char kSetPageZoomAction[] =
     "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
+constexpr char kSetProxyAction[] = "org.chromium.arc.intent_helper.SET_PROXY";
 
 constexpr char kArcProxyBypassListDelimiter[] = ",";
 
@@ -172,6 +174,8 @@ class ArcSettingsServiceImpl
   void SyncLocale() const;
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
+  bool IsSystemProxyActive() const;
+  void SyncProxySettingsForSystemProxy() const;
   void SyncReportingConsent(bool initial_sync) const;
   void SyncPictureInPictureEnabled() const;
   void SyncSelectToSpeakEnabled() const;
@@ -284,7 +288,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncUse24HourClock();
   } else if (pref_name == ::prefs::kResolveTimezoneByGeolocationMethod) {
     SyncTimeZoneByGeolocation();
-  } else if (pref_name == proxy_config::prefs::kProxy) {
+  } else if (pref_name == proxy_config::prefs::kProxy ||
+             pref_name == ::prefs::kSystemProxyUserTrafficHostAndPort) {
     SyncProxySettings();
   } else {
     LOG(ERROR) << "Unknown pref changed.";
@@ -344,6 +349,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(ash::prefs::kAccessibilitySwitchAccessEnabled);
   AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(::prefs::kResolveTimezoneByGeolocationMethod);
+  AddPrefToObserve(::prefs::kSystemProxyUserTrafficHostAndPort);
   AddPrefToObserve(::prefs::kUse24HourClock);
   AddPrefToObserve(proxy_config::prefs::kProxy);
   AddPrefToObserve(onc::prefs::kDeviceOpenNetworkConfiguration);
@@ -482,12 +488,15 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
   std::unique_ptr<ProxyConfigDictionary> proxy_config_dict =
       chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
           GetPrefs(), g_browser_process->local_state());
-  if (!proxy_config_dict)
-    return;
 
   ProxyPrefs::ProxyMode mode;
   if (!proxy_config_dict || !proxy_config_dict->GetMode(&mode))
     mode = ProxyPrefs::MODE_DIRECT;
+
+  if (mode != ProxyPrefs::MODE_DIRECT && IsSystemProxyActive()) {
+    SyncProxySettingsForSystemProxy();
+    return;
+  }
 
   base::DictionaryValue extras;
   extras.SetString("mode", ProxyPrefs::ProxyModeToString(mode));
@@ -540,7 +549,36 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
       return;
   }
 
-  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_PROXY", extras);
+  SendSettingsBroadcast(kSetProxyAction, extras);
+}
+
+bool ArcSettingsServiceImpl::IsSystemProxyActive() const {
+  if (!profile_->GetPrefs()->HasPrefPath(
+          ::prefs::kSystemProxyUserTrafficHostAndPort)) {
+    return false;
+  }
+
+  const std::string proxy_host_and_port = profile_->GetPrefs()->GetString(
+      ::prefs::kSystemProxyUserTrafficHostAndPort);
+  // System-proxy can be active, but the network namespace for the worker
+  // process is not yet configured.
+  return !proxy_host_and_port.empty();
+}
+
+void ArcSettingsServiceImpl::SyncProxySettingsForSystemProxy() const {
+  const std::string proxy_host_and_port = profile_->GetPrefs()->GetString(
+      ::prefs::kSystemProxyUserTrafficHostAndPort);
+  std::string host;
+  int port;
+  if (!net::ParseHostAndPort(proxy_host_and_port, &host, &port))
+    return;
+
+  base::DictionaryValue extras;
+  extras.SetString(
+      "mode", ProxyPrefs::ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS));
+  extras.SetString("host", host);
+  extras.SetInteger("port", port);
+  SendSettingsBroadcast(kSetProxyAction, extras);
 }
 
 void ArcSettingsServiceImpl::SyncReportingConsent(bool initial_sync) const {

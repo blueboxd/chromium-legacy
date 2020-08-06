@@ -41,6 +41,11 @@ enum class KeyRetrievalTriggerForUMA;
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// Shows the list of saved passwords in the settings. Automatically starts
+// password check.
+- (void)showSavedPasswordsSettingsAndStartPasswordCheckFromViewController:
+    (UIViewController*)baseViewController;
+
 // Shows the list of profiles (addresess) in the settings.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController;

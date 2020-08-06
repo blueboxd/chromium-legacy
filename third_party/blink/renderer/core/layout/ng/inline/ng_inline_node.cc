@@ -1581,10 +1581,15 @@ static LayoutUnit ComputeContentSize(
       break;
 
     LayoutUnit inline_size = line_info.Width();
+#if DCHECK_IS_ON()
     // Text measurement is done using floats which may introduce small rounding
     // errors for near-saturated values.
-    DCHECK_EQ(inline_size.Round(),
-              line_info.ComputeWidth().ClampNegativeToZero().Round());
+    // See http://crbug.com/1112560
+    if (!LayoutUnit(line_info.ComputeWidthInFloat()).MightBeSaturated()) {
+      DCHECK_EQ(inline_size.Round(),
+                line_info.ComputeWidth().ClampNegativeToZero().Round());
+    }
+#endif
 
     for (const NGInlineItemResult& item_result : line_info.Results()) {
       DCHECK(item_result.item);

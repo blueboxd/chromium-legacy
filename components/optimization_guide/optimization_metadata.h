@@ -55,6 +55,17 @@ class OptimizationMetadata {
     loading_predictor_metadata_ = loading_predictor_metadata;
   }
 
+  base::Optional<proto::DelayAsyncScriptExecutionMetadata>
+  delay_async_script_execution_metadata() const {
+    return delay_async_script_execution_metadata_;
+  }
+  void set_delay_async_script_execution_metadata(
+      const proto::DelayAsyncScriptExecutionMetadata&
+          delay_async_script_execution_metadata) {
+    delay_async_script_execution_metadata_ =
+        delay_async_script_execution_metadata;
+  }
+
  private:
   // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
   base::Optional<proto::PreviewsMetadata> previews_metadata_;
@@ -67,6 +78,10 @@ class OptimizationMetadata {
 
   // Only applicable for the LOADING_PREDICTOR optimization type.
   base::Optional<proto::LoadingPredictorMetadata> loading_predictor_metadata_;
+
+  // Only applicable for the DELAY_ASYNC_SCRIPT_EXECUTION optimization type.
+  base::Optional<proto::DelayAsyncScriptExecutionMetadata>
+      delay_async_script_execution_metadata_;
 };
 
 }  // namespace optimization_guide

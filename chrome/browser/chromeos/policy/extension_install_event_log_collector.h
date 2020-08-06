@@ -110,7 +110,7 @@ class ExtensionInstallEventLogCollector
 
   // Adds success events and notifies delegate that extension is loaded
   // successfully.
-  void AddSuccessEvent(const extensions::ExtensionId& id);
+  void AddSuccessEvent(const extensions::Extension* extension);
 
  private:
   extensions::ExtensionRegistry* registry_;
@@ -125,7 +125,7 @@ class ExtensionInstallEventLogCollector
       registry_observer_{this};
   ScopedObserver<extensions::InstallStageTracker,
                  extensions::InstallStageTracker::Observer>
-      collector_observer_{this};
+      stage_tracker_observer_{this};
 };
 
 }  // namespace policy

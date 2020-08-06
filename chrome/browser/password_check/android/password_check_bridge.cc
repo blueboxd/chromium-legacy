@@ -17,24 +17,23 @@ static jlong JNI_PasswordCheckBridge_Create(
 PasswordCheckBridge::PasswordCheckBridge(
     const base::android::JavaParamRef<jobject>& java_bridge)
     : java_bridge_(java_bridge) {}
+
 PasswordCheckBridge::~PasswordCheckBridge() = default;
 
 void PasswordCheckBridge::StartCheck(JNIEnv* env) {
-  // TODO(crbug.com/1102025): implement this.
+  check_manager_.StartCheck();
 }
 
 void PasswordCheckBridge::StopCheck(JNIEnv* env) {
-  // TODO(crbug.com/1102025): implement this.
+  check_manager_.StopCheck();
 }
 
 jint PasswordCheckBridge::GetCompromisedCredentialsCount(JNIEnv* env) {
-  // TODO(crbug.com/1102025): implement this.
-  return 0;
+  return check_manager_.GetCompromisedCredentialsCount();
 }
 
 jint PasswordCheckBridge::GetSavedPasswordsCount(JNIEnv* env) {
-  // TODO(crbug.com/1102025): implement this.
-  return 0;
+  return check_manager_.GetSavedPasswordsCount();
 }
 
 void PasswordCheckBridge::GetCompromisedCredentials(
@@ -50,7 +49,18 @@ void PasswordCheckBridge::RemoveCredential(
 }
 
 void PasswordCheckBridge::Destroy(JNIEnv* env) {
+  check_manager_.StopCheck();
   delete this;
+}
+
+void PasswordCheckBridge::OnSavedPasswordsFetched(int count) {
+  Java_PasswordCheckBridge_onSavedPasswordsFetched(
+      base::android::AttachCurrentThread(), java_bridge_, count);
+}
+
+void PasswordCheckBridge::OnCompromisedCredentialsChanged(int count) {
+  Java_PasswordCheckBridge_onCompromisedCredentialsFetched(
+      base::android::AttachCurrentThread(), java_bridge_, count);
 }
 
 void PasswordCheckBridge::OnPasswordCheckStatusChanged(

@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -20,6 +21,12 @@
 @end
 
 @implementation LegacyPageInfoTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kPageInfoRefactoring);
+  return config;
+}
 
 // Tests that rotating the device will automatically dismiss the page info view.
 - (void)testShowPageInfoAndDismissOnDeviceRotation {

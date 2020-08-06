@@ -58,11 +58,13 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
 
   bool IsExecutionForbidden() const;
 
-  // Returns true if the evaluation completed with no uncaught exception.
-  bool Evaluate(const ScriptSourceCode&,
-                SanitizeScriptErrors sanitize_script_errors,
-                ErrorEvent** = nullptr,
-                V8CacheOptions = kV8CacheOptionsDefault);
+  // Returns a non-Empty value if the evaluation completed with no uncaught
+  // exception. Callers should enter ScriptState::Scope before calling this.
+  v8::Local<v8::Value> EvaluateAndReturnValue(
+      const ScriptSourceCode&,
+      SanitizeScriptErrors sanitize_script_errors,
+      ErrorEvent** = nullptr,
+      V8CacheOptions = kV8CacheOptionsDefault);
 
   // Prevents future JavaScript execution.
   void ForbidExecution();
@@ -103,17 +105,15 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
     return script_state_ && !!script_state_->PerContextData();
   }
 
-  ScriptValue EvaluateAndReturnValueForTest(const ScriptSourceCode&);
-
  private:
   class ExecutionState;
 
   void DisableEvalInternal(const String& error_message);
 
   // Evaluate a script file in the current execution environment.
-  ScriptValue EvaluateInternal(const ScriptSourceCode&,
-                               SanitizeScriptErrors,
-                               V8CacheOptions);
+  v8::Local<v8::Value> EvaluateInternal(const ScriptSourceCode&,
+                                        SanitizeScriptErrors,
+                                        V8CacheOptions);
   void DisposeContextIfNeeded();
 
   Member<WorkerOrWorkletGlobalScope> global_scope_;

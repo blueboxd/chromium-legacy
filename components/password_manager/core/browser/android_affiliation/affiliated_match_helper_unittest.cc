@@ -27,11 +27,13 @@ namespace password_manager {
 
 namespace {
 
-using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
+using StrategyOnCacheMiss = AndroidAffiliationService::StrategyOnCacheMiss;
 
-class MockAffiliationService : public testing::StrictMock<AffiliationService> {
+class MockAffiliationService
+    : public testing::StrictMock<AndroidAffiliationService> {
  public:
-  MockAffiliationService() : testing::StrictMock<AffiliationService>(nullptr) {
+  MockAffiliationService()
+      : testing::StrictMock<AndroidAffiliationService>(nullptr) {
     testing::DefaultValue<AffiliatedFacets>::Set(AffiliatedFacets());
   }
 

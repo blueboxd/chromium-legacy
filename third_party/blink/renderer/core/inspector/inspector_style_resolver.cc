@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/inspector/inspector_css_cascade.h"
+#include "third_party/blink/renderer/core/inspector/inspector_style_resolver.h"
 
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
@@ -17,8 +17,8 @@
 
 namespace blink {
 
-InspectorCSSCascade::InspectorCSSCascade(Element* element,
-                                         PseudoId element_pseudo_id)
+InspectorStyleResolver::InspectorStyleResolver(Element* element,
+                                               PseudoId element_pseudo_id)
     : element_(element) {
   DCHECK(element_);
 
@@ -74,62 +74,18 @@ InspectorCSSCascade::InspectorCSSCascade(Element* element,
   }
 }
 
-RuleIndexList* InspectorCSSCascade::MatchedRules() const {
+RuleIndexList* InspectorStyleResolver::MatchedRules() const {
   return matched_rules_;
 }
 
 HeapVector<Member<InspectorCSSMatchedRules>>
-InspectorCSSCascade::PseudoElementRules() {
+InspectorStyleResolver::PseudoElementRules() {
   return pseudo_element_rules_;
 }
 
 HeapVector<Member<InspectorCSSMatchedRules>>
-InspectorCSSCascade::ParentRules() {
+InspectorStyleResolver::ParentRules() {
   return parent_rules_;
-}
-
-// This method does not handle different style origins/CSS variables/rule
-// priorities.
-// TODO (alexrudenko): Use real cascaded value (blocked on a better StyleEngine
-// API).
-const CSSValue* InspectorCSSCascade::GetCascadedProperty(
-    CSSPropertyID property_id) const {
-  DCHECK_NE(property_id, CSSPropertyID::kVariable);
-  if (const CSSValue* result =
-          GetPropertyValueFromStyle(element_->style(), property_id)) {
-    return result;
-  }
-
-  if (const CSSValue* result =
-          GetPropertyValueFromRuleIndexList(MatchedRules(), property_id)) {
-    return result;
-  }
-
-  return nullptr;
-}
-
-const CSSValue* InspectorCSSCascade::GetPropertyValueFromStyle(
-    CSSStyleDeclaration* style,
-    CSSPropertyID property_id) const {
-  if (!style)
-    return nullptr;
-  return style->GetPropertyCSSValueInternal(property_id);
-}
-
-const CSSValue* InspectorCSSCascade::GetPropertyValueFromRuleIndexList(
-    RuleIndexList* list,
-    CSSPropertyID property_id) const {
-  for (auto it = list->rbegin(); it != list->rend(); ++it) {
-    CSSRule* rule = it->first;
-    CSSStyleRule* style_rule = DynamicTo<CSSStyleRule>(rule);
-    if (!style_rule)
-      continue;
-    if (const CSSValue* result =
-            GetPropertyValueFromStyle(style_rule->style(), property_id)) {
-      return result;
-    }
-  }
-  return nullptr;
 }
 
 }  // namespace blink

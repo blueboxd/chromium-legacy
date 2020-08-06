@@ -150,7 +150,8 @@ PropertyHandleSet StringKeyframe::Properties() const {
   for (unsigned i = 0; i < css_property_map_->PropertyCount(); ++i) {
     CSSPropertyValueSet::PropertyReference property_reference =
         css_property_map_->PropertyAt(i);
-    const CSSProperty& property = property_reference.Property();
+    // TODO(crbug.com/980160): Remove access to static Variable instance.
+    const CSSProperty& property = CSSProperty::Get(property_reference.Id());
     DCHECK(!property.IsShorthand())
         << "Web Animations: Encountered unexpanded shorthand CSS property ("
         << static_cast<int>(property.PropertyID()) << ").";
@@ -159,7 +160,8 @@ PropertyHandleSet StringKeyframe::Properties() const {
 
   for (unsigned i = 0; i < presentation_attribute_map_->PropertyCount(); ++i) {
     properties.insert(PropertyHandle(
-        presentation_attribute_map_->PropertyAt(i).Property(), true));
+        CSSProperty::Get(presentation_attribute_map_->PropertyAt(i).Id()),
+        true));
   }
 
   for (auto* const key : svg_attribute_map_.Keys())

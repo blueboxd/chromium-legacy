@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_EXTENSION_INFO_H_
 
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "extensions/common/extension.h"
 
 class Profile;
 
 namespace enterprise_reporting {
+
+enterprise_management::Extension_ExtensionType ConvertExtensionTypeToProto(
+    extensions::Manifest::Type extension_type);
 
 void AppendExtensionInfoIntoProfileReport(
     Profile* profile,

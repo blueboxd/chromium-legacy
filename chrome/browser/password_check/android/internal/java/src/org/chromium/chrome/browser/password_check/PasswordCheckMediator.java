@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 
+import org.chromium.base.Consumer;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -21,6 +22,14 @@ class PasswordCheckMediator
         implements PasswordCheckCoordinator.CredentialEventHandler, PasswordCheck.Observer {
     private PropertyModel mModel;
     private PasswordCheckComponentUi.Delegate mDelegate;
+    private final Consumer<String> mLaunchCctWithChangePasswordUrl;
+    private final Consumer<CompromisedCredential> mLaunchCctWithScript;
+
+    PasswordCheckMediator(Consumer<String> launchCctWithChangePasswordUrl,
+            Consumer<CompromisedCredential> launchCctWithScript) {
+        this.mLaunchCctWithChangePasswordUrl = launchCctWithChangePasswordUrl;
+        this.mLaunchCctWithScript = launchCctWithScript;
+    }
 
     void initialize(PropertyModel model, PasswordCheckComponentUi.Delegate delegate) {
         mModel = model;
@@ -96,12 +105,13 @@ class PasswordCheckMediator
 
     @Override
     public void onChangePasswordButtonClick(CompromisedCredential credential) {
-        // TODO(crbug.com/1092444): Implement the action for the button.
+        mLaunchCctWithChangePasswordUrl.accept(credential.getOriginUrl());
     }
 
     @Override
     public void onChangePasswordWithScriptButtonClick(CompromisedCredential credential) {
-        // TODO(crbug.com/1086109): Implement the action for the button.
+        assert credential.hasScript();
+        mLaunchCctWithScript.accept(credential);
     }
 
     private PasswordCheck getPasswordCheck() {

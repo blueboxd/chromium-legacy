@@ -88,7 +88,7 @@ class StylePropertySerializer {
     explicit PropertyValueForSerializer(
         CSSPropertyValueSet::PropertyReference property)
         : value_(&property.Value()),
-          property_(property.Property()),
+          property_(CSSProperty::Get(property.Id())),
           is_important_(property.IsImportant()) {}
 
     // TODO(sashab): Make this take a const CSSValue&.
@@ -97,6 +97,7 @@ class StylePropertySerializer {
                                bool is_important)
         : value_(value), property_(property), is_important_(is_important) {}
 
+    // TODO(crbug.com/980160): Remove this function.
     const CSSProperty& Property() const { return property_; }
     const CSSValue* Value() const { return value_; }
     bool IsImportant() const { return is_important_; }

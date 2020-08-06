@@ -182,7 +182,8 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
     // behavior, but this causes failures on
     // wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout.html
     // and friends.
-    worker->ScriptController()->Evaluate(
+    ScriptState::Scope scope(worker->ScriptController()->GetScriptState());
+    worker->ScriptController()->EvaluateAndReturnValue(
         ScriptSourceCode(code_,
                          ScriptSourceLocationType::kEvalForScheduledAction),
         SanitizeScriptErrors::kDoNotSanitize);

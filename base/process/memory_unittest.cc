@@ -571,7 +571,16 @@ TEST_F(OutOfMemoryHandledTest, NewReleasesReservation) {
 // cases.
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) || defined(OS_ANDROID)
 
-TEST_F(OutOfMemoryDeathTest, UncheckedMallocDies) {
+// TODO(crbug.com/1112840): Fails on some Android bots.
+#if defined(OS_ANDROID)
+#define MAYBE_UncheckedMallocDies DISABLED_UncheckedMallocDies
+#define MAYBE_UncheckedCallocDies DISABLED_UncheckedCallocDies
+#else
+#define MAYBE_UncheckedMallocDies UncheckedMallocDies
+#define MAYBE_UncheckedCallocDies UncheckedCallocDies
+#endif  // defined(OS_ANDROID)
+
+TEST_F(OutOfMemoryDeathTest, MAYBE_UncheckedMallocDies) {
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     void* data;
@@ -580,7 +589,7 @@ TEST_F(OutOfMemoryDeathTest, UncheckedMallocDies) {
   });
 }
 
-TEST_F(OutOfMemoryDeathTest, UncheckedCallocDies) {
+TEST_F(OutOfMemoryDeathTest, MAYBE_UncheckedCallocDies) {
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     void* data;

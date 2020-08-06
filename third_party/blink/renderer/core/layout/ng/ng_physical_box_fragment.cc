@@ -253,6 +253,7 @@ PhysicalRect NGPhysicalBoxFragment::OverflowClipRect(
 PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
     TextHeightType height_type) const {
   DCHECK(GetLayoutObject());
+  DCHECK_EQ(PostLayout(), this);
   if (UNLIKELY(IsLayoutObjectDestroyedOrMoved())) {
     NOTREACHED();
     return PhysicalRect();
@@ -286,6 +287,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
 
 PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
     TextHeightType height_type) const {
+  DCHECK_EQ(PostLayout(), this);
   const NGFragmentItems* items = Items();
   if (Children().empty() && !items)
     return PhysicalRect();
@@ -409,7 +411,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
         continue;
       }
 
-      if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
+      if (const NGPhysicalBoxFragment* child_box =
+              item->PostLayoutBoxFragment()) {
         if (child_box->IsFloatingOrOutOfFlowPositioned()) {
           context.AddFloatingOrOutOfFlowPositionedChild(
               *child_box, item->OffsetInContainerBlock());
@@ -426,7 +429,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
   // - out of flow fragments whose css container is inline box.
   // TODO(layout-dev) Transforms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
-  for (const auto& child : Children()) {
+  for (const auto& child : PostLayoutChildren()) {
     if (child->IsFloatingOrOutOfFlowPositioned()) {
       context.AddFloatingOrOutOfFlowPositionedChild(*child, child.Offset());
     } else if (add_inline_children && child->IsLineBox()) {
@@ -457,6 +460,7 @@ PhysicalSize NGPhysicalBoxFragment::ScrollSize() const {
 }
 
 PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
+  DCHECK_EQ(PostLayout(), this);
   CheckCanUpdateInkOverflow();
   const ComputedStyle& style = Style();
   PhysicalRect ink_overflow({}, Size().ToLayoutSize());
@@ -485,6 +489,7 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     Vector<PhysicalRect>* outline_rects) const {
+  DCHECK_EQ(PostLayout(), this);
   if (!NGOutlineUtils::ShouldPaintOutline(*this))
     return;
 

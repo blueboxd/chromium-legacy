@@ -59,20 +59,20 @@ class CORE_EXPORT CSSPropertyValueSet
         : property_set_(&property_set), index_(index) {}
 
     CSSPropertyID Id() const {
-      return static_cast<CSSPropertyID>(
-          PropertyMetadata().Property().PropertyID());
-    }
-    const CSSProperty& Property() const {
-      return PropertyMetadata().Property();
+      return static_cast<CSSPropertyID>(PropertyMetadata().PropertyID());
     }
     CSSPropertyID ShorthandID() const {
       return PropertyMetadata().ShorthandID();
     }
 
-    CSSPropertyName Name() const;
+    CSSPropertyName Name() const { return PropertyMetadata().Name(); }
 
     bool IsImportant() const { return PropertyMetadata().important_; }
     bool IsImplicit() const { return PropertyMetadata().implicit_; }
+    bool IsAffectedByAll() const {
+      return Id() != CSSPropertyID::kVariable &&
+             CSSProperty::Get(Id()).IsAffectedByAll();
+    }
 
     const CSSValue& Value() const { return PropertyValue(); }
 

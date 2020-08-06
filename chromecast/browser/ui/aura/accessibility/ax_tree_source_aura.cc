@@ -40,7 +40,6 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
         aura::client::GetFocusClient(root_window);
     if (focus_client) {
       aura::Window* window = focus_client->GetFocusedWindow();
-      tree_data->focus_id = ui::AXNode::kInvalidAXID;
 
       // Search for the full screen shell surface that holds the child
       // tree for our UI. This is the node that should receive focus.

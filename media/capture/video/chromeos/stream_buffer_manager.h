@@ -69,7 +69,6 @@ class CAPTURE_EXPORT StreamBufferManager final {
   // camera frame rotation for good.
   base::Optional<Buffer> AcquireBufferForClientById(StreamType stream_type,
                                                     uint64_t buffer_ipc_id,
-                                                    int rotation,
                                                     VideoCaptureFormat* format);
 
   VideoCaptureFormat GetStreamCaptureFormat(StreamType stream_type);

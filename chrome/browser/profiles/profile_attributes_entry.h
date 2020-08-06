@@ -19,10 +19,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "third_party/skia/include/core/SkColor.h"
-
-namespace gfx {
-class Image;
-}
+#include "ui/gfx/image/image.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -86,9 +83,13 @@ class ProfileAttributesEntry {
   // address used to sign in and the empty string for profiles that aren't
   // signed in to chrome.
   base::string16 GetUserName() const;
-  // Gets the icon used as this profile's avatar. This might not be the icon
-  // displayed in the UI if IsUsingGAIAPicture() is true.
-  const gfx::Image& GetAvatarIcon() const;
+  // Gets the icon used as this profile's avatar.
+  // TODO(crbug.com/1100835): Rename |size_for_placeholder_avatar| to |size| and
+  // make this function resize all avatars appropriately. Remove the default
+  // value of |size_for_placeholder_avatar| when all callsites pass some value.
+  // Consider adding a |shape| parameter and get rid of
+  // profiles::GetSizedAvatarIcon().
+  gfx::Image GetAvatarIcon(int size_for_placeholder_avatar = 74) const;
   std::string GetLocalAuthCredentials() const;
   std::string GetPasswordChangeDetectionToken() const;
   // Returns true if the profile is currently running any background apps. Note
@@ -244,6 +245,9 @@ class ProfileAttributesEntry {
   // Loads or uses an already loaded high resolution image of the generic
   // profile avatar.
   const gfx::Image* GetHighResAvatar() const;
+
+  // Generates the colored placeholder avatar icon for the given |size|.
+  gfx::Image GetPlaceholderAvatarIcon(int size) const;
 
   // Returns if this profile has accounts (signed-in or signed-out) with
   // different account names. This is approximate as only a short hash of an

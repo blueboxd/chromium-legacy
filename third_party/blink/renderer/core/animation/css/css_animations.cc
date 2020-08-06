@@ -115,7 +115,9 @@ StringKeyframeVector ProcessKeyframesRule(
     keyframe->SetEasing(default_timing_function);
     const CSSPropertyValueSet& properties = style_keyframe->Properties();
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
-      const CSSProperty& property = properties.PropertyAt(j).Property();
+      // TODO(crbug.com/980160): Remove access to static Variable instance.
+      const CSSProperty& property =
+          CSSProperty::Get(properties.PropertyAt(j).Id());
       specified_properties_for_use_counter.insert(&property);
       if (property.PropertyID() == CSSPropertyID::kAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
@@ -493,6 +495,16 @@ ScrollTimelineOffset* ComputeScrollOffset(const CSSValue* value) {
   return MakeGarbageCollected<ScrollTimelineOffset>();
 }
 
+HeapVector<Member<ScrollTimelineOffset>>* ComputeScrollOffsets(
+    const CSSValue* start,
+    const CSSValue* end) {
+  auto* offsets =
+      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
+  offsets->push_back(ComputeScrollOffset(start));
+  offsets->push_back(ComputeScrollOffset(end));
+  return offsets;
+}
+
 base::Optional<double> ComputeTimeRange(const CSSValue* value) {
   if (auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
     return primitive->ComputeSeconds() * 1000.0;
@@ -500,26 +512,32 @@ base::Optional<double> ComputeTimeRange(const CSSValue* value) {
   return base::nullopt;
 }
 
+struct CSSScrollTimelineOptions {
+  STACK_ALLOCATED();
+
+ public:
+  CSSScrollTimelineOptions(Element* element, StyleRuleScrollTimeline& rule)
+      : source(ComputeScrollSource(element, rule.GetSource())),
+        direction(ComputeScrollDirection(rule.GetOrientation())),
+        offsets(ComputeScrollOffsets(rule.GetStart(), rule.GetEnd())),
+        time_range(ComputeTimeRange(rule.GetTimeRange())) {}
+
+  Element* source;
+  ScrollTimeline::ScrollDirection direction;
+  HeapVector<Member<ScrollTimelineOffset>>* offsets;
+  base::Optional<double> time_range;
+};
+
 ScrollTimeline* CreateScrollTimeline(Element* element,
                                      StyleRuleScrollTimeline* rule) {
   if (!rule)
     return nullptr;
-  base::Optional<double> scroll_time_range =
-      ComputeTimeRange(rule->GetTimeRange());
-  if (!scroll_time_range)
+  CSSScrollTimelineOptions options(element, *rule);
+  if (!options.time_range)
     return nullptr;
-  Element* source = ComputeScrollSource(element, rule->GetSource());
-  ScrollTimeline::ScrollDirection direction =
-      ComputeScrollDirection(rule->GetOrientation());
-  ScrollTimelineOffset* start = ComputeScrollOffset(rule->GetStart());
-  ScrollTimelineOffset* end = ComputeScrollOffset(rule->GetEnd());
-  HeapVector<Member<ScrollTimelineOffset>>* scroll_offsets =
-      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
-  scroll_offsets->push_back(start);
-  scroll_offsets->push_back(end);
   auto* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
-      &element->GetDocument(), source, direction, scroll_offsets,
-      *scroll_time_range);
+      &element->GetDocument(), options.source, options.direction,
+      options.offsets, *options.time_range);
   // It's is not allowed for a style resolve to create timelines that
   // needs timing updates (i.e. AnimationTimeline::NeedsAnimationTimingUpdate()
   // must return false). Servicing animations after creation preserves this

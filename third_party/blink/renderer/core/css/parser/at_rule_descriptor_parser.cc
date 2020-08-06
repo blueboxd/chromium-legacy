@@ -381,7 +381,7 @@ bool AtRuleDescriptorParser::ParseAtRule(
   // the CSSPropertyID.
   CSSPropertyID equivalent_property_id = AtRuleDescriptorIDAsCSSPropertyID(id);
   parsed_descriptors.push_back(
-      CSSPropertyValue(CSSProperty::Get(equivalent_property_id), *result));
+      CSSPropertyValue(CSSPropertyName(equivalent_property_id), *result));
   return true;
 }
 

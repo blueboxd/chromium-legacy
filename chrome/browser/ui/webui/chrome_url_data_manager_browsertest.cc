@@ -198,7 +198,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://device-log",
     "chrome://devices",
     "chrome://dino",
-    "chrome://discards",
     "chrome://domain-reliability-internals",
     "chrome://download-internals",
     "chrome://downloads",

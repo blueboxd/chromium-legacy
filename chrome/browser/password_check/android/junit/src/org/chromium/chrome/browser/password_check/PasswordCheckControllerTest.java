@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Consumer;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
@@ -53,6 +54,10 @@ public class PasswordCheckControllerTest {
     @Mock
     private PasswordCheckComponentUi.Delegate mDelegate;
     @Mock
+    private Consumer<String> mLaunchCctWithChangePasswordUrlConsumer;
+    @Mock
+    private Consumer<CompromisedCredential> mLaunchCctWithScriptConsumer;
+    @Mock
     private PasswordCheck mPasswordCheck;
 
     // DO NOT INITIALIZE HERE! The objects would be shared here which leaks state between tests.
@@ -63,7 +68,8 @@ public class PasswordCheckControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mModel = PasswordCheckProperties.createDefaultModel();
-        mMediator = new PasswordCheckMediator();
+        mMediator = new PasswordCheckMediator(
+                mLaunchCctWithChangePasswordUrlConsumer, mLaunchCctWithScriptConsumer);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         mMediator.initialize(mModel, mDelegate);
     }
@@ -121,5 +127,17 @@ public class PasswordCheckControllerTest {
     public void testRemovingElementTriggersDelegate() {
         mMediator.onRemove(ANA);
         verify(mDelegate).removeCredential(eq(ANA));
+    }
+
+    @Test
+    public void testOnChangePasswordButtonClick() {
+        mMediator.onChangePasswordButtonClick(ANA);
+        verify(mLaunchCctWithChangePasswordUrlConsumer).accept(eq(ANA.getOriginUrl()));
+    }
+
+    @Test
+    public void testOnChangePasswordWithScriptButtonClick() {
+        mMediator.onChangePasswordWithScriptButtonClick(BOB);
+        verify(mLaunchCctWithScriptConsumer).accept(eq(BOB));
     }
 }

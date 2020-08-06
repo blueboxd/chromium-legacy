@@ -3,6 +3,9 @@
     --avatar-icon-size: 74px;
     --banner-img-height: 628px;
     --banner-img-width: 250px;
+    --main-view-min-height: 620px;
+    min-height: var(--main-view-min-height);
+    min-width: 500px;
   }
 
   .banner {
@@ -15,18 +18,25 @@
   }
 
   #leftBanner {
-    background: url(left_banner_image.svg);
+    background: url(images/left_banner_image.svg);
     left: 0;
   }
 
   #rightBanner {
-    background: url(right_banner_image.svg);
+    background: url(images/right_banner_image.svg);
     right: 0;
   }
 
   .title-container {
-    margin: 30px auto;
+    margin: 30px auto 0 auto;
     text-align: center;
+  }
+
+  #wrapper {
+    display: flex;
+    height: calc(max(100vh, var(--main-view-min-height)) - 260px);
+    margin-inline-end: 140px;
+    margin-inline-start: 140px;
   }
 
   .profiles-container {
@@ -41,13 +51,12 @@
     grid-template-columns: repeat(auto-fit, var(--profile-item-width));
     justify-content: center;
     margin: auto;
-    margin-inline-end: 140px;
-    margin-inline-start: 140px;
-    max-height: calc((var(--profile-item-height) + var(--grid-gutter)) * 2 +
-        30px);
+    max-height: 100%;
+    overflow-x: hidden;
     overflow-y: auto;
     padding-inline-end: var(--scrollbar-width);
     padding-inline-start: var(--scrollbar-width);
+    width: 100%;
   }
 
   .profiles-container::-webkit-scrollbar {
@@ -77,7 +86,7 @@
 
   #addProfile {
     border: 1px dashed;
-    border-color:  var(--google-grey-400);
+    border-color: var(--google-grey-400);
   }
 
   cr-icon-button[iron-icon='profiles:add'] {
@@ -92,6 +101,7 @@
   .footer {
     bottom: 0;
     display: flex;
+    font-size: var(--text-font-size);
     margin-bottom: 40px;
     position: absolute;
     width: 100%;
@@ -110,21 +120,40 @@
   }
 
   cr-checkbox {
-    --cr-checkbox-label-color:  var(--google-grey-refresh-700);
+    --cr-checkbox-label-color:  var(--cr-secondary-text-color);
     --cr-checkbox-label-padding-start: 8px;
     justify-content: flex-end;
     margin-inline-end: 40px;
     margin-inline-start: auto;
+    padding-inline-end: 5px;
+    padding-inline-start: 5px;
   }
 
   @media (prefers-color-scheme: dark) {
-    /* TODO(msalama): Dark mode mocks not ready yet.*/
-    .footer > * {
-      background-color: rgba(0, 0, 0, .5);
+    #leftBanner {
+      background: url(images/dark_mode_left_banner_image.svg);
     }
 
-    cr-checkbox {
-      --cr-checkbox-label-color: var(--google-grey-refresh-500);
+    #rightBanner {
+      background: url(images/dark_mode_right_banner_image.svg);
+    }
+
+    .profiles-container::-webkit-scrollbar-thumb {
+      background: var(--google-grey-800);
+    }
+
+    #addProfile {
+      border-color: var(--google-grey-refresh-700);
+    }
+
+    cr-icon-button[iron-icon='profiles:add'] {
+      --cr-icon-button-fill-color: var(--google-grey-refresh-500);
+      --cr-icon-button-stroke-color: rgb(48, 48, 50);
+      color: var(--google-grey-refresh-500);
+    }
+
+    .footer > * {
+      background-color: rgba(0, 0, 0, .5);
     }
   }
 </style>
@@ -138,16 +167,22 @@
   <h2>$i18n{mainViewTitle}</h2>
   <h3>$i18n{mainViewSubtitle}</h3>
 </div>
-<div class="profiles-container">
-  <template is="dom-repeat"
-      hidden="[[!profilesList_]]" items="[[profilesList_]]">
-    <profile-card class="profile-item" profile-state="[[item]]"></profile-card>
-  </template>
-  <div id="addProfile" class="profile-item">
-    <!-- TODO(msalama): Add title, aria-label once strings are ready-->
-    <cr-icon-button iron-icon="profiles:add"
-        on-click="onAddProfileClick_">
-    </cr-icon-button>
+<div id="wrapper">
+  <div class="profiles-container">
+    <template is="dom-repeat"
+        hidden="[[!profilesList_]]" items="[[profilesList_]]">
+      <profile-card
+          class="profile-item" profile-state="[[item]]">
+      </profile-card>
+    </template>
+    <div id="addProfile" class="profile-item">
+      <div class="profile-card-info">$i18n{addSpaceButton}</div>
+      <cr-icon-button iron-icon="profiles:add"
+          on-click="onAddProfileClick_" aria-label$="$i18n{addSpaceButton}">
+      </cr-icon-button>
+      <!-- Empty div to maintain alignment with other profile cards. -->
+      <div class="profile-card-info"></div>
+    </div>
   </div>
 </div>
 <div id="rightBanner" class="banner"></div>

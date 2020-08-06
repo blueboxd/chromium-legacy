@@ -134,6 +134,14 @@ class IOSChromePasswordCheckManager
   password_manager::BulkLeakCheckServiceAdapter
       bulk_leak_check_service_adapter_;
 
+  // Boolean that remembers whether the delegate is initialized. This is done
+  // when the delegate obtains the list of saved passwords for the first time.
+  bool is_initialized_ = false;
+
+  // Boolean that indicate whether Password Check should be started right after
+  // delegate is initialized.
+  bool start_check_on_init_ = false;
+
   // A scoped observer for |saved_passwords_presenter_|.
   ScopedObserver<password_manager::SavedPasswordsPresenter,
                  password_manager::SavedPasswordsPresenter::Observer>

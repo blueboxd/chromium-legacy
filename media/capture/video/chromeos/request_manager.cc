@@ -319,7 +319,7 @@ void RequestManager::PrepareCaptureRequest() {
   pending_result.input_buffer_id = input_buffer_id;
   pending_result.reprocess_effect = reprocess_effect;
   pending_result.still_capture_callback = std::move(callback);
-  pending_result.orientation = device_context_->GetCameraFrameOrientation();
+  pending_result.orientation = device_context_->GetCameraFrameRotation();
 
   // For reprocess supported devices, bind the ReprocessTaskQueue with this
   // frame number. Once the shot result is returned, we will rebind the
@@ -441,7 +441,7 @@ bool RequestManager::TryPrepareOneShotRequest(
     take_photo_callback_queue_.pop();
 
     *settings = std::move(take_photo_settings_queue_.front());
-    SetJpegOrientation(settings, device_context_->GetCameraFrameOrientation());
+    SetJpegOrientation(settings, device_context_->GetCameraFrameRotation());
   }
   SetZeroShutterLag(settings, true);
   take_photo_settings_queue_.pop();
@@ -832,8 +832,7 @@ void RequestManager::SubmitCapturedPreviewBuffer(uint32_t frame_number,
     VideoCaptureFormat format;
     base::Optional<VideoCaptureDevice::Client::Buffer> buffer =
         stream_buffer_manager_->AcquireBufferForClientById(
-            StreamType::kPreviewOutput, buffer_ipc_id,
-            device_context_->GetCameraFrameOrientation(), &format);
+            StreamType::kPreviewOutput, buffer_ipc_id, &format);
     CHECK(buffer);
 
     // TODO: Figure out the right color space for the camera frame.  We may need
@@ -859,7 +858,7 @@ void RequestManager::SubmitCapturedPreviewBuffer(uint32_t frame_number,
         return VideoRotation::VIDEO_ROTATION_0;
       };
       metadata.rotation =
-          translate_rotation(device_context_->GetCameraFrameOrientation());
+          translate_rotation(device_context_->GetRotationForDisplay());
     } else {
       // All frames are pre-rotated to the display orientation.
       metadata.rotation = VideoRotation::VIDEO_ROTATION_0;

@@ -56,14 +56,6 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
                 ComponentPaymentRequestImpl componentPaymentRequestImpl);
 
         /**
-         * Set a native side observer for the implementation of this interface, for testing purpose
-         * only.
-         * @param nativeObserverForTest The native side observer.
-         */
-        @VisibleForTesting
-        void setNativeObserverForTest(NativeObserverForTest nativeObserverForTest);
-
-        /**
          * @return The JourneyLogger of PaymentRequestImpl.
          */
         JourneyLogger getJourneyLogger();
@@ -102,7 +94,6 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     public ComponentPaymentRequestImpl(ComponentPaymentRequestDelegate delegate) {
         mDelegate = delegate;
         mDelegate.setComponentPaymentRequestImpl(this);
-        mDelegate.setNativeObserverForTest(sNativeObserverForTest);
     }
 
     /**
@@ -113,6 +104,12 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     @VisibleForTesting
     public static void setNativeObserverForTest(NativeObserverForTest nativeObserverForTest) {
         sNativeObserverForTest = nativeObserverForTest;
+    }
+
+    /** @return Get the native=side observer, for testing purpose only. */
+    @Nullable
+    public static NativeObserverForTest getNativeObserverForTest() {
+        return sNativeObserverForTest;
     }
 
     @Override

@@ -92,7 +92,7 @@ message AutofillRandomizedValue {
   //
   // BIT_K encodings:
   //    each randomized bit i in |encoded_bits| corresponds to bit k of the byte
-  //    at the corresponsding offset i of the original metadata value, up to
+  //    at the corresponding offset i of the original metadata value, up to
   //    i=64 (8 bytes).
   //
   // EVEN_BITS encoding:
@@ -103,7 +103,7 @@ message AutofillRandomizedValue {
   //     each randomized bit i in |encoded_bits| corresponds to bit 2*i+1 of the
   //     original metadata value, up to i=256 (32 bytes).
   //
-  // ALL_BITS encding:
+  // ALL_BITS encoding:
   //     each bit i in |encoded_bits| corresponds to bit i of the original
   //     metadata value, up to i=512 (64 bytes).
   //
@@ -115,6 +115,11 @@ message AutofillRandomizedValue {
   // transmitted as noise. For all of the other encodings, the encoded bits
   // does not encode any full bytes.
   optional bytes encoded_bits = 2;
+
+  // 32-bit checksum before randomization (passed in clear text). Note that
+  // this value may not be present; for now, it is only stored for metadata
+  // values of type FORM_URL.
+  optional fixed32 checksum = 3;
 }
 
 // Describes how the button is implemented in HTML source. Corresponds to
@@ -157,8 +162,7 @@ message AutofillRandomizedFormMetadata {
   // Titles of form's buttons. Example: <input type="submit" value="XXXXX">
   repeated ButtonTitle button_title = 5;
 
-  // Hash of the clear form URL, not randomized.
-  optional fixed32 checksum_for_url = 6;
+  reserved 6;
 }
 
 // The collection of autofill field metadata to be sent using randomization.

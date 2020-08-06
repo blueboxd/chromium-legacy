@@ -15,6 +15,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -81,8 +82,13 @@ void SystemProxyManager::StartObservingPrimaryProfilePrefs(Profile* profile) {
       prefs::kKerberosActivePrincipalName,
       base::BindRepeating(&SystemProxyManager::OnKerberosAccountChanged,
                           base::Unretained(this)));
+  profile_pref_change_registrar_->Add(
+      arc::prefs::kArcEnabled,
+      base::BindRepeating(&SystemProxyManager::OnArcEnabledChanged,
+                          weak_factory_.GetWeakPtr()));
   if (system_proxy_enabled_) {
     OnKerberosAccountChanged();
+    OnArcEnabledChanged();
   }
 }
 
@@ -131,6 +137,7 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
         request, base::BindOnce(&SystemProxyManager::OnShutDownProcess,
                                 weak_factory_.GetWeakPtr()));
     system_services_address_.clear();
+    SetUserTrafficProxyPref(std::string());
     return;
   }
 
@@ -156,6 +163,11 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
   chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
       request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
                               weak_factory_.GetWeakPtr()));
+  // Fire once to cover the case where the SystemProxySetting policy is set
+  // during a user session.
+  if (IsArcEnabled()) {
+    OnArcEnabledChanged();
+  }
 }
 
 void SystemProxyManager::OnKerberosEnabledChanged() {
@@ -167,6 +179,32 @@ void SystemProxyManager::OnKerberosAccountChanged() {
     return;
   }
   SendKerberosAuthenticationDetails();
+}
+
+void SystemProxyManager::OnArcEnabledChanged() {
+  if (!system_proxy_enabled_) {
+    return;
+  }
+
+  if (!IsArcEnabled()) {
+    system_proxy::ShutDownRequest request;
+    request.set_traffic_type(system_proxy::TrafficOrigin::USER);
+    chromeos::SystemProxyClient::Get()->ShutDownProcess(
+        request, base::BindOnce(&SystemProxyManager::OnShutDownProcess,
+                                weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  system_proxy::SetAuthenticationDetailsRequest request;
+  request.set_traffic_type(system_proxy::TrafficOrigin::USER);
+  chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
+      request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
+                              weak_factory_.GetWeakPtr()));
+}
+
+bool SystemProxyManager::IsArcEnabled() const {
+  return primary_profile_ &&
+         primary_profile_->GetPrefs()->GetBoolean(arc::prefs::kArcEnabled);
 }
 
 void SystemProxyManager::SendKerberosAuthenticationDetails() {
@@ -197,6 +235,12 @@ void SystemProxyManager::SetSystemServicesProxyUrlForTest(
     const std::string& local_proxy_url) {
   system_proxy_enabled_ = true;
   system_services_address_ = local_proxy_url;
+}
+
+// static
+void SystemProxyManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kSystemProxyUserTrafficHostAndPort,
+                               /*default_value=*/std::string());
 }
 
 void SystemProxyManager::OnSetAuthenticationDetails(
@@ -230,7 +274,18 @@ void SystemProxyManager::OnWorkerActive(
     const system_proxy::WorkerActiveSignalDetails& details) {
   if (details.traffic_origin() == system_proxy::TrafficOrigin::SYSTEM) {
     system_services_address_ = details.local_proxy_url();
+    return;
   }
+  SetUserTrafficProxyPref(details.local_proxy_url());
+}
+
+void SystemProxyManager::SetUserTrafficProxyPref(
+    const std::string& user_traffic_address) {
+  if (!primary_profile_) {
+    return;
+  }
+  primary_profile_->GetPrefs()->SetString(
+      prefs::kSystemProxyUserTrafficHostAndPort, user_traffic_address);
 }
 
 void SystemProxyManager::OnAuthenticationRequired(
@@ -287,7 +342,7 @@ void SystemProxyManager::LookupProxyAuthCredentialsCallback(
   user_credentials.set_password(password);
 
   system_proxy::SetAuthenticationDetailsRequest request;
-  request.set_traffic_type(system_proxy::TrafficOrigin::SYSTEM);
+  request.set_traffic_type(system_proxy::TrafficOrigin::ALL);
   *request.mutable_credentials() = user_credentials;
   *request.mutable_protection_space() = protection_space;
 

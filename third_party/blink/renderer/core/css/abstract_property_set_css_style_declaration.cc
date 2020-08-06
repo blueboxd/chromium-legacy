@@ -41,7 +41,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
   if (property.Id() == CSSPropertyID::kVariable)
     return To<CSSCustomPropertyDeclaration>(property.Value()).GetName();
-  return property.Property().GetPropertyName();
+  return property.Name().ToAtomicString();
 }
 
 String AbstractPropertySetCSSStyleDeclaration::cssText() const {

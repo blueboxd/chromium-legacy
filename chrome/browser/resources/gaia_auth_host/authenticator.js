@@ -861,7 +861,7 @@ cr.define('cr.login', function() {
 
     /**
      * Invoked to send a HTML5 message to the webview element.
-     * @param {Object} payload Payload of the HTML5 message.
+     * @param {*} payload Payload of the HTML5 message.
      */
     sendMessageToWebview(payload) {
       const currentUrl = this.webview_.src;

@@ -37,7 +37,7 @@ constexpr base::TimeDelta AffiliatedMatchHelper::kInitializationDelayOnStartup;
 
 AffiliatedMatchHelper::AffiliatedMatchHelper(
     PasswordStore* password_store,
-    std::unique_ptr<AffiliationService> affiliation_service)
+    std::unique_ptr<AndroidAffiliationService> affiliation_service)
     : password_store_(password_store),
       affiliation_service_(std::move(affiliation_service)) {}
 
@@ -63,7 +63,7 @@ void AffiliatedMatchHelper::GetAffiliatedAndroidRealms(
     FacetURI facet_uri(
         FacetURI::FromPotentiallyInvalidSpec(observed_form.signon_realm));
     affiliation_service_->GetAffiliationsAndBranding(
-        facet_uri, AffiliationService::StrategyOnCacheMiss::FAIL,
+        facet_uri, AndroidAffiliationService::StrategyOnCacheMiss::FAIL,
         base::BindOnce(
             &AffiliatedMatchHelper::CompleteGetAffiliatedAndroidRealms,
             weak_ptr_factory_.GetWeakPtr(), facet_uri,
@@ -79,7 +79,7 @@ void AffiliatedMatchHelper::GetAffiliatedWebRealms(
   if (IsValidAndroidCredential(android_form)) {
     affiliation_service_->GetAffiliationsAndBranding(
         FacetURI::FromPotentiallyInvalidSpec(android_form.signon_realm),
-        AffiliationService::StrategyOnCacheMiss::FETCH_OVER_NETWORK,
+        AndroidAffiliationService::StrategyOnCacheMiss::FETCH_OVER_NETWORK,
         base::BindOnce(&AffiliatedMatchHelper::CompleteGetAffiliatedWebRealms,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(result_callback)));
@@ -103,7 +103,7 @@ void AffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
   for (auto* form : android_credentials) {
     affiliation_service_->GetAffiliationsAndBranding(
         FacetURI::FromPotentiallyInvalidSpec(form->signon_realm),
-        AffiliationService::StrategyOnCacheMiss::FAIL,
+        AndroidAffiliationService::StrategyOnCacheMiss::FAIL,
         base::BindOnce(&AffiliatedMatchHelper::
                            CompleteInjectAffiliationAndBrandingInformation,
                        weak_ptr_factory_.GetWeakPtr(), base::Unretained(form),

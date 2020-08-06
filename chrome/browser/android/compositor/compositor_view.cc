@@ -299,6 +299,8 @@ void CompositorView::SetSceneLayer(JNIEnv* env,
 
 void CompositorView::FinalizeLayers(JNIEnv* env,
                                     const JavaParamRef<jobject>& jobj) {
+  if (GetResourceManager())
+    GetResourceManager()->OnFrameUpdatesFinished();
 #if !defined(OFFICIAL_BUILD)
   TRACE_EVENT0("compositor", "CompositorView::FinalizeLayers");
 #endif

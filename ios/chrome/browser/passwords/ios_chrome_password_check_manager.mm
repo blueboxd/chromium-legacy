@@ -114,11 +114,15 @@ IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
 IOSChromePasswordCheckManager::~IOSChromePasswordCheckManager() = default;
 
 void IOSChromePasswordCheckManager::StartPasswordCheck() {
-  IOSChromePasswordCheckManagerHolder data(
-      scoped_refptr<IOSChromePasswordCheckManager>(this));
-  bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
-                                                      &data);
-  is_check_running_ = true;
+  if (is_initialized_) {
+    IOSChromePasswordCheckManagerHolder data(
+        scoped_refptr<IOSChromePasswordCheckManager>(this));
+    bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
+                                                        &data);
+    is_check_running_ = true;
+  } else {
+    start_check_on_init_ = true;
+  }
 }
 
 void IOSChromePasswordCheckManager::StopPasswordCheck() {
@@ -183,6 +187,9 @@ void IOSChromePasswordCheckManager::OnSavedPasswordsChanged(
     SavedPasswordsView) {
   // Observing saved passwords to update possible kNoPasswords state.
   NotifyPasswordCheckStatusChanged();
+  if (!std::exchange(is_initialized_, true) && start_check_on_init_) {
+    StartPasswordCheck();
+  }
 }
 
 void IOSChromePasswordCheckManager::OnCompromisedCredentialsChanged(

@@ -470,7 +470,8 @@ void ProfileMenuView::BuildIdentity() {
   } else {
     SetProfileIdentityInfo(
         profile_name, background_color, edit_button_params,
-        ui::ImageModel::FromImage(profile_attributes->GetAvatarIcon()),
+        ui::ImageModel::FromImage(
+            profile_attributes->GetAvatarIcon(kIdentityImageSize)),
         /*title=*/base::string16(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
@@ -628,7 +629,8 @@ void ProfileMenuView::BuildSelectableProfiles() {
       continue;
 
     AddSelectableProfile(
-        ui::ImageModel::FromImage(profile_entry->GetAvatarIcon()),
+        ui::ImageModel::FromImage(
+            profile_entry->GetAvatarIcon(kSelectableProfileImageSize)),
         profile_entry->GetName(),
         /*is_guest=*/false,
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,

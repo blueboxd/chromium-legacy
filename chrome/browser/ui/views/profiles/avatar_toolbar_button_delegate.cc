@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "components/signin/public/identity_manager/consent_level.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_features.h"
@@ -55,11 +56,16 @@ bool IsGenericProfile(const ProfileAttributesEntry& entry) {
 
 // Returns the avatar image for the current profile. May be called only in
 // "normal" states where the user is guaranteed to have an avatar image (i.e.
-// not kGenericProfile, not kGuestSession and not kIncognitoProfile).
-const gfx::Image& GetAvatarImage(Profile* profile,
-                                 const gfx::Image& user_identity_image) {
+// not kGuestSession and not kIncognitoProfile).
+gfx::Image GetAvatarImage(Profile* profile,
+                          const gfx::Image& user_identity_image,
+                          int preferred_size) {
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile);
-  DCHECK(entry);
+  if (!entry) {  // This can happen if the user deletes the current profile.
+    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        profiles::GetPlaceholderAvatarIconResourceID());
+  }
+
   // TODO(crbug.com/1012179): it should suffice to call entry->GetAvatarIcon().
   // For this to work well, this class needs to observe ProfileAttributesStorage
   // instead of (or on top of) IdentityManager. Only then we can rely on |entry|
@@ -80,7 +86,7 @@ const gfx::Image& GetAvatarImage(Profile* profile,
     return user_identity_image;
   }
 
-  return entry->GetAvatarIcon();
+  return entry->GetAvatarIcon(preferred_size);
 }
 
 }  // namespace
@@ -148,8 +154,9 @@ gfx::Image AvatarToolbarButtonDelegate::GetGaiaAccountImage() const {
 }
 
 gfx::Image AvatarToolbarButtonDelegate::GetProfileAvatarImage(
-    gfx::Image gaia_account_image) const {
-  return GetAvatarImage(profile_, gaia_account_image);
+    gfx::Image gaia_account_image,
+    int preferred_size) const {
+  return GetAvatarImage(profile_, gaia_account_image, preferred_size);
 }
 
 int AvatarToolbarButtonDelegate::GetIncognitoWindowsCount() const {

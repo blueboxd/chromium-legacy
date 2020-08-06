@@ -1,6 +1,5 @@
-<style>
+<style include="profile-picker-shared">
   cr-button {
-    --text-color: inherit;
     background-color: rgb(248, 249, 250);
     border: none;
     border-radius: inherit;
@@ -9,6 +8,12 @@
     height: inherit;
     padding: 0;
     width: inherit;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    cr-button {
+      background-color: var(--google-grey-800);
+    }
   }
 
   :host-context(.focus-outline-visible) cr-button:focus {
@@ -20,22 +25,12 @@
     height: var(--avatar-icon-size);
     width: var(--avatar-icon-size);
   }
-
-  .profile-info {
-    height: 20px;
-    overflow: hidden;
-    padding: 16px;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 146px;
-  }
 </style>
 
 <cr-button on-click="onProfileClick_">
   <profile-card-menu profile-state="[[profileState]]"></profile-card-menu>
   <!-- TODO(msalama): Implement editing local profile name in place -->
-  <div class="profile-info">[[profileState.localProfileName]]</div>
+  <div class="profile-card-info">[[profileState.localProfileName]]</div>
   <img class="profile-avatar" alt="" src="[[profileState.avatarIcon]]">
-  <div class="profile-info">[[profileState.gaiaName]]</div>
+  <div class="profile-card-info">[[profileState.gaiaName]]</div>
 </cr-button>

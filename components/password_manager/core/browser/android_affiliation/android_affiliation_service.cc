@@ -19,11 +19,11 @@
 
 namespace password_manager {
 
-AffiliationService::AffiliationService(
+AndroidAffiliationService::AndroidAffiliationService(
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(nullptr), backend_task_runner_(backend_task_runner) {}
 
-AffiliationService::~AffiliationService() {
+AndroidAffiliationService::~AndroidAffiliationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (backend_) {
     backend_task_runner_->DeleteSoon(FROM_HERE, backend_);
@@ -31,7 +31,7 @@ AffiliationService::~AffiliationService() {
   }
 }
 
-void AffiliationService::Initialize(
+void AndroidAffiliationService::Initialize(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& db_path) {
@@ -48,7 +48,7 @@ void AffiliationService::Initialize(
                      base::Unretained(network_connection_tracker), db_path));
 }
 
-void AffiliationService::GetAffiliationsAndBranding(
+void AndroidAffiliationService::GetAffiliationsAndBranding(
     const FacetURI& facet_uri,
     StrategyOnCacheMiss cache_miss_strategy,
     ResultCallback result_callback) {
@@ -61,8 +61,8 @@ void AffiliationService::GetAffiliationsAndBranding(
                                 base::SequencedTaskRunnerHandle::Get()));
 }
 
-void AffiliationService::Prefetch(const FacetURI& facet_uri,
-                                  const base::Time& keep_fresh_until) {
+void AndroidAffiliationService::Prefetch(const FacetURI& facet_uri,
+                                         const base::Time& keep_fresh_until) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
@@ -71,8 +71,9 @@ void AffiliationService::Prefetch(const FacetURI& facet_uri,
                      facet_uri, keep_fresh_until));
 }
 
-void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
-                                        const base::Time& keep_fresh_until) {
+void AndroidAffiliationService::CancelPrefetch(
+    const FacetURI& facet_uri,
+    const base::Time& keep_fresh_until) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
@@ -81,7 +82,8 @@ void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
                      base::Unretained(backend_), facet_uri, keep_fresh_until));
 }
 
-void AffiliationService::TrimCacheForFacetURI(const FacetURI& facet_uri) {
+void AndroidAffiliationService::TrimCacheForFacetURI(
+    const FacetURI& facet_uri) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(

@@ -16,6 +16,9 @@
 // Informs the presenter that the feature should dismiss.
 - (void)stop;
 
+// Informs the presenter that the Password page should be open.
+- (void)startPasswordCheck;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_PRESENTER_H_

@@ -309,6 +309,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return self;
 }
 
+- (void)startPasswordCheck {
+  if (_passwordCheck->GetPasswordCheckState() != PasswordCheckState::kRunning) {
+    _passwordCheck->StartPasswordCheck();
+  }
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {

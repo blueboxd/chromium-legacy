@@ -36,23 +36,41 @@ struct SameSizeAsCSSPropertyValue {
 
 ASSERT_SIZE(CSSPropertyValue, SameSizeAsCSSPropertyValue);
 
+CSSPropertyValueMetadata::CSSPropertyValueMetadata(
+    const CSSPropertyName& name,
+    bool is_set_from_shorthand,
+    int index_in_shorthands_vector,
+    bool important,
+    bool implicit)
+    : property_id_(static_cast<unsigned>(name.Id())),
+      is_set_from_shorthand_(is_set_from_shorthand),
+      index_in_shorthands_vector_(index_in_shorthands_vector),
+      important_(important),
+      implicit_(implicit) {
+  if (name.IsCustomProperty())
+    custom_name_ = name.ToAtomicString();
+}
+
 CSSPropertyID CSSPropertyValueMetadata::ShorthandID() const {
   if (!is_set_from_shorthand_)
     return CSSPropertyID::kInvalid;
 
   Vector<StylePropertyShorthand, 4> shorthands;
-  getMatchingShorthandsForLonghand(Property().PropertyID(), &shorthands);
+  getMatchingShorthandsForLonghand(PropertyID(), &shorthands);
   DCHECK(shorthands.size());
   DCHECK_GE(index_in_shorthands_vector_, 0u);
   DCHECK_LT(index_in_shorthands_vector_, shorthands.size());
   return shorthands.at(index_in_shorthands_vector_).id();
 }
 
-CSSPropertyName CSSPropertyValue::Name() const {
-  if (Id() != CSSPropertyID::kVariable)
-    return CSSPropertyName(Id());
-  return CSSPropertyName(
-      To<CSSCustomPropertyDeclaration>(value_.Get())->GetName());
+CSSPropertyID CSSPropertyValueMetadata::PropertyID() const {
+  return convertToCSSPropertyID(property_id_);
+}
+
+CSSPropertyName CSSPropertyValueMetadata::Name() const {
+  if (PropertyID() != CSSPropertyID::kVariable)
+    return CSSPropertyName(PropertyID());
+  return CSSPropertyName(custom_name_);
 }
 
 bool CSSPropertyValue::operator==(const CSSPropertyValue& other) const {

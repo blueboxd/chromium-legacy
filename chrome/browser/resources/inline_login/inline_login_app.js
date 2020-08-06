@@ -7,6 +7,10 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+// <if expr="chromeos">
+import './gaia_action_buttons.js';
+// </if>
+
 import {isRTL} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -35,13 +39,16 @@ Polymer({
       type: Boolean,
       value: true,
     },
-  },
 
-  /**
-   * The auth extension host instance.
-   * @private {?Authenticator}
-   */
-  authExtHost_: null,
+    /**
+     * The auth extension host instance.
+     * @private {?Authenticator}
+     */
+    authExtHost_: {
+      type: Object,
+      value: null,
+    },
+  },
 
   /** @private {?InlineLoginBrowserProxy} */
   browserProxy_: null,
@@ -51,6 +58,9 @@ Polymer({
    * @private {boolean}
    */
   isLoginPrimaryAccount_: false,
+
+  /** @private {boolean} */
+  enableGaiaActionButtons_: false,
 
   /** @override */
   created() {
@@ -155,6 +165,7 @@ Polymer({
     this.authExtHost_.load(data.authMode, data);
     this.loading_ = true;
     this.isLoginPrimaryAccount_ = data.isLoginPrimaryAccount;
+    this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
   },
 
   /**

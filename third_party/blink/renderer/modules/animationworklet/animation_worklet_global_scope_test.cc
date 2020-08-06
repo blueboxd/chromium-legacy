@@ -182,18 +182,18 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
         ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source_code))
             ->RunScriptOnWorkerOrWorklet(*global_scope));
 
-    ScriptValue constructed_before =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().constructed"));
-    EXPECT_FALSE(
-        ToBoolean(isolate, constructed_before.V8Value(), ASSERT_NO_EXCEPTION))
+    v8::Local<v8::Value> constructed_before =
+        global_scope->ScriptController()->EvaluateAndReturnValue(
+            ScriptSourceCode("Function('return this')().constructed"),
+            SanitizeScriptErrors::kSanitize);
+    EXPECT_FALSE(ToBoolean(isolate, constructed_before, ASSERT_NO_EXCEPTION))
         << "constructor is not invoked";
 
-    ScriptValue animated_before =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().animated"));
-    EXPECT_FALSE(
-        ToBoolean(isolate, animated_before.V8Value(), ASSERT_NO_EXCEPTION))
+    v8::Local<v8::Value> animated_before =
+        global_scope->ScriptController()->EvaluateAndReturnValue(
+            ScriptSourceCode("Function('return this')().animated"),
+            SanitizeScriptErrors::kSanitize);
+    EXPECT_FALSE(ToBoolean(isolate, animated_before, ASSERT_NO_EXCEPTION))
         << "animate function is invoked early";
 
     // Passing a new input state with a new animation id should cause the
@@ -209,18 +209,18 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
         ProxyClientMutate(state, global_scope);
     EXPECT_EQ(output->animations.size(), 1ul);
 
-    ScriptValue constructed_after =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().constructed"));
-    EXPECT_TRUE(
-        ToBoolean(isolate, constructed_after.V8Value(), ASSERT_NO_EXCEPTION))
+    v8::Local<v8::Value> constructed_after =
+        global_scope->ScriptController()->EvaluateAndReturnValue(
+            ScriptSourceCode("Function('return this')().constructed"),
+            SanitizeScriptErrors::kSanitize);
+    EXPECT_TRUE(ToBoolean(isolate, constructed_after, ASSERT_NO_EXCEPTION))
         << "constructor is not invoked";
 
-    ScriptValue animated_after =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().animated"));
-    EXPECT_TRUE(
-        ToBoolean(isolate, animated_after.V8Value(), ASSERT_NO_EXCEPTION))
+    v8::Local<v8::Value> animated_after =
+        global_scope->ScriptController()->EvaluateAndReturnValue(
+            ScriptSourceCode("Function('return this')().animated"),
+            SanitizeScriptErrors::kSanitize);
+    EXPECT_TRUE(ToBoolean(isolate, animated_after, ASSERT_NO_EXCEPTION))
         << "animate function is not invoked";
 
     waitable_event->Signal();

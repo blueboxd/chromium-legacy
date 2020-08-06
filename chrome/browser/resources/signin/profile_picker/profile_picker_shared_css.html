@@ -1,17 +1,36 @@
 <template>
   <style>
+    :host {
+      --text-font-size: 1.16em;
+    }
+
     html {
       font-family: roboto;
     }
 
     h2 {
+      color: var(--cr-primary-text-color);
       font-size: 1.85em;
       font-weight: normal;
     }
 
     h3 {
-      color: var(--google-grey-refresh-700);
+      color: var(--cr-secondary-text-color);
+      font-size: var(--text-font-size);
       font-weight: normal;
+    }
+
+    .profile-card-info {
+      color: var(--cr-primary-text-color);
+      font-size: var(--text-font-size);
+      font-weight: 500;
+      height: 20px;
+      overflow: hidden;
+      padding: 16px;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 130px;
     }
   </style>
 </template>

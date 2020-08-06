@@ -42,6 +42,9 @@ constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 constexpr char kExtensionId[] = "extensionId";
 constexpr char kExtensionInstallEvent[] = "extensionAppInstallEvent";
 constexpr char kDownloadStage[] = "downloadStage";
+constexpr char kFailureReason[] = "failureReason";
+constexpr char kInstallationStage[] = "installationStage";
+constexpr char kExtensionType[] = "extensionType";
 
 // Calculates hash for the given |event| and |context|, and stores the hash in
 // |hash|. Returns true if |event| and |context| are json serializable and
@@ -166,6 +169,21 @@ base::Value ConvertExtensionEventToValue(
   }
 
   event.SetStringKey(kSerialNumber, GetSerialNumber());
+
+  if (extension_install_report_log_event.has_failure_reason()) {
+    event.SetIntKey(kFailureReason,
+                    extension_install_report_log_event.failure_reason());
+  }
+
+  if (extension_install_report_log_event.has_installation_stage()) {
+    event.SetIntKey(kInstallationStage,
+                    extension_install_report_log_event.installation_stage());
+  }
+
+  if (extension_install_report_log_event.has_extension_type()) {
+    event.SetIntKey(kExtensionType,
+                    extension_install_report_log_event.extension_type());
+  }
 
   base::Value wrapper(base::Value::Type::DICTIONARY);
   wrapper.SetKey(kExtensionInstallEvent, std::move(event));

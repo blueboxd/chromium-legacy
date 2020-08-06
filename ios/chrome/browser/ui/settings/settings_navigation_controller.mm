@@ -140,11 +140,15 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 + (instancetype)
     savePasswordsControllerForBrowser:(Browser*)browser
                              delegate:(id<SettingsNavigationControllerDelegate>)
-                                          delegate {
+                                          delegate
+      startPasswordCheckAutomatically:(BOOL)startCheck {
   DCHECK(browser);
   PasswordsTableViewController* controller =
       [[PasswordsTableViewController alloc] initWithBrowser:browser];
   controller.dispatcher = [delegate handlerForSettings];
+  if (startCheck) {
+    [controller startPasswordCheck];
+  }
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -523,6 +527,15 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   PasswordsTableViewController* controller =
       [[PasswordsTableViewController alloc] initWithBrowser:self.browser];
   controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+- (void)showSavedPasswordsSettingsAndStartPasswordCheckFromViewController:
+    (UIViewController*)baseViewController {
+  PasswordsTableViewController* controller =
+      [[PasswordsTableViewController alloc] initWithBrowser:self.browser];
+  controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
+  [controller startPasswordCheck];
   [self pushViewController:controller animated:YES];
 }
 

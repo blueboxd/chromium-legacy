@@ -88,7 +88,15 @@
     [passwords
         addObject:[[PasswordIssueWithForm alloc] initWithPasswordForm:form]];
   }
-  [self.consumer setPasswordIssues:passwords];
+
+  NSSortDescriptor* origin = [[NSSortDescriptor alloc] initWithKey:@"website"
+                                                         ascending:YES];
+  NSSortDescriptor* username = [[NSSortDescriptor alloc] initWithKey:@"username"
+                                                           ascending:YES];
+
+  [self.consumer
+      setPasswordIssues:[passwords
+                            sortedArrayUsingDescriptors:@[ origin, username ]]];
 }
 
 #pragma mark SuccessfulReauthTimeAccessor

@@ -2964,6 +2964,10 @@ message ExtensionInstallReportLogEvent {
 
   // Stage of downloading process.
   optional DownloadingStage downloading_stage = 9;
+
+  // Type of the extension. Set for event type SUCCESS and sometimes (when
+  // possible) for INSTALLATION_FAILED.
+  optional Extension.ExtensionType extension_type = 10;
 }
 
 // A single entry in the push-install log for an app.

@@ -91,6 +91,11 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     base::RepeatingClosure edit_action;
   };
 
+  // Size of the large identity image in the menu.
+  static constexpr int kIdentityImageSize = 64;
+  // Size of the small identity images for other selectable profiles.
+  static constexpr int kSelectableProfileImageSize = 20;
+
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
   // call this function when the button is clicked and if the bubble isn't

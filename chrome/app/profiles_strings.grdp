@@ -664,6 +664,9 @@
 
   <!-- Profile Picker -->
   <if expr="not chromeos and not is_android">
+    <message name="IDS_PROFILE_PICKER_ADD_SPACE_BUTTON" desc="Text for the add space button on the profile picker main view">
+      Add Space
+    </message>
     <message name="IDS_PROFILE_PICKER_ASK_ON_STARTUP" desc="Text for the checkbox on the profile picker main view">
       Ask on startup
     </message>

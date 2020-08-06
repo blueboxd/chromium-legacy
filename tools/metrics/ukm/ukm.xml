@@ -12462,6 +12462,307 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="V8.Wasm.ModuleCompiled">
+  <owner>ecmziegler@chromium.org</owner>
+  <summary>
+    Records information on baseline compilation of WebAssembly modules and its
+    resource consumption.
+  </summary>
+  <metric name="Async" enum="Boolean">
+    <summary>
+      The compilation was running asynchronously.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Cached" enum="Boolean">
+    <summary>
+      The compilation was re-using already cached native module code instead of
+      JIT compiling it.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CodeSize">
+    <summary>
+      The size of the native module code in bytes after baseline compilation
+      finished.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Deserialized" enum="Boolean">
+    <summary>
+      The compilation was deserializing the native module code from the disk
+      cache instead of JIT compiling it.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Lazy" enum="Boolean">
+    <summary>
+      The lazy compilation flag was enabled and therefore not all functions
+      might have been compiled.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LiftoffBailoutCount">
+    <summary>
+      The number of functions that Liftoff could not compile and that therefore
+      needed to be compiled by TurboFan.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Streamed" enum="Boolean">
+    <summary>
+      The wire bytes were streamed while compiling.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Success" enum="Boolean">
+    <summary>
+      The module was successfully compiled.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WallClockTime">
+    <summary>
+      The total time the compilation took in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="V8.Wasm.ModuleDecoded">
+  <owner>ecmziegler@chromium.org</owner>
+  <summary>
+    Records information on WebAssembly modules included in websites.
+  </summary>
+  <metric name="FunctionCount">
+    <summary>
+      Number of declared functions in this module.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ModuleSize">
+    <summary>
+      The size of the wire bytes of the module.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Streamed" enum="Boolean">
+    <summary>
+      The wire bytes were streamed while decoding.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Success" enum="Boolean">
+    <summary>
+      The module was successfully decoded.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WallClockTime">
+    <summary>
+      The total time the decoding took in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="V8.Wasm.ModuleInstantiated">
+  <owner>ecmziegler@chromium.org</owner>
+  <summary>
+    Records information on instantiation of WebAssembly modules and its resource
+    consumption.
+  </summary>
+  <metric name="ImportedFunctionCount">
+    <summary>
+      The number of functions imported by the module.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Success" enum="Boolean">
+    <summary>
+      The module was successfully instantiated.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WallClockTime">
+    <summary>
+      The total time the instantiation took in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="V8.Wasm.ModuleTieredUp">
+  <owner>ecmziegler@chromium.org</owner>
+  <summary>
+    Records information on top-tier compilation of WebAssembly modules and its
+    resource consumption.
+  </summary>
+  <metric name="CodeSize">
+    <summary>
+      The size of the native module code in bytes after top-tier compilation
+      finished.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Lazy" enum="Boolean">
+    <summary>
+      The lazy compilation flag was enabled and therefore not all functions
+      might have been compiled.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WallClockTime">
+    <summary>
+      The total time the compilation took in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="VirtualKeyboard.Open">
   <owner>shend@chromium.org</owner>
   <summary>

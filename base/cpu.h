@@ -7,6 +7,7 @@
 
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "base/base_export.h"
 #include "build/build_config.h"

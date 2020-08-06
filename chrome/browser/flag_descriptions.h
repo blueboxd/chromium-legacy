@@ -1102,6 +1102,9 @@ extern const char kQuicDescription[];
 extern const char kQuietNotificationPromptsName[];
 extern const char kQuietNotificationPromptsDescription[];
 
+extern const char kContentSettingsRedesignName[];
+extern const char kContentSettingsRedesignDescription[];
+
 extern const char kRawClipboardName[];
 extern const char kRawClipboardDescription[];
 
@@ -1886,6 +1889,9 @@ extern const char kD3D11VideoDecoderDescription[];
 
 extern const char kElasticOverscrollWinName[];
 extern const char kElasticOverscrollWinDescription[];
+
+extern const char kEnableIncognitoShortcutOnDesktopName[];
+extern const char kEnableIncognitoShortcutOnDesktopDescription[];
 
 extern const char kEnableMediaFoundationVideoCaptureName[];
 extern const char kEnableMediaFoundationVideoCaptureDescription[];

@@ -5,6 +5,7 @@
 #include "chrome/browser/password_manager/change_password_url_service_factory.h"
 
 #include "base/no_destructor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/change_password_url_service_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -36,5 +37,6 @@ KeyedService* ChangePasswordUrlServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new password_manager::ChangePasswordUrlServiceImpl(
       content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLLoaderFactoryForBrowserProcess());
+          ->GetURLLoaderFactoryForBrowserProcess(),
+      Profile::FromBrowserContext(context)->GetPrefs());
 }

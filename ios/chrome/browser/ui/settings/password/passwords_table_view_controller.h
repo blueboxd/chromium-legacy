@@ -22,6 +22,9 @@ class Browser;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
+// Starts password check.
+- (void)startPasswordCheck;
+
 @end
 
 @interface PasswordsTableViewController (Testing) <

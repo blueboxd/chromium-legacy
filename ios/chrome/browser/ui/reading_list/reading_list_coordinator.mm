@@ -442,16 +442,13 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];
 
-        // Copy URL action.
-        [menuElements addObject:[actionFactory actionToCopyURL:item.entryURL]];
-
-        // "Open in" actions.
         [menuElements addObject:[actionFactory actionToOpenInNewTabWithBlock:^{
                         [weakSelf loadEntryURL:item.entryURL
                                 withOfflineURL:GURL::EmptyGURL()
                                       inNewTab:YES
                                      incognito:NO];
                       }]];
+
         [menuElements
             addObject:[actionFactory actionToOpenInNewIncognitoTabWithBlock:^{
               [weakSelf loadEntryURL:item.entryURL
@@ -459,6 +456,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                             inNewTab:YES
                            incognito:YES];
             }]];
+
         if (IsMultipleScenesSupported()) {
           [menuElements
               addObject:[actionFactory
@@ -467,6 +465,8 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                                                 WindowActivityReadingListOrigin
                                                 completion:nil]];
         }
+
+        [menuElements addObject:[actionFactory actionToCopyURL:item.entryURL]];
 
         return [UIMenu menuWithTitle:@"" children:menuElements];
       };

@@ -19,32 +19,6 @@ namespace enterprise_reporting {
 
 namespace {
 
-em::Extension_ExtensionType GetExtensionType(
-    extensions::Manifest::Type extension_type) {
-  switch (extension_type) {
-    case extensions::Manifest::TYPE_UNKNOWN:
-    case extensions::Manifest::TYPE_SHARED_MODULE:
-      return em::Extension_ExtensionType_TYPE_UNKNOWN;
-    case extensions::Manifest::TYPE_EXTENSION:
-      return em::Extension_ExtensionType_TYPE_EXTENSION;
-    case extensions::Manifest::TYPE_THEME:
-      return em::Extension_ExtensionType_TYPE_THEME;
-    case extensions::Manifest::TYPE_USER_SCRIPT:
-      return em::Extension_ExtensionType_TYPE_USER_SCRIPT;
-    case extensions::Manifest::TYPE_HOSTED_APP:
-      return em::Extension_ExtensionType_TYPE_HOSTED_APP;
-    case extensions::Manifest::TYPE_LEGACY_PACKAGED_APP:
-      return em::Extension_ExtensionType_TYPE_LEGACY_PACKAGED_APP;
-    case extensions::Manifest::TYPE_PLATFORM_APP:
-      return em::Extension_ExtensionType_TYPE_PLATFORM_APP;
-    case extensions::Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
-      return em::Extension_ExtensionType_TYPE_LOGIN_SCREEN_EXTENSION;
-    case extensions::Manifest::NUM_LOAD_TYPES:
-      NOTREACHED();
-      return em::Extension_ExtensionType_TYPE_UNKNOWN;
-  }
-}
-
 em::Extension_InstallType GetExtensionInstallType(
     extensions::Manifest::Location extension_location) {
   switch (extension_location) {
@@ -99,7 +73,8 @@ void AddExtensions(const extensions::ExtensionSet& extensions,
     extension_info->set_version(extension->VersionString());
     extension_info->set_name(extension->name());
     extension_info->set_description(extension->description());
-    extension_info->set_app_type(GetExtensionType(extension->GetType()));
+    extension_info->set_app_type(
+        ConvertExtensionTypeToProto(extension->GetType()));
     extension_info->set_homepage_url(
         extensions::ManifestURL::GetHomepageURL(extension.get()).spec());
     extension_info->set_install_type(
@@ -112,6 +87,32 @@ void AddExtensions(const extensions::ExtensionSet& extensions,
 }
 
 }  // namespace
+
+em::Extension_ExtensionType ConvertExtensionTypeToProto(
+    extensions::Manifest::Type extension_type) {
+  switch (extension_type) {
+    case extensions::Manifest::TYPE_UNKNOWN:
+    case extensions::Manifest::TYPE_SHARED_MODULE:
+      return em::Extension_ExtensionType_TYPE_UNKNOWN;
+    case extensions::Manifest::TYPE_EXTENSION:
+      return em::Extension_ExtensionType_TYPE_EXTENSION;
+    case extensions::Manifest::TYPE_THEME:
+      return em::Extension_ExtensionType_TYPE_THEME;
+    case extensions::Manifest::TYPE_USER_SCRIPT:
+      return em::Extension_ExtensionType_TYPE_USER_SCRIPT;
+    case extensions::Manifest::TYPE_HOSTED_APP:
+      return em::Extension_ExtensionType_TYPE_HOSTED_APP;
+    case extensions::Manifest::TYPE_LEGACY_PACKAGED_APP:
+      return em::Extension_ExtensionType_TYPE_LEGACY_PACKAGED_APP;
+    case extensions::Manifest::TYPE_PLATFORM_APP:
+      return em::Extension_ExtensionType_TYPE_PLATFORM_APP;
+    case extensions::Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
+      return em::Extension_ExtensionType_TYPE_LOGIN_SCREEN_EXTENSION;
+    case extensions::Manifest::NUM_LOAD_TYPES:
+      NOTREACHED();
+      return em::Extension_ExtensionType_TYPE_UNKNOWN;
+  }
+}
 
 void AppendExtensionInfoIntoProfileReport(
     Profile* profile,

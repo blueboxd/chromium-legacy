@@ -270,7 +270,10 @@ void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
   if (!document_ || !document_->GetExecutionContext())
     return;
   for (size_t i = 0; i < rule.Properties().PropertyCount(); ++i) {
-    const CSSProperty& property = rule.Properties().PropertyAt(i).Property();
+    CSSPropertyID id = rule.Properties().PropertyAt(i).Id();
+    if (id == CSSPropertyID::kVariable)
+      continue;
+    const CSSProperty& property = CSSProperty::Get(id);
     if (!LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&property))
       continue;
     LayoutAnimationsPolicy::ReportViolation(property,

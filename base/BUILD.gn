@@ -886,6 +886,8 @@ jumbo_component("base") {
 
     if (!is_nacl && !is_mac && !is_ios) {
       sources += [
+        "cpu_affinity_posix.cc",
+        "cpu_affinity_posix.h",
         "profiler/stack_copier_signal.cc",
         "profiler/stack_copier_signal.h",
         "profiler/stack_sampler_posix.cc",
@@ -3053,7 +3055,10 @@ test("base_unittests") {
       "task/thread_pool/task_tracker_posix_unittest.cc",
     ]
     if (!is_nacl && !is_mac && !is_ios) {
-      sources += [ "profiler/stack_copier_signal_unittest.cc" ]
+      sources += [
+        "cpu_affinity_posix_unittest.cc",
+        "profiler/stack_copier_signal_unittest.cc",
+      ]
     }
   }
 

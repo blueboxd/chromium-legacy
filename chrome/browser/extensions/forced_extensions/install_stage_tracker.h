@@ -281,8 +281,7 @@ class InstallStageTracker : public KeyedService {
     // Unpack failure reason in case of
     // CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
     base::Optional<SandboxedUnpackerFailureReason> unpacker_failure_reason;
-    // Type of extension, assigned when CRX installation error detail is
-    // DISALLOWED_BY_POLICY.
+    // Type of extension, assigned during CRX installation process.
     base::Optional<Manifest::Type> extension_type;
     // Type of update check status received from server when manifest was
     // fetched.
@@ -381,11 +380,11 @@ class InstallStageTracker : public KeyedService {
       ExtensionDownloaderDelegate::CacheStatus cache_status);
   void ReportManifestUpdateCheckStatus(const ExtensionId& id,
                                        const std::string& status);
-  // Assigns the extension type. See InstallationData::extension_type for
-  // more details.
-  void ReportExtensionTypeForPolicyDisallowedExtension(
-      const ExtensionId& id,
-      Manifest::Type extension_type);
+  // Assigns the extension type. Reported from SandboxedInstalled when (and in
+  // case when) the extension type is discovered.
+  // See InstallationData::extension_type for more details.
+  void ReportExtensionType(const ExtensionId& id,
+                           Manifest::Type extension_type);
   void ReportCrxInstallError(const ExtensionId& id,
                              FailureReason reason,
                              CrxInstallErrorDetail crx_install_error);

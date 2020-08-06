@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
+#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -84,9 +85,16 @@ class SystemProxyManagerTest : public testing::Test {
     testing::Test::SetUp();
     profile_ = std::make_unique<TestingProfile>();
     chromeos::SystemProxyClient::InitializeFake();
+    system_proxy_manager_ = std::make_unique<SystemProxyManager>(
+        chromeos::CrosSettings::Get(), local_state_.Get());
+    // Listen for pref changes for the primary profile.
+    system_proxy_manager_->StartObservingPrimaryProfilePrefs(profile_.get());
   }
 
-  void TearDown() override { chromeos::SystemProxyClient::Shutdown(); }
+  void TearDown() override {
+    system_proxy_manager_->StopObservingPrimaryProfilePrefs();
+    chromeos::SystemProxyClient::Shutdown();
+  }
 
  protected:
   void SetPolicy(bool system_proxy_enabled,
@@ -100,6 +108,7 @@ class SystemProxyManagerTest : public testing::Test {
                 base::Value(system_services_password));
     scoped_testing_cros_settings_.device_settings()->Set(
         chromeos::kSystemProxySettings, dict);
+    task_environment_.RunUntilIdle();
   }
 
   chromeos::SystemProxyClient::TestInterface* client_test_interface() {
@@ -108,8 +117,9 @@ class SystemProxyManagerTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
-  std::unique_ptr<TestingProfile> profile_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  std::unique_ptr<SystemProxyManager> system_proxy_manager_;
+  std::unique_ptr<TestingProfile> profile_;
   chromeos::ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   chromeos::ScopedStubInstallAttributes test_install_attributes_;
 };
@@ -117,19 +127,15 @@ class SystemProxyManagerTest : public testing::Test {
 // Verifies that System-proxy is configured with the system traffic credentials
 // set by |kSystemProxySettings| policy.
 TEST_F(SystemProxyManagerTest, SetAuthenticationDetails) {
-  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
-                                          local_state_.Get());
   EXPECT_EQ(0, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
-  task_environment_.RunUntilIdle();
   // Don't send empty credentials.
   EXPECT_EQ(1, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   SetPolicy(true /* system_proxy_enabled */, kSystemServicesUsername,
             kSystemServicesPassword);
-  task_environment_.RunUntilIdle();
   EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   system_proxy::SetAuthenticationDetailsRequest request =
@@ -143,14 +149,10 @@ TEST_F(SystemProxyManagerTest, SetAuthenticationDetails) {
 // Verifies requests to shut down are sent to System-proxy according to the
 // |kSystemProxySettings| policy.
 TEST_F(SystemProxyManagerTest, ShutDownDaemon) {
-  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
-                                          local_state_.Get());
-
   EXPECT_EQ(0, client_test_interface()->GetShutDownCallCount());
 
   SetPolicy(false /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
-  task_environment_.RunUntilIdle();
   // Don't send empty credentials.
   EXPECT_EQ(1, client_test_interface()->GetShutDownCallCount());
 }
@@ -158,18 +160,11 @@ TEST_F(SystemProxyManagerTest, ShutDownDaemon) {
 // Tests that |SystemProxyManager| sends the correct Kerberos details and
 // updates to System-proxy.
 TEST_F(SystemProxyManagerTest, KerberosConfig) {
-  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
-                                          local_state_.Get());
-
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
-  task_environment_.RunUntilIdle();
   local_state_.Get()->SetBoolean(prefs::kKerberosEnabled, true);
   EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
-  // Listen for pref changes for the primary profile.
-  system_proxy_manager.StartObservingPrimaryProfilePrefs(profile_.get());
-  EXPECT_EQ(3, client_test_interface()->GetSetAuthenticationDetailsCallCount());
   system_proxy::SetAuthenticationDetailsRequest request =
       client_test_interface()->GetLastAuthenticationDetailsRequest();
   EXPECT_FALSE(request.has_credentials());
@@ -178,7 +173,7 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
   // Set an active principal name.
   profile_->GetPrefs()->SetString(prefs::kKerberosActivePrincipalName,
                                   kKerberosActivePrincipalName);
-  EXPECT_EQ(4, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+  EXPECT_EQ(3, client_test_interface()->GetSetAuthenticationDetailsCallCount());
   request = client_test_interface()->GetLastAuthenticationDetailsRequest();
   EXPECT_EQ(kKerberosActivePrincipalName, request.active_principal_name());
 
@@ -192,16 +187,12 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
   local_state_.Get()->SetBoolean(prefs::kKerberosEnabled, false);
   request = client_test_interface()->GetLastAuthenticationDetailsRequest();
   EXPECT_FALSE(request.kerberos_enabled());
-
-  system_proxy_manager.StopObservingPrimaryProfilePrefs();
 }
 
 // Tests that when no user is signed in, credential requests are resolved to a
 // D-Bus call which sends back to System-proxy empty credentials for the
 // specified protection space.
 TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
-  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
-                                          local_state_.Get());
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
 
@@ -233,11 +224,8 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
 // Tests that credential requests are resolved to a  D-Bus call which sends back
 // to System-proxy credentials acquired from the NetworkService.
 TEST_F(SystemProxyManagerTest, UserCredentialsRequestedFromNetworkService) {
-  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
-                                          local_state_.Get());
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
-  system_proxy_manager.StartObservingPrimaryProfilePrefs(profile_.get());
 
   // Setup the NetworkContext with credentials.
   std::unique_ptr<network::NetworkContext> network_context =
@@ -279,6 +267,59 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequestedFromNetworkService) {
   ASSERT_TRUE(request.has_credentials());
   EXPECT_EQ(kBrowserUsername, request.credentials().username());
   EXPECT_EQ(kBrowserPassword, request.credentials().password());
-  system_proxy_manager.StopObservingPrimaryProfilePrefs();
 }
+
+// Tests that |SystemProxyManager| sends requests to start and shut down the
+// worker which tunnels ARC++ traffic according to policy.
+TEST_F(SystemProxyManagerTest, EnableArcWorker) {
+  int expected_set_auth_details_call_count = 0;
+  SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
+            "" /* system_services_password */);
+
+  EXPECT_EQ(++expected_set_auth_details_call_count,
+            client_test_interface()->GetSetAuthenticationDetailsCallCount());
+
+  profile_->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, true);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(++expected_set_auth_details_call_count,
+            client_test_interface()->GetSetAuthenticationDetailsCallCount());
+
+  profile_->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, false);
+  EXPECT_EQ(1, client_test_interface()->GetShutDownCallCount());
+}
+
+// Tests that the user preference used by ARC++ to point to the local proxy is
+// kept in sync.
+TEST_F(SystemProxyManagerTest, ArcWorkerAddressPrefSynced) {
+  const char kLocalProxyAddress[] = "local address";
+  SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
+            "" /* system_services_password */);
+
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::USER);
+  details.set_local_proxy_url(kLocalProxyAddress);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kLocalProxyAddress,
+            profile_->GetPrefs()->GetString(
+                ::prefs::kSystemProxyUserTrafficHostAndPort));
+
+  // The preference shouldn't be updated if the signal is send for system
+  // traffic.
+  details.set_traffic_origin(system_proxy::TrafficOrigin::SYSTEM);
+  details.set_local_proxy_url("other address");
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kLocalProxyAddress,
+            profile_->GetPrefs()->GetString(
+                ::prefs::kSystemProxyUserTrafficHostAndPort));
+
+  SetPolicy(false /* system_proxy_enabled */, "" /* system_services_username */,
+            "" /* system_services_password */);
+
+  EXPECT_TRUE(profile_->GetPrefs()
+                  ->GetString(::prefs::kSystemProxyUserTrafficHostAndPort)
+                  .empty());
+}
+
 }  // namespace policy

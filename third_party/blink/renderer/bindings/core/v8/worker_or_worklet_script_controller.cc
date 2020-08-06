@@ -342,7 +342,7 @@ void WorkerOrWorkletScriptController::DisableEvalInternal(
       V8String(isolate_, error_message));
 }
 
-ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
+v8::Local<v8::Value> WorkerOrWorkletScriptController::EvaluateInternal(
     const ScriptSourceCode& source_code,
     SanitizeScriptErrors sanitize_script_errors,
     V8CacheOptions v8_cache_options) {
@@ -352,8 +352,6 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
                inspector_evaluate_script_event::Data(
                    nullptr, source_code.Url(), source_code.StartPosition()));
-
-  ScriptState::Scope scope(script_state_);
 
   v8::TryCatch block(isolate_);
 
@@ -380,7 +378,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
 
   if (!block.CanContinue()) {
     ForbidExecution();
-    return ScriptValue();
+    return v8::Local<v8::Value>();
   }
 
   if (block.HasCaught()) {
@@ -397,33 +395,33 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   }
 
   v8::Local<v8::Value> result;
-  if (!maybe_result.ToLocal(&result) || result->IsUndefined())
-    return ScriptValue();
+  if (!maybe_result.ToLocal(&result))
+    return v8::Local<v8::Value>();
 
-  return ScriptValue(script_state_->GetIsolate(), result);
+  return result;
 }
 
-bool WorkerOrWorkletScriptController::Evaluate(
+v8::Local<v8::Value> WorkerOrWorkletScriptController::EvaluateAndReturnValue(
     const ScriptSourceCode& source_code,
     SanitizeScriptErrors sanitize_script_errors,
     ErrorEvent** error_event,
     V8CacheOptions v8_cache_options) {
   if (IsExecutionForbidden())
-    return false;
+    return v8::Local<v8::Value>();
 
   ExecutionState state(this);
-  EvaluateInternal(source_code, sanitize_script_errors, v8_cache_options);
+  v8::Local<v8::Value> result =
+      EvaluateInternal(source_code, sanitize_script_errors, v8_cache_options);
   if (IsExecutionForbidden())
-    return false;
+    return v8::Local<v8::Value>();
 
-  ScriptState::Scope scope(script_state_);
   if (state.had_exception) {
     if (error_event) {
       if (state.error_event_from_imported_script_) {
         // Propagate inner error event outwards.
         *error_event = state.error_event_from_imported_script_;
         state.error_event_from_imported_script_ = nullptr;
-        return false;
+        return v8::Local<v8::Value>();
       }
       if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
         *error_event = ErrorEvent::CreateSanitizedError(script_state_);
@@ -444,16 +442,9 @@ bool WorkerOrWorkletScriptController::Evaluate(
       }
       global_scope_->DispatchErrorEvent(event, sanitize_script_errors);
     }
-    return false;
+    return v8::Local<v8::Value>();
   }
-  return true;
-}
-
-ScriptValue WorkerOrWorkletScriptController::EvaluateAndReturnValueForTest(
-    const ScriptSourceCode& source_code) {
-  ExecutionState state(this);
-  return EvaluateInternal(source_code, SanitizeScriptErrors::kSanitize,
-                          kV8CacheOptionsDefault);
+  return result;
 }
 
 void WorkerOrWorkletScriptController::ForbidExecution() {

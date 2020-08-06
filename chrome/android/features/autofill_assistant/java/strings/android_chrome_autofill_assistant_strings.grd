@@ -193,7 +193,7 @@
         Try voice actions\non websites
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_SHOPPING" desc="Onboarding message describing autofill assistant's capability for shopping.">
-        Buy things\nin just a few taps
+        Fast checkout\nin just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
         Google Assistant saves you time by helping you complete actions on the web, like search and checkout.

@@ -58,8 +58,7 @@ ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 // Helpers --------------------------------------------------------------------
 
 constexpr int kMenuWidth = 288;
-constexpr int kIdentityImageSize = 64;
-constexpr int kMaxImageSize = kIdentityImageSize;
+constexpr int kMaxImageSize = ProfileMenuViewBase::kIdentityImageSize;
 constexpr int kDefaultMargin = 8;
 constexpr int kBadgeSize = 16;
 constexpr int kCircularImageButtonSize = 28;
@@ -260,7 +259,7 @@ class AvatarImageView : public views::ImageView {
       // is no image, or in tests.
       avatar_image_ = ui::ImageModel::FromVectorIcon(
           kUserAccountAvatarIcon, ui::NativeTheme::kColorId_MenuIconColor,
-          kIdentityImageSize);
+          ProfileMenuViewBase::kIdentityImageSize);
     }
   }
 
@@ -270,7 +269,8 @@ class AvatarImageView : public views::ImageView {
     constexpr int kBadgePadding = 1;
     DCHECK(!avatar_image_.IsEmpty());
     gfx::ImageSkia sized_avatar_image =
-        SizeImageModel(avatar_image_, GetNativeTheme(), kIdentityImageSize);
+        SizeImageModel(avatar_image_, GetNativeTheme(),
+                       ProfileMenuViewBase::kIdentityImageSize);
 
     const SkColor background_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_BubbleBackground);
@@ -368,7 +368,9 @@ void BuildProfileBackgroundContainer(
     // The bottom background edge should match the center of the identity image.
     gfx::Insets background_insets(
         0, 0,
-        /*bottom=*/kIdentityImageSize / 2 + kAvatarImageViewBottomMargin, 0);
+        /*bottom=*/ProfileMenuViewBase::kIdentityImageSize / 2 +
+            kAvatarImageViewBottomMargin,
+        0);
     profile_background_container->SetBackground(
         views::CreateBackgroundFromPainter(
             views::Painter::CreateSolidRoundRectPainter(
@@ -744,8 +746,6 @@ void ProfileMenuViewBase::AddSelectableProfile(
     const base::string16& name,
     bool is_guest,
     base::RepeatingClosure action) {
-  constexpr int kImageSize = 20;
-
   // Initialize layout if this is the first time a button is added.
   if (!selectable_profiles_container_->GetLayoutManager()) {
     selectable_profiles_container_->SetLayoutManager(
@@ -754,8 +754,8 @@ void ProfileMenuViewBase::AddSelectableProfile(
   }
 
   DCHECK(!image_model.IsEmpty());
-  gfx::ImageSkia sized_image =
-      SizeImageModel(image_model, GetNativeTheme(), kImageSize);
+  gfx::ImageSkia sized_image = SizeImageModel(image_model, GetNativeTheme(),
+                                              kSelectableProfileImageSize);
 
   views::Button* button = selectable_profiles_container_->AddChildView(
       std::make_unique<HoverButton>(this, sized_image, name));

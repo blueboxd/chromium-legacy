@@ -52,6 +52,10 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
     // |ConnectToWorkerSignals|.
     virtual void SendAuthenticationRequiredSignal(
         const system_proxy::AuthenticationRequiredDetails& details) = 0;
+    // Simulates the |WorkerActiveSignal| signal by calling the callback set
+    // by |SetWorkerActiveSignalCallback|.
+    virtual void SendWorkerActiveSignal(
+        const system_proxy::WorkerActiveSignalDetails& details) = 0;
 
    protected:
     virtual ~TestInterface() {}

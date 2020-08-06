@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
+#include "ios/chrome/browser/ui/util/multi_window_buildflags.h"
 #include "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -217,6 +218,16 @@
 
   [_memoryHelper handleMemoryPressure];
 }
+
+#if BUILDFLAG(IOS_MULTIWINDOW_ENABLED)
+- (void)application:(UIApplication*)application
+    didDiscardSceneSessions:(NSSet<UISceneSession*>*)sceneSessions
+    API_AVAILABLE(ios(13)) {
+  ios::GetChromeBrowserProvider()
+      ->GetChromeIdentityService()
+      ->ApplicationDidDiscardSceneSessions(sceneSessions);
+}
+#endif  // BUILDFLAG(IOS_MULTIWINDOW_ENABLED)
 
 #pragma mark - Scenes lifecycle
 

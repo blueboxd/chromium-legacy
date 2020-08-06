@@ -426,14 +426,9 @@ LoginPinView::LoginPinView(Style keyboard_style,
                            const OnPinKey& on_key,
                            const OnPinBackspace& on_backspace,
                            const OnPinSubmit& on_submit)
-    : NonAccessibleView(kLoginPinViewClassName),
-      backspace_(new BackspacePinButton(kButtonSize, on_backspace)),
-      submit_button_(new SubmitPinButton(kButtonSize, on_submit)),
-      on_key_(on_key),
-      on_backspace_(on_backspace),
-      on_submit_(on_submit) {
-  DCHECK(on_key_);
-  DCHECK(on_backspace_);
+    : NonAccessibleView(kLoginPinViewClassName) {
+  DCHECK(on_key);
+  DCHECK(on_backspace);
 
   // Layer rendering.
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
@@ -445,7 +440,7 @@ LoginPinView::LoginPinView(Style keyboard_style,
 
   auto add_digit_button = [&](View* row, int value) {
     row->AddChildView(
-        new DigitPinButton(value, show_letters, kButtonSize, on_key_));
+        new DigitPinButton(value, show_letters, kButtonSize, on_key));
   };
 
   // 1-2-3
@@ -468,19 +463,16 @@ LoginPinView::LoginPinView(Style keyboard_style,
 
   // backspace-0-submit
   row = BuildAndAddRow();
-  row->AddChildView(backspace_);
+  backspace_ = row->AddChildView(
+      std::make_unique<BackspacePinButton>(kButtonSize, on_backspace));
   add_digit_button(row, 0);
-  if (!on_submit_.is_null())
-    row->AddChildView(submit_button_);
-}
 
-LoginPinView::LoginPinView(Style keyboard_style,
-                           const OnPinKey& on_key,
-                           const OnPinBackspace& on_backspace)
-    : LoginPinView(keyboard_style,
-                   on_key,
-                   on_backspace,
-                   base::RepeatingClosure()) {}
+  // Only add the submit button if the callback is valid.
+  if (!on_submit.is_null()) {
+    submit_button_ = row->AddChildView(
+        std::make_unique<SubmitPinButton>(kButtonSize, on_submit));
+  }
+}
 
 LoginPinView::~LoginPinView() = default;
 
@@ -495,7 +487,8 @@ void LoginPinView::NotifyAccessibilityLocationChanged() {
 
 void LoginPinView::OnPasswordTextChanged(bool is_empty) {
   backspace_->SetEnabled(!is_empty);
-  submit_button_->SetEnabled(!is_empty);
+  if (submit_button_)
+    submit_button_->SetEnabled(!is_empty);
 }
 
 NonAccessibleView* LoginPinView::BuildAndAddRow() {

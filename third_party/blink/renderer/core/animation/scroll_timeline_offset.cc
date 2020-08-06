@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
@@ -64,6 +65,16 @@ bool IsContainingBlockChainDescendant(const LayoutObject* descendant,
   while (descendant && descendant != ancestor)
     descendant = descendant->ContainingBlock();
   return descendant;
+}
+
+bool ElementBasedOffsetsEqual(ScrollTimelineElementBasedOffset* o1,
+                              ScrollTimelineElementBasedOffset* o2) {
+  if (o1 == o2)
+    return true;
+  if (!o1 || !o2)
+    return false;
+  return (o1->edge() == o2->edge()) && (o1->target() == o2->target()) &&
+         (o1->threshold() == o2->threshold());
 }
 
 }  // namespace
@@ -213,6 +224,12 @@ ScrollTimelineOffset::ToStringOrScrollTimelineElementBasedOffset() const {
   }
 
   return result;
+}
+
+bool ScrollTimelineOffset::operator==(const ScrollTimelineOffset& o) const {
+  return DataEquivalent(length_based_offset_, o.length_based_offset_) &&
+         ElementBasedOffsetsEqual(element_based_offset_,
+                                  o.element_based_offset_);
 }
 
 ScrollTimelineOffset::ScrollTimelineOffset(const CSSPrimitiveValue* offset)

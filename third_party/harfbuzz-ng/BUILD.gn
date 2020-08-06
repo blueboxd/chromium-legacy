@@ -63,7 +63,6 @@ if (use_system_harfbuzz) {
     ]
 
     sources = [
-      "src/src/hb-aat-fdsc-table.hh",
       "src/src/hb-aat-layout-ankr-table.hh",
       "src/src/hb-aat-layout-bsln-table.hh",
       "src/src/hb-aat-layout-feat-table.hh",

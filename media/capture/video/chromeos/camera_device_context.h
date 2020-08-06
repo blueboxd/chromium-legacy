@@ -134,7 +134,17 @@ class CAPTURE_EXPORT CameraDeviceContext {
 
   void SetScreenRotation(int screen_rotation);
 
-  int GetCameraFrameOrientation();
+  // Gets the accumulated rotation that the camera frame needs to be rotated
+  // to match the display orientation.  This includes the sensor orientation and
+  // the screen rotation.
+  int GetCameraFrameRotation();
+
+  // Gets the rotation needed to match the camera frame to the display, assuming
+  // the camera frame has 0 degree orientation.
+  int GetRotationForDisplay();
+
+  // Gets the rotation needed to get the camera frame to 0 degree orientation.
+  int GetRotationFromSensorOrientation();
 
   // Reserves a video capture buffer from the buffer pool provided by the video
   // |client_|.  Returns true if the operation succeeds; false otherwise.

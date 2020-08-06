@@ -72,6 +72,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "nfc.icon",
     "overflow_chevron.icon",
     "paintbrush.icon",
+    "person_outline_padded.icon",
     "photo_camera.icon",
     "picture_in_picture_control_background.icon",
     "picture_in_picture_alt.icon",

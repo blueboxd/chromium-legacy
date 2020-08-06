@@ -42,8 +42,6 @@ void TabListSceneLayer::BeginBuildingFrame(JNIEnv* env,
   // matches PutTabLayer call order.
   for (auto tab : tab_map_)
     tab.second->layer()->RemoveFromParent();
-
-  used_tints_.clear();
 }
 
 void TabListSceneLayer::FinishBuildingFrame(JNIEnv* env,
@@ -57,8 +55,6 @@ void TabListSceneLayer::FinishBuildingFrame(JNIEnv* env,
       ++it;
   }
   visible_tabs_this_frame_.clear();
-  DCHECK(resource_manager_);
-  resource_manager_->RemoveUnusedTints(used_tints_);
 }
 
 void TabListSceneLayer::UpdateLayer(
@@ -148,13 +144,6 @@ void TabListSceneLayer::PutTabLayer(
   }
   own_tree_->AddChild(layer->layer());
   visible_tabs_this_frame_.insert(id);
-
-  // Add the tints for the border asset and close icon to the list that was
-  // used for this frame.
-  used_tints_.insert(toolbar_background_color);
-  used_tints_.insert(close_button_color);
-  used_tints_.insert(default_theme_color);
-  used_tints_.insert(toolbar_textbox_background_color);
 
   DCHECK(layer);
   if (layer) {

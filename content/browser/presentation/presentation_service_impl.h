@@ -24,7 +24,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/gurl.h"
@@ -283,9 +283,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   std::unordered_map<int, std::unique_ptr<NewPresentationCallbackWrapper>>
       pending_reconnect_presentation_cbs_;
 
-  // RAII receiver of |this| to PresentationService request.
-  mojo::Receiver<blink::mojom::PresentationService>
-      presentation_service_receiver_{this};
+  mojo::ReceiverSet<blink::mojom::PresentationService>
+      presentation_service_receivers_;
 
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;

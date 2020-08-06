@@ -49,11 +49,6 @@ class UI_ANDROID_EXPORT ResourceManager {
   virtual Resource* GetStaticResourceWithTint(int res_id,
                                               SkColor tint_color) = 0;
 
-  // Remove tints that were unused in the current frame being built. This
-  // function takes a set |used_tints| and removes all the tints not in the set
-  // from the cache.
-  virtual void RemoveUnusedTints(const std::unordered_set<int>& used_tints) = 0;
-
   // Trigger asynchronous loading of the resource specified by |res_type| and
   // |res_id|, if it has not yet been loaded.
   virtual void PreloadResource(AndroidResourceType res_type, int res_id) = 0;
@@ -64,6 +59,9 @@ class UI_ANDROID_EXPORT ResourceManager {
     return resource && resource->ui_resource() ? resource->ui_resource()->id()
                                                : 0;
   }
+
+  // A notification that all updates have finished for the current frame.
+  virtual void OnFrameUpdatesFinished() = 0;
 
  protected:
   virtual ~ResourceManager() {}

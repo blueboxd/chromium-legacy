@@ -2261,7 +2261,7 @@ void AddProperty(CSSPropertyID resolved_property,
   }
 
   properties.push_back(CSSPropertyValue(
-      CSSProperty::Get(resolved_property), value, important, set_from_shorthand,
+      CSSPropertyName(resolved_property), value, important, set_from_shorthand,
       shorthand_index, implicit == IsImplicitProperty::kImplicit));
 }
 

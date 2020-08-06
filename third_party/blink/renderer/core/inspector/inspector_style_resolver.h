@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_CSS_CASCADE_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_CSS_CASCADE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_STYLE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_STYLE_RESOLVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -31,24 +31,17 @@ struct CORE_EXPORT InspectorCSSMatchedRules
   }
 };
 
-// Resolves style rules for an element and helps compute cascaded values for
-// inspector use cases.
-class CORE_EXPORT InspectorCSSCascade {
+// Resolves style rules for an element.
+class CORE_EXPORT InspectorStyleResolver {
   STACK_ALLOCATED();
 
  public:
-  explicit InspectorCSSCascade(Element*, PseudoId);
+  explicit InspectorStyleResolver(Element*, PseudoId);
   RuleIndexList* MatchedRules() const;
   HeapVector<Member<InspectorCSSMatchedRules>> PseudoElementRules();
   HeapVector<Member<InspectorCSSMatchedRules>> ParentRules();
-  const CSSValue* GetCascadedProperty(CSSPropertyID property_id) const;
 
  private:
-  const CSSValue* GetPropertyValueFromStyle(CSSStyleDeclaration*,
-                                            CSSPropertyID) const;
-  const CSSValue* GetPropertyValueFromRuleIndexList(RuleIndexList*,
-                                                    CSSPropertyID) const;
-
   Element* element_;
   RuleIndexList* matched_rules_;
   HeapVector<Member<InspectorCSSMatchedRules>> parent_rules_;
@@ -57,4 +50,4 @@ class CORE_EXPORT InspectorCSSCascade {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_CSS_CASCADE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_STYLE_RESOLVER_H_

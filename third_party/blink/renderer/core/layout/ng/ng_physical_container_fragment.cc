@@ -97,6 +97,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     NGOutlineType outline_type,
     const LayoutBoxModelObject* containing_block) const {
   if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(this)) {
+    DCHECK_EQ(box->PostLayout(), box);
     if (const NGFragmentItems* items = box->Items()) {
       for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNext()) {
         DCHECK(cursor.Current().Item());
@@ -196,7 +197,8 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
       continue;
     }
 
-    if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
+    if (const NGPhysicalBoxFragment* child_box =
+            item->PostLayoutBoxFragment()) {
       PhysicalRect child_scroll_overflow;
       if (height_type == TextHeightType::kNormalHeight ||
           (child_box->BoxType() != kInlineBox && !IsRubyBox()))
@@ -258,6 +260,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
 
   if (const auto* descendant_box =
           DynamicTo<NGPhysicalBoxFragment>(descendant.get())) {
+    DCHECK_EQ(descendant_box->PostLayout(), descendant_box);
     const LayoutObject* descendant_layout_object =
         descendant_box->GetLayoutObject();
 

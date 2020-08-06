@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: This test focuses on functionality implemented in AffiliationService
-// itself. More thorough The AffiliationBackend is tested in-depth separarately.
+// Note: This test focuses on functionality implemented in
+// AndroidAffiliationService itself. More thorough The AffiliationBackend is
+// tested in-depth separarately.
 
 #include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 
@@ -31,7 +32,7 @@ namespace password_manager {
 
 namespace {
 
-using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
+using StrategyOnCacheMiss = AndroidAffiliationService::StrategyOnCacheMiss;
 
 const char kTestFacetURIAlpha1[] = "https://one.alpha.example.com";
 const char kTestFacetURIAlpha2[] = "https://two.alpha.example.com";
@@ -48,14 +49,14 @@ AffiliatedFacets GetTestEquivalenceClassAlpha() {
 
 }  // namespace
 
-class AffiliationServiceTest : public testing::Test {
+class AndroidAffiliationServiceTest : public testing::Test {
  public:
-  AffiliationServiceTest() = default;
+  AndroidAffiliationServiceTest() = default;
 
  protected:
   void DestroyService() { service_.reset(); }
 
-  AffiliationService* service() { return service_.get(); }
+  AndroidAffiliationService* service() { return service_.get(); }
   MockAffiliationConsumer* mock_consumer() { return &mock_consumer_; }
 
   base::TestMockTimeTaskRunner* background_task_runner() {
@@ -77,7 +78,8 @@ class AffiliationServiceTest : public testing::Test {
         network::TestNetworkConnectionTracker::GetInstance();
     network_connection_tracker->SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_ETHERNET);
-    service_ = std::make_unique<AffiliationService>(background_task_runner());
+    service_ =
+        std::make_unique<AndroidAffiliationService>(background_task_runner());
     service_->Initialize(test_shared_loader_factory_,
                          network_connection_tracker, database_path);
     // Note: the background task runner is purposely not pumped here, so that
@@ -104,12 +106,12 @@ class AffiliationServiceTest : public testing::Test {
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;
 
-  std::unique_ptr<AffiliationService> service_;
+  std::unique_ptr<AndroidAffiliationService> service_;
 
-  DISALLOW_COPY_AND_ASSIGN(AffiliationServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(AndroidAffiliationServiceTest);
 };
 
-TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
+TEST_F(AndroidAffiliationServiceTest, GetAffiliationsAndBranding) {
   // The first request allows on-demand fetching, and should trigger a fetch.
   // Then, it should succeed after the fetch is complete.
   service()->GetAffiliationsAndBranding(
@@ -157,7 +159,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 }
 
-TEST_F(AffiliationServiceTest, ShutdownWhileTasksArePosted) {
+TEST_F(AndroidAffiliationServiceTest, ShutdownWhileTasksArePosted) {
   service()->GetAffiliationsAndBranding(
       FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
       StrategyOnCacheMiss::FETCH_OVER_NETWORK,

@@ -55,16 +55,9 @@ public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
     @Rule
     public final Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
 
-    // This test rule is only applied for Legacy AccountPickerDialog fragment.
-    // TODO(crbug.com/1106737): Refactor the tests into two separate files.
-    @Rule
-    public final ChromeRenderTestRule mRenderTestRuleLegacy =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
-
-    // This test rule is only applied when MOBILE_IDENTITY_CONSISTENCY feature flag is enabled.
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(2).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
@@ -132,7 +125,7 @@ public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
     @Feature("RenderTest")
     public void testAccountPickerDialogViewLegacy() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        mRenderTestRuleLegacy.render(
+        mRenderTestRule.render(
                 mDialog.getDialog().getWindow().getDecorView(), "account_picker_dialog_legacy");
     }
 
@@ -143,7 +136,7 @@ public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.updateSelectedAccount(mAccountName2));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        mRenderTestRuleLegacy.render(mDialog.getDialog().getWindow().getDecorView(),
+        mRenderTestRule.render(mDialog.getDialog().getWindow().getDecorView(),
                 "account_picker_dialog_update_selected_account");
     }
 

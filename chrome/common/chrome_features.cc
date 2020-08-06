@@ -53,7 +53,7 @@ const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
 const base::Feature kAppServiceIntentHandling{"AppServiceIntentHandling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceAdaptiveIcon{"AppServiceAdaptiveIcon",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables the built-in DNS resolver.
@@ -125,6 +125,9 @@ const base::Feature kClickToOpenPDFPlaceholder{
 
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
@@ -303,6 +306,12 @@ const base::Feature kEnableAmbientAuthenticationInIncognito{
 const base::Feature kEnableAmbientAuthenticationInGuestSession{
     "EnableAmbientAuthenticationInGuestSession",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_WIN)
+// Enables users to create a desktop shortcut for incognito mode.
+const base::Feature kEnableIncognitoShortcutOnDesktop{
+    "EnableIncognitoShortcutOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_CHROMEOS)
 // Upload enterprise cloud reporting from Chrome OS.

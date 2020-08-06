@@ -10,6 +10,7 @@ option java_outer_classname = "HintsProto";
 package optimization_guide.proto;
 
 import "common_types.proto";
+import "delay_async_script_execution_metadata.proto";
 import "loading_predictor_metadata.proto";
 import "performance_hints_metadata.proto";
 import "previews_metadata.proto";
@@ -140,6 +141,9 @@ enum OptimizationType {
   // This optimization provides information about hosts that historically
   // provide a fast and responsive user experience.
   FAST_HOST_HINTS = 10;
+  // This optimization provides information about the effective delay for async
+  // script execution.
+  DELAY_ASYNC_SCRIPT_EXECUTION = 11;
 }
 
 // Presents semantics for how page load URLs should be matched.
@@ -194,6 +198,8 @@ message Optimization {
     PerformanceHintsMetadata performance_hints_metadata = 11;
     PublicImageMetadata public_image_metadata = 12;
     LoadingPredictorMetadata loading_predictor_metadata = 13;
+    DelayAsyncScriptExecutionMetadata delay_async_script_execution_metadata =
+        14;
   }
 }
 

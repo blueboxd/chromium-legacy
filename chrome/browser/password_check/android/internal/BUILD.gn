@@ -70,6 +70,7 @@ android_library("internal_java") {
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//ui/android:ui_full_java",
     _public_target,
   ]

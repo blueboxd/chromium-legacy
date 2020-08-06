@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -79,6 +80,7 @@ import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -778,6 +780,33 @@ public class InstantStartTest {
         Assert.assertTrue(TabUiFeatureUtilities.supportInstantStart(false));
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
         Assert.assertFalse(StartSurfaceConfiguration.isStartSurfaceEnabled());
+
+        Assert.assertEquals(1,
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount());
+        Layout activeLayout = mActivityTestRule.getActivity().getLayoutManager().getActiveLayout();
+        Assert.assertTrue(activeLayout instanceof StaticLayout);
+        Assert.assertEquals(123, ((StaticLayout) activeLayout).getCurrentTabIdForTesting());
+    }
+
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.
+    Add({ChromeSwitches.ENABLE_ACCESSIBILITY_TAB_SWITCHER, "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    public void
+    testInstantStartNotCrashWhenAccessibilityLayoutEnabled() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
+        Assert.assertTrue(DeviceClassManager.enableAccessibilityLayout());
+
+        createTabStateFile(new int[] {123});
+        mActivityTestRule.startMainActivityFromLauncher();
+
+        Assert.assertFalse(TabUiFeatureUtilities.supportInstantStart(false));
+        Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
+        Assert.assertTrue(StartSurfaceConfiguration.isStartSurfaceEnabled());
 
         Assert.assertEquals(1,
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount());

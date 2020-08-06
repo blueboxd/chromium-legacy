@@ -3,6 +3,7 @@ include_rules = [
   "+components/autofill",
   "+components/google/core/common",
   "+components/password_manager/core/browser",
+  "+components/password_manager/core/common",
   "+components/version_info",
   "+content/public/browser",
   "+content/public/test",

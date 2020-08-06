@@ -25,9 +25,19 @@ android_library("password_check_java_enums") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "bulk_leak_check_controller_android_unittest.cc" ]
+  sources = [
+    "bulk_leak_check_controller_android_unittest.cc",
+    "password_check_manager_unittest.cc",
+  ]
   deps = [
     ":android",
+    ":password_check_enums_srcjar",
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//chrome/test:test_support",
+    "//components/password_manager/core/browser",
+    "//components/signin/public/identity_manager",
+    "//components/signin/public/identity_manager:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

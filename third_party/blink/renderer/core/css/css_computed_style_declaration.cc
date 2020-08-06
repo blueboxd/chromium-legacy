@@ -519,10 +519,10 @@ MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
   HeapVector<CSSPropertyValue, 256> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
-    const CSSProperty& property = *properties[i];
-    const CSSValue* value = GetPropertyCSSValue(property.GetCSSPropertyName());
+    CSSPropertyName name = properties[i]->GetCSSPropertyName();
+    const CSSValue* value = GetPropertyCSSValue(name);
     if (value)
-      list.push_back(CSSPropertyValue(property, *value, false));
+      list.push_back(CSSPropertyValue(name, *value, false));
   }
   return MakeGarbageCollected<MutableCSSPropertyValueSet>(list.data(),
                                                           list.size());

@@ -557,6 +557,16 @@
     "expiry_milestone": 85
   },
   {
+    "name": "content-settings-redesign",
+    "owners": [
+      "tchudakov",
+      "harrisonsean",
+      "msramek",
+      "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "context-menu-copy-image",
     "owners": [ "gangwu" ],
     "expiry_milestone": 88
@@ -1637,6 +1647,11 @@
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "enable-incognito-shortcut-on-desktop",
+    "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "enable-inline-update-flow",

@@ -23,17 +23,17 @@ struct PasswordForm;
 
 namespace password_manager {
 
-class AffiliationService;
+class AndroidAffiliationService;
 
-// Interacts with the AffiliationService on behalf of the PasswordStore.
+// Interacts with the AndroidAffiliationService on behalf of the PasswordStore.
 // For each GetLogins() request, it provides the PasswordStore with a list of
 // additional realms that are affiliation-based matches to the observed realm.
 //
 // Currently, the only supported use-case is obtaining Android applications
 // affiliated with the web site containing the observed form. This is achieved
 // by implementing the "proactive fetching" strategy for interacting with the
-// AffiliationService (see android_affiliation_service.h for details), with
-// Android applications playing the role of facet Y.
+// AndroidAffiliationService (see android_affiliation_service.h for details),
+// with Android applications playing the role of facet Y.
 //
 // More specifically, this class prefetches affiliation information on start-up
 // for all Android applications that the PasswordStore has credentials stored
@@ -55,7 +55,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // except in tests which do not Initialize() the object.
   AffiliatedMatchHelper(
       PasswordStore* password_store,
-      std::unique_ptr<AffiliationService> affiliation_service);
+      std::unique_ptr<AndroidAffiliationService> affiliation_service);
   ~AffiliatedMatchHelper() override;
 
   // Schedules deferred initialization.
@@ -109,27 +109,27 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // observing the store for future changes.
   void DoDeferredInitialization();
 
-  // Called back by AffiliationService to supply the list of facets affiliated
-  // with |original_facet_uri| so that a GetAffiliatedAndroidRealms() call can
-  // be completed.
+  // Called back by AndroidAffiliationService to supply the list of facets
+  // affiliated with |original_facet_uri| so that a GetAffiliatedAndroidRealms()
+  // call can be completed.
   void CompleteGetAffiliatedAndroidRealms(
       const FacetURI& original_facet_uri,
       AffiliatedRealmsCallback result_callback,
       const AffiliatedFacets& results,
       bool success);
 
-  // Called back by AffiliationService to supply the list of facets affiliated
-  // with the Android application that GetAffiliatedWebRealms() was called with,
-  // so that the call can be completed.
+  // Called back by AndroidAffiliationService to supply the list of facets
+  // affiliated with the Android application that GetAffiliatedWebRealms() was
+  // called with, so that the call can be completed.
   void CompleteGetAffiliatedWebRealms(AffiliatedRealmsCallback result_callback,
                                       const AffiliatedFacets& results,
                                       bool success);
 
-  // Called back by AffiliationService to supply the list of facets affiliated
-  // with the Android credential in |form|. Injects affiliation and branding
-  // information by setting |affiliated_web_realm|, |app_display_name| and
-  // |app_icon_url| on |form| if |success| is true and |results| is non-empty.
-  // Invokes |barrier_closure|.
+  // Called back by AndroidAffiliationService to supply the list of facets
+  // affiliated with the Android credential in |form|. Injects affiliation and
+  // branding information by setting |affiliated_web_realm|, |app_display_name|
+  // and |app_icon_url| on |form| if |success| is true and |results| is
+  // non-empty. Invokes |barrier_closure|.
   void CompleteInjectAffiliationAndBrandingInformation(
       autofill::PasswordForm* form,
       base::OnceClosure barrier_closure,
@@ -145,8 +145,9 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
 
   PasswordStore* const password_store_;
 
-  // Being the sole consumer of AffiliationService, |this| owns the service.
-  std::unique_ptr<AffiliationService> affiliation_service_;
+  // Being the sole consumer of AndroidAffiliationService, |this| owns the
+  // service.
+  std::unique_ptr<AndroidAffiliationService> affiliation_service_;
 
   base::WeakPtrFactory<AffiliatedMatchHelper> weak_ptr_factory_{this};
 

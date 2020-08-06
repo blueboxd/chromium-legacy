@@ -11,10 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
@@ -26,6 +28,10 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -88,6 +94,28 @@ int NextAvailableMetricsBucketIndex() {
 int GetLowEntropyHashValue(const std::string& value) {
   return base::PersistentHash(value) % kNumberOfLowEntropyHashValues;
 }
+
+class ImageWithBackgroundSource : public gfx::CanvasImageSource {
+ public:
+  ImageWithBackgroundSource(const gfx::ImageSkia& image, SkColor background)
+      : gfx::CanvasImageSource(image.size()),
+        image_(image),
+        background_(background) {}
+
+  ~ImageWithBackgroundSource() override = default;
+
+  // gfx::CanvasImageSource override.
+  void Draw(gfx::Canvas* canvas) override {
+    canvas->DrawColor(background_);
+    canvas->DrawImageInt(image_, 0, 0);
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+  const SkColor background_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageWithBackgroundSource);
+};
 
 }  // namespace
 
@@ -284,11 +312,19 @@ base::string16 ProfileAttributesEntry::GetUserName() const {
   return GetString16(kUserNameKey);
 }
 
-const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() const {
+gfx::Image ProfileAttributesEntry::GetAvatarIcon(
+    int size_for_placeholder_avatar) const {
   if (IsUsingGAIAPicture()) {
     const gfx::Image* image = GetGAIAPicture();
     if (image)
       return *image;
+  }
+
+  // TODO(crbug.com/1100835): After launch, remove the treatment of placeholder
+  // avatars from GetHighResAvatar() and from any other places.
+  if (base::FeatureList::IsEnabled(features::kNewProfilePicker) &&
+      GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex()) {
+    return GetPlaceholderAvatarIcon(size_for_placeholder_avatar);
   }
 
 #if !defined(OS_ANDROID)
@@ -708,6 +744,18 @@ const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
   return profile_info_cache_->LoadAvatarPictureFromPath(GetPath(), key,
                                                         image_path);
+}
+
+gfx::Image ProfileAttributesEntry::GetPlaceholderAvatarIcon(int size) const {
+  ProfileThemeColors colors = GetProfileThemeColors();
+  gfx::ImageSkia icon_without_background =
+      gfx::CreateVectorIcon(gfx::IconDescription(
+          kPersonOutlinePaddedIcon, size, colors.default_avatar_stroke_color));
+  gfx::ImageSkia icon_with_background(
+      std::make_unique<ImageWithBackgroundSource>(
+          icon_without_background, colors.default_avatar_fill_color),
+      size);
+  return gfx::Image(icon_with_background);
 }
 
 bool ProfileAttributesEntry::HasMultipleAccountNames() const {

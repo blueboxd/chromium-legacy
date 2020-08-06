@@ -198,16 +198,13 @@
     NSMutableArray<UIMenuElement*>* menuElements =
         [[NSMutableArray alloc] init];
 
-    // Copy URL action.
-    [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
-
-    // "Open in" actions.
     [menuElements
         addObject:[actionFactory
                       actionToOpenInNewTabWithURL:item.URL
                                        completion:^{
                                          [weakSelf onOpenedURLInNewTab];
                                        }]];
+
     [menuElements
         addObject:
             [actionFactory
@@ -216,6 +213,7 @@
                                             [weakSelf
                                                 onOpenedURLInNewIncognitoTab];
                                           }]];
+
     if (IsMultipleScenesSupported()) {
       [menuElements
           addObject:
@@ -225,7 +223,8 @@
                                       completion:nil]];
     }
 
-    // Delete action.
+    [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
+
     [menuElements addObject:[actionFactory actionToDeleteWithBlock:^{
                     [historyItemDelegate historyEntryItemDidRequestDelete:item];
                   }]];

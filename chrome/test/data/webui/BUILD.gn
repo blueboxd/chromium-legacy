@@ -133,6 +133,7 @@ if (include_js_tests) {
         "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
         "../chromeos/oobe_webui_browsertest.js",
         "chromeos/edu_login/edu_login_browsertest.js",
+        "chromeos/gaia_action_buttons/gaia_action_buttons_browsertest.js",
         "nearby_share/shared/nearby_shared_browsertest.js",
         "set_time_dialog_browsertest.js",
         "settings/chromeos/a11y/crostini_settings_details_a11y_test.js",
@@ -396,6 +397,9 @@ group("closure_compile") {
 
     # TODO(crbug.com/1000989): Add page specific targets here.
   ]
+  if (is_chromeos) {
+    deps += [ "chromeos/gaia_action_buttons:closure_compile" ]
+  }
   if (enable_tab_search) {
     deps += [ "tab_search/test:closure_compile" ]
   }

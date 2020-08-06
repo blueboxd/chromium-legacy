@@ -56,7 +56,6 @@ import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.CanMakePaymentQuery;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.ComponentPaymentRequestImpl.ComponentPaymentRequestDelegate;
-import org.chromium.components.payments.ComponentPaymentRequestImpl.NativeObserverForTest;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
@@ -282,7 +281,6 @@ public class PaymentRequestImpl
     private final Handler mHandler = new Handler();
     private final RenderFrameHost mRenderFrameHost;
     private final Delegate mDelegate;
-    private NativeObserverForTest mNativeObserverForTest;
     private final WebContents mWebContents;
     private final String mTopLevelOrigin;
     private final String mPaymentRequestOrigin;
@@ -451,12 +449,6 @@ public class PaymentRequestImpl
         assert mComponentPaymentRequestImpl == null;
         assert componentPaymentRequestImpl != null;
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
-    }
-
-    // Implement ComponentPaymentRequestDelegate:
-    @Override
-    public void setNativeObserverForTest(NativeObserverForTest nativeObserverForTest) {
-        mNativeObserverForTest = nativeObserverForTest;
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -766,8 +758,8 @@ public class PaymentRequestImpl
 
         if (mIsFinishedQueryingPaymentApps) {
             // Send AppListReady signal when all apps are created and request.show() is called.
-            if (mNativeObserverForTest != null) {
-                mNativeObserverForTest.onAppListReady(
+            if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getNativeObserverForTest().onAppListReady(
                         mPaymentUIsManager.getPaymentMethodsSection().getItems(), mRawTotal);
             }
             // Calculate skip ui and build ui only after all payment apps are ready and
@@ -869,7 +861,9 @@ public class PaymentRequestImpl
     }
 
     private void onMinimalUIReady() {
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onMinimalUIReady();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onMinimalUIReady();
+        }
     }
 
     private void onMinimalUiConfirmed(PaymentApp app) {
@@ -1565,7 +1559,9 @@ public class PaymentRequestImpl
         if (client != null) client.onError(reason, debugMessage);
         closeClient();
         closeUIAndDestroyNativeObjects();
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onConnectionTerminated();
+        }
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -1596,7 +1592,9 @@ public class PaymentRequestImpl
         } else {
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceUnableToAbort();
         }
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onAbortCalled();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onAbortCalled();
+        }
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -1634,8 +1632,8 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mNativeObserverForTest != null) {
-            mNativeObserverForTest.onCompleteCalled();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onCompleteCalled();
         }
 
         closeUIAndDestroyNativeObjects();
@@ -1739,7 +1737,9 @@ public class PaymentRequestImpl
     public void canMakePayment() {
         if (getClient() == null) return;
 
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentCalled();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onCanMakePaymentCalled();
+        }
 
         if (mIsFinishedQueryingPaymentApps) {
             respondCanMakePaymentQuery();
@@ -1763,7 +1763,9 @@ public class PaymentRequestImpl
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentReturned();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onCanMakePaymentReturned();
+        }
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -1772,7 +1774,9 @@ public class PaymentRequestImpl
     public void hasEnrolledInstrument(boolean perMethodQuota) {
         if (getClient() == null) return;
 
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onHasEnrolledInstrumentCalled();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onHasEnrolledInstrumentCalled();
+        }
 
         mHasEnrolledInstrumentUsesPerMethodQuota = perMethodQuota;
 
@@ -1807,8 +1811,9 @@ public class PaymentRequestImpl
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
         }
-        if (mNativeObserverForTest != null) {
-            mNativeObserverForTest.onHasEnrolledInstrumentReturned();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest()
+                    .onHasEnrolledInstrumentReturned();
         }
     }
 
@@ -1836,7 +1841,9 @@ public class PaymentRequestImpl
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
         if (sObserverForTest != null) sObserverForTest.onRendererClosedMojoConnection();
         closeUIAndDestroyNativeObjects();
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onConnectionTerminated();
+        }
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -1849,7 +1856,9 @@ public class PaymentRequestImpl
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
         closeUIAndDestroyNativeObjects();
-        if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
+        if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getNativeObserverForTest().onConnectionTerminated();
+        }
     }
 
     // PaymentAppFactoryParams implementation.
@@ -2090,8 +2099,8 @@ public class PaymentRequestImpl
 
         if (mIsCurrentPaymentRequestShowing) {
             // Send AppListReady signal when all apps are created and request.show() is called.
-            if (mNativeObserverForTest != null) {
-                mNativeObserverForTest.onAppListReady(
+            if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getNativeObserverForTest().onAppListReady(
                         mPaymentUIsManager.getPaymentMethodsSection().getItems(), mRawTotal);
             }
             // Calculate skip ui and build ui only after all payment apps are ready and
@@ -2126,7 +2135,9 @@ public class PaymentRequestImpl
                             ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
                             : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
             if (mIsProhibitedOriginOrInvalidSsl) {
-                if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
+                if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+                    ComponentPaymentRequestImpl.getNativeObserverForTest().onNotSupportedError();
+                }
                 // Chrome always refuses payments with invalid SSL and in prohibited origin types.
                 disconnectFromClientWithDebugMessage(
                         mRejectShowErrorMessage, PaymentErrorReason.NOT_SUPPORTED);
@@ -2136,7 +2147,9 @@ public class PaymentRequestImpl
                 disconnectFromClientWithDebugMessage(
                         ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
             } else {
-                if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
+                if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
+                    ComponentPaymentRequestImpl.getNativeObserverForTest().onNotSupportedError();
+                }
 
                 if (TextUtils.isEmpty(mRejectShowErrorMessage) && !isInTwa()
                         && mMethodData.get(MethodStrings.GOOGLE_PLAY_BILLING) != null) {

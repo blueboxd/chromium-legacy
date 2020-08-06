@@ -697,16 +697,20 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoMediaFoundation() {
           if (list_was_empty ||
               !DevicesInfoContainsDeviceId(devices_info, device_id)) {
             ComPtr<IMFMediaSource> source;
-            const bool pan_tilt_zoom_supported =
-                CreateDeviceSourceMediaFoundation(
-                    device_id, api_attributes.first, &source) &&
-                VideoCaptureDeviceMFWin::IsPanTiltZoomSupported(
-                    std::move(source));
+            bool pan_tilt_zoom_supported = false;
+            VideoCaptureFormats supported_formats;
+            if (CreateDeviceSourceMediaFoundation(
+                    device_id, api_attributes.first, &source)) {
+              pan_tilt_zoom_supported =
+                  VideoCaptureDeviceMFWin::IsPanTiltZoomSupported(source);
+              supported_formats =
+                  GetSupportedFormatsMediaFoundation(source, display_name);
+            }
             devices_info.emplace_back(VideoCaptureDeviceDescriptor(
                 display_name, device_id, model_id, api_attributes.first,
                 pan_tilt_zoom_supported));
             devices_info.back().supported_formats =
-                GetSupportedFormatsMediaFoundation(source, display_name);
+                std::move(supported_formats);
           }
         }
       }

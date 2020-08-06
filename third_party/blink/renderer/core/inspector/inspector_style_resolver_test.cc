@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/inspector/inspector_css_cascade.h"
+#include "third_party/blink/renderer/core/inspector/inspector_style_resolver.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class InspectorCSSCascadeTest : public testing::Test {
+class InspectorStyleResolverTest : public testing::Test {
  protected:
   void SetUp() override;
 
@@ -24,11 +24,11 @@ class InspectorCSSCascadeTest : public testing::Test {
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
-void InspectorCSSCascadeTest::SetUp() {
+void InspectorStyleResolverTest::SetUp() {
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
 }
 
-TEST_F(InspectorCSSCascadeTest, DirectlyMatchedRules) {
+TEST_F(InspectorStyleResolverTest, DirectlyMatchedRules) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #grid {
@@ -41,17 +41,18 @@ TEST_F(InspectorCSSCascadeTest, DirectlyMatchedRules) {
     </div>
   )HTML");
   Element* grid = GetDocument().getElementById("grid");
-  InspectorCSSCascade cascade(grid, kPseudoIdNone);
-  const CSSValue* value =
-      cascade.GetCascadedProperty(CSSPropertyID::kGridTemplateColumns);
-  const CSSValueList* value_list = DynamicTo<CSSValueList>(value);
-  EXPECT_EQ(3u, value_list->length());
-  EXPECT_EQ("100px", value_list->Item(0).CssText());
-  EXPECT_EQ("1fr", value_list->Item(1).CssText());
-  EXPECT_EQ("20%", value_list->Item(2).CssText());
+  InspectorStyleResolver resolver(grid, kPseudoIdNone);
+  RuleIndexList* matched_rules = resolver.MatchedRules();
+  // Some rules are coming for UA.
+  EXPECT_EQ(2u, matched_rules->size());
+  auto rule = matched_rules->at(1);
+  EXPECT_EQ(
+      "#grid { display: grid; gap: 10px; grid-template-columns: 100px 1fr 20%; "
+      "}",
+      rule.first->cssText());
 }
 
-TEST_F(InspectorCSSCascadeTest, ParentRules) {
+TEST_F(InspectorStyleResolverTest, ParentRules) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #grid-container {
@@ -70,9 +71,9 @@ TEST_F(InspectorCSSCascadeTest, ParentRules) {
     </div>
   )HTML");
   Element* grid = GetDocument().getElementById("grid");
-  InspectorCSSCascade cascade(grid, kPseudoIdNone);
+  InspectorStyleResolver resolver(grid, kPseudoIdNone);
   HeapVector<Member<InspectorCSSMatchedRules>> parent_rules =
-      cascade.ParentRules();
+      resolver.ParentRules();
   Element* grid_container = GetDocument().getElementById("grid-container");
   // Some rules are coming for UA.
   EXPECT_EQ(3u, parent_rules.size());

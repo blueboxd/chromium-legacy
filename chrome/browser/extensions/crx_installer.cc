@@ -1055,14 +1055,14 @@ void CrxInstaller::NotifyCrxInstallComplete(
       extension_id, InstallStageTracker::Stage::COMPLETE);
   const bool success = !error.has_value();
 
+  if (extension()) {
+    install_stage_tracker->ReportExtensionType(extension_id,
+                                               extension()->GetType());
+  }
+
   if (!success && (!expected_id_.empty() || extension())) {
     switch (error->type()) {
       case CrxInstallErrorType::DECLINED:
-        if (error->detail() == CrxInstallErrorDetail::DISALLOWED_BY_POLICY) {
-          install_stage_tracker
-              ->ReportExtensionTypeForPolicyDisallowedExtension(
-                  extension_id, extension()->GetType());
-        }
         install_stage_tracker->ReportCrxInstallError(
             extension_id,
             InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_DECLINED,

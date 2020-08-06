@@ -53,15 +53,15 @@ TEST(FrameSequenceMetricsTest, MergeMetrics) {
   // Create a metric with only a small number of frames. It shouldn't report any
   // metrics.
   FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
-  first.impl_throughput().frames_expected = 15;
-  first.impl_throughput().frames_produced = 5;
+  first.impl_throughput().frames_expected = 20;
+  first.impl_throughput().frames_produced = 10;
   EXPECT_FALSE(first.HasEnoughDataForReporting());
 
   // Create a second metric with too few frames to report any metrics.
   auto second = std::make_unique<FrameSequenceMetrics>(
       FrameSequenceTrackerType::kTouchScroll, nullptr);
-  second->impl_throughput().frames_expected = 10;
-  second->impl_throughput().frames_produced = 5;
+  second->impl_throughput().frames_expected = 90;
+  second->impl_throughput().frames_produced = 60;
   EXPECT_FALSE(second->HasEnoughDataForReporting());
 
   // Merge the two metrics. The result should have enough frames to report
@@ -74,13 +74,13 @@ TEST(FrameSequenceMetricsTest, MergeMetrics) {
 TEST(FrameSequenceMetricsTest, ScrollingThreadMergeMetrics) {
   FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
   first.SetScrollingThread(FrameSequenceMetrics::ThreadType::kCompositor);
-  first.impl_throughput().frames_expected = 15;
-  first.impl_throughput().frames_produced = 5;
+  first.impl_throughput().frames_expected = 20;
+  first.impl_throughput().frames_produced = 10;
 
   auto second = std::make_unique<FrameSequenceMetrics>(
       FrameSequenceTrackerType::kTouchScroll, nullptr);
   second->SetScrollingThread(FrameSequenceMetrics::ThreadType::kMain);
-  second->main_throughput().frames_expected = 15;
+  second->main_throughput().frames_expected = 50;
   second->main_throughput().frames_produced = 10;
 
   ASSERT_DEATH(first.Merge(std::move(second)), "");
@@ -93,10 +93,10 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   // Create a metric with enough frames on impl to be reported, but not enough
   // on main.
   FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
-  first.impl_throughput().frames_expected = 30;
-  first.impl_throughput().frames_produced = 10;
-  first.main_throughput().frames_expected = 10;
-  first.main_throughput().frames_produced = 5;
+  first.impl_throughput().frames_expected = 120;
+  first.impl_throughput().frames_produced = 80;
+  first.main_throughput().frames_expected = 20;
+  first.main_throughput().frames_produced = 10;
   EXPECT_TRUE(first.HasEnoughDataForReporting());
   first.ReportMetrics();
 
@@ -113,9 +113,9 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
 
   auto second = std::make_unique<FrameSequenceMetrics>(
       FrameSequenceTrackerType::kTouchScroll, nullptr);
-  second->impl_throughput().frames_expected = 30;
-  second->impl_throughput().frames_produced = 20;
-  second->main_throughput().frames_expected = 10;
+  second->impl_throughput().frames_expected = 110;
+  second->impl_throughput().frames_produced = 100;
+  second->main_throughput().frames_expected = 90;
   first.Merge(std::move(second));
   EXPECT_TRUE(first.HasEnoughDataForReporting());
   first.ReportMetrics();
@@ -128,10 +128,10 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   EXPECT_FALSE(first.HasDataLeftForReporting());
 
   FrameSequenceMetrics third(FrameSequenceTrackerType::kUniversal, nullptr);
-  third.impl_throughput().frames_expected = 30;
-  third.impl_throughput().frames_produced = 10;
-  third.main_throughput().frames_expected = 30;
-  third.main_throughput().frames_produced = 10;
+  third.impl_throughput().frames_expected = 120;
+  third.impl_throughput().frames_produced = 80;
+  third.main_throughput().frames_expected = 120;
+  third.main_throughput().frames_produced = 80;
   EXPECT_TRUE(third.HasEnoughDataForReporting());
   third.ReportMetrics();
 

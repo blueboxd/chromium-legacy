@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/reporting/extension_info.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
@@ -198,7 +199,7 @@ ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
   chromeos::PowerManagerClient::Get()->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   registry_observer_.Add(registry_);
-  collector_observer_.Add(extensions::InstallStageTracker::Get(profile_));
+  stage_tracker_observer_.Add(extensions::InstallStageTracker::Get(profile_));
 }
 
 ExtensionInstallEventLogCollector::~ExtensionInstallEventLogCollector() {
@@ -265,6 +266,12 @@ void ExtensionInstallEventLogCollector::OnExtensionInstallationFailed(
   event->set_event_type(
       em::ExtensionInstallReportLogEvent::INSTALLATION_FAILED);
   event->set_failure_reason(ConvertFailureReasonToProto(reason));
+  extensions::InstallStageTracker::InstallationData data =
+      extensions::InstallStageTracker::Get(profile_)->Get(extension_id);
+  if (data.extension_type) {
+    event->set_extension_type(enterprise_reporting::ConvertExtensionTypeToProto(
+        data.extension_type.value()));
+  }
   delegate_->Add(extension_id, true /* gather_disk_space_info */,
                  std::move(event));
   delegate_->OnExtensionInstallationFinished(extension_id);
@@ -295,23 +302,28 @@ void ExtensionInstallEventLogCollector::OnExtensionLoaded(
     const extensions::Extension* extension) {
   if (!delegate_->IsExtensionPending(extension->id()))
     return;
-  AddSuccessEvent(extension->id());
+  AddSuccessEvent(extension);
 }
 
 void ExtensionInstallEventLogCollector::OnExtensionsRequested(
     const extensions::ExtensionIdSet& extension_ids) {
   for (const auto& extension_id : extension_ids) {
-    if (registry_->enabled_extensions().Contains(extension_id))
-      AddSuccessEvent(extension_id);
+    const extensions::Extension* extension = registry_->GetExtensionById(
+        extension_id, extensions::ExtensionRegistry::ENABLED);
+    if (extension)
+      AddSuccessEvent(extension);
   }
 }
 
 void ExtensionInstallEventLogCollector::AddSuccessEvent(
-    const extensions::ExtensionId& id) {
+    const extensions::Extension* extension) {
   auto event = std::make_unique<em::ExtensionInstallReportLogEvent>();
   event->set_event_type(em::ExtensionInstallReportLogEvent::SUCCESS);
-  delegate_->Add(id, true /* gather_disk_space_info */, std::move(event));
-  delegate_->OnExtensionInstallationFinished(id);
+  event->set_extension_type(
+      enterprise_reporting::ConvertExtensionTypeToProto(extension->GetType()));
+  delegate_->Add(extension->id(), true /* gather_disk_space_info */,
+                 std::move(event));
+  delegate_->OnExtensionInstallationFinished(extension->id());
 }
 
 }  // namespace policy

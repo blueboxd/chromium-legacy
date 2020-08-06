@@ -370,13 +370,37 @@ TEST_F(ExtensionInstallEventLogCollectorTest, ExtensionInstallFailed) {
   collector->OnExtensionInstallationFailed(
       kExtensionId1,
       extensions::InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
-  ASSERT_EQ(1, delegate()->add_count());
-  ASSERT_EQ(0, delegate()->add_for_all_count());
-  EXPECT_EQ(kExtensionId1, delegate()->last_request().extension_id);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(1 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::INSTALLATION_FAILED,
             delegate()->last_request().event.event_type());
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::CRX_FETCH_URL_EMPTY,
             delegate()->last_request().event.failure_reason());
+}
+
+// Simulate failure after unpacking, so extension type should be reported.
+TEST_F(ExtensionInstallEventLogCollectorTest, ExtensionInstallFailedWithType) {
+  std::unique_ptr<ExtensionInstallEventLogCollector> collector =
+      std::make_unique<ExtensionInstallEventLogCollector>(
+          registry(), delegate(), profile());
+
+  extensions::InstallStageTracker* tracker =
+      extensions::InstallStageTracker::Get(profile());
+
+  // One extension failed.
+  tracker->ReportExtensionType(kExtensionId1,
+                               extensions::Manifest::TYPE_LEGACY_PACKAGED_APP);
+  tracker->ReportFailure(kExtensionId1,
+                         extensions::InstallStageTracker::FailureReason::
+                             CRX_INSTALL_ERROR_DECLINED);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(1 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::INSTALLATION_FAILED,
+            delegate()->last_request().event.event_type());
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::CRX_INSTALL_ERROR_DECLINED,
+            delegate()->last_request().event.failure_reason());
+  EXPECT_EQ(em::Extension::TYPE_LEGACY_PACKAGED_APP,
+            delegate()->last_request().event.extension_type());
 }
 
 TEST_F(ExtensionInstallEventLogCollectorTest, InstallExtension) {
@@ -393,6 +417,8 @@ TEST_F(ExtensionInstallEventLogCollectorTest, InstallExtension) {
                                            0 /*expected_add_all_count*/));
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::SUCCESS,
             delegate()->last_request().event.event_type());
+  EXPECT_EQ(em::Extension::TYPE_EXTENSION,
+            delegate()->last_request().event.extension_type());
 }
 
 // Verifies that a new event is created when the installation stage is changed

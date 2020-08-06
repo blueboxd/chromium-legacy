@@ -67,7 +67,6 @@ gfx::GpuMemoryBuffer* StreamBufferManager::GetGpuMemoryBufferById(
 base::Optional<StreamBufferManager::Buffer>
 StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
                                                 uint64_t buffer_ipc_id,
-                                                int rotation,
                                                 VideoCaptureFormat* format) {
   DCHECK(stream_context_.count(stream_type));
   auto& stream_context = stream_context_[stream_type];
@@ -83,9 +82,14 @@ StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
   // We only support NV12 at the moment.
   DCHECK_EQ(format->pixel_format, PIXEL_FORMAT_NV12);
 
+  int rotation = device_context_->GetCameraFrameRotation();
   if (base::FeatureList::IsEnabled(
           features::kDisableCameraFrameRotationAtSource)) {
-    return std::move(buffer_pair.vcd_buffer);
+    // For a device that don't have the camera sensor installed to match the
+    // device's natural orientation, we have to fix the sensor orientation here.
+    // Otherwise the recorded video in Chrome camera app would have wrong
+    // orientation because we no longer rotate the frames for the video encoder.
+    rotation = device_context_->GetRotationFromSensorOrientation();
   }
 
   if (rotation == 0) {

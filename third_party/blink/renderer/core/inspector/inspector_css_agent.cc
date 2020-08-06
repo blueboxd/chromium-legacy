@@ -76,11 +76,11 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
-#include "third_party/blink/renderer/core/inspector/inspector_css_cascade.h"
 #include "third_party/blink/renderer/core/inspector/inspector_history.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
+#include "third_party/blink/renderer/core/inspector/inspector_style_resolver.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
@@ -1026,11 +1026,11 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
     stylesheet->SyncTextIfNeeded();
   }
 
-  InspectorCSSCascade cascade(element, element_pseudo_id);
+  InspectorStyleResolver resolver(element, element_pseudo_id);
 
   // Matched rules.
   *matched_css_rules =
-      BuildArrayForMatchedRuleList(cascade.MatchedRules(), kPseudoIdNone);
+      BuildArrayForMatchedRuleList(resolver.MatchedRules(), kPseudoIdNone);
 
   // Pseudo elements.
   if (element_pseudo_id)
@@ -1046,7 +1046,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   *pseudo_id_matches =
       std::make_unique<protocol::Array<protocol::CSS::PseudoElementMatches>>();
 
-  for (InspectorCSSMatchedRules* match : cascade.PseudoElementRules()) {
+  for (InspectorCSSMatchedRules* match : resolver.PseudoElementRules()) {
     pseudo_id_matches->fromJust()->emplace_back(
         protocol::CSS::PseudoElementMatches::create()
             .setPseudoType(
@@ -1059,7 +1059,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   // Inherited styles.
   *inherited_entries =
       std::make_unique<protocol::Array<protocol::CSS::InheritedStyleEntry>>();
-  for (InspectorCSSMatchedRules* match : cascade.ParentRules()) {
+  for (InspectorCSSMatchedRules* match : resolver.ParentRules()) {
     std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
         protocol::CSS::InheritedStyleEntry::create()
             .setMatchedCSSRules(BuildArrayForMatchedRuleList(

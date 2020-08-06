@@ -59,12 +59,6 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
       properties, count, css_parser_mode);
 }
 
-CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
-  if (Id() != CSSPropertyID::kVariable)
-    return CSSPropertyName(Id());
-  return CSSPropertyName(To<CSSCustomPropertyDeclaration>(Value()).GetName());
-}
-
 ImmutableCSSPropertyValueSet* CSSPropertyValueSet::ImmutableCopyIfNeeded()
     const {
   auto* immutable_property_set = DynamicTo<ImmutableCSSPropertyValueSet>(
@@ -126,7 +120,7 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             uint16_t id,
                             CSSPropertyID property_id) {
   DCHECK_EQ(id, static_cast<uint16_t>(property_id));
-  bool result = static_cast<uint16_t>(metadata.Property().PropertyID()) == id;
+  bool result = static_cast<uint16_t>(metadata.PropertyID()) == id;
 // Only enabled properties should be part of the style.
 #if DCHECK_IS_ON()
   DCHECK(!result ||
@@ -140,7 +134,7 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             uint16_t id,
                             const AtomicString& custom_property_name) {
   DCHECK_EQ(id, static_cast<uint16_t>(CSSPropertyID::kVariable));
-  return static_cast<uint16_t>(metadata.Property().PropertyID()) == id &&
+  return static_cast<uint16_t>(metadata.PropertyID()) == id &&
          To<CSSCustomPropertyDeclaration>(value).GetName() ==
              custom_property_name;
 }
@@ -400,16 +394,20 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
                                              bool important) {
   StylePropertyShorthand shorthand = shorthandForProperty(property_id);
   if (!shorthand.length()) {
-    SetProperty(
-        CSSPropertyValue(CSSProperty::Get(property_id), value, important));
+    // TODO(crbug.com/1112291): Don't use this function for custom properties.
+    CSSPropertyName name =
+        (property_id == CSSPropertyID::kVariable)
+            ? CSSPropertyName(To<CSSCustomPropertyDeclaration>(value).GetName())
+            : CSSPropertyName(property_id);
+    SetProperty(CSSPropertyValue(name, value, important));
     return;
   }
 
   RemovePropertiesInSet(shorthand.properties(), shorthand.length());
 
   for (unsigned i = 0; i < shorthand.length(); ++i) {
-    property_vector_.push_back(
-        CSSPropertyValue(*shorthand.properties()[i], value, important));
+    CSSPropertyName name(shorthand.properties()[i]->PropertyID());
+    property_vector_.push_back(CSSPropertyValue(name, value, important));
   }
 }
 
@@ -430,8 +428,8 @@ bool MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
 bool MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
                                              CSSValueID identifier,
                                              bool important) {
-  SetProperty(CSSPropertyValue(CSSProperty::Get(property_id),
-                               *CSSIdentifierValue::Create(identifier),
+  CSSPropertyName name(property_id);
+  SetProperty(CSSPropertyValue(name, *CSSIdentifierValue::Create(identifier),
                                important));
   return true;
 }
@@ -595,10 +593,10 @@ MutableCSSPropertyValueSet* CSSPropertyValueSet::CopyPropertiesInSet(
   HeapVector<CSSPropertyValue, 256> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
-    const CSSValue* value = GetPropertyCSSValue(properties[i]->PropertyID());
-    if (value) {
-      list.push_back(CSSPropertyValue(*properties[i], *value, false));
-    }
+    CSSPropertyName name(properties[i]->PropertyID());
+    const CSSValue* value = GetPropertyCSSValue(name.Id());
+    if (value)
+      list.push_back(CSSPropertyValue(name, *value, false));
   }
   return MakeGarbageCollected<MutableCSSPropertyValueSet>(list.data(),
                                                           list.size());

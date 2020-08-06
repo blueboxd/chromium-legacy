@@ -55,6 +55,9 @@ class CORE_EXPORT ScrollTimelineOffset final
     return !length_based_offset_ && !element_based_offset_;
   }
 
+  bool operator==(const ScrollTimelineOffset&) const;
+  bool operator!=(const ScrollTimelineOffset& o) const { return !(*this == o); }
+
  private:
   // We either have an scroll or element based offset so at any time one of
   // these is null. If both are null, it represents the default value of

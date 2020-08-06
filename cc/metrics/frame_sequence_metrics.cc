@@ -22,7 +22,7 @@ namespace {
 
 // Avoid reporting any throughput metric for sequences that do not have a
 // sufficient number of frames.
-constexpr int kMinFramesForThroughputMetric = 20;
+constexpr int kMinFramesForThroughputMetric = 100;
 
 constexpr int kBuiltinSequenceNum =
     static_cast<int>(FrameSequenceTrackerType::kMaxType) + 1;

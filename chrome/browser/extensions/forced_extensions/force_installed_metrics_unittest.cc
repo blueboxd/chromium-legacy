@@ -894,8 +894,8 @@ TEST_F(ForceInstalledMetricsTest,
       ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
   tracker_->OnExtensionLoaded(profile_, extension.get());
   // Hosted app is not a valid extension type, so this should report an error.
-  install_stage_tracker_->ReportExtensionTypeForPolicyDisallowedExtension(
-      kExtensionId2, Manifest::Type::TYPE_HOSTED_APP);
+  install_stage_tracker_->ReportExtensionType(kExtensionId2,
+                                              Manifest::Type::TYPE_HOSTED_APP);
   install_stage_tracker_->ReportCrxInstallError(
       kExtensionId2,
       InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_DECLINED,
@@ -924,8 +924,8 @@ TEST_F(ForceInstalledMetricsTest,
   auto extension =
       ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
   tracker_->OnExtensionLoaded(profile_, extension.get());
-  install_stage_tracker_->ReportExtensionTypeForPolicyDisallowedExtension(
-      kExtensionId2, Manifest::Type::TYPE_EXTENSION);
+  install_stage_tracker_->ReportExtensionType(kExtensionId2,
+                                              Manifest::Type::TYPE_EXTENSION);
   install_stage_tracker_->ReportCrxInstallError(
       kExtensionId2,
       InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_DECLINED,

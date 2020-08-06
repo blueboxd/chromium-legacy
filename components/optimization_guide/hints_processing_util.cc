@@ -45,6 +45,8 @@ std::string GetStringNameForOptimizationType(
       return "LoadingPredictor";
     case proto::OptimizationType::FAST_HOST_HINTS:
       return "FastHostHints";
+    case proto::OptimizationType::DELAY_ASYNC_SCRIPT_EXECUTION:
+      return "DelayAsyncScriptExecution";
   }
   NOTREACHED();
   return std::string();

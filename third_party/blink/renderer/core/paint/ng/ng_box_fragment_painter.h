@@ -325,6 +325,7 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       box_item_(box_item),
       inline_box_cursor_(inline_box_cursor) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
+  DCHECK_EQ(box.PostLayout(), &box);
 #if DCHECK_IS_ON()
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     DCHECK(!paint_fragment_);

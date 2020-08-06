@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -19,6 +20,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +34,8 @@ using testing::AnyNumber;
 using testing::NiceMock;
 using testing::Return;
 
-constexpr char kTestUsername[] = "test@gmail.com";
+constexpr char kTestUsername[] = "user";
+constexpr char kGaiaAccountEmail[] = "user@gmail.com";
 constexpr char kTestPassword[] = "T3stP@$$w0rd";
 constexpr char kTestOrigin[] = "https://example.com/";
 
@@ -46,6 +50,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD(void, PromptUserToEnableAutosignin, (), (override));
   MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
   MOCK_METHOD(bool, IsIncognito, (), (const, override));
+  MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
 };
 
 PasswordForm CreateForm(std::string username,
@@ -81,13 +86,23 @@ class PasswordManagerClientHelperTest : public testing::Test {
     prefs_.SetBoolean(prefs::kWasAutoSignInFirstRunExperienceShown, false);
     prefs_.SetBoolean(prefs::kCredentialsEnableAutosignin, true);
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(&prefs_));
+
+    ON_CALL(*client(), GetIdentityManager)
+        .WillByDefault(Return(identity_test_environment()->identity_manager()));
+    identity_test_environment()->SetUnconsentedPrimaryAccount(
+        kGaiaAccountEmail);
   }
   ~PasswordManagerClientHelperTest() override = default;
 
  protected:
   PasswordManagerClientHelper* helper() { return &helper_; }
   MockPasswordManagerClient* client() { return &client_; }
+  signin::IdentityTestEnvironment* identity_test_environment() {
+    return &identity_test_environment_;
+  }
 
+  base::test::TaskEnvironment task_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   NiceMock<MockPasswordManagerClient> client_;
   PasswordManagerClientHelper helper_;
   TestingPrefServiceSimple prefs_;
@@ -180,6 +195,24 @@ TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveForUnmovableForm) {
       CreateForm(kTestUsername, kTestPassword, GURL(kTestOrigin));
   helper()->NotifySuccessfulLoginWithExistingPassword(
       CreateFormManager(&form, /*is_movable=*/false));
+}
+
+TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveForGaiaAccountForm) {
+  base::test::ScopedFeatureList account_storage_feature;
+  account_storage_feature.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(),
+              ShouldShowAccountStorageBubbleUi)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore)
+      .WillOnce(Return(autofill::PasswordForm::Store::kAccountStore));
+
+  EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
+
+  const PasswordForm gaia_account_form = CreateForm(
+      kGaiaAccountEmail, kTestPassword, GaiaUrls::GetInstance()->gaia_url());
+  helper()->NotifySuccessfulLoginWithExistingPassword(
+      CreateFormManager(&gaia_account_form, /*is_movable=*/true));
 }
 
 }  // namespace password_manager

@@ -2044,12 +2044,12 @@ TEST_F(FrameSequenceTrackerTest, MergeTrackersScrollOnSameThread) {
   // Do a short scroll on the compositor thread, then do another short scroll on
   // the compositor thread. Make sure these are merged.
   base::HistogramTester histogram_tester;
-  const char first_sequence[] = "b(1)s(1)e(1,0)P(1)b(10)s(2)e(10,0)P(2)";
+  const char first_sequence[] = "b(1)s(1)e(1,0)P(1)b(80)s(2)e(80,0)P(2)";
   GenerateSequence(first_sequence);
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
 
   CreateNewTracker(FrameSequenceMetrics::ThreadType::kCompositor);
-  const char second_sequence[] = "b(11)s(3)e(11,0)P(3)b(21)s(4)e(21,0)P(4)";
+  const char second_sequence[] = "b(81)s(3)e(81,0)P(3)b(101)s(4)e(101,0)P(4)";
   GenerateSequence(second_sequence);
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
 
@@ -2065,12 +2065,13 @@ TEST_F(FrameSequenceTrackerTest, MergeTrackersScrollOnDifferentThreads) {
   // Do a short scroll on the compositor thread, then do another short scroll on
   // the main-thread. Make sure these are not merged.
   base::HistogramTester histogram_tester;
-  const char compscroll_sequence[] = "b(1)s(1)e(1,0)P(1)b(10)s(2)e(10,0)P(2)";
+  const char compscroll_sequence[] = "b(1)s(1)e(1,0)P(1)b(80)s(2)e(80,0)P(2)";
   GenerateSequence(compscroll_sequence);
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
 
   CreateNewTracker(FrameSequenceMetrics::ThreadType::kMain);
-  const char mainscroll_sequence[] = "b(11)s(3)e(11,0)P(3)b(21)s(4)e(21,0)P(4)";
+  const char mainscroll_sequence[] =
+      "b(81)s(3)e(81,0)P(3)b(101)s(4)e(101,0)P(4)";
   GenerateSequence(mainscroll_sequence);
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
 

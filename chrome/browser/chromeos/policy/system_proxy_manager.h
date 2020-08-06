@@ -21,6 +21,7 @@ class SetAuthenticationDetailsResponse;
 class ShutDownResponse;
 }  // namespace system_proxy
 
+class PrefRegistrySimple;
 class PrefService;
 class PrefChangeRegistrar;
 class Profile;
@@ -59,6 +60,9 @@ class SystemProxyManager {
   void SetSystemProxyEnabledForTest(bool enabled);
   void SetSystemServicesProxyUrlForTest(const std::string& local_proxy_url);
 
+  // Registers prefs stored in user profiles.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
  private:
   void OnSetAuthenticationDetails(
       const system_proxy::SetAuthenticationDetailsResponse& response);
@@ -68,6 +72,10 @@ class SystemProxyManager {
 
   void OnKerberosEnabledChanged();
   void OnKerberosAccountChanged();
+  void OnArcEnabledChanged();
+  // Sets the value of the pref |kSystemProxyUserTrafficHostAndPort|.
+  void SetUserTrafficProxyPref(const std::string& user_traffic_address);
+  bool IsArcEnabled() const;
 
   void SendKerberosAuthenticationDetails();
 

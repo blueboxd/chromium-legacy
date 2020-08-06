@@ -1038,6 +1038,12 @@ const char kUpdateRequiredTimerStartTime[] = "update_required_timer_start_time";
 // required timer will expire and block user session. If the timer is not
 // started the pref holds the default value base::TimeDelta().
 const char kUpdateRequiredWarningPeriod[] = "update_required_warning_period";
+
+// String user profile pref that contains the host and port of the local
+// proxy which tunnels user traffic, in the format <address>:<proxy>. Only set
+// when System-proxy and ARC++ are enabled by policy.
+const char kSystemProxyUserTrafficHostAndPort[] =
+    "system_proxy.user_traffic_host_and_port";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

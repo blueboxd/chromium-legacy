@@ -1070,7 +1070,7 @@ bool CameraDeviceDelegate::SetPointsOfInterest(
 
   // Handle rotation, still in normalized square space.
   std::tie(x, y) = [&]() -> std::pair<double, double> {
-    switch (device_context_->GetCameraFrameOrientation()) {
+    switch (device_context_->GetCameraFrameRotation()) {
       case 0:
         return {x, y};
       case 90:

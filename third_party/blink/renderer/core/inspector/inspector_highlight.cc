@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -17,7 +18,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
-#include "third_party/blink/renderer/core/inspector/inspector_css_cascade.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -744,14 +744,15 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   if (grid_highlight_config.show_track_sizes) {
     Element* element = DynamicTo<Element>(node);
     DCHECK(element);
-    InspectorCSSCascade cascade(element, kPseudoIdNone);
-    // TODO(alexrudenko): caching might be required. Currently, the style
-    // resolver is used only for grid layouts when show_track_sizes is on.
+    StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
+    HeapHashMap<CSSPropertyName, Member<const CSSValue>> cascaded_values =
+        style_resolver.CascadedValuesForElement(element, kPseudoIdNone);
     Vector<String> column_authored_values = GetAuthoredGridTrackSizes(
-        cascade.GetCascadedProperty(CSSPropertyID::kGridTemplateColumns),
+        cascaded_values.at(
+            CSSPropertyName(CSSPropertyID::kGridTemplateColumns)),
         layout_grid->AutoRepeatCountForDirection(kForColumns));
     Vector<String> row_authored_values = GetAuthoredGridTrackSizes(
-        cascade.GetCascadedProperty(CSSPropertyID::kGridTemplateRows),
+        cascaded_values.at(CSSPropertyName(CSSPropertyID::kGridTemplateRows)),
         layout_grid->AutoRepeatCountForDirection(kForRows));
 
     grid_info->setValue(

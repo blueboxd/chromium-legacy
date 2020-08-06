@@ -620,7 +620,7 @@ TEST_F(CascadeExpansionTest, MatchedDeclarationsLimit) {
 
   // Actually give the first index a value, such that the initial call to
   // Next() does not crash.
-  declarations[0] = CSSPropertyValue(GetCSSPropertyColor(),
+  declarations[0] = CSSPropertyValue(CSSPropertyName(CSSPropertyID::kColor),
                                      *cssvalue::CSSUnsetValue::Create());
 
   MatchResult result;

@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -36,6 +37,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -69,6 +71,21 @@ scoped_refptr<TestPasswordStore> CreateAndUseTestPasswordStore(
     Profile* profile) {
   return base::WrapRefCounted(static_cast<TestPasswordStore*>(
       PasswordStoreFactory::GetInstance()
+          ->SetTestingFactoryAndUse(
+              profile,
+              base::BindRepeating(&password_manager::BuildPasswordStore<
+                                  content::BrowserContext, TestPasswordStore>))
+          .get()));
+}
+
+scoped_refptr<TestPasswordStore> CreateAndUseTestAccountPasswordStore(
+    Profile* profile) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    return nullptr;
+  }
+  return base::WrapRefCounted(static_cast<TestPasswordStore*>(
+      AccountPasswordStoreFactory::GetInstance()
           ->SetTestingFactoryAndUse(
               profile,
               base::BindRepeating(&password_manager::BuildPasswordStore<
@@ -200,6 +217,8 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   extensions::TestEventRouter* event_router_ = nullptr;
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
+  scoped_refptr<TestPasswordStore> account_store_ =
+      CreateAndUseTestAccountPasswordStore(&profile_);
   ui::TestClipboard* test_clipboard_ =
       ui::TestClipboard::CreateForCurrentThread();
 

@@ -7,10 +7,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_consumer.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -82,12 +84,19 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 }
 
 - (void)confirmationAlertPrimaryAction {
-  // Opening a new tab already stops the presentation in the presenter.
-  // No need to send |stop|.
   self.dismissReason = LeakDialogDismissalReason::kClickedCheckPasswords;
-  OpenNewTabCommand* newTabCommand =
-      [OpenNewTabCommand commandWithURLFromChrome:GetPasswordCheckupURL()];
-  [self.handler openURLInNewTab:newTabCommand];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    // Opening Password page will stop the presentation in the presenter.
+    // No need to send |stop|.
+    [self.presenter startPasswordCheck];
+  } else {
+    // Opening a new tab already stops the presentation in the presenter.
+    // No need to send |stop|.
+    OpenNewTabCommand* newTabCommand =
+        [OpenNewTabCommand commandWithURLFromChrome:GetPasswordCheckupURL()];
+    [self.handler openURLInNewTab:newTabCommand];
+  }
 }
 
 - (void)confirmationAlertLearnMoreAction {

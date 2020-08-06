@@ -103,4 +103,11 @@ using password_manager::CredentialLeakType;
       .permittedArrowDirections = UIPopoverArrowDirectionUp;
 }
 
+- (void)startPasswordCheck {
+  id<ApplicationCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  [handler showSavedPasswordsSettingsAndStartPasswordCheckFromViewController:
+               self.baseViewController];
+}
+
 @end

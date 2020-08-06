@@ -123,6 +123,7 @@ source_set("unit_tests") {
   sources = [
     "password_details_table_view_controller_unittest.mm",
     "password_exporter_unittest.mm",
+    "password_issues_mediator_unittest.mm",
     "password_issues_table_view_controller_unittest.mm",
     "passwords_table_view_controller_unittest.mm",
   ]

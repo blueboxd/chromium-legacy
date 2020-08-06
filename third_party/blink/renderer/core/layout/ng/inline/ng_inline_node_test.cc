@@ -475,6 +475,29 @@ TEST_F(NGInlineNodeTest, MinMaxSizesFloatsClearance) {
   EXPECT_EQ(160, sizes.max_size);
 }
 
+// For http://crbug.com/1112560
+TEST_F(NGInlineNodeTest, MinMaxSizesSaturated) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+    b {
+        display: inline-block;
+        border-inline-start: groove;
+        width:1e8px;
+    }
+    #t {
+        float: left;
+        font: 10px Ahem;
+    }
+    </style>
+    <div id=t><b></b> <img></div>)HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
+  EXPECT_EQ(LayoutUnit(33554431), sizes.min_size.Round());
+  // Note: |sizes.max_size.Round()| isn't |LayoutUnit::Max()| on some platform.
+}
+
 TEST_F(NGInlineNodeTest, MinMaxSizesTabulationWithBreakWord) {
   LoadAhem();
   SetupHtml("t", R"HTML(

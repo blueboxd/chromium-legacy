@@ -287,6 +287,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "syncSetupFriendlySettings",
       base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings));
 
+  html_source->AddBoolean(
+      "enableContentSettingsRedesign",
+      base::FeatureList::IsEnabled(features::kContentSettingsRedesign));
+
 #if defined(OS_WIN)
   html_source->AddBoolean(
       "safetyCheckChromeCleanerChildEnabled",

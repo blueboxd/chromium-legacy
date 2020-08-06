@@ -247,9 +247,8 @@ void InstallStageTracker::ReportFailure(const ExtensionId& id,
   NotifyObserversOfFailure(id, reason, data);
 }
 
-void InstallStageTracker::ReportExtensionTypeForPolicyDisallowedExtension(
-    const ExtensionId& id,
-    Manifest::Type extension_type) {
+void InstallStageTracker::ReportExtensionType(const ExtensionId& id,
+                                              Manifest::Type extension_type) {
   InstallationData& data = installation_data_map_[id];
   data.extension_type = extension_type;
 }

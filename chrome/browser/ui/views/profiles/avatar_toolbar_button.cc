@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -281,16 +282,19 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
     case State::kGuestSession:
       return profiles::GetGuestAvatar(icon_size);
     case State::kGenericProfile:
-      return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon, icon_color,
-                                            icon_size);
+      if (!base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
+        return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon,
+                                              icon_color, icon_size);
+      }
+      FALLTHROUGH;
     case State::kAnimatedUserIdentity:
     case State::kPasswordsOnlySyncError:
     case State::kSyncError:
     case State::kSyncPaused:
     case State::kNormal:
       return ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(
-          delegate_->GetProfileAvatarImage(gaia_account_image), true, icon_size,
-          icon_size, profiles::SHAPE_CIRCLE));
+          delegate_->GetProfileAvatarImage(gaia_account_image, icon_size), true,
+          icon_size, icon_size, profiles::SHAPE_CIRCLE));
   }
   NOTREACHED();
   return ui::ImageModel();

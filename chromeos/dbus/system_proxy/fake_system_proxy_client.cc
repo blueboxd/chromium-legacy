@@ -85,4 +85,11 @@ void FakeSystemProxyClient::SendAuthenticationRequiredSignal(
       FROM_HERE, base::BindOnce(auth_required_callback_, details));
 }
 
+void FakeSystemProxyClient::SendWorkerActiveSignal(
+    const system_proxy::WorkerActiveSignalDetails& details) {
+  DCHECK(worker_active_callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(worker_active_callback_, details));
+}
+
 }  // namespace chromeos

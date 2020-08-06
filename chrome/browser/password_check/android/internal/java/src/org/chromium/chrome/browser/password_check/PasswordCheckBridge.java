@@ -62,12 +62,12 @@ class PasswordCheckBridge {
                 originUrl, username, password, hasScript);
     }
 
-    // TODO(crbug.com/1102025): Add call from native.
+    @CalledByNative
     void onCompromisedCredentialsFetched(int count) {
         mPasswordCheckObserver.onCompromisedCredentialsFetched(count);
     }
 
-    // TODO(crbug.com/1102025): Add call from native.
+    @CalledByNative
     void onSavedPasswordsFetched(int count) {
         mPasswordCheckObserver.onSavedPasswordsFetched(count);
     }

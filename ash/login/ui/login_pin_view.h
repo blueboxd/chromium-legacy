@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
@@ -46,7 +47,7 @@ namespace ash {
 //    -------    -------    -------
 //
 // The <- represents the delete button while -> represents the submit button.
-// The submit button can be hidden.
+// The submit button is optional.
 //
 class ASH_EXPORT LoginPinView : public NonAccessibleView {
  public:
@@ -91,18 +92,12 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   // non-null.
   // |on_backspace| is called when the user wants to erase the most recently
   // tapped key; must be non-null.
-  // |on_submit| is called when the user wants to submit the PIN / password.
+  // If |on_submit| is valid, there will be a submit button on the pinpad that
+  // calls it when the user wants to submit the PIN / password.
   LoginPinView(Style keyboard_style,
                const OnPinKey& on_key,
                const OnPinBackspace& on_backspace,
-               const OnPinSubmit& on_submit);
-
-  // Creates PIN view without submit button. This is useful when a submit button
-  // is already present in the password view, which is the case when the display
-  // password button feature is disabled.
-  LoginPinView(Style keyboard_style,
-               const OnPinKey& on_key,
-               const OnPinBackspace& on_backspace);
+               const OnPinSubmit& on_submit = base::NullCallback());
 
   ~LoginPinView() override;
 
@@ -119,11 +114,9 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   // Builds and returns a new view which contains a row of the PIN keyboard.
   NonAccessibleView* BuildAndAddRow();
 
-  BackspacePinButton* backspace_;
-  SubmitPinButton* submit_button_;
-  OnPinKey on_key_;
-  OnPinBackspace on_backspace_;
-  OnPinSubmit on_submit_;
+  BackspacePinButton* backspace_ = nullptr;
+  // The submit button does not exist when no |on_submit| callback is passed.
+  SubmitPinButton* submit_button_ = nullptr;
 
   std::vector<NonAccessibleView*> rows;
 

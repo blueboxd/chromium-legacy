@@ -126,6 +126,7 @@ source_set("eg2_tests") {
   sources = [ "legacy_page_info_egtest.mm" ]
   deps = [
     ":constants",
+    "//ios/chrome/browser/ui/page_info:features",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

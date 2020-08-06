@@ -763,8 +763,8 @@ IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled,
       GenURL("e.com", "/worker.js")));
 }
 
-#if defined(OS_WIN)
-// Flaky on Windows: https://crbug.com/1104847
+#if defined(OS_WIN) || (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER))
+// Flaky on Windows and on Linux ASan LSan: https://crbug.com/1104847
 #define MAYBE_SplitCacheDedicatedWorkersScripts \
   DISABLED_SplitCacheDedicatedWorkersScripts
 #else

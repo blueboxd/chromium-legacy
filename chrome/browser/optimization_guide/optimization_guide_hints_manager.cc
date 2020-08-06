@@ -154,6 +154,11 @@ bool IsOptimizationTypeAllowed(
           optimization_metadata->set_loading_predictor_metadata(
               optimization.loading_predictor_metadata());
           break;
+        case optimization_guide::proto::Optimization::
+            kDelayAsyncScriptExecutionMetadata:
+          optimization_metadata->set_delay_async_script_execution_metadata(
+              optimization.delay_async_script_execution_metadata());
+          break;
         case optimization_guide::proto::Optimization::METADATA_NOT_SET:
           // Some optimization types do not have metadata, make sure we do not
           // DCHECK.

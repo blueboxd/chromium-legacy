@@ -494,7 +494,7 @@ TEST_F(PopupMenuMediatorTest, TestEnterpriseInfoShown) {
   policy::PolicyMap map;
   map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-          std::make_unique<base::Value>("hello"), nullptr);
+          base::Value("hello"), nullptr);
   enterprise_policy_helper->GetPolicyProvider()->UpdateChromePolicy(map);
 
   CreateMediatorWithBrowserPolicyConnector(

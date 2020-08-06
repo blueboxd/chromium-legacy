@@ -217,19 +217,6 @@ void PolicyMap::Set(
     PolicyLevel level,
     PolicyScope scope,
     PolicySource source,
-    std::unique_ptr<base::Value> value,
-    std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
-  Entry entry(level, scope, source,
-              value ? base::make_optional(std::move(*value)) : base::nullopt,
-              std::move(external_data_fetcher));
-  Set(policy, std::move(entry));
-}
-
-void PolicyMap::Set(
-    const std::string& policy,
-    PolicyLevel level,
-    PolicyScope scope,
-    PolicySource source,
     base::Optional<base::Value> value,
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
   Entry entry(level, scope, source, std::move(value),

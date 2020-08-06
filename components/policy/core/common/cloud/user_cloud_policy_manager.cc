@@ -114,8 +114,7 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
       !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {
     policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                    std::make_unique<base::Value>(false),
-                    nullptr /* external_data_fetcher */);
+                    base::Value(false), nullptr /* external_data_fetcher */);
   }
 #endif
 }

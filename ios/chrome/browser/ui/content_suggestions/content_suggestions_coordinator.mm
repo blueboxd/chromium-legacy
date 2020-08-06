@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_action_handler.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
@@ -43,6 +44,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/discover_feed_header_changing.h"
 #import "ios/chrome/browser/ui/content_suggestions/discover_feed_menu_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -69,8 +71,10 @@
 #endif
 
 @interface ContentSuggestionsCoordinator () <
+    ContentSuggestionsActionHandler,
     ContentSuggestionsMenuProvider,
     ContentSuggestionsViewControllerAudience,
+    DiscoverFeedDelegate,
     DiscoverFeedMenuCommands,
     OverscrollActionsControllerDelegate,
     ThemeChangeDelegate,
@@ -97,6 +101,7 @@
 // Delegate for handling Discover feed header UI changes.
 @property(nonatomic, weak) id<DiscoverFeedHeaderChanging>
     discoverFeedHeaderDelegate;
+@property(nonatomic) CGFloat discoverFeedHeight;
 
 @end
 
@@ -178,19 +183,7 @@
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
 
-  self.discoverFeedViewController = ios::GetChromeBrowserProvider()
-                                        ->GetDiscoverFeedProvider()
-                                        ->NewFeedViewController(self.browser);
-
-  // TODO(crbug.com/1085419): Once the CollectionView is cleanly exposed, remove
-  // this loop.
-  for (UIView* view in self.discoverFeedViewController.view.subviews) {
-    if ([view isKindOfClass:[UICollectionView class]]) {
-      UICollectionView* feedView = static_cast<UICollectionView*>(view);
-      feedView.bounces = false;
-      feedView.alwaysBounceVertical = false;
-    }
-  }
+  self.discoverFeedViewController = [self discoverFeed];
 
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
       initWithContentService:contentSuggestionsService
@@ -204,6 +197,7 @@
   self.contentSuggestionsMediator.headerProvider = self.headerController;
   self.contentSuggestionsMediator.contentArticlesExpanded =
       self.contentSuggestionsVisible;
+  self.contentSuggestionsMediator.discoverFeedDelegate = self;
 
   self.headerController.promoCanShow =
       [self.contentSuggestionsMediator notificationPromo]->CanShow();
@@ -224,12 +218,16 @@
       self.browser->GetCommandDispatcher(), SnackbarCommands);
   self.suggestionsViewController.dispatcher = dispatcher;
   self.suggestionsViewController.discoverFeedMenuHandler = self;
+
   self.discoverFeedHeaderDelegate =
       self.suggestionsViewController.discoverFeedHeaderDelegate;
-
   [self.discoverFeedHeaderDelegate
       changeDiscoverFeedHeaderVisibility:[self.contentSuggestionsVisible
                                                  value]];
+  self.suggestionsViewController.contentSuggestionsEnabled =
+      prefs->FindPreference(prefs::kArticlesForYouEnabled);
+  self.suggestionsViewController.handler = self;
+  self.contentSuggestionsMediator.consumer = self.suggestionsViewController;
 
   if (@available(iOS 13.0, *)) {
     self.suggestionsViewController.menuProvider = self;
@@ -429,6 +427,37 @@
   [self.alertCoordinator start];
 }
 
+#pragma mark - DiscoverFeedDelegate
+
+- (void)recreateDiscoverFeedViewController {
+  DCHECK(IsDiscoverFeedEnabled());
+
+  // Create and set a new DiscoverFeed since that its model has changed.
+  self.discoverFeedViewController = [self discoverFeed];
+  self.contentSuggestionsMediator.discoverFeed =
+      self.discoverFeedViewController;
+}
+
+#pragma mark - ContentSuggestionsActionHandler
+
+- (void)loadMoreFeedArticles {
+  CGFloat currentHeight = 0;
+  for (UIView* view in self.discoverFeedViewController.view.subviews) {
+    if ([view isKindOfClass:[UICollectionView class]]) {
+      UICollectionView* feedView = static_cast<UICollectionView*>(view);
+      currentHeight = feedView.contentSize.height;
+    }
+  }
+  // TODO(crbug.com/1085419): Track number of cards from protocol instead of
+  // height to determine whether or not we should fetch more cards.
+  if (currentHeight > self.discoverFeedHeight) {
+    ios::GetChromeBrowserProvider()
+        ->GetDiscoverFeedProvider()
+        ->LoadMoreFeedArticles();
+    self.discoverFeedHeight = currentHeight;
+  }
+}
+
 #pragma mark - Public methods
 
 - (UIView*)view {
@@ -497,6 +526,29 @@
       [UIContextMenuConfiguration configurationWithIdentifier:nil
                                               previewProvider:nil
                                                actionProvider:actionProvider];
+}
+
+#pragma mark - Helpers
+
+// Creates, configures and returns a DiscoverFeed ViewController.
+- (UIViewController*)discoverFeed {
+  if (!IsDiscoverFeedEnabled())
+    return nil;
+
+  UIViewController* discoverFeed = ios::GetChromeBrowserProvider()
+                                       ->GetDiscoverFeedProvider()
+                                       ->NewFeedViewController(self.browser);
+  // TODO(crbug.com/1085419): Once the CollectionView is cleanly exposed, remove
+  // this loop.
+  for (UIView* view in discoverFeed.view.subviews) {
+    if ([view isKindOfClass:[UICollectionView class]]) {
+      UICollectionView* feedView = static_cast<UICollectionView*>(view);
+      feedView.bounces = NO;
+      feedView.alwaysBounceVertical = NO;
+      feedView.scrollEnabled = NO;
+    }
+  }
+  return discoverFeed;
 }
 
 @end

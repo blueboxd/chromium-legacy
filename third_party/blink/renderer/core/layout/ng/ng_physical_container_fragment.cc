@@ -110,9 +110,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
           continue;
         }
         if (item.Type() == NGFragmentItem::kBox) {
-          if (const NGPhysicalBoxFragment* child_box = item.BoxFragment()) {
-            if (const NGPhysicalFragment* post_layout = child_box->PostLayout())
-              child_box = To<NGPhysicalBoxFragment>(post_layout);
+          if (const NGPhysicalBoxFragment* child_box =
+                  item.PostLayoutBoxFragment()) {
             DCHECK(!child_box->IsOutOfFlowPositioned());
             AddOutlineRectsForDescendant(
                 {child_box, item.OffsetInContainerBlock()}, outline_rects,

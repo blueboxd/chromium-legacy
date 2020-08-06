@@ -389,7 +389,7 @@ void MediaRouterIntegrationBrowserTest::SetEnableMediaRouter(bool enable) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kEnableMediaRouter, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(enable), nullptr);
+             base::Value(enable), nullptr);
   provider_.UpdateChromePolicy(policy);
   base::RunLoop().RunUntilIdle();
 }

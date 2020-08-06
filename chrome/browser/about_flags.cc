@@ -4204,6 +4204,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSplitPartiallyOccludedQuads)},
 
 #if BUILDFLAG(ENABLE_PDF)
+    {"accessible-pdf-form", flag_descriptions::kAccessiblePDFFormName,
+     flag_descriptions::kAccessiblePDFFormDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kAccessiblePDFForm)},
+
     {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
@@ -6190,6 +6194,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kH264DecoderBufferIsCompleteFrameName,
      flag_descriptions::kH264DecoderBufferIsCompleteFrameDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kH264DecoderBufferIsCompleteFrame)},
+
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+    {"enable-tab-search", flag_descriptions::kEnableTabSearchName,
+     flag_descriptions::kEnableTabSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTabSearch)}
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

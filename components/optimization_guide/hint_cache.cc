@@ -318,7 +318,6 @@ bool HintCache::ProcessAndCacheHints(
             : clock_->Now() + features::URLKeyedHintValidCacheDuration();
 
     switch (hint.key_representation()) {
-      case proto::HOST_SUFFIX:
       case proto::HOST:
         host_keyed_cache_.Put(
             hint_key,
@@ -336,6 +335,7 @@ bool HintCache::ProcessAndCacheHints(
               std::make_unique<MemoryHint>(expiry_time, std::move(hint)));
         }
         break;
+      case proto::HOST_SUFFIX:
       case proto::REPRESENTATION_UNSPECIFIED:
         NOTREACHED();
         break;

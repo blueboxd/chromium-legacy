@@ -57,8 +57,8 @@ class CORE_EXPORT NGFragmentItem {
     //
     // If this item is a root of another IFC/BFC, children are stored normally,
     // as children of |box_fragment|.
-    //
-    // Note:|box_fragment| can be null for <span>.
+    const NGPhysicalBoxFragment* PostLayout() const;
+
     scoped_refptr<const NGPhysicalBoxFragment> box_fragment;
     wtf_size_t descendants_count;
   };
@@ -194,6 +194,11 @@ class CORE_EXPORT NGFragmentItem {
   const NGPhysicalBoxFragment* BoxFragment() const {
     if (Type() == kBox)
       return box_.box_fragment.get();
+    return nullptr;
+  }
+  const NGPhysicalBoxFragment* PostLayoutBoxFragment() const {
+    if (Type() == kBox)
+      return box_.PostLayout();
     return nullptr;
   }
 

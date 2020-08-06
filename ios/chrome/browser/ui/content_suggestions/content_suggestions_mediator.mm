@@ -30,11 +30,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_service_bridge_observer.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
@@ -43,6 +45,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -59,6 +62,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }  // namespace
 
 @interface ContentSuggestionsMediator () <BooleanObserver,
+                                          DiscoverFeedObserverBridgeDelegate,
                                           ContentSuggestionsItemDelegate,
                                           ContentSuggestionsServiceObserver,
                                           MostVisitedSitesObserving,
@@ -74,13 +78,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
   std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
+  // Observes changes in the DiscoverFeed.
+  std::unique_ptr<DiscoverFeedObserverBridge>
+      _discoverFeedProviderObserverBridge;
 }
 
 // Whether the contents section should be hidden completely.
 // Don't use PrefBackedBoolean or PrefMember as this value needs to be checked
 // when the Preference is updated.
-@property(nullable, nonatomic, assign)
-    const PrefService::Preference* contentArticlesEnabled;
+@property(nonatomic, assign)
+    const PrefService::Preference* contentSuggestionsEnabled;
 // Most visited items from the MostVisitedSites service currently displayed.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
@@ -149,7 +156,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
               discoverFeed:(UIViewController*)discoverFeed {
   self = [super init];
   if (self) {
-    _contentArticlesEnabled =
+    _contentSuggestionsEnabled =
         prefService->FindPreference(prefs::kArticlesForYouEnabled);
     _suggestionBridge =
         std::make_unique<ContentSuggestionsServiceBridge>(self, contentService);
@@ -168,9 +175,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
     _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
 
+    _discoverFeed = discoverFeed;
     _discoverSectionInfo = DiscoverSectionInformation();
     _discoverItem = [[ContentSuggestionsDiscoverItem alloc] init];
-    _discoverItem.discoverFeed = discoverFeed;
+    _discoverItem.discoverFeed = _discoverFeed;
 
     _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
@@ -190,6 +198,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
+
+    if (IsDiscoverFeedEnabled()) {
+      _discoverFeedProviderObserverBridge =
+          std::make_unique<DiscoverFeedObserverBridge>(self);
+    }
   }
   return self;
 }
@@ -197,10 +210,18 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)disconnect {
   _prefChangeRegistrar.reset();
   _prefObserverBridge.reset();
+  _discoverFeedProviderObserverBridge.reset();
 }
 
 - (void)reloadAllData {
   [self.dataSink reloadAllData];
+}
+
+- (void)setConsumer:(id<ContentSuggestionsConsumer>)consumer {
+  _consumer = consumer;
+  [self.consumer
+      setContentSuggestionsEnabled:self.contentSuggestionsEnabled->GetValue()
+                                       ->GetBool()];
 }
 
 - (void)blockMostVisitedURL:(GURL)URL {
@@ -262,7 +283,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   // TODO(crbug.com/1105624): Observe the kArticlesForYouEnabled Pref in order
   // to hide the DiscoverFeed section if the finch flag is enabled.
   if (IsDiscoverFeedEnabled() &&
-      self.contentArticlesEnabled->GetValue()->GetBool()) {
+      self.contentSuggestionsEnabled->GetValue()->GetBool()) {
     [sectionsInfo addObject:self.discoverSectionInfo];
   }
 
@@ -460,6 +481,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       [self.dataSink section:sectionInfo isLoading:NO];
     }
   }
+  [self.consumer
+      setContentSuggestionsEnabled:self.contentSuggestionsEnabled->GetValue()
+                                       ->GetBool()];
 }
 
 - (void)contentSuggestionsService:
@@ -674,13 +698,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
-// |contentArticlesEnabled|.
+// |contentSuggestionsEnabled|.
 - (BOOL)isCategoryInitOrAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
       status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED)
-    return self.contentArticlesEnabled->GetValue()->GetBool();
+    return self.contentSuggestionsEnabled->GetValue()->GetBool();
   else
     return IsCategoryStatusInitOrAvailable(
         self.contentService->GetCategoryStatus(category));
@@ -688,13 +712,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
-// |contentArticlesEnabled|.
+// |contentSuggestionsEnabled|.
 - (BOOL)isCategoryAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
       status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-    return self.contentArticlesEnabled->GetValue()->GetBool();
+    return self.contentSuggestionsEnabled->GetValue()->GetBool();
   } else {
     return IsCategoryStatusAvailable(
         self.contentService->GetCategoryStatus(category));
@@ -747,6 +771,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   [contentArticlesExpanded setObserver:self];
 }
 
+- (void)setDiscoverFeed:(UIViewController*)discoverFeed {
+  DCHECK(_discoverFeed != discoverFeed);
+  _discoverFeed = discoverFeed;
+  _discoverItem.discoverFeed = _discoverFeed;
+  [self.dataSink reloadAllData];
+}
+
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -767,6 +798,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     self.readingListItem.count = self.readingListUnreadCount;
     [self.dataSink itemHasChanged:self.readingListItem];
   }
+}
+
+#pragma mark - DiscoverFeedObserverBridge
+
+- (void)onDiscoverFeedModelRecreated {
+  [self.discoverFeedDelegate recreateDiscoverFeedViewController];
 }
 
 @end

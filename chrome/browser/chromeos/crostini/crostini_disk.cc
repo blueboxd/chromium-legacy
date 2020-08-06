@@ -219,13 +219,12 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
   }
   std::vector<int64_t> values = GetTicksForDiskSize(min, max);
 
-  // Find the first value which is >= the current size, round that value down to
-  // the current size, and then record that as the default. This means that the
-  // ticks won't be evenly spaced, but GetTicksForDiskSize uses ~100 ticks so
-  // close enough.
+  // If the current size isn't on one of the ticks insert an extra tick for it.
   auto it = std::lower_bound(begin(values), end(values), current);
   if (it != end(values)) {
-    *it = current;
+    if (*it != current) {
+      values.insert(it, current);
+    }
     *out_default_index = std::distance(begin(values), it);
   } else {
     DCHECK(values.empty());

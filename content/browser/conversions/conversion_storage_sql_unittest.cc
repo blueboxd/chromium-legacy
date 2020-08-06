@@ -276,4 +276,16 @@ TEST_F(ConversionStorageSqlTest, CantOpenDb_FailsSilentlyInRelease) {
   EXPECT_FALSE(storage->Initialize());
 }
 
+TEST_F(ConversionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
+  // Give the storage layer a database directory that doesn't exist.
+  std::unique_ptr<ConversionStorage> storage =
+      std::make_unique<ConversionStorageSql>(
+          temp_directory_.GetPath().Append(
+              FILE_PATH_LITERAL("ConversionFolder/")),
+          std::make_unique<ConfigurableStorageDelegate>(), clock());
+
+  // The directory should be created, and the database opened.
+  EXPECT_TRUE(storage->Initialize());
+}
+
 }  // namespace content

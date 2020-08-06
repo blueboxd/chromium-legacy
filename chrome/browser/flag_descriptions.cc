@@ -34,6 +34,12 @@ const char kAccessibilityExposeDisplayNoneDescription[] =
     "Expose 'display: none' nodes that have an HTML ID to the browser process "
     "accessibility tree.";
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+const char kAccessiblePDFFormName[] = "Accessible PDF Forms";
+const char kAccessiblePDFFormDescription[] =
+    "Enables accessibility support for PDF forms.";
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 const char kAccountIdMigrationName[] = "Account ID migration";
 const char kAccountIdMigrationDescription[] =
     "Migrate to use Gaia ID instead of the email as the account identifer for "
@@ -961,6 +967,13 @@ const char kEnableSyncTrustedVaultName[] =
     "Enable trusted vault sync passphrase type";
 const char kEnableSyncTrustedVaultDescription[] =
     "Enables the new, experimental passphrase type for sync data";
+
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+const char kEnableTabSearchName[] = "Enable Tab Search";
+const char kEnableTabSearchDescription[] =
+    "Enable the Tab Search feature in Top Chrome UI, which will show a popup"
+    "bubble that allows users to search over their currently open tabs.";
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)";
 
 const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
 const char kEnableTextFragmentAnchorDescription[] =

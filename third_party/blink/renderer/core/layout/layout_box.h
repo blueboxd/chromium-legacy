@@ -1016,8 +1016,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     wtf_size_t Size() const { return layout_results_.size(); }
     bool IsEmpty() const { return layout_results_.IsEmpty(); }
 
-    class Iterator : public std::iterator<std::forward_iterator_tag,
-                                          NGPhysicalBoxFragment> {
+    class CORE_EXPORT Iterator : public std::iterator<std::forward_iterator_tag,
+                                                      NGPhysicalBoxFragment> {
      public:
       explicit Iterator(const NGLayoutResultList::const_iterator& iterator)
           : iterator_(iterator) {}

@@ -202,6 +202,46 @@ NGPhysicalBoxFragment::CloneAsHiddenForPaint() const {
   return builder.ToBoxFragment();
 }
 
+const NGPhysicalBoxFragment* NGPhysicalBoxFragment::PostLayout() const {
+  const auto* layout_object = GetSelfOrContainerLayoutObject();
+  if (UNLIKELY(!layout_object)) {
+    NOTREACHED();
+    return nullptr;
+  }
+  const auto* box = ToLayoutBoxOrNull(layout_object);
+  if (UNLIKELY(!box)) {
+    DCHECK(IsInlineBox());
+    return this;
+  }
+  if (UNLIKELY(IsColumnBox())) {
+    // Column boxes should not be a relayout boundary.
+    return this;
+  }
+
+  const wtf_size_t fragment_count = box->PhysicalFragmentCount();
+  if (UNLIKELY(fragment_count == 0)) {
+    // This should not happen, but DCHECK hits. crbug.com/1107204
+    return nullptr;
+  }
+  if (fragment_count == 1) {
+    const NGPhysicalBoxFragment* post_layout = box->GetPhysicalFragment(0);
+    DCHECK(post_layout);
+    if (UNLIKELY(post_layout != this)) {
+      // This can happen at the relayout boundary crbug.com/829028
+      // but DCHECKing |IsRelayoutBoundary()| hits. crbug.com/1107204
+      return post_layout;
+    }
+  }
+  // TODO(crbug.com/829028): Block fragmentation not supported yet.
+
+  DCHECK(std::any_of(box->PhysicalFragments().begin(),
+                     box->PhysicalFragments().end(),
+                     [this](const NGPhysicalFragment& fragment) {
+                       return this == &fragment;
+                     }));
+  return this;
+}
+
 PhysicalRect NGPhysicalBoxFragment::OverflowClipRect(
     const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {

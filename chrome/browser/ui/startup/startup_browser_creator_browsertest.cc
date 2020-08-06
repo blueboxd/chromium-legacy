@@ -1528,9 +1528,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   policy_map_.Set(policy::key::kRestoreOnStartup,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                   policy::POLICY_SOURCE_CLOUD, base::Value(4), nullptr);
-  auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
-  url_list->Append(
-      base::Value(embedded_test_server()->GetURL("/title1.html").spec()));
+  base::Value url_list(base::Value::Type::LIST);
+  url_list.Append(embedded_test_server()->GetURL("/title1.html").spec());
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                   policy::POLICY_SOURCE_CLOUD, std::move(url_list), nullptr);

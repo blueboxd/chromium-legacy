@@ -1239,7 +1239,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_key_representation(optimization_guide::proto::HOST);
   hint1->set_version("someversion");
   optimization_guide::proto::Optimization* opt1 =
       hint1->add_whitelisted_optimizations();

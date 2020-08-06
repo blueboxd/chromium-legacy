@@ -58,6 +58,11 @@ extern const char kAccessibilityExposeARIAAnnotationsDescription[];
 extern const char kAccessibilityExposeDisplayNoneName[];
 extern const char kAccessibilityExposeDisplayNoneDescription[];
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+extern const char kAccessiblePDFFormName[];
+extern const char kAccessiblePDFFormDescription[];
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 extern const char kAccountIdMigrationName[];
 extern const char kAccountIdMigrationDescription[];
 
@@ -558,6 +563,11 @@ extern const char kEnableSubresourceRedirectDescription[];
 
 extern const char kEnableSyncTrustedVaultName[];
 extern const char kEnableSyncTrustedVaultDescription[];
+
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+extern const char kEnableTabSearchName[];
+extern const char kEnableTabSearchDescription[];
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
 extern const char kEnableTextFragmentAnchorName[];
 extern const char kEnableTextFragmentAnchorDescription[];

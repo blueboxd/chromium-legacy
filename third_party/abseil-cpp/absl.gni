@@ -72,8 +72,6 @@ template("absl_source_set") {
           # Not used by Chromium directly.
           "//chromecast/internal/*",
           "//libassistant/*",
-
-          "//third_party/nearby/*",
         ]
       } else {
         visibility = [ "*" ]

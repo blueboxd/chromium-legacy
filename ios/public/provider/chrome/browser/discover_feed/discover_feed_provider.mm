@@ -13,11 +13,6 @@ bool DiscoverFeedProvider::IsDiscoverFeedEnabled() {
 }
 
 UIViewController* DiscoverFeedProvider::NewFeedViewController(
-    id<ApplicationCommands> handler) {
-  return nil;
-}
-
-UIViewController* DiscoverFeedProvider::NewFeedViewController(
     Browser* browser) {
   return nil;
 }
@@ -26,3 +21,7 @@ void DiscoverFeedProvider::UpdateTheme() {}
 
 void DiscoverFeedProvider::RefreshFeedWithCompletion(
     ProceduralBlock completion) {}
+
+void DiscoverFeedProvider::AddObserver(Observer* observer) {}
+void DiscoverFeedProvider::RemoveObserver(Observer* observer) {}
+void DiscoverFeedProvider::LoadMoreFeedArticles() {}

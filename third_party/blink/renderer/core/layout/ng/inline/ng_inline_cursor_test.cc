@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
@@ -1124,54 +1125,80 @@ TEST_F(NGInlineCursorBlockFragmentationTest, MoveToLayoutObject) {
 
   // Line-ranged cursors can find fragments only in the line.
   // The 1st line has "1111", from "text1".
-  NGInlineCursor cursor(*span1->FragmentItemsContainer());
+  const LayoutBlockFlow* block_flow = span1->FragmentItemsContainer();
+  NGInlineCursor cursor(*block_flow);
   EXPECT_TRUE(cursor.Current().IsLineBox());
   NGInlineCursor line1 = cursor.CursorForDescendants();
-  line1.MoveTo(*text1);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line1), ElementsAre("1111"));
-  line1 = cursor.CursorForDescendants();
-  line1.MoveToIncludingCulledInline(*span1);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line1), ElementsAre("1111"));
-  line1 = cursor.CursorForDescendants();
-  line1.MoveTo(*text2);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line1), ElementsAre());
-  line1 = cursor.CursorForDescendants();
-  line1.MoveToIncludingCulledInline(*span2);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line1), ElementsAre());
+  const auto TestFragment1 = [&](const NGInlineCursor& initial_cursor) {
+    NGInlineCursor cursor = initial_cursor;
+    cursor.MoveTo(*text1);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("1111"));
+    cursor = initial_cursor;
+    cursor.MoveToIncludingCulledInline(*span1);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("1111"));
+    cursor = initial_cursor;
+    cursor.MoveTo(*text2);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre());
+    cursor = initial_cursor;
+    cursor.MoveToIncludingCulledInline(*span2);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre());
+  };
+  TestFragment1(line1);
 
   // The 2nd line has "22" from "text1" and "33" from text2.
   cursor.MoveToNextFragmentainer();
   EXPECT_TRUE(cursor);
   EXPECT_TRUE(cursor.Current().IsLineBox());
   NGInlineCursor line2 = cursor.CursorForDescendants();
-  line2.MoveTo(*text1);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line2), ElementsAre("22"));
-  line2 = cursor.CursorForDescendants();
-  line2.MoveToIncludingCulledInline(*span1);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line2), ElementsAre("22"));
-  line2 = cursor.CursorForDescendants();
-  line2.MoveTo(*text2);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line2), ElementsAre("33"));
-  line2 = cursor.CursorForDescendants();
-  line2.MoveToIncludingCulledInline(*span2);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line2), ElementsAre("33"));
+  const auto TestFragment2 = [&](const NGInlineCursor& initial_cursor) {
+    NGInlineCursor cursor = initial_cursor;
+    cursor.MoveTo(*text1);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("22"));
+    cursor = initial_cursor;
+    cursor.MoveToIncludingCulledInline(*span1);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("22"));
+    cursor = initial_cursor;
+    cursor.MoveTo(*text2);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("33"));
+    cursor = initial_cursor;
+    cursor.MoveToIncludingCulledInline(*span2);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("33"));
+  };
+  TestFragment2(line2);
 
   // The 3rd line has "4444" from text2.
   cursor.MoveToNextFragmentainer();
   EXPECT_TRUE(cursor);
   EXPECT_TRUE(cursor.Current().IsLineBox());
   NGInlineCursor line3 = cursor.CursorForDescendants();
-  line3.MoveTo(*text1);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line3), ElementsAre());
-  line3 = cursor.CursorForDescendants();
-  line3.MoveToIncludingCulledInline(*span1);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line3), ElementsAre());
-  line3 = cursor.CursorForDescendants();
-  line3.MoveTo(*text2);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line3), ElementsAre("4444"));
-  line3 = cursor.CursorForDescendants();
-  line3.MoveToIncludingCulledInline(*span2);
-  EXPECT_THAT(LayoutObjectToDebugStringList(line3), ElementsAre("4444"));
+  const auto TestFragment3 = [&](const NGInlineCursor& initial_cursor) {
+    NGInlineCursor cursor = initial_cursor;
+    cursor.MoveTo(*text1);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre());
+    cursor = initial_cursor;
+    cursor.MoveToIncludingCulledInline(*span1);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre());
+    cursor = initial_cursor;
+    cursor.MoveTo(*text2);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("4444"));
+    cursor = initial_cursor;
+    cursor.MoveToIncludingCulledInline(*span2);
+    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("4444"));
+  };
+  TestFragment3(line3);
+
+  // Test cursors rooted at |NGFragmentItems|.
+  // They can enumerate fragments only in the specified fragmentainer.
+  Vector<const NGFragmentItems*> fragment_items_list;
+  for (const NGPhysicalBoxFragment& fragment :
+       block_flow->PhysicalFragments()) {
+    fragment_items_list.push_back(fragment.Items());
+    DCHECK_NE(fragment_items_list.back(), nullptr);
+  }
+  EXPECT_EQ(fragment_items_list.size(), 3u);
+  TestFragment1(NGInlineCursor(*fragment_items_list[0]));
+  TestFragment2(NGInlineCursor(*fragment_items_list[1]));
+  TestFragment3(NGInlineCursor(*fragment_items_list[2]));
 }
 
 }  // namespace

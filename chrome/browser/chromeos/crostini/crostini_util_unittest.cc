@@ -8,10 +8,13 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
+#include "chrome/browser/component_updater/fake_cros_component_manager.h"
+#include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +39,8 @@ class CrostiniUtilTest : public testing::Test {
       : app_id_(crostini::CrostiniTestHelper::GenerateAppId(kDesktopFileId)),
         task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         local_state_(std::make_unique<ScopedTestingLocalState>(
-            TestingBrowserProcess::GetGlobal())) {
+            TestingBrowserProcess::GetGlobal())),
+        browser_part_(g_browser_process->platform_part()) {
     chromeos::DBusThreadManager::Initialize();
 
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
@@ -47,6 +51,18 @@ class CrostiniUtilTest : public testing::Test {
   CrostiniUtilTest& operator=(const CrostiniUtilTest&) = delete;
 
   void SetUp() override {
+    chromeos::DlcserviceClient::InitializeFake();
+
+    component_manager_ =
+        base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
+    component_manager_->set_supported_components({"cros-termina"});
+    component_manager_->ResetComponentState(
+        "cros-termina",
+        component_updater::FakeCrOSComponentManager::ComponentInfo(
+            component_updater::CrOSComponentManager::Error::NONE,
+            base::FilePath("/install/path"), base::FilePath("/mount/path")));
+    browser_part_.InitializeCrosComponentManager(component_manager_);
+
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     test_helper_ = std::make_unique<CrostiniTestHelper>(profile_.get());
@@ -60,6 +76,9 @@ class CrostiniUtilTest : public testing::Test {
     test_helper_.reset();
     run_loop_.reset();
     profile_.reset();
+    browser_part_.ShutdownCrosComponentManager();
+    component_manager_.reset();
+    chromeos::DlcserviceClient::Shutdown();
   }
 
  protected:
@@ -73,6 +92,8 @@ class CrostiniUtilTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ScopedTestingLocalState> local_state_;
+  scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
+  BrowserProcessPlatformPartTestApi browser_part_;
 };
 
 TEST_F(CrostiniUtilTest, ContainerIdEquality) {

@@ -354,31 +354,9 @@ const FragmentData* NGPhysicalFragment::GetFragmentData() const {
 }
 
 const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
-  const auto* layout_box = ToLayoutBoxOrNull(GetLayoutObject());
-  if (UNLIKELY(!layout_box))
-    return nullptr;
-  const wtf_size_t fragment_count = layout_box->PhysicalFragmentCount();
-  if (UNLIKELY(fragment_count == 0)) {
-    // This should not happen, but DCHECK hits. crbug.com/1107204
-    return nullptr;
-  }
-
-  if (fragment_count == 1) {
-    const NGPhysicalFragment* post_layout = layout_box->GetPhysicalFragment(0);
-    DCHECK(post_layout);
-    if (UNLIKELY(post_layout && post_layout != this)) {
-      // This can happen at the relayout boundary crbug.com/829028
-      // but DCHECKing |IsRelayoutBoundary| hits. crbug.com/1107204
-      return post_layout;
-    }
-  }
-  // TODO(crbug.com/829028): Block fragmentation not supported yet.
-  DCHECK(std::any_of(layout_box->PhysicalFragments().begin(),
-                     layout_box->PhysicalFragments().end(),
-                     [this](const NGPhysicalFragment& fragment) {
-                       return this == &fragment;
-                     }));
-  return nullptr;
+  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(this))
+    return box->PostLayout();
+  return this;
 }
 
 #if DCHECK_IS_ON()

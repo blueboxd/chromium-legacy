@@ -143,16 +143,6 @@ class POLICY_EXPORT PolicyMap {
 
   // Overwrites any existing information stored in the map for the key |policy|.
   // Resets the error for that policy to the empty string.
-  // DEPRECATED: Use the other version that takes base::Optional<base::Value>
-  // below.
-  // TODO(crbug.com/1092469): Migrate the existing usages and delete this
-  // method.
-  void Set(const std::string& policy,
-           PolicyLevel level,
-           PolicyScope scope,
-           PolicySource source,
-           std::unique_ptr<base::Value> value,
-           std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
   void Set(const std::string& policy,
            PolicyLevel level,
            PolicyScope scope,

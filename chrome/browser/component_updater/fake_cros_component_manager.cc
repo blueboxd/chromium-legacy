@@ -137,7 +137,7 @@ bool FakeCrOSComponentManager::Unload(const std::string& name) {
   }
   mounted_components_.erase(name);
   installed_components_.erase(name);
-  return true;
+  return unload_component_result_;
 }
 
 void FakeCrOSComponentManager::RegisterCompatiblePath(

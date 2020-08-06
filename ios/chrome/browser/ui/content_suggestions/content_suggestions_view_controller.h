@@ -9,8 +9,10 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 
 @class ContentSuggestionsSectionInformation;
+@protocol ContentSuggestionsActionHandler;
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
 @protocol ContentSuggestionsHeaderSynchronizing;
@@ -29,7 +31,8 @@ extern NSString* const
 
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController
-    : CollectionViewController <ContentSuggestionsCollectionControlling>
+    : CollectionViewController <ContentSuggestionsCollectionControlling,
+                                ContentSuggestionsConsumer>
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_DESIGNATED_INITIALIZER;
@@ -57,7 +60,10 @@ extern NSString* const
     discoverFeedHeaderDelegate;
 @property(nonatomic, weak) id<ContentSuggestionsMetricsRecording>
     metricsRecorder;
-
+// Whether or not the contents section should be hidden completely.
+@property(nonatomic, assign) BOOL contentSuggestionsEnabled;
+// Delegate for handling actions relating to content suggestions.
+@property(nonatomic, weak) id<ContentSuggestionsActionHandler> handler;
 // Provider of menu configurations for the contentSuggestions component.
 @property(nonatomic, weak) id<ContentSuggestionsMenuProvider> menuProvider
     API_AVAILABLE(ios(13.0));

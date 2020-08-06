@@ -37,10 +37,10 @@ void AddTestPolicies(PolicyMap* policy) {
               POLICY_SOURCE_CLOUD, base::Value("omg"), nullptr);
   policy->Set("recommended-user", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean("false", false);
-  dict->SetInteger("int", 456);
-  dict->SetString("str", "bbq");
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetBoolKey("false", false);
+  dict.SetIntKey("int", 456);
+  dict.SetStringKey("str", "bbq");
   policy->Set("recommended-machine", POLICY_LEVEL_RECOMMENDED,
               POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(dict),
               nullptr);

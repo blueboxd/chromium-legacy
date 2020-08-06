@@ -47,15 +47,15 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
       ConstIterator(const NGLink* current, wtf_size_t size)
           : current_(current), end_(current + size) {
-        SkipDestroyedOrMoved();
+        SkipInvalidAndSetPostLayout();
       }
 
-      const NGLink& operator*() const { return *PostLayoutOrCurrent(); }
-      const NGLink* operator->() const { return PostLayoutOrCurrent(); }
+      const NGLink& operator*() const { return post_layout_; }
+      const NGLink* operator->() const { return &post_layout_; }
 
       ConstIterator& operator++() {
         ++current_;
-        SkipDestroyedOrMoved();
+        SkipInvalidAndSetPostLayout();
         return *this;
       }
       bool operator==(const ConstIterator& other) const {
@@ -66,35 +66,27 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       }
 
      private:
-      const NGLink* PostLayoutOrCurrent() const {
-        post_layout_.fragment = current_->fragment->PostLayout();
-        if (!post_layout_.fragment)
-          return current_;
-        post_layout_.offset = current_->offset;
-        return &post_layout_;
-      }
-
-      void SkipDestroyedOrMoved() {
-        while (current_ != end_ &&
-               current_->fragment->IsLayoutObjectDestroyedOrMoved())
-          ++current_;
+      void SkipInvalidAndSetPostLayout() {
+        for (; current_ != end_; ++current_) {
+          const NGPhysicalFragment* fragment = current_->fragment;
+          if (UNLIKELY(fragment->IsLayoutObjectDestroyedOrMoved()))
+            continue;
+          if (const NGPhysicalFragment* post_layout = fragment->PostLayout()) {
+            post_layout_.fragment = post_layout;
+            post_layout_.offset = current_->offset;
+            return;
+          }
+        }
       }
 
       const NGLink* current_;
       const NGLink* end_;
-      mutable NGLink post_layout_;
+      NGLink post_layout_;
     };
     using const_iterator = ConstIterator;
 
     const_iterator begin() const { return const_iterator(buffer_, count_); }
     const_iterator end() const { return const_iterator(buffer_ + count_, 0); }
-
-    const NGLink operator[](wtf_size_t idx) const {
-      CHECK_LT(idx, count_);
-      return buffer_[idx].PostLayout();
-    }
-    const NGLink front() const { return (*this)[0]; }
-    const NGLink back() const { return (*this)[count_ - 1]; }
 
     wtf_size_t size() const { return count_; }
     bool empty() const { return count_ == 0; }

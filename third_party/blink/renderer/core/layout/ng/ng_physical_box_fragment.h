@@ -46,6 +46,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       child.fragment->Release();
   }
 
+  const NGPhysicalBoxFragment* PostLayout() const;
+
   // Returns |NGFragmentItems| if this fragment has one.
   bool HasItems() const { return has_fragment_items_; }
   const NGFragmentItems* Items() const {

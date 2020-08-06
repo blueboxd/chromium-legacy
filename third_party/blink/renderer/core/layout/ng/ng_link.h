@@ -26,14 +26,6 @@ struct CORE_EXPORT NGLink {
   const NGPhysicalFragment& operator*() const { return *fragment; }
   const NGPhysicalFragment* operator->() const { return fragment; }
 
-  // Returns a |NGLink| with newer generation if exists, or |this|. See
-  // |NGPhysicalFragment::PostLayout()| for more details.
-  const NGLink PostLayout() const {
-    if (const NGPhysicalFragment* new_fragment = fragment->PostLayout())
-      return {new_fragment, offset};
-    return *this;
-  }
-
   const NGPhysicalFragment* fragment;
   PhysicalOffset offset;
 };

@@ -73,12 +73,6 @@ message GetHintsResponse {
   // representation combination. These hints are intended to apply to a full
   // page. It is expected that the client will use the Hint record with the
   // most specific key that matches the main frame URL.
-  //
-  // Note, this list may contain multiple hints that apply to a page. For
-  // example, if there are hints for (HOST_SUFFIX,cnn.com) and
-  // (HOST_SUFFIX,sports.cnn.com), these may both apply to
-  // sports.cnn.com/foo. In this case, the client is expected to use the
-  // hints from (HOST_SUFFIX,sports.cnn.com).
   repeated Hint hints = 1;
 
   // The maximum duration in which the hints, or lack of hints, provided in
@@ -155,7 +149,7 @@ enum KeyRepresentation {
   //
   // Example: A host suffix of example.com would match pages with host
   // sports.example.com, but not fooexample.com.
-  HOST_SUFFIX = 1;
+  HOST_SUFFIX = 1 [deprecated = true];
   // The full URL to match.
   //
   // This will be an exact match of a page load URL, including query params and

@@ -53,6 +53,10 @@
 @implementation ContentSuggestionsDiscoverCell
 
 - (void)setDiscoverFeedView:(UIViewController*)discoverFeed {
+  if (_discoverFeed == discoverFeed) {
+    return;
+  }
+  [_discoverFeed.view removeFromSuperview];
   _discoverFeed = discoverFeed;
   if (discoverFeed) {
     UIView* discoverView = discoverFeed.view;
@@ -76,7 +80,8 @@
   if (!self.discoverFeed) {
     return 0;
   }
-
+  // TODO(crbug.com/1092900): Make this more robust. Will require
+  // the provider to expose the feed as a UICollectionViewController.
   for (UIView* view in self.discoverFeed.view.subviews) {
     if ([view isKindOfClass:[UICollectionView class]]) {
       feedView = static_cast<UICollectionView*>(view);

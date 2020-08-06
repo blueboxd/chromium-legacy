@@ -408,49 +408,33 @@ void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void DownloadItemView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  // TODO(pkasting): Refactor to simplify.
-
-  if (sender == open_now_button_) {
+  if (sender == open_button_) {
+    if (mode_ == Mode::kNormal) {
+      complete_animation_.End();
+      announce_accessible_alert_soon_ = true;
+      model_->OpenDownload();
+      // WARNING: |this| may be deleted!
+    } else {
+      ShowOpenDialog(
+          shelf_->browser()->tab_strip_model()->GetActiveWebContents());
+    }
+  } else if (sender == open_now_button_) {
     OpenDownloadDuringAsyncScanning();
-    return;
-  }
-
-  if (sender == dropdown_button_) {
+  } else if (sender == scan_button_) {
+    ExecuteCommand(DownloadCommands::DEEP_SCAN);
+  } else if (sender == dropdown_button_) {
     SetDropdownPressed(true);
     ShowContextMenuImpl(dropdown_button_->GetBoundsInScreen(),
                         ui::GetMenuSourceTypeForEvent(event));
-    return;
-  }
-
-  if (sender == open_button_) {
-    if ((mode_ == Mode::kDeepScanning) ||
-        (model_->GetDangerType() ==
-         download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING)) {
-      ShowOpenDialog(
-          shelf_->browser()->tab_strip_model()->GetActiveWebContents());
-      return;
-    }
-    if (has_warning_label(mode_))
-      return;
-    complete_animation_.End();
-    announce_accessible_alert_soon_ = true;
-    model_->OpenDownload();
+  } else {
+    const auto command = (sender == save_button_) ? DownloadCommands::KEEP
+                                                  : DownloadCommands::DISCARD;
+    if (is_mixed_content(mode_))
+      ExecuteCommand(command);
+    else
+      MaybeSubmitDownloadToFeedbackService(command);
     // WARNING: |this| may be deleted!
-    return;
   }
-
-  if (sender == scan_button_) {
-    ExecuteCommand(DownloadCommands::DEEP_SCAN);
-    return;
-  }
-
-  const auto command = (sender == save_button_) ? DownloadCommands::KEEP
-                                                : DownloadCommands::DISCARD;
-  if (is_mixed_content(mode_))
-    ExecuteCommand(command);
-  else
-    MaybeSubmitDownloadToFeedbackService(command);
-  // WARNING: |this| may be deleted!
 }
 
 void DownloadItemView::ShowContextMenuForViewImpl(
@@ -521,11 +505,9 @@ void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
 
 void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
     DownloadCommands::Command download_command) {
-  if (model_->ShouldAllowDownloadFeedback() &&
-      SubmitDownloadToFeedbackService(download_command)) {
-  } else {
+  if (!model_->ShouldAllowDownloadFeedback() ||
+      !SubmitDownloadToFeedbackService(download_command))
     ExecuteCommand(download_command);
-  }
 }
 
 gfx::Size DownloadItemView::CalculatePreferredSize() const {
@@ -589,9 +571,9 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
   OnPaintBackground(canvas);
 
-  bool use_new_warnings = UseNewWarnings();
-  bool show_warning_icon = mode_ != Mode::kNormal;
-  if (show_warning_icon && !use_new_warnings) {
+  const bool use_new_warnings = UseNewWarnings();
+
+  if (mode_ != Mode::kNormal && !use_new_warnings) {
     const gfx::ImageSkia icon = ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
                                     .GetImageSkia(GetNativeTheme());
     const int icon_x =
@@ -603,25 +585,22 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
+  const gfx::Image* const file_icon_image =
+      g_browser_process->icon_manager()->LookupIconFromFilepath(
+          model_->GetTargetFilePath(), IconLoader::SMALL);
+  const gfx::ImageSkia* file_icon =
+      file_icon_image ? file_icon_image->ToImageSkia() : nullptr;
+
   // Paint download progress.
   // TODO(pkasting): Use a child view to display this.
-  download::DownloadItem::DownloadState state = model_->GetState();
   int progress_x = base::i18n::IsRTL()
                        ? width() - kStartPadding - kProgressIndicatorSize
                        : kStartPadding;
   int progress_y = CenterY(kProgressIndicatorSize);
   const gfx::RectF progress_bounds(
       progress_x, progress_y, kProgressIndicatorSize, kProgressIndicatorSize);
-
-  const gfx::ImageSkia* current_icon = nullptr;
-  IconManager* im = g_browser_process->icon_manager();
-  gfx::Image* image_ptr = im->LookupIconFromFilepath(
-      model_->GetTargetFilePath(), IconLoader::SMALL);
-  if (image_ptr)
-    current_icon = image_ptr->ToImageSkia();
-
-  if (state == download::DownloadItem::IN_PROGRESS &&
-      !(use_new_warnings && show_warning_icon)) {
+  const download::DownloadItem::DownloadState state = model_->GetState();
+  if (mode_ == Mode::kNormal && state == download::DownloadItem::IN_PROGRESS) {
     base::TimeDelta indeterminate_progress_time =
         indeterminate_progress_time_elapsed_;
     if (!model_->IsPaused()) {
@@ -644,23 +623,21 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     PaintDownloadProgress(canvas, progress_bounds, base::TimeDelta(), 100);
     canvas->Restore();
   } else if (use_new_warnings) {
-    current_icon = &file_icon_;
+    file_icon = &file_icon_;
   }
 
-  if (current_icon) {
+  if (file_icon) {
     // Draw the file icon.
-    int kFiletypeIconOffset =
-        (kProgressIndicatorSize - current_icon->height()) / 2;
-    int icon_x = progress_x + kFiletypeIconOffset;
-    int icon_y = progress_y + kFiletypeIconOffset;
+    const int offset = (progress_bounds.height() - file_icon->height()) / 2;
     cc::PaintFlags flags;
     // Use an alpha to make the image look disabled.
     if (!GetEnabled())
       flags.setAlpha(120);
-    canvas->DrawImageInt(*current_icon, icon_x, icon_y, flags);
+    canvas->DrawImageInt(*file_icon, progress_x + offset, progress_y + offset,
+                         flags);
 
     // Overlay the warning icon if appropriate.
-    if (show_warning_icon && use_new_warnings) {
+    if (mode_ != Mode::kNormal) {
       constexpr int kDangerIconOffset = 8;
       const gfx::ImageSkia icon =
           ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
@@ -733,7 +710,9 @@ void DownloadItemView::UpdateMode(Mode mode) {
   // status changes via the accessible alert notifications, and text change
   // notifications would be redundant.
 
-  if (is_download_warning(mode_)) {
+  if (mode_ == Mode::kNormal) {
+    UpdateAccessibleAlertAndTimersForNormalMode();
+  } else if (is_download_warning(mode_)) {
     download::DownloadDangerType danger_type = model_->GetDangerType();
     RecordDangerousDownloadWarningShown(danger_type);
     announce_accessible_alert_soon_ = true;
@@ -748,8 +727,6 @@ void DownloadItemView::UpdateMode(Mode mode) {
   } else if (mode_ == Mode::kDeepScanning) {
     UpdateAccessibleAlert(l10n_util::GetStringFUTF16(
         IDS_DEEP_SCANNING_ACCESSIBLE_ALERT, unelided_filename));
-  } else if (mode_ == Mode::kNormal) {
-    UpdateAccessibleAlertAndTimersForNormalMode();
   }
 
   shelf_->InvalidateLayout();

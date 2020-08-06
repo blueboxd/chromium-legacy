@@ -28,8 +28,9 @@ void RecordUkmFeatures(const UkmFeatureList& features,
     if (!features_recorded.test(static_cast<size_t>(feature)))
       continue;
     if (ukm_features_recorded->find(static_cast<size_t>(feature)) !=
-        ukm_features_recorded->end())
+        ukm_features_recorded->end()) {
       continue;
+    }
     ukm::builders::Blink_UseCounter(source_id)
         .SetFeature(static_cast<size_t>(feature))
         .SetIsMainFrameFeature(
@@ -236,4 +237,10 @@ UseCounterPageLoadMetricsObserver::ShouldObserveMimeType(
                  mime_type == "image/svg+xml"
              ? CONTINUE_OBSERVING
              : STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UseCounterPageLoadMetricsObserver::OnEnterBackForwardCache(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  return CONTINUE_OBSERVING;
 }

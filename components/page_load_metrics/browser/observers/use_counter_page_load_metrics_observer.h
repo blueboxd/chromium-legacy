@@ -40,6 +40,8 @@ class UseCounterPageLoadMetricsObserver
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo&
           failed_provisional_load_info) override;
+  ObservePolicy OnEnterBackForwardCache(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy ShouldObserveMimeType(

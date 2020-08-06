@@ -957,7 +957,7 @@ TEST_P(HintCacheTest,
 
   proto::Hint hint;
   hint.set_key("whatever.com");
-  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST);
   hint.add_whitelisted_optimizations()->set_optimization_type(
       optimization_guide::proto::DEFER_ALL_SCRIPT);
 

@@ -133,56 +133,56 @@ struct MediaSerializer<base::TimeDelta> {
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::AudioCodec> {
-  static inline base::Value Serialize(media::AudioCodec value) {
+struct MediaSerializer<AudioCodec> {
+  static inline base::Value Serialize(AudioCodec value) {
     return base::Value(GetCodecName(value));
   }
 };
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::AudioCodecProfile> {
-  static inline base::Value Serialize(media::AudioCodecProfile value) {
+struct MediaSerializer<AudioCodecProfile> {
+  static inline base::Value Serialize(AudioCodecProfile value) {
     return base::Value(GetProfileName(value));
   }
 };
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::VideoCodec> {
-  static inline base::Value Serialize(media::VideoCodec value) {
+struct MediaSerializer<VideoCodec> {
+  static inline base::Value Serialize(VideoCodec value) {
     return base::Value(GetCodecName(value));
   }
 };
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::VideoCodecProfile> {
-  static inline base::Value Serialize(media::VideoCodecProfile value) {
+struct MediaSerializer<VideoCodecProfile> {
+  static inline base::Value Serialize(VideoCodecProfile value) {
     return base::Value(GetProfileName(value));
   }
 };
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::ChannelLayout> {
-  static inline base::Value Serialize(media::ChannelLayout value) {
+struct MediaSerializer<ChannelLayout> {
+  static inline base::Value Serialize(ChannelLayout value) {
     return base::Value(ChannelLayoutToString(value));
   }
 };
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::SampleFormat> {
-  static inline base::Value Serialize(media::SampleFormat value) {
+struct MediaSerializer<SampleFormat> {
+  static inline base::Value Serialize(SampleFormat value) {
     return base::Value(SampleFormatToString(value));
   }
 };
 
 // Enum (complex)
 template <>
-struct MediaSerializer<media::EncryptionScheme> {
-  static base::Value Serialize(const media::EncryptionScheme& value) {
+struct MediaSerializer<EncryptionScheme> {
+  static base::Value Serialize(const EncryptionScheme& value) {
     std::ostringstream encryptionSchemeString;
     encryptionSchemeString << value;
     return base::Value(encryptionSchemeString.str());
@@ -191,8 +191,8 @@ struct MediaSerializer<media::EncryptionScheme> {
 
 // Class (complex)
 template <>
-struct MediaSerializer<media::VideoTransformation> {
-  static base::Value Serialize(const media::VideoTransformation& value) {
+struct MediaSerializer<VideoTransformation> {
+  static base::Value Serialize(const VideoTransformation& value) {
     std::string rotation = VideoRotationToString(value.rotation);
     if (value.mirrored)
       rotation += ", mirrored";
@@ -202,16 +202,16 @@ struct MediaSerializer<media::VideoTransformation> {
 
 // Class (simple)
 template <>
-struct MediaSerializer<media::VideoColorSpace> {
-  static inline base::Value Serialize(const media::VideoColorSpace& value) {
+struct MediaSerializer<VideoColorSpace> {
+  static inline base::Value Serialize(const VideoColorSpace& value) {
     return base::Value(value.ToGfxColorSpace().ToString());
   }
 };
 
 // Class (complex)
 template <>
-struct MediaSerializer<media::HDRMetadata> {
-  static base::Value Serialize(const media::HDRMetadata& value) {
+struct MediaSerializer<HDRMetadata> {
+  static base::Value Serialize(const HDRMetadata& value) {
     // TODO(tmathmeyer) serialize more fields here potentially.
     base::Value result(base::Value::Type::DICTIONARY);
     FIELD_SERIALIZE("luminance range",
@@ -235,8 +235,8 @@ struct MediaSerializer<media::HDRMetadata> {
 
 // Class (complex)
 template <>
-struct MediaSerializer<media::AudioDecoderConfig> {
-  static base::Value Serialize(const media::AudioDecoderConfig& value) {
+struct MediaSerializer<AudioDecoderConfig> {
+  static base::Value Serialize(const AudioDecoderConfig& value) {
     base::Value result(base::Value::Type::DICTIONARY);
     FIELD_SERIALIZE("codec", value.codec());
     FIELD_SERIALIZE("profile", value.profile());
@@ -265,9 +265,8 @@ struct MediaSerializer<media::AudioDecoderConfig> {
 
 // Enum (simple)
 template <>
-struct MediaSerializer<media::VideoDecoderConfig::AlphaMode> {
-  static inline base::Value Serialize(
-      media::VideoDecoderConfig::AlphaMode value) {
+struct MediaSerializer<VideoDecoderConfig::AlphaMode> {
+  static inline base::Value Serialize(VideoDecoderConfig::AlphaMode value) {
     return base::Value(value == VideoDecoderConfig::AlphaMode::kHasAlpha
                            ? "has_alpha"
                            : "is_opaque");
@@ -276,8 +275,8 @@ struct MediaSerializer<media::VideoDecoderConfig::AlphaMode> {
 
 // Class (complex)
 template <>
-struct MediaSerializer<media::VideoDecoderConfig> {
-  static base::Value Serialize(const media::VideoDecoderConfig& value) {
+struct MediaSerializer<VideoDecoderConfig> {
+  static base::Value Serialize(const VideoDecoderConfig& value) {
     base::Value result(base::Value::Type::DICTIONARY);
     FIELD_SERIALIZE("codec", value.codec());
     FIELD_SERIALIZE("profile", value.profile());
@@ -296,9 +295,9 @@ struct MediaSerializer<media::VideoDecoderConfig> {
 
 // enum (simple)
 template <>
-struct MediaSerializer<media::BufferingState> {
-  static inline base::Value Serialize(const media::BufferingState value) {
-    return base::Value(value == media::BufferingState::BUFFERING_HAVE_ENOUGH
+struct MediaSerializer<BufferingState> {
+  static inline base::Value Serialize(const BufferingState value) {
+    return base::Value(value == BufferingState::BUFFERING_HAVE_ENOUGH
                            ? "BUFFERING_HAVE_ENOUGH"
                            : "BUFFERING_HAVE_NOTHING");
   }
@@ -306,8 +305,8 @@ struct MediaSerializer<media::BufferingState> {
 
 // enum (complex)
 template <>
-struct MediaSerializer<media::BufferingStateChangeReason> {
-  static base::Value Serialize(const media::BufferingStateChangeReason value) {
+struct MediaSerializer<BufferingStateChangeReason> {
+  static base::Value Serialize(const BufferingStateChangeReason value) {
     switch (value) {
       case DEMUXER_UNDERFLOW:
         return base::Value("DEMUXER_UNDERFLOW");
@@ -322,10 +321,9 @@ struct MediaSerializer<media::BufferingStateChangeReason> {
 };
 
 // Class (complex)
-template <media::SerializableBufferingStateType T>
-struct MediaSerializer<media::SerializableBufferingState<T>> {
-  static base::Value Serialize(
-      const media::SerializableBufferingState<T>& value) {
+template <SerializableBufferingStateType T>
+struct MediaSerializer<SerializableBufferingState<T>> {
+  static base::Value Serialize(const SerializableBufferingState<T>& value) {
     base::Value result(base::Value::Type::DICTIONARY);
     FIELD_SERIALIZE("state", value.state);
 
@@ -350,16 +348,16 @@ struct MediaSerializer<media::SerializableBufferingState<T>> {
 
 // enum (simple)
 template <>
-struct MediaSerializer<media::StatusCode> {
-  static inline base::Value Serialize(media::StatusCode code) {
+struct MediaSerializer<StatusCode> {
+  static inline base::Value Serialize(StatusCode code) {
     return base::Value(static_cast<int>(code));
   }
 };
 
 // Class (complex)
 template <>
-struct MediaSerializer<media::Status> {
-  static base::Value Serialize(const media::Status& status) {
+struct MediaSerializer<Status> {
+  static base::Value Serialize(const Status& status) {
     if (status.is_ok())
       return base::Value("Ok");
 

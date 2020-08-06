@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -95,9 +96,15 @@ bool ConversionStorageSql::Initialize() {
   db_->set_cache_size(32);
   db_->set_exclusive_locking();
 
-  bool opened = (path_to_database_.value() == kInMemoryPath)
-                    ? db_->OpenInMemory()
-                    : db_->Open(path_to_database_);
+  const base::FilePath& dir = path_to_database_.DirName();
+  bool opened = false;
+  if (path_to_database_.value() == kInMemoryPath) {
+    opened = db_->OpenInMemory();
+  } else if (base::DirectoryExists(dir) || base::CreateDirectory(dir)) {
+    opened = db_->Open(path_to_database_);
+  } else {
+    DLOG(ERROR) << "Failed to create directory for Conversion database";
+  }
 
   if (!opened || !InitializeSchema()) {
     db_.reset();

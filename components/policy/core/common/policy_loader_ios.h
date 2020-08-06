@@ -40,9 +40,8 @@ class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
   // Validates the given policy data against the stored |schema_|, converting
   // data to the expected type if necessary.  The returned value is suitable for
   // adding to a PolicyMap.
-  std::unique_ptr<base::Value> ConvertPolicyDataIfNecessary(
-      const std::string& key,
-      const base::Value& value);
+  base::Value ConvertPolicyDataIfNecessary(const std::string& key,
+                                           const base::Value& value);
 
   // The schema used by |ValidatePolicyData()|.
   const Schema* policy_schema_;

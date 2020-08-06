@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 
+#include <memory>
+
 #include "base/json/json_string_value_serializer.h"
+#include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -44,15 +47,18 @@ NSString* SerializeValue(const base::Value* value) {
 // Takes a JSON-encoded string representing a |base::Value|, and deserializes
 // into a |base::Value| pointer. If nullptr is given, returns a pointer to a
 // |base::Value| of type NONE.
-std::unique_ptr<base::Value> DeserializeValue(NSString* json_value) {
+base::Optional<base::Value> DeserializeValue(NSString* json_value) {
   if (!json_value) {
-    return std::make_unique<base::Value>(base::Value::Type::NONE);
+    return base::Value(base::Value::Type::NONE);
   }
 
   std::string json = base::SysNSStringToUTF8(json_value);
   JSONStringValueDeserializer deserializer(json);
-  return deserializer.Deserialize(/*error_code=*/nullptr,
-                                  /*error_message=*/nullptr);
+  std::unique_ptr<base::Value> value =
+      deserializer.Deserialize(/*error_code=*/nullptr,
+                               /*error_message=*/nullptr);
+  return value ? base::make_optional<base::Value>(std::move(*value))
+               : base::nullopt;
 }
 }
 
@@ -80,7 +86,7 @@ std::unique_ptr<base::Value> DeserializeValue(NSString* json_value) {
 }
 
 + (void)setPolicyValue:(NSString*)jsonValue forKey:(NSString*)policyKey {
-  std::unique_ptr<base::Value> value = DeserializeValue(jsonValue);
+  base::Optional<base::Value> value = DeserializeValue(jsonValue);
   policy::PolicyMap values;
   values.Set(base::SysNSStringToUTF8(policyKey), policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,

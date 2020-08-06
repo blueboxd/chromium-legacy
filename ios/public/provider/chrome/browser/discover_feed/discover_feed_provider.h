@@ -16,6 +16,19 @@ class Browser;
 // Feed.
 class DiscoverFeedProvider {
  public:
+  // Observer class for discover feed events.
+  class Observer {
+   public:
+    Observer() {}
+    virtual ~Observer() {}
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
+    // Called whenever the FeedProvider Model has changed. At this point all
+    // existing Feed ViewControllers are stale and need to be refreshed.
+    virtual void OnDiscoverFeedModelRecreated() = 0;
+  };
+
   DiscoverFeedProvider() = default;
   virtual ~DiscoverFeedProvider() = default;
 
@@ -25,18 +38,17 @@ class DiscoverFeedProvider {
   // Returns true if the Discover Feed is enabled.
   virtual bool IsDiscoverFeedEnabled();
   // Returns the Discover Feed ViewController.
-  // Deprecated - use the below NewFeedViewController(Browser* browser) instead.
-  // TODO(crbug.com/1085419): Remove this interface after rolling the downstream
-  // change.
-  virtual UIViewController* NewFeedViewController(
-      id<ApplicationCommands> handler) NS_RETURNS_RETAINED;
-  // Returns the Discover Feed ViewController.
   virtual UIViewController* NewFeedViewController(Browser* browser)
       NS_RETURNS_RETAINED;
   // Updates the feed's theme to match the user's theme (light/dark).
   virtual void UpdateTheme();
   // Refreshes the Discover Feed with completion.
   virtual void RefreshFeedWithCompletion(ProceduralBlock completion);
+  // Methods to register or remove observers.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+  // Loads and appends the next set of articles in the feed.
+  virtual void LoadMoreFeedArticles();
 };
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_PROVIDER_H_

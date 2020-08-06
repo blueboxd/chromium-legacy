@@ -697,7 +697,7 @@ TEST_F(PluginVmInstallerDriveTest, CancelledDriveDownloadTest) {
 
 TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
   SetPluginVmImagePref(kDriveUrl, kHash);
-  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorNone);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorNone);
 
   ExpectObserverEventsUntil(InstallingState::kImporting);
   EXPECT_CALL(*observer_, OnDownloadProgressUpdated(_, std::strlen(kContent)))
@@ -711,7 +711,7 @@ TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluingVmDlcInternal) {
   SetPluginVmImagePref(kDriveUrl, kHash);
-  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInternal);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorInternal);
 
   ExpectObserverEventsUntil(InstallingState::kDownloadingDlc);
   EXPECT_CALL(*observer_, OnError(FailureReason::DLC_INTERNAL));
@@ -724,7 +724,7 @@ TEST_F(PluginVmInstallerDriveTest, InstallingPluingVmDlcInternal) {
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluingVmDlcBusy) {
   SetPluginVmImagePref(kDriveUrl, kHash);
-  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorBusy);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorBusy);
 
   ExpectObserverEventsUntil(InstallingState::kDownloadingDlc);
   EXPECT_CALL(*observer_, OnError(FailureReason::DLC_BUSY));
@@ -736,7 +736,7 @@ TEST_F(PluginVmInstallerDriveTest, InstallingPluingVmDlcBusy) {
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcNeedReboot) {
   SetPluginVmImagePref(kDriveUrl, kHash);
-  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorNeedReboot);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorNeedReboot);
 
   ExpectObserverEventsUntil(InstallingState::kDownloadingDlc);
   EXPECT_CALL(*observer_, OnError(FailureReason::DLC_NEED_REBOOT));
@@ -749,7 +749,7 @@ TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcNeedReboot) {
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcNeedSpace) {
   SetPluginVmImagePref(kDriveUrl, kHash);
-  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorAllocation);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorAllocation);
 
   ExpectObserverEventsUntil(InstallingState::kDownloadingDlc);
   EXPECT_CALL(*observer_, OnError(FailureReason::DLC_NEED_SPACE));
@@ -762,7 +762,7 @@ TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcNeedSpace) {
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenUnsupported) {
   SetPluginVmImagePref(kDriveUrl, kHash);
-  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInvalidDlc);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorInvalidDlc);
 
   ExpectObserverEventsUntil(InstallingState::kDownloadingDlc);
   EXPECT_CALL(*observer_, OnError(FailureReason::DLC_UNSUPPORTED));

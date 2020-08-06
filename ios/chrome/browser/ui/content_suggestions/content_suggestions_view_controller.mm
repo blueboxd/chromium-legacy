@@ -16,10 +16,12 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_action_handler.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
@@ -49,6 +51,8 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 const CGFloat kMostVisitedBottomMargin = 13;
 const CGFloat kCardBorderRadius = 11;
 const CGFloat kDiscoverFeedContentWith = 430;
+// Value representing offset from bottom of the page to trigger pagination.
+const CGFloat kPaginationOffset = 100;
 }
 
 NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
@@ -643,6 +647,14 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
   self.scrolledToTop =
       scrollView.contentOffset.y >= [self.headerSynchronizer pinnedOffsetY];
+
+  if (IsDiscoverFeedEnabled() && self.contentSuggestionsEnabled) {
+    float scrollPosition =
+        scrollView.contentOffset.y + scrollView.frame.size.height;
+    if (scrollPosition >= scrollView.contentSize.height - kPaginationOffset) {
+      [self.handler loadMoreFeedArticles];
+    }
+  }
 }
 
 - (BOOL)scrollViewShouldScrollToTop:(UIScrollView*)scrollView {
@@ -805,6 +817,12 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 // Opens top-level feed menu when pressing |menuButton|.
 - (void)openDiscoverFeedMenu:(id)menuButton {
   [self.discoverFeedMenuHandler openDiscoverFeedMenu:menuButton];
+}
+
+#pragma mark - ContentSuggestionsConsumer
+
+- (void)setContentSuggestionsEnabled:(BOOL)enabled {
+  _contentSuggestionsEnabled = enabled;
 }
 
 @end

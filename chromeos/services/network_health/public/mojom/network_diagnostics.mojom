@@ -1,6 +1,9 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// NOTE: This mojom should be kept in sync with the copy in the Chromium OS
+// repo: src/platform2/diagnostics/mojo/network_diagnostics.mojom.
 
 module chromeos.network_diagnostics.mojom;
 
@@ -37,7 +40,7 @@ enum GatewayCanBePingedProblem {
   kNonDefaultNetworksAboveLatencyThreshold,
 };
 
-// Messages related to the HasSecureWiFiConnection routine.
+// Problems related to the HasSecureWiFiConnection routine.
 [Extensible]
 enum HasSecureWiFiConnectionProblem {
   kSecurityTypeNone,
@@ -46,7 +49,7 @@ enum HasSecureWiFiConnectionProblem {
   kUnknownSecurityType,
 };
 
-// Messages related to the DnsResolverPresent routine.
+// Problems related to the DnsResolverPresent routine.
 [Extensible]
 enum DnsResolverPresentProblem {
   kNoNameServersFound,
@@ -54,7 +57,7 @@ enum DnsResolverPresentProblem {
   kEmptyNameServers,
 };
 
-// Messages related to the DnsLatencyProblem routine.
+// Problems related to the DnsLatencyProblem routine.
 [Extensible]
 enum DnsLatencyProblem {
   // The routine was unable to successfully resolve all the hosts. Note that
@@ -66,7 +69,7 @@ enum DnsLatencyProblem {
   kSignificantlyAboveThreshold,
 };
 
-// Messages related to the DnsResolution routine.
+// Problems related to the DnsResolution routine.
 [Extensible]
 enum DnsResolutionProblem {
   // The routine was unable to successfully resolve the test host

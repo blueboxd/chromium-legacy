@@ -30,6 +30,11 @@
 
 [
   {
+    "name": "accessible-pdf-form",
+    "owners": [ "ankk@microsoft.com", "mohitb@microsoft.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "account-id-migration",
     "owners": [ "msarda" ],
     "expiry_milestone": 88

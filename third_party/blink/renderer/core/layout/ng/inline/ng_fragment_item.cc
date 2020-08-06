@@ -329,6 +329,12 @@ bool NGFragmentItem::HasSelfPaintingLayer() const {
   return false;
 }
 
+const NGPhysicalBoxFragment* NGFragmentItem::BoxItem::PostLayout() const {
+  if (box_fragment)
+    return box_fragment->PostLayout();
+  return nullptr;
+}
+
 void NGFragmentItem::LayoutObjectWillBeDestroyed() const {
   const_cast<NGFragmentItem*>(this)->layout_object_ = nullptr;
   if (const NGPhysicalBoxFragment* fragment = BoxFragment())

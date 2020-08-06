@@ -99,7 +99,7 @@ class StartupBrowserPolicyUnitTest : public testing::Test {
                  Args... args) {
     policy_map.Set(policy, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(args...), nullptr);
+                   base::Value(args...), nullptr);
   }
 
   template <typename... Args>

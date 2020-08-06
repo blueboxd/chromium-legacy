@@ -46,7 +46,10 @@ class FeedbackUploader : public KeyedService,
   static void SetMinimumRetryDelayForTesting(base::TimeDelta delay);
 
   // Queues a report for uploading.
-  void QueueReport(std::unique_ptr<std::string> data);
+  // |data|: The serialized userfeedback::ExtensionSubmit proto to send.
+  // |has_email|: True iff the user included their email address in the report.
+  // virtual for testing.
+  virtual void QueueReport(std::unique_ptr<std::string> data, bool has_email);
 
   // Re-queues an existing report from disk for uploading.
   void RequeueReport(scoped_refptr<FeedbackReport> report);

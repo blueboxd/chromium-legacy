@@ -134,6 +134,7 @@ void AutofillPopupControllerImpl::Show(
       ->RegisterKeyPressHandler(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                      base::Unretained(this)));
+
   delegate_->OnPopupShown();
 }
 

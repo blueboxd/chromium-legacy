@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FAVICON_CORE_CORE_FAVICON_SERVICE_H_
 #define COMPONENTS_FAVICON_CORE_CORE_FAVICON_SERVICE_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -14,6 +16,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
+class SkBitmap;
+
+namespace gfx {
+class Image;
+}
 
 namespace favicon {
 
@@ -97,6 +104,14 @@ class CoreFaviconService : public KeyedService {
   virtual void UnableToDownloadFavicon(const GURL& icon_url) = 0;
   virtual void ClearUnableToDownloadFavicons() = 0;
   virtual bool WasUnableToDownloadFavicon(const GURL& icon_url) const = 0;
+
+ protected:
+  // Returns a vector of pixel edge sizes from |size_in_dip| and
+  // GetFaviconScales().
+  static std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip);
+
+  // Returns a vector of the bitmaps to store for the specified image.
+  static std::vector<SkBitmap> ExtractSkBitmapsToStore(const gfx::Image& image);
 };
 
 }  // namespace favicon

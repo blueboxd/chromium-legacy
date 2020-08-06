@@ -93,7 +93,9 @@ Font::Weight GetFontWeightFromNSFont(NSFont* font) {
   // Map CoreText weights in a manner similar to ct_weight_to_fontstyle() from
   // SkFontHost_mac.cpp, but adjusted for the weights actually used by the
   // system fonts. See PlatformFontMacTest.FontWeightAPIConsistency for details.
-  // Use ranges for paranoia.
+  // The Mac uses specific float values, but to avoid float comparison
+  // inaccuracies as well as for paranoia in case float values other than these
+  // appear, use ranges.
   constexpr struct {
     // A range of CoreText weights.
     CGFloat weight_lower;
@@ -127,7 +129,7 @@ Font::Weight GetFontWeightFromNSFont(NSFont* font) {
       //     .AppleSystemUIFontEmphasized: 0.40 (10.12-)
       //     .AppleSystemUIFontHeavy: 0.56 (10.11-)
       //     .AppleSystemUIFontBlack: 0.62 (10.11-)
-      {-1000, -0.70, Font::Weight::THIN},         // NSFontWeightUltraLight
+      {-1.0, -0.70, Font::Weight::THIN},          // NSFontWeightUltraLight
       {-0.70, -0.45, Font::Weight::EXTRA_LIGHT},  // NSFontWeightThin
       {-0.45, -0.10, Font::Weight::LIGHT},        // NSFontWeightLight
       {-0.10, 0.10, Font::Weight::NORMAL},        // NSFontWeightRegular
@@ -135,7 +137,7 @@ Font::Weight GetFontWeightFromNSFont(NSFont* font) {
       {0.27, 0.35, Font::Weight::SEMIBOLD},       // NSFontWeightSemibold
       {0.35, 0.50, Font::Weight::BOLD},           // NSFontWeightBold
       {0.50, 0.60, Font::Weight::EXTRA_BOLD},     // NSFontWeightHeavy
-      {0.60, 1000, Font::Weight::BLACK},          // NSFontWeightBlack
+      {0.60, 1.0, Font::Weight::BLACK},           // NSFontWeightBlack
   };
 
   base::ScopedCFTypeRef<CFDictionaryRef> traits(

@@ -4,6 +4,8 @@
 
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 
+#include "ash/public/cpp/in_session_auth_dialog_client.h"
+
 namespace ash {
 
 InSessionAuthDialogControllerImpl::InSessionAuthDialogControllerImpl() =
@@ -11,6 +13,11 @@ InSessionAuthDialogControllerImpl::InSessionAuthDialogControllerImpl() =
 
 InSessionAuthDialogControllerImpl::~InSessionAuthDialogControllerImpl() =
     default;
+
+void InSessionAuthDialogControllerImpl::SetClient(
+    InSessionAuthDialogClient* client) {
+  client_ = client;
+}
 
 void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog() {
   dialog_ = std::make_unique<InSessionAuthDialog>();

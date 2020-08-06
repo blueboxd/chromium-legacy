@@ -21,6 +21,7 @@
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -68,6 +69,7 @@ class ASH_EXPORT WallpaperControllerImpl
       public WallpaperColorCalculatorObserver,
       public SessionObserver,
       public TabletModeObserver,
+      public OverviewObserver,
       public ui::CompositorLockClient {
  public:
   enum WallpaperResolution {
@@ -141,6 +143,12 @@ class ASH_EXPORT WallpaperControllerImpl
   // first wallpaper is set (which happens momentarily after startup), and will
   // always return true thereafter.
   bool HasShownAnyWallpaper() const;
+
+  // Ash cannot close the chrome side of the wallpaper preview so this function
+  // tells the chrome side to do so. Also Ash cannot tell whether or not the
+  // wallpaper picker is currently open so this will close the wallpaper preview
+  // if it is open and do nothing if it is not open.
+  void MaybeClosePreviewWallpaper();
 
   // Shows the wallpaper and alerts observers of changes.
   // Does not show the image if:
@@ -289,6 +297,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
+
+  // OverviewObserver:
+  void OnOverviewModeWillStart() override;
 
   // CompositorLockClient:
   void CompositorLockTimedOut() override;

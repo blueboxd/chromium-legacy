@@ -97,7 +97,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // We start by doing some simple checks that can run on the UI thread.
-    UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.ClassificationStart", 1);
+    base::UmaHistogramBoolean("SBClientPhishing.ClassificationStart", true);
 
     // Only classify [X]HTML documents.
     if (mime_type_ != "text/html" && mime_type_ != "application/xhtml+xml") {
@@ -154,7 +154,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       ClientSideDetectionHost::ShouldClassifyUrlRequest>;
 
   // Enum used to keep stats about why the pre-classification check failed.
-  enum PreClassificationCheckFailures {
+  enum PreClassificationCheckResult {
     OBSOLETE_NO_CLASSIFY_PROXY_FETCH = 0,
     NO_CLASSIFY_PRIVATE_IP = 1,
     NO_CLASSIFY_OFF_THE_RECORD = 2,
@@ -168,6 +168,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DEPRECATED_NO_CLASSIFY_NOT_HTTP_URL = 10,
     NO_CLASSIFY_SCHEME_NOT_SUPPORTED = 11,
     NO_CLASSIFY_WHITELISTED_BY_POLICY = 12,
+    CLASSIFY = 13,
 
     NO_CLASSIFY_MAX  // Always add new values before this one.
   };
@@ -180,12 +181,13 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     return !start_phishing_classification_cb_.is_null();
   }
 
-  void DontClassifyForPhishing(PreClassificationCheckFailures reason) {
+  void DontClassifyForPhishing(PreClassificationCheckResult reason) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (ShouldClassifyForPhishing()) {
       // Track the first reason why we stopped classifying for phishing.
-      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
-                                reason, NO_CLASSIFY_MAX);
+      base::UmaHistogramEnumeration(
+          "SBClientPhishing.PreClassificationCheckResult", reason,
+          NO_CLASSIFY_MAX);
       start_phishing_classification_cb_.Run(false);
     }
     start_phishing_classification_cb_.Reset();
@@ -193,7 +195,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 
   void CheckSafeBrowsingDatabase(const GURL& url) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    PreClassificationCheckFailures phishing_reason = NO_CLASSIFY_MAX;
+    PreClassificationCheckResult phishing_reason = NO_CLASSIFY_MAX;
     if (!database_manager_.get()) {
       // We cannot check the Safe Browsing whitelists so we stop here
       // for safety.
@@ -213,7 +215,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   }
 
   void OnWhitelistCheckDoneOnIO(const GURL& url,
-                                PreClassificationCheckFailures phishing_reason,
+                                PreClassificationCheckResult phishing_reason,
                                 bool match_whitelist) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // We don't want to call the classification callbacks from the IO
@@ -227,7 +229,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
                                   phishing_reason));
   }
 
-  void CheckCache(PreClassificationCheckFailures phishing_reason) {
+  void CheckCache(PreClassificationCheckResult phishing_reason) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (phishing_reason != NO_CLASSIFY_MAX)
       DontClassifyForPhishing(phishing_reason);
@@ -238,7 +240,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // In that case we're just trying to show the warning.
     bool is_phishing;
     if (csd_service_->GetValidCachedResult(url_, &is_phishing)) {
-      UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.RequestSatisfiedFromCache", 1);
+      base::UmaHistogramBoolean("SBClientPhishing.RequestSatisfiedFromCache",
+                                true);
       // Since we are already on the UI thread, this is safe.
       host_->MaybeShowPhishingWarning(url_, is_phishing);
       DontClassifyForPhishing(NO_CLASSIFY_RESULT_FROM_CACHE);
@@ -250,7 +253,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // phishing we want to send a request to the server to give ourselves
     // a chance to fix misclassifications.
     if (csd_service_->IsInCache(url_)) {
-      UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.ReportLimitSkipped", 1);
+      base::UmaHistogramBoolean("SBClientPhishing.ReportLimitSkipped", true);
     } else if (csd_service_->OverPhishingReportLimit()) {
       DontClassifyForPhishing(NO_CLASSIFY_TOO_MANY_REPORTS);
     }
@@ -259,6 +262,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // |web_contents_| is safe to call as we will be destructed
     // before it is.
     if (ShouldClassifyForPhishing()) {
+      base::UmaHistogramEnumeration(
+          "SBClientPhishing.PreClassificationCheckResult", CLASSIFY,
+          NO_CLASSIFY_MAX);
       start_phishing_classification_cb_.Run(true);
       // Reset the callback to make sure ShouldClassifyForPhishing()
       // returns false.
@@ -463,10 +469,11 @@ void ClientSideDetectionHost::PhishingDetectionDone(
   UmaHistogramMediumTimes(
       "SBClientPhishing.PhishingDetectionDuration",
       base::TimeTicks::Now() - phishing_detection_start_time_);
-  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PhishingDetectorResult", result);
+  base::UmaHistogramEnumeration("SBClientPhishing.PhishingDetectorResult",
+                                result);
   if (result == mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY) {
-    UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClassifierNotReadyReason",
-                              csd_service_->GetLastModelStatus());
+    base::UmaHistogramEnumeration("SBClientPhishing.ClassifierNotReadyReason",
+                                  csd_service_->GetLastModelStatus());
   }
   if (result != mojom::PhishingDetectorResult::SUCCESS)
     return;
@@ -478,6 +485,7 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
+    VLOG(2) << "Phishing classification score: " << verdict->client_score();
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     if (!IsExtendedReportingEnabled(*profile->GetPrefs()) &&

@@ -3002,6 +3002,63 @@ FloatPoint LayoutObject::LocalToAncestorFloatPoint(
   return transform_state.LastPlanarPoint();
 }
 
+bool LayoutObject::LocalToAncestorRectFastPath(
+    const PhysicalRect& rect,
+    const LayoutBoxModelObject* ancestor,
+    MapCoordinatesFlags mode,
+    PhysicalRect& result) const {
+  if (!(mode & kUseGeometryMapperMode))
+    return false;
+  // No other modes are supported.
+  if (mode & (~kUseGeometryMapperMode))
+    return false;
+
+  if (!ancestor)
+    ancestor = View();
+
+  if (ancestor == this)
+    return true;
+
+  AncestorSkipInfo skip_info(ancestor);
+  PropertyTreeState container_properties = PropertyTreeState::Uninitialized();
+  const LayoutObject* property_container =
+      GetPropertyContainer(&skip_info, &container_properties);
+  if (!property_container)
+    return false;
+
+  FloatRect mapping_rect(rect);
+
+  // This works because it's not possible to have any intervening clips,
+  // effects, transforms between |this| and |property_container|, and therefore
+  // FirstFragment().PaintOffset() is relative to the transform space defined by
+  // FirstFragment().LocalBorderBoxProperties() (if this == property_container)
+  // or property_container->FirstFragment().ContentsProperties().
+  mapping_rect.Move(FloatSize(FirstFragment().PaintOffset()));
+
+  if (property_container != ancestor) {
+    GeometryMapper::SourceToDestinationRect(
+        container_properties.Transform(),
+        ancestor->FirstFragment().LocalBorderBoxProperties().Transform(),
+        mapping_rect);
+  }
+  mapping_rect.Move(-FloatSize(ancestor->FirstFragment().PaintOffset()));
+
+  result = PhysicalRect::EnclosingRect(mapping_rect);
+  return true;
+}
+
+PhysicalRect LayoutObject::LocalToAncestorRect(
+    const PhysicalRect& rect,
+    const LayoutBoxModelObject* ancestor,
+    MapCoordinatesFlags mode) const {
+  PhysicalRect result;
+  if (LocalToAncestorRectFastPath(rect, ancestor, mode, result))
+    return result;
+
+  return PhysicalRect::EnclosingRect(
+      LocalToAncestorQuad(FloatRect(rect), ancestor, mode).BoundingBox());
+}
+
 FloatQuad LayoutObject::LocalToAncestorQuad(
     const FloatQuad& local_quad,
     const LayoutBoxModelObject* ancestor,

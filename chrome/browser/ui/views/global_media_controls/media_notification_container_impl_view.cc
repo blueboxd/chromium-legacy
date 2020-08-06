@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
@@ -115,16 +116,19 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       dismiss_button_container_->AddChildView(std::move(dismiss_button));
   UpdateDismissButtonIcon();
 
+  bool is_cast_notification = item ? item->SourceIsCast() : false;
   auto view = std::make_unique<media_message_center::MediaNotificationViewImpl>(
       this, std::move(item), std::move(dismiss_button_placeholder),
       base::string16(), kWidth, /*should_show_icon=*/false);
   view_ = swipeable_container_->AddChildView(std::move(view));
 
   if (base::FeatureList::IsEnabled(
-          media::kGlobalMediaControlsSeamlessTransfer)) {
+          media::kGlobalMediaControlsSeamlessTransfer) &&
+      !is_cast_notification) {
     auto audio_device_selector_view =
         std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-            this, service_, gfx::Size(kWidth, kAudioDeviceSelectorViewHeight));
+            this, service_, gfx::Size(kWidth, kAudioDeviceSelectorViewHeight),
+            audio_sink_id_);
     audio_device_selector_view_ =
         AddChildView(std::move(audio_device_selector_view));
     view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);
@@ -285,6 +289,12 @@ void MediaNotificationContainerImplView::OnMediaSessionInfoChanged(
   is_playing_ =
       session_info && session_info->playback_state ==
                           media_session::mojom::MediaPlaybackState::kPlaying;
+  if (session_info) {
+    audio_sink_id_ = session_info->audio_sink_id.value_or(
+        media::AudioDeviceDescription::kDefaultDeviceId);
+    if (audio_device_selector_view_)
+      audio_device_selector_view_->UpdateCurrentAudioDevice(audio_sink_id_);
+  }
 }
 
 void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged(

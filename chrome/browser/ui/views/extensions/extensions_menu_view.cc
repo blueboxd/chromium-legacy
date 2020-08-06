@@ -149,7 +149,7 @@ void ExtensionsMenuView::Populate() {
   AddChildView(std::make_unique<views::Separator>());
 
   auto footer = CreateBubbleMenuItem(
-      EXTENSIONS_SETTINGS_ID, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION),
+      EXTENSIONS_SETTINGS_ID, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS),
       &button_listener_);
   footer->SetImage(
       views::Button::STATE_NORMAL,

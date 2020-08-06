@@ -261,7 +261,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         let sessionInit = {
-          requiredFeatures: ['anchors'],
+          requiredFeatures: ['anchors', 'plane-detection'],
           optionalFeatures: [],
         };
         if (useDomOverlay.checked) {
@@ -296,10 +296,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         session.updateRenderState({
             baseLayer: new XRWebGLLayer(session, gl)
-        });
-
-        session.updateWorldTrackingState({
-          "planeDetectionState" : { "enabled" : true}
         });
 
         session.requestReferenceSpace('local').then((refSpace) => {

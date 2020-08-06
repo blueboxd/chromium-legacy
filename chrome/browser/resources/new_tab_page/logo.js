@@ -204,8 +204,8 @@ class LogoElement extends PolymerElement {
 
   /** @private */
   onImageDoodleChange_() {
-    if (this.imageDoodle_) {
-      const shareButton = this.imageDoodle_.shareButton;
+    const shareButton = this.imageDoodle_ && this.imageDoodle_.shareButton;
+    if (shareButton) {
       const height = this.imageDoodle_.height;
       const width = this.imageDoodle_.width;
       this.updateStyles({
@@ -217,8 +217,6 @@ class LogoElement extends PolymerElement {
             `${SHARE_BUTTON_SIZE_PX / width * 100}%`,
         '--ntp-logo-share-button-x': `${shareButton.x / width * 100}%`,
         '--ntp-logo-share-button-y': `${shareButton.y / height * 100}%`,
-        '--ntp-logo-box-color':
-            skColorToRgba(this.imageDoodle_.backgroundColor),
       });
     } else {
       this.updateStyles({
@@ -227,6 +225,15 @@ class LogoElement extends PolymerElement {
         '--ntp-logo-share-button-width': null,
         '--ntp-logo-share-button-x': null,
         '--ntp-logo-share-button-y': null,
+      });
+    }
+    if (this.imageDoodle_) {
+      this.updateStyles({
+        '--ntp-logo-box-color':
+            skColorToRgba(this.imageDoodle_.backgroundColor),
+      });
+    } else {
+      this.updateStyles({
         '--ntp-logo-box-color': null,
       });
     }

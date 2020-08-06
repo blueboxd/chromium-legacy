@@ -36,7 +36,7 @@ class SharingClient {
       : connection_(pc_factory,
                     /*ice_servers=*/{},
                     host_.signaling_sender.BindNewPipeAndPassRemote(),
-                    host_.signalling_receiver.BindNewPipeAndPassReceiver(),
+                    host_.signaling_receiver.BindNewPipeAndPassReceiver(),
                     host_.delegate.BindNewPipeAndPassRemote(),
                     host_.connection.BindNewPipeAndPassReceiver(),
                     host_.socket_manager.BindNewPipeAndPassRemote(),

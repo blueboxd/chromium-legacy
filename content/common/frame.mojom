@@ -191,26 +191,6 @@ interface FrameNavigationControl {
       bool wants_result,
       int32 world_id) => (mojo_base.mojom.Value result);
 
-  // Forwards a message from a portal's host to the main frame in the portal's
-  // guest contents.
-  ForwardMessageFromHost(blink.mojom.TransferableMessage message,
-                         url.mojom.Origin source_origin,
-                         url.mojom.Origin? target_origin);
-
-  // Called on the main frame of a page embedded in a Portal when it is
-  // activated. The frame has the option to adopt the previous page as a portal
-  // identified by |portal_token| with the interface |portal|. The activation
-  // can optionally include a message |data| dispatched with the
-  // PortalActivateEvent. The return value |was_adopted| indicates if the portal
-  // for the predecessor (identified by |portal_token|) was adopted by the
-  // current frame.
-  OnPortalActivated(
-      blink.mojom.PortalToken portal_token,
-      pending_associated_remote<blink.mojom.Portal> portal,
-      pending_associated_receiver<blink.mojom.PortalClient> portal_client,
-      blink.mojom.TransferableMessage data)
-      => (blink.mojom.PortalActivateResult result);
-
   // Requests that a provisional RenderFrame swap itself into the frame tree,
   // replacing the RenderFrameProxy that it is associated with. This is used
   // with remote-to-local frame navigations when the RenderFrameProxy

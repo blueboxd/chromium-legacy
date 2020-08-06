@@ -126,6 +126,7 @@ source_set("content_suggestions_ui") {
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
     "content_suggestions_view_controller_audience.h",
+    "discover_feed_header_changing.h",
     "discover_feed_menu_commands.h",
     "ntp_home_consumer.h",
     "theme_change_delegate.h",

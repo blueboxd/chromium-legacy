@@ -12,14 +12,13 @@ source_set("client") {
     "nearby_share_client_impl.h",
     "nearby_share_http_notifier.cc",
     "nearby_share_http_notifier.h",
-    "nearby_share_request_error.cc",
-    "nearby_share_request_error.h",
     "nearby_share_switches.cc",
     "nearby_share_switches.h",
   ]
 
   deps = [
     "//base",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/logging",
     "//chrome/browser/nearby_sharing/proto",
     "//components/signin/public/identity_manager",
@@ -42,6 +41,7 @@ source_set("test_support") {
   deps = [
     ":client",
     "//base",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/proto",
   ]
 }
@@ -58,6 +58,7 @@ source_set("unit_tests") {
     ":client",
     "//base",
     "//base/test:test_support",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/proto",
     "//components/signin/public/identity_manager:test_support",
     "//net",

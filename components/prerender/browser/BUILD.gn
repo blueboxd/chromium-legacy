@@ -22,6 +22,9 @@ static_library("browser") {
     "prerender_manager.cc",
     "prerender_manager.h",
     "prerender_manager_delegate.h",
+    "prerender_processor_impl.cc",
+    "prerender_processor_impl.h",
+    "prerender_processor_impl_delegate.h",
     "prerender_util.cc",
     "prerender_util.h",
   ]

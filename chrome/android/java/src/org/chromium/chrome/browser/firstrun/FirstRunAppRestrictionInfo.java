@@ -80,16 +80,18 @@ class FirstRunAppRestrictionInfo {
      */
     public static void destroy() {
         ThreadUtils.assertOnUiThread();
-        if (sInstance != null) {
-            if (sInstance.mFetchAppRestrictionAsyncTask != null) {
-                sInstance.mFetchAppRestrictionAsyncTask.cancel(true);
-            }
-            if (sInstance.mProvider != null) {
-                sInstance.mProvider.destroy();
-            }
-            sInstance.mCallBacks.clear();
-        }
+        if (sInstance != null) sInstance.destroyInternal();
         sInstance = null;
+    }
+
+    private void destroyInternal() {
+        if (mFetchAppRestrictionAsyncTask != null) {
+            mFetchAppRestrictionAsyncTask.cancel(true);
+        }
+        if (mProvider != null) {
+            mProvider.destroy();
+        }
+        mCallBacks.clear();
     }
 
     /**
@@ -162,5 +164,10 @@ class FirstRunAppRestrictionInfo {
         while (!mCallBacks.isEmpty()) {
             mCallBacks.remove().onResult(mHasAppRestriction);
         }
+    }
+
+    @VisibleForTesting
+    public static void setInstanceForTest(FirstRunAppRestrictionInfo testInstance) {
+        sInstance = testInstance;
     }
 }

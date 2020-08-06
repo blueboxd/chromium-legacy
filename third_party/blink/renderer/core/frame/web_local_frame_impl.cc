@@ -204,15 +204,11 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
-#include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
-#include "third_party/blink/renderer/core/html/portal/portal_activate_event.h"
-#include "third_party/blink/renderer/core/html/portal/portal_host.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -223,7 +219,6 @@
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/web_associated_url_loader_impl.h"
-#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
@@ -2446,54 +2441,6 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
       GetFrame()->GetDocument()->FocusedElement());
   return focused_form_control_element &&
          autofill_client_->ShouldSuppressKeyboard(focused_form_control_element);
-}
-
-void WebLocalFrameImpl::OnPortalActivated(
-    const PortalToken& portal_token,
-    CrossVariantMojoAssociatedRemote<mojom::blink::PortalInterfaceBase> portal,
-    CrossVariantMojoAssociatedReceiver<mojom::blink::PortalClientInterfaceBase>
-        portal_client,
-    TransferableMessage data,
-    OnPortalActivatedCallback callback) {
-  PaintTiming::From(*frame_->GetDocument()).OnPortalActivate();
-  LocalDOMWindow* window = GetFrame()->DomWindow();
-
-  DOMWindowPortalHost::portalHost(*window)->OnPortalActivated();
-  GetFrame()->GetPage()->SetInsidePortal(false);
-
-  auto blink_data =
-      BlinkTransferableMessage::FromTransferableMessage(std::move(data));
-  DCHECK(!blink_data.locked_agent_cluster_id)
-      << "portal activation is always cross-agent-cluster and should be "
-         "diagnosed early";
-  MessagePortArray* ports =
-      MessagePort::EntanglePorts(*window, std::move(blink_data.ports));
-
-  PortalActivateEvent* event = PortalActivateEvent::Create(
-      frame_.Get(), portal_token, std::move(portal), std::move(portal_client),
-      std::move(blink_data.message), ports, std::move(callback));
-
-  ThreadDebugger* debugger = MainThreadDebugger::Instance();
-  if (debugger)
-    debugger->ExternalAsyncTaskStarted(blink_data.sender_stack_trace_id);
-  GetFrame()->DomWindow()->DispatchEvent(*event);
-  if (debugger)
-    debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
-  event->ExpireAdoptionLifetime();
-}
-
-void WebLocalFrameImpl::ForwardMessageFromHost(
-    TransferableMessage message,
-    const WebSecurityOrigin& source_origin,
-    const base::Optional<WebSecurityOrigin>& target_origin) {
-  scoped_refptr<const SecurityOrigin> target;
-  if (target_origin)
-    target = target_origin.value();
-
-  PortalHost::From(*(GetFrame()->DomWindow()))
-      .ReceiveMessage(
-          BlinkTransferableMessage::FromTransferableMessage(std::move(message)),
-          source_origin, target);
 }
 
 void WebLocalFrameImpl::AddMessageToConsoleImpl(

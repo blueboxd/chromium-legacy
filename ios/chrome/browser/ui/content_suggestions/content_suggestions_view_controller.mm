@@ -90,6 +90,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
     _initialContentOffset = NAN;
+    _discoverFeedHeaderDelegate = _collectionUpdater;
   }
   return self;
 }

@@ -180,7 +180,6 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
   DCHECK(session);
 
   auto options = device::mojom::blink::XRFrameDataRequestOptions::New(
-      session->worldTrackingState()->planeDetectionState()->enabled(),
       session->LightEstimationEnabled());
 
   // Immersive frame logic.
@@ -401,7 +400,6 @@ void XRFrameProvider::RequestNonImmersiveFrameData(XRSession* session) {
   } else {
     auto& data_provider = provider->value->Value();
     auto options = device::mojom::blink::XRFrameDataRequestOptions::New(
-        session->worldTrackingState()->planeDetectionState()->enabled(),
         session->LightEstimationEnabled());
 
     data_provider->GetFrameData(

@@ -8,10 +8,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "media/base/media_switches.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/video/h264_level_limits.h"
 
@@ -40,6 +42,8 @@ H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
       profile_(profile),
       accelerator_(std::move(accelerator)) {
   DCHECK(accelerator_);
+  decoder_buffer_is_complete_frame_ =
+      base::FeatureList::IsEnabled(media::kH264DecoderBufferIsCompleteFrame);
   Reset();
 }
 
@@ -1305,10 +1309,14 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
     if (!curr_nalu_) {
       curr_nalu_.reset(new H264NALU());
       par_res = parser_.AdvanceToNextNALU(curr_nalu_.get());
-      if (par_res == H264Parser::kEOStream)
+      if (par_res == H264Parser::kEOStream) {
+        if (decoder_buffer_is_complete_frame_)
+          CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
+
         return kRanOutOfStreamData;
-      else if (par_res != H264Parser::kOk)
+      } else if (par_res != H264Parser::kOk) {
         SET_ERROR_AND_RETURN();
+      }
 
       DVLOG(4) << "New NALU: " << static_cast<int>(curr_nalu_->nal_unit_type);
     }

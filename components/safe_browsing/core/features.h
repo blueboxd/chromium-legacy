@@ -34,6 +34,9 @@ extern const base::Feature kAdSamplerTriggerFeature;
 // reports.
 extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 
+// Enables client side detection on Android.
+extern const base::Feature kClientSideDetectionForAndroid;
+
 // Controls whether to do deep scanning for DLP. If both this feature and
 // the enterprise policies are enabled, the downloaded and uploaded files are
 // sent for scanning.

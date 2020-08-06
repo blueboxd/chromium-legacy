@@ -149,7 +149,7 @@ void OnMessageSent(
 
 struct SharingWebRtcMojoPipes {
   MojoPipe<sharing::mojom::SignalingSender> signaling_sender;
-  MojoPipe<sharing::mojom::SignallingReceiver> signalling_receiver;
+  MojoPipe<sharing::mojom::SignalingReceiver> signaling_receiver;
   MojoPipe<sharing::mojom::SharingWebRtcConnectionDelegate> delegate;
   MojoPipe<sharing::mojom::SharingWebRtcConnection> connection;
   MojoPipe<network::mojom::P2PTrustedSocketManagerClient> socket_manager_client;
@@ -267,7 +267,7 @@ SharingWebRtcConnectionHost* SharingServiceHost::CreateConnection(
 
   auto signalling_host = std::make_unique<WebRtcSignallingHostFCM>(
       std::move(pipes->signaling_sender.receiver),
-      std::move(pipes->signalling_receiver.remote), message_sender_,
+      std::move(pipes->signaling_receiver.remote), message_sender_,
       CreateDeviceInfo(device_guid, fcm_configuration, device_source_));
 
   // base::Unretained is safe as the connection is owned by |this|.
@@ -313,7 +313,7 @@ void SharingServiceHost::OnIceServersReceived(
 
   sharing_utility_service_->CreateSharingWebRtcConnection(
       std::move(pipes->signaling_sender.remote),
-      std::move(pipes->signalling_receiver.receiver),
+      std::move(pipes->signaling_receiver.receiver),
       std::move(pipes->delegate.remote), std::move(pipes->connection.receiver),
       std::move(pipes->socket_manager.remote),
       std::move(pipes->mdns_responder.remote), std::move(ice_servers));

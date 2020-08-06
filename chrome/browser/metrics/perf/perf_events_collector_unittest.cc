@@ -35,13 +35,14 @@ const char kPerfLBRCallgraphCmd[] =
 const char kPerfLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 const char kPerfLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 const char kPerfITLBMissCyclesCmdIvyBridge[] =
-    "perf record -a -e itlb_misses.walk_duration -c 20001";
+    "perf record -a -e itlb_misses.walk_duration -c 30001";
 const char kPerfITLBMissCyclesCmdSkylake[] =
-    "perf record -a -e itlb_misses.walk_pending -c 20001";
+    "perf record -a -e itlb_misses.walk_pending -c 30001";
 const char kPerfITLBMissCyclesCmdAtom[] =
-    "perf record -a -e page_walks.i_side_cycles -c 20001";
-const char kPerfLLCMissesCmd[] = "perf record -a -e r412e -c 12007";
-const char kPerfLLCMissesPreciseCmd[] = "perf record -a -e r412e:pp -c 12007";
+    "perf record -a -e page_walks.i_side_cycles -c 30001";
+const char kPerfLLCMissesCmd[] = "perf record -a -e r412e -g -c 30007";
+const char kPerfLLCMissesPreciseCmd[] =
+    "perf record -a -e r412e:pp -g -c 30007";
 
 // Converts a protobuf to serialized format as a byte vector.
 std::vector<uint8_t> SerializeMessageToVector(

@@ -42,6 +42,11 @@ struct RemoteDevice {
   std::map<SoftwareFeature, SoftwareFeatureState> software_features;
   std::vector<BeaconSeed> beacon_seeds;
 
+  // Bluetooth public address, formatted as a hex string with colons and capital
+  // letters (example: "01:23:45:67:89:AB"). If the device does not have a
+  // synced address, this field is empty.
+  std::string bluetooth_public_address;
+
   RemoteDevice();
   RemoteDevice(
       const std::string& user_email,
@@ -52,7 +57,8 @@ struct RemoteDevice {
       const std::string& persistent_symmetric_key,
       int64_t last_update_time_millis,
       const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
-      const std::vector<BeaconSeed>& beacon_seeds);
+      const std::vector<BeaconSeed>& beacon_seeds,
+      const std::string& bluetooth_public_address);
   RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
 

@@ -18,7 +18,11 @@ namespace base {
 namespace win {
 
 // Parses headers and various data from a PE image. This parser is safe for use
-// on untrusted data.
+// on untrusted data and works on PE files with different bitness from the
+// current process. The PeImageReader is initialized after construction by
+// passing the address and size of a PE file that has been read into memory -
+// not loaded by the OS as an image. Parsing of a PE file that has been loaded
+// as an image can be done with PEImage.
 class BASE_EXPORT PeImageReader {
  public:
   enum WordSize {

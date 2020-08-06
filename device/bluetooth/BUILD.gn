@@ -40,12 +40,15 @@ source_set("deprecated_experimental_mojo") {
     "device.h",
     "discovery_session.cc",
     "discovery_session.h",
+    "socket.cc",
+    "socket.h",
   ]
 
   deps = [
     ":bluetooth",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces",
     "//mojo/public/cpp/bindings",
+    "//net",
   ]
 
   visibility = [

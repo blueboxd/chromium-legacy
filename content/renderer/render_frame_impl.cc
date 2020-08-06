@@ -2636,27 +2636,8 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
       std::make_unique<FrameHostMsg_VisualStateResponse>(routing_id_, id));
 }
 
-void RenderFrameImpl::OnPortalActivated(
-    const blink::PortalToken& portal_token,
-    mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
-    mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
-    blink::TransferableMessage data,
-    OnPortalActivatedCallback callback) {
-  frame_->OnPortalActivated(portal_token, std::move(portal),
-                            std::move(portal_client), std::move(data),
-                            std::move(callback));
-}
-
 void RenderFrameImpl::SwapIn() {
   SwapInInternal();
-}
-
-void RenderFrameImpl::ForwardMessageFromHost(
-    blink::TransferableMessage message,
-    const url::Origin& source_origin,
-    const base::Optional<url::Origin>& target_origin) {
-  frame_->ForwardMessageFromHost(std::move(message), source_origin,
-                                 target_origin);
 }
 
 void RenderFrameImpl::UpdateBrowserControlsState(

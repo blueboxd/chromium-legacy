@@ -68,7 +68,6 @@ class WebInputMethodController;
 class WebPerformance;
 class WebPlugin;
 class WebRange;
-class WebSecurityOrigin;
 class WebScriptExecutionCallback;
 class WebSpellCheckPanelHostClient;
 class WebString;
@@ -76,7 +75,6 @@ class WebTextCheckClient;
 class WebURL;
 class WebView;
 struct FramePolicy;
-struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebIsolatedWorldInfo;
@@ -588,30 +586,6 @@ class WebLocalFrame : public WebFrame {
   // TEMP: Usage count for chrome.loadtimes deprecation.
   // This will be removed following the deprecation.
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
-
-  // Portals -------------------------------------------------------------
-
-  // Dispatches an event when a Portal gets activated. |portal_token| is the
-  // portal's unique identifier, the message pipe |portal_pipe| is the
-  // portal's mojo interface, and the message pipe |portal_client_pipe| is
-  // a mojo interface to communicate back with the caller of the portal's
-  // mojo interface. |data| is an optional message sent together with the
-  // portal's activation.
-  using OnPortalActivatedCallback =
-      base::OnceCallback<void(mojom::PortalActivateResult)>;
-  virtual void OnPortalActivated(
-      const PortalToken& portal_token,
-      CrossVariantMojoAssociatedRemote<mojom::PortalInterfaceBase> portal,
-      CrossVariantMojoAssociatedReceiver<mojom::PortalClientInterfaceBase>
-          portal_client,
-      TransferableMessage data,
-      OnPortalActivatedCallback callback) = 0;
-
-  // Forwards message to the PortalHost object exposed by the frame.
-  virtual void ForwardMessageFromHost(
-      TransferableMessage message,
-      const WebSecurityOrigin& source_origin,
-      const base::Optional<WebSecurityOrigin>& target_origin) = 0;
 
   // Scheduling ---------------------------------------------------------------
 

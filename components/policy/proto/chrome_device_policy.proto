@@ -24,10 +24,16 @@ message UserWhitelistProto {
   repeated string user_whitelist = 1;
 }
 
+message UserAllowlistProto {
+  // If a UserAllowlistProto is included in the ChromeDeviceSettingsProto but
+  // the user_whitelist field is empty then no user can sign-in.
+  repeated string user_allowlist = 1;
+}
+
 message AllowNewUsersProto {
   // Determines whether we allow arbitrary users to log into the device.
-  // This interacts with the UserWhitelistProto as follows:
-  // allow_new_users | user_whitelist     | anyone can log in
+  // This interacts with the UserAllowlistProto as follows:
+  // allow_new_users | user_allowlist     | anyone can log in
   //-----------------+--------------------+------------------
   //  present, true  | not present        | Yes
   //-----------------+--------------------+------------------
@@ -1831,4 +1837,5 @@ message ChromeDeviceSettingsProto {
   optional DevicePrintersProto device_printers = 110;
   optional DeviceShowLowDiskSpaceNotificationProto
       device_show_low_disk_space_notification = 111;
+  optional UserAllowlistProto user_allowlist = 112;
 }

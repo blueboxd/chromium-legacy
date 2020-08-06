@@ -8,6 +8,7 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
@@ -75,6 +76,16 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Do not install allocator shim on iOS 13.4 due to high crash volume on this
+// particular version of OS. TODO(crbug.com/1108219): Remove this workaround
+// when/if the bug gets fixed.
+bool ShouldInstallAllocatorShim() {
+  return !base::ios::IsRunningOnOrLater(13, 4, 0) ||
+         base::ios::IsRunningOnOrLater(13, 5, 0);
+}
+}  // namespace
+
 IOSChromeMainParts::IOSChromeMainParts(
     const base::CommandLine& parsed_command_line)
     : parsed_command_line_(parsed_command_line), local_state_(nullptr) {
@@ -88,7 +99,9 @@ IOSChromeMainParts::~IOSChromeMainParts() {}
 
 void IOSChromeMainParts::PreEarlyInitialization() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  base::allocator::InitializeAllocatorShim();
+  if (ShouldInstallAllocatorShim()) {
+    base::allocator::InitializeAllocatorShim();
+  }
 #endif
 }
 
@@ -154,13 +167,18 @@ void IOSChromeMainParts::PreCreateThreads() {
   SetupFieldTrials();
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  // Start heap profiling as early as possible so it can start recording
-  // memory allocations. Requires the allocator shim to be enabled.
-  heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
-  metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
-      base::BindRepeating(
-          &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
-  heap_profiler_controller_->Start();
+  // Do not install allocator shim on iOS 13.4 due to high crash volume on this
+  // particular version of OS. TODO(crbug.com/1108219): Remove this workaround
+  // when/if the bug gets fixed.
+  if (ShouldInstallAllocatorShim()) {
+    // Start heap profiling as early as possible so it can start recording
+    // memory allocations. Requires the allocator shim to be enabled.
+    heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
+    metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
+        base::BindRepeating(
+            &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
+    heap_profiler_controller_->Start();
+  }
 #endif
 
   variations::InitCrashKeys();

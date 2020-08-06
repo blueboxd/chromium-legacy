@@ -14,6 +14,10 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
  public:
   // Opens the wallpaper picker window.
   virtual void OpenWallpaperPicker() = 0;
+
+  // Closes the app side of the wallpaper preview (top header bar) if it is
+  // currently open.
+  virtual void MaybeClosePreviewWallpaper() = 0;
 };
 
 }  // namespace ash

@@ -150,12 +150,6 @@ WorkerThreadScheduler::CompositorTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WorkerThreadScheduler::IPCTaskRunner() {
-  NOTREACHED() << "Not implemented";
-  return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThreadScheduler::NonWakingTaskRunner() {
   NOTREACHED() << "Not implemented";
   return nullptr;

@@ -9,8 +9,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContextOptions.h"
 
-class GrContext;
-
 namespace gpu {
 struct Capabilities;
 class ContextSupport;

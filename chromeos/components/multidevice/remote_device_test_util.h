@@ -18,6 +18,7 @@ namespace multidevice {
 // Attributes of the default test remote device.
 extern const char kTestRemoteDeviceName[];
 extern const char kTestRemoteDevicePublicKey[];
+extern const char kTestRemoteDeviceBluetoothPublicAddress[];
 
 class RemoteDeviceRefBuilder {
  public:
@@ -37,6 +38,8 @@ class RemoteDeviceRefBuilder {
       int64_t last_update_time_millis);
   RemoteDeviceRefBuilder& SetBeaconSeeds(
       const std::vector<BeaconSeed>& beacon_seeds);
+  RemoteDeviceRefBuilder& SetBluetoothPublicAddress(
+      const std::string& bluetooth_public_address);
   RemoteDeviceRef Build();
 
  private:

@@ -12,7 +12,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
 
-class GrContext;
+class GrDirectContext;
 
 namespace gfx {
 class GpuFence;
@@ -152,13 +152,13 @@ class ContextSupport {
       const cc::ImageHeaderMetadata* image_metadata) const = 0;
 
   // Returns true if the context provider automatically manages calls to
-  // GrContext::resetContext under the hood to prevent GL state synchronization
-  // problems between the GLES2 interface and skia.
+  // GrDirectContext::resetContext under the hood to prevent GL state
+  // synchronization problems between the GLES2 interface and skia.
   virtual bool HasGrContextSupport() const = 0;
 
-  // Sets the GrContext that is to receive resetContext signals when the GL
-  // state is modified via direct calls to the GLES2 interface.
-  virtual void SetGrContext(GrContext* gr) = 0;
+  // Sets the GrDirectContext that is to receive resetContext signals when the
+  // GL state is modified via direct calls to the GLES2 interface.
+  virtual void SetGrContext(GrDirectContext* gr) = 0;
 
   virtual void WillCallGLFromSkia() = 0;
 

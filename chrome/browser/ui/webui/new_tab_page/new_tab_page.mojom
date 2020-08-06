@@ -207,7 +207,7 @@ struct ImageDoodle {
   // differs from that color we show the doodle in a box of that color.
   skia.mojom.SkColor background_color;
   // Specification of the share button.
-  DoodleShareButton share_button;
+  DoodleShareButton? share_button;
   // URLs to be pinged when an image has been shown.
   url.mojom.Url image_impression_log_url;
   url.mojom.Url? animation_impression_log_url;

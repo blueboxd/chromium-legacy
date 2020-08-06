@@ -452,10 +452,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     performDropWithCoordinator:
         (id<UICollectionViewDropCoordinator>)coordinator {
   id<UICollectionViewDropItem> item = coordinator.items.firstObject;
+
+  NSIndexPath* dropIndexPath = coordinator.destinationIndexPath;
+  if (!dropIndexPath) {
+    dropIndexPath = [NSIndexPath indexPathForItem:self.items.count inSection:0];
+  }
+
   NSUInteger destinationIndex =
-      base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
-  [coordinator dropItem:item.dragItem
-      toItemAtIndexPath:coordinator.destinationIndexPath];
+      base::checked_cast<NSUInteger>(dropIndexPath.item);
+  [coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath];
 
   // TODO(crbug.com/1095200): Handle the edge case that two windows are
   // simultaneously dragging and dropping.

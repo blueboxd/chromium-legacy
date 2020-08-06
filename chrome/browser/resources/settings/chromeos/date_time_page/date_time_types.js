@@ -9,7 +9,7 @@ cr.define('settings', function() {
    * in sync with TimeZoneResolverManager::TimeZoneResolveMethod enum.
    * @enum {number}
    */
-  const TimeZoneAutoDetectMethod = {
+  /* #export */ const TimeZoneAutoDetectMethod = {
     DISABLED: 0,
     IP_ONLY: 1,
     SEND_WIFI_ACCESS_POINTS: 2,

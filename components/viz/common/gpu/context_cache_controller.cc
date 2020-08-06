@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace viz {
 namespace {
@@ -48,7 +48,7 @@ ContextCacheController::~ContextCacheController() {
     ClientBecameNotVisible(std::move(held_visibility_));
 }
 
-void ContextCacheController::SetGrContext(GrContext* gr_context) {
+void ContextCacheController::SetGrContext(GrDirectContext* gr_context) {
   gr_context_ = gr_context;
 }
 

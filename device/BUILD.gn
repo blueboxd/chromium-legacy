@@ -41,6 +41,7 @@ test("device_unittests") {
     "bluetooth/bluetooth_task_manager_win_unittest.cc",
     "bluetooth/device_unittest.cc",
     "bluetooth/public/cpp/bluetooth_uuid_unittest.cc",
+    "bluetooth/socket_unittest.cc",
     "bluetooth/string_util_icu_unittest.cc",
     "bluetooth/test/bluetooth_gatt_server_test.cc",
     "bluetooth/test/bluetooth_gatt_server_test.h",

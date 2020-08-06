@@ -7,7 +7,7 @@
 #ifndef GPU_SKIA_BINDINGS_GLES2_IMPLEMENTATION_WITH_GRCONTEXT_SUPPORT_H_
 #define GPU_SKIA_BINDINGS_GLES2_IMPLEMENTATION_WITH_GRCONTEXT_SUPPORT_H_
 
-class GrContext;
+class GrDirectContext;
 
 namespace skia_bindings {
 
@@ -29,7 +29,7 @@ class GLES2ImplementationWithGrContextSupport
 
   void WillCallGLFromSkia() override;
   void DidCallGLFromSkia() override;
-  void SetGrContext(GrContext* gr) override;
+  void SetGrContext(GrDirectContext* gr) override;
   bool HasGrContextSupport() const override;
 
   // Overrides for GLES2 calls that invalidate state that is tracked by skia
@@ -179,7 +179,7 @@ class GLES2ImplementationWithGrContextSupport
   void WillEnableOrDisable(GLenum cap);
   void ResetGrContextIfNeeded(uint32_t dirty_bits);
 
-  GrContext* gr_context_ = nullptr;
+  GrDirectContext* gr_context_ = nullptr;
   bool using_gl_from_skia_ = false;
 };
 

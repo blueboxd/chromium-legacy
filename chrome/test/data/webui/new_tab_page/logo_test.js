@@ -149,6 +149,22 @@ function createSuite(themeModeDoodlesEnabled) {
     });
   });
 
+  [true, false].forEach(dark => {
+    test(`hide share button in ${dark ? 'dark' : 'light'} mode`, async () => {
+      // Arrange.
+      const doodle = createImageDoodle();
+      const imageDoodle = dark ? doodle.image.dark : doodle.image.light;
+      delete imageDoodle.shareButton;
+
+      // Act.
+      const logo = await createLogo(doodle);
+      logo.dark = dark;
+
+      // Assert.
+      assertStyle($$(logo, '#shareButton'), 'display', 'none');
+    });
+  });
+
   [null, '#ff0000'].forEach(color => {
     test(`${color || 'no'} background color shows box`, async () => {
       // Arrange.
@@ -373,11 +389,15 @@ function createSuite(themeModeDoodlesEnabled) {
     assertEquals(0, pos.top);
   });
 
-  // Disabled for flakiness, see https://crbug.com/1065812.
-  test.skip('receiving resize message resizes doodle', async () => {
+  test('receiving resize message resizes doodle', async () => {
     // Arrange.
-    const logo =
-        await createLogo({interactive: {url: {url: 'https://foo.com'}}});
+    const logo = await createLogo({
+      interactive: {
+        url: {url: 'https://foo.com'},
+        width: 200,
+        height: 100,
+      }
+    });
     const transitionend = eventToPromise('transitionend', $$(logo, '#iframe'));
 
     // Act.
@@ -408,8 +428,13 @@ function createSuite(themeModeDoodlesEnabled) {
 
   test('receiving other message does not resize doodle', async () => {
     // Arrange.
-    const logo =
-        await createLogo({interactive: {url: {url: 'https://foo.com'}}});
+    const logo = await createLogo({
+      interactive: {
+        url: {url: 'https://foo.com'},
+        width: 200,
+        height: 100,
+      }
+    });
     const height = $$(logo, '#iframe').offsetHeight;
     const width = $$(logo, '#iframe').offsetWidth;
 

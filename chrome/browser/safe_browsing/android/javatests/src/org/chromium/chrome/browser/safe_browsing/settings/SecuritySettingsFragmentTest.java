@@ -4,6 +4,13 @@
 
 package org.chromium.chrome.browser.safe_browsing.settings;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -134,19 +141,103 @@ public class SecuritySettingsFragmentTest {
             Assert.assertEquals(ASSERT_SAFE_BROWSING_STATE_NATIVE,
                     SafeBrowsingState.STANDARD_PROTECTION,
                     SafeBrowsingBridge.getSafeBrowsingState());
+        });
+    }
 
-            // Click the No Protection button.
+    @Test
+    @SmallTest
+    @Feature({"SafeBrowsing"})
+    @Features.EnableFeatures(ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED)
+    public void testCheckNoProtectionRadioButtonsCancel() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+            SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
+        });
+        launchSettingsActivity();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             getNoProtectionButton().onClick(null);
-            Assert.assertEquals(ASSERT_SAFE_BROWSING_STATE_RADIO_BUTTON_GROUP,
-                    SafeBrowsingState.NO_SAFE_BROWSING, getSafeBrowsingState());
+
+            // Checked button hasn't changed yet, because confirmation is pending.
+            Assert.assertTrue(
+                    ASSERT_RADIO_BUTTON_CHECKED, getEnhancedProtectionButton().isChecked());
+            Assert.assertFalse(ASSERT_RADIO_BUTTON_CHECKED, getNoProtectionButton().isChecked());
+        });
+
+        // The dialog is displayed.
+        onView(withText(R.string.safe_browsing_no_protection_confirmation_dialog_title))
+                .check(matches(isDisplayed()));
+        // Don't confirm.
+        onView(withText(R.string.cancel)).perform(click());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // It should stay in enhanced protection mode.
+            Assert.assertTrue(
+                    ASSERT_RADIO_BUTTON_CHECKED, getEnhancedProtectionButton().isChecked());
+            Assert.assertFalse(ASSERT_RADIO_BUTTON_CHECKED, getNoProtectionButton().isChecked());
+            Assert.assertEquals(ASSERT_SAFE_BROWSING_STATE_NATIVE,
+                    SafeBrowsingState.ENHANCED_PROTECTION,
+                    SafeBrowsingBridge.getSafeBrowsingState());
+        });
+
+        // The confirmation dialog should be gone.
+        onView(withText(R.string.safe_browsing_no_protection_confirmation_dialog_title))
+                .check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SafeBrowsing"})
+    @Features.EnableFeatures(ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED)
+    public void testCheckNoProtectionRadioButtonsConfirm() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+            SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
+        });
+        launchSettingsActivity();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            getNoProtectionButton().onClick(null);
+
+            // Checked button is not changed yet, because confirmation is pending.
+            Assert.assertTrue(
+                    ASSERT_RADIO_BUTTON_CHECKED, getEnhancedProtectionButton().isChecked());
+            Assert.assertFalse(ASSERT_RADIO_BUTTON_CHECKED, getNoProtectionButton().isChecked());
+        });
+
+        // The dialog is displayed.
+        onView(withText(R.string.safe_browsing_no_protection_confirmation_dialog_title))
+                .check(matches(isDisplayed()));
+        // Confirm.
+        onView(withText(R.string.safe_browsing_no_protection_confirmation_dialog_confirm))
+                .perform(click());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse(
                     ASSERT_RADIO_BUTTON_CHECKED, getEnhancedProtectionButton().isChecked());
-            Assert.assertFalse(
-                    ASSERT_RADIO_BUTTON_CHECKED, getStandardProtectionButton().isChecked());
             Assert.assertTrue(ASSERT_RADIO_BUTTON_CHECKED, getNoProtectionButton().isChecked());
             Assert.assertEquals(ASSERT_SAFE_BROWSING_STATE_NATIVE,
                     SafeBrowsingState.NO_SAFE_BROWSING, SafeBrowsingBridge.getSafeBrowsingState());
         });
+
+        // The confirmation dialog should be gone.
+        onView(withText(R.string.safe_browsing_no_protection_confirmation_dialog_title))
+                .check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SafeBrowsing"})
+    @Features.EnableFeatures(ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED)
+    public void testCheckNoProtectionConfirmationIfAlreadyInNoProtectionMode() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+            SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.NO_SAFE_BROWSING);
+        });
+        launchSettingsActivity();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { getNoProtectionButton().onClick(null); });
+
+        // Since it is already in no protection mode, the dialog shouldn't be shown.
+        onView(withText(R.string.safe_browsing_no_protection_confirmation_dialog_title))
+                .check(doesNotExist());
     }
 
     @Test

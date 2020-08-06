@@ -2072,12 +2072,23 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
     EDisplay display) {
   // TODO(layout-dev): Do we need to convert all our inline displays to block
   // type in the anonymous logic?
-  const EDisplay new_display =
-      (display == EDisplay::kFlex || display == EDisplay::kInlineFlex)
-          ? EDisplay::kFlex
-          : (display == EDisplay::kGrid || display == EDisplay::kInlineGrid)
-                ? EDisplay::kGrid
-                : EDisplay::kBlock;
+  EDisplay new_display;
+  switch (display) {
+    case EDisplay::kFlex:
+    case EDisplay::kInlineFlex:
+      new_display = EDisplay::kFlex;
+      break;
+    case EDisplay::kGrid:
+    case EDisplay::kInlineGrid:
+      new_display = EDisplay::kGrid;
+      break;
+    case EDisplay::kFlowRoot:
+      new_display = EDisplay::kFlowRoot;
+      break;
+    default:
+      new_display = EDisplay::kBlock;
+      break;
+  }
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      new_display);
@@ -2094,7 +2105,8 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
     layout_block = LayoutObjectFactory::CreateGrid(parent->GetDocument(),
                                                    *new_style, legacy);
   } else {
-    DCHECK_EQ(new_display, EDisplay::kBlock);
+    DCHECK(new_display == EDisplay::kBlock ||
+           new_display == EDisplay::kFlowRoot);
     layout_block = LayoutObjectFactory::CreateBlockFlow(parent->GetDocument(),
                                                         *new_style, legacy);
   }

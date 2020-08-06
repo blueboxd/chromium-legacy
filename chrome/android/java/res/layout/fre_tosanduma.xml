@@ -45,6 +45,15 @@
                     tools:ignore="ContentDescription"
                     android:src="@drawable/fre_product_logo" />
 
+                <ProgressBar
+                    android:id="@+id/progress_spinner_large"
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    android:layout_marginTop="@dimen/fre_vertical_spacing"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:visibility="gone"/>
+
                 <LinearLayout
                     android:id="@+id/fre_content_wrapper"
                     android:layout_width="0dp"

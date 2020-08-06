@@ -78,6 +78,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     private static final int FRE_PROGRESS_MAX = 7;
 
     private static FirstRunActivityObserver sObserver;
+    // TODO(wenyufu): Remove when MVP for crbug.com/1103476 is complete.
+    private static boolean sEnableEnterpriseCCT;
 
     private String mResultSignInAccountName;
     private boolean mResultIsDefaultAccount;
@@ -100,6 +102,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * Android app list.
      */
     private boolean mLaunchedFromChromeIcon;
+    private boolean mLaunchedFromCCT;
 
     private final List<FirstRunPage> mPages = new ArrayList<>();
     private final List<Integer> mFreProgressStates = new ArrayList<>();
@@ -113,7 +116,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * Defines a sequence of pages to be shown (depending on parameters etc).
      */
     private void createPageSequence() {
-        mPages.add(new ToSAndUMAFirstRunFragment.Page());
+        mPages.add(sEnableEnterpriseCCT && mLaunchedFromCCT
+                        ? new TosAndUmaCctFirstRunFragment.Page()
+                        : new ToSAndUMAFirstRunFragment.Page());
         mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
         // Other pages will be created by createPostNativePageSequence() after
         // native has been initialized.
@@ -381,6 +386,11 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
+        exitFirstRun();
+    }
+
+    @Override
+    public void exitFirstRun() {
         if (!sendFirstRunCompletePendingIntent()) {
             finish();
         } else {
@@ -440,6 +450,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         if (getIntent() != null) {
             mLaunchedFromChromeIcon =
                     getIntent().getBooleanExtra(EXTRA_COMING_FROM_CHROME_ICON, false);
+            mLaunchedFromCCT =
+                    getIntent().getBooleanExtra(EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false);
         }
     }
 
@@ -503,5 +515,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public static void setObserverForTest(FirstRunActivityObserver observer) {
         assert sObserver == null;
         sObserver = observer;
+    }
+
+    @VisibleForTesting
+    public static void setEnableEnterpriseCCTForTest(boolean isEnabled) {
+        sEnableEnterpriseCCT = isEnabled;
     }
 }

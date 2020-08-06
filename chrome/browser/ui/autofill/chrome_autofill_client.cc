@@ -542,6 +542,17 @@ void ChromeAutofillClient::UpdatePopup(
   if (!popup_controller_.get())
     return;  // Update only if there is a popup.
 
+  // When a form changes dynamically, |popup_controller_| may hold a delegate of
+  // the wrong type, so updating the popup would call into the wrong delegate.
+  // Hence, just close the existing popup (crbug/1113241).
+  // The cast is needed to access AutofillPopupController::GetPopupType().
+  if (popup_type !=
+      static_cast<const AutofillPopupController*>(popup_controller_.get())
+          ->GetPopupType()) {
+    popup_controller_->Hide(PopupHidingReason::kStaleData);
+    return;
+  }
+
   // Calling show will reuse the existing view automatically
   popup_controller_->Show(suggestions, /*autoselect_first_suggestion=*/false,
                           popup_type);

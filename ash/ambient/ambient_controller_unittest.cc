@@ -301,47 +301,13 @@ TEST_F(AmbientControllerTest, ShouldDismissAndThenComesBack) {
   EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
 }
 
-TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
-  // Simulate a device being connected with a charger initially to acquire a
-  // wake lock upon shown.
-  power_manager::PowerSupplyProperties proto;
-  proto.set_battery_state(
-      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
-  PowerStatus::Get()->SetProtoForTesting(proto);
-
-  // Starts ambient screen.
-  ShowAmbientScreen();
-  EXPECT_TRUE(ambient_controller()->IsShown());
-  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // Simulates the system starting to suspend by lid closed.
-  SimulateSystemSuspendAndWait(
-      power_manager::SuspendImminent_Reason_LID_CLOSED);
-
-  // System suspension should hide Ui and release the wake lock acquired
-  // previously.
-  EXPECT_FALSE(container_view());
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // Simulates the system starting to resume.
-  SimulateSystemResumeAndWait();
-
-  // System resume should not invoke Ui to show up, thus no wake lock needed
-  // to acquire.
-  EXPECT_FALSE(container_view());
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-}
-
 TEST_F(AmbientControllerTest,
        ShouldShowAmbientScreenWithLockscreenWhenScreenIsDimmed) {
   GetSessionControllerClient()->SetShouldLockScreenAutomatically(true);
   EXPECT_FALSE(ambient_controller()->IsShown());
 
   // Should lock the device and enter ambient mode when the screen is dimmed.
-  SetScreenDimmedAndWait(true);
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/false);
   EXPECT_TRUE(IsLocked());
   EXPECT_FALSE(ambient_controller()->IsShown());
 
@@ -358,8 +324,9 @@ TEST_F(AmbientControllerTest, ShouldShowAmbientScreenWhenScreenIsDimmed) {
   GetSessionControllerClient()->SetShouldLockScreenAutomatically(false);
   EXPECT_FALSE(ambient_controller()->IsShown());
 
-  // Should lock the device and enter ambient mode when the screen is dimmed.
-  SetScreenDimmedAndWait(true);
+  // Should not lock the device but enter ambient mode when the screen is
+  // dimmed.
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/false);
   EXPECT_FALSE(IsLocked());
 
   FastForwardToNextImage();
@@ -367,6 +334,62 @@ TEST_F(AmbientControllerTest, ShouldShowAmbientScreenWhenScreenIsDimmed) {
 
   // Closes ambient for clean-up.
   CloseAmbientScreen();
+}
+
+TEST_F(AmbientControllerTest, ShouldHideAmbientScreenWhenDisplayIsOff) {
+  GetSessionControllerClient()->SetShouldLockScreenAutomatically(false);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  // Should not lock the device and enter ambient mode when the screen is
+  // dimmed.
+  SetScreenBrightnessAndWait(/*percent=*/50);
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/false);
+  EXPECT_FALSE(IsLocked());
+
+  FastForwardToNextImage();
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  // Should dismiss ambient mode screen.
+  SetScreenBrightnessAndWait(/*percent=*/0);
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/true);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  // Screen back on again, should not have ambient screen.
+  SetScreenBrightnessAndWait(/*percent=*/50);
+  SetScreenIdleStateAndWait(/*dimmed=*/false, /*off=*/false);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+}
+
+TEST_F(AmbientControllerTest,
+       ShouldHideAmbientScreenWhenDisplayIsOffThenComesBackWithLockScreen) {
+  GetSessionControllerClient()->SetShouldLockScreenAutomatically(true);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  // Should not lock the device and enter ambient mode when the screen is
+  // dimmed.
+  SetScreenBrightnessAndWait(/*percent=*/50);
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/false);
+  EXPECT_TRUE(IsLocked());
+
+  FastForwardToInactivity();
+  FastForwardToNextImage();
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  // Should dismiss ambient mode screen.
+  SetScreenBrightnessAndWait(/*percent=*/0);
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/true);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  // Screen back on again, should not have ambient screen, but still has lock
+  // screen.
+  SetScreenBrightnessAndWait(/*percent=*/50);
+  SetScreenIdleStateAndWait(/*dimmed=*/false, /*off=*/false);
+  EXPECT_TRUE(IsLocked());
+  EXPECT_FALSE(ambient_controller()->IsShown());
+
+  FastForwardToInactivity();
+  FastForwardToNextImage();
+  EXPECT_TRUE(ambient_controller()->IsShown());
 }
 
 }  // namespace ash

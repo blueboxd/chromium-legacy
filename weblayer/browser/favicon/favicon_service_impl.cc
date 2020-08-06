@@ -11,50 +11,18 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/hash/hash.h"
-#include "base/stl_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/common/url_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/favicon_size.h"
-#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 #include "weblayer/browser/favicon/favicon_backend_wrapper.h"
 #include "weblayer/browser/favicon/favicon_service_impl_observer.h"
 
 namespace weblayer {
 namespace {
-
-// TODO(sky): refactor this to common place (also in
-// favicon::FaviconServiceImpl).
-// Returns a vector of pixel edge sizes from |size_in_dip| and
-// favicon_base::GetFaviconScales().
-std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip) {
-  // NOTE: GetFaviconScales() always returns 1x on android.
-  std::vector<float> scales = favicon_base::GetFaviconScales();
-  std::vector<int> sizes_in_pixel;
-  for (float scale : scales)
-    sizes_in_pixel.push_back(std::ceil(size_in_dip * scale));
-  return sizes_in_pixel;
-}
-
-// TODO(sky): refactor this to common place (also in
-// favicon::FaviconServiceImpl).
-std::vector<SkBitmap> ExtractSkBitmapsToStore(const gfx::Image& image) {
-  gfx::ImageSkia image_skia = image.AsImageSkia();
-  image_skia.EnsureRepsForSupportedScales();
-  std::vector<SkBitmap> bitmaps;
-  const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
-  for (const gfx::ImageSkiaRep& rep : image_skia.image_reps()) {
-    // Don't save if the scale isn't one of supported favicon scales.
-    if (!base::Contains(favicon_scales, rep.scale()))
-      continue;
-    bitmaps.push_back(rep.GetBitmap());
-  }
-  return bitmaps;
-}
 
 bool CanAddUrl(const GURL& url) {
   if (!url.is_valid())

@@ -13,7 +13,10 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_statistics.h"
+#include "chrome/browser/profiles/profile_statistics_factory.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/common/pref_names.h"
@@ -55,6 +58,10 @@ void ProfilePickerHandler::RegisterMessages() {
       base::BindRepeating(
           &ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getProfileStatistics",
+      base::BindRepeating(&ProfilePickerHandler::HandleGetProfileStatistics,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "loadSignInProfileCreationFlow",
       base::BindRepeating(
@@ -149,6 +156,57 @@ void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
   ResolveJavascriptCallback(callback_id, std::move(dict));
 }
 
+void ProfilePickerHandler::HandleGetProfileStatistics(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value& profile_path_value = args->GetList()[0];
+  base::Optional<base::FilePath> profile_path =
+      util::ValueToFilePath(profile_path_value);
+  if (!profile_path)
+    return;
+
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(*profile_path);
+
+  if (profile) {
+    GatherProfileStatistics(profile);
+  } else {
+    g_browser_process->profile_manager()->LoadProfileByPath(
+        *profile_path, false,
+        base::BindOnce(&ProfilePickerHandler::GatherProfileStatistics,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ProfilePickerHandler::GatherProfileStatistics(Profile* profile) {
+  if (!profile) {
+    return;
+  }
+
+  ProfileStatisticsFactory::GetForProfile(profile)->GatherStatistics(
+      base::BindRepeating(&ProfilePickerHandler::OnProfileStatisticsReceived,
+                          weak_factory_.GetWeakPtr(), profile->GetPath()));
+}
+
+void ProfilePickerHandler::OnProfileStatisticsReceived(
+    base::FilePath profile_path,
+    profiles::ProfileCategoryStats result) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("profilePath", util::FilePathToValue(profile_path));
+  base::Value stats(base::Value::Type::DICTIONARY);
+  // Categories are defined in |kProfileStatisticsCategories|
+  // {"BrowsingHistory", "Passwords", "Bookmarks", "Autofill"}.
+  for (const auto& item : result) {
+    stats.SetIntKey(item.category, item.count);
+  }
+  dict.SetKey("statistics", std::move(stats));
+  FireWebUIListener("profile-statistics-received", std::move(dict));
+}
+
 void ProfilePickerHandler::HandleLoadSignInProfileCreationFlow(
     const base::ListValue* args) {
   // TODO(crbug.com/1063856): Add implementation.
@@ -179,8 +237,12 @@ base::Value ProfilePickerHandler::GetProfilesList() {
     profile_entry->SetKey("profilePath",
                           util::FilePathToValue(entry->GetPath()));
     profile_entry->SetString("localProfileName", entry->GetLocalProfileName());
-    // GAIA name can be empty, if the profile is not signed in to chrome.
+    profile_entry->SetBoolPath(
+        "isSignedIn", entry->GetSigninState() != SigninState::kNotSignedIn);
+    // GAIA name/user name can be empty, if the profile is not signed in to
+    // chrome.
     profile_entry->SetString("gaiaName", entry->GetGAIANameToDisplay());
+    profile_entry->SetString("userName", entry->GetUserName());
     gfx::Image icon = profiles::GetSizedAvatarIcon(
         entry->GetAvatarIcon(), true, kAvatarIconSize, kAvatarIconSize);
     std::string icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());

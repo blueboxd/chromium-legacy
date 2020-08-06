@@ -2236,7 +2236,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BOOL)canHandleURLDropInTableView:(UITableView*)tableView {
   return !self.sharedState.currentlyShowingSearchResults &&
-         !self.tableView.hasActiveDrag;
+         !self.tableView.hasActiveDrag && ![self isDisplayingBookmarkRoot];
 }
 
 - (void)tableView:(UITableView*)tableView

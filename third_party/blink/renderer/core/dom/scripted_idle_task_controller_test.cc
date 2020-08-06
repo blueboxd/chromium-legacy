@@ -29,9 +29,6 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
     return nullptr;
   }
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override {
-    return nullptr;
-  }
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override {
     return nullptr;
   }

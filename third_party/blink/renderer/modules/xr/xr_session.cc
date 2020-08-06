@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_hit_test_options_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_render_state_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_transient_input_hit_test_options_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_world_tracking_state_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -290,6 +289,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::LIGHT_ESTIMATION:
     case XRSessionFeature::ANCHORS:
     case XRSessionFeature::CAMERA_ACCESS:
+    case XRSessionFeature::PLANE_DETECTION:
       // Not recording metrics for these features currently.
       break;
   }
@@ -309,7 +309,6 @@ XRSession::XRSession(
       mode_(mode),
       environment_integration_(
           mode == device::mojom::blink::XRSessionMode::kImmersiveAr),
-      world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       enabled_features_(std::move(enabled_features)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
@@ -326,6 +325,9 @@ XRSession::XRSession(
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   // Ensure that frame focus is considered in the initial visibilityState.
   UpdateVisibilityState();
+
+  world_tracking_state_ = MakeGarbageCollected<XRWorldTrackingState>(
+      IsFeatureEnabled(device::mojom::XRSessionFeature::PLANE_DETECTION));
 
   switch (environment_blend_mode) {
     case kBlendModeOpaque:
@@ -444,21 +446,6 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
   // should be requesting frames again. Kick off a new frame request in case
   // there are any pending callbacks to flush them out.
   MaybeRequestFrame();
-}
-
-void XRSession::updateWorldTrackingState(
-    XRWorldTrackingStateInit* world_tracking_state_init,
-    ExceptionState& exception_state) {
-  DVLOG(3) << __func__;
-
-  if (ended_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kSessionEnded);
-    return;
-  }
-
-  world_tracking_state_ =
-      MakeGarbageCollected<XRWorldTrackingState>(world_tracking_state_init);
 }
 
 void XRSession::UpdateEyeParameters(

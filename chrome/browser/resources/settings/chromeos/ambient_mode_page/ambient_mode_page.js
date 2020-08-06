@@ -9,7 +9,10 @@
 Polymer({
   is: 'settings-ambient-mode-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    I18nBehavior, PrefsBehavior, settings.RouteObserverBehavior,
+    WebUIListenerBehavior
+  ],
 
   properties: {
     /** Preferences state. */
@@ -58,8 +61,19 @@ Polymer({
     this.addWebUIListener('topic-source-changed', (topicSource) => {
       this.selectedTopicSource_ = topicSource;
     });
+  },
 
-    this.browserProxy_.onAmbientModePageReady();
+  /**
+   * RouteObserverBehavior
+   * @param {!settings.Route} currentRoute
+   * @protected
+   */
+  currentRouteChanged(currentRoute) {
+    if (currentRoute !== settings.routes.AMBIENT_MODE) {
+      return;
+    }
+
+    this.browserProxy_.requestTopicSource();
   },
 
   /**

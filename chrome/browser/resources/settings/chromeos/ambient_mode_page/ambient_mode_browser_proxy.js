@@ -14,10 +14,18 @@ cr.define('settings', function() {
   /** @interface */
   /* #export */ class AmbientModeBrowserProxy {
     /**
-     * Retrieves the initial settings from server, such as topic source. As a
-     * response, the C++ sends the 'topic-source-changed' WebUIListener event.
+     * Retrieves the AmbientModeTopicSource from server. As a response, the C++
+     * sends the 'topic-source-changed' event.
      */
-    onAmbientModePageReady() {}
+    requestTopicSource() {}
+
+    /**
+     * Retrieves the albums from server. As a response, the C++ sends either the
+     * 'albums-changed' WebUIListener event.
+     * @param {!AmbientModeTopicSource} topicSource the topic source for which
+     *     the albums requested.
+     */
+    requestAlbums(topicSource) {}
 
     /**
      * Updates the selected topic source to server.
@@ -26,26 +34,22 @@ cr.define('settings', function() {
     setSelectedTopicSource(topicSource) {}
 
     /**
-     * Retrieves the personal album and art categories from server. As a
-     * response, the C++ sends the 'photos-containers-changed' WebUIListener
-     * event.
-     * @param {!AmbientModeTopicSource} topicSource the topic source for which
-     *     the containers requested for.
-     */
-    requestPhotosContainers(topicSource) {}
-
-    /**
-     * Updates the selected personal albums or art categories to server.
+     * Updates the selected albums of Google Photos or art categories to server.
      * @param {!AmbientModeSettings} settings the selected albums or categeries.
      */
-    setSelectedPhotosContainers(settings) {}
+    setSelectedAlbums(settings) {}
   }
 
   /** @implements {settings.AmbientModeBrowserProxy} */
   /* #export */ class AmbientModeBrowserProxyImpl {
     /** @override */
-    onAmbientModePageReady() {
-      chrome.send('onAmbientModePageReady');
+    requestTopicSource() {
+      chrome.send('requestTopicSource');
+    }
+
+    /** @override */
+    requestAlbums(topicSource) {
+      chrome.send('requestAlbums', [topicSource]);
     }
 
     /** @override */
@@ -54,13 +58,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    requestPhotosContainers(topicSource) {
-      chrome.send('requestPhotosContainers', [topicSource]);
-    }
-
-    /** @override */
-    setSelectedPhotosContainers(settings) {
-      chrome.send('setSelectedPhotosContainers', [settings]);
+    setSelectedAlbums(settings) {
+      chrome.send('setSelectedAlbums', [settings]);
     }
   }
 

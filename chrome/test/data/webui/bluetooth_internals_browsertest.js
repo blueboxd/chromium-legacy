@@ -130,6 +130,10 @@ BluetoothInternalsTest.prototype = {
         return {session: null};
       }
 
+      async connectToServiceInsecurely(address, service_uuid) {
+        return {result: null};
+      }
+
       setTestConnectResult(connectResult) {
         this.connectResult_ = connectResult;
       }

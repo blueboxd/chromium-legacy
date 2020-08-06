@@ -11,6 +11,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/crx_info.pb.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -48,8 +49,13 @@ void BlocklistStateFetcher::Request(const std::string& id,
     return;
 
   if (g_browser_process && g_browser_process->safe_browsing_service()) {
-    url_loader_factory_ =
-        g_browser_process->safe_browsing_service()->GetURLLoaderFactory();
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kSafeBrowsingRemoveCookies)) {
+      url_loader_factory_ = g_browser_process->shared_url_loader_factory();
+    } else {
+      url_loader_factory_ =
+          g_browser_process->safe_browsing_service()->GetURLLoaderFactory();
+    }
   }
 
   SendRequest(id);
@@ -99,6 +105,9 @@ void BlocklistStateFetcher::SendRequest(const std::string& id) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = request_url;
   resource_request->method = "POST";
+  if (base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingRemoveCookies)) {
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  }
   std::unique_ptr<network::SimpleURLLoader> fetcher_ptr =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);

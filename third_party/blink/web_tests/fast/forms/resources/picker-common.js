@@ -41,6 +41,22 @@ function openPicker(element, callback, errorCallback) {
         errorCallback();
 }
 
+// openPickerAppearanceOnly opens a picker UI for the following types:
+// - menulist SELECT
+// - INPUT color
+// - INPUT date/datetime-local/month/week
+
+// This is intended for use with picker UI tests that are only testing picker
+// appearance. Therefore, it is expected that tests using this API should fail
+// if the picker does not open.
+function openPickerAppearanceOnly(element, callback) {
+    let errorCallback = undefined;
+    if (typeof testFailed === 'function') {
+        errorCallback = () => testFailed('Popup failed to open.');
+    }
+    openPicker(element, callback, errorCallback);
+  }
+
 // openPickerWithPromise opens a picker UI for the following types:
 // - menulist SELECT
 // - INPUT color

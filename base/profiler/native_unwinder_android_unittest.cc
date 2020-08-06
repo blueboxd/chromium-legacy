@@ -6,9 +6,12 @@
 
 #include <sys/mman.h>
 
+#include <inttypes.h>
 #include <stdio.h>  // For printf address.
 #include <string.h>
+#include <algorithm>
 #include <iterator>
+#include <vector>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -20,6 +23,7 @@
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/profiler/thread_delegate_posix.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +33,11 @@ extern char __executable_start;
 namespace base {
 
 namespace {
+
+bool CompareModulesByBaseAddress(const ModuleCache::Module* a,
+                                 const ModuleCache::Module* b) {
+  return a->GetBaseAddress() < b->GetBaseAddress();
+}
 
 // Add a MapInfo with the provided values to |maps|.
 void AddMapInfo(uint64_t start,
@@ -387,25 +396,8 @@ TEST(NativeUnwinderAndroidTest, UnwindStackMemoryTest) {
   check_read_succeeds(end - 1, 1);
 }
 
-// Checks the debug basename for a module with a path name.
-TEST(NativeUnwinderAndroidTest, ModuleDebugBasenameForPath) {
-  unwindstack::Maps maps;
-
-  AddMapInfo(0x1000u, 0x2000u, 0u, PROT_READ | PROT_EXEC, "/usr/lib/foo.so",
-             {0xAA}, maps);
-
-  ModuleCache module_cache;
-  NativeUnwinderAndroid::AddInitialModulesFromMaps(maps, &module_cache);
-
-  std::vector<const ModuleCache::Module*> modules = module_cache.GetModules();
-
-  ASSERT_EQ(1u, modules.size());
-  EXPECT_EQ("foo.so", modules[0]->GetDebugBasename().value());
-}
-
-// Checks the debug basename is the whole name for a module with a non-path
-// name.
-TEST(NativeUnwinderAndroidTest, ModuleDebugBasenameForNonPath) {
+// Checks the debug basename is the whole name for a non-ELF module.
+TEST(NativeUnwinderAndroidTest, ModuleDebugBasenameForNonElf) {
   unwindstack::Maps maps;
 
   AddMapInfo(0x1000u, 0x2000u, 0u, PROT_READ | PROT_EXEC, "[foo / bar]", {0xAA},
@@ -420,37 +412,48 @@ TEST(NativeUnwinderAndroidTest, ModuleDebugBasenameForNonPath) {
   EXPECT_EQ("[foo / bar]", modules[0]->GetDebugBasename().value());
 }
 
-// Checks that the specified build id is returned.
-TEST(NativeUnwinderAndroidTest, ModuleId) {
+// Checks that modules are only created for executable memory regions.
+TEST(NativeUnwinderAndroidTest, ModulesCreatedOnlyForExecutableRegions) {
   unwindstack::Maps maps;
-
-  AddMapInfo(0x1000u, 0x2000u, 0u, PROT_READ | PROT_EXEC, "/lib/foo.so",
-             {0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF}, maps);
+  AddMapInfo(0x1000u, 0x2000u, 0u, PROT_READ | PROT_EXEC, "[a]", {0xAA}, maps);
+  AddMapInfo(0x2000u, 0x3000u, 0u, PROT_READ, "[b]", {0xAB}, maps);
+  AddMapInfo(0x3000u, 0x4000u, 0u, PROT_READ | PROT_EXEC, "[c]", {0xAC}, maps);
 
   ModuleCache module_cache;
   NativeUnwinderAndroid::AddInitialModulesFromMaps(maps, &module_cache);
 
   std::vector<const ModuleCache::Module*> modules = module_cache.GetModules();
+  std::sort(modules.begin(), modules.end(), CompareModulesByBaseAddress);
 
-  ASSERT_EQ(1u, modules.size());
-  // The id should have a '0' age field appended.
-  EXPECT_EQ("1234567890ABCDEF0", modules[0]->GetId());
+  ASSERT_EQ(2u, modules.size());
+  EXPECT_EQ(0x1000u, modules[0]->GetBaseAddress());
+  EXPECT_EQ(0x3000u, modules[1]->GetBaseAddress());
 }
 
-// Checks that an empty module id has no age field appended.
-TEST(NativeUnwinderAndroidTest, EmptyModuleId) {
-  unwindstack::Maps maps;
-
-  AddMapInfo(0x1000u, 0x2000u, 0u, PROT_READ | PROT_EXEC, "/lib/foo.so",
-             std::string(), maps);
-
+// Checks that module address ranges don't overlap.
+TEST(NativeUnwinderAndroidTest, NonOverlappingModules) {
   ModuleCache module_cache;
-  NativeUnwinderAndroid::AddInitialModulesFromMaps(maps, &module_cache);
+  std::unique_ptr<unwindstack::Maps> maps = NativeUnwinderAndroid::CreateMaps();
+  NativeUnwinderAndroid::AddInitialModulesFromMaps(*maps, &module_cache);
 
   std::vector<const ModuleCache::Module*> modules = module_cache.GetModules();
+  std::sort(modules.begin(), modules.end(), CompareModulesByBaseAddress);
+  auto loc = std::adjacent_find(
+      modules.begin(), modules.end(),
+      [](const ModuleCache::Module* m1, const ModuleCache::Module* m2) {
+        return m2->GetBaseAddress() < m1->GetBaseAddress() + m1->GetSize();
+      });
 
-  ASSERT_EQ(1u, modules.size());
-  EXPECT_EQ(std::string(), modules[0]->GetId());
+  const auto describe_module = [](const ModuleCache::Module* module) {
+    return StringPrintf(
+        "id \"%s\", debug basename \"%s\" at [0x%" PRIxPTR ", 0x%" PRIxPTR ")",
+        module->GetId().c_str(), module->GetDebugBasename().value().c_str(),
+        module->GetBaseAddress(), module->GetBaseAddress() + module->GetSize());
+  };
+
+  EXPECT_EQ(modules.end(), loc) << "module overlap found between\n"
+                                << "  " << describe_module(*loc) << " and \n"
+                                << "  " << describe_module(*std::next(loc));
 }
 
 // ModuleCache::GetModuleForAddress() is not implemented for 64-bit arm.
@@ -463,8 +466,9 @@ TEST(NativeUnwinderAndroidTest, EmptyModuleId) {
 // state created by the ModuleCache. Checks the module for a system library.
 TEST(NativeUnwinderAndroidTest, MAYBE_ModuleState_SystemLibrary) {
   ModuleCache unwinder_module_cache;
-  NativeUnwinderAndroid::AddInitialModulesFromMaps(
-      *NativeUnwinderAndroid::CreateMaps(), &unwinder_module_cache);
+  std::unique_ptr<unwindstack::Maps> maps = NativeUnwinderAndroid::CreateMaps();
+  NativeUnwinderAndroid::AddInitialModulesFromMaps(*maps,
+                                                   &unwinder_module_cache);
 
   const uintptr_t c_library_function_address =
       reinterpret_cast<uintptr_t>(&printf);
@@ -479,11 +483,12 @@ TEST(NativeUnwinderAndroidTest, MAYBE_ModuleState_SystemLibrary) {
       reference_module_cache.GetModuleForAddress(c_library_function_address);
   ASSERT_NE(nullptr, reference_module);
 
-  // TODO(https://crbug.com/1004855): Fix base address and size discrepancies
-  // and add checks.
+  EXPECT_EQ(reference_module->GetBaseAddress(),
+            unwinder_module->GetBaseAddress());
   EXPECT_EQ(reference_module->GetId(), unwinder_module->GetId());
   EXPECT_EQ(reference_module->GetDebugBasename(),
             unwinder_module->GetDebugBasename());
+  EXPECT_EQ(unwinder_module->GetSize(), reference_module->GetSize());
 }
 
 // ModuleCache::GetModuleForAddress() is not implemented for 64-bit arm.
@@ -497,8 +502,9 @@ TEST(NativeUnwinderAndroidTest, MAYBE_ModuleState_SystemLibrary) {
 // library.
 TEST(NativeUnwinderAndroidTest, MAYBE_ModuleState_ChromeLibrary) {
   ModuleCache unwinder_module_cache;
-  NativeUnwinderAndroid::AddInitialModulesFromMaps(
-      *NativeUnwinderAndroid::CreateMaps(), &unwinder_module_cache);
+  std::unique_ptr<unwindstack::Maps> maps = NativeUnwinderAndroid::CreateMaps();
+  NativeUnwinderAndroid::AddInitialModulesFromMaps(*maps,
+                                                   &unwinder_module_cache);
 
   const uintptr_t chrome_function_address =
       reinterpret_cast<uintptr_t>(&CaptureScenario);
@@ -519,7 +525,7 @@ TEST(NativeUnwinderAndroidTest, MAYBE_ModuleState_ChromeLibrary) {
   EXPECT_EQ(reference_module->GetId(), unwinder_module->GetId());
   EXPECT_EQ(reference_module->GetDebugBasename(),
             unwinder_module->GetDebugBasename());
-  // TODO(https://crbug.com/1004855): Fix size discrepancy and add check.
+  EXPECT_EQ(unwinder_module->GetSize(), reference_module->GetSize());
 }
 
 }  // namespace base

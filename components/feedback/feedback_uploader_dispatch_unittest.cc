@@ -34,9 +34,27 @@ constexpr base::TimeDelta kTestRetryDelay =
 constexpr char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
-void QueueReport(FeedbackUploader* uploader, const std::string& report_data) {
-  uploader->QueueReport(std::make_unique<std::string>(report_data));
+void QueueReport(FeedbackUploader* uploader,
+                 const std::string& report_data,
+                 bool has_email = true) {
+  uploader->QueueReport(std::make_unique<std::string>(report_data), has_email);
 }
+
+// Stand-in for the FeedbackUploaderChrome class that adds a fake bearer token
+// to the request.
+class MockFeedbackUploaderChrome : public FeedbackUploader {
+ public:
+  MockFeedbackUploaderChrome(
+      content::BrowserContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : FeedbackUploader(context, task_runner) {}
+
+  void AppendExtraHeadersToUploadRequest(
+      network::ResourceRequest* resource_request) override {
+    resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                                        "Bearer abcdefg");
+  }
+};
 
 }  // namespace
 
@@ -104,6 +122,36 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   base::RunLoop().RunUntilIdle();
 
   variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+}
+
+// Test that the bearer token is present if there is an email address present in
+// the report.
+TEST_F(FeedbackUploaderDispatchTest, BearerTokenWithEmail) {
+  MockFeedbackUploaderChrome uploader(
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
+
+  test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_TRUE(request.headers.HasHeader("Authorization"));
+      }));
+
+  QueueReport(&uploader, "test", /*has_email=*/true);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(FeedbackUploaderDispatchTest, BearerTokenNoEmail) {
+  MockFeedbackUploaderChrome uploader(
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
+
+  test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_FALSE(request.headers.HasHeader("Authorization"));
+      }));
+
+  QueueReport(&uploader, "test", /*has_email=*/false);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FeedbackUploaderDispatchTest, 204Response) {

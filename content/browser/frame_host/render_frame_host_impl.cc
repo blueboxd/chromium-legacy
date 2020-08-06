@@ -1195,7 +1195,7 @@ void RenderFrameHostImpl::OnPortalActivated(
     base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
   auto it = portals_.insert(std::move(predecessor)).first;
 
-  GetNavigationControl()->OnPortalActivated(
+  GetAssociatedLocalMainFrame()->OnPortalActivated(
       (*it)->portal_token(), std::move(pending_portal),
       std::move(client_receiver), std::move(data),
       base::BindOnce(
@@ -1259,8 +1259,8 @@ void RenderFrameHostImpl::ForwardMessageFromHost(
     if (target_origin != GetLastCommittedOrigin())
       return;
   }
-  GetNavigationControl()->ForwardMessageFromHost(std::move(message),
-                                                 source_origin, target_origin);
+  GetAssociatedLocalMainFrame()->ForwardMessageFromHost(
+      std::move(message), source_origin, target_origin);
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
@@ -6545,12 +6545,12 @@ RenderFrameHostImpl::GetAssociatedLocalFrame() {
   return local_frame_;
 }
 
-const mojo::AssociatedRemote<blink::mojom::LocalMainFrame>&
+blink::mojom::LocalMainFrame*
 RenderFrameHostImpl::GetAssociatedLocalMainFrame() {
   DCHECK(frame_tree_node_->IsMainFrame());
   if (!local_main_frame_)
     GetRemoteAssociatedInterfaces()->GetInterface(&local_main_frame_);
-  return local_main_frame_;
+  return local_main_frame_.get();
 }
 
 const mojo::Remote<blink::mojom::HighPriorityLocalFrame>&

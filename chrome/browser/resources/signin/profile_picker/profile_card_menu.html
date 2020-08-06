@@ -1,0 +1,114 @@
+<style include="cr-icons profile-picker-shared">
+  #moreActionsButton {
+    --cr-icon-button-icon-size: 14px;
+    --cr-icon-button-margin-end: 0;
+    --cr-icon-button-margin-start: 0;
+    --cr-icon-button-size: 24px;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+  }
+
+  cr-action-menu {
+    font-weight: normal;
+  }
+
+  #removeActionMenu {
+    pointer-events: none;
+  }
+
+  #removeConfirmation {
+    margin-top: 16px;
+    pointer-events: none;
+    width: 234px;
+  }
+
+  #removeConfirmation > * {
+    margin: 0 16px 16px 16px;
+  }
+
+  .header {
+    font-size: 1.17em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .key-text {
+    font-weight: 500;
+  }
+
+  .statistics {
+    border: 1px solid var(--google-grey-refresh-100);
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 12px 16px 16px 12px;
+    width: -webkit-fill-available;
+  }
+
+  .category {
+    text-align: start;
+  }
+
+  .count {
+    color: var(--google-grey-refresh-500);
+    text-align: end;
+  }
+
+  #removeConfirmationButton {
+    --active-shadow-action-rgb: var(--google-red-500-rgb);
+    --bg-action: var(--google-red-700);
+    --hover-bg-action: rgba(var(--google-red-700-rgb), .9);
+    --hover-shadow-action-rgb: var(--google-red-500-rgb);
+    background-color: var(--google-red-700);
+    border-radius: 4px;
+    color: var(--ink-color-action);
+    font-weight: 500;
+    left: 50%;
+    margin-bottom: 16px;
+    pointer-events: auto;
+    transform: translateX(-50%);
+    width: 111px;
+  }
+
+  #removeConfirmationButton:hover {
+    background-color: var(--hover-bg-action);
+  }
+</style>
+
+<cr-icon-button class="icon-more-vert" id="moreActionsButton"
+    on-click="onMoreActionsButtonClicked_" title$="[[profileMenuText_]]"
+    aria-label$="[[profileMenuText_]]">
+</cr-icon-button>
+
+<cr-action-menu id="actionMenu" role-description="menu">
+  <button class="dropdown-item" on-click="onRemoveButtonClicked_">
+    $i18n{profileMenuRemoveText}
+  </button>
+</cr-action-menu>
+
+<cr-action-menu id="removeActionMenu" role-description="menu">
+  <div id="removeConfirmation">
+    <div class="header">
+      $i18n{profileMenuRemoveText}
+      <span class="key-text">[[profileState.localProfileName]]</span>
+    </div>
+    <div>
+      [[removeWarningText_]]
+      <span class="key-text">[[profileState.userName]]</span>
+    </div>
+    <table class="statistics">
+      <template is="dom-repeat" items="[[profileStatistics_]]">
+        <tr>
+          <td class="category">[[getProfileStatisticText_(item)]]</td>
+          <td class="count">
+            [[getProfileStatisticCount_(item, statistics_)]]</td>
+        <tr>
+      </template>
+    </table>
+  </div>
+  <cr-button id="removeConfirmationButton"class="dropdown-item action-button"
+      on-click="onRemoveComfirationClicked_">
+    $i18n{profileMenuRemoveText}
+  </cr-button>
+</cr-action-menu>

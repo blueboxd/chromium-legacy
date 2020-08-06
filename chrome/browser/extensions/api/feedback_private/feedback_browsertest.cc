@@ -139,8 +139,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
   EXPECT_TRUE(bool_result);
 }
 
-// Tests that there's an option in the email drop down box with a value
-// 'anonymous_user'.
+// Tests that there's an option in the email drop down box with a value ''.
 IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
@@ -160,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
       "  ((function() {"
       "      var options = $('user-email-drop-down').options;"
       "      for (var option in options) {"
-      "        if (options[option].value == 'anonymous_user')"
+      "        if (options[option].value == '')"
       "          return true;"
       "      }"
       "      return false;"

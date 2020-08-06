@@ -624,6 +624,15 @@ bool WallpaperControllerImpl::HasShownAnyWallpaper() const {
   return !!current_wallpaper_;
 }
 
+void WallpaperControllerImpl::MaybeClosePreviewWallpaper() {
+  if (!confirm_preview_wallpaper_callback_) {
+    DCHECK(!reload_preview_wallpaper_callback_);
+    return;
+  }
+  wallpaper_controller_client_->MaybeClosePreviewWallpaper();
+  CancelPreviewWallpaper();
+}
+
 void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
                                                  WallpaperInfo info,
                                                  bool preview_mode,
@@ -1375,10 +1384,12 @@ void WallpaperControllerImpl::OnRootWindowAdded(aura::Window* root_window) {
 
 void WallpaperControllerImpl::OnShellInitialized() {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
 }
 
 void WallpaperControllerImpl::OnShellDestroying() {
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->overview_controller()->RemoveObserver(this);
 }
 
 void WallpaperControllerImpl::OnWallpaperResized() {
@@ -1430,6 +1441,13 @@ void WallpaperControllerImpl::OnTabletModeStarted() {
 
 void WallpaperControllerImpl::OnTabletModeEnded() {
   RepaintWallpaper();
+}
+
+void WallpaperControllerImpl::OnOverviewModeWillStart() {
+  // Due to visual glitches when overview mode is activated whilst wallpaper
+  // preview is active (http://crbug.com/895265), cancel wallpaper preview and
+  // close its front-end before toggling overview mode.
+  MaybeClosePreviewWallpaper();
 }
 
 void WallpaperControllerImpl::CompositorLockTimedOut() {

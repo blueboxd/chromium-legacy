@@ -44,7 +44,7 @@ class ASH_EXPORT AmbientController
       public chromeos::PowerManagerClient::Observer {
  public:
   static constexpr base::TimeDelta kAutoShowWaitTimeInterval =
-      base::TimeDelta::FromSeconds(15);
+      base::TimeDelta::FromSeconds(7);
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -61,12 +61,10 @@ class ASH_EXPORT AmbientController
   void OnPowerStatusChanged() override;
 
   // chromeos::PowerManagerClient::Observer:
-  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
-                        const base::TimeTicks& timestamp) override;
-  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
   void ScreenIdleStateChanged(
       const power_manager::ScreenIdleState& idle_state) override;
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
   void AddAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
   void RemoveAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
@@ -131,15 +129,7 @@ class ASH_EXPORT AmbientController
   // Release |wake_lock_|. Unbalanced release call will have no effect.
   void ReleaseWakeLock();
 
-  // Updates |autoshow_enabled_| flag based on the lid state.
-  void OnReceiveSwitchStates(
-      base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states);
-
-  // Invoked to dismiss ambient when the device is suspending.
-  void HandleOnSuspend();
-
-  // Invoked to restart the auto-show timer when the device is resuming.
-  void HandleOnResume();
+  void CloseWidget(bool immediately);
 
   AmbientPhotoController* get_ambient_photo_controller_for_testing() {
     return &ambient_photo_controller_;
@@ -177,9 +167,7 @@ class ASH_EXPORT AmbientController
                  chromeos::PowerManagerClient::Observer>
       power_manager_client_observer_{this};
 
-  // Whether ambient screen will be brought up from hidden after long device
-  // inactivity.
-  bool autoshow_enabled_ = false;
+  bool is_screen_off_ = false;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AmbientController);

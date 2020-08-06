@@ -167,6 +167,7 @@ constexpr device::mojom::XRSessionFeature kARCoreDeviceFeatures[] = {
     device::mojom::XRSessionFeature::DOM_OVERLAY,
     device::mojom::XRSessionFeature::LIGHT_ESTIMATION,
     device::mojom::XRSessionFeature::ANCHORS,
+    device::mojom::XRSessionFeature::PLANE_DETECTION,
 };
 
 #if BUILDFLAG(ENABLE_OPENVR)

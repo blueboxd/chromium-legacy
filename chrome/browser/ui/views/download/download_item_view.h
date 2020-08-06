@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/icon_loader.h"
+#include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
@@ -31,7 +33,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-class DownloadShelfContextMenuView;
 class DownloadShelfView;
 
 namespace content {
@@ -68,8 +69,8 @@ class DownloadItemView : public views::View,
  public:
   enum class Mode;
 
-  DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
-                   DownloadShelfView* parent,
+  DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
+                   DownloadShelfView* shelf,
                    views::View* accessible_alert);
   DownloadItemView(const DownloadItemView&) = delete;
   DownloadItemView& operator=(const DownloadItemView&) = delete;
@@ -209,13 +210,13 @@ class DownloadItemView : public views::View,
   void ExecuteCommand(DownloadCommands::Command command);
 
   // The model controlling this object's state.
-  DownloadUIModel::DownloadUIModelPtr model_;
+  const DownloadUIModel::DownloadUIModelPtr model_;
 
   // A utility object to help execute commands on the model.
   DownloadCommands commands_{model()};
 
   // The download shelf that owns us.
-  DownloadShelfView* shelf_;
+  DownloadShelfView* const shelf_;
 
   // Mode of the download item view.
   Mode mode_;
@@ -257,7 +258,7 @@ class DownloadItemView : public views::View,
   // Whether the dropdown is currently pressed.
   bool dropdown_pressed_ = false;
 
-  std::unique_ptr<DownloadShelfContextMenuView> context_menu_;
+  DownloadShelfContextMenuView context_menu_{this};
 
   base::RepeatingTimer indeterminate_progress_timer_;
 
@@ -285,6 +286,8 @@ class DownloadItemView : public views::View,
 
   // Forces reading the current alert text the next time it updates.
   bool announce_accessible_alert_soon_ = false;
+
+  ScopedObserver<DownloadUIModel, DownloadUIModel::Observer> observer_{this};
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

@@ -888,7 +888,7 @@ void ArCoreGl::ProcessFrame(
   frame_data->anchors_data = arcore_->GetAnchorsData();
 
   // Get planes data if it was requested.
-  if (options && options->include_plane_data) {
+  if (IsFeatureEnabled(device::mojom::XRSessionFeature::PLANE_DETECTION)) {
     frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
 

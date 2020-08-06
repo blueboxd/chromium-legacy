@@ -41,6 +41,7 @@ const char kTestRemoteDeviceNamePrefix[] = "name-";
 const char kTestRemoteDevicePiiFreeNamePrefix[] = "piiFreeName-";
 const char kTestRemoteDevicePublicKeyPrefix[] = "publicKey-";
 const char kTestRemoteDevicePskPrefix[] = "psk-";
+const char kTestRemoteDeviceBluetoothPublicAddressPrefix[] = "address-";
 
 multidevice::RemoteDevice CreateRemoteDeviceForTest(const std::string& suffix,
                                                     bool has_instance_id,
@@ -62,7 +63,8 @@ multidevice::RemoteDevice CreateRemoteDeviceForTest(const std::string& suffix,
       kTestRemoteDevicePskPrefix + suffix, 100L /* last_update_time_millis */,
       {} /* software_features */,
       {multidevice::BeaconSeed(beacon_seed_data, base::Time::FromJavaTime(200L),
-                               base::Time::FromJavaTime(300L))});
+                               base::Time::FromJavaTime(300L))},
+      kTestRemoteDeviceBluetoothPublicAddressPrefix + suffix);
 }
 
 // Provide four fake RemoteDevices associated with a v1 DeviceSync. These

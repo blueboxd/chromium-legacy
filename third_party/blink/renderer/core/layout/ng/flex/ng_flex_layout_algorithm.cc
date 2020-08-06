@@ -852,6 +852,33 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
       LogicalSize available_size;
       NGBoxStrut margins = flex_item.physical_margins.ConvertToLogical(
           ConstraintSpace().GetWritingMode(), Style().Direction());
+      LayoutUnit fixed_aspect_ratio_cross_size = kIndefiniteSize;
+      if (RuntimeEnabledFeatures::FlexAspectRatioEnabled() &&
+          flex_item.ng_input_node.HasAspectRatio() &&
+          flex_item.ng_input_node.IsReplaced()) {
+        // This code derives the cross axis size from the flexed main size and
+        // the aspect ratio. We can delete this code when
+        // NGReplacedLayoutAlgorithm exists, because it will do this for us.
+        NGConstraintSpace flex_basis_space =
+            BuildSpaceForFlexBasis(flex_item.ng_input_node);
+        const Length& cross_axis_length =
+            is_horizontal_flow_ ? child_style.Height() : child_style.Width();
+        // Only derive the cross axis size from the aspect ratio if the computed
+        // cross axis length might be indefinite. The item's cross axis length
+        // might still be definite if it is stretched, but that is checked in
+        // the |WillChildCrossSizeBeContainerCrossSize| calls below.
+        if (cross_axis_length.IsAuto() ||
+            (MainAxisIsInlineAxis(flex_item.ng_input_node) &&
+             BlockLengthUnresolvable(flex_basis_space, cross_axis_length,
+                                     LengthResolvePhase::kLayout))) {
+          fixed_aspect_ratio_cross_size =
+              flex_item.min_max_cross_sizes->ClampSizeToMinAndMax(
+                  flex_item.cross_axis_border_padding +
+                  LayoutUnit(
+                      flex_item.flexed_content_size /
+                      GetMainOverCrossAspectRatio(flex_item.ng_input_node)));
+        }
+      }
       if (is_column_) {
         available_size.inline_size = ChildAvailableSize().inline_size;
         available_size.block_size =
@@ -861,6 +888,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
           space_builder.SetIsFixedInlineSize(true);
           available_size.inline_size = CalculateFixedCrossSize(
               flex_item.min_max_cross_sizes.value(), margins);
+        } else if (fixed_aspect_ratio_cross_size != kIndefiniteSize) {
+          space_builder.SetIsFixedInlineSize(true);
+          available_size.inline_size = fixed_aspect_ratio_cross_size;
         }
         // https://drafts.csswg.org/css-flexbox/#definite-sizes
         // If the flex container has a definite main size, a flex item's
@@ -879,6 +909,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
           space_builder.SetIsFixedBlockSize(true);
           available_size.block_size = CalculateFixedCrossSize(
               flex_item.min_max_cross_sizes.value(), margins);
+        } else if (fixed_aspect_ratio_cross_size != kIndefiniteSize) {
+          space_builder.SetIsFixedBlockSize(true);
+          available_size.block_size = fixed_aspect_ratio_cross_size;
         } else if (DoesItemStretch(flex_item.ng_input_node)) {
           // If we are in a row flexbox, and we don't have a fixed block-size
           // (yet), use the "measure" cache slot. This will be the first

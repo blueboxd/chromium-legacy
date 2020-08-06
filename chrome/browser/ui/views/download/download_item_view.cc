@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/safe_browsing/deep_scanning_modal_dialog.h"
 #include "chrome/browser/ui/views/safe_browsing/prompt_for_scanning_modal_dialog.h"
@@ -147,13 +146,13 @@ class TransparentButton : public views::Button {
  public:
   METADATA_HEADER(TransparentButton);
 
-  explicit TransparentButton(views::ButtonListener* listener)
-      : Button(listener) {
+  explicit TransparentButton(DownloadItemView* parent) : Button(parent) {
     SetFocusForPlatform();
     views::InstallRectHighlightPathGenerator(this);
     SetInkDropMode(InkDropMode::ON);
+    set_context_menu_controller(parent);
   }
-  ~TransparentButton() override {}
+  ~TransparentButton() override = default;
 
   // Button subclasses need to provide this because the default color is
   // kPlaceholderColor. In theory we could statically compute it in the
@@ -230,12 +229,12 @@ bool has_warning_label(DownloadItemView::Mode mode) {
 
 }  // namespace
 
-DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
-                                   DownloadShelfView* parent,
+DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
+                                   DownloadShelfView* shelf,
                                    views::View* accessible_alert)
     : AnimationDelegateViews(this),
-      model_(std::move(download)),
-      shelf_(parent),
+      model_(std::move(model)),
+      shelf_(shelf),
       mode_(Mode::kNormal),
       indeterminate_progress_timer_(
           FROM_HERE,
@@ -253,70 +252,54 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
           base::BindRepeating(&DownloadItemView::AnnounceAccessibleAlert,
                               base::Unretained(this))) {
   views::InstallRectHighlightPathGenerator(this);
-  model_->AddObserver(this);
+  observer_.Add(this->model());
 
   // TODO(pkasting): Use bespoke file-scope subclasses for some of these child
   // views to localize functionality and simplify this class.
 
-  auto open_button = std::make_unique<TransparentButton>(this);
-  open_button->set_context_menu_controller(this);
-  open_button_ = AddChildView(std::move(open_button));
+  open_button_ = AddChildView(std::make_unique<TransparentButton>(this));
 
-  auto file_name_label =
-      std::make_unique<views::StyledLabel>(base::string16(), nullptr);
-  file_name_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
-  const base::string16 filename = ElidedFilename(*file_name_label);
-  file_name_label->SetText(filename);
-  file_name_label->set_can_process_events_within_subtree(false);
-  file_name_label_ = AddChildView(std::move(file_name_label));
+  file_name_label_ = AddChildView(
+      std::make_unique<views::StyledLabel>(base::string16(), nullptr));
+  file_name_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  file_name_label_->GetViewAccessibility().OverrideIsIgnored(true);
+  const base::string16 filename = ElidedFilename(*file_name_label_);
+  file_name_label_->SetText(filename);
+  file_name_label_->set_can_process_events_within_subtree(false);
 
-  auto status_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING),
-      CONTEXT_DOWNLOAD_SHELF_STATUS);
-  status_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  status_label->GetViewAccessibility().OverrideIsIgnored(true);
-  status_label_ = AddChildView(std::move(status_label));
+  status_label_ = AddChildView(std::make_unique<views::Label>(
+      base::string16(), CONTEXT_DOWNLOAD_SHELF_STATUS));
+  status_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  auto warning_label = std::make_unique<views::StyledLabel>(
-      base::string16(), /*listener=*/nullptr);
-  warning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  warning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  warning_label->SetAutoColorReadabilityEnabled(false);
-  warning_label->set_can_process_events_within_subtree(false);
-  warning_label_ = AddChildView(std::move(warning_label));
+  warning_label_ = AddChildView(
+      std::make_unique<views::StyledLabel>(base::string16(), nullptr));
+  warning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  warning_label_->set_can_process_events_within_subtree(false);
 
-  auto deep_scanning_label = std::make_unique<views::StyledLabel>(
-      base::string16(), /*listener=*/nullptr);
-  deep_scanning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  deep_scanning_label->SetAutoColorReadabilityEnabled(false);
-  deep_scanning_label->set_can_process_events_within_subtree(false);
-  deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
+  deep_scanning_label_ = AddChildView(
+      std::make_unique<views::StyledLabel>(base::string16(), nullptr));
+  deep_scanning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  deep_scanning_label_->set_can_process_events_within_subtree(false);
 
-  auto open_now_button = views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
-  open_now_button_ = AddChildView(std::move(open_now_button));
+  open_now_button_ = AddChildView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW)));
 
-  auto save_button = views::MdTextButton::Create(this, base::string16());
-  save_button_ = AddChildView(std::move(save_button));
+  save_button_ =
+      AddChildView(views::MdTextButton::Create(this, base::string16()));
 
-  auto discard_button = views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-  discard_button_ = AddChildView(std::move(discard_button));
+  discard_button_ = AddChildView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));
 
-  auto scan_button = views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
-  scan_button_ = AddChildView(std::move(scan_button));
+  scan_button_ = AddChildView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD)));
 
-  auto dropdown_button = views::CreateVectorImageButton(this);
-  dropdown_button->SetAccessibleName(l10n_util::GetStringUTF16(
+  dropdown_button_ = AddChildView(views::CreateVectorImageButton(this));
+  dropdown_button_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
-  dropdown_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
-  dropdown_button->set_has_ink_drop_action_on_click(false);
-  dropdown_button->SetFocusForPlatform();
-  dropdown_button->SizeToPreferredSize();
-  dropdown_button_ = AddChildView(std::move(dropdown_button));
+  dropdown_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
+  dropdown_button_->set_has_ink_drop_action_on_click(false);
+  dropdown_button_->SetFocusForPlatform();
+  dropdown_button_->SizeToPreferredSize();
 
   complete_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(2500));
   complete_animation_.SetTweenType(gfx::Tween::LINEAR);
@@ -325,9 +308,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   OnDownloadUpdated();
 }
 
-DownloadItemView::~DownloadItemView() {
-  model_->RemoveObserver(this);
-}
+DownloadItemView::~DownloadItemView() = default;
 
 void DownloadItemView::Layout() {
   // TODO(crbug.com/1005568): Replace Layout()/CalculatePreferredSize() with a
@@ -591,12 +572,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
 }
 
 void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
-  // Make sure to draw |this| opaquely. Since the toolbar color can be partially
-  // transparent, start with a black backdrop (which is the default initialized
-  // color for opaque canvases).
-  canvas->DrawColor(SK_ColorBLACK);
-  canvas->DrawColor(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF));
+  View::OnPaintBackground(canvas);
 
   // Draw the separator as part of the background. It will be covered by the
   // focus ring when the view has focus.
@@ -703,10 +679,13 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 void DownloadItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
 
-  SkColor background_color =
+  const SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
+  SetBackground(views::CreateSolidBackground(background_color));
   file_name_label_->SetDisplayedOnBackgroundColor(background_color);
   status_label_->SetBackgroundColor(background_color);
+  warning_label_->SetDisplayedOnBackgroundColor(background_color);
+  deep_scanning_label_->SetDisplayedOnBackgroundColor(background_color);
 
   shelf_->ConfigureButtonForTheme(open_now_button_);
   shelf_->ConfigureButtonForTheme(save_button_);
@@ -1207,14 +1186,12 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   static_cast<views::internal::RootView*>(GetWidget()->GetRootView())
       ->SetMouseHandler(nullptr);
 
-  if (!context_menu_.get())
-    context_menu_ = std::make_unique<DownloadShelfContextMenuView>(this);
   const auto release_dropdown = [](DownloadItemView* view) {
     view->SetDropdownPressed(false);
     // Make sure any new status from activating a context menu option is read.
     view->announce_accessible_alert_soon_ = true;
   };
-  context_menu_->Run(
+  context_menu_.Run(
       GetWidget()->GetTopLevelWidget(), rect, source_type,
       base::BindRepeating(std::move(release_dropdown), base::Unretained(this)));
 }

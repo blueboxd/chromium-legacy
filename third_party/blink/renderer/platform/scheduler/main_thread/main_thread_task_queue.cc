@@ -49,8 +49,6 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "frame_loading_control_tq";
     case MainThreadTaskQueue::QueueType::kV8:
       return "v8_tq";
-    case MainThreadTaskQueue::QueueType::kIPC:
-      return "ipc_tq";
     case MainThreadTaskQueue::QueueType::kInput:
       return "input_tq";
     case MainThreadTaskQueue::QueueType::kDetached:
@@ -88,7 +86,6 @@ bool MainThreadTaskQueue::IsPerFrameTaskQueue(
     case MainThreadTaskQueue::QueueType::kCompositor:
     case MainThreadTaskQueue::QueueType::kTest:
     case MainThreadTaskQueue::QueueType::kV8:
-    case MainThreadTaskQueue::QueueType::kIPC:
     case MainThreadTaskQueue::QueueType::kInput:
     case MainThreadTaskQueue::QueueType::kDetached:
     case MainThreadTaskQueue::QueueType::kNonWaking:
@@ -110,7 +107,6 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kIdle:
     case QueueType::kTest:
     case QueueType::kV8:
-    case QueueType::kIPC:
     case QueueType::kNonWaking:
       return QueueClass::kNone;
     case QueueType::kFrameLoading:

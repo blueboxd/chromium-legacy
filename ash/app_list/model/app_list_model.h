@@ -26,8 +26,8 @@ class AppListItem;
 class AppListItemList;
 class AppListModelObserver;
 
-// Master model of app list that holds AppListItemList, which owns a list
-// of AppListItems and is displayed in the grid view.
+// Main model for the app list. Holds AppListItemList, which owns a list of
+// AppListItems and is displayed in the grid view.
 // NOTE: Currently this class observes |top_level_item_list_|. The View code may
 // move entries in the item list directly (but can not add or remove them) and
 // the model needs to notify its observers when this occurs.

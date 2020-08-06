@@ -838,6 +838,7 @@
       'policies': [
         'DeviceGuestModeEnabled',
         'DeviceUserWhitelist',
+        'DeviceUserAllowlist',
         'DeviceAllowNewUsers',
         'DeviceLoginScreenDomainAutoComplete',
         'DeviceShowUserNamesOnSignin',
@@ -2172,6 +2173,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:39-'],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -9089,11 +9091,37 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': [ 'madmax@managedchrome.com' ],
       'id': 122,
       'caption': '''Login user white list''',
       'tags': [],
-      'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD">*@domain</ph>.
+      'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_ALLOWLIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_ALLOWLIST_ENTRY_WILDCARD">*@domain</ph>.
+
+      If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.
+
+      This policy is deprecated, please use <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph> instead.''',
+      'arc_support': 'This policy controls who may start a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
+    },
+    {
+      'name': 'DeviceUserAllowlist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+        'sensitiveValue': True,
+      },
+      'supported_on': ['chrome_os:86-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': [ 'madmax@managedchrome.com' ],
+      'id': 764,
+      'caption': '''Login user allow list''',
+      'tags': [],
+      'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_ALLOWLIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_ALLOWLIST_ENTRY_WILDCARD">*@domain</ph>.
 
       If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
       'arc_support': 'This policy controls who may start a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
@@ -9114,7 +9142,7 @@
       'tags': [],
       'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
-      If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICE_USER_WHITELIST_POLICY_NAME">DeviceUserWhitelist</ph> does not prevent the user from logging in.''',
+      If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph> does not prevent the user from logging in.''',
       'arc_support': 'This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph>. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
     },
     {
@@ -23001,6 +23029,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceShowUserNamesOnSignin': 'show_user_names.show_user_names',
     'DeviceAllowNewUsers': 'allow_new_users.allow_new_users',
     'DeviceUserWhitelist': 'user_whitelist.user_whitelist',
+    'DeviceUserAllowlist': 'user_allowlist.user_allowlist',
     'DeviceEphemeralUsersEnabled': 'ephemeral_users_enabled.ephemeral_users_enabled',
     'LoginAuthenticationBehavior': 'login_authentication_behavior.login_authentication_behavior',
     'DeviceAllowBluetooth': 'allow_bluetooth.allow_bluetooth',
@@ -23646,6 +23675,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 763,
+  'highest_id_currently_used': 764,
   'highest_atomic_group_id_currently_used': 39
 }

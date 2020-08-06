@@ -8,6 +8,7 @@
 #include "base/check.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/ui/views/download/download_item_view.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/geometry/point.h"

@@ -17,6 +17,7 @@
 @protocol ContentSuggestionsMenuProvider;
 @protocol ContentSuggestionsMetricsRecording;
 @protocol ContentSuggestionsViewControllerAudience;
+@protocol DiscoverFeedHeaderChanging;
 @protocol DiscoverFeedMenuCommands;
 @protocol OverscrollActionsControllerDelegate;
 @protocol SnackbarCommands;
@@ -28,7 +29,7 @@ extern NSString* const
 
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController
-    : CollectionViewController<ContentSuggestionsCollectionControlling>
+    : CollectionViewController <ContentSuggestionsCollectionControlling>
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_DESIGNATED_INITIALIZER;
@@ -52,6 +53,8 @@ extern NSString* const
 // Delegate for handling theme changes (dark/light theme).
 @property(nonatomic, weak) id<ThemeChangeDelegate> themeChangeDelegate;
 @property(nonatomic, weak) id<DiscoverFeedMenuCommands> discoverFeedMenuHandler;
+@property(nonatomic, weak, readonly) id<DiscoverFeedHeaderChanging>
+    discoverFeedHeaderDelegate;
 @property(nonatomic, weak) id<ContentSuggestionsMetricsRecording>
     metricsRecorder;
 

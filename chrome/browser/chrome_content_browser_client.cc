@@ -604,7 +604,7 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 #endif
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #endif
@@ -2226,16 +2226,24 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         }
       }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+      bool client_side_detection_enabled =
+          safe_browsing::IsSafeBrowsingEnabled(*prefs) &&
+          safe_browsing::ClientSideDetectionServiceFactory::GetForProfile(
+              profile);
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
+      client_side_detection_enabled &= base::FeatureList::IsEnabled(
+          safe_browsing::kClientSideDetectionForAndroid);
+#endif  // BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
+
       // Disable client-side phishing detection in the renderer if it is
-      // disabled in the Profile preferences, or by command line flag.
-      if (!safe_browsing::IsSafeBrowsingEnabled(*prefs) ||
-          !safe_browsing::ClientSideDetectionServiceFactory::GetForProfile(
-              profile)) {
+      // disabled in the Profile preferences, or by command line flag, or by not
+      // being enabled on Android.
+      if (!client_side_detection_enabled) {
         command_line->AppendSwitch(
             switches::kDisableClientSidePhishingDetection);
       }
-#endif
+#endif  // BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 
       if (prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kDisablePrintPreview);
@@ -4042,7 +4050,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
                    &throttles);
 #endif
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   MaybeAddThrottle(safe_browsing::MaybeCreateNavigationThrottle(handle),
                    &throttles);
 #endif
@@ -4376,7 +4384,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
 
-#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {

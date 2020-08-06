@@ -405,11 +405,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
 
   UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLHistoryItems",
                           restored_data->history_id_word_map_.size());
-  UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLCacheSize", data.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
-                             restored_data->word_map_.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
-                             restored_data->char_word_map_.size());
   if (restored_data->Empty())
     return nullptr;  // 'No data' is the same as a failed reload.
   return restored_data;
@@ -452,10 +447,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
                       base::TimeTicks::Now() - beginning_time);
   UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLHistoryItems",
                           rebuilt_data->history_id_word_map_.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
-                             rebuilt_data->word_map_.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
-                             rebuilt_data->char_word_map_.size());
   return rebuilt_data;
 }
 

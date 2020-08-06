@@ -10,47 +10,12 @@
 
 namespace {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class UpdaterResultCode {
-  kSuccess = 0,
-  kTimeout = 1,
-  kHttpErrorOffline = 2,
-  kHttpErrorEndpointNotFound = 3,
-  kHttpErrorAuthenticationError = 4,
-  kHttpErrorBadRequest = 5,
-  kHttpErrorResponseMalformed = 6,
-  kHttpErrorInternalServerError = 7,
-  kHttpErrorUnknown = 8,
-  kMaxValue = kHttpErrorUnknown
-};
-
 const char kDeviceIdPrefix[] = "users/me/devices/";
 const char kDeviceNameFieldMaskPath[] = "device.display_name";
 const char kContactsFieldMaskPath[] = "device.contacts";
 const char kCertificatesFieldMaskPath[] = "device.public_certificates";
 
-UpdaterResultCode RequestErrorToUpdaterResultCode(
-    NearbyShareRequestError error) {
-  switch (error) {
-    case NearbyShareRequestError::kOffline:
-      return UpdaterResultCode::kHttpErrorOffline;
-    case NearbyShareRequestError::kEndpointNotFound:
-      return UpdaterResultCode::kHttpErrorEndpointNotFound;
-    case NearbyShareRequestError::kAuthenticationError:
-      return UpdaterResultCode::kHttpErrorAuthenticationError;
-    case NearbyShareRequestError::kBadRequest:
-      return UpdaterResultCode::kHttpErrorBadRequest;
-    case NearbyShareRequestError::kResponseMalformed:
-      return UpdaterResultCode::kHttpErrorResponseMalformed;
-    case NearbyShareRequestError::kInternalServerError:
-      return UpdaterResultCode::kHttpErrorInternalServerError;
-    case NearbyShareRequestError::kUnknown:
-      return UpdaterResultCode::kHttpErrorUnknown;
-  }
-}
-
-void RecordResultMetrics(UpdaterResultCode code) {
+void RecordResultMetrics(NearbyShareHttpResult result) {
   // TODO(crbug.com/1105579): Record a histogram value for each result.
 }
 
@@ -130,20 +95,20 @@ void NearbyShareDeviceDataUpdaterImpl::OnRpcSuccess(
   timer_.Stop();
   nearbyshare::proto::UpdateDeviceResponse response_copy(response);
   client_.reset();
-  RecordResultMetrics(UpdaterResultCode::kSuccess);
+  RecordResultMetrics(NearbyShareHttpResult::kSuccess);
   FinishAttempt(response_copy);
 }
 
 void NearbyShareDeviceDataUpdaterImpl::OnRpcFailure(
-    NearbyShareRequestError error) {
+    NearbyShareHttpError error) {
   timer_.Stop();
   client_.reset();
-  RecordResultMetrics(RequestErrorToUpdaterResultCode(error));
+  RecordResultMetrics(NearbyShareHttpErrorToResult(error));
   FinishAttempt(/*response=*/base::nullopt);
 }
 
 void NearbyShareDeviceDataUpdaterImpl::OnTimeout() {
   client_.reset();
-  RecordResultMetrics(UpdaterResultCode::kTimeout);
+  RecordResultMetrics(NearbyShareHttpResult::kTimeout);
   FinishAttempt(/*response=*/base::nullopt);
 }

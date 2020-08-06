@@ -24,6 +24,10 @@ class FakeAdapter : public mojom::Adapter {
   void GetInfo(GetInfoCallback callback) override;
   void SetClient(::mojo::PendingRemote<mojom::AdapterClient> client) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
+  void ConnectToServiceInsecurely(
+      const std::string& address,
+      const device::BluetoothUUID& service_uuid,
+      ConnectToServiceInsecurelyCallback callback) override;
 
   mojo::Receiver<mojom::Adapter> adapter{this};
   bool present = true;

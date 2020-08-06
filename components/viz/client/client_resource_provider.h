@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_CLIENT_CLIENT_RESOURCE_PROVIDER_H_
 #define COMPONENTS_VIZ_CLIENT_CLIENT_RESOURCE_PROVIDER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/threading/thread_checker.h"
@@ -19,7 +20,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 
 namespace gpu {
 namespace gles2 {

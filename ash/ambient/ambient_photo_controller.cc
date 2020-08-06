@@ -69,6 +69,10 @@ using DownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 void DownloadImageFromUrl(const std::string& url, DownloadCallback callback) {
   DCHECK(!url.empty());
 
+  // During shutdown, we may not have `ImageDownloader` when reach here.
+  if (!ImageDownloader::Get())
+    return;
+
   ImageDownloader::Get()->Download(GURL(url), NO_TRAFFIC_ANNOTATION_YET,
                                    base::BindOnce(std::move(callback)));
 }

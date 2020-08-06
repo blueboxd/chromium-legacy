@@ -13,13 +13,13 @@
 
 WebRtcSignallingHostFCM::WebRtcSignallingHostFCM(
     mojo::PendingReceiver<sharing::mojom::SignalingSender> signaling_sender,
-    mojo::PendingRemote<sharing::mojom::SignallingReceiver> signalling_receiver,
+    mojo::PendingRemote<sharing::mojom::SignalingReceiver> signaling_receiver,
     SharingMessageSender* message_sender,
     std::unique_ptr<syncer::DeviceInfo> device_info)
     : message_sender_(message_sender),
       device_info_(std::move(device_info)),
       signaling_sender_(this, std::move(signaling_sender)),
-      signalling_receiver_(std::move(signalling_receiver)) {
+      signaling_receiver_(std::move(signaling_receiver)) {
   DCHECK(device_info_);
 }
 
@@ -79,10 +79,10 @@ void WebRtcSignallingHostFCM::SendIceCandidates(
 void WebRtcSignallingHostFCM::OnOfferReceived(
     const std::string& offer,
     base::OnceCallback<void(const std::string&)> callback) {
-  signalling_receiver_->OnOfferReceived(offer, std::move(callback));
+  signaling_receiver_->OnOfferReceived(offer, std::move(callback));
 }
 
 void WebRtcSignallingHostFCM::OnIceCandidatesReceived(
     std::vector<sharing::mojom::IceCandidatePtr> ice_candidates) {
-  signalling_receiver_->OnIceCandidatesReceived(std::move(ice_candidates));
+  signaling_receiver_->OnIceCandidatesReceived(std::move(ice_candidates));
 }

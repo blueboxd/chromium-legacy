@@ -43,15 +43,11 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
       fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager,
       fuchsia::ui::views::ViewRef view_ref,
       content::WebContents* web_contents,
-      base::OnceCallback<void(zx_status_t)> on_disconnect_callback);
+      base::OnceCallback<void(zx_status_t)> on_error_callback);
   ~AccessibilityBridge() final;
 
   AccessibilityBridge(const AccessibilityBridge&) = delete;
   AccessibilityBridge& operator=(const AccessibilityBridge&) = delete;
-
-  void set_handle_actions_for_test(bool handle) {
-    handle_actions_for_test_ = handle;
-  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest, OnSemanticsModeChanged);
@@ -127,15 +123,12 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   // These are keyed by the request_id field of ui::AXActionData.
   base::flat_map<int, HitTestCallback> pending_hit_test_callbacks_;
 
-  // Maintain a map of callbacks for accessibility actions. Entries are keyed by
-  // node id the action is performed on.
-  base::flat_map<int, OnAccessibilityActionRequestedCallback>
-      pending_accessibility_action_callbacks_;
+  // Run in the case of an internal error that cannot be recovered from. This
+  // will cause the frame |this| is owned by to be torn down.
+  base::OnceCallback<void(zx_status_t)> on_error_callback_;
 
   // The root id of |tree_|.
   int32_t root_id_ = 0;
-
-  bool handle_actions_for_test_ = true;
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_ACCESSIBILITY_BRIDGE_H_

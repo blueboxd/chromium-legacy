@@ -134,6 +134,9 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
   } else if (RuntimeEnabledFeatures::WebXRCameraAccessEnabled(context) &&
              feature_string == "camera-access") {
     return device::mojom::XRSessionFeature::CAMERA_ACCESS;
+  } else if (RuntimeEnabledFeatures::WebXRPlaneDetectionEnabled(context) &&
+             feature_string == "plane-detection") {
+    return device::mojom::XRSessionFeature::PLANE_DETECTION;
   }
 
   return base::nullopt;
@@ -168,6 +171,9 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
       return true;
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
     case device::mojom::XRSessionFeature::CAMERA_ACCESS:
+    case device::mojom::XRSessionFeature::PLANE_DETECTION:
+      // Fallthrough - light estimation, camera access and plane detection APIs
+      // are all valid only for immersive AR mode for now.
       return mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
   }
 }
@@ -189,6 +195,7 @@ bool HasRequiredFeaturePolicy(const ExecutionContext* context,
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
     case device::mojom::XRSessionFeature::ANCHORS:
     case device::mojom::XRSessionFeature::CAMERA_ACCESS:
+    case device::mojom::XRSessionFeature::PLANE_DETECTION:
       return context->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kWebXr,
           ReportOptions::kReportOnFailure);
@@ -939,6 +946,9 @@ void XRSystem::RequestImmersiveSession(LocalFrame* frame,
   auto* immersive_session_request_error =
       CheckImmersiveSessionRequestAllowed(frame, doc);
   if (immersive_session_request_error) {
+    DVLOG(2) << __func__
+             << ": rejecting session - immersive session not allowed, reason: "
+             << immersive_session_request_error;
     query->RejectWithSecurityError(immersive_session_request_error,
                                    exception_state);
     return;
@@ -947,6 +957,9 @@ void XRSystem::RequestImmersiveSession(LocalFrame* frame,
   // Ensure there are no other immersive sessions currently pending or active
   if (has_outstanding_immersive_request_ ||
       frameProvider()->immersive_session()) {
+    DVLOG(2) << __func__
+             << ": rejecting session - immersive session request is already "
+                "pending or an immersive session is already active";
     query->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
                                   kActiveImmersiveSession, exception_state);
     return;
@@ -956,6 +969,7 @@ void XRSystem::RequestImmersiveSession(LocalFrame* frame,
   // hardware.
   TryEnsureService();
   if (!service_.is_bound()) {
+    DVLOG(2) << __func__ << ": rejecting session - service is not bound";
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kNoDevicesMessage, exception_state);
     return;
@@ -1509,19 +1523,31 @@ void XRSystem::OnEnvironmentProviderDisconnect() {
 }
 
 void XRSystem::TryEnsureService() {
+  DVLOG(2) << __func__;
+
   // If we already have a service, there's nothing to do.
-  if (service_.is_bound())
+  if (service_.is_bound()) {
+    DVLOG(2) << __func__ << ": service already bound";
     return;
+  }
 
   // If the service has been disconnected in the past or our context has been
   // destroyed, don't try to get the service again.
-  if (did_service_ever_disconnect_ || is_context_destroyed_)
+  if (did_service_ever_disconnect_ || is_context_destroyed_) {
+    DVLOG(2) << __func__
+             << ": service disconnected or context destroyed, "
+                "did_service_ever_disconnect_="
+             << did_service_ever_disconnect_
+             << ", is_context_destroyed_=" << is_context_destroyed_;
     return;
+  }
 
   // If the current frame isn't attached, don't try to get the service.
   LocalFrame* frame = GetFrame();
-  if (!frame || !frame->IsAttached())
+  if (!frame || !frame->IsAttached()) {
+    DVLOG(2) << ": current frame is not attached";
     return;
+  }
 
   // See https://bit.ly/2S0zRAS for task types.
   frame->GetBrowserInterfaceBroker().GetInterface(

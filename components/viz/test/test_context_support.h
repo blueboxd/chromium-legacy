@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -82,7 +84,7 @@ class TestContextSupport : public gpu::ContextSupport {
   bool CanDecodeWithHardwareAcceleration(
       const cc::ImageHeaderMetadata* image_metadata) const override;
   bool HasGrContextSupport() const override;
-  void SetGrContext(GrContext* gr) override;
+  void SetGrContext(GrDirectContext* gr) override;
   void WillCallGLFromSkia() override;
   void DidCallGLFromSkia() override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override {}

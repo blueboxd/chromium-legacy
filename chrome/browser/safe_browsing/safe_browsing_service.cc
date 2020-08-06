@@ -55,13 +55,16 @@
 #include "chrome/install_static/install_util.h"
 #endif
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "components/safe_browsing/content/password_protection/password_protection_service.h"
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
-#include "components/safe_browsing/content/password_protection/password_protection_service.h"
 #endif
 
 using content::BrowserThread;

@@ -448,7 +448,12 @@ TEST_F(AccessContextAuditServiceTest, TimeRangeHistoryDeletion) {
   CheckContainsStorageAPIRecord(kOrigin1, kTestStorageType2, kOrigin1, records);
 }
 
-TEST_F(AccessContextAuditServiceTest, SessionOnlyRecords) {
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SessionOnlyRecords DISABLED_SessionOnlyRecords
+#else
+#define MAYBE_SessionOnlyRecords SessionOnlyRecords
+#endif
+TEST_F(AccessContextAuditServiceTest, MAYBE_SessionOnlyRecords) {
   // Check that data for cookie domains and storage origins are cleared on
   // service shutdown when the associated content settings indicate they should.
   const GURL kTestPersistentURL("https://persistent.com");

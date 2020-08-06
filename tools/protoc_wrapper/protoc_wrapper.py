@@ -97,6 +97,8 @@ def main(argv):
   parser.add_argument("--import-dir", action="append", default=[],
                       help="Extra import directory for protos, can be repeated."
   )
+  parser.add_argument("--descriptor-set-out",
+                      help="Path to write a descriptor.")
   parser.add_argument("protos", nargs="+",
                       help="Input protobuf definition file(s).")
 
@@ -150,6 +152,9 @@ def main(argv):
     protoc_cmd += ["--proto_path", path]
 
   protoc_cmd += [os.path.join(proto_dir, name) for name in protos]
+
+  if options.descriptor_set_out:
+    protoc_cmd += ["--descriptor_set_out", options.descriptor_set_out]
 
   ret = subprocess.call(protoc_cmd)
   if ret != 0:

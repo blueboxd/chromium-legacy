@@ -1892,11 +1892,19 @@ bool RenderFrameHostManager::CanUseSourceSiteInstance(
     SiteInstance* source_instance,
     bool was_server_redirect,
     bool is_failure) {
+  if (!source_instance)
+    return false;
+
   // We use the source SiteInstance in case of data URLs, about:srcdoc pages and
   // about:blank pages because the content is then controlled and/or scriptable
-  // by the source SiteInstance.
+  // by the initiator and therefore needs to stay in the |source_instance|.
+  if (!IsDataOrAbout(dest_url))
+    return false;
+
+  // One exception (where data URLs, about:srcdoc or about:blank pages are *not*
+  // controlled by the initiator) is when these URLs are reached via a server
+  // redirect.
   //
-  // One exception to this is when these URLs are reached via a server redirect.
   // Normally, redirects to data: or about: URLs are disallowed as
   // net::ERR_UNSAFE_REDIRECT, but extensions can still redirect arbitrary
   // requests to those URLs using webRequest or declarativeWebRequest API (for
@@ -1905,10 +1913,18 @@ bool RenderFrameHostManager::CanUseSourceSiteInstance(
   // redirects, the content is controlled by the extension (rather than by the
   // |source_instance|), so we don't use the |source_instance| for data: URLs if
   // there was a server redirect.
-  return source_instance && IsDataOrAbout(dest_url) &&
-         (!was_server_redirect || !dest_url.SchemeIs(url::kDataScheme)) &&
-         IsSiteInstanceCompatibleWithErrorIsolation(
-             source_instance, frame_tree_node_->IsMainFrame(), is_failure);
+  if (was_server_redirect && dest_url.SchemeIs(url::kDataScheme))
+    return false;
+
+  // Make sure that error isolation is taken into account.  See also
+  // ChromeNavigationBrowserTest.RedirectErrorPageReloadToAboutBlank.
+  if (!IsSiteInstanceCompatibleWithErrorIsolation(
+          source_instance, frame_tree_node_->IsMainFrame(), is_failure)) {
+    return false;
+  }
+
+  // Okay to use |source_instance|.
+  return true;
 }
 
 bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,

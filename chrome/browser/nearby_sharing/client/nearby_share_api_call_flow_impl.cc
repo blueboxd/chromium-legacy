@@ -5,6 +5,7 @@
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -20,22 +21,6 @@ const char kPost[] = "POST";
 const char kProtobufContentType[] = "application/x-protobuf";
 const char kQueryParameterAlternateOutputKey[] = "alt";
 const char kQueryParameterAlternateOutputProto[] = "proto";
-
-NearbyShareRequestError GetErrorForHttpResponseCode(int response_code) {
-  if (response_code == 400)
-    return NearbyShareRequestError::kBadRequest;
-
-  if (response_code == 403)
-    return NearbyShareRequestError::kAuthenticationError;
-
-  if (response_code == 404)
-    return NearbyShareRequestError::kEndpointNotFound;
-
-  if (response_code >= 500 && response_code < 600)
-    return NearbyShareRequestError::kInternalServerError;
-
-  return NearbyShareRequestError::kUnknown;
-}
 
 }  // namespace
 
@@ -132,7 +117,7 @@ void NearbyShareApiCallFlowImpl::ProcessApiCallSuccess(
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   if (!body) {
-    std::move(error_callback_).Run(NearbyShareRequestError::kResponseMalformed);
+    std::move(error_callback_).Run(NearbyShareHttpError::kResponseMalformed);
     return;
   }
   std::move(result_callback_).Run(std::move(*body));
@@ -142,15 +127,15 @@ void NearbyShareApiCallFlowImpl::ProcessApiCallFailure(
     int net_error,
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
-  base::Optional<NearbyShareRequestError> error;
+  base::Optional<NearbyShareHttpError> error;
   std::string error_message;
   if (net_error == net::OK) {
     int response_code = -1;
     if (head && head->headers)
       response_code = head->headers->response_code();
-    error = GetErrorForHttpResponseCode(response_code);
+    error = NearbyShareHttpErrorForHttpResponseCode(response_code);
   } else {
-    error = NearbyShareRequestError::kOffline;
+    error = NearbyShareHttpError::kOffline;
   }
 
   NS_LOG(ERROR) << "API call failed, error code: "

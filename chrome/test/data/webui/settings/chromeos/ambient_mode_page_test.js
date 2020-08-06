@@ -17,25 +17,40 @@
 class TestAmbientModeBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'onAmbientModePageReady',
-      'onTopicSourceSelectedChanged',
+      'requestTopicSource',
+      'requestAlbums',
+      'setSelectedTopicSource',
+      'setSelectedAlbums',
     ]);
   }
 
   /** @override */
-  onAmbientModePageReady() {
-    this.methodCalled('onAmbientModePageReady');
+  requestTopicSource() {
+    this.methodCalled('requestTopicSource');
   }
 
   /** @override */
-  onTopicSourceSelectedChanged(selected) {
-    this.methodCalled('onTopicSourceSelectedChanged', selected);
+  requestAlbums(topicSource) {
+    this.methodCalled('requestAlbums', [topicSource]);
+  }
+
+  /** @override */
+  setSelectedTopicSource(topicSource) {
+    this.methodCalled('setSelectedTopicSource', [topicSource]);
+  }
+
+  /** @override */
+  setSelectedAlbums(settings) {
+    this.methodCalled('setSelectedAlbums', [settings]);
   }
 }
 
 suite('AmbientModeHandler', function() {
   /** @type {SettingsAmbientModePageElement} */
-  let page = null;
+  let ambientModePage = null;
+
+  /** @type {SettingsAmbientModePhotosPageElement} */
+  let ambientModePhotosPage = null;
 
   /** @type {?TestAmbientModeBrowserProxy} */
   let browserProxy = null;
@@ -51,36 +66,43 @@ suite('AmbientModeHandler', function() {
     const prefElement = document.createElement('settings-prefs');
     document.body.appendChild(prefElement);
 
-    return CrSettingsPrefs.initialized.then(function() {
-      page = document.createElement('settings-ambient-mode-page');
-      page.prefs = prefElement.prefs;
+    ambientModePhotosPage =
+        document.createElement('settings-ambient-mode-photos-page');
+    document.body.appendChild(ambientModePhotosPage);
 
-      page.prefs.settings.ambient_mode = {
+    return CrSettingsPrefs.initialized.then(function() {
+      ambientModePage = document.createElement('settings-ambient-mode-page');
+      ambientModePage.prefs = prefElement.prefs;
+
+      ambientModePage.prefs.settings.ambient_mode = {
         enabled: {value: true},
       };
 
-      document.body.appendChild(page);
+      document.body.appendChild(ambientModePage);
       Polymer.dom.flush();
     });
   });
 
   teardown(function() {
-    page.remove();
+    ambientModePage.remove();
+    ambientModePhotosPage.remove();
   });
 
   test('toggleAmbientMode', function() {
-    const button = page.$$('#ambientModeEnable');
+    const button = ambientModePage.$$('#ambientModeEnable');
     assertTrue(!!button);
     assertFalse(button.disabled);
 
     // The button's state is set by the pref value.
-    const enabled = page.getPref('settings.ambient_mode.enabled.value');
+    const enabled =
+        ambientModePage.getPref('settings.ambient_mode.enabled.value');
     assertEquals(enabled, button.checked);
 
     // Click the button will toggle the pref value.
     button.click();
     Polymer.dom.flush();
-    const enabled_toggled = page.getPref('settings.ambient_mode.enabled.value');
+    const enabled_toggled =
+        ambientModePage.getPref('settings.ambient_mode.enabled.value');
     assertEquals(enabled_toggled, button.checked);
     assertEquals(enabled, !enabled_toggled);
 
@@ -88,15 +110,36 @@ suite('AmbientModeHandler', function() {
     button.click();
     Polymer.dom.flush();
     const enabled_toggled_twice =
-        page.getPref('settings.ambient_mode.enabled.value');
+        ambientModePage.getPref('settings.ambient_mode.enabled.value');
     assertEquals(enabled_toggled_twice, button.checked);
     assertEquals(enabled, enabled_toggled_twice);
   });
 
   test('hasTopicSourceItems', function() {
-    const topicSourceListElement = page.$$('topic-source-list');
+    const topicSourceListElement = ambientModePage.$$('topic-source-list');
     const ironList = topicSourceListElement.$$('iron-list');
     const topicSourceItems = ironList.querySelectorAll('topic-source-item');
     assertEquals(2, topicSourceItems.length);
+  });
+
+  test('hasAlbums', function() {
+    ambientModePhotosPage.albums_ = [
+      {albumId: 'id0', checked: true, title: 'album0'},
+      {albumId: 'id1', checked: false, title: 'album1'}
+    ];
+    Polymer.dom.flush();
+
+    const ironList = ambientModePhotosPage.$$('iron-list');
+    const checkboxes = ironList.querySelectorAll('cr-checkbox');
+    assertEquals(2, checkboxes.length);
+
+    const checkbox0 = checkboxes[0];
+    const checkbox1 = checkboxes[1];
+    assertEquals('id0', checkbox0.dataset.id);
+    assertTrue(checkbox0.checked);
+    assertEquals('album0', checkbox0.label);
+    assertEquals('id1', checkbox1.dataset.id);
+    assertFalse(checkbox1.checked);
+    assertEquals('album1', checkbox1.label);
   });
 });

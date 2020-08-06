@@ -6,5 +6,5 @@ testRunner.waitUntilDone();
 <!-- Check if step attribute is reflected in the appearance of the calendar picker.  -->
 <input type="date" id="date" value="2010-12-31" step="3">
 <script>
-openPicker(document.getElementById('date'), () => testRunner.notifyDone());
+openPickerAppearanceOnly(document.getElementById('date'), () => testRunner.notifyDone());
 </script>

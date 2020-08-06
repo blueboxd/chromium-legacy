@@ -84,6 +84,10 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
       base::OnceCallback<void(const std::vector<std::string>& preview_urls)>;
   using OnPersonalAlbumsFetchedCallback =
       base::OnceCallback<void(PersonalAlbums)>;
+  // TODO(wutao): Make |settings| move only.
+  using OnSettingsAndAlbumsFetchedCallback =
+      base::OnceCallback<void(const base::Optional<AmbientSettings>& settings,
+                              PersonalAlbums personal_albums)>;
 
   static AmbientBackendController* Get();
 
@@ -118,6 +122,12 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
                                    int num_albums,
                                    const std::string& resume_token,
                                    OnPersonalAlbumsFetchedCallback) = 0;
+
+  // Fetch the Settings and albums as one API.
+  virtual void FetchSettingsAndAlbums(int banner_width,
+                                      int banner_height,
+                                      int num_albums,
+                                      OnSettingsAndAlbumsFetchedCallback) = 0;
 
   // Set the photo refresh interval in ambient mode.
   virtual void SetPhotoRefreshInterval(base::TimeDelta interval) = 0;

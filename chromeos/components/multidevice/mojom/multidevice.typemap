@@ -20,7 +20,9 @@ sources = [
 
 public_deps = [
   "//chromeos/components/multidevice",
+  "//chromeos/components/multidevice/logging",
   "//chromeos/services/device_sync/proto",
+  "//device/bluetooth/public/cpp",
 ]
 
 type_mappings = [

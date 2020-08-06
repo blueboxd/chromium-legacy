@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_statistics_common.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // The handler for Javascript messages related to the profile picker main view.
@@ -29,8 +30,12 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   void HandleLaunchGuestProfile(const base::ListValue* args);
   void HandleAskOnStartupChanged(const base::ListValue* args);
   void HandleGetNewProfileSuggestedThemeInfo(const base::ListValue* args);
+  void HandleGetProfileStatistics(const base::ListValue* args);
   void HandleLoadSignInProfileCreationFlow(const base::ListValue* args);
 
+  void GatherProfileStatistics(Profile* profile);
+  void OnProfileStatisticsReceived(base::FilePath profile_path,
+                                   profiles::ProfileCategoryStats result);
   void OnSwitchToProfileComplete(Profile* profile,
                                  Profile::CreateStatus profile_create_status);
   void PushProfilesList();

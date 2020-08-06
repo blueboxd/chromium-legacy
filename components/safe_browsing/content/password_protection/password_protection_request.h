@@ -169,17 +169,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Fill |request_proto_| with appropriate values.
   void FillRequestProto(bool is_sampled_ping);
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Collects visual features from the current login page.
-  void CollectVisualFeatures();
-
-  // Processes the screenshot of the login page into visual features.
-  void OnScreenshotTaken(const SkBitmap& bitmap);
-
-  // Called when the visual feature extraction is complete.
-  void OnVisualFeatureCollectionDone(
-      std::unique_ptr<VisualFeatures> visual_features);
-
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   // Called when the DOM feature extraction is complete.
   void OnGetDomFeatures(mojom::PhishingDetectorResult result,
                         const std::string& verdict);
@@ -190,6 +180,18 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // If appropriate, collects visual features, otherwise continues on to sending
   // the request.
   void MaybeCollectVisualFeatures();
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  // Collects visual features from the current login page.
+  void CollectVisualFeatures();
+
+  // Processes the screenshot of the login page into visual features.
+  void OnScreenshotTaken(const SkBitmap& bitmap);
+
+  // Called when the visual feature extraction is complete.
+  void OnVisualFeatureCollectionDone(
+      std::unique_ptr<VisualFeatures> visual_features);
 #endif
 
   // Initiates network request to Safe Browsing backend.
@@ -272,7 +274,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // If a request is sent, this is the token returned by the WebUI.
   int web_ui_token_;
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   // When we start extracting visual features.
   base::TimeTicks visual_feature_start_time_;
 

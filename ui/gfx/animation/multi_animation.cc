@@ -46,23 +46,27 @@ void MultiAnimation::Step(base::TimeTicks time_now) {
   size_t last_index = current_part_index_;
 
   base::TimeDelta delta = time_now - start_time();
-  if (delta >= cycle_time_ && !continuous_) {
+  bool should_stop = delta >= cycle_time_ && !continuous_;
+  if (should_stop) {
     current_part_index_ = parts_.size() - 1;
     current_value_ = Tween::CalculateValue(parts_[current_part_index_].type, 1);
-    Stop();
-    return;
+  } else {
+    delta %= cycle_time_;
+    const Part& part = GetPart(&delta, &current_part_index_);
+    double percent = (delta + part.part_start).InMillisecondsF() /
+                     part.total_length.InMillisecondsF();
+    DCHECK_LE(percent, 1);
+    current_value_ = Tween::CalculateValue(part.type, percent);
   }
-  delta %= cycle_time_;
-  const Part& part = GetPart(&delta, &current_part_index_);
-  double percent = (delta + part.part_start).InMillisecondsF() /
-                   part.total_length.InMillisecondsF();
-  DCHECK_LE(percent, 1);
-  current_value_ = Tween::CalculateValue(part.type, percent);
 
   if ((current_value_ != last_value || current_part_index_ != last_index) &&
       delegate()) {
+    // Run AnimationProgressed() even if the animation will be stopped, so that
+    // the animation runs its final frame.
     delegate()->AnimationProgressed(this);
   }
+  if (should_stop)
+    Stop();
 }
 
 void MultiAnimation::SetStartTime(base::TimeTicks start_time) {

@@ -1445,15 +1445,15 @@ void AutofillManager::OnLoadedServerPredictions(
         form_interactions_ukm_logger_.get());
   }
 
-  // Forward form structures to the password generation manager to detect
-  // account creation forms.
-  driver()->PropagateAutofillPredictions(queried_forms);
-
   // Send field type predictions to the renderer so that it can possibly
   // annotate forms with the predicted types or add console warnings.
   driver()->SendAutofillTypePredictionsToRenderer(queried_forms);
 
   LogAutofillTypePredictionsAvailable(log_manager_, queried_forms);
+
+  // Forward form structures to the password generation manager to detect
+  // account creation forms.
+  driver()->PropagateAutofillPredictions(queried_forms);
 }
 
 void AutofillManager::OnCreditCardFetched(bool did_succeed,

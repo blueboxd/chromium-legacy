@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
+#include "chrome/browser/ui/ash/in_session_auth_dialog_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
@@ -135,6 +136,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       chromeos::input_method::InputMethodManager::Get());
   ime_controller_client_->Init();
 
+  in_session_auth_dialog_client_ =
+      std::make_unique<InSessionAuthDialogClient>();
+
   // NOTE: The WallpaperControllerClient must be initialized before the
   // session controller, because the session controller triggers the loading
   // of users, which itself calls a code path which eventually reaches the
@@ -235,6 +239,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   system_tray_client_.reset();
   session_controller_client_.reset();
   ime_controller_client_.reset();
+  in_session_auth_dialog_client_.reset();
   chrome_new_window_client_.reset();
   accessibility_controller_client_.reset();
   // AppListClientImpl indirectly holds WebContents for answer card and

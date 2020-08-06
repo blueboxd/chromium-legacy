@@ -518,7 +518,7 @@
   u'prod_enterprise_crosprqa3_user': {
     u'device_recommended_policies': {},
     u'device_mandatory_policies': {
-      u'DeviceUserWhitelist': [
+      u'DeviceUserAllowlist': [
         u'bob.exc@crosprqa1.com',
         u'*@crosprqa3.com',
         u'*@crosprqa2.com',

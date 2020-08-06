@@ -339,6 +339,28 @@
      ]
    },
 
+  "PrintingEnabled":{
+      "os":["ios"],
+      "policy_pref_mapping_test":[
+          {
+              "policies":{"PrintingEnabled": true},
+              "prefs":{
+                "printing.enabled":{
+                  "value": true
+              } 
+            }
+          },
+          {
+              "policies":{"PrintingEnabled": false},
+              "prefs":{
+                "printing.enabled":{
+                  "value": false
+              } 
+            }
+          }
+      ]
+  },
+
   "SafeBrowsingEnabled": {
     "os": [ "ios" ],
     "can_be_recommended": true,

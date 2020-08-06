@@ -33,7 +33,10 @@
                use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PROFILE_PICKER_PROFILE_CARD_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_card.js"
-               use_base_dir="false" type="BINDATA" preprocess="true"/>
+               use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_PROFILE_PICKER_PROFILE_CARD_MENU_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_card_menu.js"
+               use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_creation_flow/profile_type_choice.js"
                use_base_dir="false" type="BINDATA"/>

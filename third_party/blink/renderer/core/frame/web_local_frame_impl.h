@@ -261,18 +261,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebNode ContextMenuNode() const override;
   void CopyImageAtForTesting(const gfx::Point&) override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
-  void OnPortalActivated(
-      const PortalToken& portal_token,
-      CrossVariantMojoAssociatedRemote<mojom::blink::PortalInterfaceBase>
-          portal,
-      CrossVariantMojoAssociatedReceiver<
-          mojom::blink::PortalClientInterfaceBase> portal_client,
-      TransferableMessage data,
-      OnPortalActivatedCallback callback) override;
-  void ForwardMessageFromHost(
-      TransferableMessage message,
-      const WebSecurityOrigin& source_origin,
-      const base::Optional<WebSecurityOrigin>& target_origin) override;
   FrameScheduler* Scheduler() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   WebInputMethodController* GetInputMethodController() override;

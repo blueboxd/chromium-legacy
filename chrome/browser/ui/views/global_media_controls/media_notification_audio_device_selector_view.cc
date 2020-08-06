@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
 
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "components/vector_icons/vector_icons.h"
+#include "media/audio/audio_device_description.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -44,8 +46,11 @@ MediaNotificationAudioDeviceSelectorView::
     MediaNotificationAudioDeviceSelectorView(
         MediaNotificationContainerImpl* container,
         MediaNotificationService* service,
-        gfx::Size size)
-    : container_(container), service_(service) {
+        gfx::Size size,
+        const std::string& current_device_id)
+    : container_(container),
+      service_(service),
+      current_device_id_(current_device_id) {
   DCHECK(service);
   SetPreferredSize(size);
 
@@ -109,9 +114,32 @@ void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
     const media::AudioDeviceDescriptions& device_descriptions) {
   sink_id_map_.clear();
   device_button_container_->RemoveAllChildViews(true);
+  current_device_button_ = nullptr;
   for (auto description : device_descriptions) {
     CreateDeviceButton(description);
   }
+  UpdateCurrentAudioDevice(current_device_id_);
+}
+
+void MediaNotificationAudioDeviceSelectorView::UpdateCurrentAudioDevice(
+    const std::string& current_device_id) {
+  auto it = std::find_if(sink_id_map_.begin(), sink_id_map_.end(),
+                         [&current_device_id](auto& item) {
+                           return item.second == current_device_id;
+                         });
+
+  DCHECK(it != sink_id_map_.end());
+
+  if (current_device_button_)
+    current_device_button_->SetProminent(false);
+
+  current_device_button_ = static_cast<views::MdTextButton*>(it->first);
+  current_device_button_->SetProminent(true);
+  device_button_container_->ReorderChildView(current_device_button_, 0);
+
+  device_button_container_->Layout();
+
+  current_device_id_ = current_device_id;
 }
 
 void MediaNotificationAudioDeviceSelectorView::ButtonPressed(

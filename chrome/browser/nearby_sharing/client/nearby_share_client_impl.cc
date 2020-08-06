@@ -14,6 +14,7 @@
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_switches.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/proto/certificate_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/contact_rpc.pb.h"
@@ -335,7 +336,7 @@ void NearbyShareClientImpl::OnAccessTokenFetched(
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
-    OnApiCallFailed(NearbyShareRequestError::kAuthenticationError);
+    OnApiCallFailed(NearbyShareHttpError::kAuthenticationError);
     return;
   }
   access_token_used_ = access_token_info.token;
@@ -383,14 +384,14 @@ void NearbyShareClientImpl::OnFlowSuccess(
     const std::string& serialized_response) {
   ResponseProto response;
   if (!response.ParseFromString(serialized_response)) {
-    OnApiCallFailed(NearbyShareRequestError::kResponseMalformed);
+    OnApiCallFailed(NearbyShareHttpError::kResponseMalformed);
     return;
   }
   std::move(result_callback).Run(response);
   notifier_->NotifyOfResponse(response);
 }
 
-void NearbyShareClientImpl::OnApiCallFailed(NearbyShareRequestError error) {
+void NearbyShareClientImpl::OnApiCallFailed(NearbyShareHttpError error) {
   std::move(error_callback_).Run(error);
   NS_LOG(ERROR) << error;
 }

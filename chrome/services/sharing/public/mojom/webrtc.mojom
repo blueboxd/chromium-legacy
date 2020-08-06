@@ -7,7 +7,7 @@ module sharing.mojom;
 import "url/mojom/url.mojom";
 
 // Represents an ICE candidate as defined in RFC 5245. These will be exchanged
-// OOB via the SignalingSender and SignallingReceiver interfaces.
+// OOB via the SignalingSender and SignalingReceiver interfaces.
 struct IceCandidate {
   // Represents the remote address to connect to as defined in RFC 5245 # 15.1.
   string candidate;
@@ -55,7 +55,7 @@ interface SignalingSender {
 
 // Signalling receiver interface used to notify about incoming offers and ICE
 // candidates from a remote. Implemented in a sandboxed utility process.
-interface SignallingReceiver {
+interface SignalingReceiver {
   // Received an offer from a remote, expecting an answer in response.
   OnOfferReceived(string offer) => (string answer);
 

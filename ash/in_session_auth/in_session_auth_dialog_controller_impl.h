@@ -12,6 +12,8 @@
 
 namespace ash {
 
+class InSessionAuthDialogClient;
+
 // InSessionAuthDialogControllerImpl persists as long as UI is running.
 class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
  public:
@@ -23,10 +25,13 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
   ~InSessionAuthDialogControllerImpl() override;
 
   // InSessionAuthDialogController overrides
+  void SetClient(InSessionAuthDialogClient* client) override;
   void ShowAuthenticationDialog() override;
   void DestroyAuthenticationDialog() override;
 
  private:
+  InSessionAuthDialogClient* client_ = nullptr;
+
   std::unique_ptr<InSessionAuthDialog> dialog_;
 };
 

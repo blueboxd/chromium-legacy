@@ -25,8 +25,7 @@ class WebRtcSignallingHostFCM : public sharing::mojom::SignalingSender {
  public:
   WebRtcSignallingHostFCM(
       mojo::PendingReceiver<sharing::mojom::SignalingSender> signaling_sender,
-      mojo::PendingRemote<sharing::mojom::SignallingReceiver>
-          signalling_receiver,
+      mojo::PendingRemote<sharing::mojom::SignalingReceiver> signaling_receiver,
       SharingMessageSender* message_sender,
       std::unique_ptr<syncer::DeviceInfo> device_info);
   WebRtcSignallingHostFCM(const WebRtcSignallingHostFCM&) = delete;
@@ -54,7 +53,7 @@ class WebRtcSignallingHostFCM : public sharing::mojom::SignalingSender {
   std::unique_ptr<syncer::DeviceInfo> device_info_;
 
   mojo::Receiver<sharing::mojom::SignalingSender> signaling_sender_;
-  mojo::Remote<sharing::mojom::SignallingReceiver> signalling_receiver_;
+  mojo::Remote<sharing::mojom::SignalingReceiver> signaling_receiver_;
 
   base::WeakPtrFactory<WebRtcSignallingHostFCM> weak_ptr_factory_{this};
 };

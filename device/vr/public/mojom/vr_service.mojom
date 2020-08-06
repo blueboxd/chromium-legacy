@@ -59,8 +59,9 @@ enum XRSessionFeature {
   DOM_OVERLAY = 6,
   HIT_TEST = 7,
   LIGHT_ESTIMATION = 8, // Experimental feature.
-  ANCHORS = 9,  // Experimental feature.
+  ANCHORS = 9,
   CAMERA_ACCESS = 10, // Experimental feature.
+  PLANE_DETECTION = 11, // Experimental feature.
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -837,10 +838,6 @@ interface XRInputSourceButtonListener {
 };
 
 struct XRFrameDataRequestOptions {
-  // Controls whether |XRFrameData.detected_planes| should be populated by the
-  // request to |XRFrameDataProvider.GetFrameData()|.
-  bool include_plane_data;
-
   // Controls whether |XRFrameData.light_estimation_data| should be populated
   // by the request to |XRFrameDataProvider.GetFrameData()|.
   bool include_lighting_estimation_data;

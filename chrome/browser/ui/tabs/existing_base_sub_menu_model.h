@@ -38,6 +38,10 @@ class ExistingBaseSubMenuModel : public ui::SimpleMenuModel,
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) final;
 
+  // Command IDs for various submenus.
+  static constexpr int kMinExistingWindowCommandId = 1001;
+  static constexpr int kMinExistingTabGroupCommandId = 2001;
+
   ~ExistingBaseSubMenuModel() override;
 
  protected:
@@ -75,11 +79,7 @@ class ExistingBaseSubMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteExistingCommand(int command_index);
 
   // Maximum number of entries for a submenu.
-  static const int max_size = 200;
-
-  // Command IDs for various submenus.
-  static const int kMinExistingWindowCommandId = 1001;
-  static const int kMinExistingTabGroupCommandId = 2001;
+  static constexpr int max_size = 200;
 
   ui::SimpleMenuModel::Delegate* parent_delegate() const {
     return parent_delegate_;

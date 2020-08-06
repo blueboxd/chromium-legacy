@@ -44,8 +44,19 @@ class MockUploader : public FeedbackUploader {
   // feedback::FeedbackUploader:
   void StartDispatchingReport() override { std::move(on_report_sent_).Run(); }
 
+  void QueueReport(std::unique_ptr<std::string> data, bool has_email) override {
+    report_had_email_ = has_email;
+    called_queue_report_ = true;
+    FeedbackUploader::QueueReport(std::move(data), has_email);
+  }
+
+  bool called_queue_report() const { return called_queue_report_; }
+  bool report_had_email() const { return report_had_email_; }
+
  private:
   base::OnceClosure on_report_sent_;
+  bool called_queue_report_ = false;
+  bool report_had_email_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockUploader);
 };
@@ -100,7 +111,23 @@ TEST_F(FeedbackDataTest, ReportSending) {
   data_->AttachAndCompressFileData(kFileData);
   Send();
   RunMessageLoop();
+  EXPECT_EQ(data_->user_email(), "");
   EXPECT_TRUE(data_->IsDataComplete());
+  EXPECT_TRUE(uploader_.called_queue_report());
+  EXPECT_FALSE(uploader_.report_had_email());
+}
+
+TEST_F(FeedbackDataTest, ReportSendingWithEmail) {
+  data_->SetAndCompressHistograms(kHistograms);
+  data_->set_image(kImageData);
+  data_->AttachAndCompressFileData(kFileData);
+  data_->set_user_email("foo@bar.com");
+  Send();
+  RunMessageLoop();
+  EXPECT_EQ(data_->user_email(), "foo@bar.com");
+  EXPECT_TRUE(data_->IsDataComplete());
+  EXPECT_TRUE(uploader_.called_queue_report());
+  EXPECT_TRUE(uploader_.report_had_email());
 }
 
 }  // namespace feedback

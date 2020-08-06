@@ -14,9 +14,15 @@
 // Item representing header on top of Discover feed.
 @interface ContentSuggestionsDiscoverHeaderItem : CollectionViewItem
 
+// The title for the feed header label.
+@property(nonatomic, copy) NSString* title;
+
+// Represents whether the Discover feed is visible or hidden.
+@property(nonatomic, assign) BOOL discoverFeedVisible;
+
 // Initializes header with 'title' as main label.
 - (instancetype)initWithType:(NSInteger)type
-                       title:(NSString*)title NS_DESIGNATED_INITIALIZER;
+         discoverFeedVisible:(BOOL)visible NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
 
@@ -30,6 +36,9 @@
 
 // Title label for the feed.
 @property(nonatomic, strong) UILabel* titleLabel;
+
+// Changes header UI based on Discover feed visibility.
+- (void)changeDiscoverFeedHeaderVisibility:(BOOL)visible;
 
 @end
 

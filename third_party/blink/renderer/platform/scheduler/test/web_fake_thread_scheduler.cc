@@ -32,11 +32,6 @@ WebFakeThreadScheduler::CompositorTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WebFakeThreadScheduler::IPCTaskRunner() {
-  return nullptr;
-}
-
 std::unique_ptr<WebWidgetScheduler>
 WebFakeThreadScheduler::CreateWidgetScheduler() {
   return std::make_unique<WebFakeWidgetScheduler>();

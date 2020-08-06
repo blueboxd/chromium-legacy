@@ -687,7 +687,7 @@ cr.define('device_page_tests', function() {
 
         // Check specifically clicking the row changes pref.
         const reverseScrollSettings = pointersPage.$$('#reverseScrollRow');
-        reverseScrollToggle.click();
+        reverseScrollSettings.click();
         expectReverseScrollValue(pointersPage, true);
         devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
         expectReverseScrollValue(pointersPage, false);

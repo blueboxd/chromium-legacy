@@ -29,7 +29,7 @@ sk_sp<PaintShader> ImagePattern::CreateShader(const SkMatrix& local_matrix) {
 }
 
 bool ImagePattern::IsTextureBacked() const {
-  return tile_image_ && tile_image_.GetSkImage()->isTextureBacked();
+  return tile_image_ && tile_image_.IsTextureBacked();
 }
 
 }  // namespace blink

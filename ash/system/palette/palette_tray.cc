@@ -590,8 +590,6 @@ bool PaletteTray::DeactivateActiveTool() {
       palette_tool_manager_->GetActiveTool(PaletteGroup::MODE);
   if (active_tool_id != PaletteToolId::NONE) {
     palette_tool_manager_->DeactivateTool(active_tool_id);
-    // TODO(sammiequon): Investigate whether we should removed |is_switched|
-    // from PaletteToolIdToPaletteModeCancelType.
     RecordPaletteModeCancellation(PaletteToolIdToPaletteModeCancelType(
         active_tool_id, false /*is_switched*/));
     return true;

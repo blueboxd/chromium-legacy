@@ -7,6 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -146,7 +149,7 @@ bool TestContextSupport::HasGrContextSupport() const {
   return true;
 }
 
-void TestContextSupport::SetGrContext(GrContext* gr) {}
+void TestContextSupport::SetGrContext(GrDirectContext* gr) {}
 
 void TestContextSupport::WillCallGLFromSkia() {}
 

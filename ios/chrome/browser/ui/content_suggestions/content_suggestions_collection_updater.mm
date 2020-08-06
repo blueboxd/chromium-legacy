@@ -159,6 +159,10 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 // All SectionIdentifier from ContentSuggestions.
 @property(nonatomic, strong)
     NSMutableSet<NSNumber*>* sectionIdentifiersFromContentSuggestions;
+// Discover feed header to prevent it from being recreated each time view is
+// reloaded.
+@property(nonatomic, strong)
+    ContentSuggestionsDiscoverHeaderItem* discoverFeedHeader;
 
 @end
 
@@ -199,6 +203,15 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 
   if (self.collectionViewController)
     [self reloadAllData];
+}
+
+- (ContentSuggestionsDiscoverHeaderItem*)discoverFeedHeader {
+  if (!_discoverFeedHeader) {
+    _discoverFeedHeader = [[ContentSuggestionsDiscoverHeaderItem alloc]
+               initWithType:ItemTypeHeader
+        discoverFeedVisible:self.discoverFeedVisible];
+  }
+  return _discoverFeedHeader;
 }
 
 #pragma mark - ContentSuggestionsDataSink
@@ -664,11 +677,8 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 - (CollectionViewItem*)headerForSectionInfo:
     (ContentSuggestionsSectionInformation*)sectionInfo {
   if (SectionIdentifierForInfo(sectionInfo) == SectionIdentifierDiscover) {
-    ContentSuggestionsDiscoverHeaderItem* header =
-        [[ContentSuggestionsDiscoverHeaderItem alloc]
-            initWithType:ItemTypeHeader
-                   title:sectionInfo.title];
-    return header;
+    self.discoverFeedHeader.title = sectionInfo.title;
+    return self.discoverFeedHeader;
   }
   DCHECK(SectionIdentifierForInfo(sectionInfo) == SectionIdentifierArticles);
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
@@ -828,6 +838,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   [model addItem:item toSectionWithIdentifier:sectionIdentifier];
 
   return [NSIndexPath indexPathForItem:itemNumber inSection:section];
+}
+
+#pragma mark - DiscoverFeedHeaderChanging
+
+- (void)changeDiscoverFeedHeaderVisibility:(BOOL)visible {
+  self.discoverFeedVisible = visible;
+  self.discoverFeedHeader.discoverFeedVisible = visible;
 }
 
 @end

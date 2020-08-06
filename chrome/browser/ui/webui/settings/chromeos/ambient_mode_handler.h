@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -34,36 +35,31 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
 
   // settings::SettingsPageUIHandler:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override;
+  void OnJavascriptAllowed() override {}
   void OnJavascriptDisallowed() override;
 
  private:
-  // WebUI call to signal js side is ready.
-  void HandleInitialized(const base::ListValue* args);
+  friend class AmbientModeHandlerTest;
 
-  // WebUI call to request photos containers, e.g. personal albums or art
-  // categories.
-  void RequestPhotosContainers(const base::ListValue* args);
+  // WebUI call to request topic source related data.
+  void HandleRequestTopicSource(const base::ListValue* args);
+
+  // WebUI call to request albums related data.
+  void HandleRequestAlbums(const base::ListValue* args);
 
   // WebUI call to sync topic source with server.
   void HandleSetSelectedTopicSource(const base::ListValue* args);
 
-  // WebUI call to sync photos containers with server.
-  void HandleSetSelectedPhotosContainers(const base::ListValue* args);
-
-  // Retrieve the initial settings from server.
-  void GetSettings();
-
-  // Called when the initial settings is retrieved.
-  void OnGetSettings(const base::Optional<ash::AmbientSettings>& settings);
+  // WebUI call to sync albums with server.
+  void HandleSetSelectedAlbums(const base::ListValue* args);
 
   // Send the "topic-source-changed" WebUIListener event when the initial
   // settings is retrieved.
   void SendTopicSource();
 
-  // Send the "photos-containers-changed" WebUIListener event with albums info
+  // Send the "albums-changed" WebUIListener event with albums info
   // in the |topic_source|.
-  void SendPhotosContainers(ash::AmbientModeTopicSource topic_source);
+  void SendAlbums(ash::AmbientModeTopicSource topic_source);
 
   // Update the local |settings_| to server.
   void UpdateSettings();
@@ -71,18 +67,24 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // Called when the settings is updated.
   void OnUpdateSettings(bool success);
 
-  void FetchPersonalAlbums();
+  void RequestSettingsAndAlbums(
+      ash::AmbientBackendController::OnSettingsAndAlbumsFetchedCallback
+          callback);
 
-  void OnPersonalAlbumsFetched(ash::PersonalAlbums personal_albums);
-
-  // Whether the Javascript is inited from the ambientMode page.
-  bool init_from_ambient_mode_page_ = false;
+  // |topic_source| is what the |settings_| and |personal_albums_| were
+  // requested for the ambientMode/photos subpage. It is base::nullopt if they
+  // were requested by the ambientMode subpage.
+  void OnSettingsAndAlbumsFetched(
+      base::Optional<ash::AmbientModeTopicSource> topic_source,
+      const base::Optional<ash::AmbientSettings>& settings,
+      ash::PersonalAlbums personal_albums);
 
   base::Optional<ash::AmbientSettings> settings_;
 
   ash::PersonalAlbums personal_albums_;
 
-  base::WeakPtrFactory<AmbientModeHandler> weak_factory_{this};
+  base::WeakPtrFactory<AmbientModeHandler> backend_weak_factory_{this};
+  base::WeakPtrFactory<AmbientModeHandler> ui_update_weak_factory_{this};
 };
 
 }  // namespace settings

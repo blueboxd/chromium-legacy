@@ -104,6 +104,7 @@ class WallpaperControllerClient : public ash::WallpaperControllerClient {
 
   // ash::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
+  void MaybeClosePreviewWallpaper() override;
 
   void DeviceWallpaperImageFilePathChanged();
 

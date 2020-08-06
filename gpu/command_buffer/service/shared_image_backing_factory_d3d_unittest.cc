@@ -403,7 +403,7 @@ class SharedImageBackingFactoryD3DTest
   }
 
  protected:
-  GrContext* gr_context() const { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() const { return context_state_->gr_context(); }
 
   void CheckSkiaPixels(const Mailbox& mailbox,
                        const gfx::Size& size,

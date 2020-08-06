@@ -12,6 +12,7 @@ include_rules = [
   "+chrome/browser/ui/android/native_page",
   "+chrome/browser/ui/messages/android",
   "+chrome/browser/util/android/java",
+  "+chrome/browser/webauthn/android",
   "+chrome/browser/xsurface/android",
   "+components/browser_ui/android/bottomsheet",
   "+components/browser_ui/banners/android",

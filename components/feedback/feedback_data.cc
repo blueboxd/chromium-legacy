@@ -136,7 +136,8 @@ void FeedbackData::SendReport() {
     PrepareReport(&feedback_data);
     auto post_body = std::make_unique<std::string>();
     feedback_data.SerializeToString(post_body.get());
-    uploader_->QueueReport(std::move(post_body));
+    uploader_->QueueReport(std::move(post_body),
+                           /*has_email=*/!user_email().empty());
   }
 }
 

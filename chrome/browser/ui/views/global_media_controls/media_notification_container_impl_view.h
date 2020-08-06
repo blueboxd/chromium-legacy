@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/global_media_controls/overlay_media_notification_view.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_view_impl.h"
+#include "media/audio/audio_device_description.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -177,6 +178,8 @@ class MediaNotificationContainerImplView
   bool is_dragging_ = false;
 
   bool is_playing_ = false;
+
+  std::string audio_sink_id_ = media::AudioDeviceDescription::kDefaultDeviceId;
 
   base::ObserverList<MediaNotificationContainerObserver> observers_;
 

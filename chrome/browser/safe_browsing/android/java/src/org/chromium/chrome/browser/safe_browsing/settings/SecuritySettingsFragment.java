@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.safe_browsing.settings;
 import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -24,7 +25,8 @@ import org.chromium.components.browser_ui.settings.TextMessagePreference;
  */
 public class SecuritySettingsFragment extends PreferenceFragmentCompat
         implements FragmentSettingsLauncher,
-                   RadioButtonGroupSafeBrowsingPreference.OnSafeBrowsingModeDetailsRequested {
+                   RadioButtonGroupSafeBrowsingPreference.OnSafeBrowsingModeDetailsRequested,
+                   Preference.OnPreferenceChangeListener {
     @VisibleForTesting
     static final String PREF_TEXT_MANAGED = "text_managed";
     @VisibleForTesting
@@ -33,6 +35,8 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
     // An instance of SettingsLauncher that is used to launch Safe Browsing subsections.
     private SettingsLauncher mSettingsLauncher;
 
+    private RadioButtonGroupSafeBrowsingPreference mSafeBrowsingPreference;
+
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         SettingsUtils.addPreferencesFromResource(this, R.xml.security_preferences);
@@ -40,24 +44,18 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
 
         ManagedPreferenceDelegate managedPreferenceDelegate = createManagedPreferenceDelegate();
 
-        RadioButtonGroupSafeBrowsingPreference safeBrowsingPreference =
-                findPreference(PREF_SAFE_BROWSING);
-        safeBrowsingPreference.init(SafeBrowsingBridge.getSafeBrowsingState(),
+        mSafeBrowsingPreference = findPreference(PREF_SAFE_BROWSING);
+        mSafeBrowsingPreference.init(SafeBrowsingBridge.getSafeBrowsingState(),
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED));
-        safeBrowsingPreference.setSafeBrowsingModeDetailsRequestedListener(this);
-        safeBrowsingPreference.setManagedPreferenceDelegate(managedPreferenceDelegate);
-        safeBrowsingPreference.setOnPreferenceChangeListener((preference, newValue) -> {
-            @SafeBrowsingState
-            int newState = (int) newValue;
-            SafeBrowsingBridge.setSafeBrowsingState(newState);
-            return true;
-        });
+        mSafeBrowsingPreference.setSafeBrowsingModeDetailsRequestedListener(this);
+        mSafeBrowsingPreference.setManagedPreferenceDelegate(managedPreferenceDelegate);
+        mSafeBrowsingPreference.setOnPreferenceChangeListener(this);
 
         TextMessagePreference textManaged = findPreference(PREF_TEXT_MANAGED);
         textManaged.setManagedPreferenceDelegate(managedPreferenceDelegate);
         textManaged.setVisible(managedPreferenceDelegate.isPreferenceClickDisabledByPolicy(
-                safeBrowsingPreference));
+                mSafeBrowsingPreference));
     }
 
     @Override
@@ -88,5 +86,41 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
             }
             return false;
         };
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        String key = preference.getKey();
+        assert PREF_SAFE_BROWSING.equals(key) : "Unexpected preference key.";
+        @SafeBrowsingState
+        int newState = (int) newValue;
+        @SafeBrowsingState
+        int currentState = SafeBrowsingBridge.getSafeBrowsingState();
+        // If the user selects no protection from another Safe Browsing state, show a confirmation
+        // dialog to double check if they want to select no protection.
+        if (newState == SafeBrowsingState.NO_SAFE_BROWSING
+                && currentState != SafeBrowsingState.NO_SAFE_BROWSING) {
+            // The user hasn't confirmed to select no protection, keep the radio button / UI checked
+            // state at the currently selected level.
+            mSafeBrowsingPreference.setCheckedState(currentState);
+            NoProtectionConfirmationDialog
+                    .create(getContext(),
+                            (didConfirm) -> {
+                                if (didConfirm) {
+                                    // The user has confirmed to select no protection, set Safe
+                                    // Browsing pref to no protection, and change the radio button /
+                                    // UI checked state to no protection.
+                                    SafeBrowsingBridge.setSafeBrowsingState(
+                                            SafeBrowsingState.NO_SAFE_BROWSING);
+                                    mSafeBrowsingPreference.setCheckedState(
+                                            SafeBrowsingState.NO_SAFE_BROWSING);
+                                }
+                                // No-ops if the user denies.
+                            })
+                    .show();
+        } else {
+            SafeBrowsingBridge.setSafeBrowsingState(newState);
+        }
+        return true;
     }
 }

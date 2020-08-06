@@ -14,6 +14,13 @@ class KaleidoscopeToolbarElement extends PolymerElement {
   static get template() {
     return html`{__html_template__}`;
   }
+
+  static get properties() {
+    return {
+      // Controls whether the search field is shown.
+      showSearch: {type: Boolean, value: false},
+    };
+  }
 }
 
 customElements.define(

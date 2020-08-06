@@ -707,6 +707,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_DISCOVER_FEED_TITLE" desc="The title in the Discover feed menu.">
         Discover
       </message>
+      <message name="IDS_IOS_DISCOVER_FEED_TITLE_OFF_LABEL" desc="The 'Off' label appended to the title in the Discover feed menu.">
+        Off
+      </message>
       <message name="IDS_IOS_DISCOVER_FEED_MENU_LEARN_MORE_ITEM" desc="The 'Learn More' action for the Discover feed header menu.">
         Learn More
       </message>
@@ -1616,10 +1619,10 @@ While in incognito, sites can't use cookies to see your browsing activity across
         Passwords
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_DESC_WITH_COMPANY_NAME" desc="Text displayed to inform the user that the browser is managed by Enterprise policies with company name. [iOS only]">
-        Managed by <ph name="COMPANY">$1<ex>Google</ex></ph>.
+        Managed by <ph name="COMPANY">$1<ex>Google</ex></ph>. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_DESC_WITHOUT_COMPANY_NAME" desc="Text displayed to inform the user that the browser is managed by Enterprise policies without company name. [iOS only]">
-        Managed by your organization.
+        Managed by your organization. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE" desc="Text displayed to inform the user that the setting is managed by an Enterprise policy. [iOS only]">
         This setting is enforced by your administrator.

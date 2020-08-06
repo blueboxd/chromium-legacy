@@ -371,10 +371,10 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
   }
 
   auto* new_end =
-      std::remove_if(pending_decodes_.begin(), pending_decodes_.end(),
-                     [](const auto& request) {
-                       return request->result || request->exception;
-                     });
+      std::stable_partition(pending_decodes_.begin(), pending_decodes_.end(),
+                            [](const auto& request) {
+                              return !request->result && !request->exception;
+                            });
 
   // Copy completed requests to a new local vector to avoid reentrancy issues
   // when resolving and rejecting the promises.

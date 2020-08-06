@@ -16,13 +16,13 @@
       </ul>
       <button
           v-if="selectedNode.visualizationState.selectedByFilter"
-          @click="removeSelectedFromFilter">
-        Remove from filter
+          @click="uncheckNodeInFilter">
+        Uncheck in filter
       </button>
       <button
           v-else
-          @click="addSelectedToFilter">
-        Add to filter
+          @click="checkNodeInFilter">
+        Add/check in filter
       </button>
     </template>
     <div v-else>
@@ -43,12 +43,11 @@ const GraphSelectedNodeDetails = {
     return this.selectedNodeDetailsData;
   },
   methods: {
-    addSelectedToFilter: function() {
-      this.$emit(CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED, this.selectedNode.id);
+    checkNodeInFilter: function(check) {
+      this.$emit(CUSTOM_EVENTS.DETAILS_CHECK_NODE, this.selectedNode.id);
     },
-    removeSelectedFromFilter: function() {
-      this.$emit(
-          CUSTOM_EVENTS.REMOVE_FROM_FILTER_CLICKED, this.selectedNode.id);
+    uncheckNodeInFilter: function(check) {
+      this.$emit(CUSTOM_EVENTS.DETAILS_UNCHECK_NODE, this.selectedNode.id);
     },
   },
 };

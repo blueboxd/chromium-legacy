@@ -5,6 +5,7 @@
 module bluetooth.mojom;
 
 import "device/bluetooth/public/mojom/device.mojom";
+import "device/bluetooth/public/mojom/uuid.mojom";
 
 // Possible errors sent as a response by Adapter.ConnectToDevice on a Device
 // connection request.
@@ -21,7 +22,15 @@ enum ConnectResult {
   DEVICE_NO_LONGER_IN_RANGE,
 };
 
+// The results of a successful connection via ConnectToServiceInsecurely().
+struct ConnectToServiceResult {
+  pending_remote<Socket> socket;
+  handle<data_pipe_consumer> receive_stream;
+  handle<data_pipe_producer> send_stream;
+};
+
 struct AdapterInfo {
+  // TODO(crbug.com/1112886): Use fixed-size array, not string, for address.
   string address;
   string name;
   string system_name;
@@ -52,10 +61,25 @@ interface DiscoverySession {
   Stop() => (bool success);
 };
 
+// Represents an open connection to a remote device. Releasing it will destroy
+// the underlying connection, but callers should prefer to let a call to
+// Disconnect() to finish first.
+interface Socket {
+  // Use to gracefully close the underlying connection before destroying. The
+  // reply callback can be used to synchronize a reconnection attempt;
+  // attempting to reconnect to the same service on this device may fail with a
+  // busy error until the reply callback is invoked.
+  [Sync]
+  Disconnect() => ();
+};
+
+// Handles requests to either query Bluetooth adapter capabilities or state, or
+// find or connect to remote devices. Backed by //device/bluetooth.
 interface Adapter {
   // Creates a GATT connection to the device with |address| and returns a
   // Device if the connection was succesful. The GATT connection is tied to the
   // the lifetime of the Device message pipe.
+  // TODO(crbug.com/1112886): Use fixed-size array, not string, for address.
   ConnectToDevice(string address) =>
       (ConnectResult result, pending_remote<Device>? device);
 
@@ -73,6 +97,16 @@ interface Adapter {
   // Requests the adapter to start a new discovery session. Returns null if
   // session not created successfully.
   StartDiscoverySession() => (pending_remote<DiscoverySession>? session);
+
+  // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the
+  // advertised service on this device matching |service_uuid|. This method is
+  // marked as "Insecurely" because the outgoing connection will not request
+  // bonding (pairing) to the remote device. All return values will be null if
+  // the connection attempt fails.
+  // TODO(crbug.com/1112886): Use fixed-size array, not string, for address.
+  [Sync]
+  ConnectToServiceInsecurely(string address, UUID service_uuid)
+      => (ConnectToServiceResult? result);
 };
 
 interface AdapterClient {

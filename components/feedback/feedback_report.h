@@ -32,13 +32,15 @@ class FeedbackReport : public base::RefCountedThreadSafe<FeedbackReport> {
   FeedbackReport(const base::FilePath& path,
                  const base::Time& upload_at,
                  std::unique_ptr<std::string> data,
-                 scoped_refptr<base::SequencedTaskRunner> task_runner);
+                 scoped_refptr<base::SequencedTaskRunner> task_runner,
+                 bool has_email);
 
   // Creates a feedback report from an existing one on-disk at |path|, the
   // |upload_at| time should be set after construction.
   FeedbackReport(base::FilePath path,
                  std::unique_ptr<std::string> data,
-                 scoped_refptr<base::SequencedTaskRunner> task_runner);
+                 scoped_refptr<base::SequencedTaskRunner> task_runner,
+                 bool has_email);
 
   // The ID of the product specific data for the crash report IDs as stored by
   // the feedback server.
@@ -64,6 +66,7 @@ class FeedbackReport : public base::RefCountedThreadSafe<FeedbackReport> {
   const base::Time& upload_at() const { return upload_at_; }
   void set_upload_at(const base::Time& time) { upload_at_ = time; }
   const std::string& data() const { return *data_; }
+  bool has_email() const { return has_email_; }
   scoped_refptr<base::SequencedTaskRunner> reports_task_runner() const {
     return reports_task_runner_;
   }
@@ -74,6 +77,9 @@ class FeedbackReport : public base::RefCountedThreadSafe<FeedbackReport> {
 
   // Name of the file corresponding to this report.
   base::FilePath file_;
+
+  // True iff the report is being sent with an email.
+  const bool has_email_;
 
   base::FilePath reports_path_;
   base::Time upload_at_;  // Upload this report at or after this time.

@@ -1444,10 +1444,14 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
     } else {
       continue;
     }
-    // Convert the quad damage rect into its target space and clip it
-    // if needed.
-    gfx::Rect rect_in_target_space = cc::MathUtil::MapEnclosingClippedRect(
-        quad->shared_quad_state->quad_to_target_transform, quad_damage_rect);
+    // Convert the quad damage rect into its target space and clip it if
+    // needed. Ignore tiny errors to avoid artificially inflating the
+    // damage due to floating point math.
+    constexpr float kEpsilon = 0.001f;
+    gfx::Rect rect_in_target_space =
+        cc::MathUtil::MapEnclosingClippedRectIgnoringError(
+            quad->shared_quad_state->quad_to_target_transform, quad_damage_rect,
+            kEpsilon);
     if (quad->shared_quad_state->is_clipped) {
       rect_in_target_space.Intersect(quad->shared_quad_state->clip_rect);
     }

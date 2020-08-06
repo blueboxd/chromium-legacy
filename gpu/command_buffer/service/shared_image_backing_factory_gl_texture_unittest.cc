@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/buffer_format_utils.h"
@@ -119,7 +120,7 @@ class SharedImageBackingFactoryGLTextureTestBase
 
   viz::ResourceFormat get_format() { return std::get<1>(GetParam()); }
 
-  GrContext* gr_context() { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;

@@ -188,6 +188,32 @@ void ReadChromeOSGraphicsMemory(SystemMemoryInfoKB* meminfo) {
 }
 #endif  // defined(OS_CHROMEOS)
 
+// Executes the lambda for every task in the process's /proc/<pid>/task
+// directory. The thread id and file path of the task directory are provided as
+// arguments to the lambda.
+template <typename Lambda>
+void ForEachProcessTask(base::ProcessHandle process, Lambda&& lambda) {
+  // Iterate through the different threads tracked in /proc/<pid>/task.
+  FilePath fd_path = internal::GetProcPidDir(process).Append("task");
+
+  DirReaderPosix dir_reader(fd_path.value().c_str());
+  if (!dir_reader.IsValid())
+    return;
+
+  for (; dir_reader.Next();) {
+    const char* tid_str = dir_reader.name();
+    if (strcmp(tid_str, ".") == 0 || strcmp(tid_str, "..") == 0)
+      continue;
+
+    PlatformThreadId tid;
+    if (!StringToInt(tid_str, &tid))
+      continue;
+
+    FilePath task_path = fd_path.Append(tid_str);
+    lambda(tid, task_path);
+  }
+}
+
 bool SupportsPerTaskTimeInState() {
   FilePath time_in_state_path = internal::GetProcPidDir(GetCurrentProcId())
                                     .Append("task")
@@ -219,22 +245,21 @@ bool ProcessMetrics::GetCumulativeCPUUsagePerThread(
     CPUUsagePerThread& cpu_per_thread) {
   cpu_per_thread.clear();
 
-  internal::ForEachProcessTask(
-      process_,
-      [&cpu_per_thread](PlatformThreadId tid, const FilePath& task_path) {
-        FilePath thread_stat_path = task_path.Append("stat");
+  ForEachProcessTask(process_, [&cpu_per_thread](PlatformThreadId tid,
+                                                 const FilePath& task_path) {
+    FilePath thread_stat_path = task_path.Append("stat");
 
-        std::string buffer;
-        std::vector<std::string> proc_stats;
-        if (!internal::ReadProcFile(thread_stat_path, &buffer) ||
-            !internal::ParseProcStats(buffer, &proc_stats)) {
-          return;
-        }
+    std::string buffer;
+    std::vector<std::string> proc_stats;
+    if (!internal::ReadProcFile(thread_stat_path, &buffer) ||
+        !internal::ParseProcStats(buffer, &proc_stats)) {
+      return;
+    }
 
-        TimeDelta thread_time = internal::ClockTicksToTimeDelta(
-            ParseTotalCPUTimeFromStats(proc_stats));
-        cpu_per_thread.emplace_back(tid, thread_time);
-      });
+    TimeDelta thread_time =
+        internal::ClockTicksToTimeDelta(ParseTotalCPUTimeFromStats(proc_stats));
+    cpu_per_thread.emplace_back(tid, thread_time);
+  });
 
   return !cpu_per_thread.empty();
 }
@@ -252,7 +277,7 @@ bool ProcessMetrics::GetPerThreadCumulativeCPUTimeInState(
     return false;
 
   bool success = false;
-  internal::ForEachProcessTask(
+  ForEachProcessTask(
       process_, [&time_in_state_per_thread, &success, this](
                     PlatformThreadId tid, const FilePath& task_path) {
         FilePath time_in_state_path = task_path.Append("time_in_state");

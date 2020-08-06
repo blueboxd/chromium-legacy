@@ -36,6 +36,8 @@ USE_PYTHON_3 = f'This script will only run under python3.'
 
 _SRC_ROOT = os.path.normpath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+sys.path.append(os.path.join(_SRC_ROOT, 'build', 'android'))
+from pylib import constants
 
 # pylint: disable=line-too-long
 _URL_BAR = 'chrome/android/java/src/org/chromium/chrome/browser/omnibox/UrlBar.java'
@@ -253,16 +255,21 @@ def main():
                         type=int,
                         default=1,
                         help='Number of times to repeat the benchmark.')
-    parser.add_argument('-C',
-                        '--out-dir',
-                        default=os.path.join('out', 'Debug'),
-                        help='Output directory to use relative to src.')
+    parser.add_argument(
+        '-C',
+        '--output-directory',
+        help='If outdir is not provided, will attempt to guess.')
     parser.add_argument('-v',
                         '--verbose',
                         action='count',
                         default=0,
                         help='1 to print logging, 2 to print ninja output.')
     args = parser.parse_args()
+
+    if args.output_directory:
+        constants.SetOutputDirectory(args.output_directory)
+    constants.CheckOutputDirectory()
+    out_dir = constants.GetOutDirectory()
 
     if args.verbose >= 2:
         level = logging.DEBUG
@@ -274,8 +281,7 @@ def main():
         level=level, format='%(levelname).1s %(relativeCreated)6d %(message)s')
 
     gn_args = _GN_ARG_PRESETS[args.args]
-    results = run_benchmarks(args.benchmark, gn_args, args.out_dir,
-                             args.repeat)
+    results = run_benchmarks(args.benchmark, gn_args, out_dir, args.repeat)
 
     print('Summary')
     print(f'gn args: {" ".join(gn_args)}')

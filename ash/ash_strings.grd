@@ -510,6 +510,10 @@ This file contains the strings for ash.
         Menu moved to the bottom-right corner of the screen.
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_CAPTURE_MODE_BUTTON_LABEL" desc="The label text for the button in the status tray to trigger capture mode.">
+        Screen capture
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_MIC_GAIN" desc="The accessible text for the toggle mic muted button in the tray audio settings">
         Toggle Mic. <ph name="STATE_TEXT">$1<ex>Mic is muted</ex></ph>
       </message>
@@ -901,6 +905,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in.">
         Create note
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_ENTER_CAPTURE_MODE_ACTION" desc="Title of the enter capture mode action in the stylus tools (a pop-up panel next to the status tray). This enters capture mode, which allows users to take screenshots and record video. Capture mode has an UI for users to modify what gets screenshotted or recorded.">
+        Screen capture
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_LASER_POINTER_MODE" desc="Title of the laser pointer in the palette (a pop-up panel next to the status tray). Clicking this turns the mouse into a laser pointer. Additionally, the palette tray is closed.">
         Laser pointer

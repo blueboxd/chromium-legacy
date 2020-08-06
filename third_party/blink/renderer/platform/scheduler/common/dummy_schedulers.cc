@@ -174,10 +174,6 @@ class DummyThreadScheduler : public ThreadScheduler {
     return base::ThreadTaskRunnerHandle::Get();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-
   scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override {
     return base::ThreadTaskRunnerHandle::Get();
   }
@@ -234,11 +230,6 @@ class DummyWebThreadScheduler : public WebThreadScheduler,
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
-    DCHECK(WTF::IsMainThread());
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override {
     DCHECK(WTF::IsMainThread());
     return base::ThreadTaskRunnerHandle::Get();
   }

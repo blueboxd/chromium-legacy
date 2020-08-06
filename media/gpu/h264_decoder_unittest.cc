@@ -305,7 +305,9 @@ TEST_F(H264DecoderTest, DecodeProfileBaseline) {
   ASSERT_TRUE(decoder_->Flush());
 }
 
-TEST_F(H264DecoderTest, OutputPictureFailureCausesFlushToFail) {
+// TODO(jkardatzke): Remove this test if we keep the flag for DecoderBuffers
+// are complete frames because this code path will never get called.
+TEST_F(H264DecoderTest, DISABLED_OutputPictureFailureCausesFlushToFail) {
   // Provide one frame so that Decode() will not try to output a frame, so
   // Flush() will.
   SetInputFrameFiles({
@@ -517,14 +519,11 @@ TEST_F(H264DecoderTest, SubmitFrameMetadataRetry) {
     InSequence sequence;
     EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
-  }
-  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
-
-  {
-    InSequence sequence;
     EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
+
   ASSERT_TRUE(decoder_->Flush());
 }
 
@@ -553,14 +552,13 @@ TEST_F(H264DecoderTest, SubmitSliceRetry) {
   ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
 
   // Assume key has been provided now, next call to Decode() should proceed.
-  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
-  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
-
   {
     InSequence sequence;
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
 }
 
@@ -599,14 +597,10 @@ TEST_F(H264DecoderTest, SubmitDecodeRetry) {
     EXPECT_CALL(*accelerator_, CreateH264Picture());
     EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
-  }
-  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
-
-  {
-    InSequence sequence;
     EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(2)));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(2)));
   }
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
 }
 
@@ -629,14 +623,10 @@ TEST_F(H264DecoderTest, SetStreamRetry) {
     EXPECT_CALL(*accelerator_, CreateH264Picture());
     EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
-  }
-  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
-
-  {
-    InSequence sequence;
     EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
 }
 

@@ -11,8 +11,9 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
-#include "chrome/browser/ui/views/download/download_item_view.h"
 #include "ui/base/ui_base_types.h"
+
+class DownloadItemView;
 
 namespace gfx {
 class Rect;

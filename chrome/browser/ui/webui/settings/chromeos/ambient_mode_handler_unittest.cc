@@ -1,0 +1,168 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
+
+#include <memory>
+
+#include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/test/test_web_ui.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace chromeos {
+
+namespace settings {
+
+namespace {
+
+const char kWebCallbackFunctionName[] = "cr.webUIListenerCallback";
+
+class TestAmbientModeHandler : public AmbientModeHandler {
+ public:
+  TestAmbientModeHandler() = default;
+  ~TestAmbientModeHandler() override = default;
+
+  // Make public for testing.
+  using AmbientModeHandler::AllowJavascript;
+  using AmbientModeHandler::RegisterMessages;
+  using AmbientModeHandler::set_web_ui;
+};
+
+}  // namespace
+
+class AmbientModeHandlerTest : public testing::Test {
+ public:
+  AmbientModeHandlerTest() = default;
+  ~AmbientModeHandlerTest() override = default;
+
+  void SetUp() override {
+    web_ui_ = std::make_unique<content::TestWebUI>();
+    handler_ = std::make_unique<TestAmbientModeHandler>();
+    handler_->set_web_ui(web_ui_.get());
+    handler_->RegisterMessages();
+    handler_->AllowJavascript();
+    fake_backend_controller_ =
+        std::make_unique<ash::FakeAmbientBackendControllerImpl>();
+  }
+
+  void RequestTopicSource() {
+    base::ListValue args;
+    handler_->HandleRequestTopicSource(&args);
+  }
+
+  void RequestAlbums(int topic_source) {
+    base::ListValue args;
+    args.Append(topic_source);
+    handler_->HandleRequestAlbums(&args);
+  }
+
+  void VerifyTopicSourceSent(base::RunLoop* run_loop) {
+    EXPECT_EQ(1U, web_ui_->call_data().size());
+
+    const content::TestWebUI::CallData& call_data =
+        *web_ui_->call_data().back();
+
+    // The call is structured such that the function name is the "web callback"
+    // name and the first argument is the name of the message being sent.
+    EXPECT_EQ(kWebCallbackFunctionName, call_data.function_name());
+    EXPECT_EQ("topic-source-changed", call_data.arg1()->GetString());
+    // In FakeAmbientBackendControllerImpl, the |topic_source| is
+    // kGooglePhotos.
+    EXPECT_EQ(0, call_data.arg2()->GetInt());
+    run_loop->Quit();
+  }
+
+  void VerifyAlbumsSent(int expected_topic_source, base::RunLoop* run_loop) {
+    EXPECT_EQ(1U, web_ui_->call_data().size());
+
+    const content::TestWebUI::CallData& call_data =
+        *web_ui_->call_data().back();
+
+    // The call is structured such that the function name is the "web callback"
+    // name and the first argument is the name of the message being sent.
+    EXPECT_EQ(kWebCallbackFunctionName, call_data.function_name());
+    EXPECT_EQ("albums-changed", call_data.arg1()->GetString());
+
+    // The test data is set in FakeAmbientBackendControllerImpl.
+    const base::DictionaryValue* dictionary = nullptr;
+    call_data.arg2()->GetAsDictionary(&dictionary);
+
+    const base::Value* topic_source_value = dictionary->FindKey("topicSource");
+    EXPECT_EQ(expected_topic_source, topic_source_value->GetInt());
+
+    const base::Value* albums = dictionary->FindKey("albums");
+    EXPECT_EQ(2U, albums->GetList().size());
+
+    const base::DictionaryValue* album0;
+    albums->GetList()[0].GetAsDictionary(&album0);
+    EXPECT_EQ("0", album0->FindKey("albumId")->GetString());
+
+    if (expected_topic_source == 0) {
+      EXPECT_EQ(false, album0->FindKey("checked")->GetBool());
+      EXPECT_EQ("album0", album0->FindKey("title")->GetString());
+
+    } else {
+      EXPECT_EQ(true, album0->FindKey("checked")->GetBool());
+      EXPECT_EQ("art0", album0->FindKey("title")->GetString());
+    }
+    const base::DictionaryValue* album1;
+    albums->GetList()[1].GetAsDictionary(&album1);
+    EXPECT_EQ("1", album1->FindKey("albumId")->GetString());
+
+    if (expected_topic_source == 0) {
+      EXPECT_EQ(true, album1->FindKey("checked")->GetBool());
+      EXPECT_EQ("album1", album1->FindKey("title")->GetString());
+    } else {
+      EXPECT_EQ(false, album1->FindKey("checked")->GetBool());
+      EXPECT_EQ("art1", album1->FindKey("title")->GetString());
+    }
+    run_loop->Quit();
+  }
+
+ private:
+  base::test::TaskEnvironment task_environment_;
+  std::unique_ptr<content::TestWebUI> web_ui_;
+  std::unique_ptr<ash::AmbientBackendController> fake_backend_controller_;
+  std::unique_ptr<TestAmbientModeHandler> handler_;
+};
+
+TEST_F(AmbientModeHandlerTest, TestSendTopicSource) {
+  RequestTopicSource();
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AmbientModeHandlerTest::VerifyTopicSourceSent,
+                     base::Unretained(this), &run_loop),
+      base::TimeDelta::FromSeconds(1));
+  run_loop.Run();
+}
+
+TEST_F(AmbientModeHandlerTest, TestSendAlbumsForGooglePhotos) {
+  int topic_source = 0;
+  RequestAlbums(topic_source);
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AmbientModeHandlerTest::VerifyAlbumsSent,
+                     base::Unretained(this), topic_source, &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(AmbientModeHandlerTest, TestSendAlbumsForArtGallery) {
+  int topic_source = 1;
+  RequestAlbums(topic_source);
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AmbientModeHandlerTest::VerifyAlbumsSent,
+                     base::Unretained(this), topic_source, &run_loop));
+  run_loop.Run();
+}
+
+}  // namespace settings
+}  // namespace chromeos

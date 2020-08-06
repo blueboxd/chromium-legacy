@@ -1843,37 +1843,29 @@ EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_COALESCED)
 
 // Session received an ACK frame.
 //   {
-//     "sent_info": <Details of packet sent by the peer>
-//       {
-//         "least_unacked": <Lowest sequence number of a packet sent by the peer
-//                           for which it has not received an ACK>,
-//       }
-//     "received_info": <Details of packet received by the peer>
-//       {
-//         "largest_observed": <The largest sequence number of a packet received
-//                               by (or inferred by) the peer>,
-//         "missing": <List of sequence numbers of packets lower than
-//                     largest_observed which have not been received by the
-//                     peer>,
-//       }
+//     "largest_observed": <The largest packet number of a packet the peer has
+//       received, a.k.a. Largest Acknowledged>,
+//     "smallest_observed": <The smallest packet number covered by this ACK>,
+//     "delta_time_largest_observed_us": <Time between when the largest
+//       packet number was received and the ACK sent, a.k.a. Ack Delay>,
+//     "missing_packets": <List of packet numbers of packets between
+//       smallest_observed and largest_observed which were not received>,
+//     "received_packet_times": <List of dictionaries containing
+//       "packet_number" and "received" timestamps (if enabled)>,
 //   }
 EVENT_TYPE(QUIC_SESSION_ACK_FRAME_RECEIVED)
 
 // Session sent an ACK frame.
 //   {
-//     "sent_info": <Details of packet sent by the peer>
-//       {
-//         "least_unacked": <Lowest sequence number of a packet sent by the peer
-//                           for which it has not received an ACK>,
-//       }
-//     "received_info": <Details of packet received by the peer>
-//       {
-//         "largest_observed": <The largest sequence number of a packet received
-//                               by (or inferred by) the peer>,
-//         "missing": <List of sequence numbers of packets lower than
-//                     largest_observed which have not been received by the
-//                     peer>,
-//       }
+//     "largest_observed": <The largest packet number of a packet we have
+//       received, a.k.a. Largest Acknowledged>,
+//     "smallest_observed": <The smallest packet number covered by this ACK>,
+//     "delta_time_largest_observed_us": <Time between when the largest
+//       packet number was received and the ACK sent, a.k.a. Ack Delay>,
+//     "missing_packets": <List of packet numbers of packets between
+//       smallest_observed and largest_observed which were not received>,
+//     "received_packet_times": <List of dictionaries containing
+//       "packet_number" and "received" timestamps (if enabled)>,
 //   }
 EVENT_TYPE(QUIC_SESSION_ACK_FRAME_SENT)
 

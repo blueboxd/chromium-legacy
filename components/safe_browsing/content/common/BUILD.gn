@@ -20,7 +20,7 @@ mojom("interfaces") {
   component_deps = [ "//third_party/blink/public/common:common" ]
 
   enabled_features = []
-  if (safe_browsing_mode == 1) {
+  if (safe_browsing_mode > 0) {
     enabled_features += [ "full_safe_browsing" ]
   }
 }

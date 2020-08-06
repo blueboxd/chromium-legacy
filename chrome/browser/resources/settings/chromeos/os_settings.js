@@ -18,6 +18,7 @@ import './parental_controls_page/parental_controls_page.m.js';
 import './os_people_page/os_people_page.m.js';
 import './os_privacy_page/os_privacy_page.m.js';
 import './date_time_page/timezone_selector.m.js';
+import './date_time_page/timezone_subpage.m.js';
 
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
 export {dataUsageStringToEnum, NearbyShareDataUsage} from '../nearby_share_page/types.m.js';

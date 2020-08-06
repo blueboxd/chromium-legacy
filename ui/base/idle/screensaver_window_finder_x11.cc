@@ -4,7 +4,9 @@
 
 #include "ui/base/idle/screensaver_window_finder_x11.h"
 
+#include "base/command_line.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/screensaver.h"
 #include "ui/gfx/x/x11.h"
@@ -16,6 +18,10 @@ namespace ui {
 ScreensaverWindowFinder::ScreensaverWindowFinder() : exists_(false) {}
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
+  // Avoid calling into potentially missing X11 APIs in headless mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
+    return false;
+
   auto* connection = x11::Connection::Get();
 
   // Let the server know the client version before making any requests.

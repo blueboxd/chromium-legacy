@@ -7,6 +7,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace gpu {
 
@@ -155,7 +156,7 @@ SharedImageRepresentationSkia::ScopedReadAccess::~ScopedReadAccess() {
 }
 
 sk_sp<SkImage> SharedImageRepresentationSkia::ScopedReadAccess::CreateSkImage(
-    GrContext* context) const {
+    GrDirectContext* context) const {
   auto surface_origin = representation()->surface_origin();
   auto color_type =
       viz::ResourceFormatToClosestSkColorType(true, representation()->format());

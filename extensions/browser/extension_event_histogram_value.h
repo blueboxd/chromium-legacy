@@ -481,6 +481,7 @@ enum HistogramValue {
   CERTIFICATEPROVIDER_ON_CERTIFICATES_UPDATE_REQUESTED = 459,
   CERTIFICATEPROVIDER_ON_SIGNATURE_REQUESTED = 460,
   WINDOWS_ON_BOUNDS_CHANGED = 461,
+  WALLPAPER_PRIVATE_ON_CLOSE_PREVIEW_WALLPAPER = 462,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

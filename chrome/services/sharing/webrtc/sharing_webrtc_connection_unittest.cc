@@ -174,7 +174,7 @@ class SharingWebRtcConnectionTest : public testing::Test {
     connection_ = std::make_unique<SharingWebRtcConnection>(
         mock_webrtc_pc_factory_.get(), std::vector<mojom::IceServerPtr>(),
         connection_host_.signaling_sender.BindNewPipeAndPassRemote(),
-        connection_host_.signalling_receiver.BindNewPipeAndPassReceiver(),
+        connection_host_.signaling_receiver.BindNewPipeAndPassReceiver(),
         connection_host_.delegate.BindNewPipeAndPassRemote(),
         connection_host_.connection.BindNewPipeAndPassReceiver(),
         connection_host_.socket_manager.BindNewPipeAndPassRemote(),

@@ -16,47 +16,87 @@ const GraphEdgeColor = {
 };
 
 /**
- * A container representing the visualization's node filter. Nodes included in
- * the filter are allowed to be displayed on the graph.
+ * Underlying data for node filtering. The UI shows a "filter list" that
+ * displays nodes of interest, and each can be toggled on/off using a checkbox.
+ * Each node is classified as:
+ * 1. Ignored: Not in filter list; hidden in visualizer.
+ * 2. Unchecked: In filter list; hidden in visualizer.
+ * 3. Checked (Selected): In filter list; shown in visualizer.
  */
 class NodeFilterData {
-  /**
-   * Vue does not currently support reactivity on ES6 Sets. (Planned addition
-   * for 3.0 https://github.com/vuejs/vue/issues/2410#issuecomment-434990853).
-   * For performance, we maintain a Set for lookups when filtering nodes/edges
-   * and expose an Array to the UI for reactivity. We sync the data in these
-   * two structures manually.
-   */
   constructor() {
-    /** @public {!Set<string>} */
-    this.nodeSet = new Set();
-    /** @public {!Array<string>} */
-    this.nodeList = [];
-  }
+    /**
+     * @typedef {Object} NodeFilterEntry An entry in the filter list.
+     * @property {string} name The name of the node to be filtered.
+     * @property {boolean} checked Whether the node is checked (selected). If
+     *   true, then the node is shown in the visualizer.
+     */
 
-  /**
-   * Adds a node to the node set + array.
-   * @param {string} nodeName The name of the node to add.
+    /**
+     * List of filter list entries, i.e., nodes in unchecked or checked state.
+     * @public {!Array<!NodeFilterEntry>)
    */
-  addNode(nodeName) {
-    if (!this.nodeSet.has(nodeName)) {
-      this.nodeSet.add(nodeName);
-      this.nodeList.push(nodeName);
-    }
+    this.filterList = [];
   }
 
   /**
-   * Removes a node from the node set + array.
+   * Finds a node in the filter list, creating and adding one if necessary.
+   * @param {string} nodeName The name of the node to find.
+   * @return {!NodeFilterEntry} The node's entry in the filter list.
+   */
+  addOrFindNode(nodeName) {
+    const foundIndex = this.filterList.findIndex(
+        filterEntry => filterEntry.name === nodeName);
+    if (foundIndex >= 0) {
+      return this.filterList[foundIndex];
+    }
+    const entryToAdd = {
+      name: nodeName,
+      checked: true,
+    };
+    this.filterList.push(entryToAdd);
+    return entryToAdd;
+  }
+
+  /**
+   * Removes a node from the filter list (i.e., set state to ignored) if it
+   *   exists.
    * @param {string} nodeName The name of the node to remove.
    */
   removeNode(nodeName) {
-    const deleted = this.nodeSet.delete(nodeName);
-    if (deleted) {
-      const deleteIndex = this.nodeList.indexOf(nodeName);
+    const deleteIndex = this.filterList.findIndex(
+        filterEntry => filterEntry.name === nodeName);
+    if (deleteIndex >= 0) {
       // TODO(yjlong): If order turns out to be unimportant, just swap the
       // last element and the deleted element, then pop.
-      this.nodeList.splice(deleteIndex, 1);
+      this.filterList.splice(deleteIndex, 1);
     }
+  }
+
+  /**
+   * Sets all nodes in the filter list to checked.
+   */
+  checkAll() {
+    for (const filterEntry of this.filterList) {
+      filterEntry.checked = true;
+    }
+  }
+
+  /**
+   * Sets all nodes in the filter list to unchecked.
+   */
+  uncheckAll() {
+    for (const filterEntry of this.filterList) {
+      filterEntry.checked = false;
+    }
+  }
+
+  /**
+   * @return {!Set<string>} A set of nodes that are checked in the filter.
+   */
+  getSelectedNodeSet() {
+    return new Set(this.filterList.filter(filterEntry => filterEntry.checked)
+        .map(filterEntry => filterEntry.name));
   }
 }
 
@@ -89,9 +129,12 @@ class DisplaySettingsData {
     urlProcessor.append(
         URL_PARAM_KEYS.COLOR_ONLY_ON_HOVER, this.colorOnlyOnHover);
     urlProcessor.append(URL_PARAM_KEYS.EDGE_COLOR, this.graphEdgeColor);
-    if (this.nodeFilterData.nodeList.length > 0) {
-      urlProcessor.appendArray(
-          URL_PARAM_KEYS.FILTER, this.nodeFilterData.nodeList);
+    if (this.nodeFilterData.filterList.length > 0) {
+      urlProcessor.appendArray(URL_PARAM_KEYS.FILTER_NAMES,
+          this.nodeFilterData.filterList.map(filterEntry => filterEntry.name));
+      urlProcessor.appendArray(URL_PARAM_KEYS.FILTER_CHECKED,
+          this.nodeFilterData.filterList.map(
+              filterEntry => filterEntry.checked));
     }
   }
 
@@ -110,8 +153,20 @@ class DisplaySettingsData {
         URL_PARAM_KEYS.COLOR_ONLY_ON_HOVER, this.colorOnlyOnHover);
     this.graphEdgeColor = urlProcessor.getString(
         URL_PARAM_KEYS.EDGE_COLOR, this.graphEdgeColor);
-    for (const filterItem of urlProcessor.getArray(URL_PARAM_KEYS.FILTER, [])) {
-      this.nodeFilterData.addNode(filterItem);
+
+    const filterNames = urlProcessor.getArray(URL_PARAM_KEYS.FILTER_NAMES, []);
+    const filterChecked = urlProcessor.getArray(
+        URL_PARAM_KEYS.FILTER_CHECKED, []);
+    for (const [filterIdx, filterName] of filterNames.entries()) {
+      const filterEntry = this.nodeFilterData.addOrFindNode(filterName);
+      // If there is no corresponding entry in `filterChecked` (e.g., if the
+      // checked param is empty), use true as a default value.
+      if (filterIdx < filterChecked.length) {
+        const filterElemChecked = (filterChecked[filterIdx] === 'true');
+        filterEntry.checked = filterElemChecked;
+      } else {
+        filterEntry.checked = true;
+      }
     }
   }
 }

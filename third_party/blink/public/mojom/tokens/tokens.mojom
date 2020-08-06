@@ -27,6 +27,11 @@ struct RemoteFrameToken {
   mojo_base.mojom.UnguessableToken value;
 };
 
+union FrameToken {
+  LocalFrameToken local_frame_token;
+  RemoteFrameToken remote_frame_token;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // WORKER TOKENS
 
@@ -34,12 +39,18 @@ struct DedicatedWorkerToken {
   mojo_base.mojom.UnguessableToken value;
 };
 
+struct ServiceWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
 struct SharedWorkerToken {
   mojo_base.mojom.UnguessableToken value;
 };
 
-struct ServiceWorkerToken {
-  mojo_base.mojom.UnguessableToken value;
+union WorkerToken {
+  DedicatedWorkerToken dedicated_worker_token;
+  ServiceWorkerToken service_worker_token;
+  SharedWorkerToken shared_worker_token;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,6 +61,13 @@ struct ServiceWorkerToken {
 // If you have multiple tokens that make a thematic group, please lift them to
 // their own section, in alphabetical order. If adding a new token here, please
 // keep the following list in alphabetic order.
+
+union ExecutionContextAttributionToken {
+  LocalFrameToken local_frame_token;
+  DedicatedWorkerToken dedicated_worker_token;
+  ServiceWorkerToken service_worker_token;
+  SharedWorkerToken shared_worker_token;
+};
 
 struct PortalToken {
   mojo_base.mojom.UnguessableToken value;

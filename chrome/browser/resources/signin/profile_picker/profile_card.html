@@ -33,6 +33,7 @@
 </style>
 
 <cr-button on-click="onProfileClick_">
+  <profile-card-menu profile-state="[[profileState]]"></profile-card-menu>
   <!-- TODO(msalama): Implement editing local profile name in place -->
   <div class="profile-info">[[profileState.localProfileName]]</div>
   <img class="profile-avatar" alt="" src="[[profileState.avatarIcon]]">

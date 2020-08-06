@@ -53,7 +53,7 @@ class MockSignallingHost : public WebRtcSignallingHostFCM {
   MockSignallingHost()
       : WebRtcSignallingHostFCM(
             mojo::PendingReceiver<sharing::mojom::SignalingSender>(),
-            mojo::PendingRemote<sharing::mojom::SignallingReceiver>(),
+            mojo::PendingRemote<sharing::mojom::SignalingReceiver>(),
             /*message_sender=*/nullptr,
             CreateFakeDeviceInfo("id", "name")) {}
   ~MockSignallingHost() override = default;

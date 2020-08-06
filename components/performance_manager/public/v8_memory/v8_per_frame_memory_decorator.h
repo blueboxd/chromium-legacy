@@ -458,6 +458,9 @@ class V8PerFrameMemoryRequestAnySeq {
   V8PerFrameMemoryRequestAnySeq& operator=(
       const V8PerFrameMemoryRequestAnySeq&) = delete;
 
+  // Returns whether |observer| is in |observers_|.
+  bool HasObserver(V8PerFrameMemoryObserverAnySeq* observer);
+
   // Adds an observer that was created on the same sequence as the
   // V8PerFrameMemoryRequestAnySeq.
   void AddObserver(V8PerFrameMemoryObserverAnySeq* observer);

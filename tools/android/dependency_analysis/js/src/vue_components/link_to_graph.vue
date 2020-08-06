@@ -19,7 +19,7 @@ const LinkToGraph = {
   computed: {
     url: function() {
       const urlProcessor = UrlProcessor.createForOutput();
-      urlProcessor.appendArray(URL_PARAM_KEYS.FILTER, this.filter);
+      urlProcessor.appendArray(URL_PARAM_KEYS.FILTER_NAMES, this.filter);
       return urlProcessor.getUrl(document.URL, this.graphType);
     },
   },

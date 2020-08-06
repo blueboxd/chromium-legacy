@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_header_changing.h"
 #import "ios/chrome/browser/ui/content_suggestions/discover_feed_menu_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
@@ -93,6 +94,9 @@
 @property(nonatomic, strong, readwrite)
     ContentSuggestionsHeaderViewController* headerController;
 @property(nonatomic, strong) PrefBackedBoolean* contentSuggestionsVisible;
+// Delegate for handling Discover feed header UI changes.
+@property(nonatomic, weak) id<DiscoverFeedHeaderChanging>
+    discoverFeedHeaderDelegate;
 
 @end
 
@@ -220,6 +224,12 @@
       self.browser->GetCommandDispatcher(), SnackbarCommands);
   self.suggestionsViewController.dispatcher = dispatcher;
   self.suggestionsViewController.discoverFeedMenuHandler = self;
+  self.discoverFeedHeaderDelegate =
+      self.suggestionsViewController.discoverFeedHeaderDelegate;
+
+  [self.discoverFeedHeaderDelegate
+      changeDiscoverFeedHeaderVisibility:[self.contentSuggestionsVisible
+                                                 value]];
 
   if (@available(iOS 13.0, *)) {
     self.suggestionsViewController.menuProvider = self;
@@ -383,6 +393,8 @@
                              IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM)
                   action:^{
                     [weakSelf.contentSuggestionsVisible setValue:NO];
+                    [weakSelf.discoverFeedHeaderDelegate
+                        changeDiscoverFeedHeaderVisibility:NO];
                     [weakSelf.contentSuggestionsMediator reloadAllData];
                   }
                    style:UIAlertActionStyleDestructive];
@@ -392,6 +404,8 @@
                              IDS_IOS_DISCOVER_FEED_MENU_TURN_ON_ITEM)
                   action:^{
                     [weakSelf.contentSuggestionsVisible setValue:YES];
+                    [weakSelf.discoverFeedHeaderDelegate
+                        changeDiscoverFeedHeaderVisibility:YES];
                     [weakSelf.contentSuggestionsMediator reloadAllData];
                   }
                    style:UIAlertActionStyleDefault];

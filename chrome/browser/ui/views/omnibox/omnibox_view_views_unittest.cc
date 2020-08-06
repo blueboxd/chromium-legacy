@@ -196,6 +196,7 @@ void TestingOmniboxView::UpdateSchemeStyle(const Range& range) {
 
 void TestingOmniboxView::ApplyColor(SkColor color, const gfx::Range& range) {
   range_colors_.emplace_back(std::pair<SkColor, gfx::Range>(color, range));
+  OmniboxViewViews::ApplyColor(color, range);
 }
 
 // TestingOmniboxEditController -----------------------------------------------
@@ -1908,6 +1909,48 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, BoundsChanged) {
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+}
+
+// Tests that the simplified domain animation doesn't crash when it's cancelled.
+// Regression test for https://crbug.com/1103738.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, CancellingAnimationDoesNotCrash) {
+  SetUpSimplifiedDomainTest();
+
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+
+  // Hover over the omnibox to begin the unelision animation, then change the
+  // URL such that the current animation would go out of bounds if it continued
+  // running.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* unelide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(unelide_animation);
+  EXPECT_TRUE(unelide_animation->IsAnimating());
+  // Step through the animation partially so that it has a nonzero current
+  // value. (A zero current value causes an early return that circumvents the
+  // crash we are regression-testing.)
+  gfx::AnimationContainerElement* unelide_as_element =
+      static_cast<gfx::AnimationContainerElement*>(
+          unelide_animation->GetAnimationForTesting());
+  unelide_as_element->SetStartTime(base::TimeTicks());
+  unelide_as_element->Step(
+      base::TimeTicks() +
+      base::TimeDelta::FromMilliseconds(
+          OmniboxFieldTrial::UnelideURLOnHoverThresholdMs() + 1));
+
+  location_bar_model()->set_url(GURL(base::ASCIIToUTF16("https://foo.test")));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://foo.test"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Stopping the animation after changing the underlying display text should
+  // not crash.
+  unelide_animation->Stop();
 }
 
 // Tests scheme and trivial subdomain elision when simplified domain field

@@ -5,11 +5,14 @@
 // A collection of names for the custom events to be emitted by the page's
 // components (in vue_components/).
 const CUSTOM_EVENTS = {
-  ADD_TO_FILTER_CLICKED: 'add-to-filter-clicked',
-  FILTER_ELEMENT_CLICKED: 'filter-element-clicked',
+  DETAILS_CHECK_NODE: 'details-check-node',
+  DETAILS_UNCHECK_NODE: 'details-uncheck-node',
+  FILTER_REMOVE: 'filter-remove',
+  FILTER_CHECK_ALL: 'filter-check-all',
+  FILTER_UNCHECK_ALL: 'filter-uncheck-all',
   FILTER_SUBMITTED: 'filter-submitted',
   NODE_CLICKED: 'node-clicked',
-  REMOVE_FROM_FILTER_CLICKED: 'remove-from-filter-clicked',
+  NODE_DOUBLE_CLICKED: 'node-double-clicked',
 };
 
 export {

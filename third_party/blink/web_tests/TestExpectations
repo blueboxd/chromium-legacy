@@ -737,6 +737,8 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 # [css-flexbox]
 
+crbug.com/957454 external/wpt/css/css-flexbox/align-items-007.html [ Failure ]
+
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-001.html [ Failure ]
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure ]
@@ -782,10 +784,6 @@ crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-003.html [ Failure ]
 
 # We don't correctly implement aspect ratios for images in Flexbox
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006.html [ Failure ]
 crbug.com/1111128 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
 
 # These tests are incorrect, as Firefox has a bug in this area. https://bugzilla.mozilla.org/show_bug.cgi?id=1136312
@@ -814,12 +812,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001v.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002v.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005v.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006v.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007v.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-vert-006.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-wmvert-001.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-safe-overflow-position-001.html [ Failure ]
@@ -6849,5 +6841,4 @@ crbug.com/1112771 external/wpt/css/css-grid/grid-definition/grid-inline-template
 
 # Sheriff 2020-08-05
 crbug.com/1113050 fast/borders/border-radius-mask-video-ratio.html [ Pass Failure ]
-crbug.com/1113127 fast/canvas/downsample-quality.html [ Pass Failure ]
-crbug.com/1112111 [ Mac ] fast/forms/month/month-picker-appearance-step.html [ Pass Failure ]
+crbug.com/1113127 fast/canvas/downsample-quality.html [ Pass Failure Crash ]

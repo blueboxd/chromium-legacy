@@ -75,7 +75,7 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
             &shared_image_manager_, nullptr);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;

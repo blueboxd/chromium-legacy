@@ -525,6 +525,12 @@
             "description": "The third party wallpaper app name."
           }
         ]
+      },
+      {
+        "name": "onClosePreviewWallpaper",
+        "type": "function",
+        "description": "This event is sent when the app side of preview wallpaper should be closed.",
+        "parameters": []
       }
     ]
   }

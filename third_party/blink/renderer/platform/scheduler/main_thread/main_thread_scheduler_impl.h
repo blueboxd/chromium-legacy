@@ -160,7 +160,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<Thread> CreateMainThread() override;
   std::unique_ptr<WebWidgetScheduler> CreateWidgetScheduler() override;
   // Note: this is also shared by the ThreadScheduler interface.
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override;
@@ -219,7 +218,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                            Thread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
-  // IPCTaskRunner() is implemented above in the WebThreadScheduler section.
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
   std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()
@@ -849,14 +847,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   TaskQueueVoterMap task_runners_;
 
   scoped_refptr<MainThreadTaskQueue> v8_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
   scoped_refptr<MainThreadTaskQueue> memory_purge_task_queue_;
   scoped_refptr<MainThreadTaskQueue> non_waking_task_queue_;
 
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> non_waking_task_runner_;
 
   MemoryPurgeManager memory_purge_manager_;

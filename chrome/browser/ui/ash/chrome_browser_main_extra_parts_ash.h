@@ -27,6 +27,7 @@ class AshShellInit;
 class CastConfigControllerMediaRouter;
 class ChromeNewWindowClient;
 class ImeControllerClient;
+class InSessionAuthDialogClient;
 class LoginScreenClient;
 class MediaClientImpl;
 class MobileDataNotifications;
@@ -80,6 +81,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ArcChromeActionsClient> arc_chrome_actions_client_;
   std::unique_ptr<ChromeNewWindowClient> chrome_new_window_client_;
   std::unique_ptr<ImeControllerClient> ime_controller_client_;
+  std::unique_ptr<InSessionAuthDialogClient> in_session_auth_dialog_client_;
   std::unique_ptr<ScreenOrientationDelegateChromeos>
       screen_orientation_delegate_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;

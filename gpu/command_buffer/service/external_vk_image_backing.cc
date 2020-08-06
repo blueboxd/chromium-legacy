@@ -146,7 +146,7 @@ bool UseSeparateGLTexture(SharedContextState* context_state,
   return true;
 }
 
-void WaitSemaphoresOnGrContext(GrContext* gr_context,
+void WaitSemaphoresOnGrContext(GrDirectContext* gr_context,
                                std::vector<ExternalSemaphore>* semaphores) {
   std::vector<GrBackendSemaphore> backend_senampres;
   backend_senampres.reserve(semaphores->size());

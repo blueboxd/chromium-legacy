@@ -52,10 +52,12 @@ namespace {
 // the size of the report. UMA suggests 99.9% will have < 200 domains.
 const int kMaxReusedDomains = 200;
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 // The maximum time to wait for DOM features to be collected, in milliseconds.
 const int kDomFeatureTimeoutMs = 3000;
+#endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 // Parameters chosen to ensure privacy is preserved by visual features.
 const int kMinWidthForVisualFeatures = 576;
 const int kMinHeightForVisualFeatures = 576;
@@ -321,7 +323,19 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
       NOTREACHED();
   }
 
+  bool client_side_detection_enabled =
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+      true;
+#else
+      base::FeatureList::IsEnabled(
+          safe_browsing::kClientSideDetectionForAndroid);
+#endif
+
+  if (!client_side_detection_enabled) {
+    SendRequest();
+    return;
+  }
+
   // Get the page DOM features.
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
   password_protection_service_->GetPhishingDetector(rfh->GetRemoteInterfaces(),
@@ -337,12 +351,9 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
                      GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDomFeatureTimeoutMs));
   dom_feature_start_time_ = base::TimeTicks::Now();
-#else
-  SendRequest();
-#endif
 }
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 void PasswordProtectionRequest::OnGetDomFeatures(
     mojom::PhishingDetectorResult result,
     const std::string& verdict) {
@@ -397,6 +408,9 @@ void PasswordProtectionRequest::OnGetDomFeatureTimeout() {
 }
 
 void PasswordProtectionRequest::MaybeCollectVisualFeatures() {
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
+  SendRequest();
+#else
   // Once the DOM features are collected, either collect visual features, or go
   // straight to sending the ping.
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
@@ -409,8 +423,11 @@ void PasswordProtectionRequest::MaybeCollectVisualFeatures() {
   } else {
     SendRequest();
   }
+#endif  // BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
 }
+#endif  // BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void PasswordProtectionRequest::CollectVisualFeatures() {
   content::RenderWidgetHostView* view =
       web_contents_ ? web_contents_->GetRenderWidgetHostView() : nullptr;

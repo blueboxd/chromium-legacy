@@ -7,10 +7,12 @@
     <div id="page-controls">
       <GraphFilterInput
           :node-ids="pageModel.getNodeIds()"
-          @[CUSTOM_EVENTS.FILTER_SUBMITTED]="addNodeToFilter"/>
+          @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
       <GraphFilterItems
           :node-filter-data="displaySettingsData.nodeFilterData"
-          @[CUSTOM_EVENTS.FILTER_ELEMENT_CLICKED]="removeNodeFromFilter"/>
+          @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
+          @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
+          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
       <NumericInput
           description="Change inbound (blue) depth:"
           input-id="inbound-input"
@@ -24,22 +26,21 @@
       <GraphVisualization
           :graph-update-triggers="[
             displaySettingsData,
-            displaySettingsData.nodeFilterData.nodeList,
+            displaySettingsData.nodeFilterData.filterList,
           ]"
           :page-model="pageModel"
           :display-settings-data="displaySettingsData"
-          @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"/>
+          @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"
+          @[CUSTOM_EVENTS.NODE_DOUBLE_CLICKED]="graphNodeDoubleClicked"/>
       <div id="node-details-container">
         <GraphDisplaySettings
             :display-settings-data="displaySettingsData"/>
         <GraphSelectedNodeDetails
-            :selected-node-details-data="
-              pageModel.selectedNodeDetailsData"
-            @[CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED]="addNodeToFilter"
-            @[CUSTOM_EVENTS.REMOVE_FROM_FILTER_CLICKED]="removeNodeFromFilter"/>
+            :selected-node-details-data="pageModel.selectedNodeDetailsData"
+            @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
+            @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode"/>
         <PackageDetailsPanel
-            :selected-package="
-              pageModel.selectedNodeDetailsData.selectedNode"/>
+            :selected-package="pageModel.selectedNodeDetailsData.selectedNode"/>
       </div>
     </div>
   </div>
@@ -119,15 +120,15 @@ const PackageGraphPage = {
     const pageUrlProcessor = new UrlProcessor(pageUrl.searchParams);
     this.displaySettingsData.readUrlProcessor(pageUrlProcessor);
 
-    if (this.displaySettingsData.nodeFilterData.nodeList.length === 0) {
+    if (this.displaySettingsData.nodeFilterData.filterList.length === 0) {
       // TODO(yjlong): This is test data. Remove this when no longer needed.
-      this.addNodesToFilter([
+      [
         'org.chromium.base',
         'org.chromium.chrome.browser.gsa',
         'org.chromium.chrome.browser.omaha',
         'org.chromium.chrome.browser.media',
         'org.chromium.ui.base',
-      ]);
+      ].forEach(nodeName => this.filterAddOrCheckNode(nodeName));
     }
   },
   methods: {
@@ -138,25 +139,22 @@ const PackageGraphPage = {
       const pageUrl = urlProcessor.getUrl(document.URL, PagePathName.PACKAGE);
       history.replaceState(null, '', pageUrl);
     },
-    /**
-     * @param {string} nodeName The node to add.
-     */
-    addNodeToFilter: function(nodeName) {
-      this.displaySettingsData.nodeFilterData.addNode(nodeName);
-    },
-    /**
-     * @param {!Array<string>} nodeNames The nodes to add.
-     */
-    addNodesToFilter: function(nodeNames) {
-      for (const nodeName of nodeNames) {
-        this.displaySettingsData.nodeFilterData.addNode(nodeName);
-      }
-    },
-    /**
-     * @param {string} nodeName The node to remove.
-     */
-    removeNodeFromFilter: function(nodeName) {
+    filterRemoveNode: function(nodeName) {
       this.displaySettingsData.nodeFilterData.removeNode(nodeName);
+    },
+    filterAddOrCheckNode: function(nodeName) {
+      this.displaySettingsData.nodeFilterData.addOrFindNode(
+          nodeName).checked = true;
+    },
+    filterUncheckNode: function(nodeName) {
+      this.displaySettingsData.nodeFilterData.addOrFindNode(
+          nodeName).checked = false;
+    },
+    filterCheckAll: function() {
+      this.displaySettingsData.nodeFilterData.checkAll();
+    },
+    filterUncheckAll: function() {
+      this.displaySettingsData.nodeFilterData.uncheckAll();
     },
     /**
      * @param {number} depth The new inbound depth.
@@ -176,6 +174,16 @@ const PackageGraphPage = {
      */
     graphNodeClicked: function(node) {
       this.pageModel.selectedNodeDetailsData.selectedNode = node;
+    },
+    /**
+     * @param {!GraphNode} node The double-clicked node.
+     */
+    graphNodeDoubleClicked: function(node) {
+      if (node.visualizationState.selectedByFilter) {
+        this.filterUncheckNode(node.id);
+      } else {
+        this.filterAddOrCheckNode(node.id);
+      }
     },
   },
 };

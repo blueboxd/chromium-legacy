@@ -1,0 +1,34 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_PUBLIC_CPP_IN_SESSION_AUTH_DIALOG_CLIENT_H_
+#define ASH_PUBLIC_CPP_IN_SESSION_AUTH_DIALOG_CLIENT_H_
+
+#include <string>
+
+#include "ash/public/cpp/ash_public_export.h"
+#include "base/callback_forward.h"
+
+namespace ash {
+
+// An interface that allows Ash to trigger authentication steps that ChromeOS
+// is responsible for.
+class ASH_PUBLIC_EXPORT InSessionAuthDialogClient {
+ public:
+  // Attempt to authenticate the current session user with a password or PIN.
+  // |password|: The submitted password.
+  // |authenticated_by_pin|: True if we are using pin to authenticate.
+  // |callback|: the callback to run on auth complete.
+  virtual void AuthenticateUserWithPasswordOrPin(
+      const std::string& password,
+      bool authenticated_by_pin,
+      base::OnceCallback<void(bool)> callback) = 0;
+
+ protected:
+  virtual ~InSessionAuthDialogClient() = default;
+};
+
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_IN_SESSION_AUTH_DIALOG_CLIENT_H_

@@ -26,6 +26,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -73,7 +74,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
             &shared_image_manager_, nullptr);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;

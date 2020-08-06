@@ -25,6 +25,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingBridge.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/settings/EnhancedProtectionSettingsFragment.java",
+    "java/src/org/chromium/chrome/browser/safe_browsing/settings/NoProtectionConfirmationDialog.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/settings/RadioButtonGroupSafeBrowsingPreference.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/settings/SecuritySettingsFragment.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/settings/StandardProtectionSettingsFragment.java",
@@ -37,6 +38,7 @@ android_library("java") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/settings:java",
+    "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/prefs/android:java",
@@ -74,6 +76,7 @@ android_library("javatests") {
     "//components/user_prefs/android:java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_deps:espresso_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",

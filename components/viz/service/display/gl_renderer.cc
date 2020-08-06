@@ -655,7 +655,7 @@ static GrGLenum SkFormatToGlFormat(SkColorType format) {
 static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                   uint32_t target,
                                   const gfx::Size& size,
-                                  GrContext* context,
+                                  GrDirectContext* context,
                                   bool flip_texture,
                                   SkColorType format,
                                   bool adopt_texture) {

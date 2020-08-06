@@ -61,7 +61,7 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #endif  // !defined(OS_ANDROID)
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #endif
 
@@ -131,7 +131,7 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   if (!render_frame->IsMainFrame())
     return;
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
@@ -434,7 +434,7 @@ void ChromeRenderFrameObserver::GetMediaFeedURL(
 }
 
 void ChromeRenderFrameObserver::SetClientSidePhishingDetection() {
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   phishing_classifier_ = safe_browsing::PhishingClassifierDelegate::Create(
       render_frame(), nullptr);
 #endif
@@ -470,7 +470,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
     // Don't capture contents unless there is either a translate agent or a
     // phishing classifier to consume them.
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   if (!translate_agent_ && !phishing_classifier_)
     return;
 #else
@@ -500,7 +500,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
   TRACE_EVENT0("renderer", "ChromeRenderFrameObserver::CapturePageText");
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   // Will swap out the string.
   if (phishing_classifier_)
     phishing_classifier_->PageCaptured(&contents,

@@ -471,7 +471,6 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kMainThreadTaskQueueDefault:
     case TaskType::kMainThreadTaskQueueInput:
     case TaskType::kMainThreadTaskQueueIdle:
-    case TaskType::kMainThreadTaskQueueIPC:
     case TaskType::kMainThreadTaskQueueControl:
     case TaskType::kMainThreadTaskQueueMemoryPurge:
     case TaskType::kCompositorThreadTaskQueueDefault:

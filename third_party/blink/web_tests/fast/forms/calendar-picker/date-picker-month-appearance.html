@@ -7,7 +7,7 @@ testRunner.waitUntilDone();
 <script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
 <input type=date id=date value="10000-07-31">
 <script>
-openPicker(document.getElementById('date'), function() {
+openPickerAppearanceOnly(document.getElementById('date'), function() {
   clickMonthPopupButton();
   popupWindow.global.picker.monthPopupView.yearListView.element.addEventListener('webkitTransitionEnd', function() {
     testRunner.notifyDone();

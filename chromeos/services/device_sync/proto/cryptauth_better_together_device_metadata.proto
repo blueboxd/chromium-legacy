@@ -24,7 +24,7 @@ message BeaconSeed {
 // Device metadata relevant to the suite of multi-device (Better Together)
 // features. This data is sent to and received from CryptAuth--using end-to-end
 // encryption--as part of DeviceSync v2.
-// Next ID: 4
+// Next ID: 5
 message BetterTogetherDeviceMetadata {
   // A cryptographic public key associated with the device.
   // The format of this key is a serialized SecureMessage.GenericPublicKey.
@@ -35,4 +35,8 @@ message BetterTogetherDeviceMetadata {
 
   // A list of seeds for EID BLE advertisements targeting this device.
   repeated BeaconSeed beacon_seeds = 3;
+
+  // Bluetooth public address, formatted as a hex string with colons and capital
+  // letters. Example: "01:23:45:67:89:AB"
+  string bluetooth_public_address = 4;
 }

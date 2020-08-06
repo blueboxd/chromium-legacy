@@ -11477,7 +11477,6 @@ interface XRSession : EventTarget
     method requestLightProbe
     method requestReferenceSpace
     method updateRenderState
-    method updateWorldTrackingState
     setter onend
     setter oninputsourceschange
     setter onselect

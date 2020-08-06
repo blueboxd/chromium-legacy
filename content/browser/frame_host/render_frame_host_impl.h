@@ -952,9 +952,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   GetAssociatedLocalFrame();
 
   // Returns associated remote for the blink::mojom::LocalMainFrame Mojo
-  // interface.
-  const mojo::AssociatedRemote<blink::mojom::LocalMainFrame>&
-  GetAssociatedLocalMainFrame();
+  // interface. May be overridden by subclasses, e.g. tests which wish to
+  // intercept outgoing local main frame messages.
+  virtual blink::mojom::LocalMainFrame* GetAssociatedLocalMainFrame();
 
   // Returns remote to blink::mojom::HighPriorityLocalFrame Mojo interface. Note
   // this interface is highly experimental and is being tested to address

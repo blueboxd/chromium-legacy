@@ -868,6 +868,16 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
     }
   }
 
+  // Prefer a fallback app over viewing in the browser (crbug.com/1111399).
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    FullTaskDescriptor& task = (*tasks)[i];
+    if (IsFallbackFileHandler(task) &&
+        task.task_descriptor().action_id != "view-in-browser") {
+      task.set_is_default(true);
+      return;
+    }
+  }
+
   // No default tasks found. If there is any fallback file browser handler,
   // make it as default task, so it's selected by default.
   for (size_t i = 0; i < tasks->size(); ++i) {

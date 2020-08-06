@@ -26,11 +26,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/system/sys_info.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -659,22 +661,58 @@ static void InitializeV8Common(v8::Isolate* isolate) {
 namespace {
 
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+ public:
+  ArrayBufferAllocator() : total_allocation_(0) {
+    // size_t may be equivalent to uint32_t or uint64_t, cast all values to
+    // uint64_t to compare.
+    uint64_t virtual_size =
+        static_cast<uint64_t>(base::SysInfo::AmountOfVirtualMemory());
+    uint64_t size_t_max =
+        static_cast<uint64_t>(std::numeric_limits<std::size_t>::max());
+    DCHECK(virtual_size < size_t_max);
+    // If AmountOfVirtualMemory() returns 0, there is no limit on virtual
+    // memory, do not limit the total allocation. Otherwise, Limit the total
+    // allocation to 50% of available virtual memory.
+    max_allocation_ = static_cast<size_t>(virtual_size) / 2;
+  }
+
   // Allocate() methods return null to signal allocation failure to V8, which
   // should respond by throwing a RangeError, per
   // http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
   void* Allocate(size_t size) override {
-    return ArrayBufferContents::AllocateMemoryOrNull(
+    if (max_allocation_ != 0 &&
+        std::atomic_load(&total_allocation_) > max_allocation_ - size)
+      return nullptr;
+    void* result = ArrayBufferContents::AllocateMemoryOrNull(
         size, ArrayBufferContents::kZeroInitialize);
+    if (max_allocation_ != 0 && result)
+      total_allocation_.fetch_add(size, std::memory_order_relaxed);
+    return result;
   }
 
   void* AllocateUninitialized(size_t size) override {
-    return ArrayBufferContents::AllocateMemoryOrNull(
+    if (max_allocation_ != 0 &&
+        std::atomic_load(&total_allocation_) > max_allocation_ - size)
+      return nullptr;
+    void* result = ArrayBufferContents::AllocateMemoryOrNull(
         size, ArrayBufferContents::kDontInitialize);
+    if (max_allocation_ != 0 && result)
+      total_allocation_.fetch_add(size, std::memory_order_relaxed);
+    return result;
   }
 
   void Free(void* data, size_t size) override {
+    if (max_allocation_ != 0 && data)
+      total_allocation_.fetch_sub(size, std::memory_order_relaxed);
     ArrayBufferContents::FreeMemory(data);
   }
+
+ private:
+  // Total memory allocated in bytes.
+  std::atomic_size_t total_allocation_;
+  // If |max_allocation_| is 0, skip these atomic operations on
+  // |total_allocation_|.
+  size_t max_allocation_;
 };
 
 }  // namespace

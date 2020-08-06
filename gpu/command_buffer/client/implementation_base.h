@@ -26,6 +26,8 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/context_result.h"
 
+class GrDirectContext;
+
 namespace gpu {
 
 namespace gles2 {
@@ -80,7 +82,7 @@ class GLES2_IMPL_EXPORT ImplementationBase
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
                        callback) override;
-  void SetGrContext(GrContext* gr) override;
+  void SetGrContext(GrDirectContext* gr) override;
   bool HasGrContextSupport() const override;
   void WillCallGLFromSkia() override;
   void DidCallGLFromSkia() override;

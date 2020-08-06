@@ -54,7 +54,7 @@ class SharingImpl : public mojom::Sharing {
   // mojom::Sharing:
   void CreateSharingWebRtcConnection(
       mojo::PendingRemote<mojom::SignalingSender> signaling_sender,
-      mojo::PendingReceiver<mojom::SignallingReceiver> signalling_receiver,
+      mojo::PendingReceiver<mojom::SignalingReceiver> signaling_receiver,
       mojo::PendingRemote<mojom::SharingWebRtcConnectionDelegate> delegate,
       mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
       mojo::PendingRemote<network::mojom::P2PSocketManager> socket_manager,

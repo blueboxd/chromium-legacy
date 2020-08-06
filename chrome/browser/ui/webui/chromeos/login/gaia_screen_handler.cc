@@ -522,7 +522,8 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   const AccountId& owner_account_id =
       user_manager::UserManager::Get()->GetOwnerAccountId();
   params.SetBoolean("hasDeviceOwner", owner_account_id.is_valid());
-  if (owner_account_id.is_valid()) {
+  if (owner_account_id.is_valid() &&
+      !::features::IsParentAccessCodeForOnlineLoginEnabled()) {
     // Some Autotest policy tests appear to wipe the user list in Local State
     // but preserve a policy file referencing an owner: https://crbug.com/850139
     const user_manager::User* owner_user =

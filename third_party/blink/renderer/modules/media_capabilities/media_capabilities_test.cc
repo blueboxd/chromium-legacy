@@ -522,6 +522,14 @@ TEST(MediaCapabilitiesTests, ConfigMatchesFeatures) {
 TEST(MediaCapabilitiesTests, NonIntegerFramerate) {
   MediaCapabilitiesTestContext context;
 
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // Enabled features.
+      {},
+      // Disabled ML predictions + GpuFactories (just use DB).
+      {media::kMediaCapabilitiesQueryGpuFactories,
+       media::kMediaLearningSmoothnessExperiment});
+
   const auto* kDecodingConfig = CreateDecodingConfig();
   const media::mojom::blink::PredictionFeatures kFeatures = CreateFeatures();
 
@@ -550,10 +558,13 @@ TEST(MediaCapabilitiesTests, NonIntegerFramerate) {
 
 // Test smoothness predictions from DB (PerfHistoryService).
 TEST(MediaCapabilitiesTests, PredictWithJustDB) {
-  // Disable ML predictions (may/may not be disabled by default).
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      media::kMediaLearningSmoothnessExperiment);
+  scoped_feature_list.InitWithFeatures(
+      // Enabled features.
+      {},
+      // Disabled ML predictions + GpuFactories (just use DB).
+      {media::kMediaCapabilitiesQueryGpuFactories,
+       media::kMediaLearningSmoothnessExperiment});
 
   MediaCapabilitiesTestContext context;
   const auto* kDecodingConfig = CreateDecodingConfig();
@@ -660,9 +671,12 @@ TEST(MediaCapabilitiesTests, PredictWithBadWindowMLService) {
   const double kBadWindowThreshold = 2;
   const double kNnrThreshold = -1;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      media::kMediaLearningSmoothnessExperiment,
-      MakeMlParams(kBadWindowThreshold, kNnrThreshold));
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      // Enabled features w/ parameters
+      {{media::kMediaLearningSmoothnessExperiment,
+        MakeMlParams(kBadWindowThreshold, kNnrThreshold)}},
+      // Disabled GpuFactories (use DB for power).
+      {media::kMediaCapabilitiesQueryGpuFactories});
 
   MediaCapabilitiesTestContext context;
   const auto* kDecodingConfig = CreateDecodingConfig();
@@ -719,9 +733,12 @@ TEST(MediaCapabilitiesTests, PredictWithNnrMLService) {
   const double kBadWindowThreshold = -1;
   const double kNnrThreshold = 5;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      media::kMediaLearningSmoothnessExperiment,
-      MakeMlParams(kBadWindowThreshold, kNnrThreshold));
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      // Enabled both ML services.
+      {{media::kMediaLearningSmoothnessExperiment,
+        MakeMlParams(kBadWindowThreshold, kNnrThreshold)}},
+      // Disabled features (use DB for power efficiency)
+      {media::kMediaCapabilitiesQueryGpuFactories});
 
   MediaCapabilitiesTestContext context;
   const auto* kDecodingConfig = CreateDecodingConfig();
@@ -780,9 +797,12 @@ TEST(MediaCapabilitiesTests, PredictWithBothMLServices) {
   const double kBadWindowThreshold = 2;
   const double kNnrThreshold = 1;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      media::kMediaLearningSmoothnessExperiment,
-      MakeMlParams(kBadWindowThreshold, kNnrThreshold));
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      // Enabled both ML services.
+      {{media::kMediaLearningSmoothnessExperiment,
+        MakeMlParams(kBadWindowThreshold, kNnrThreshold)}},
+      // Disabled features (use DB for power efficiency)
+      {media::kMediaCapabilitiesQueryGpuFactories});
 
   MediaCapabilitiesTestContext context;
   const auto* kDecodingConfig = CreateDecodingConfig();

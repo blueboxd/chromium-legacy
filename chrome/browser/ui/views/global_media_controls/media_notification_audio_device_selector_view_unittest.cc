@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
+#include <memory>
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
@@ -15,6 +17,7 @@
 #include "media/audio/audio_device_description.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 
 class MediaNotificationContainerObserver;
 
@@ -82,6 +85,10 @@ class MediaNotificationAudioDeviceSelectorViewTest
     ChromeViewsTestBase::TearDown();
   }
 
+  std::string GetButtonText(views::View* view) {
+    return base::UTF16ToUTF8(static_cast<views::LabelButton*>(view)->GetText());
+  }
+
   TestingProfile profile_;
   std::unique_ptr<MockMediaNotificationDeviceProvider> provider_;
   std::unique_ptr<MediaNotificationService> service_;
@@ -96,7 +103,7 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, DeviceButtonsCreated) {
   service_->set_device_provider_for_testing(std::move(provider_));
 
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      nullptr, service_.get(), gfx::Size());
+      nullptr, service_.get(), gfx::Size(), "1");
 
   std::vector<std::string> button_texts;
   ASSERT_TRUE(view_->device_button_container_ != nullptr);
@@ -127,7 +134,7 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
   EXPECT_CALL(container, OnAudioSinkChosen("3")).Times(1);
 
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      &container, service_.get(), gfx::Size());
+      &container, service_.get(), gfx::Size(), "1");
 
   for (views::View* child : view_->device_button_container_->children()) {
     view_->ButtonPressed(
@@ -135,4 +142,59 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
         ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                        ui::EventTimeForNow(), 0, 0));
   }
+}
+
+TEST_F(MediaNotificationAudioDeviceSelectorViewTest, CurrentDeviceHighlighted) {
+  // The 'current' audio device should be highlighted in the UI and appear
+  // before other devices.
+  provider_->AddDevice("Speaker", "1");
+  provider_->AddDevice("Headphones", "2");
+  provider_->AddDevice("Earbuds", "3");
+  service_->set_device_provider_for_testing(std::move(provider_));
+
+  MockMediaNotificationContainerImpl container;
+  view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
+      &container, service_.get(), gfx::Size(), "3");
+
+  auto* first_button = static_cast<views::MdTextButton*>(
+      view_->device_button_container_->children().front());
+  EXPECT_EQ(first_button->GetText(), base::UTF8ToUTF16("Earbuds"));
+  EXPECT_TRUE(first_button->GetProminent());
+}
+
+TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
+       DeviceHighlightedOnChange) {
+  // When the audio output device changes, the UI should highlight that one.
+  provider_->AddDevice("Speaker", "1");
+  provider_->AddDevice("Headphones", "2");
+  provider_->AddDevice("Earbuds", "3");
+  service_->set_device_provider_for_testing(std::move(provider_));
+
+  MockMediaNotificationContainerImpl container;
+  view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
+      &container, service_.get(), gfx::Size(), "1");
+
+  auto button_is_highlighted = [](views::View* view) {
+    return static_cast<views::MdTextButton*>(view)->GetProminent();
+  };
+
+  auto& buttons = view_->device_button_container_->children();
+
+  // There should be only one highlighted button. It should be the first button.
+  // It's text should be "Speaker"
+  EXPECT_EQ(
+      std::count_if(buttons.begin(), buttons.end(), button_is_highlighted), 1);
+  EXPECT_EQ(std::find_if(buttons.begin(), buttons.end(), button_is_highlighted),
+            buttons.begin());
+  EXPECT_EQ(GetButtonText(buttons.front()), "Speaker");
+
+  // Simulate a device change
+  view_->UpdateCurrentAudioDevice("3");
+
+  // The button for "Earbuds" should come before all others & be highlighted.
+  EXPECT_EQ(
+      std::count_if(buttons.begin(), buttons.end(), button_is_highlighted), 1);
+  EXPECT_EQ(std::find_if(buttons.begin(), buttons.end(), button_is_highlighted),
+            buttons.begin());
+  EXPECT_EQ(GetButtonText(buttons.front()), "Earbuds");
 }

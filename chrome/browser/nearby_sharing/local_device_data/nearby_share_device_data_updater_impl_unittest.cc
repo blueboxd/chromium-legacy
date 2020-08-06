@@ -13,7 +13,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/client/fake_nearby_share_client.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_device_data_updater_impl.h"
 #include "chrome/browser/nearby_sharing/proto/device_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
@@ -179,7 +179,7 @@ class NearbyShareDeviceDataUpdaterImplTest : public ::testing::Test {
         break;
       case UpdateDeviceRequestResult::kHttpFailure:
         std::move(client->update_device_requests()[0].error_callback)
-            .Run(NearbyShareRequestError::kBadRequest);
+            .Run(NearbyShareHttpError::kBadRequest);
         break;
       case UpdateDeviceRequestResult::kTimeout:
         FastForward(kTestTimeout);

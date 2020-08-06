@@ -232,8 +232,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
 
   v8_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kV8));
-  ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-      MainThreadTaskQueue::QueueType::kIPC));
   non_waking_task_queue_ =
       NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                        MainThreadTaskQueue::QueueType::kNonWaking)
@@ -245,8 +243,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       TaskType::kMainThreadTaskQueueCompositor);
   control_task_runner_ = helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
       TaskType::kMainThreadTaskQueueControl);
-  ipc_task_runner_ =
-      ipc_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueIPC);
   non_waking_task_runner_ = non_waking_task_queue_->CreateTaskRunner(
       TaskType::kMainThreadTaskQueueNonWaking);
 
@@ -648,11 +644,6 @@ MainThreadSchedulerImpl::DefaultTaskRunner() {
 scoped_refptr<SingleThreadIdleTaskRunner>
 MainThreadSchedulerImpl::IdleTaskRunner() {
   return idle_helper_.IdleTaskRunner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MainThreadSchedulerImpl::IPCTaskRunner() {
-  return ipc_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -2296,7 +2287,6 @@ void MainThreadSchedulerImpl::SetTopLevelBlameContext(
   compositor_task_queue_->SetBlameContext(blame_context);
   idle_helper_.IdleTaskRunner()->SetBlameContext(blame_context);
   v8_task_queue_->SetBlameContext(blame_context);
-  ipc_task_queue_->SetBlameContext(blame_context);
 }
 
 void MainThreadSchedulerImpl::AddRAILModeObserver(RAILModeObserver* observer) {

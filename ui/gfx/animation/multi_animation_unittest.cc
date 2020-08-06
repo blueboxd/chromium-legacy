@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_element.h"
+#include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
 
@@ -77,6 +78,40 @@ TEST(MultiAnimationTest, DontCycle) {
   as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(300));
   EXPECT_EQ(1.0, animation.GetCurrentValue());
   EXPECT_FALSE(animation.is_animating());
+}
+
+class CurrentValueDelegate : public AnimationDelegate {
+ public:
+  CurrentValueDelegate() = default;
+
+  double latest_current_value() { return latest_current_value_; }
+
+  // AnimationDelegate overrides:
+  void AnimationProgressed(const Animation* animation) override {
+    latest_current_value_ = animation->GetCurrentValue();
+  }
+
+ private:
+  double latest_current_value_ = 0.0;
+};
+
+// Makes sure multi-animation runs the final frame when exceeding the cycle time
+// and not running continuously.
+TEST(MultiAnimationTest, ExceedCycleNonContinuous) {
+  MultiAnimation::Parts parts;
+  parts.push_back(MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
+                                       Tween::LINEAR));
+  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
+  CurrentValueDelegate delegate;
+  animation.set_delegate(&delegate);
+  animation.set_continuous(false);
+  AnimationContainerElement* as_element =
+      static_cast<AnimationContainerElement*>(&animation);
+  as_element->SetStartTime(base::TimeTicks());
+
+  // Step to 300, which is greater than the cycle time.
+  as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(300));
+  EXPECT_EQ(1.0, delegate.latest_current_value());
 }
 
 // Makes sure multi-animation cycles correctly.

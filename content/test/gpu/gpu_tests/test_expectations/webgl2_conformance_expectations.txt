@@ -364,7 +364,7 @@ crbug.com/811614 [ amd mac ] deqp/functional/gles3/negativeshaderapi.html [ Fail
 crbug.com/811614 [ intel mac ] deqp/functional/gles3/negativeshaderapi.html [ Failure ]
 
 # Mac Retina NVIDIA
-crbug.com/981101 [ mac nvidia-0xfe9 ] deqp/functional/gles3/multisample.html [ Failure ]
+crbug.com/981101 [ mac no-asan nvidia-0xfe9 ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/mat_01.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/tmp.html [ Failure ]
 crbug.com/641209 [ mac nvidia-0xfe9 ] deqp/functional/gles3/fbomultisample* [ Failure ]
@@ -662,6 +662,9 @@ crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/video/* [ RetryOnFailure ]
+
+# Mac ASAN slow tests
+crbug.com/1113404 [ mac asan ] deqp/functional/gles3/multisample.html [ Skip ]
 
 # Mac Validating / Intel
 crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/fbocolorbuffer/tex2d_00.html [ Failure ]

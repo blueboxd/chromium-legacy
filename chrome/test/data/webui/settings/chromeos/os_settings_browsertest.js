@@ -1550,4 +1550,23 @@ TEST_F('OSSettingsTimezoneSelectorTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Tests for the Date Time subpage
+// eslint-disable-next-line no-var
+var OSSettingsTimezoneSubpageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/date_time_page/timezone_subpage.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat(['timezone_subpage_test.js']);
+  }
+};
+
+TEST_F('OSSettingsTimezoneSubpageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 GEN('#endif  // defined(NDEBUG)');

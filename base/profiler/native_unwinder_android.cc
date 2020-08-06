@@ -18,8 +18,6 @@
 #include "base/profiler/module_cache.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/profile_builder.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
@@ -33,46 +31,21 @@
 namespace base {
 namespace {
 
-// Returns the hex string build id given the binary build id from MapInfo.
-// Returns the empty string if no build id is present.
-//
-// Build IDs follow a cross-platform format consisting of two fields
-// concatenated together:
-// - the module's unique id encoded as a hex string, and
-// - the age suffix for incremental builds.
-//
-// On POSIX, the unique id comes from the ELF binary's .note.gnu.build-id
-// section. The age field is always 0.
-std::string EncodeBuildID(StringPiece map_info_build_id) {
-  if (map_info_build_id.empty())
-    return std::string();
-
-  return HexEncode(map_info_build_id.data(), map_info_build_id.size()) + "0";
-}
-
-// We assume this is a file-backed region if the name looks like an absolute
-// path, and return the basename. Otherwise we assume the region is not
-// associated with a file and return the full name string.
-FilePath CreateDebugBasename(StringPiece map_info_name) {
-  const FilePath path = FilePath(map_info_name);
-  return !map_info_name.empty() && map_info_name[0] == '/' ? path.BaseName()
-                                                           : path;
-}
-
-class AndroidModule : public ModuleCache::Module {
+class NonElfModule : public ModuleCache::Module {
  public:
-  AndroidModule(unwindstack::MapInfo* map_info)
+  NonElfModule(unwindstack::MapInfo* map_info)
       : start_(map_info->start),
-        size_(map_info->end - map_info->start),
-        build_id_(EncodeBuildID(map_info->GetBuildID())),
-        debug_basename_(CreateDebugBasename(map_info->name)) {}
-  ~AndroidModule() override = default;
+        size_(map_info->end - start_),
+        map_info_name_(map_info->name) {}
+  ~NonElfModule() override = default;
 
   uintptr_t GetBaseAddress() const override { return start_; }
 
-  std::string GetId() const override { return build_id_; }
+  std::string GetId() const override { return std::string(); }
 
-  FilePath GetDebugBasename() const override { return debug_basename_; }
+  FilePath GetDebugBasename() const override {
+    return FilePath(map_info_name_);
+  }
 
   // Gets the size of the module.
   size_t GetSize() const override { return size_; }
@@ -80,10 +53,10 @@ class AndroidModule : public ModuleCache::Module {
   // True if this is a native module.
   bool IsNative() const override { return true; }
 
+ private:
   const uintptr_t start_;
   const size_t size_;
-  const std::string build_id_;
-  const FilePath debug_basename_;
+  const std::string map_info_name_;
 };
 
 std::unique_ptr<unwindstack::Regs> CreateFromRegisterContext(
@@ -104,10 +77,10 @@ void CopyToRegisterContext(unwindstack::Regs* regs,
                            RegisterContext* thread_context) {
 #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
   memcpy(reinterpret_cast<void*>(&thread_context->arm_r0), regs->RawData(),
-         unwindstack::ARM_REG_LAST * sizeof(uint32_t));
+         unwindstack::ARM_REG_LAST * sizeof(uintptr_t));
 #elif defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_64_BITS)
   memcpy(reinterpret_cast<void*>(&thread_context->regs[0]), regs->RawData(),
-         unwindstack::ARM64_REG_LAST * sizeof(uint32_t));
+         unwindstack::ARM64_REG_LAST * sizeof(uintptr_t));
 #else   // #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
   NOTREACHED();
 #endif  // #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
@@ -246,12 +219,29 @@ UnwindResult NativeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
 void NativeUnwinderAndroid::AddInitialModulesFromMaps(
     const unwindstack::Maps& memory_regions_map,
     ModuleCache* module_cache) {
-  for (const auto& region : memory_regions_map) {
-    // Only add executable regions.
+  // The effect of this loop is to create modules for the executable regions in
+  // the memory map. Regions composing a mapped ELF file are handled specially
+  // however: for just one module extending from the ELF base address to the
+  // *last* executable region backed by the file is implicitly created by
+  // ModuleCache. This avoids duplicate module instances covering the same
+  // in-memory module in the case that a module has multiple mmapped executable
+  // regions.
+  for (const std::unique_ptr<unwindstack::MapInfo>& region :
+       memory_regions_map) {
     if (!(region->flags & PROT_EXEC))
       continue;
+
+    // Use the standard ModuleCache POSIX module representation for ELF files.
+    // This call returns the containing ELF module for the region, creating it
+    // if it doesn't exist.
+    if (module_cache->GetModuleForAddress(
+            static_cast<uintptr_t>(region->start))) {
+      continue;
+    }
+
+    // Non-ELF modules are represented with NonElfModule.
     module_cache->AddCustomNativeModule(
-        std::make_unique<AndroidModule>(region.get()));
+        std::make_unique<NonElfModule>(region.get()));
   }
 }
 
@@ -267,7 +257,7 @@ void NativeUnwinderAndroid::EmitDexFrame(uintptr_t dex_pc,
     // AddInitialModulesFromMaps().
     unwindstack::MapInfo* map_info = memory_regions_map_->Find(dex_pc);
     if (map_info) {
-      auto new_module = std::make_unique<AndroidModule>(map_info);
+      auto new_module = std::make_unique<NonElfModule>(map_info);
       module = new_module.get();
       module_cache->AddCustomNativeModule(std::move(new_module));
     }

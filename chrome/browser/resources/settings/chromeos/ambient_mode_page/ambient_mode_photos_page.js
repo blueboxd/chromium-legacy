@@ -21,8 +21,8 @@ Polymer({
       },
     },
 
-    /** @private {Array<Object>} */
-    photosContainers_: Array,
+    /** @private {Array<!AmbientModeAlbum>} */
+    albums_: Array,
   },
 
   /** @private {?settings.AmbientModeBrowserProxy} */
@@ -35,15 +35,7 @@ Polymer({
 
   /** @override */
   ready() {
-    this.addWebUIListener(
-        'photos-containers-changed', (AmbientModeSettings) => {
-          // This page has been reused by other topic source since the last time
-          // requesting the containers. Do not update on this stale event.
-          if (AmbientModeSettings.topicSource !== this.topicSource_) {
-            return;
-          }
-          this.photosContainers_ = AmbientModeSettings.topicContainers;
-        });
+    this.addWebUIListener('albums-changed', this.onAlbumsChanged_.bind(this));
   },
 
   /**
@@ -76,8 +68,21 @@ Polymer({
       return;
     }
 
-    this.photosContainers_ = [];
-    this.browserProxy_.requestPhotosContainers(this.topicSource_);
+    this.albums_ = [];
+    this.browserProxy_.requestAlbums(this.topicSource_);
+  },
+
+  /**
+   * @param {!AmbientModeSettings} settings
+   * @private
+   */
+  onAlbumsChanged_(settings) {
+    // This page has been reused by other topic source since the last time
+    // requesting the albums. Do not update on this stale event.
+    if (settings.topicSource !== this.topicSource_) {
+      return;
+    }
+    this.albums_ = settings.albums;
   },
 
   /**
@@ -95,15 +100,19 @@ Polymer({
 
   /** @private */
   onCheckboxChange_() {
-    const checkboxes = this.$$('#containers').querySelectorAll('cr-checkbox');
-    const containers = [];
+    const checkboxes = this.$$('#albums').querySelectorAll('cr-checkbox');
+    const albums = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked && !checkbox.hidden) {
-        containers.push(checkbox.dataset.id);
+        albums.push({
+          albumId: checkbox.dataset.id,
+          checked: true,
+          title: checkbox.label
+        });
       }
     });
-    this.browserProxy_.setSelectedPhotosContainers(
-        {topicSource: this.topicSource_, topicContainers: containers});
+    this.browserProxy_.setSelectedAlbums(
+        {topicSource: this.topicSource_, albums: albums});
   }
 
 });

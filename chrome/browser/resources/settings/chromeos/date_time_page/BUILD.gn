@@ -61,12 +61,10 @@ js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
     #   ":date_time_page.m",
-    #   ":date_time_types.m",
-
-    #   ":timezone_browser_proxy.m",
+    ":date_time_types.m",
+    ":timezone_browser_proxy.m",
     ":timezone_selector.m",
-
-    #   ":timezone_subpage.m"
+    ":timezone_subpage.m",
   ]
 }
 
@@ -81,15 +79,16 @@ js_library("date_time_page.m") {
 js_library("date_time_types.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/date_time_types.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":date_time_types_module" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("timezone_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/timezone_browser_proxy.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
   ]
   extra_deps = [ ":modulize" ]
 }
@@ -109,7 +108,12 @@ js_library("timezone_selector.m") {
 js_library("timezone_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/timezone_subpage.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":date_time_types.m",
+    ":timezone_browser_proxy.m",
+    "..:os_settings_routes.m",
+    "../..:router.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":timezone_subpage_module" ]
 }
@@ -119,7 +123,6 @@ import("//tools/polymer/polymer.gni")
 group("polymer3_elements") {
   public_deps = [
     ":date_time_page_module",
-    ":date_time_types_module",
     ":modulize",
     ":timezone_selector_module",
     ":timezone_subpage_module",
@@ -129,12 +132,6 @@ group("polymer3_elements") {
 polymer_modulizer("date_time_page") {
   js_file = "date_time_page.js"
   html_file = "date_time_page.html"
-  html_type = "dom-module"
-}
-
-polymer_modulizer("date_time_types") {
-  js_file = "date_time_types.js"
-  html_file = "date_time_types.html"
   html_type = "dom-module"
 }
 
@@ -151,10 +148,22 @@ polymer_modulizer("timezone_subpage") {
   js_file = "timezone_subpage.js"
   html_file = "timezone_subpage.html"
   html_type = "dom-module"
+  migrated_imports = os_settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites +
+                       [ "settings.TimeZoneBrowserProxy|TimeZoneBrowserProxy" ]
+  auto_imports = os_settings_auto_imports + [
+                   "chrome/browser/resources/settings/chromeos/date_time_page/date_time_types.html|TimeZoneAutoDetectMethod",
+                   "chrome/browser/resources/settings/chromeos/date_time_page/timezone_browser_proxy.html|TimeZoneBrowserProxyImpl,TimeZoneBrowserProxy",
+                 ]
 }
 
 import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
-  input_files = [ "timezone_browser_proxy.js" ]
+  input_files = [
+    "date_time_types.js",
+    "timezone_browser_proxy.js",
+  ]
+  namespace_rewrites = os_settings_namespace_rewrites +
+                       [ "settings.TimeZoneBrowserProxy|TimeZoneBrowserProxy" ]
 }

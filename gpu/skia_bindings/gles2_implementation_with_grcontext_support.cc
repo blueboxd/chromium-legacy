@@ -8,7 +8,7 @@
 
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace skia_bindings {
 
@@ -43,7 +43,8 @@ void GLES2ImplementationWithGrContextSupport::ResetGrContextIfNeeded(
   }
 }
 
-void GLES2ImplementationWithGrContextSupport::SetGrContext(GrContext* gr) {
+void GLES2ImplementationWithGrContextSupport::SetGrContext(
+    GrDirectContext* gr) {
   DCHECK(!gr || !gr_context_);  // Cant have multiple linked GrContexts
   gr_context_ = gr;
 }

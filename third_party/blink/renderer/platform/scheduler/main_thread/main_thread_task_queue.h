@@ -63,7 +63,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     kFramePausable = 14,
     kFrameUnpausable = 15,
     kV8 = 16,
-    kIPC = 17,
+    // 17 : kIPC, obsolete
     kInput = 18,
 
     // Detached is used in histograms for tasks which are run after frame

@@ -7,7 +7,7 @@ testRunner.waitUntilDone();
 <script src="../../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
 <input type=month id=month value="2018-08">
 <script>
-openPicker(document.getElementById('month'), function() {
+openPickerAppearanceOnly(document.getElementById('month'), function() {
   if (popupWindow.global.params.isFormControlsRefreshEnabled) {
     hoverOverMonthButtonForMonthPicker(2018, 5);
   }

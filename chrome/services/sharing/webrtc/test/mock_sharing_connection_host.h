@@ -53,7 +53,7 @@ class MockSharingConnectionHost : public mojom::SignalingSender,
                void(const ::net::IPAddress&, RemoveNameForAddressCallback));
 
   mojo::Receiver<mojom::SignalingSender> signaling_sender{this};
-  mojo::Remote<mojom::SignallingReceiver> signalling_receiver;
+  mojo::Remote<mojom::SignalingReceiver> signaling_receiver;
   mojo::Receiver<mojom::SharingWebRtcConnectionDelegate> delegate{this};
   mojo::Remote<mojom::SharingWebRtcConnection> connection;
   mojo::Receiver<network::mojom::P2PSocketManager> socket_manager{this};

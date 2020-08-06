@@ -42,7 +42,7 @@ class SharingImplTest : public testing::Test {
     auto connection = std::make_unique<MockSharingConnectionHost>();
     service_->CreateSharingWebRtcConnection(
         connection->signaling_sender.BindNewPipeAndPassRemote(),
-        connection->signalling_receiver.BindNewPipeAndPassReceiver(),
+        connection->signaling_receiver.BindNewPipeAndPassReceiver(),
         connection->delegate.BindNewPipeAndPassRemote(),
         connection->connection.BindNewPipeAndPassReceiver(),
         connection->socket_manager.BindNewPipeAndPassRemote(),

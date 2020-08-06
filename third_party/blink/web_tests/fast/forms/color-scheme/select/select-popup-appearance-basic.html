@@ -16,5 +16,7 @@ testRunner.waitUntilDone();
   </optgroup>
 </select>
 <script>
+// The call to openPicker is not expected to succeed on Mac
+// since we use a native popup on Mac.
 openPicker(document.getElementById('menu'), () => testRunner.notifyDone(), () => testRunner.notifyDone());
 </script>

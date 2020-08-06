@@ -58,6 +58,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['ResetPage', 'os_reset_page_test.m.js'],
  ['SmartInputsPage', 'smart_inputs_page_test.m.js'],
  ['TimezoneSelector', 'timezone_selector_test.m.js'],
+ ['TimezoneSubpage', 'timezone_subpage_test.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

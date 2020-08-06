@@ -76,9 +76,8 @@ void ManifestServiceChannel::OnStartupInitializationComplete() {
 void ManifestServiceChannel::OnOpenResource(
     const std::string& key, IPC::Message* reply) {
   delegate_->OpenResource(
-      key,
-      base::Bind(&ManifestServiceChannel::DidOpenResource,
-                 weak_ptr_factory_.GetWeakPtr(), reply));
+      key, base::BindOnce(&ManifestServiceChannel::DidOpenResource,
+                          weak_ptr_factory_.GetWeakPtr(), reply));
 }
 
 void ManifestServiceChannel::DidOpenResource(IPC::Message* reply,

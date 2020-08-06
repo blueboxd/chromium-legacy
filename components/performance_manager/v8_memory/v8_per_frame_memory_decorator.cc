@@ -662,6 +662,12 @@ V8PerFrameMemoryRequestAnySeq::~V8PerFrameMemoryRequestAnySeq() {
                      std::move(request_)));
 }
 
+bool V8PerFrameMemoryRequestAnySeq::HasObserver(
+    V8PerFrameMemoryObserverAnySeq* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return observers_.HasObserver(observer);
+}
+
 void V8PerFrameMemoryRequestAnySeq::AddObserver(
     V8PerFrameMemoryObserverAnySeq* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

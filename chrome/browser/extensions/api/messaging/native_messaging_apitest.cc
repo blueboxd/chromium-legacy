@@ -74,20 +74,18 @@ class NativeMessagingLazyApiTest
 INSTANTIATE_TEST_SUITE_P(EventPage,
                          NativeMessagingLazyApiTest,
                          ::testing::Values(ContextType::kEventPage));
-INSTANTIATE_TEST_SUITE_P(ServiceWorker,
-                         NativeMessagingLazyApiTest,
-                         ::testing::Values(ContextType::kServiceWorker));
+// Service Worker versions of these tests are flaky.
+// See http://crbug.com/1111536 and http://crbug.com/1111337.
+// INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+//                          NativeMessagingLazyApiTest,
+//                         ::testing::Values(ContextType::kServiceWorker));
 
-// Flaky test: http://crbug.com/1111536
-IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest,
-                       DISABLED_NativeMessagingBasic) {
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, NativeMessagingBasic) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
   ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
 }
 
-// Flaky test: http://crbug.com/1111337
-IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest,
-                       DISABLED_UserLevelNativeMessaging) {
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, UserLevelNativeMessaging) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(true));
   ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
 }

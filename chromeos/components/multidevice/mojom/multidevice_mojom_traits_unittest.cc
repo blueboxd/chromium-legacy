@@ -62,6 +62,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
   input.last_update_time_millis = 3L;
   input.software_features = software_features;
   input.beacon_seeds = {CreateTestBeaconSeed()};
+  input.bluetooth_public_address = "01:23:45:67:89:AB";
 
   chromeos::multidevice::RemoteDevice output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
@@ -81,6 +82,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
             output.beacon_seeds[0].start_time().ToJavaTime());
   EXPECT_EQ(kTestBeaconSeedEndTimeMillis,
             output.beacon_seeds[0].end_time().ToJavaTime());
+  EXPECT_EQ("01:23:45:67:89:AB", output.bluetooth_public_address);
 }
 
 TEST(DeviceSyncMojomEnumTraitsTest, SoftwareFeature) {

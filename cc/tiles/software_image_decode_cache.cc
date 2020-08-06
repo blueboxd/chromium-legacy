@@ -508,14 +508,14 @@ SoftwareImageDecodeCache::FindCachedCandidate(const CacheKey& key) {
 
 bool SoftwareImageDecodeCache::UseCacheForDrawImage(
     const DrawImage& draw_image) const {
-  sk_sp<SkImage> sk_image = draw_image.paint_image().GetSkImage();
+  PaintImage paint_image = draw_image.paint_image();
 
   // Software cache doesn't support using texture backed images.
-  if (sk_image->isTextureBacked())
+  if (paint_image.IsTextureBacked())
     return false;
 
   // Lazy generated images need to have their decode cached.
-  if (sk_image->isLazyGenerated())
+  if (paint_image.IsLazyGenerated())
     return true;
 
   // Cache images that need to be converted to a non-sRGB color space.

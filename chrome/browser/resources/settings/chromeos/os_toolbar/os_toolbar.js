@@ -24,6 +24,16 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /**
+     * True when the toolbar is displaying in an extremely narrow mode that the
+     * viewport may cutoff an OsSettingsSearchBox with a specific px width.
+     * @private
+     */
+    isSearchBoxCutoff_: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     /** @private */
     showingSearch_: {
       type: Boolean,

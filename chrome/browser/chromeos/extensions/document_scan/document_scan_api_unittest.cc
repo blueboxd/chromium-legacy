@@ -100,7 +100,7 @@ TEST_F(DocumentScanScanFunctionTest, UnsupportedMimeTypesError) {
 TEST_F(DocumentScanScanFunctionTest, ScanImageError) {
   GetLorgnetteManagerClient()->SetListScannersResponse(
       CreateListScannersResponse());
-  GetLorgnetteManagerClient()->SetScanImageToStringResponse(base::nullopt);
+  GetLorgnetteManagerClient()->SetScanResponse(base::nullopt);
   EXPECT_EQ("Failed to scan image",
             RunFunctionAndReturnError("[{\"mimeTypes\": [\"image/png\"]}]"));
 }
@@ -108,7 +108,7 @@ TEST_F(DocumentScanScanFunctionTest, ScanImageError) {
 TEST_F(DocumentScanScanFunctionTest, Success) {
   GetLorgnetteManagerClient()->SetListScannersResponse(
       CreateListScannersResponse());
-  GetLorgnetteManagerClient()->SetScanImageToStringResponse("PrettyPicture");
+  GetLorgnetteManagerClient()->SetScanResponse("PrettyPicture");
   std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       function_.get(), "[{\"mimeTypes\": [\"image/png\"]}]"));
   ASSERT_NE(nullptr, result.get());

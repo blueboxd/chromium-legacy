@@ -27,4 +27,9 @@ void FakeAdapter::SetClient(
 void FakeAdapter::StartDiscoverySession(
     StartDiscoverySessionCallback callback) {}
 
+void FakeAdapter::ConnectToServiceInsecurely(
+    const std::string& address,
+    const device::BluetoothUUID& service_uuid,
+    ConnectToServiceInsecurelyCallback callback) {}
+
 }  // namespace bluetooth

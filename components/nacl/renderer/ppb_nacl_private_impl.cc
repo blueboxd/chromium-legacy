@@ -545,7 +545,7 @@ void PPBNaClPrivate::LaunchSelLdr(
     std::unique_ptr<ManifestServiceChannel> manifest_service_channel(
         new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
-            base::Bind(&PostPPCompletionCallback, callback),
+            base::BindOnce(&PostPPCompletionCallback, callback),
             std::move(manifest_service_proxy),
             content::RenderThread::Get()->GetShutdownEvent()));
     load_manager->set_manifest_service_channel(
@@ -688,12 +688,12 @@ void GetNexeFd(PP_Instance instance,
                const std::string& etag,
                bool has_no_store_header,
                bool use_subzero,
-               base::Callback<void(int32_t, bool, PP_FileHandle)> callback) {
+               PnaclTranslationResourceHost::RequestNexeFdCallback callback) {
   if (!InitializePnaclResourceHost()) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED), false,
-                       PP_kInvalidFileHandle));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_ERROR_FAILED), false,
+                                  PP_kInvalidFileHandle));
     return;
   }
 
@@ -710,11 +710,8 @@ void GetNexeFd(PP_Instance instance,
   cache_info.sandbox_isa = GetSandboxArch();
   cache_info.extra_flags = GetCpuFeatures();
 
-  g_pnacl_resource_host.Get()->RequestNexeFd(
-      GetRoutingID(instance),
-      instance,
-      cache_info,
-      callback);
+  g_pnacl_resource_host.Get()->RequestNexeFd(GetRoutingID(instance), instance,
+                                             cache_info, std::move(callback));
 }
 
 void LogTranslationFinishedUMA(const std::string& uma_suffix,
@@ -1021,8 +1018,8 @@ void DownloadManifestToBuffer(PP_Instance instance,
   // ManifestDownloader deletes itself after invoking the callback.
   ManifestDownloader* manifest_downloader = new ManifestDownloader(
       std::move(url_loader), load_manager->is_installed(),
-      base::Bind(DownloadManifestToBufferCompletion, instance, callback,
-                 base::Time::Now()));
+      base::BindOnce(DownloadManifestToBufferCompletion, instance, callback,
+                     base::Time::Now()));
   manifest_downloader->Load(request);
 }
 
@@ -1631,10 +1628,10 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
         has_no_store_header = true;
     }
 
-    GetNexeFd(
-        instance_, pexe_url_, pexe_opt_level_, last_modified_time, etag,
-        has_no_store_header, use_subzero_,
-        base::Bind(&PexeDownloader::didGetNexeFd, weak_factory_.GetWeakPtr()));
+    GetNexeFd(instance_, pexe_url_, pexe_opt_level_, last_modified_time, etag,
+              has_no_store_header, use_subzero_,
+              base::BindOnce(&PexeDownloader::didGetNexeFd,
+                             weak_factory_.GetWeakPtr()));
   }
 
   void didGetNexeFd(int32_t pp_error,

@@ -691,6 +691,9 @@ extern const char kGpuRasterizationDescription[];
 extern const char kGooglePasswordManagerName[];
 extern const char kGooglePasswordManagerDescription[];
 
+extern const char kH264DecoderBufferIsCompleteFrameName[];
+extern const char kH264DecoderBufferIsCompleteFrameDescription[];
+
 extern const char kHandwritingGestureName[];
 extern const char kHandwritingGestureDescription[];
 
@@ -1808,6 +1811,9 @@ extern const char kNtpRealboxDescription[];
 
 extern const char kNtpRealboxMatchOmniboxThemeName[];
 extern const char kNtpRealboxMatchOmniboxThemeDescription[];
+
+extern const char kNtpRepeatableQueriesName[];
+extern const char kNtpRepeatableQueriesDescription[];
 
 extern const char kNtpWebUIName[];
 extern const char kNtpWebUIDescription[];

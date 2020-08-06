@@ -55,6 +55,10 @@ std::unique_ptr<views::StyledLabel> CreateSuggestionLabel() {
   suggestion_label->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPadding / 2, 0)));
   suggestion_label->SetAutoColorReadabilityEnabled(false);
+  // StyledLabel eats event, probably because it has to handle links.
+  // Explicitly sets below to false for SuggestionView's hover to work
+  // correctly.
+  suggestion_label->set_can_process_events_within_subtree(false);
 
   return suggestion_label;
 }

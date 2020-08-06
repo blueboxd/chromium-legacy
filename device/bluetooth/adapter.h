@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "device/bluetooth/public/mojom/device.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -36,6 +37,10 @@ class Adapter : public mojom::Adapter,
   void GetInfo(GetInfoCallback callback) override;
   void SetClient(mojo::PendingRemote<mojom::AdapterClient> client) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
+  void ConnectToServiceInsecurely(
+      const std::string& address,
+      const device::BluetoothUUID& service_uuid,
+      ConnectToServiceInsecurelyCallback callback) override;
 
   // device::BluetoothAdapter::Observer overrides:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -66,6 +71,12 @@ class Adapter : public mojom::Adapter,
       std::unique_ptr<device::BluetoothDiscoverySession> session);
 
   void OnDiscoverySessionError(StartDiscoverySessionCallback callback);
+
+  void OnConnectToService(ConnectToServiceInsecurelyCallback callback,
+                          scoped_refptr<device::BluetoothSocket> socket);
+
+  void OnConnectToServiceError(ConnectToServiceInsecurelyCallback callback,
+                               const std::string& message);
 
   // The current Bluetooth adapter.
   scoped_refptr<device::BluetoothAdapter> adapter_;

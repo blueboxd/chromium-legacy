@@ -231,16 +231,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformDefaultAction) {
   semantics_manager_.RequestAccessibilityAction(
       button2->node_id(), fuchsia::accessibility::semantics::Action::DEFAULT);
   semantics_manager_.RunUntilNumActionsHandledEquals(2);
-
-  // Handle the case that actions are still in flight when AccessibilityBridge
-  // gets torn down. The corresponding callbacks should still be run.
-  frame_impl_->set_handle_actions_for_test(false);
-  semantics_manager_.RequestAccessibilityAction(
-      button3->node_id(), fuchsia::accessibility::semantics::Action::DEFAULT);
-  frame_ptr_.Unbind();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, semantics_manager_.num_actions_handled());
-  EXPECT_EQ(1, semantics_manager_.num_actions_unhandled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformUnsupportedAction) {

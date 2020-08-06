@@ -5374,6 +5374,8 @@
 
   "DeviceUserWhitelist": {},
 
+  "DeviceUserAllowlist": {},
+
   "DeviceGuestModeEnabled": {},
 
   "DeviceShowUserNamesOnSignin": {},

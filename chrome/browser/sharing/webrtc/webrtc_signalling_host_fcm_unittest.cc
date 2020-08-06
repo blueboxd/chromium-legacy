@@ -16,21 +16,21 @@
 
 namespace {
 
-class MockSignallingService : public sharing::mojom::SignallingReceiver {
+class MockSignallingService : public sharing::mojom::SignalingReceiver {
  public:
   MockSignallingService() = default;
   MockSignallingService(const MockSignallingService&) = delete;
   MockSignallingService& operator=(const MockSignallingService&) = delete;
   ~MockSignallingService() override = default;
 
-  // sharing::mojom::SignallingReceiver:
+  // sharing::mojom::SignalingReceiver:
   MOCK_METHOD2(OnOfferReceived,
                void(const std::string&, OnOfferReceivedCallback));
   MOCK_METHOD1(OnIceCandidatesReceived,
                void(std::vector<sharing::mojom::IceCandidatePtr>));
 
   mojo::Remote<sharing::mojom::SignalingSender> signaling_sender;
-  mojo::Receiver<sharing::mojom::SignallingReceiver> signalling_receiver{this};
+  mojo::Receiver<sharing::mojom::SignalingReceiver> signaling_receiver{this};
 };
 
 class WebRtcSignallingHostFCMTest : public testing::Test {
@@ -74,7 +74,7 @@ class WebRtcSignallingHostFCMTest : public testing::Test {
   MockSignallingService signalling_service_;
   WebRtcSignallingHostFCM signalling_host_{
       signalling_service_.signaling_sender.BindNewPipeAndPassReceiver(),
-      signalling_service_.signalling_receiver.BindNewPipeAndPassRemote(),
+      signalling_service_.signaling_receiver.BindNewPipeAndPassRemote(),
       &message_sender_, CreateFakeDeviceInfo("id", "name")};
 
  private:

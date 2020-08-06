@@ -242,7 +242,7 @@ class SkiaOutputSurfaceImplOnGpu
       base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
       OutputSurfaceFrame* frame = nullptr);
 
-  GrContext* gr_context() { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() { return context_state_->gr_context(); }
 
   bool is_using_vulkan() const {
     return !!vulkan_context_provider_ &&

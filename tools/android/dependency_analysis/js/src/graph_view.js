@@ -269,6 +269,13 @@ class HullColorManager {
  */
 
 /**
+ * A callback to be triggered whenever a node is double-clicked in the
+ * visualization.
+ * @callback OnNodeDoubleClickedCallback
+ * @param {!GraphNode} node The node that was double-clicked.
+ */
+
+/**
  * Returns the group a node is in, or `null` if the node shouldn't be grouped.
  * @callback GetNodeGroupCallback
  * @param {!GraphNode} node The node to find the group for.
@@ -299,6 +306,8 @@ class GraphView {
     this.getNodeGroup_ = null;
     /** @private @type {?OnNodeClickedCallback} */
     this.onNodeClicked_ = null;
+    /** @private @type {?OnNodeDoubleClickedCallback} */
+    this.onNodeDoubleClicked_ = null;
 
     const svg = d3.select('#graph-svg');
     const graphGroup = svg.append('g'); // Contains entire graph (for zoom/pan).
@@ -314,7 +323,8 @@ class GraphView {
         .scaleExtent([0.25, 10])
         .on('zoom', () =>
           graphGroup.attr('transform', d3.event.transform),
-        ));
+        ))
+        .on('dblclick.zoom', null);
 
     // The order of these groups decide the SVG paint order (since we append
     // sequentially), we want hulls below edges below nodes below labels.
@@ -388,6 +398,16 @@ class GraphView {
    */
   registerOnNodeClicked(onNodeClicked) {
     this.onNodeClicked_ = onNodeClicked;
+  }
+
+  /**
+   * Binds the event when a node is double-clicked in the graph to a given
+   * callback.
+   * @param {!OnNodeDoubleClickedCallback} onNodeDoubleClicked The callback to
+   *   bind to.
+   */
+  registerOnNodeDoubleClicked(onNodeDoubleClicked) {
+    this.onNodeDoubleClicked_ = onNodeDoubleClicked;
   }
 
   /**
@@ -690,6 +710,7 @@ class GraphView {
           return enter.append('circle')
               .attr('r', 5)
               .attr('stroke', node => getNodeColor(node))
+              .on('dblclick', node => this.onNodeDoubleClicked_(node))
               .on('mousedown', node => this.onNodeClicked_(node))
               .on('mouseenter', node => {
                 this.hoveredNodeManager_.setHoveredNode(node);

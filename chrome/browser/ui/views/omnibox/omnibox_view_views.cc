@@ -332,11 +332,6 @@ void OmniboxViewViews::ElideAnimation::AnimationProgressed(
   view_->SchedulePaint();
 }
 
-void OmniboxViewViews::ElideAnimation::AnimationEnded(
-    const gfx::Animation* animation) {
-  AnimationProgressed(animation);
-}
-
 // OmniboxViewViews -----------------------------------------------------------
 
 // static

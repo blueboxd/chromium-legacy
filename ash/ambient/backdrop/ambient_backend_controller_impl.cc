@@ -14,6 +14,7 @@
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/guid.h"
 #include "base/optional.h"
@@ -431,6 +432,44 @@ void AmbientBackendControllerImpl::OnPersonalAlbumsFetched(
   ash::PersonalAlbums personal_albums =
       BackdropClientConfig::ParsePersonalAlbumsResponse(*response);
   std::move(callback).Run(std::move(personal_albums));
+}
+
+void AmbientBackendControllerImpl::FetchSettingsAndAlbums(
+    int banner_width,
+    int banner_height,
+    int num_albums,
+    OnSettingsAndAlbumsFetchedCallback callback) {
+  auto on_done = base::BarrierClosure(
+      /*num_callbacks=*/2,
+      base::BindOnce(&AmbientBackendControllerImpl::OnSettingsAndAlbumsFetched,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+
+  GetSettings(base::BindOnce(&AmbientBackendControllerImpl::OnSettingsFetched,
+                             weak_factory_.GetWeakPtr(), on_done));
+
+  FetchPersonalAlbums(
+      banner_width, banner_height, num_albums, /*resume_token=*/"",
+      base::BindOnce(&AmbientBackendControllerImpl::OnAlbumsFetched,
+                     weak_factory_.GetWeakPtr(), on_done));
+}
+
+void AmbientBackendControllerImpl::OnSettingsFetched(
+    base::RepeatingClosure on_done,
+    const base::Optional<ash::AmbientSettings>& settings) {
+  settings_ = settings;
+  std::move(on_done).Run();
+}
+
+void AmbientBackendControllerImpl::OnAlbumsFetched(
+    base::RepeatingClosure on_done,
+    ash::PersonalAlbums personal_albums) {
+  personal_albums_ = std::move(personal_albums);
+  std::move(on_done).Run();
+}
+
+void AmbientBackendControllerImpl::OnSettingsAndAlbumsFetched(
+    OnSettingsAndAlbumsFetchedCallback callback) {
+  std::move(callback).Run(settings_, std::move(personal_albums_));
 }
 
 }  // namespace ash

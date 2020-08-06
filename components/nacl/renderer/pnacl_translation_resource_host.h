@@ -33,8 +33,8 @@ struct PnaclCacheInfo;
 // needs from the browser since "Resource" is a Pepper thing...
 class PnaclTranslationResourceHost : public IPC::MessageFilter {
  public:
-  typedef base::Callback<void(int32_t, bool, PP_FileHandle)>
-          RequestNexeFdCallback;
+  typedef base::OnceCallback<void(int32_t, bool, PP_FileHandle)>
+      RequestNexeFdCallback;
 
   explicit PnaclTranslationResourceHost(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);

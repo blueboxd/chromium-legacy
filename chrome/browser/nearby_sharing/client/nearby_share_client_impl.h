@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_client.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -116,7 +116,7 @@ class NearbyShareClientImpl : public NearbyShareClient {
       const std::string& serialized_response);
 
   // Called when the current API call fails at any step.
-  void OnApiCallFailed(NearbyShareRequestError error);
+  void OnApiCallFailed(NearbyShareHttpError error);
 
   // Constructs and executes the actual HTTP request.
   std::unique_ptr<NearbyShareApiCallFlow> api_call_flow_;

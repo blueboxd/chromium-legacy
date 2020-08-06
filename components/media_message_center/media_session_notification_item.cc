@@ -165,6 +165,10 @@ void MediaSessionNotificationItem::Dismiss() {
   controller_->RemoveItem(request_id_);
 }
 
+bool MediaSessionNotificationItem::SourceIsCast() {
+  return false;
+}
+
 void MediaSessionNotificationItem::SetController(
     mojo::Remote<media_session::mojom::MediaController> controller,
     media_session::mojom::MediaSessionInfoPtr session_info) {

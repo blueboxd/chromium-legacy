@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRERENDER_CHROME_PRERENDER_PROCESSOR_IMPL_DELEGATE_H_
 #define CHROME_BROWSER_PRERENDER_CHROME_PRERENDER_PROCESSOR_IMPL_DELEGATE_H_
 
-#include "chrome/browser/prerender/prerender_processor_impl_delegate.h"
+#include "components/prerender/browser/prerender_processor_impl_delegate.h"
 
 namespace content {
 class BrowserContext;

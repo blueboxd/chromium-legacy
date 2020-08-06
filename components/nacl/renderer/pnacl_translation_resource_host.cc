@@ -57,7 +57,8 @@ void PnaclTranslationResourceHost::RequestNexeFd(
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PnaclTranslationResourceHost::SendRequestNexeFd, this,
-                     render_view_id, instance, cache_info, callback));
+                     render_view_id, instance, cache_info,
+                     std::move(callback)));
   return;
 }
 
@@ -70,12 +71,12 @@ void PnaclTranslationResourceHost::SendRequestNexeFd(
   if (!sender_ || !sender_->Send(new NaClHostMsg_NexeTempFileRequest(
           render_view_id, instance, cache_info))) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED), false,
-                       PP_kInvalidFileHandle));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_ERROR_FAILED), false,
+                                  PP_kInvalidFileHandle));
     return;
   }
-  pending_cache_requests_.insert(std::make_pair(instance, callback));
+  pending_cache_requests_.insert(std::make_pair(instance, std::move(callback)));
 }
 
 void PnaclTranslationResourceHost::ReportTranslationFinished(
@@ -122,7 +123,8 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
       status = PP_OK;
     }
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE, base::BindOnce(it->second, status, is_hit, file_handle));
+        FROM_HERE,
+        base::BindOnce(std::move(it->second), status, is_hit, file_handle));
     pending_cache_requests_.erase(it);
   } else {
     DLOG(ERROR) << "Could not find pending request for reply";
@@ -134,9 +136,9 @@ void PnaclTranslationResourceHost::CleanupCacheRequests() {
   for (auto it = pending_cache_requests_.begin();
        it != pending_cache_requests_.end(); ++it) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE,
-        base::BindOnce(it->second, static_cast<int32_t>(PP_ERROR_ABORTED),
-                       false, PP_kInvalidFileHandle));
+        FROM_HERE, base::BindOnce(std::move(it->second),
+                                  static_cast<int32_t>(PP_ERROR_ABORTED), false,
+                                  PP_kInvalidFileHandle));
   }
   pending_cache_requests_.clear();
 }

@@ -52,11 +52,6 @@ SimpleThreadScheduler::CompositorTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-SimpleThreadScheduler::IPCTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 SimpleThreadScheduler::DeprecatedDefaultTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }

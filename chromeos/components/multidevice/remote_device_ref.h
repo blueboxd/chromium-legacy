@@ -65,6 +65,9 @@ class RemoteDeviceRef {
   const std::vector<BeaconSeed>& beacon_seeds() const {
     return remote_device_->beacon_seeds;
   }
+  const std::string& bluetooth_public_address() const {
+    return remote_device_->bluetooth_public_address;
+  }
 
   std::string GetDeviceId() const;
   SoftwareFeatureState GetSoftwareFeatureState(

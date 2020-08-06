@@ -4050,6 +4050,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpRealboxMatchOmniboxThemeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kRealboxMatchOmniboxTheme)},
 
+    {"ntp-repeatable-queries", flag_descriptions::kNtpRepeatableQueriesName,
+     flag_descriptions::kNtpRepeatableQueriesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpRepeatableQueries)},
+
     {"ntp-webui", flag_descriptions::kNtpWebUIName,
      flag_descriptions::kNtpWebUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kWebUI)},
@@ -6171,7 +6175,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"frame-throttle-fps", flag_descriptions::kFrameThrottleFpsName,
      flag_descriptions::kFrameThrottleFpsDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kFrameThrottleFpsChoices)}
+     MULTI_VALUE_TYPE(kFrameThrottleFpsChoices)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
@@ -6181,6 +6185,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kFillingPasswordsFromAnyOrigin)},
 #endif  // OS_ANDROID
+
+    {"h264-decoder-is-buffer-complete-frame",
+     flag_descriptions::kH264DecoderBufferIsCompleteFrameName,
+     flag_descriptions::kH264DecoderBufferIsCompleteFrameDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kH264DecoderBufferIsCompleteFrame)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

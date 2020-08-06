@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_TOKENS_TOKENS_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_TOKENS_TOKENS_MOJOM_TRAITS_H_
 
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/tokens/token_mojom_traits_helper.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/tokens/tokens.mojom-shared.h"
@@ -31,6 +32,19 @@ struct StructTraits<blink::mojom::RemoteFrameTokenDataView,
           blink::mojom::RemoteFrameTokenDataView,
           blink::RemoteFrameToken> {};
 
+template <>
+struct BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::FrameTokenDataView, blink::FrameToken> {
+  static bool Read(blink::mojom::FrameTokenDataView input,
+                   blink::FrameToken* output);
+  static blink::mojom::FrameTokenDataView::Tag GetTag(
+      const blink::FrameToken& token);
+  static blink::LocalFrameToken local_frame_token(
+      const blink::FrameToken& token);
+  static blink::RemoteFrameToken remote_frame_token(
+      const blink::FrameToken& token);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // WORKER TOKENS
 
@@ -55,6 +69,21 @@ struct StructTraits<blink::mojom::SharedWorkerTokenDataView,
           blink::mojom::SharedWorkerTokenDataView,
           blink::SharedWorkerToken> {};
 
+template <>
+struct BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::WorkerTokenDataView, blink::WorkerToken> {
+  static bool Read(blink::mojom::WorkerTokenDataView input,
+                   blink::WorkerToken* output);
+  static blink::mojom::WorkerTokenDataView::Tag GetTag(
+      const blink::WorkerToken& token);
+  static blink::DedicatedWorkerToken dedicated_worker_token(
+      const blink::WorkerToken& token);
+  static blink::ServiceWorkerToken service_worker_token(
+      const blink::WorkerToken& token);
+  static blink::SharedWorkerToken shared_worker_token(
+      const blink::WorkerToken& token);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // OTHER TOKENS
 //
@@ -63,6 +92,24 @@ struct StructTraits<blink::mojom::SharedWorkerTokenDataView,
 // If you have multiple tokens that make a thematic group, please lift them to
 // their own section, in alphabetical order. If adding a new token here, please
 // keep the following list in alphabetic order.
+
+template <>
+struct BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
+                blink::ExecutionContextAttributionToken> {
+  static bool Read(blink::mojom::ExecutionContextAttributionTokenDataView input,
+                   blink::ExecutionContextAttributionToken* output);
+  static blink::mojom::ExecutionContextAttributionTokenDataView::Tag GetTag(
+      const blink::ExecutionContextAttributionToken& token);
+  static blink::LocalFrameToken local_frame_token(
+      const blink::ExecutionContextAttributionToken& token);
+  static blink::DedicatedWorkerToken dedicated_worker_token(
+      const blink::ExecutionContextAttributionToken& token);
+  static blink::ServiceWorkerToken service_worker_token(
+      const blink::ExecutionContextAttributionToken& token);
+  static blink::SharedWorkerToken shared_worker_token(
+      const blink::ExecutionContextAttributionToken& token);
+};
 
 template <>
 struct StructTraits<blink::mojom::PortalTokenDataView, blink::PortalToken>

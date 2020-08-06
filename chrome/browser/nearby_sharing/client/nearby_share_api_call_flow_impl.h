@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 
 // NearbyShareApiCallFlowImpl is a wrapper around OAuth2ApiCallFlow

@@ -26,7 +26,12 @@ namespace win {
 
 // This class is a wrapper for the Portable Executable File Format (PE).
 // Its main purpose is to provide an easy way to work with imports and exports
-// from a file, mapped in memory as image.
+// from a file, mapped in memory as image. A PEImage object is constructed from
+// a loaded PE file by passing the HMODULE to the constructor. Loading a PE file
+// as an image will execute code and should only be done with trusted images.
+// Parsing of untrusted PE files is better done with PeImageReader.
+// PEImage can only parse PE files that match the bitness of the process.
+// See also PEImageAsData.
 class PEImage {
  public:
   // Callback to enumerate sections.

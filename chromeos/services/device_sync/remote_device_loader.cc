@@ -138,7 +138,8 @@ void RemoteDeviceLoader::OnPSKDerived(
       user_email_, std::string() /* instance_id */,
       device.friendly_device_name(), device.no_pii_device_name(),
       device.public_key(), psk, device.last_update_time_millis(),
-      GetSoftwareFeatureToStateMap(device), multidevice_beacon_seeds);
+      GetSoftwareFeatureToStateMap(device), multidevice_beacon_seeds,
+      device.bluetooth_address());
 
   remote_devices_.push_back(remote_device);
 

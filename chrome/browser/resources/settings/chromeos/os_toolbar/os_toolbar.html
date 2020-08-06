@@ -76,6 +76,11 @@
       }
 
       :host([narrow]) #centeredContent {
+        position: absolute;
+        width: 100%;
+      }
+
+      :host([narrow]:not([showing-search_])) #centeredContent {
         justify-content: flex-end;
       }
 
@@ -84,9 +89,23 @@
         visibility: hidden;
       }
 
-      :host([narrow][showing-search_]) #leftContent {
-        opacity: 0;
-        position: absolute;
+      :host([narrow][showing-search_]) #settingsTitle {
+        display: none;
+      }
+
+      :host([showing-search_][is-search-box-cutoff_]) os-settings-search-box {
+        --cr-toolbar-field-width: 80vw; /* Ensures the input is not cutoff. */
+        margin-inline-start: 48px; /* No overlap with #leftContent. */
+      }
+
+      :host([showing-search_][narrow]:not([is-search-box-cutoff_]))
+          os-settings-search-box {
+        --cr-toolbar-field-width: 680px;
+      }
+
+      :host(:not([narrow]):not([is-search-box-cutoff_]))
+          os-settings-search-box {
+        --cr-toolbar-field-width: 480px;
       }
 
       :host(:not([narrow])) #leftContent {
@@ -106,6 +125,9 @@
         text-align: end;
       }
     </style>
+    <iron-media-query query="(max-width: 780px)"
+        query-matches="{{isSearchBoxCutoff_}}">
+    </iron-media-query>
     <div id="leftContent">
       <div id="leftSpacer">
         <template is="dom-if" if="[[showMenu]]">
@@ -115,7 +137,7 @@
               title="$i18n{menuButtonLabel}">
           </cr-icon-button>
         </template>
-        <h1>$i18n{settings}</h1>
+        <h1 id="settingsTitle">$i18n{settings}</h1>
       </div>
     </div>
 

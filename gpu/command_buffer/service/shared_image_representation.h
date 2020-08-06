@@ -258,7 +258,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
     SkPromiseImageTexture* promise_image_texture() const {
       return promise_image_texture_.get();
     }
-    sk_sp<SkImage> CreateSkImage(GrContext* context) const;
+    sk_sp<SkImage> CreateSkImage(GrDirectContext* context) const;
     GrBackendSurfaceMutableState* end_state() const { return end_state_.get(); }
 
    private:

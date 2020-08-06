@@ -14,6 +14,10 @@ namespace chromeos {
 
 namespace multidevice {
 
+namespace {
+const char kFakeBluetoothPublicAddress[] = "01:23:45:67:89:AB";
+}  // namespace
+
 class RemoteDeviceRefTest : public testing::Test {
  protected:
   RemoteDeviceRefTest() = default;
@@ -33,7 +37,8 @@ class RemoteDeviceRefTest : public testing::Test {
         "user_email", "instance_id", "name", "pii_free_name", "public_key",
         "persistent_symmetric_key", 42000 /* last_update_time_millis */,
         software_feature_to_state_map /* software_features */,
-        beacon_seeds /* beacon_seeds */);
+        beacon_seeds /* beacon_seeds */,
+        kFakeBluetoothPublicAddress /* bluetooth_public_address */);
   }
 
   std::shared_ptr<RemoteDevice> remote_device_;
@@ -54,6 +59,8 @@ TEST_F(RemoteDeviceRefTest, TestFields) {
   EXPECT_EQ(remote_device_->last_update_time_millis,
             remote_device_ref.last_update_time_millis());
   EXPECT_EQ(&remote_device_->beacon_seeds, &remote_device_ref.beacon_seeds());
+  EXPECT_EQ(kFakeBluetoothPublicAddress,
+            remote_device_ref.bluetooth_public_address());
 
   EXPECT_EQ(SoftwareFeatureState::kNotSupported,
             remote_device_ref.GetSoftwareFeatureState(

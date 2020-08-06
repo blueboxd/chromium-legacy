@@ -101,8 +101,6 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueInput";
     case TaskType::kMainThreadTaskQueueIdle:
       return "MainThreadTaskQueueIdle";
-    case TaskType::kMainThreadTaskQueueIPC:
-      return "MainThreadTaskQueueIPC";
     case TaskType::kMainThreadTaskQueueControl:
       return "MainThreadTaskQueueControl";
     case TaskType::kMainThreadTaskQueueMemoryPurge:

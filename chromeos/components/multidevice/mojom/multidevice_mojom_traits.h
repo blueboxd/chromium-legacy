@@ -57,6 +57,8 @@ class StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
   software_features(const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::vector<chromeos::multidevice::BeaconSeed>& beacon_seeds(
       const chromeos::multidevice::RemoteDevice& remote_device);
+  static const std::string& bluetooth_public_address(
+      const chromeos::multidevice::RemoteDevice& remote_device);
 
   static bool Read(chromeos::multidevice::mojom::RemoteDeviceDataView in,
                    chromeos::multidevice::RemoteDevice* out);

@@ -242,6 +242,7 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
 
   // WallpaperControllerClient:
   void OpenWallpaperPicker() override { open_count_++; }
+  void MaybeClosePreviewWallpaper() override {}
 
  private:
   size_t open_count_ = 0;

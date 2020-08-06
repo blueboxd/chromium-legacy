@@ -56,7 +56,6 @@ class XRViewData;
 class XRWebGLLayer;
 class XRWorldInformation;
 class XRWorldTrackingState;
-class XRWorldTrackingStateInit;
 
 using XRSessionFeatureSet = HashSet<device::mojom::XRSessionFeature>;
 
@@ -139,9 +138,6 @@ class XRSession final
 
   void updateRenderState(XRRenderStateInit* render_state_init,
                          ExceptionState& exception_state);
-  void updateWorldTrackingState(
-      XRWorldTrackingStateInit* world_tracking_state_init,
-      ExceptionState& exception_state);
   ScriptPromise requestReferenceSpace(ScriptState* script_state,
                                       const String& type,
                                       ExceptionState&);

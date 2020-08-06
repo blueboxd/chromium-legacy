@@ -1297,9 +1297,6 @@ static_library("browser") {
     "prerender/prerender_link_manager_factory.h",
     "prerender/prerender_manager_factory.cc",
     "prerender/prerender_manager_factory.h",
-    "prerender/prerender_processor_impl.cc",
-    "prerender/prerender_processor_impl.h",
-    "prerender/prerender_processor_impl_delegate.h",
     "prerender/prerender_tab_helper.cc",
     "prerender/prerender_tab_helper.h",
     "previews/previews_content_util.cc",
@@ -2901,6 +2898,7 @@ static_library("browser") {
       "updates/update_notification_client.h",
       "updates/update_notification_service_bridge_android.cc",
       "updates/update_notification_service_bridge_android.h",
+      "webauthn/android/cable_module_android.cc",
     ]
     public_deps += [
       "//chrome/android/features/dev_ui:buildflags",
@@ -5714,17 +5712,9 @@ static_library("browser") {
     deps += [ "//device/udev_linux" ]
   }
 
-  if (is_android && notouch_build) {
-    configs += [ ":notouch_config" ]
-  }
-
   if (tpm_fallback) {
     defines += [ "TPM_FALLBACK" ]
   }
-}
-
-config("notouch_config") {
-  defines = [ "ENABLE_SPATIAL_NAVIGATION_HOST" ]
 }
 
 if (is_android) {

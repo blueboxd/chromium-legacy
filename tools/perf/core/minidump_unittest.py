@@ -36,7 +36,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Disabled(
       'chromeos-local',
       'linux',  # https://crbug.com/1108432
-      'win'  # https://crbug.com/1084931
+      'win7'  # https://crbug.com/1084931
   )
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
@@ -82,7 +82,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Disabled(
       'chromeos-local',
       'linux',  # https://crbug.com/1108432
-      'win'  # https://crbug.com/1084931
+      'win7'  # https://crbug.com/1084931
   )
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing

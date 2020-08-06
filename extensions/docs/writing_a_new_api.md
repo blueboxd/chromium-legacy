@@ -3,10 +3,16 @@
 [TOC]
 
 ## Overview
-This document describes the procedure and general advice for writing the implementation of a new Extension API.
+This document describes the procedure and general advice for writing the
+implementation of a new Extension API.
 
 ## Before Writing (Much) Code
-Before you invest significant time and energy into writing a new Extension API, be sure to go through the API proposal process.  This is important, as we may not accept each proposal for a new Extension API, and many require tweaks or changes.  The proposal process is designed to reach consensus on both the general usefulness and appropriateness of an API, as well as the high-level shape it will take.
+Before you invest significant time and energy into writing a new Extension API,
+be sure to go through the API proposal process.  This is important, as we may
+not accept each proposal for a new Extension API, and many require tweaks or
+changes.  The proposal process is designed to reach consensus on both the
+general usefulness and appropriateness of an API, as well as the high-level
+shape it will take.
 
 The proposal process is documented [here](/extensions/docs/new_api_proposal.md).
 
@@ -142,7 +148,11 @@ method, intentionally, requires special review from API reviewers (who are
 familiar with the best practices and any common pitfalls).  If a stub is used,
 this review is no longer useful.
 
-Additionally, APIs may need to be slightly tweaked as a result of different implementation details.  While most of these should be ironed out in the proposal process, some may still come up during the implementation review.  Bundling the declaration with the implementation allows us to catch any changes that need to happen in the API surface during the primary review.
+Additionally, APIs may need to be slightly tweaked as a result of different
+implementation details.  While most of these should be ironed out in the
+proposal process, some may still come up during the implementation review.
+Bundling the declaration with the implementation allows us to catch any changes
+that need to happen in the API surface during the primary review.
 
 #### Code Concepts
 TODO(devlin): Incorporate the below into this article.

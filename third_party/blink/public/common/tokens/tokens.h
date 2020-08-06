@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_TOKENS_TOKENS_H_
 
 #include "base/util/type_safety/token_type.h"
+#include "third_party/blink/public/common/tokens/multi_token.h"
 
 namespace blink {
 
@@ -34,6 +35,9 @@ using LocalFrameToken = util::TokenType<class LocalFrameTokenTypeMarker>;
 // will be distinct.
 using RemoteFrameToken = util::TokenType<class RemoteFrameTokenTypeMarker>;
 
+// Can represent either type of FrameToken.
+using FrameToken = MultiToken<LocalFrameToken, RemoteFrameToken>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // WORKER TOKENS
 
@@ -42,13 +46,17 @@ using RemoteFrameToken = util::TokenType<class RemoteFrameTokenTypeMarker>;
 using DedicatedWorkerToken =
     util::TokenType<class DedicatedWorkerTokenTypeMarker>;
 
+// Identifies a blink::ServiceWorkerGlobalScope in the renderer and a
+// content::ServiceWorkerVersion in the browser.
+using ServiceWorkerToken = util::TokenType<class ServiceWorkerTokenTypeMarker>;
+
 // Identifies a blink::SharedWorkerGlobalScope in the renderer and a
 // content::SharedWorkerHost in the browser.
 using SharedWorkerToken = util::TokenType<class SharedWorkerTokenTypeMarker>;
 
-// Identifies a blink::ServiceWorkerGlobalScope in the renderer and a
-// content::ServiceWorkerVersion in the browser.
-using ServiceWorkerToken = util::TokenType<class ServiceWorkerTokenTypeMarker>;
+// Can represent any type of WorkerToken.
+using WorkerToken =
+    MultiToken<DedicatedWorkerToken, ServiceWorkerToken, SharedWorkerToken>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // OTHER TOKENS
@@ -58,6 +66,16 @@ using ServiceWorkerToken = util::TokenType<class ServiceWorkerTokenTypeMarker>;
 // If you have multiple tokens that make a thematic group, please lift them to
 // their own section, in alphabetical order. If adding a new token here, please
 // keep the following list in alphabetic order.
+
+// Identifies an ExecutionContext hosted in a renderer for the purposes of
+// memory and CPU attribution. Worklets are not tracked independently, but
+// simply attributed to their parent context, hence only LocalFrames and workers
+// can be named. As such, it is possible for multiple ExecutionContexts to have
+// the same ExecutionContextAttributionToken.
+using ExecutionContextAttributionToken = MultiToken<LocalFrameToken,
+                                                    DedicatedWorkerToken,
+                                                    ServiceWorkerToken,
+                                                    SharedWorkerToken>;
 
 // Identifies a blink::PortalContents / blink::HTMLPortalElement in the
 // renderer process, and a content::Portal in the browser process.

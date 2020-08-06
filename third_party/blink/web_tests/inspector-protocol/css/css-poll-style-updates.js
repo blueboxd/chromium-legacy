@@ -116,14 +116,16 @@
     `Updated nodes from the second session should not contain the fourth item: ${
     !secondSessionRespondedIds.includes(secondSessionNodeIds[3])}`);
 
+  const multipleRequestsPromise = Promise.all([
+    firstDP.CSS.takeComputedStyleUpdates(),
+    firstDP.CSS.takeComputedStyleUpdates(),
+  ]);
+
   firstSession.evaluate(
     () =>
       document.querySelector('.container').classList.remove('change-2'));
   // Only one request can be active at a time; other requests should fail.
-  const multipleRequestsResponse = await Promise.all([
-    firstDP.CSS.takeComputedStyleUpdates(),
-    firstDP.CSS.takeComputedStyleUpdates(),
-  ]);
+  const multipleRequestsResponse = await multipleRequestsPromise;
   let errorResponse =
     multipleRequestsResponse.find(result => Boolean(result.error));
   testRunner.log(

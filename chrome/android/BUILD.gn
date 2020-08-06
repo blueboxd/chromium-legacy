@@ -341,6 +341,7 @@ android_library("chrome_java") {
     "//chrome/browser/ui/android/native_page:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
+    "//chrome/browser/webauthn/android:java",
     "//chrome/browser/xsurface:java",
     "//components/autofill/android:autofill_java",
     "//components/autofill_assistant/browser:proto_java",
@@ -661,6 +662,7 @@ group("jni_headers") {
     "//chrome/browser/ui/android/favicon:jni_headers",
     "//chrome/browser/ui/messages/android:jni_headers",
     "//chrome/browser/util:jni_headers",
+    "//chrome/browser/webauthn/android:jni_headers",
   ]
 }
 
@@ -1341,6 +1343,7 @@ if (enable_vr || enable_arcore) {
 
       sources = [
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArAnchorsTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr/WebXrArCameraAccessTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArHitTestTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArSessionTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArTestFramework.java",

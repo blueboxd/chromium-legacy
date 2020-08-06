@@ -147,6 +147,7 @@ jumbo_source_set("common") {
     "service_worker/service_worker_utils.cc",
     "switches.cc",
     "thread_safe_browser_interface_broker_proxy.cc",
+    "tokens/tokens_mojom_traits.cc",
     "user_agent/user_agent_metadata.cc",
     "web_package/signed_exchange_consts.cc",
     "web_package/web_package_request_matcher.cc",
@@ -244,6 +245,7 @@ jumbo_source_set("common_unittests_sources") {
     "origin_trials/trial_token_validator_unittest.cc",
     "test/run_all_unittests.cc",
     "tokens/multi_token_unittest.cc",
+    "tokens/tokens_mojom_traits_unittest.cc",
     "user_agent/user_agent_metadata_unittest.cc",
     "web_package/web_package_request_matcher_unittest.cc",
   ]

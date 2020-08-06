@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import './profile_card_menu.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
@@ -16,7 +17,7 @@ Polymer({
     /**  @type {!ProfileState} */
     profileState: {
       type: Object,
-    }
+    },
   },
 
   /** @private {ManageProfilesBrowserProxy} */
@@ -33,5 +34,4 @@ Polymer({
     this.manageProfilesBrowserProxy_.launchSelectedProfile(
         this.profileState.profilePath);
   },
-
 });

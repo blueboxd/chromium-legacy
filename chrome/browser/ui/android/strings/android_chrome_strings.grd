@@ -1015,6 +1015,17 @@ Your Google account may have other forms of browsing history like searches and a
         Sends URLs of some pages you visit, limited system information, and some page content to Google, to help discover new threats and protect everyone on the web.
       </message>
 
+      <!-- Safe Browsing no protection confirmation dialog -->
+      <message name="IDS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_TITLE" desc="Title for Safe Browsing no protection confirmation dialog.">
+        Turn off Safe Browsing?
+      </message>
+      <message name="IDS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_MESSAGE" desc="Message for Safe Browsing no protection confirmation dialog.">
+        Safe Browsing protects you against deceptive websites. If you turn it off, be extra careful when browsing, especially before entering passwords.
+      </message>
+      <message name="IDS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_CONFIRM" desc="Message for Safe Browsing no protection confirmation button.">
+        Turn off
+      </message>
+
       <!-- Accessibility preferences -->
       <message name="IDS_PREFS_ACCESSIBILITY" desc="Title of Accessibility settings, which allows the user to change webpage font sizes. [CHAR-LIMIT=32]">
         Accessibility

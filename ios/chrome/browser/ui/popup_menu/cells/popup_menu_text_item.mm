@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
+#include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
@@ -32,6 +33,9 @@ NSMutableAttributedString* GetAttributedString(NSString* imageName,
   // Add a space to have a distance with the leading icon.
   NSString* fullText = [@" " stringByAppendingString:message];
 
+  NSRange range;
+  fullText = ParseStringWithLink(fullText, &range);
+
   NSDictionary* generalAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
     NSFontAttributeName :
@@ -41,6 +45,13 @@ NSMutableAttributedString* GetAttributedString(NSString* imageName,
   NSMutableAttributedString* attributedString =
       [[NSMutableAttributedString alloc] initWithString:fullText
                                              attributes:generalAttributes];
+
+  NSDictionary* linkAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
+  };
+  [attributedString setAttributes:linkAttributes range:range];
 
   // Create the leading enterprise icon.
   NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
@@ -79,6 +90,7 @@ NSMutableAttributedString* GetAttributedString(NSString* imageName,
 - (void)configureCell:(PopupMenuTextCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
+  cell.userInteractionEnabled = YES;
   NSMutableAttributedString* StringOfCell =
       GetAttributedString(self.imageName, self.message);
   cell.messageAttributedString = StringOfCell;
@@ -113,7 +125,6 @@ NSMutableAttributedString* GetAttributedString(NSString* imageName,
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
-    self.userInteractionEnabled = NO;
     UIView* selectedBackgroundView = [[UIView alloc] init];
     selectedBackgroundView.backgroundColor =
         [UIColor colorNamed:kTableViewRowHighlightColor];

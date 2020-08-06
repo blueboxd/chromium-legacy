@@ -508,7 +508,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
         account_id.GetUserEmail(), std::string() /* instance_id */,
         std::string() /* name */, std::string() /* pii_free_name */,
         decoded_public_key, decoded_psk /* persistent_symmetric_key */,
-        0L /* last_update_time_millis */, software_features, beacon_seeds);
+        0L /* last_update_time_millis */, software_features, beacon_seeds,
+        std::string() /* bluetooth_public_address */);
 
     remote_devices.push_back(remote_device);
     PA_LOG(VERBOSE) << "Loaded Remote Device:\n"

@@ -740,6 +740,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/firstrun/SigninFirstRunFragment.java",
   "java/src/org/chromium/chrome/browser/firstrun/TabbedModeFirstRunActivity.java",
   "java/src/org/chromium/chrome/browser/firstrun/ToSAndUMAFirstRunFragment.java",
+  "java/src/org/chromium/chrome/browser/firstrun/TosAndUmaCctFirstRunFragment.java",
   "java/src/org/chromium/chrome/browser/flags/ChromeSessionState.java",
   "java/src/org/chromium/chrome/browser/fullscreen/BrowserControlsManager.java",
   "java/src/org/chromium/chrome/browser/fullscreen/FullscreenHtmlApiHandler.java",

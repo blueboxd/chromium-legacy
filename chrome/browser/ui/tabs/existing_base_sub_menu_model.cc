@@ -29,6 +29,9 @@ bool ExistingBaseSubMenuModel::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
+constexpr int ExistingBaseSubMenuModel::kMinExistingWindowCommandId;
+constexpr int ExistingBaseSubMenuModel::kMinExistingTabGroupCommandId;
+
 void ExistingBaseSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (IsNewCommand(command_id)) {
     ExecuteNewCommand(event_flags);

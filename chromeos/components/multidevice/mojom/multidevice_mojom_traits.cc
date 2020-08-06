@@ -5,7 +5,9 @@
 #include "chromeos/components/multidevice/mojom/multidevice_mojom_traits.h"
 
 #include "base/notreached.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
@@ -113,6 +115,14 @@ StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
   return remote_device.beacon_seeds;
 }
 
+const std::string&
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
+             chromeos::multidevice::RemoteDevice>::
+    bluetooth_public_address(
+        const chromeos::multidevice::RemoteDevice& remote_device) {
+  return remote_device.bluetooth_public_address;
+}
+
 bool StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
                   chromeos::multidevice::RemoteDevice>::
     Read(chromeos::multidevice::mojom::RemoteDeviceDataView in,
@@ -127,8 +137,27 @@ bool StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
       !in.ReadPersistentSymmetricKey(&out->persistent_symmetric_key) ||
       !in.ReadLastUpdateTime(&last_update_time) ||
       !in.ReadSoftwareFeatures(&out->software_features) ||
-      !in.ReadBeaconSeeds(&out->beacon_seeds)) {
+      !in.ReadBeaconSeeds(&out->beacon_seeds) ||
+      !in.ReadBluetoothPublicAddress(&out->bluetooth_public_address)) {
     return false;
+  }
+
+  // Note: |bluetooth_public_address| may be empty if it has not been synced.
+  if (!out->bluetooth_public_address.empty()) {
+    std::string bluetooth_public_address_before_canonicalizing =
+        out->bluetooth_public_address;
+
+    // Canonicalize address, which capitalizes all hex digits. Note that if the
+    // input address is invalid, CanonicalizeAddress() returns an empty string.
+    out->bluetooth_public_address =
+        device::CanonicalizeBluetoothAddress(out->bluetooth_public_address);
+
+    if (out->bluetooth_public_address.empty()) {
+      PA_LOG(ERROR) << "Invalid bluetooth public address \""
+                    << bluetooth_public_address_before_canonicalizing
+                    << "\" for device with ID \"" << out->GetDeviceId()
+                    << "\"; clearing.";
+    }
   }
 
   out->public_key =

@@ -23,6 +23,12 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
   import("//build/config/mips.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See docs/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && enable_basic_printing
 skia_support_skottie = true
@@ -264,21 +270,36 @@ component("skia") {
     "ext/skia_trace_memory_dump_impl.h",
     "ext/skia_utils_base.cc",
     "ext/skia_utils_base.h",
-    "ext/skia_utils_ios.h",
-    "ext/skia_utils_ios.mm",
-    "ext/skia_utils_mac.h",
-    "ext/skia_utils_mac.mm",
-    "ext/skia_utils_win.cc",
-    "ext/skia_utils_win.h",
   ]
-
   if (!is_mac && !is_ios) {
     sources += [
       "ext/fontmgr_default.cc",
       "ext/fontmgr_default.h",
-      "ext/fontmgr_default_android.cc",
-      "ext/fontmgr_default_linux.cc",
+    ]
+  }
+  if (is_android) {
+    sources += [ "ext/fontmgr_default_android.cc" ]
+  }
+  if (is_linux || is_chromeos) {
+    sources += [ "ext/fontmgr_default_linux.cc" ]
+  }
+  if (is_ios) {
+    sources += [
+      "ext/skia_utils_ios.h",
+      "ext/skia_utils_ios.mm",
+    ]
+  }
+  if (is_mac) {
+    sources += [
+      "ext/skia_utils_mac.h",
+      "ext/skia_utils_mac.mm",
+    ]
+  }
+  if (is_win) {
+    sources += [
       "ext/fontmgr_default_win.cc",
+      "ext/skia_utils_win.cc",
+      "ext/skia_utils_win.h",
     ]
   }
 
@@ -441,7 +462,6 @@ component("skia") {
   }
 
   if (is_apple) {
-    set_sources_assignment_filter([])
     sources += [
       "//third_party/skia/include/ports/SkFontMgr_mac_ct.h",
       "//third_party/skia/src/ports/SkFontMgr_mac_ct.cpp",
@@ -451,7 +471,6 @@ component("skia") {
       "//third_party/skia/src/ports/SkTypeface_mac_ct.cpp",
       "//third_party/skia/src/ports/SkTypeface_mac_ct.h",
     ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   if (is_linux || is_chromeos) {
@@ -578,15 +597,6 @@ component("skia") {
   }
   if (is_ios) {
     frameworks = [ "ImageIO.framework" ]
-    set_sources_assignment_filter([])
-    sources += [
-      "//third_party/skia/src/utils/mac/SkCGBase.h",
-      "//third_party/skia/src/utils/mac/SkCGGeometry.h",
-      "//third_party/skia/src/utils/mac/SkCTFontSmoothBehavior.cpp",
-      "//third_party/skia/src/utils/mac/SkCTFontSmoothBehavior.h",
-      "//third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp",
-    ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   if (is_fuchsia) {
@@ -915,9 +925,13 @@ test("skia_unittests") {
     "ext/platform_canvas_unittest.cc",
     "ext/recursive_gaussian_convolution_unittest.cc",
     "ext/skia_memory_dump_provider_unittest.cc",
-    "ext/skia_utils_ios_unittest.mm",
-    "ext/skia_utils_mac_unittest.mm",
   ]
+  if (is_ios) {
+    sources += [ "ext/skia_utils_ios_unittest.mm" ]
+  }
+  if (is_mac) {
+    sources += [ "ext/skia_utils_mac_unittest.mm" ]
+  }
 
   if (!is_win) {
     sources -= [ "ext/platform_canvas_unittest.cc" ]

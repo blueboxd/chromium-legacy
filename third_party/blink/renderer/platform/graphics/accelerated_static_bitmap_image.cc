@@ -239,13 +239,8 @@ void AcceleratedStaticBitmapImage::Draw(
 }
 
 bool AcceleratedStaticBitmapImage::IsValid() const {
-  // TODO: Remove explicit cast after http://review.skia.org/304776 lands.
-  if (texture_backing_ && (!skia_context_provider_wrapper_ ||
-                           !texture_backing_->GetAcceleratedSkImage()->isValid(
-                               static_cast<GrRecordingContext*>(
-                                   ContextProvider()->GetGrContext())))) {
+  if (texture_backing_ && !skia_context_provider_wrapper_)
     return false;
-  }
 
   if (mailbox_ref_->is_cross_thread()) {
     // If context is is from another thread, validity cannot be verified. Just

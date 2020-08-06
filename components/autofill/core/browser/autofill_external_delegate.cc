@@ -201,7 +201,9 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
-  // If a popup was shown, then we showed either autofill or autocomplete.
+  // Popups are expected to be Autofill or Autocomplete.
+  DCHECK_NE(GetPopupType(), PopupType::kPasswords);
+
   OnAutofillAvailabilityEvent(
       has_autofill_suggestions_ ? mojom::AutofillState::kAutofillAvailable
                                 : mojom::AutofillState::kAutocompleteAvailable);

@@ -129,7 +129,11 @@ void DeleteTmpFileWithRetry(File tmp_file,
                !SequencedTaskRunnerHandle::Get()->PostDelayedTask(
                    FROM_HERE,
                    BindOnce(&DeleteTmpFileWithRetry, base::File(),
-                            tmp_file_path, histogram_suffix, attempt),
+                            tmp_file_path,
+                            // Pass the suffix as a std::string rather than a
+                            // StringPiece since the latter references memory
+                            // owned by this function's caller.
+                            std::string(histogram_suffix), attempt),
                    kDeleteFileRetryDelay)) {
       // Retries are not possible, so record the simple delete error.
       UmaHistogramExactLinearWithSuffix("ImportantFile.FileDeleteNoRetryError",

@@ -57,6 +57,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
 
   // Hides the media notification.
   virtual void Dismiss() = 0;
+
+  // Return true if this item belongs to a cast media session, false otherwise.
+  virtual bool SourceIsCast() = 0;
 };
 
 }  // namespace media_message_center

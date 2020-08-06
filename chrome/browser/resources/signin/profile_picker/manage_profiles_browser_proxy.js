@@ -9,7 +9,9 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  * @typedef {{
  *   profilePath: string,
  *   localProfileName: string,
+ *   isSignedIn: Boolean,
  *   gaiaName: string,
+ *   userName: string,
  *   avatarIcon: string,
  * }}
  */
@@ -54,6 +56,12 @@ export class ManageProfilesBrowserProxy {
    */
   getNewProfileSuggestedThemeInfo() {}
 
+  /**
+   * Retrieves profile statistics to be shown in the remove profile warning.
+   * @param {string} profilePath
+   */
+  getProfileStatistics(profilePath) {}
+
   /** Loads Google sign in page.*/
   loadSignInProfileCreationFlow() {}
 }
@@ -83,6 +91,11 @@ export class ManageProfilesBrowserProxyImpl {
   /** @override */
   getNewProfileSuggestedThemeInfo() {
     return sendWithPromise('getNewProfileSuggestedThemeInfo');
+  }
+
+  /** @override */
+  getProfileStatistics(profilePath) {
+    chrome.send('getProfileStatistics', [profilePath]);
   }
 
   /** @override */

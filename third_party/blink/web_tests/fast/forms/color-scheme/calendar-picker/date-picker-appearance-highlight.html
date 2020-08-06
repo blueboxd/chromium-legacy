@@ -7,7 +7,7 @@ testRunner.waitUntilDone();
 <script src="../../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
 <input type="date" id="date" value="2018-08-05">
 <script>
-openPicker(document.getElementById('date'), function() {
+openPickerAppearanceOnly(document.getElementById('date'), function() {
   hoverOverDayCellAt(2, 3);
   testRunner.notifyDone()
 });

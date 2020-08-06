@@ -78,10 +78,11 @@ void FeedbackUploader::SetMinimumRetryDelayForTesting(base::TimeDelta delay) {
   g_minimum_retry_delay = delay;
 }
 
-void FeedbackUploader::QueueReport(std::unique_ptr<std::string> data) {
+void FeedbackUploader::QueueReport(std::unique_ptr<std::string> data,
+                                   bool has_email) {
   reports_queue_.emplace(base::MakeRefCounted<FeedbackReport>(
-      feedback_reports_path_, base::Time::Now(), std::move(data),
-      task_runner_));
+      feedback_reports_path_, base::Time::Now(), std::move(data), task_runner_,
+      has_email));
   UpdateUploadTimer();
 }
 
@@ -176,7 +177,9 @@ void FeedbackUploader::DispatchReport() {
                                  : variations::InIncognito::kNo,
       resource_request.get());
 
-  AppendExtraHeadersToUploadRequest(resource_request.get());
+  if (report_being_dispatched_->has_email()) {
+    AppendExtraHeadersToUploadRequest(resource_request.get());
+  }
 
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),

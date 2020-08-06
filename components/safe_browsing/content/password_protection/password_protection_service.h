@@ -475,7 +475,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   // Get the content area size of current browsing window.
   virtual gfx::Size GetCurrentContentAreaSize() const = 0;
+#endif
 
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   // Binds the |phishing_detector| to the appropriate interface, as provided by
   // |provider|.
   virtual void GetPhishingDetector(

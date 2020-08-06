@@ -107,7 +107,9 @@ void RemoteDeviceV2LoaderImpl::AddRemoteDevice(const CryptAuthDevice& device,
       device.last_update_time.ToJavaTime(), device.feature_states,
       beto_metadata ? multidevice::FromCryptAuthV2SeedRepeatedPtrField(
                           beto_metadata->beacon_seeds())
-                    : std::vector<multidevice::BeaconSeed>());
+                    : std::vector<multidevice::BeaconSeed>(),
+      beto_metadata ? beto_metadata->bluetooth_public_address()
+                    : std::string());
 
   remaining_ids_to_process_.erase(device.instance_id());
 

@@ -50,7 +50,6 @@ modules_dictionary_idl_files = [
   "xr_hit_test_options_init.idl",
   "xr_input_source_event_init.idl",
   "xr_input_sources_change_event_init.idl",
-  "xr_plane_detection_state_init.idl",
   "xr_ray_direction_init.idl",
   "xr_reference_space_event_init.idl",
   "xr_render_state_init.idl",
@@ -58,7 +57,6 @@ modules_dictionary_idl_files = [
   "xr_session_init.idl",
   "xr_transient_input_hit_test_options_init.idl",
   "xr_webgl_layer_init.idl",
-  "xr_world_tracking_state_init.idl",
 ]
 
 modules_typedefs_enums_only_idl_files = []

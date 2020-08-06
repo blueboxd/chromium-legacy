@@ -258,7 +258,8 @@ enum class TaskType : unsigned char {
   kMainThreadTaskQueueDefault = 39,
   kMainThreadTaskQueueInput = 40,
   kMainThreadTaskQueueIdle = 41,
-  kMainThreadTaskQueueIPC = 42,
+  // Removed:
+  // kMainThreadTaskQueueIPC = 42,
   kMainThreadTaskQueueControl = 43,
   // Removed:
   // kMainThreadTaskQueueCleanup = 52,

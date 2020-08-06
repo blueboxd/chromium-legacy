@@ -34,6 +34,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -440,7 +441,9 @@ void MagnificationController::OnMouseEvent(ui::MouseEvent* event) {
       SwitchTargetRootWindow(current_root, true);
     }
 
-    if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED &&
+    const bool dragged_or_moved = event->type() == ui::ET_MOUSE_MOVED ||
+                                  event->type() == ui::ET_MOUSE_DRAGGED;
+    if (IsMagnified() && dragged_or_moved &&
         event->pointer_details().pointer_type != ui::EventPointerType::kPen) {
       OnMouseMove(event->root_location());
     }

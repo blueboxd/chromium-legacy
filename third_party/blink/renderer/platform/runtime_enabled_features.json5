@@ -787,6 +787,10 @@
       status: "stable",
     },
     {
+      name: "FlexAspectRatio",
+      status: "experimental",
+    },
+    {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,
     },

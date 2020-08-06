@@ -234,18 +234,25 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackFileBrowser) {
   EXPECT_TRUE(tasks[0].is_default());
 }
 
-// Test that Text.app is chosen as default even if nothing is set in the
-// preferences.
+// Test that Text.app is chosen as default instead of the Files app
+// even if nothing is set in the preferences.
 TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackTextApp) {
   TestingPrefServiceSimple pref_service;
   RegisterDefaultTaskPreferences(&pref_service);
 
-  // The text editor app was found for "foo.txt".
-  TaskDescriptor files_app_task(kTextEditorAppId, TASK_TYPE_FILE_HANDLER,
-                                "Text");
+  // Define the browser handler of the Files app for "foo.txt".
+  TaskDescriptor files_app_task(
+      kFileManagerAppId, TASK_TYPE_FILE_BROWSER_HANDLER, "view-in-browser");
+  // Define the text editor app for "foo.txt".
+  TaskDescriptor text_app_task(kTextEditorAppId, TASK_TYPE_FILE_HANDLER,
+                               "Text");
   std::vector<FullTaskDescriptor> tasks;
   tasks.emplace_back(
-      files_app_task, "Text", Verb::VERB_OPEN_WITH,
+      files_app_task, "View in browser", Verb::VERB_OPEN_WITH,
+      GURL("http://example.com/some_icon.png"), false /* is_default */,
+      false /* is_generic_file_handler */, false /* is_file_extension_match */);
+  tasks.emplace_back(
+      text_app_task, "Text", Verb::VERB_OPEN_WITH,
       GURL("chrome://extension-icon/mmfbcljfglbokpmkimbfghdkjmjhdgbg/16/1"),
       false /* is_default */, false /* is_generic_file_handler */,
       false /* is_file_extension_match */);
@@ -256,7 +263,7 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackTextApp) {
   // The text editor app should be chosen as default, as it's a fallback file
   // browser handler.
   ChooseAndSetDefaultTask(pref_service, entries, &tasks);
-  EXPECT_TRUE(tasks[0].is_default());
+  EXPECT_TRUE(tasks[1].is_default());
 }
 
 // Test that Audio Player is chosen as default even if nothing is set in the

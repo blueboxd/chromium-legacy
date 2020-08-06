@@ -112,6 +112,6 @@ Polymer({
   onReverseScrollRowClicked_: function() {
     this.setPrefValue(
         'settings.touchpad.natural_scroll',
-        this.getPref('settings.touchpad.natural_scroll').value);
+        !this.getPref('settings.touchpad.natural_scroll').value);
   },
 });

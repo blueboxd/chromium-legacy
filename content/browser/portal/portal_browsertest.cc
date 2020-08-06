@@ -1380,18 +1380,18 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateLateInNavigation) {
 
 namespace {
 
-class NavigationControlInterceptorBadPortalActivateResult
-    : public mojom::FrameNavigationControlInterceptorForTesting {
+class LocalMainFrameInterceptorBadPortalActivateResult
+    : public blink::mojom::LocalMainFrameInterceptorForTesting {
  public:
-  explicit NavigationControlInterceptorBadPortalActivateResult(
+  explicit LocalMainFrameInterceptorBadPortalActivateResult(
       RenderFrameHostImpl* frame_host)
       : frame_host_(frame_host) {}
 
-  mojom::FrameNavigationControl* GetForwardingInterface() override {
-    if (!navigation_control_)
+  blink::mojom::LocalMainFrame* GetForwardingInterface() override {
+    if (!local_main_frame_)
       frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
-          &navigation_control_);
-    return navigation_control_.get();
+          &local_main_frame_);
+    return local_main_frame_.get();
   }
 
   void OnPortalActivated(
@@ -1416,24 +1416,24 @@ class NavigationControlInterceptorBadPortalActivateResult
 
  private:
   RenderFrameHostImpl* frame_host_;
-  mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
+  mojo::AssociatedRemote<blink::mojom::LocalMainFrame> local_main_frame_;
 };
 
-class RenderFrameHostImplForNavigationControlInterceptor
+class RenderFrameHostImplForLocalMainFrameInterceptor
     : public RenderFrameHostImpl {
  private:
   using RenderFrameHostImpl::RenderFrameHostImpl;
 
-  mojom::FrameNavigationControl* GetNavigationControl() override {
+  blink::mojom::LocalMainFrame* GetAssociatedLocalMainFrame() final {
     return &interceptor_;
   }
 
-  NavigationControlInterceptorBadPortalActivateResult interceptor_{this};
+  LocalMainFrameInterceptorBadPortalActivateResult interceptor_{this};
 
-  friend class RenderFrameHostFactoryForNavigationControlInterceptor;
+  friend class RenderFrameHostFactoryForLocalMainFrameInterceptor;
 };
 
-class RenderFrameHostFactoryForNavigationControlInterceptor
+class RenderFrameHostFactoryForLocalMainFrameInterceptor
     : public TestRenderFrameHostFactory {
  protected:
   std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
@@ -1445,12 +1445,10 @@ class RenderFrameHostFactoryForNavigationControlInterceptor
       int32_t routing_id,
       const base::UnguessableToken& frame_token,
       bool renderer_initiated_creation) override {
-    return base::WrapUnique(
-        new RenderFrameHostImplForNavigationControlInterceptor(
-            site_instance, std::move(render_view_host), delegate, frame_tree,
-            frame_tree_node, routing_id, frame_token,
-            renderer_initiated_creation,
-            RenderFrameHostImpl::LifecycleState::kActive));
+    return base::WrapUnique(new RenderFrameHostImplForLocalMainFrameInterceptor(
+        site_instance, std::move(render_view_host), delegate, frame_tree,
+        frame_tree_node, routing_id, frame_token, renderer_initiated_creation,
+        RenderFrameHostImpl::LifecycleState::kActive));
   }
 };
 
@@ -1467,7 +1465,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MisbehavingRendererActivated) {
 
   // Arrange for a special kind of RenderFrameHost to be created which permits
   // its NavigationControl messages to be intercepted.
-  RenderFrameHostFactoryForNavigationControlInterceptor scoped_rfh_factory;
+  RenderFrameHostFactoryForLocalMainFrameInterceptor scoped_rfh_factory;
   GURL url = embedded_test_server()->GetURL("a.com", "/title2.html");
   Portal* portal = CreatePortalToUrl(web_contents_impl, url);
 

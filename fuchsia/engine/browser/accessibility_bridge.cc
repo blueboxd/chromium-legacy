@@ -26,20 +26,20 @@ AccessibilityBridge::AccessibilityBridge(
     fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager,
     fuchsia::ui::views::ViewRef view_ref,
     content::WebContents* web_contents,
-    base::OnceCallback<void(zx_status_t)> on_disconnect_callback)
-    : binding_(this), web_contents_(web_contents) {
+    base::OnceCallback<void(zx_status_t)> on_error_callback)
+    : binding_(this),
+      web_contents_(web_contents),
+      on_error_callback_(std::move(on_error_callback)) {
   DCHECK(web_contents_);
   Observe(web_contents_);
   tree_.AddObserver(this);
 
   semantics_manager->RegisterViewForSemantics(
       std::move(view_ref), binding_.NewBinding(), tree_ptr_.NewRequest());
-  tree_ptr_.set_error_handler(
-      [disconnect_callback =
-           std::move(on_disconnect_callback)](zx_status_t status) mutable {
-        ZX_LOG(ERROR, status) << "SemanticTree disconnected";
-        std::move(disconnect_callback).Run(ZX_ERR_INTERNAL);
-      });
+  tree_ptr_.set_error_handler([this](zx_status_t status) mutable {
+    ZX_LOG(ERROR, status) << "SemanticTree disconnected";
+    std::move(on_error_callback_).Run(ZX_ERR_INTERNAL);
+  });
 }
 
 AccessibilityBridge::~AccessibilityBridge() {
@@ -50,11 +50,6 @@ AccessibilityBridge::~AccessibilityBridge() {
     hit.set_node_id(kSemanticNodeRootId);
     callback.second(std::move(hit));
   }
-  pending_hit_test_callbacks_.clear();
-
-  for (auto& callback : pending_accessibility_action_callbacks_)
-    callback.second(false);
-  pending_accessibility_action_callbacks_.clear();
 }
 
 void AccessibilityBridge::TryCommit() {
@@ -131,7 +126,12 @@ void AccessibilityBridge::AccessibilityEventReceived(
     const content::AXEventNotificationDetails& details) {
   // Updates to AXTree must be applied first.
   for (const ui::AXTreeUpdate& update : details.updates) {
-    tree_.Unserialize(update);
+    if (!tree_.Unserialize(update)) {
+      // If this fails, it is a fatal error that will cause the current Frame to
+      // be destroyed.
+      std::move(on_error_callback_).Run(ZX_ERR_INTERNAL);
+      return;
+    }
   }
 
   // Events to fire after tree has been updated.
@@ -146,13 +146,6 @@ void AccessibilityBridge::AccessibilityEventReceived(
         pending_hit_test_callbacks_[event.action_request_id](std::move(hit));
         pending_hit_test_callbacks_.erase(event.action_request_id);
       }
-    }
-
-    // Run callbacks associated with other accessibility events.
-    if (pending_accessibility_action_callbacks_.find(event.id) !=
-        pending_accessibility_action_callbacks_.end()) {
-      pending_accessibility_action_callbacks_[event.id](true);
-      pending_accessibility_action_callbacks_.erase(event.id);
     }
   }
 }
@@ -169,15 +162,9 @@ void AccessibilityBridge::OnAccessibilityActionRequested(
   }
 
   action_data.target_node_id = node_id;
-  pending_accessibility_action_callbacks_[node_id] = std::move(callback);
-
-  // Allow tests to bypass action handling to simulate the case that actions
-  // aren't handled in tests.
-  if (!handle_actions_for_test_) {
-    return;
-  }
 
   web_contents_->GetMainFrame()->AccessibilityPerformAction(action_data);
+  callback(true);
 }
 
 void AccessibilityBridge::HitTest(fuchsia::math::PointF local_point,

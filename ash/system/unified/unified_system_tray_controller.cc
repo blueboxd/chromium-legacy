@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_controller.h"
 
+#include "ash/capture_mode/capture_mode_feature_pod_controller.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_features.h"
@@ -411,6 +412,8 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
+  if (features::IsCaptureModeEnabled())
+    AddFeaturePodItem(std::make_unique<CaptureModeFeaturePodController>());
 
   // If you want to add a new feature pod item, add here.
 

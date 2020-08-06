@@ -94,4 +94,9 @@ struct RemoteDevice {
   // metadata synced for over 30 days, it is possible that a connection will not
   // be able to be established over BLE.
   array<BeaconSeed> beacon_seeds;
+
+  // Bluetooth public address, formatted as a hex string with colons and capital
+  // letters (example: "01:23:45:67:89:AB"). If the device does not have a
+  // synced address, this field is empty.
+  string bluetooth_public_address;
 };

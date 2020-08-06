@@ -602,16 +602,6 @@ class CONTENT_EXPORT RenderFrameImpl
       bool wants_result,
       int32_t world_id,
       JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
-  void ForwardMessageFromHost(
-      blink::TransferableMessage message,
-      const url::Origin& source_origin,
-      const base::Optional<url::Origin>& target_origin) override;
-  void OnPortalActivated(
-      const blink::PortalToken& portal_token,
-      mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
-      mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
-      blink::TransferableMessage data,
-      OnPortalActivatedCallback callback) override;
   void SwapIn() override;
 
   // mojom::FullscreenVideoElementHandler implementation:

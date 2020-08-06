@@ -125,6 +125,7 @@ Pointer::~Pointer() {
   if (pointer_constraint_delegate_) {
     pointer_constraint_delegate_->GetConstrainedSurface()
         ->RemoveSurfaceObserver(this);
+    VLOG(1) << "Pointer constraint broken by pointer destruction";
     pointer_constraint_delegate_->OnConstraintBroken();
   }
   WMHelper* helper = WMHelper::GetInstance();
@@ -252,8 +253,10 @@ void Pointer::UnconstrainPointer() {
 }
 
 bool Pointer::EnablePointerCapture(Surface* capture_surface) {
-  if (!base::FeatureList::IsEnabled(kPointerCapture))
+  if (!base::FeatureList::IsEnabled(kPointerCapture)) {
+    LOG(WARNING) << "Unable to capture the pointer, feature is disabled.";
     return false;
+  }
 
   if (capture_surface->window() !=
       WMHelper::GetInstance()->GetFocusedWindow()) {
@@ -317,6 +320,7 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
   if (surface && pointer_constraint_delegate_ &&
       surface == pointer_constraint_delegate_->GetConstrainedSurface()) {
     surface->RemoveSurfaceObserver(this);
+    VLOG(1) << "Pointer constraint broken by surface destruction";
     pointer_constraint_delegate_->OnConstraintBroken();
     UnconstrainPointer();
   }
@@ -544,6 +548,7 @@ void Pointer::OnWindowFocused(aura::Window* gained_focus,
                               aura::Window* lost_focus) {
   if (capture_window_ && capture_window_ != gained_focus) {
     if (pointer_constraint_delegate_) {
+      VLOG(1) << "Pointer constraint broken by focus change";
       pointer_constraint_delegate_->OnConstraintBroken();
       UnconstrainPointer();
     } else {

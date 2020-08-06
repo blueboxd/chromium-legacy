@@ -20,39 +20,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace favicon {
-namespace {
-
-// Returns a vector of pixel edge sizes from |size_in_dip| and
-// favicon_base::GetFaviconScales().
-std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip) {
-  std::vector<float> scales = favicon_base::GetFaviconScales();
-  std::vector<int> sizes_in_pixel;
-  for (size_t i = 0; i < scales.size(); ++i) {
-    sizes_in_pixel.push_back(std::ceil(size_in_dip * scales[i]));
-  }
-  return sizes_in_pixel;
-}
-
-std::vector<SkBitmap> ExtractSkBitmapsToStore(const gfx::Image& image) {
-  gfx::ImageSkia image_skia = image.AsImageSkia();
-  image_skia.EnsureRepsForSupportedScales();
-  const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
-  std::vector<SkBitmap> bitmaps;
-  const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
-  for (size_t i = 0; i < image_reps.size(); ++i) {
-    // Don't save if the scale isn't one of supported favicon scales.
-    if (!base::Contains(favicon_scales, image_reps[i].scale()))
-      continue;
-    bitmaps.push_back(image_reps[i].GetBitmap());
-  }
-  return bitmaps;
-}
-
-}  // namespace
 
 FaviconServiceImpl::FaviconServiceImpl(
     std::unique_ptr<FaviconClient> favicon_client,

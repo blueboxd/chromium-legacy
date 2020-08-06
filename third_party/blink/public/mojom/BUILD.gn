@@ -112,7 +112,6 @@ mojom("mojom_platform") {
     "page/drag.mojom",
     "page/page.mojom",
     "page/page_visibility_state.mojom",
-    "page/spatial_navigation.mojom",
     "page/widget.mojom",
     "payments/payment_app.mojom",
     "peerconnection/peer_connection_tracker.mojom",

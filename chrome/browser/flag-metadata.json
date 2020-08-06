@@ -2624,6 +2624,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "h264-decoder-is-buffer-complete-frame",
+    "owners": [ "jkardatzke", "mcasas" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "handwriting-gesture",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 90
@@ -3095,6 +3100,11 @@
     "name": "ntp-realbox-match-omnibox-theme",
     "owners": [ "aee", "mahmadi", "tiborg" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "ntp-repeatable-queries",
+    "owners": [ "aee", "mahmadi", "ramyan", "tiborg" ],
+    "expiry_milestone": 89
   },
   {
     "name": "ntp-webui",

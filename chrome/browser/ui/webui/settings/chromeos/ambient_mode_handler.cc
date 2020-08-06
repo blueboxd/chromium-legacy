@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -21,7 +23,7 @@ namespace {
 
 // Width and height of the preview image for personal album.
 constexpr int kBannerWidth = 512;
-constexpr int kBannderHeight = 512;
+constexpr int kBannerHeight = 512;
 
 ash::AmbientModeTopicSource ExtractTopicSource(const base::Value& value) {
   ash::AmbientModeTopicSource topic_source =
@@ -45,8 +47,13 @@ AmbientModeHandler::~AmbientModeHandler() = default;
 
 void AmbientModeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "onAmbientModePageReady",
-      base::BindRepeating(&AmbientModeHandler::HandleInitialized,
+      "requestTopicSource",
+      base::BindRepeating(&AmbientModeHandler::HandleRequestTopicSource,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "requestAlbums",
+      base::BindRepeating(&AmbientModeHandler::HandleRequestAlbums,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -55,47 +62,45 @@ void AmbientModeHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "requestPhotosContainers",
-      base::BindRepeating(&AmbientModeHandler::RequestPhotosContainers,
+      "setSelectedAlbums",
+      base::BindRepeating(&AmbientModeHandler::HandleSetSelectedAlbums,
                           base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "setSelectedPhotosContainers",
-      base::BindRepeating(
-          &AmbientModeHandler::HandleSetSelectedPhotosContainers,
-          base::Unretained(this)));
-}
-
-void AmbientModeHandler::OnJavascriptAllowed() {
-  GetSettings();
-
-  // Prefetch albums.
-  FetchPersonalAlbums();
 }
 
 void AmbientModeHandler::OnJavascriptDisallowed() {
-  weak_factory_.InvalidateWeakPtrs();
+  backend_weak_factory_.InvalidateWeakPtrs();
+  ui_update_weak_factory_.InvalidateWeakPtrs();
 }
 
-void AmbientModeHandler::HandleInitialized(const base::ListValue* args) {
+void AmbientModeHandler::HandleRequestTopicSource(const base::ListValue* args) {
   CHECK(args);
   CHECK(args->empty());
 
-  init_from_ambient_mode_page_ = true;
   AllowJavascript();
+
+  // Settings subpages may have changed from ambientMode/photos to ambientMode
+  // since the last time requesting the data. Abort any request in progress to
+  // avoid unnecessary updating invisible subpage.
+  ui_update_weak_factory_.InvalidateWeakPtrs();
+  RequestSettingsAndAlbums(
+      base::BindOnce(&AmbientModeHandler::OnSettingsAndAlbumsFetched,
+                     ui_update_weak_factory_.GetWeakPtr(),
+                     /*topic_source=*/base::nullopt));
 }
 
-void AmbientModeHandler::RequestPhotosContainers(const base::ListValue* args) {
-  // TODO(b/159747583): Handle deep linking to ambientMode/photos page.
-  // For now it will not load the page contents if visited directly.
-  if (!init_from_ambient_mode_page_)
-    return;
+void AmbientModeHandler::HandleRequestAlbums(const base::ListValue* args) {
+  CHECK(args);
+  CHECK_EQ(args->GetSize(), 1U);
 
-  ash::AmbientModeTopicSource topic_source = ExtractTopicSource(args);
-  if (topic_source == ash::AmbientModeTopicSource::kGooglePhotos)
-    FetchPersonalAlbums();
+  AllowJavascript();
 
-  SendPhotosContainers(topic_source);
+  // ambientMode/photos subpages may have changed, e.g. from displaying Google
+  // Photos to Art gallery, since the last time requesting the data.
+  // Abort any request in progress to avoid updating incorrect contents.
+  ui_update_weak_factory_.InvalidateWeakPtrs();
+  RequestSettingsAndAlbums(base::BindOnce(
+      &AmbientModeHandler::OnSettingsAndAlbumsFetched,
+      ui_update_weak_factory_.GetWeakPtr(), ExtractTopicSource(args)));
 }
 
 void AmbientModeHandler::HandleSetSelectedTopicSource(
@@ -105,8 +110,7 @@ void AmbientModeHandler::HandleSetSelectedTopicSource(
   UpdateSettings();
 }
 
-void AmbientModeHandler::HandleSetSelectedPhotosContainers(
-    const base::ListValue* args) {
+void AmbientModeHandler::HandleSetSelectedAlbums(const base::ListValue* args) {
   const base::DictionaryValue* dictionary = nullptr;
   CHECK(!args->GetList().empty());
   args->GetList()[0].GetAsDictionary(&dictionary);
@@ -116,20 +120,19 @@ void AmbientModeHandler::HandleSetSelectedPhotosContainers(
   CHECK(topic_source_value);
   ash::AmbientModeTopicSource topic_source =
       ExtractTopicSource(*topic_source_value);
-  const base::Value* containers = dictionary->FindKey("topicContainers");
-  CHECK(containers);
+  const base::Value* albums = dictionary->FindKey("albums");
+  CHECK(albums);
   switch (topic_source) {
     case ash::AmbientModeTopicSource::kGooglePhotos:
       // For Google Photos, we will populate the |selected_album_ids| with IDs
       // of selected albums.
       settings_->selected_album_ids.clear();
-      for (const auto& value : containers->GetList()) {
-        const std::string& album_id = value.GetString();
-        auto it = std::find_if(personal_albums_.albums.begin(),
-                               personal_albums_.albums.end(),
-                               [&album_id](const auto& album) {
-                                 return album.album_id == album_id;
-                               });
+      for (const auto& album : albums->GetList()) {
+        const base::Value* album_id = album.FindKey("albumId");
+        const std::string& id = album_id->GetString();
+        auto it = std::find_if(
+            personal_albums_.albums.begin(), personal_albums_.albums.end(),
+            [&id](const auto& album) { return album.album_id == id; });
         CHECK(it != personal_albums_.albums.end());
         settings_->selected_album_ids.emplace_back(it->album_id);
       }
@@ -139,12 +142,12 @@ void AmbientModeHandler::HandleSetSelectedPhotosContainers(
       // based on the selections.
       for (auto& art_setting : settings_->art_settings) {
         const std::string& album_id = art_setting.album_id;
-        auto it = std::find_if(containers->GetList().begin(),
-                               containers->GetList().end(),
-                               [&album_id](const auto& value) {
-                                 return value.GetString() == album_id;
-                               });
-        const bool checked = it != containers->GetList().end();
+        auto it = std::find_if(
+            albums->GetList().begin(), albums->GetList().end(),
+            [&album_id](const auto& album) {
+              return album.FindKey("albumId")->GetString() == album_id;
+            });
+        const bool checked = it != albums->GetList().end();
         art_setting.enabled = checked;
       }
       break;
@@ -153,35 +156,17 @@ void AmbientModeHandler::HandleSetSelectedPhotosContainers(
   UpdateSettings();
 }
 
-void AmbientModeHandler::GetSettings() {
-  ash::AmbientBackendController::Get()->GetSettings(base::BindOnce(
-      &AmbientModeHandler::OnGetSettings, weak_factory_.GetWeakPtr()));
-}
-
-void AmbientModeHandler::OnGetSettings(
-    const base::Optional<ash::AmbientSettings>& settings) {
-  if (!settings) {
-    // TODO(b/152921891): Retry a small fixed number of times, then only retry
-    // when user confirms in the error message dialog.
-    return;
-  }
-
-  settings_ = settings;
-  SendTopicSource();
-}
-
 void AmbientModeHandler::SendTopicSource() {
   DCHECK(settings_);
   FireWebUIListener("topic-source-changed",
                     base::Value(static_cast<int>(settings_->topic_source)));
 }
 
-void AmbientModeHandler::SendPhotosContainers(
-    ash::AmbientModeTopicSource topic_source) {
+void AmbientModeHandler::SendAlbums(ash::AmbientModeTopicSource topic_source) {
   DCHECK(settings_);
 
   base::Value dictionary(base::Value::Type::DICTIONARY);
-  base::Value containers(base::Value::Type::LIST);
+  base::Value albums(base::Value::Type::LIST);
   switch (topic_source) {
     case ash::AmbientModeTopicSource::kGooglePhotos:
       for (const auto& album : personal_albums_.albums) {
@@ -191,7 +176,7 @@ void AmbientModeHandler::SendPhotosContainers(
         value.SetKey("checked",
                      base::Value(base::Contains(settings_->selected_album_ids,
                                                 album.album_id)));
-        containers.Append(std::move(value));
+        albums.Append(std::move(value));
       }
       break;
     case ash::AmbientModeTopicSource::kArtGallery:
@@ -200,21 +185,21 @@ void AmbientModeHandler::SendPhotosContainers(
         value.SetKey("albumId", base::Value(setting.album_id));
         value.SetKey("title", base::Value(setting.title));
         value.SetKey("checked", base::Value(setting.enabled));
-        containers.Append(std::move(value));
+        albums.Append(std::move(value));
       }
       break;
   }
 
   dictionary.SetKey("topicSource", base::Value(static_cast<int>(topic_source)));
-  dictionary.SetKey("topicContainers", std::move(containers));
-  FireWebUIListener("photos-containers-changed", std::move(dictionary));
+  dictionary.SetKey("albums", std::move(albums));
+  FireWebUIListener("albums-changed", std::move(dictionary));
 }
 
 void AmbientModeHandler::UpdateSettings() {
   DCHECK(settings_);
   ash::AmbientBackendController::Get()->UpdateSettings(
       *settings_, base::BindOnce(&AmbientModeHandler::OnUpdateSettings,
-                                 weak_factory_.GetWeakPtr()));
+                                 backend_weak_factory_.GetWeakPtr()));
 }
 
 void AmbientModeHandler::OnUpdateSettings(bool success) {
@@ -225,30 +210,33 @@ void AmbientModeHandler::OnUpdateSettings(bool success) {
   // when user confirms in the error message dialog.
 }
 
-void AmbientModeHandler::FetchPersonalAlbums() {
-  // TODO(b/161044021): Add a helper function to get all the albums.
-  ash::AmbientBackendController::Get()->FetchPersonalAlbums(
-      kBannerWidth, kBannderHeight, /*num_albums=*/100, /*resume_token=*/"",
-      base::BindOnce(&AmbientModeHandler::OnPersonalAlbumsFetched,
-                     weak_factory_.GetWeakPtr()));
+void AmbientModeHandler::RequestSettingsAndAlbums(
+    ash::AmbientBackendController::OnSettingsAndAlbumsFetchedCallback
+        callback) {
+  // TODO(b/161044021): Add a helper function to get all the albums. Currently
+  // only load 100 latest modified albums.
+  ash::AmbientBackendController::Get()->FetchSettingsAndAlbums(
+      kBannerWidth, kBannerHeight, /*num_albums=*/100, std::move(callback));
 }
 
-void AmbientModeHandler::OnPersonalAlbumsFetched(
+void AmbientModeHandler::OnSettingsAndAlbumsFetched(
+    base::Optional<ash::AmbientModeTopicSource> topic_source,
+    const base::Optional<ash::AmbientSettings>& settings,
     ash::PersonalAlbums personal_albums) {
+  // TODO(b/152921891): Retry a small fixed number of times, then only retry
+  // when user confirms in the error message dialog.
+  if (!settings)
+    return;
+
+  settings_ = settings;
   personal_albums_ = std::move(personal_albums);
 
-  // If the |topic_source| is not |kGooglePhotos|, no need to refresh the
-  // photos subpage.
-  // |settings_| could be null because we call GetSettings() and
-  // FetchPersonalAlbums() in OnJavascriptAllowed(). |settings_| is populated by
-  // OnGetSettings(), which could be called later. The purpose to call
-  // FetchPersonalAlbums() is to prefetch albums, which takes several seconds,
-  // This improves the experience when we click into the ambientMode/photos page
-  // to show the albums list faster.
-  if (settings_) {
-    SendPhotosContainers(
-        /*topic_source=*/ash::AmbientModeTopicSource::kGooglePhotos);
+  if (topic_source) {
+    SendAlbums(*topic_source);
+    return;
   }
+
+  SendTopicSource();
 }
 
 }  // namespace settings

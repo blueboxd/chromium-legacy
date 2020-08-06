@@ -30,7 +30,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
@@ -137,8 +136,6 @@ class CORE_EXPORT DocumentInit final {
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
   DocumentInit& WithNewRegistrationContext();
 
-  DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
-
   DocumentInit& WithWebBundleClaimedUrl(const KURL& web_bundle_claimed_url);
   const KURL& GetWebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
 
@@ -150,8 +147,6 @@ class CORE_EXPORT DocumentInit final {
   // document, etc., it will be the DocumentLoader that drove the commit
   // of its owning Document.
   DocumentLoader* TreeRootDocumentLoader() const;
-
-  bool IsSandboxed(network::mojom::blink::WebSandboxFlags) const;
 
   static PluginData* GetPluginData(LocalFrame* frame, const KURL& url);
 
@@ -173,10 +168,6 @@ class CORE_EXPORT DocumentInit final {
   bool is_srcdoc_document_ = false;
   V0CustomElementRegistrationContext* registration_context_ = nullptr;
   bool create_new_registration_context_ = false;
-
-  // Additional sandbox flags
-  network::mojom::blink::WebSandboxFlags sandbox_flags_ =
-      network::mojom::blink::WebSandboxFlags::kNone;
 
   // The claimed URL inside Web Bundle file from which the document is loaded.
   // This URL is used for window.location and document.URL and relative path

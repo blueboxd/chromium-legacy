@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 
 namespace nearbyshare {
 namespace proto {
@@ -32,7 +32,7 @@ class NearbyShareClient {
  public:
   using CheckContactsReachabilityCallback = base::OnceCallback<void(
       const nearbyshare::proto::CheckContactsReachabilityResponse&)>;
-  using ErrorCallback = base::OnceCallback<void(NearbyShareRequestError)>;
+  using ErrorCallback = base::OnceCallback<void(NearbyShareHttpError)>;
   using ListContactPeopleCallback = base::OnceCallback<void(
       const nearbyshare::proto::ListContactPeopleResponse&)>;
   using ListPublicCertificatesCallback = base::OnceCallback<void(

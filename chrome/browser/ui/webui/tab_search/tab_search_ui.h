@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
+#include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -45,6 +46,8 @@ class TabSearchUI : public ui::MojoWebUIController,
 
   mojo::Receiver<tab_search::mojom::PageHandlerFactory> page_factory_receiver_{
       this};
+
+  WebuiLoadTimer webui_load_timer_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

@@ -172,6 +172,10 @@ class OmniboxViewViews : public OmniboxView,
   void OnThemeChanged() override;
   bool IsDropCursorForInsertion() const override;
 
+  // Applies the given |color| to |range|. This is a wrapper method around
+  // Textfield::ApplyColor that tests can override.
+  virtual void ApplyColor(SkColor color, const gfx::Range& range);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, HoverAndExit);
   FRIEND_TEST_ALL_PREFIXES(
@@ -184,6 +188,8 @@ class OmniboxViewViews : public OmniboxView,
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       BoundsChanged);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, BoundsChanged);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest,
+                           CancellingAnimationDoesNotCrash);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       SchemeAndTrivialSubdomainElision);
@@ -286,7 +292,6 @@ class OmniboxViewViews : public OmniboxView,
 
     // views::AnimationDelegateViews:
     void AnimationProgressed(const gfx::Animation* animation) override;
-    void AnimationEnded(const gfx::Animation* animation) override;
 
    private:
     // Non-owning pointers. |view_| and |render_text_| must always outlive this
@@ -507,10 +512,6 @@ class OmniboxViewViews : public OmniboxView,
   // Parses GetText() as a URL, trims trivial subdomains from it (if any and if
   // applicable), and returns the result.
   url::Component GetHostComponentAfterTrivialSubdomain();
-
-  // Applies the given |color| to |range|. This is a wrapper method around
-  // Textfield::ApplyColor that tests can override.
-  virtual void ApplyColor(SkColor color, const gfx::Range& range);
 
   ElideAnimation* GetHoverElideOrUnelideAnimationForTesting();
   ElideAnimation* GetElideAfterInteractionAnimationForTesting();

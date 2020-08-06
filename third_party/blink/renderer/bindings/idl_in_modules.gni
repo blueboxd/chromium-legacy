@@ -983,7 +983,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/xr/xr_light_probe.idl",
           "//third_party/blink/renderer/modules/xr/xr_plane.idl",
           "//third_party/blink/renderer/modules/xr/xr_plane_detection_state.idl",
-          "//third_party/blink/renderer/modules/xr/xr_plane_detection_state_init.idl",
           "//third_party/blink/renderer/modules/xr/xr_plane_set.idl",
           "//third_party/blink/renderer/modules/xr/xr_pose.idl",
           "//third_party/blink/renderer/modules/xr/xr_ray.idl",
@@ -1011,7 +1010,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/xr/xr_webgl_layer_init.idl",
           "//third_party/blink/renderer/modules/xr/xr_world_information.idl",
           "//third_party/blink/renderer/modules/xr/xr_world_tracking_state.idl",
-          "//third_party/blink/renderer/modules/xr/xr_world_tracking_state_init.idl",
         ],
         "abspath")
 

@@ -200,6 +200,10 @@ void CastMediaNotificationItem::Dismiss() {
   notification_controller_->HideNotification(media_route_id_);
 }
 
+bool CastMediaNotificationItem::SourceIsCast() {
+  return true;
+}
+
 void CastMediaNotificationItem::OnMediaStatusUpdated(
     media_router::mojom::MediaStatusPtr status) {
   metadata_.title = base::UTF8ToUTF16(status->title);

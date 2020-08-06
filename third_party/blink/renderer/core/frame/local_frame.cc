@@ -125,12 +125,16 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
+#include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
+#include "third_party/blink/renderer/core/html/portal/portal_activate_event.h"
+#include "third_party/blink/renderer/core/html/portal/portal_host.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_reporter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -151,6 +155,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
@@ -2445,6 +2450,45 @@ void LocalFrame::InstallCoopAccessMonitor(
 
   accessed_frame->DomWindow()->InstallCoopAccessMonitor(report_type, this,
                                                         std::move(reporter));
+}
+
+void LocalFrame::OnPortalActivated(
+    const PortalToken& portal_token,
+    mojo::PendingAssociatedRemote<mojom::blink::Portal> portal,
+    mojo::PendingAssociatedReceiver<mojom::blink::PortalClient> portal_client,
+    BlinkTransferableMessage data,
+    OnPortalActivatedCallback callback) {
+  DCHECK(GetDocument());
+  PaintTiming::From(*GetDocument()).OnPortalActivate();
+
+  DOMWindowPortalHost::portalHost(*DomWindow())->OnPortalActivated();
+  GetPage()->SetInsidePortal(false);
+
+  DCHECK(!data.locked_agent_cluster_id)
+      << "portal activation is always cross-agent-cluster and should be "
+         "diagnosed early";
+  MessagePortArray* ports =
+      MessagePort::EntanglePorts(*DomWindow(), std::move(data.ports));
+
+  PortalActivateEvent* event = PortalActivateEvent::Create(
+      this, portal_token, std::move(portal), std::move(portal_client),
+      std::move(data.message), ports, std::move(callback));
+
+  ThreadDebugger* debugger = MainThreadDebugger::Instance();
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(data.sender_stack_trace_id);
+  DomWindow()->DispatchEvent(*event);
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(data.sender_stack_trace_id);
+  event->ExpireAdoptionLifetime();
+}
+
+void LocalFrame::ForwardMessageFromHost(
+    BlinkTransferableMessage message,
+    const scoped_refptr<const SecurityOrigin>& source_origin,
+    const scoped_refptr<const SecurityOrigin>& target_origin) {
+  PortalHost::From(*DomWindow())
+      .ReceiveMessage(std::move(message), source_origin, target_origin);
 }
 
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(

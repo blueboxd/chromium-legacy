@@ -29,6 +29,7 @@ js_library("profile_picker_main_view") {
   deps = [
     ":manage_profiles_browser_proxy",
     ":navigation_behavior",
+    ":profile_card",
     "//third_party/polymer/v3_0/components-chromium/iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
@@ -54,6 +55,28 @@ js_library("profile_picker_app") {
   ]
 }
 
+js_library("profile_card") {
+  deps = [
+    ":manage_profiles_browser_proxy",
+    ":profile_card_menu",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+  ]
+}
+
+js_library("profile_card_menu") {
+  deps = [
+    ":manage_profiles_browser_proxy",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+}
+
 js_library("manage_profiles_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
@@ -71,6 +94,7 @@ html_to_js("web_components_local") {
     "profile_picker_app.js",
     "profile_picker_main_view.js",
     "profile_card.js",
+    "profile_card_menu.js",
     "profile_picker_shared_css.js",
   ]
 }

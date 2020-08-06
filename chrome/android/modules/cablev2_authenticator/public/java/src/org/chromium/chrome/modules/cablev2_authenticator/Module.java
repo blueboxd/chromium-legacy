@@ -17,7 +17,7 @@ import org.chromium.components.module_installer.builder.ModuleInterface;
  */
 @ModuleInterface(module = "cablev2_authenticator",
         impl = "org.chromium.chrome.modules.cablev2_authenticator.ModuleImpl")
-interface Module {
+public interface Module {
     /** Returns a {@link Fragment} that contains the authenticator UI. */
     public Fragment getFragment();
 }

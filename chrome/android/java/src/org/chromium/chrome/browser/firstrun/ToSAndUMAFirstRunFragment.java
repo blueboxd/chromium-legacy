@@ -44,12 +44,13 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         }
     }
 
+    protected boolean mNativeInitialized;
+
     private Button mAcceptButton;
     private CheckBox mSendReportCheckBox;
     private TextView mTosAndPrivacy;
     private View mTitle;
     private View mProgressSpinner;
-    private boolean mNativeInitialized;
     private boolean mTriggerAcceptAfterNativeInit;
 
     @Override
@@ -76,7 +77,7 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
             }
         });
 
-        if (ChromeVersionInfo.isOfficialBuild()) {
+        if (canShowUmaCheckBox()) {
             int paddingStart = getResources().getDimensionPixelSize(
                     R.dimen.fre_tos_checkbox_padding);
             ViewCompat.setPaddingRelative(mSendReportCheckBox,
@@ -180,11 +181,31 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
     private void setSpinnerVisible(boolean spinnerVisible) {
         // When the progress spinner is visible, we hide the other UI elements so that
         // the user can't interact with them.
-        int otherElementsVisible = spinnerVisible ? View.INVISIBLE : View.VISIBLE;
-        mTitle.setVisibility(otherElementsVisible);
-        mAcceptButton.setVisibility(otherElementsVisible);
-        mTosAndPrivacy.setVisibility(otherElementsVisible);
-        mSendReportCheckBox.setVisibility(otherElementsVisible);
+        boolean otherElementVisible = !spinnerVisible;
+
+        setTosAndUmaVisible(otherElementVisible);
+        mTitle.setVisibility(otherElementVisible ? View.VISIBLE : View.INVISIBLE);
         mProgressSpinner.setVisibility(spinnerVisible ? View.VISIBLE : View.GONE);
+    }
+
+    // Exposed methods for ToSAndUMACCTFirstRunFragment
+
+    protected void setTosAndUmaVisible(boolean isVisible) {
+        int visibility = isVisible ? View.VISIBLE : View.INVISIBLE;
+
+        mAcceptButton.setVisibility(visibility);
+        mTosAndPrivacy.setVisibility(visibility);
+        // Avoid updating visibility if the UMA check box can't be shown right now.
+        if (canShowUmaCheckBox()) {
+            mSendReportCheckBox.setVisibility(visibility);
+        }
+    }
+
+    /**
+     * @return Whether the check box for Uma metrics can be shown. It should be used in conjunction
+     *         with whether other non-spinner elements can generally be shown.
+     */
+    protected boolean canShowUmaCheckBox() {
+        return ChromeVersionInfo.isOfficialBuild();
     }
 }

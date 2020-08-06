@@ -106,15 +106,7 @@ public class RadioButtonGroupSafeBrowsingPreference extends Preference
                 (RadioButtonWithDescriptionLayout) mNoProtection.getRootView();
         groupLayout.setOnCheckedChangeListener(this);
 
-        assert ((mSafeBrowsingState != SafeBrowsingState.ENHANCED_PROTECTION)
-                || mIsEnhancedProtectionEnabled)
-            : "Safe Browsing state shouldn't be enhanced protection when the flag is disabled.";
-        if (mIsEnhancedProtectionEnabled) {
-            mEnhancedProtection.setChecked(
-                    mSafeBrowsingState == SafeBrowsingState.ENHANCED_PROTECTION);
-        }
-        mStandardProtection.setChecked(mSafeBrowsingState == SafeBrowsingState.STANDARD_PROTECTION);
-        mNoProtection.setChecked(mSafeBrowsingState == SafeBrowsingState.NO_SAFE_BROWSING);
+        setCheckedState(mSafeBrowsingState);
 
         // If Safe Browsing is managed, disable the radio button group, but keep the aux buttons
         // enabled to disclose information.
@@ -158,6 +150,23 @@ public class RadioButtonGroupSafeBrowsingPreference extends Preference
     public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
         ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
+    }
+
+    /**
+     * Sets the checked state of the Safe Browsing radio button group.
+     * @param checkedState Set the radio button of checkedState to checked, and set the radio
+     *         buttons of other states to unchecked.
+     */
+    public void setCheckedState(@SafeBrowsingState int checkedState) {
+        mSafeBrowsingState = checkedState;
+        assert ((checkedState != SafeBrowsingState.ENHANCED_PROTECTION)
+                || mIsEnhancedProtectionEnabled)
+            : "Checked state shouldn't be enhanced protection when the flag is disabled.";
+        if (mIsEnhancedProtectionEnabled) {
+            mEnhancedProtection.setChecked(checkedState == SafeBrowsingState.ENHANCED_PROTECTION);
+        }
+        mStandardProtection.setChecked(checkedState == SafeBrowsingState.STANDARD_PROTECTION);
+        mNoProtection.setChecked(checkedState == SafeBrowsingState.NO_SAFE_BROWSING);
     }
 
     @VisibleForTesting

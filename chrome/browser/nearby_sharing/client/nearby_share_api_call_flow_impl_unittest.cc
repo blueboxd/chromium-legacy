@@ -131,9 +131,9 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
     result_ = std::make_unique<std::string>(result);
   }
 
-  void OnError(NearbyShareRequestError network_error) {
+  void OnError(NearbyShareHttpError network_error) {
     EXPECT_FALSE(result_ || network_error_);
-    network_error_ = std::make_unique<NearbyShareRequestError>(network_error);
+    network_error_ = std::make_unique<NearbyShareHttpError>(network_error);
   }
 
   void CheckNearbySharingClientHttpPostRequest(
@@ -270,7 +270,7 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
   }
 
   std::unique_ptr<std::string> result_;
-  std::unique_ptr<NearbyShareRequestError> network_error_;
+  std::unique_ptr<NearbyShareHttpError> network_error_;
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -305,21 +305,21 @@ TEST_F(NearbyShareApiCallFlowImplTest, PostRequestFailure) {
   StartPostRequestApiCallFlow();
   CompleteCurrentPostRequest(net::ERR_FAILED);
   EXPECT_FALSE(result_);
-  EXPECT_EQ(NearbyShareRequestError::kOffline, *network_error_);
+  EXPECT_EQ(NearbyShareHttpError::kOffline, *network_error_);
 }
 
 TEST_F(NearbyShareApiCallFlowImplTest, PatchRequestFailure) {
   StartPatchRequestApiCallFlow();
   CompleteCurrentPatchRequest(net::ERR_FAILED);
   EXPECT_FALSE(result_);
-  EXPECT_EQ(NearbyShareRequestError::kOffline, *network_error_);
+  EXPECT_EQ(NearbyShareHttpError::kOffline, *network_error_);
 }
 
 TEST_F(NearbyShareApiCallFlowImplTest, GetRequestFailure) {
   StartGetRequestApiCallFlow();
   CompleteCurrentPostRequest(net::ERR_FAILED);
   EXPECT_FALSE(result_);
-  EXPECT_EQ(NearbyShareRequestError::kOffline, *network_error_);
+  EXPECT_EQ(NearbyShareHttpError::kOffline, *network_error_);
 }
 
 TEST_F(NearbyShareApiCallFlowImplTest, RequestStatus500) {
@@ -327,7 +327,7 @@ TEST_F(NearbyShareApiCallFlowImplTest, RequestStatus500) {
   CompleteCurrentPostRequest(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
                              "Nearby Sharing Meltdown.");
   EXPECT_FALSE(result_);
-  EXPECT_EQ(NearbyShareRequestError::kInternalServerError, *network_error_);
+  EXPECT_EQ(NearbyShareHttpError::kInternalServerError, *network_error_);
 }
 
 TEST_F(NearbyShareApiCallFlowImplTest, PatchRequestStatus500) {
@@ -335,7 +335,7 @@ TEST_F(NearbyShareApiCallFlowImplTest, PatchRequestStatus500) {
   CompleteCurrentPatchRequest(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
                               "Nearby Sharing Meltdown.");
   EXPECT_FALSE(result_);
-  EXPECT_EQ(NearbyShareRequestError::kInternalServerError, *network_error_);
+  EXPECT_EQ(NearbyShareHttpError::kInternalServerError, *network_error_);
 }
 
 TEST_F(NearbyShareApiCallFlowImplTest, GetRequestStatus500) {
@@ -343,7 +343,7 @@ TEST_F(NearbyShareApiCallFlowImplTest, GetRequestStatus500) {
   CompleteCurrentPostRequest(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
                              "Nearby Sharing Meltdown.");
   EXPECT_FALSE(result_);
-  EXPECT_EQ(NearbyShareRequestError::kInternalServerError, *network_error_);
+  EXPECT_EQ(NearbyShareHttpError::kInternalServerError, *network_error_);
 }
 
 // The empty string is a valid protocol buffer message serialization.

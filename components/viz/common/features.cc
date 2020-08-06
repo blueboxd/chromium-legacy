@@ -53,8 +53,13 @@ const base::Feature kVizForWebView{"VizForWebView",
 const base::Feature kVizFrameSubmissionForWebView{
     "VizFrameSubmissionForWebView", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
 const base::Feature kUsePreferredIntervalForVideo{
     "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+const base::Feature kUsePreferredIntervalForVideo{
+    "UsePreferredIntervalForVideo", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 // Whether we should use the real buffers corresponding to overlay candidates in
 // order to do a pageflip test rather than allocating test buffers.
@@ -77,7 +82,7 @@ const base::Feature kWebRtcLogCapturePipeline{
 
 // The number of frames to wait before toggling to a lower frame rate.
 const base::FeatureParam<int> kNumOfFramesToToggleInterval{
-    &kUsePreferredIntervalForVideo, "NumOfFramesToToggleInterval", 60};
+    &kUsePreferredIntervalForVideo, "NumOfFramesToToggleInterval", 6};
 
 #if defined(OS_WIN)
 // Enables swap chains to call SetPresentDuration to request DWM/OS to reduce

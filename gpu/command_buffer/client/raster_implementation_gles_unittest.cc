@@ -237,7 +237,7 @@ class ContextSupportStub : public ContextSupport {
     return false;
   }
   bool HasGrContextSupport() const override { return false; }
-  void SetGrContext(GrContext* gr) override {}
+  void SetGrContext(GrDirectContext* gr) override {}
   void WillCallGLFromSkia() override {}
   void DidCallGLFromSkia() override {}
   void SetDisplayTransform(gfx::OverlayTransform transform) override {}

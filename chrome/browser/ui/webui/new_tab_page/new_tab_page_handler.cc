@@ -268,12 +268,14 @@ new_tab_page::mojom::ImageDoodlePtr MakeImageDoodle(
   doodle->width = width_px;
   doodle->height = height_px;
   doodle->background_color = ParseHexColor(background_color);
-  doodle->share_button = new_tab_page::mojom::DoodleShareButton::New();
-  doodle->share_button->x = share_button_x;
-  doodle->share_button->y = share_button_y;
-  doodle->share_button->icon_url = GURL(base::StringPrintf(
-      "data:image/png;base64,%s", share_button_icon.c_str()));
-  doodle->share_button->background_color = ParseHexColor(share_button_bg);
+  if (!share_button_icon.empty()) {
+    doodle->share_button = new_tab_page::mojom::DoodleShareButton::New();
+    doodle->share_button->x = share_button_x;
+    doodle->share_button->y = share_button_y;
+    doodle->share_button->icon_url = GURL(base::StringPrintf(
+        "data:image/png;base64,%s", share_button_icon.c_str()));
+    doodle->share_button->background_color = ParseHexColor(share_button_bg);
+  }
   if (type == search_provider_logos::LogoType::ANIMATED) {
     doodle->image_impression_log_url = cta_log_url;
     doodle->animation_impression_log_url = log_url;

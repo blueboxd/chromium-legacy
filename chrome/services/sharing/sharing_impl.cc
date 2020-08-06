@@ -24,7 +24,7 @@ SharingImpl::~SharingImpl() = default;
 
 void SharingImpl::CreateSharingWebRtcConnection(
     mojo::PendingRemote<mojom::SignalingSender> signaling_sender,
-    mojo::PendingReceiver<mojom::SignallingReceiver> signalling_receiver,
+    mojo::PendingReceiver<mojom::SignalingReceiver> signaling_receiver,
     mojo::PendingRemote<mojom::SharingWebRtcConnectionDelegate> delegate,
     mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
     mojo::PendingRemote<network::mojom::P2PSocketManager> socket_manager,
@@ -36,7 +36,7 @@ void SharingImpl::CreateSharingWebRtcConnection(
   // base::Unretained is safe as the |peer_connection| is owned by |this|.
   auto sharing_connection = std::make_unique<SharingWebRtcConnection>(
       webrtc_peer_connection_factory_.get(), std::move(ice_servers),
-      std::move(signaling_sender), std::move(signalling_receiver),
+      std::move(signaling_sender), std::move(signaling_receiver),
       std::move(delegate), std::move(connection), std::move(socket_manager),
       std::move(mdns_responder),
       base::BindOnce(&SharingImpl::SharingWebRtcConnectionDisconnected,

@@ -7751,11 +7751,6 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Using native notifications"/>
 </enum>
 
-<enum name="BooleanNavigated">
-  <int value="0" label="Navigation did not occur"/>
-  <int value="1" label="Navigation occurred"/>
-</enum>
-
 <enum name="BooleanNavPreloadFinishedFirst">
   <int value="0" label="Worker preparation finished first"/>
   <int value="1" label="Navigation preload response arrived first"/>
@@ -21361,6 +21356,7 @@ Called by update_document_policy_enum.py.-->
   <int value="761" label="NearbyShareAllowed"/>
   <int value="762" label="PerAppTimeLimitsAllowlist"/>
   <int value="763" label="DeviceShowLowDiskSpaceNotification"/>
+  <int value="764" label="DeviceUserAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -22569,6 +22565,7 @@ Called by update_extension_histograms.py.-->
       label="CERTIFICATEPROVIDER_ON_CERTIFICATES_UPDATE_REQUESTED"/>
   <int value="460" label="CERTIFICATEPROVIDER_ON_SIGNATURE_REQUESTED"/>
   <int value="461" label="WINDOWS_ON_BOUNDS_CHANGED"/>
+  <int value="462" label="WALLPAPER_PRIVATE_ON_CLOSE_PREVIEW_WALLPAPER"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -40423,6 +40420,7 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1530711962" label="PrivacyElevatedAndroid:disabled"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
+  <int value="-1529899201" label="H264DecoderBufferIsCompleteFrame:disabled"/>
   <int value="-1529140321" label="ReadLater:enabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
   <int value="-1525129540"
@@ -41193,6 +41191,7 @@ from previous Chrome versions.
   <int value="-748571227"
       label="AssistantEnableMediaSessionIntegration:enabled"/>
   <int value="-747463111" label="ContentSuggestionsNotifications:disabled"/>
+  <int value="-747072690" label="NtpRepeatableQueries:disabled"/>
   <int value="-746328467" label="ExpensiveBackgroundTimerThrottling:disabled"/>
   <int value="-745082968" label="SyncDeviceInfoInTransportMode:disabled"/>
   <int value="-744159181" label="disable-spdy-proxy-dev-auth-origin"/>
@@ -41570,6 +41569,7 @@ from previous Chrome versions.
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
   <int value="-326083626" label="AppBanners:disabled"/>
+  <int value="-325271559" label="NtpRepeatableQueries:enabled"/>
   <int value="-324786035"
       label="EnableAmbientAuthenticationInGuestSession:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
@@ -43433,6 +43433,7 @@ from previous Chrome versions.
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
   <int value="1702090999" label="ClearOldBrowsingData:disabled"/>
   <int value="1703927420" label="PiexWasm:enabled"/>
+  <int value="1705332854" label="H264DecoderBufferIsCompleteFrame:enabled"/>
   <int value="1705724232" label="use-android-midi-api"/>
   <int value="1706682238" label="ContextualSearchTranslations:disabled"/>
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
@@ -53375,6 +53376,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Magnifying glass mode"/>
   <int value="7" label="Laser pointer mode"/>
   <int value="8" label="Assistant mode"/>
+  <int value="9" label="Enter capture mode"/>
 </enum>
 
 <enum name="PanningModelType">
@@ -61850,6 +61852,23 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="10" label="DEPRECATED: NOT_HTTP_URL"/>
   <int value="11" label="SCHEME_NOT_SUPPORTED"/>
   <int value="12" label="WHITELISTED_BY_POLICY"/>
+</enum>
+
+<enum name="SBClientDetectionPreClassificationCheckResult">
+  <int value="0" label="PROXY_FETCH"/>
+  <int value="1" label="PRIVATE_IP"/>
+  <int value="2" label="OFF_THE_RECORD"/>
+  <int value="3" label="MATCH_CSD_WHITELIST"/>
+  <int value="4" label="TOO_MANY_REPORTS"/>
+  <int value="5" label="UNSUPPORTED_MIME_TYPE"/>
+  <int value="6" label="NO_DATABASE_MANAGER"/>
+  <int value="7" label="KILLSWITCH"/>
+  <int value="8" label="CANCEL"/>
+  <int value="9" label="RESULT_FROM_CACHE"/>
+  <int value="10" label="DEPRECATED: NOT_HTTP_URL"/>
+  <int value="11" label="SCHEME_NOT_SUPPORTED"/>
+  <int value="12" label="WHITELISTED_BY_POLICY"/>
+  <int value="13" label="CLASSIFY"/>
 </enum>
 
 <enum name="SBClientDownloadCheckDownloadStats">

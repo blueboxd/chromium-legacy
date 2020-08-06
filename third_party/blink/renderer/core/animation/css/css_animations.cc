@@ -529,6 +529,15 @@ ScrollTimeline* CreateScrollTimeline(Element* element,
   return scroll_timeline;
 }
 
+AnimationTimeline* ComputeTimeline(Element* element,
+                                   StyleRuleScrollTimeline* rule) {
+  if (rule) {
+    if (auto* timeline = CreateScrollTimeline(element, rule))
+      return timeline;
+  }
+  return &element->GetDocument().Timeline();
+}
+
 }  // namespace
 
 CSSAnimations::CSSAnimations() = default;
@@ -675,18 +684,17 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
 
       const StyleNameOrKeyword& timeline_name = animation_data->GetTimeline(i);
 
-      ScrollTimeline* scroll_timeline = nullptr;
+      StyleRuleScrollTimeline* scroll_timeline_rule = nullptr;
 
       // TODO(crbug.com/1097046): Support 'none' keyword.
       if (!timeline_name.IsKeyword()) {
-        StyleRuleScrollTimeline* scroll_timeline_rule =
+        scroll_timeline_rule =
             element.GetDocument().GetStyleEngine().FindScrollTimelineRule(
                 timeline_name.GetName().GetValue());
-        if (scroll_timeline_rule) {
-          scroll_timeline =
-              CreateScrollTimeline(&element, scroll_timeline_rule);
-        }
       }
+
+      AnimationTimeline* timeline =
+          ComputeTimeline(&element, scroll_timeline_rule);
 
       const RunningAnimation* existing_animation = nullptr;
       wtf_size_t existing_animation_index = 0;
@@ -751,9 +759,9 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
         DCHECK(!is_animation_style_change);
         base::Optional<TimelinePhase> inherited_phase;
         base::Optional<double> inherited_time = 0;
-        if (scroll_timeline) {
-          inherited_phase = base::make_optional(scroll_timeline->Phase());
-          inherited_time = scroll_timeline->CurrentTimeSeconds();
+        if (timeline && timeline->IsScrollTimeline()) {
+          inherited_phase = base::make_optional(timeline->Phase());
+          inherited_time = timeline->CurrentTimeSeconds();
         }
         update.StartAnimation(
             name, name_index, i,
@@ -762,7 +770,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                                           &style, parent_style, name,
                                           keyframe_timing_function.get(), i),
                 timing, is_paused, inherited_time, inherited_phase),
-            specified_timing, keyframes_rule, scroll_timeline,
+            specified_timing, keyframes_rule, timeline,
             animation_data->PlayStateList());
       }
     }
@@ -903,9 +911,11 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
         KeyframeEffect::kDefaultPriority, event_delegate);
 
-    AnimationTimeline* timeline = &element->GetDocument().Timeline();
-    if (entry.scroll_timeline)
-      timeline = entry.scroll_timeline.Get();
+    AnimationTimeline* timeline = entry.timeline;
+    // We always fall back to the DocumentTimeline at the moment, so the
+    // timeline can't be nullptr here.
+    // TODO(crbug.com/1097046): Support animation-timeline:none
+    DCHECK(timeline);
     auto* animation = MakeGarbageCollected<CSSAnimation>(
         element->GetExecutionContext(), timeline, effect, entry.position_index,
         entry.name);

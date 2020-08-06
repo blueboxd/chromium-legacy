@@ -132,8 +132,8 @@ class FeedbackUploaderTest : public testing::Test {
         test_shared_loader_factory_, &context_);
   }
 
-  void QueueReport(const std::string& data) {
-    uploader_->QueueReport(std::make_unique<std::string>(data));
+  void QueueReport(const std::string& data, bool has_email = true) {
+    uploader_->QueueReport(std::make_unique<std::string>(data), has_email);
   }
 
   MockFeedbackUploader* uploader() const { return uploader_.get(); }

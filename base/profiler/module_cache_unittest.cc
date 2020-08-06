@@ -2,15 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iomanip>
+#include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/profiler/module_cache.h"
+#include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "base/debug/proc_maps_linux.h"
+#endif
 
 namespace base {
 namespace {
@@ -295,6 +303,85 @@ MAYBE_TEST(ModuleCacheTest, InvalidModule) {
   ModuleCache cache;
   EXPECT_EQ(nullptr, cache.GetModuleForAddress(1));
 }
+
+// arm64 module support is not implemented.
+#if defined(OS_LINUX) || (defined(OS_ANDROID) && !defined(ARCH_CPU_ARM64))
+// Validates that, for the memory regions listed in /proc/self/maps, the modules
+// found via ModuleCache are consistent with those regions' extents.
+TEST(ModuleCacheTest, CheckAgainstProcMaps) {
+  std::string proc_maps;
+  debug::ReadProcMaps(&proc_maps);
+  std::vector<debug::MappedMemoryRegion> regions;
+  ASSERT_TRUE(debug::ParseProcMaps(proc_maps, &regions));
+
+  // Map distinct paths to lists of regions for the path in increasing memory
+  // order.
+  using RegionVector = std::vector<const debug::MappedMemoryRegion*>;
+  using PathRegionsMap = std::map<StringPiece, RegionVector>;
+  PathRegionsMap path_regions;
+  for (const debug::MappedMemoryRegion& region : regions)
+    path_regions[region.path].push_back(&region);
+
+  const auto find_last_executable_region = [](const RegionVector& regions) {
+    const auto rloc = std::find_if(
+        regions.rbegin(), regions.rend(),
+        [](const debug::MappedMemoryRegion* region) {
+          return static_cast<bool>(region->permissions &
+                                   debug::MappedMemoryRegion::EXECUTE);
+        });
+    return rloc == regions.rend() ? nullptr : *rloc;
+  };
+
+  int module_count = 0;
+
+  // Loop through each distinct path.
+  for (const auto& path_regions_pair : path_regions) {
+    // Regions that aren't associated with absolute paths are unlikely to be
+    // part of modules.
+    if (path_regions_pair.first.empty() || path_regions_pair.first[0] != '/')
+      continue;
+
+    const debug::MappedMemoryRegion* const last_executable_region =
+        find_last_executable_region(path_regions_pair.second);
+    // The region isn't part of a module if no executable regions are associated
+    // with the same path.
+    if (!last_executable_region)
+      continue;
+
+    // Loop through all the regions associated with the path, checking that
+    // modules created for addresses in each region have the expected extents.
+    const uintptr_t expected_base_address =
+        path_regions_pair.second.front()->start;
+    for (const auto* region : path_regions_pair.second) {
+      ModuleCache cache;
+      const ModuleCache::Module* module =
+          cache.GetModuleForAddress(region->start);
+      // Not all regions matching the prior conditions are necessarily modules;
+      // things like resources are also mmapped into memory from files. Ignore
+      // any region isn't part of a module.
+      if (!module)
+        continue;
+
+      ++module_count;
+
+      EXPECT_EQ(expected_base_address, module->GetBaseAddress());
+      // This needs an inequality comparison because the module size is computed
+      // based on the ELF section's actual extent, while the |proc_maps| region
+      // is aligned to a larger boundary.
+      EXPECT_LE(module->GetSize(),
+                last_executable_region->end - expected_base_address)
+          << "base address: " << std::hex << module->GetBaseAddress()
+          << std::endl
+          << "region start: " << std::hex << region->start << std::endl
+          << "region end: " << std::hex << region->end << std::endl;
+    }
+  }
+
+  // Linux should have at least this module and ld-linux.so. Android should have
+  // at least this module and system libraries.
+  EXPECT_GE(module_count, 2);
+}
+#endif
 
 }  // namespace
 }  // namespace base

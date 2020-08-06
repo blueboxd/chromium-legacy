@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "media/audio/audio_device_description.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace views {
@@ -23,7 +24,8 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
   MediaNotificationAudioDeviceSelectorView(
       MediaNotificationContainerImpl* container,
       MediaNotificationService* service,
-      gfx::Size size);
+      gfx::Size size,
+      const std::string& current_device_id);
   MediaNotificationAudioDeviceSelectorView(
       const MediaNotificationAudioDeviceSelectorView&) = delete;
   MediaNotificationAudioDeviceSelectorView& operator=(
@@ -34,6 +36,9 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
   void UpdateAvailableAudioDevices(
       const media::AudioDeviceDescriptions& device_descriptions);
 
+  // Called when an audio device switch has occurred
+  void UpdateCurrentAudioDevice(const std::string& current_device_id);
+
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -42,6 +47,10 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
                            DeviceButtonsCreated);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
                            DeviceButtonClickNotifiesContainer);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
+                           CurrentDeviceHighlighted);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
+                           DeviceHighlightedOnChange);
 
   void CreateDeviceButton(
       const media::AudioDeviceDescription& device_description);
@@ -60,6 +69,9 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
 
   views::View* expand_button_container_ = nullptr;
   views::ToggleImageButton* expand_button_ = nullptr;
+
+  views::MdTextButton* current_device_button_ = nullptr;
+  std::string current_device_id_;
 
   // Maps button pointers to the string ID of the audio sink they represent.
   std::map<views::Button*, std::string> sink_id_map_;

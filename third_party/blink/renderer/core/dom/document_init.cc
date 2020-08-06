@@ -29,8 +29,6 @@
 
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
-#include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
@@ -284,23 +282,10 @@ ExecutionContext* DocumentInit::GetExecutionContext() const {
   return GetFrame() ? GetFrame()->DomWindow() : nullptr;
 }
 
-DocumentInit& DocumentInit::WithSandboxFlags(
-    network::mojom::blink::WebSandboxFlags flags) {
-  // Only allow adding more sandbox flags.
-  sandbox_flags_ |= flags;
-  return *this;
-}
-
 DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
     const KURL& web_bundle_claimed_url) {
   web_bundle_claimed_url_ = web_bundle_claimed_url;
   return *this;
-}
-
-bool DocumentInit::IsSandboxed(
-    network::mojom::blink::WebSandboxFlags mask) const {
-  return (sandbox_flags_ & mask) !=
-         network::mojom::blink::WebSandboxFlags::kNone;
 }
 
 Document* DocumentInit::CreateDocument() const {
@@ -315,8 +300,11 @@ Document* DocumentInit::CreateDocument() const {
     case Type::kImage:
       return MakeGarbageCollected<ImageDocument>(*this);
     case Type::kPlugin: {
-      if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kPlugins))
+      DCHECK(GetFrame());
+      if (GetFrame()->DomWindow()->IsSandboxed(
+              network::mojom::blink::WebSandboxFlags::kPlugins)) {
         return MakeGarbageCollected<SinkDocument>(*this);
+      }
       return MakeGarbageCollected<PluginDocument>(*this);
     }
     case Type::kMedia:

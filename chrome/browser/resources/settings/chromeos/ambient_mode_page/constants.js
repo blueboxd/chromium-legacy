@@ -14,11 +14,22 @@
 };
 
 /**
- * Settings containing topic source and the photos containers.
+ * Album metadata for UI.
  *
  * @typedef {{
+ *   albumId: String,
+ *   checked: Boolean,
+ *   title: String,
+ * }}
+ */
+/* #export */ let AmbientModeAlbum;
+
+/**
+ * Settings containing topic source and the albums.
+ *
+ * @typedef {{
+ *   albums: !Array<!AmbientModeAlbum>,
  *   topicSource: !AmbientModeTopicSource,
- *   topicContainers: !Array,
  * }}
  */
 /* #export */ let AmbientModeSettings;

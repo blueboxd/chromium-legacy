@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -20,7 +20,7 @@ class NearbyShareApiCallFlow {
  public:
   using ResultCallback =
       base::OnceCallback<void(const std::string& serialized_response)>;
-  using ErrorCallback = base::OnceCallback<void(NearbyShareRequestError error)>;
+  using ErrorCallback = base::OnceCallback<void(NearbyShareHttpError error)>;
   using QueryParameters = std::vector<std::pair<std::string, std::string>>;
 
   NearbyShareApiCallFlow() = default;

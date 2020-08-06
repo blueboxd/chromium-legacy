@@ -1769,7 +1769,6 @@ void DocumentLoader::CommitNavigation() {
                           .WithURL(Url())
                           .WithTypeFrom(MimeType())
                           .WithSrcdocDocument(loading_srcdoc_)
-                          .WithSandboxFlags(sandbox_flags)
                           .WithNewRegistrationContext()
                           .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
   Document* document = frame_->DomWindow()->InstallNewDocument(init);

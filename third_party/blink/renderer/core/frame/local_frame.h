@@ -634,6 +634,16 @@ class CORE_EXPORT LocalFrame final
       mojo::PendingRemote<
           network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter)
       final;
+  void OnPortalActivated(
+      const PortalToken& portal_token,
+      mojo::PendingAssociatedRemote<mojom::blink::Portal> portal,
+      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient> portal_client,
+      BlinkTransferableMessage data,
+      OnPortalActivatedCallback callback) final;
+  void ForwardMessageFromHost(
+      BlinkTransferableMessage message,
+      const scoped_refptr<const SecurityOrigin>& source_origin,
+      const scoped_refptr<const SecurityOrigin>& target_origin) final;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

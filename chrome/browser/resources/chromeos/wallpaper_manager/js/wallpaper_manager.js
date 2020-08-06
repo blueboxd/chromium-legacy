@@ -1092,6 +1092,7 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
     });
   };
   this.addEventToButton_($('cancel-preview-wallpaper'), onCancelClicked);
+  window.addEventListener(Constants.ClosePreviewWallpaper, onCancelClicked);
 
   $('message-container').style.display = 'none';
 };

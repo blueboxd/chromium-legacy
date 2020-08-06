@@ -35,11 +35,12 @@ class ExistingTabGroupSubMenuModel : public ExistingBaseSubMenuModel {
   void ExecuteNewCommand(int event_flags) override;
   void ExecuteExistingCommand(int command_index) override;
 
-  // Returns the group ids in the order that they appear in the tab strip model,
-  // so that the user sees an ordered display. Only needed for creating items
-  // and executing commands, which must be in order. Otherwise, ListTabGroups()
-  // is cheaper and sufficient for determining visibility and size of the menu.
-  std::vector<tab_groups::TabGroupId> GetOrderedTabGroups();
+  // Returns the group ids that appear in the submenu in the order that they
+  // appear in the tab strip model, so that the user sees an ordered display.
+  // Only needed for creating items and executing commands, which must be in
+  // order. Otherwise, ListTabGroups() is cheaper and sufficient for determining
+  // visibility and size of the menu.
+  std::vector<tab_groups::TabGroupId> GetOrderedTabGroupsInSubMenu();
 
   // Whether the submenu should contain the group |group|. True iff at least
   // one tab that would be affected by the command is not in |group|.

@@ -86,9 +86,10 @@ void DocumentScanScanFunction::OnScannerListReceived(
   const auto& scanner = response->scanners()[0];
   chromeos::LorgnetteManagerClient::ScanProperties properties;
   properties.mode = lorgnette::kScanPropertyModeColor;
-  GetLorgnetteManagerClient()->ScanImageToString(
+  GetLorgnetteManagerClient()->StartScan(
       scanner.name(), properties,
-      base::BindOnce(&DocumentScanScanFunction::OnResultsReceived, this));
+      base::BindOnce(&DocumentScanScanFunction::OnResultsReceived, this),
+      base::nullopt);
 }
 
 void DocumentScanScanFunction::OnResultsReceived(

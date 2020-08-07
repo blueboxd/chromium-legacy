@@ -39,31 +39,6 @@ base::string16 ReduceToInitials(const base::string16& value) {
   return base::i18n::ToUpper(result);
 }
 
-bool HasHispanicLatinxNameCharaceristics(const std::string& name) {
-  // Check if the name contains one of the most common Hispanic/Latinx
-  // last names.
-  if (IsPartialMatch(name, RegEx::kMatchHispanicCommonNameCharacteristics))
-    return true;
-
-  // Check if it contains a last name conjunction.
-  if (IsPartialMatch(name,
-                     RegEx::kMatchHispanicLastNameConjuctionCharacteristics))
-    return true;
-
-  // If none of the above, there is not sufficient reason to assume this is a
-  // Hispanic/Latinx name.
-  return false;
-}
-
-bool HasCjkNameCharacteristics(const std::string& name) {
-  return IsPartialMatch(name, RegEx::kMatchCjkNameCharacteristics);
-}
-
-bool HasMiddleNameInitialsCharacteristics(const std::string& middle_name) {
-  return IsPartialMatch(middle_name,
-                        RegEx::kMatchMiddleNameInitialsCharacteristics);
-}
-
 NameHonorific::NameHonorific() : NameHonorific(nullptr) {}
 
 NameHonorific::NameHonorific(AddressComponent* parent)
@@ -166,11 +141,19 @@ void NameLast::ParseValueAndAssignSubcomponentsByFallbackMethod() {
 
 NameFull::NameFull() : NameFull(nullptr) {}
 
+// TODO(crbug.com/1113617): Honorifics are temporally disabled.
 NameFull::NameFull(AddressComponent* parent)
     : AddressComponent(
           NAME_FULL,
           parent,
-          {&name_honorific_, &name_first_, &name_middle_, &name_last_}) {}
+          {/*&name_honorific_,*/ &name_first_, &name_middle_, &name_last_}) {}
+
+NameFull::NameFull(const NameFull& other) : NameFull() {
+  // The purpose of the copy operator is to copy the values and verification
+  // statuses of all nodes in |other| to |this|. This exact functionality is
+  // already implemented in the assignment operator.
+  *this = other;
+}
 
 std::vector<const re2::RE2*> NameFull::GetParseRegularExpressionsByRelevance()
     const {
@@ -209,7 +192,17 @@ std::vector<const re2::RE2*> NameFull::GetParseRegularExpressionsByRelevance()
           pattern_provider->GetRegEx(RegEx::kParseLastCommaFirstMiddleName),
           pattern_provider->GetRegEx(RegEx::kParseFirstMiddleLastName)};
 }
-
+base::string16 NameFull::GetBestFormatString() const {
+  if (HasCjkNameCharacteristics(base::UTF16ToUTF8(name_first_.GetValue())) &&
+      HasCjkNameCharacteristics(base::UTF16ToUTF8(name_last_.GetValue()))) {
+    return base::ASCIIToUTF16("${NAME_LAST}${NAME_FIRST}");
+  }
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  return
+      // base::ASCIIToUTF16( "${NAME_HONORIFIC_PREFIX} ${NAME_FIRST}
+      // ${NAME_MIDDLE} ${NAME_LAST}");
+      base::ASCIIToUTF16("${NAME_FIRST} ${NAME_MIDDLE} ${NAME_LAST}");
+}
 NameFull::~NameFull() = default;
 
 }  // namespace structured_address

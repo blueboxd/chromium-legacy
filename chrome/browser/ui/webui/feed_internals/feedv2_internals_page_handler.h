@@ -45,6 +45,7 @@ class FeedV2InternalsPageHandler : public feed_internals::mojom::PageHandler {
   void GetFeedProcessScopeDump(GetFeedProcessScopeDumpCallback) override;
   void GetFeedHistograms(GetFeedHistogramsCallback) override;
   void OverrideFeedHost(const GURL& host) override;
+  void OverrideActionUploadEndpoint(const GURL& endpoint_url) override;
 
  private:
   bool IsFeedAllowed();

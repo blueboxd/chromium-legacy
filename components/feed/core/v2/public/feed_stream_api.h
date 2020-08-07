@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list_types.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/time/time.h"
 #include "components/feed/core/v2/public/types.h"
 
 namespace feedui {
@@ -109,6 +110,10 @@ class FeedStreamApi {
   virtual void ReportPageLoaded() = 0;
   // The user triggered the default open action, usually by tapping the card.
   virtual void ReportOpenAction(const std::string& slice_id) = 0;
+  // The user triggered an open action, visited a web page, and then navigated
+  // away or backgrouded the tab. |visit_time| is a measure of how long the
+  // visited page was foregrounded.
+  virtual void ReportOpenVisitComplete(base::TimeDelta visit_time) = 0;
   // The user triggered the 'open in new tab' action.
   virtual void ReportOpenInNewTabAction(const std::string& slice_id) = 0;
   // The user triggered the 'open in new incognito tab' action.

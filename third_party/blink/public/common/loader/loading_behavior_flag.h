@@ -41,6 +41,9 @@ enum LoadingBehaviorFlag {
   // occurred before the first rendering cycle begins. Used to study the
   // effects of delaying the first rendering cycle for web font loading.
   kLoadingBehaviorFontPreloadStartedBeforeRendering = 1 << 8,
+  // Indicates that the page uses the Next.js JavaScript framework (via a
+  // window variable)
+  kLoadingBehaviorNextJSFrameworkUsed = 1 << 9,
 };
 
 }  // namespace blink

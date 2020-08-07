@@ -283,15 +283,4 @@ TEST_F(IncomingFramesReaderTest, ReadAfterConnectionClosed) {
 
   connection().Close();
   run_loop_before_close.Run();
-
-  base::RunLoop run_loop_after_close;
-  frames_reader().ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
-      base::BindLambdaForTesting(
-          [&](base::Optional<sharing::mojom::V1FramePtr> frame) {
-            EXPECT_FALSE(frame);
-            run_loop_after_close.Quit();
-          }),
-      kTimeout);
-  run_loop_after_close.Run();
 }

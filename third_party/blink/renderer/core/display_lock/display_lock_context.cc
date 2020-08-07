@@ -737,6 +737,10 @@ bool DisplayLockContext::MarkForCompositingUpdatesIfNeeded() {
       layout_box->Layer()->SetNeedsCompositingInputsUpdate();
     needs_compositing_dependent_flag_update_ = false;
 
+    if (needs_graphics_layer_rebuild_)
+      layout_box->Layer()->SetNeedsGraphicsLayerRebuild();
+    needs_graphics_layer_rebuild_ = false;
+
     return true;
   }
   return false;

@@ -193,6 +193,11 @@ void MetricsReporter::OpenAction(int index_in_stream) {
   RecordInteraction();
 }
 
+void MetricsReporter::OpenVisitComplete(base::TimeDelta visit_time) {
+  base::UmaHistogramLongTimes("ContentSuggestions.Feed.VisitDuration",
+                              visit_time);
+}
+
 void MetricsReporter::OpenInNewTabAction(int index_in_stream) {
   CardOpenBegin();
   ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);

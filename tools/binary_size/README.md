@@ -18,6 +18,10 @@ Per-Milestone Binary Size Breakdowns:
 
  * https://chrome-supersize.firebaseapp.com/chrome-supersize/index.html
 
+Guide to dealing with chrome-perf size alerts:
+
+ * [//docs/speed/apk_size_regressions.md](/docs/speed/apk_size_regressions.md)
+
 [TOC]
 
 ## Binary Size Trybot (android-binary-size)
@@ -38,7 +42,7 @@ Per-Milestone Binary Size Breakdowns:
    [chromeperf](https://chromeperf.appspot.com/report) under
    `Test suite="resource_sizes ($APK)"`.
  * Metrics reported by this tool are described in
-   [//docs/speed/binary_size/metrics.md](//docs/speed/binary_size/metrics.md).
+   [//docs/speed/binary_size/metrics.md](/docs/speed/binary_size/metrics.md).
 
 ## SuperSize
 

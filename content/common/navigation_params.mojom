@@ -97,33 +97,38 @@ struct BeginNavigationParams {
   // Routing id of the initiator of the navigation. This routing id may no
   // longer be valid by the time the navigation is seen by the browser process,
   // if the initiator frame is deleted before the navigation IPC arrives. A
-  // value of MSG_ROUTING_NONE indicates this navigation is not associated
-  // with a frame.
-  int32 initiator_routing_id;
+  // default value of MSG_ROUTING_NONE indicates this navigation is not
+  // associated with a frame.
+  int32 initiator_routing_id = -2;  // -2 == MSG_ROUTING_NONE
 
   // Additional HTTP request headers.
   string headers;
 
   // net::URLRequest load flags (net::LOAD_NORMAL) by default).
-  int32 load_flags;
+  int32 load_flags = 0;  // 0 == net::LOAD_NORMAL
 
   // True if the ServiceWorker should be skipped.
-  bool skip_service_worker;
+  bool skip_service_worker = false;
 
   // Indicates the request context type.
-  blink.mojom.RequestContextType request_context_type;
+  blink.mojom.RequestContextType request_context_type =
+      blink.mojom.RequestContextType.UNSPECIFIED;
 
   // Indicates the request destination.
-  network.mojom.RequestDestination request_destination;
+  network.mojom.RequestDestination request_destination =
+      network.mojom.RequestDestination.kEmpty;
 
   // The mixed content context type for potential mixed content checks.
+  //
+  // [Native] enums are by default initialized to 0
+  // (i.e. blink::WebMixedContentContextType::kNotMixedContent below).
   MixedContentContextType mixed_content_context_type;
 
   // Whether or not the navigation has been initiated by a form submission.
-  bool is_form_submission;
+  bool is_form_submission = false;
 
   // Whether or not the navigation has been initiated by a link click.
-  bool was_initiated_by_link_click;
+  bool was_initiated_by_link_click = false;
 
   // See WebSearchableFormData for a description of these.
   url.mojom.Url searchable_form_url;
@@ -181,6 +186,8 @@ struct CommonNavigationParams {
   blink.mojom.Referrer referrer;
 
   // The type of transition.
+  //
+  // [Native] enums are by default initialized to 0 (i.e. PAGE_TRANSITION_LINK).
   PageTransition transition;
 
   // Type of navigation.
@@ -206,7 +213,7 @@ struct CommonNavigationParams {
   // Bitmask that has whether or not to request a Preview version of the
   // document for various preview types or let the browser decide.
   // Defined in third_party/blink/public/common/loader/previews_state.h.
-  int32 previews_state;
+  int32 previews_state = 0;  // 0 == PREVIEWS_UNSPECIFIED
 
   // The navigationStart time exposed through the Navigation Timing API to JS.
   mojo_base.mojom.TimeTicks navigation_start;

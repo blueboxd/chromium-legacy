@@ -373,8 +373,22 @@ OSStatus ReadEncryptedSecret(std::string* password, bool force_recreate) {
     return status;
   }
 
-  if (status == errSecItemNotFound || force_recreate)
-    return AddRandomPasswordToKeychain(keychain, password);
+  if (status == errSecItemNotFound || force_recreate) {
+    if (status != errSecItemNotFound) {
+      // If the item is present but can't be read. Try to delete it first.
+      // If any of those steps fail don't try to proceed any further.
+      item_ref.reset();
+      status = keychain.FindGenericPassword(
+          strlen(kServiceName), kServiceName, strlen(kAccountName),
+          kAccountName, nullptr, nullptr, item_ref.InitializeInto());
+      if (status != noErr)
+        return status;
+      status = keychain.ItemDelete(item_ref.get());
+      if (status != noErr)
+        return status;
+    }
+    status = AddRandomPasswordToKeychain(keychain, password);
+  }
 
   return status;
 }

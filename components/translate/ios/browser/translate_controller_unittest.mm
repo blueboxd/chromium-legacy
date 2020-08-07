@@ -26,8 +26,8 @@ class TranslateControllerTest : public PlatformTest,
                                 public TranslateController::Observer {
  protected:
   TranslateControllerTest()
-      : test_web_state_(new web::TestWebState),
-        test_browser_state_(new web::TestBrowserState),
+      : test_web_state_(std::make_unique<web::TestWebState>()),
+        test_browser_state_(std::make_unique<web::TestBrowserState>()),
         fake_main_frame_(/*frame_id=*/"", /*is_main_frame=*/true, GURL()),
         fake_iframe_(/*frame_id=*/"", /*is_main_frame=*/false, GURL()),
         error_type_(TranslateErrors::Type::NONE),

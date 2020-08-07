@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/web_battery_savings.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -518,6 +519,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void SetDelegatedInkMetadata(
       LocalFrame* frame,
       std::unique_ptr<viz::DelegatedInkMetadata> metadata) {}
+
+  virtual void BatterySavingsChanged(LocalFrame& main_frame,
+                                     WebBatterySavingsFlags savings) = 0;
 
  protected:
   ChromeClient() = default;

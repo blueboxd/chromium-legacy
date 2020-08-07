@@ -32,6 +32,7 @@
 #include "content/browser/content_index/content_index_context_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
+#include "content/browser/font_access/font_access_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -196,6 +197,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   QuotaContext* GetQuotaContext();
   NativeIOContext* GetNativeIOContext();
   ConversionManagerImpl* GetConversionManager();
+  FontAccessManagerImpl* GetFontAccessManager();
   std::string GetPartitionDomain();
 
   // blink::mojom::DomStorage interface.
@@ -506,6 +508,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
   std::unique_ptr<NativeIOContext> native_io_context_;
   std::unique_ptr<ConversionManagerImpl> conversion_manager_;
+  std::unique_ptr<FontAccessManagerImpl> font_access_manager_;
 
   // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The

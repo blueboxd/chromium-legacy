@@ -105,4 +105,24 @@ public class RadioButtonWithDescriptionAndAuxButtonTest extends DummyUiActivityT
         Assert.assertTrue("Aux Button should be set to enabled.",
                 mRadioButton.getAuxButtonForTests().isEnabled());
     }
+
+    @Test
+    @SmallTest
+    public void testPaddingAndBackgroundValue() {
+        View radioContainer = mRadioButton.findViewById(R.id.radio_container);
+        int lateralPadding = mRadioButton.getResources().getDimensionPixelSize(
+                R.dimen.radio_button_with_description_lateral_padding);
+        int auxButtonSpacing = mRadioButton.getResources().getDimensionPixelSize(
+                R.dimen.radio_button_with_description_and_aux_button_spacing);
+        Assert.assertEquals("Lateral padding should be set in the radio container.", lateralPadding,
+                radioContainer.getPaddingStart());
+        Assert.assertEquals("Aux button spacing should be set in the radio container.",
+                auxButtonSpacing, radioContainer.getPaddingEnd());
+        Assert.assertEquals("Lateral padding should be set to 0 in the radio button root layout.",
+                0, mRadioButton.getPaddingStart());
+        Assert.assertNotNull(
+                "Background should be set in the radio container.", radioContainer.getBackground());
+        Assert.assertNull("Background should be null in the radio button root layout",
+                mRadioButton.getBackground());
+    }
 }

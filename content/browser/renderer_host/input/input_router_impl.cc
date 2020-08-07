@@ -639,12 +639,9 @@ void InputRouterImpl::TouchEventHandled(
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.
   if (touch_action) {
+    // For main thread ACKs, Blink will directly call SetTouchActionFromMain.
     if (source == blink::mojom::InputEventResultSource::kCompositorThread)
       OnSetCompositorAllowedTouchAction(touch_action->touch_action);
-    else if (source == blink::mojom::InputEventResultSource::kMainThread)
-      OnSetTouchAction(touch_action->touch_action);
-    else
-      NOTREACHED();
   }
 
   // TODO(crbug.com/953547): find a proper way to stop the timeout monitor.
@@ -734,25 +731,6 @@ void InputRouterImpl::ForceResetTouchActionForTest() {
 
 bool InputRouterImpl::IsFlingActiveForTest() {
   return gesture_event_queue_.IsFlingActiveForTest();
-}
-
-void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
-  TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction", "action",
-               cc::TouchActionToString(touch_action));
-
-  // It is possible we get a touch action for a touch start that is no longer
-  // in the queue. eg. Events that have fired the Touch ACK timeout.
-  if (!touch_event_queue_.IsPendingAckTouchStart())
-    return;
-
-  touch_action_filter_.AppendToGestureSequenceForDebugging("S");
-  touch_action_filter_.AppendToGestureSequenceForDebugging(
-      base::NumberToString(static_cast<int>(touch_action)).c_str());
-  touch_action_filter_.OnSetTouchAction(touch_action);
-  touch_event_queue_.StopTimeoutMonitor();
-
-  // TouchAction::kNone should disable the touch ack timeout.
-  UpdateTouchAckTimeoutEnabled();
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {

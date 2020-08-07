@@ -25,6 +25,9 @@ class TestOsIntegrationManager : public OsIntegrationManager {
                       InstallOsHooksOptions options) override;
   void UninstallOsHooks(const AppId& app_id,
                         UninstallOsHooksCallback callback) override;
+  void UpdateOsHooks(const AppId& app_id,
+                     base::StringPiece old_name,
+                     const WebApplicationInfo& web_app_info) override;
 
   size_t num_create_shortcuts_calls() const {
     return num_create_shortcuts_calls_;

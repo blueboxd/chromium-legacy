@@ -184,6 +184,7 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
      IDS_PAGE_INFO_TYPE_CAMERA_PAN_TILT_ZOOM},
     {ContentSettingsType::WINDOW_PLACEMENT,
      IDS_PAGE_INFO_TYPE_WINDOW_PLACEMENT},
+    {ContentSettingsType::FONT_ACCESS, IDS_PAGE_INFO_TYPE_FONT_ACCESS},
 #if !defined(OS_ANDROID)
     {ContentSettingsType::HID_GUARD, IDS_PAGE_INFO_TYPE_HID},
 #endif
@@ -631,6 +632,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       break;
     case ContentSettingsType::WINDOW_PLACEMENT:
       icon = &vector_icons::kWindowPlacementIcon;
+      break;
+    case ContentSettingsType::FONT_ACCESS:
+      icon = &vector_icons::kFontDownloadIcon;
       break;
     case ContentSettingsType::HID_GUARD:
       icon = &vector_icons::kVideogameAssetIcon;

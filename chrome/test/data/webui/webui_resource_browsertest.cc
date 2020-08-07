@@ -108,8 +108,6 @@ class WebUIResourceBrowserTestV0 : public WebUIResourceBrowserTest {
     // See crbug.com/911943 for detail.
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "HTMLImports");
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "ShadowDOMV0");
   }
 };
 

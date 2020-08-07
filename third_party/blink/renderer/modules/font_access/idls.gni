@@ -11,7 +11,4 @@ modules_idl_files = [
 
 modules_dictionary_idl_files = [ "font_iterator_entry.idl" ]
 
-modules_dependency_idl_files = [
-  "navigator_fonts.idl",
-  "worker_navigator_fonts.idl",
-]
+modules_dependency_idl_files = [ "navigator_fonts.idl" ]

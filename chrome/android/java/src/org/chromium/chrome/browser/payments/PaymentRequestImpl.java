@@ -2432,7 +2432,8 @@ public class PaymentRequestImpl
 
     @Nullable
     private PaymentRequestClient getClient() {
-        return mComponentPaymentRequestImpl.getClient();
+        return mComponentPaymentRequestImpl == null ? null
+                                                    : mComponentPaymentRequestImpl.getClient();
     }
 
     // Pre-condition: the client is not null.

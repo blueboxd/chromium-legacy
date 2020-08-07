@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 namespace password_manager {
 
@@ -69,6 +70,23 @@ CredentialPasswordsMap JoinCompromisedCredentialsWithSavedPasswords(
     const std::vector<CompromisedCredentials>& credentials,
     SavedPasswordsPresenter::SavedPasswordsView saved_passwords) {
   CredentialPasswordsMap credentials_to_forms;
+
+  bool mark_all_credentials_leaked_for_testing =
+      base::GetFieldTrialParamByFeatureAsBool(
+          password_manager::features::kPasswordChangeInSettings,
+          password_manager::features::
+              kPasswordChangeInSettingsWithForcedWarningForEverySite,
+          false);
+  if (mark_all_credentials_leaked_for_testing) {
+    for (const auto& form : saved_passwords) {
+      CredentialView compromised_credential(form);
+      auto& credential_to_form = credentials_to_forms[compromised_credential];
+      credential_to_form.type = CompromiseTypeFlags::kCredentialLeaked;
+      credential_to_form.forms.push_back(form);
+      credential_to_form.latest_time = form.date_created;
+    }
+    return credentials_to_forms;
+  }
 
   // Since a single (signon_realm, username) pair might have multiple
   // corresponding entries in saved_passwords, we are using a multiset and doing
@@ -144,7 +162,7 @@ CredentialView& CredentialView::operator=(CredentialView&& credential) =
 CredentialView::~CredentialView() = default;
 
 CredentialWithPassword::CredentialWithPassword(const CredentialView& credential)
-    : CredentialView(std::move(credential)) {}
+    : CredentialView(credential) {}
 CredentialWithPassword::~CredentialWithPassword() = default;
 CredentialWithPassword::CredentialWithPassword(
     const CredentialWithPassword& other) = default;

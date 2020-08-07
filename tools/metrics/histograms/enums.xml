@@ -11650,6 +11650,7 @@ Called by update_net_error_codes.py.-->
   <int value="68" label="Camera pan tilt zoom"/>
   <int value="69" label="Window placement"/>
   <int value="70" label="Insecure private network requests"/>
+  <int value="71" label="Font Access"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -40241,6 +40242,7 @@ from previous Chrome versions.
   <int value="-1740519217" label="disable-software-rasterizer"/>
   <int value="-1740093155" label="UnifiedMediaView:disabled"/>
   <int value="-1738416948" label="OptimizationHints:enabled"/>
+  <int value="-1737769448" label="WebUITabStripTabDragIntegration:disabled"/>
   <int value="-1736075054" label="EnableFullscreenAppList:enabled"/>
   <int value="-1735643253" label="enable-display-list-2d-canvas"/>
   <int value="-1734885284" label="enable-navigation-predictor"/>
@@ -40482,6 +40484,7 @@ from previous Chrome versions.
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
+  <int value="-1478137998" label="lite-video-default-downlink-bandwidth-kbps"/>
   <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
   <int value="-1477560322" label="kiosk"/>
   <int value="-1476930281" label="Windows10CustomTitlebar:enabled"/>
@@ -42691,6 +42694,7 @@ from previous Chrome versions.
   <int value="871713352" label="ImprovedLanguageSettings:enabled"/>
   <int value="876879670" label="OfflinePagesInDownloadHomeOpenInCct:enabled"/>
   <int value="877059804" label="AutofillPreventMixedFormsFilling:disabled"/>
+  <int value="877238334" label="WebUITabStripTabDragIntegration:enabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
@@ -52363,6 +52367,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="Disconnect Tether Network"/>
   <int value="24" label="Wi-Fi: Metered Network"/>
   <int value="25" label="Cellular: Metered Network"/>
+  <int value="26" label="Cellular: Add Network"/>
   <int value="100" label="Bluetooth: On/Off"/>
   <int value="101" label="Bluetooth: Connect To Device"/>
   <int value="102" label="Bluetooth: Disconnect From Device"/>
@@ -68797,6 +68802,17 @@ would be helpful to identify which type is being sent.
   </int>
   <int value="2" label="Download IPH provided">
     User was provided in product help for Downloads after taking a screenshot.
+  </int>
+</enum>
+
+<enum name="TabSearchCloseActions">
+  <int value="0" label="User did not close via Tab Search UI">
+    The UI was dismissed via interactions outside what is offered by the Tab
+    Search UI.
+  </int>
+  <int value="1" label="User switched to an open tab">
+    The Tab Search UI was dismissed as a result of the user opting to switch to
+    a currently open tab.
   </int>
 </enum>
 

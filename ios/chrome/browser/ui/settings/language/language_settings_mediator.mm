@@ -208,6 +208,11 @@
       prefs::kOfferTranslateEnabled);
 }
 
+- (BOOL)translateManaged {
+  return self.browserState->GetPrefs()->IsManagedPreference(
+      prefs::kOfferTranslateEnabled);
+}
+
 - (void)stopObservingModel {
   _offerTranslatePrefObserverBridge.reset();
   _acceptLanguagesPrefObserverBridge.reset();

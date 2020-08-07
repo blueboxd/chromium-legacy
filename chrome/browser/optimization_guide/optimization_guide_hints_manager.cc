@@ -26,7 +26,6 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
-#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/google/core/common/google_util.h"
@@ -44,6 +43,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/optimization_guide_util.h"
 #include "components/optimization_guide/optimization_metadata.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -985,7 +985,7 @@ void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
   optimization_guide::OptimizationMetadata metadata;
   optimization_guide::OptimizationTypeDecision type_decision =
       CanApplyOptimization(navigation_url, optimization_type, &metadata);
-  optimization_guide::OptimizationGuideDecision decision =
+  optimization_guide::OptimizationGuideDecision decision = optimization_guide::
       GetOptimizationGuideDecisionFromOptimizationTypeDecision(type_decision);
   // It's possible that a hint that applies to |navigation_url| will come in
   // later, so only run the callback if we are sure we can apply the decision.
@@ -1150,7 +1150,9 @@ void OptimizationGuideHintsManager::OnReadyToInvokeRegisteredCallbacks(
     optimization_guide::OptimizationTypeDecision type_decision =
         CanApplyOptimization(navigation_url, opt_type, &metadata);
     optimization_guide::OptimizationGuideDecision decision =
-        GetOptimizationGuideDecisionFromOptimizationTypeDecision(type_decision);
+        optimization_guide::
+            GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+                type_decision);
 
     for (auto& callback : opt_type_and_callbacks.second) {
       base::UmaHistogramEnumeration(

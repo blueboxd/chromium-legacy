@@ -142,35 +142,33 @@ bool IsNameType(const AutofillField& field) {
 }
 
 // Selects the right name type from the |old_types| to insert into the
-// |new_types| based on |is_credit_card|. This is called when we have exactly
-// two possible types.
+// |types_to_keep| based on |is_credit_card|. This is called when we have
+// multiple possible types.
 void SelectRightNameType(AutofillField* field, bool is_credit_card) {
   DCHECK(field);
-  DCHECK_EQ(2U, field->possible_types().size());
+  // Currently, there can be up to four possible types for a field.
+  DCHECK_GE(4U, field->possible_types().size());
+  DCHECK_LE(2U, field->possible_types().size());
 
-  ServerFieldType type_to_keep;
+  ServerFieldTypeSet types_to_keep;
   const auto& old_types = field->possible_types();
-  if (old_types.count(NAME_FIRST) && old_types.count(CREDIT_CARD_NAME_FIRST)) {
-    type_to_keep = is_credit_card ? CREDIT_CARD_NAME_FIRST : NAME_FIRST;
-  } else if (old_types.count(NAME_LAST) &&
-             old_types.count(CREDIT_CARD_NAME_LAST)) {
-    type_to_keep = is_credit_card ? CREDIT_CARD_NAME_LAST : NAME_LAST;
-  } else if (old_types.count(NAME_FULL) &&
-             old_types.count(CREDIT_CARD_NAME_FULL)) {
-    type_to_keep = is_credit_card ? CREDIT_CARD_NAME_FULL : NAME_FULL;
-  } else {
-    return;
+
+  for (auto type : old_types) {
+    FieldTypeGroup group = AutofillType(type).group();
+    if ((is_credit_card && group == CREDIT_CARD) ||
+        (!is_credit_card && group == NAME)) {
+      types_to_keep.insert(type);
+    }
   }
 
-  ServerFieldTypeSet new_types;
   ServerFieldTypeValidityStatesMap new_types_validities;
-  // Since the disambiguation takes place when we have only two possible types,
-  // here we can only add one type (as we are removing the other,) and don't
-  // need to keep track of other types.
-  new_types.insert(type_to_keep);
-  new_types_validities[type_to_keep] =
-      field->get_validities_for_possible_type(type_to_keep);
-  field->set_possible_types(new_types);
+  // Since the disambiguation takes place when we up to four possible types,
+  // here we can add up to three remaining types when only one is removed.
+  for (auto type_to_keep : types_to_keep) {
+    new_types_validities[type_to_keep] =
+        field->get_validities_for_possible_type(type_to_keep);
+  }
+  field->set_possible_types(types_to_keep);
   field->set_possible_types_validities(new_types_validities);
 }
 
@@ -2303,7 +2301,7 @@ void AutofillManager::DisambiguateUploadTypes(FormStructure* form) {
   for (size_t i = 0; i < form->field_count(); ++i) {
     AutofillField* field = form->field(i);
     const ServerFieldTypeSet& upload_types = field->possible_types();
-    // The disambiguation happens when we have exactly two possible types.
+
     if (upload_types.size() == 2) {
       if (upload_types.count(ADDRESS_HOME_LINE1) &&
           upload_types.count(ADDRESS_HOME_STREET_ADDRESS)) {
@@ -2311,23 +2309,44 @@ void AutofillManager::DisambiguateUploadTypes(FormStructure* form) {
       } else if (upload_types.count(PHONE_HOME_CITY_AND_NUMBER) &&
                  upload_types.count(PHONE_HOME_WHOLE_NUMBER)) {
         AutofillManager::DisambiguatePhoneUploadTypes(form, i);
-      } else if ((upload_types.count(NAME_FULL) &&
-                  upload_types.count(CREDIT_CARD_NAME_FULL)) ||
-                 (upload_types.count(NAME_FIRST) &&
-                  upload_types.count(CREDIT_CARD_NAME_FIRST)) ||
-                 (upload_types.count(NAME_LAST) &&
-                  upload_types.count(CREDIT_CARD_NAME_LAST))) {
-        AutofillManager::DisambiguateNameUploadTypes(form, i, upload_types);
       }
     }
+
+    // In case for credit cards and names there are many other possibilities
+    // because a field can be of type NAME_FULL, NAME_LAST,
+    // NAME_LAST_FIRST/SECOND at the same time.
+    int credit_card_type_count = 0;
+    int name_type_count = 0;
+
+    bool undisambiuatable_types = false;
+    for (const auto& type : upload_types) {
+      switch (AutofillType(type).group()) {
+        case CREDIT_CARD:
+          ++credit_card_type_count;
+          break;
+        case NAME:
+          ++name_type_count;
+          break;
+        // If there is any other type left, do not disambiguate.
+        default:
+          undisambiuatable_types = true;
+      }
+      if (undisambiuatable_types)
+        break;
+    }
+    if (undisambiuatable_types)
+      continue;
+
+    if (credit_card_type_count == 1 && name_type_count >= 1)
+      AutofillManager::DisambiguateNameUploadTypes(form, i, upload_types);
   }
 }
 
 // static
 void AutofillManager::DisambiguateAddressUploadTypes(FormStructure* form,
                                                      size_t current_index) {
-  // Theis happens when we have exactly two possible types, and the profile has
-  // only one address line. Therefore the address line one and the street
+  // This happens when we have exactly two possible types, and the profile
+  // has only one address line. Therefore the address line one and the street
   // address (the whole address) have the same value and match.
 
   // If the field is followed by a field that is predicted to be an
@@ -2472,7 +2491,8 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
 }
 
 bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
-  // Should not refill if a form with the same name has not been filled before.
+  // Should not refill if a form with the same name has not been filled
+  // before.
   auto itr =
       filling_contexts_map_.find(form_structure.GetIdentifierForRefill());
   if (itr == filling_contexts_map_.end())
@@ -2512,7 +2532,8 @@ void AutofillManager::TriggerRefill(const FormData& form) {
 
   // The refill attempt can happen from different paths, some of which happen
   // after waiting for a while. Therefore, although this condition has been
-  // checked prior to calling TriggerRefill, it may not hold, when we get here.
+  // checked prior to calling TriggerRefill, it may not hold, when we get
+  // here.
   if (filling_context->attempted_refill)
     return;
 
@@ -2628,9 +2649,9 @@ void AutofillManager::GetAvailableSuggestions(
       return;
     }
   } else {
-    // On desktop, don't return non credit card related suggestions for forms or
-    // fields that have the "autocomplete" attribute set to off, only if the
-    // feature to always fill addresses is off.
+    // On desktop, don't return non credit card related suggestions for forms
+    // or fields that have the "autocomplete" attribute set to off, only if
+    // the feature to always fill addresses is off.
     if (!base::FeatureList::IsEnabled(features::kAutofillAlwaysFillAddresses) &&
         IsDesktopPlatform() && !field.should_autocomplete) {
       context->suppress_reason = SuppressReason::kAutocompleteOff;
@@ -2656,9 +2677,9 @@ void AutofillManager::GetAvailableSuggestions(
   }
 #endif
 
-  // Don't provide credit card suggestions for non-secure pages, but do provide
-  // them for secure pages with passive mixed content (see implementation of
-  // IsContextSecure).
+  // Don't provide credit card suggestions for non-secure pages, but do
+  // provide them for secure pages with passive mixed content (see
+  // implementation of IsContextSecure).
   if (!context->is_context_secure) {
     // Replace the suggestion content with a warning message explaining why
     // Autofill is disabled for a website. The string is different if the
@@ -2692,8 +2713,8 @@ bool AutofillManager::ShouldShowVirtualCardOption(
     return false;
   }
 
-  // If no credit card candidate has related cloud token data available, return
-  // false.
+  // If no credit card candidate has related cloud token data available,
+  // return false.
   if (GetVirtualCardCandidates(personal_data_).empty())
     return false;
 

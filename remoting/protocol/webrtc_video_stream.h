@@ -113,8 +113,11 @@ class WebrtcVideoStream : public VideoStream,
 
   // Settings that are received from video-control messages. These are stored
   // here in case a message is received before the encoder is created.
+  // Lossless-color is not stored here because, for VP9 encoder, WebRTC handles
+  // it via an SDP codec parameter, "profile-id=1". Changing it requires a
+  // new SDP offer/answer exchange, and therefore it cannot be changed directly
+  // via video-control message.
   bool lossless_encode_ = false;
-  bool lossless_color_ = false;
 
   base::WeakPtrFactory<WebrtcVideoStream> weak_factory_{this};
 

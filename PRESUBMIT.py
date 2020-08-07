@@ -101,6 +101,24 @@ _BANNED_JAVA_IMPORTS = (
         'third_party/robolectric/local/',
       ),
     ),
+    (
+      'android.support.test.rule.UiThreadTestRule;',
+      (
+       'Do not use UiThreadTestRule, just use '
+       '@org.chromium.base.test.UiThreadTest on test methods that should run on '
+       'the UI thread. See https://crbug.com/1111893.',
+      ),
+      (),
+    ),
+    (
+      'android.support.test.annotation.UiThreadTest;',
+      (
+        'Do not use android.support.test.annotation.UiThreadTest, use '
+        'org.chromium.base.test.UiThreadTest instead. See '
+        'https://crbug.com/1111893.',
+      ),
+      ()
+    )
 )
 
 # Format: Sequence of tuples containing:

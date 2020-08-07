@@ -88,6 +88,15 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
   bool recursion_blocked_by_display_lock =
       layer.GetLayoutObject().PrePaintBlockedByDisplayLock(
           DisplayLockLifecycleTarget::kChildren);
+  // If the recursion is blocked meaningfully (i.e. we would have recursed,
+  // since the layer has children), then we should inform the display-lock
+  // context that we blocked a graphics layer recursion, so that we can ensure
+  // to rebuild the tree once we're unlocked.
+  if (recursion_blocked_by_display_lock && layer.FirstChild()) {
+    auto* context = layer.GetLayoutObject().GetDisplayLockContext();
+    DCHECK(context);
+    context->NotifyGraphicsLayerRebuildBlocked();
+  }
 
   if (layer.IsStackingContextWithNegativeZOrderChildren()) {
     if (!recursion_blocked_by_display_lock) {
@@ -157,11 +166,9 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
                 return a.second < b.second;
               });
     for (auto& item : pending) {
-      if (auto* layer = item.first->GetCompositedLayerMapping()
-                            ->DetachLayerForOverflowControls()) {
-        this_layer_children.insert(item.second + offset, layer);
-        offset++;
-      }
+      offset += item.first->GetCompositedLayerMapping()
+                    ->MoveOverflowControlLayersInto(this_layer_children,
+                                                    item.second + offset);
     }
 
     if (!this_layer_children.IsEmpty())

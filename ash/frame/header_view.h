@@ -51,6 +51,8 @@ class ASH_EXPORT HeaderView : public views::View,
   explicit HeaderView(views::Widget* target_widget);
   ~HeaderView() override;
 
+  METADATA_HEADER(HeaderView);
+
   void set_immersive_mode_changed_callback(base::RepeatingClosure callback) {
     immersive_mode_changed_callback_ = std::move(callback);
   }

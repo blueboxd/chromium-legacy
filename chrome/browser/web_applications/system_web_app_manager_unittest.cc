@@ -22,8 +22,6 @@
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
@@ -198,8 +196,6 @@ class SystemWebAppManagerTest : public WebAppTest {
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     test_pending_app_manager_impl_ =
         std::make_unique<TestPendingAppManagerImpl>(profile());
-    test_shortcut_manager_ =
-        std::make_unique<TestAppShortcutManager>(profile());
     test_os_integration_manager_ =
         std::make_unique<TestOsIntegrationManager>(profile());
     test_system_web_app_manager_ =
@@ -211,17 +207,16 @@ class SystemWebAppManagerTest : public WebAppTest {
 
     install_manager().SetUrlLoaderForTesting(
         std::make_unique<TestWebAppUrlLoader>());
-    install_manager().SetSubsystems(
-        &controller().registrar(), &shortcut_manager(),
-        &os_integration_manager(), &install_finalizer());
+    install_manager().SetSubsystems(&controller().registrar(),
+                                    &os_integration_manager(),
+                                    &install_finalizer());
 
     auto url_loader = std::make_unique<TestWebAppUrlLoader>();
     url_loader_ = url_loader.get();
     pending_app_manager().SetUrlLoaderForTesting(std::move(url_loader));
     pending_app_manager().SetSubsystems(
-        &controller().registrar(), &shortcut_manager(),
-        &os_integration_manager(), &ui_manager(), &install_finalizer(),
-        &install_manager());
+        &controller().registrar(), &os_integration_manager(), &ui_manager(),
+        &install_finalizer(), &install_manager());
 
     system_web_app_manager().SetSubsystems(
         &pending_app_manager(), &controller().registrar(),
@@ -247,7 +242,6 @@ class SystemWebAppManagerTest : public WebAppTest {
     test_ui_manager_.reset();
     test_system_web_app_manager_.reset();
     test_os_integration_manager_.reset();
-    test_shortcut_manager_.reset();
     test_pending_app_manager_impl_.reset();
     install_manager_.reset();
     install_finalizer_.reset();
@@ -279,8 +273,6 @@ class SystemWebAppManagerTest : public WebAppTest {
   TestPendingAppManagerImpl& pending_app_manager() {
     return *test_pending_app_manager_impl_;
   }
-
-  TestAppShortcutManager& shortcut_manager() { return *test_shortcut_manager_; }
 
   TestSystemWebAppManager& system_web_app_manager() {
     return *test_system_web_app_manager_;
@@ -381,7 +373,6 @@ class SystemWebAppManagerTest : public WebAppTest {
   std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<TestPendingAppManagerImpl> test_pending_app_manager_impl_;
-  std::unique_ptr<TestAppShortcutManager> test_shortcut_manager_;
   std::unique_ptr<TestSystemWebAppManager> test_system_web_app_manager_;
   std::unique_ptr<TestWebAppUiManager> test_ui_manager_;
   std::unique_ptr<TestOsIntegrationManager> test_os_integration_manager_;

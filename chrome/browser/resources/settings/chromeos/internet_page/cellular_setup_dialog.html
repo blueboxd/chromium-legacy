@@ -1,0 +1,21 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+
+<dom-module id="os-settings-cellular-setup-dialog">
+  <template>
+    <style include="settings-shared">
+    </style>
+    <!-- TODO(crbug/1093185): Change close logic when CellularSetup embedded -->
+    <cr-dialog id="dialog">
+      <div slot="title">$i18n{cellularSetupDialogTitle}</div>
+      <div slot="body">
+        <!-- TODO(crbug/1093185): Fix - embedding CellularSetup currently causes
+            settings to open with Error code: RESULT_CODE_KILLED_BAD_MESSAGE-->
+        <!-- <cellular-setup></cellular-setup> -->
+      </div>
+    </cr-dialog>
+  </template>
+  <script src="cellular_setup_dialog.js"></script>
+</dom-module>

@@ -3503,7 +3503,161 @@ constexpr auto partition_point(Range&& range, Pred pred, Proj proj = {}) {
 // [alg.merge] Merge
 // Reference: https://wg21.link/alg.merge
 
-// TODO(crbug.com/1071094): Implement.
+// Let `N` be `(last1 - first1) + (last2 - first2)`.
+//
+// Preconditions: The ranges `[first1, last1)` and `[first2, last2)` are sorted
+// with respect to `comp` and `proj1` or `proj2`, respectively. The resulting
+// range does not overlap with either of the original ranges.
+//
+// Effects: Copies all the elements of the two ranges `[first1, last1)` and
+// `[first2, last2)` into the range `[result, result_last)`, where `result_last`
+// is `result + N`. If an element `a` precedes `b` in an input range, `a` is
+// copied into the output range before `b`. If `e1` is an element of
+// `[first1, last1)` and `e2` of `[first2, last2)`, `e2` is copied into the
+// output range before `e1` if and only if
+// `bool(invoke(comp, invoke(proj2, e2), invoke(proj1, e1)))` is `true`.
+//
+// Returns: `result_last`.
+//
+// Complexity: At most `N - 1` comparisons and applications of each projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.merge#:~:text=ranges::merge(I1
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<InputIterator1>,
+          typename = internal::iterator_category_t<InputIterator2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator1, Proj1>,
+                                       projected<InputIterator2, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator2, Proj2>,
+                                       projected<InputIterator1, Proj1>>>
+constexpr auto merge(InputIterator1 first1,
+                     InputIterator1 last1,
+                     InputIterator2 first2,
+                     InputIterator2 last2,
+                     OutputIterator result,
+                     Comp comp = {},
+                     Proj1 proj1 = {},
+                     Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::merge expects
+  // comp(proj2(lhs), proj1(rhs)) to compile.
+  return std::merge(
+      first1, last1, first2, last2, result,
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
+}
+
+// Let `N` be `size(range1) + size(range2)`.
+//
+// Preconditions: The ranges `range1` and `range2` are sorted with respect to
+// `comp` and `proj1` or `proj2`, respectively. The resulting range does not
+// overlap with either of the original ranges.
+//
+// Effects: Copies all the elements of the two ranges `range1` and `range2` into
+// the range `[result, result_last)`, where `result_last` is `result + N`. If an
+// element `a` precedes `b` in an input range, `a` is copied into the output
+// range before `b`. If `e1` is an element of `range1` and `e2` of `range2`,
+// `e2` is copied into the output range before `e1` if and only if
+// `bool(invoke(comp, invoke(proj2, e2), invoke(proj1, e1)))` is `true`.
+//
+// Returns: `result_last`.
+//
+// Complexity: At most `N - 1` comparisons and applications of each projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.merge#:~:text=ranges::merge(R1
+template <typename Range1,
+          typename Range2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
+constexpr auto merge(Range1&& range1,
+                     Range2&& range2,
+                     OutputIterator result,
+                     Comp comp = {},
+                     Proj1 proj1 = {},
+                     Proj2 proj2 = {}) {
+  return ranges::merge(ranges::begin(range1), ranges::end(range1),
+                       ranges::begin(range2), ranges::end(range2), result,
+                       std::move(comp), std::move(proj1), std::move(proj2));
+}
+
+// Preconditions: `[first, middle)` and `[middle, last)` are valid ranges sorted
+// with respect to `comp` and `proj`.
+//
+// Effects: Merges two sorted consecutive ranges `[first, middle)` and
+// `[middle, last)`, putting the result of the merge into the range
+// `[first, last)`. The resulting range is sorted with respect to `comp` and
+// `proj`.
+//
+// Returns: `last`.
+//
+// Complexity: Let `N = last - first`: If enough additional memory is available,
+// exactly `N - 1` comparisons. Otherwise, `O(N log N)` comparisons. In either
+// case, twice as many projections as comparisons.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.merge#:~:text=ranges::inplace_merge(I
+template <typename BidirectionalIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<BidirectionalIterator>>
+constexpr auto inplace_merge(BidirectionalIterator first,
+                             BidirectionalIterator middle,
+                             BidirectionalIterator last,
+                             Comp comp = {},
+                             Proj proj = {}) {
+  std::inplace_merge(first, middle, last,
+                     internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Preconditions: `[begin(range), middle)` and `[middle, end(range))` are valid
+// ranges sorted with respect to `comp` and `proj`.
+//
+// Effects: Merges two sorted consecutive ranges `[begin(range), middle)` and
+// `[middle, end(range))`, putting the result of the merge into `range`. The
+// resulting range is sorted with respect to `comp` and `proj`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Let `N = size(range)`: If enough additional memory is available,
+// exactly `N - 1` comparisons. Otherwise, `O(N log N)` comparisons. In either
+// case, twice as many projections as comparisons.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.merge#:~:text=ranges::inplace_merge(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto inplace_merge(Range&& range,
+                             iterator_t<Range> middle,
+                             Comp comp = {},
+                             Proj proj = {}) {
+  return ranges::inplace_merge(ranges::begin(range), middle, ranges::end(range),
+                               std::move(comp), std::move(proj));
+}
 
 // [alg.set.operations] Set operations on sorted structures
 // Reference: https://wg21.link/alg.set.operations

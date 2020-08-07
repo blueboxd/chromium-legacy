@@ -16,6 +16,13 @@ NetworkHealthService::NetworkHealthService() {
           chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
 }
 
+mojo::PendingRemote<mojom::NetworkHealthService>
+NetworkHealthService::GetHealthRemoteAndBindReceiver() {
+  mojo::PendingRemote<mojom::NetworkHealthService> remote;
+  BindHealthReceiver(remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
 void NetworkHealthService::BindHealthReceiver(
     mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
   network_health_.BindReceiver(std::move(receiver));

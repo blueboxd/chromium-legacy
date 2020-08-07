@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/sharesheet_button.h"
-#include "chrome/browser/ui/views/toolbar/tab_search_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -267,11 +266,6 @@ void ToolbarView::Init() {
   location_bar_ = AddChildView(std::move(location_bar));
   if (browser_actions)
     browser_actions_ = AddChildView(std::move(browser_actions));
-
-  if (base::FeatureList::IsEnabled(features::kTabSearch)) {
-    tab_search_button_ =
-        AddChildView(std::make_unique<TabSearchButton>(browser_));
-  }
 
   if (extensions_container)
     extensions_container_ = AddChildView(std::move(extensions_container));

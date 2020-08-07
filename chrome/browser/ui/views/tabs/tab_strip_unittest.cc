@@ -866,7 +866,8 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
 
   CompleteAnimationAndLayout();
 
-  EXPECT_LE(tab_strip_->new_tab_button_ideal_bounds().right(), kTabStripWidth);
+  EXPECT_LE(tab_strip_->tab_controls_container_ideal_bounds().right(),
+            kTabStripWidth);
 }
 
 TEST_P(TabStripTest, NewTabButtonRightOfTabs) {
@@ -877,7 +878,7 @@ TEST_P(TabStripTest, NewTabButtonRightOfTabs) {
 
   AnimateToIdealBounds();
 
-  EXPECT_EQ(tab_strip_->new_tab_button_ideal_bounds().x(),
+  EXPECT_EQ(tab_strip_->tab_controls_container_ideal_bounds().x(),
             tab_strip_->ideal_bounds(0).right() + TabToNewTabButtonSpacing());
 }
 

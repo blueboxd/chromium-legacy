@@ -4,15 +4,11 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.support.test.rule.UiThreadTestRule;
-
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.rules.RuleChain;
-import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
@@ -25,6 +21,7 @@ import org.chromium.chrome.browser.feed.library.testing.conformance.scheduler.Sc
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,14 +43,7 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
                     new ParameterSet().value(true).name("withRequestManager"));
 
     @Rule
-    public RuleChain mChain =
-            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule() {
-                @Override
-                protected boolean shouldRunOnUiThread(Description description) {
-                    // FeedSchedulerBridge requires the used methods to be called on the UI Thread.
-                    return true;
-                }
-            });
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     @Mock
     private RequestManager mRequestManager;
@@ -66,15 +56,17 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
     @Before
     public void setUp() {
         // The scheduler is declared and tested in SchedulerConformanceTest.
-        mScheduler = new FeedSchedulerBridge(Profile.getLastUsedRegularProfile());
-        if (mUseRequestManager) {
-            ((FeedSchedulerBridge) mScheduler).initializeFeedDependencies(mRequestManager);
-        }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mScheduler = new FeedSchedulerBridge(Profile.getLastUsedRegularProfile());
+            if (mUseRequestManager) {
+                ((FeedSchedulerBridge) mScheduler).initializeFeedDependencies(mRequestManager);
+            }
+        });
     }
 
     @After
     public void tearDown() {
-        ((FeedSchedulerBridge) mScheduler).destroy();
+        TestThreadUtils.runOnUiThreadBlocking(() -> ((FeedSchedulerBridge) mScheduler).destroy());
         mScheduler = null;
     }
 }

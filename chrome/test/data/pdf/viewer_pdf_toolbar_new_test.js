@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {eventToPromise} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/webui/test_util.m.js';
 import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
 import {ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-pdf-toolbar-new.js';
 
@@ -122,8 +123,9 @@ const tests = [
     const rotateButton = getCrIconButtons(toolbar, 'center')[3];
     chrome.test.assertEq('pdf:rotate-left', rotateButton.ironIcon);
 
-    toolbar.addEventListener('rotate-left', e => chrome.test.succeed());
+    const promise = eventToPromise('rotate-left', toolbar);
     rotateButton.click();
+    promise.then(() => chrome.test.succeed());
   },
 
   function testZoomField() {

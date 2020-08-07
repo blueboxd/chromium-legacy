@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.password_check;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_CONFIRMATION_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_ORIGIN;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
@@ -60,6 +62,11 @@ class PasswordCheckViewBinder {
                             PasswordCheckProperties::getItemType,
                             PasswordCheckViewBinder::connectPropertyModel),
                     PasswordCheckViewBinder::createViewHolder));
+        } else if (propertyKey == DELETION_CONFIRMATION_HANDLER) {
+            view.showDialogFragment(new PasswordCheckDeletionDialogFragment(
+                    model.get(DELETION_CONFIRMATION_HANDLER), model.get(DELETION_ORIGIN)));
+        } else if (propertyKey == DELETION_ORIGIN) {
+            // Binding not necessary (only used indirectly).
         } else {
             assert false : "Unhandled update to property:" + propertyKey;
         }
@@ -171,16 +178,18 @@ class PasswordCheckViewBinder {
         if (key == CHECK_PROGRESS) {
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
         } else if (key == CHECK_STATUS) {
-            // TODO(crbug.com/1109691): Set illustration based on status.
             updateActionButton(view, status);
             updateStatusIcon(view, status, compromisedCredentialsCount);
+            updateStatusIllustration(view, status, compromisedCredentialsCount);
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
+            updateStatusSubtitle(view, status, compromisedCredentialsCount);
         } else if (key == CHECK_TIMESTAMP) {
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
         } else if (key == COMPROMISED_CREDENTIALS_COUNT) {
-            // TODO(crbug.com/1109691): Set illustration based on compromised credentials count.
             updateStatusIcon(view, status, compromisedCredentialsCount);
+            updateStatusIllustration(view, status, compromisedCredentialsCount);
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
+            updateStatusSubtitle(view, status, compromisedCredentialsCount);
         } else {
             assert false : "Unhandled update to property:" + key;
         }
@@ -357,6 +366,72 @@ class PasswordCheckViewBinder {
     }
 
     private static int getStatusDescriptionVisibility(@PasswordCheckUIStatus int status) {
+        return status == PasswordCheckUIStatus.IDLE ? View.VISIBLE : View.GONE;
+    }
+
+    private static void updateStatusIllustration(
+            View view, @PasswordCheckUIStatus int status, Integer compromisedCredentialsCount) {
+        // TODO(crbug.com/1114051): Set default values for header properties.
+        if (status == PasswordCheckUIStatus.IDLE && compromisedCredentialsCount == null) return;
+        ImageView statusIllustration = view.findViewById(R.id.check_status_illustration);
+        statusIllustration.setImageResource(
+                getIllustrationResource(status, compromisedCredentialsCount));
+    }
+
+    private static int getIllustrationResource(
+            @PasswordCheckUIStatus int status, Integer compromisedCredentialsCount) {
+        switch (status) {
+            case PasswordCheckUIStatus.IDLE:
+                assert compromisedCredentialsCount != null;
+                return compromisedCredentialsCount == 0 ? R.drawable.password_check_positive
+                                                        : R.drawable.password_checkup_warning;
+            case PasswordCheckUIStatus.RUNNING:
+            case PasswordCheckUIStatus.ERROR_OFFLINE:
+            case PasswordCheckUIStatus.ERROR_NO_PASSWORDS:
+            case PasswordCheckUIStatus.ERROR_SIGNED_OUT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
+            case PasswordCheckUIStatus.ERROR_UNKNOWN:
+                return R.drawable.password_check_neutral;
+            default:
+                assert false : "Unhandled check status " + status + "on illustration update";
+        }
+        return 0;
+    }
+
+    private static void updateStatusSubtitle(
+            View view, @PasswordCheckUIStatus int status, Integer compromisedCredentialsCount) {
+        // TODO(crbug.com/1114051): Set default values for header properties.
+        if (status == PasswordCheckUIStatus.IDLE && compromisedCredentialsCount == null) return;
+        TextView statusSubtitle = view.findViewById(R.id.check_status_subtitle);
+        statusSubtitle.setText(getSubtitleText(view, status, compromisedCredentialsCount));
+        statusSubtitle.setVisibility(getSubtitleVisibility(status));
+    }
+
+    private static String getSubtitleText(
+            View view, @PasswordCheckUIStatus int status, Integer compromisedCredentialsCount) {
+        switch (status) {
+            case PasswordCheckUIStatus.IDLE:
+                assert compromisedCredentialsCount != null;
+                return compromisedCredentialsCount == 0
+                        ? getString(view, R.string.password_check_status_subtitle_no_findings)
+                        : getString(view,
+                                R.string.password_check_status_subtitle_found_compromised_credentials);
+            case PasswordCheckUIStatus.RUNNING:
+            case PasswordCheckUIStatus.ERROR_OFFLINE:
+            case PasswordCheckUIStatus.ERROR_NO_PASSWORDS:
+            case PasswordCheckUIStatus.ERROR_SIGNED_OUT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
+            case PasswordCheckUIStatus.ERROR_UNKNOWN:
+                return null;
+            default:
+                assert false : "Unhandled check status " + status + "on icon update";
+        }
+        return null;
+    }
+
+    private static int getSubtitleVisibility(@PasswordCheckUIStatus int status) {
         return status == PasswordCheckUIStatus.IDLE ? View.VISIBLE : View.GONE;
     }
 

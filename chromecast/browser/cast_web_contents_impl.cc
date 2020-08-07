@@ -327,7 +327,7 @@ void CastWebContentsImpl::ClearRenderWidgetHostView() {
   }
 }
 
-on_load_script_injector::OnLoadScriptInjectorHost*
+on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*
 CastWebContentsImpl::script_injector() {
   return &script_injector_;
 }

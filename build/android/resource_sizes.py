@@ -35,14 +35,17 @@ _AAPT_PATH = lazy.WeakConstant(lambda: build_tools.GetPath('aapt'))
 _BUILD_UTILS_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gyp')
 
+with host_paths.SysPath(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build')):
+  import gn_helpers  # pylint: disable=import-error
+
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
-  import perf_tests_results_helper # pylint: disable=import-error
+  import perf_tests_results_helper  # pylint: disable=import-error
 
 with host_paths.SysPath(host_paths.TRACING_PATH):
-  from tracing.value import convert_chart_json # pylint: disable=import-error
+  from tracing.value import convert_chart_json  # pylint: disable=import-error
 
 with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
-  from util import build_utils # pylint: disable=import-error
+  from util import build_utils  # pylint: disable=import-error
   from util import zipalign  # pylint: disable=import-error
 
 
@@ -573,8 +576,7 @@ def _ConfigOutDirAndToolsPrefix(out_dir):
       out_dir = constants.GetOutDirectory()
     except Exception:  # pylint: disable=broad-except
       return out_dir, ''
-  build_vars = build_utils.ReadBuildVars(
-      os.path.join(out_dir, "build_vars.txt"))
+  build_vars = gn_helpers.ReadBuildVars(out_dir)
   tool_prefix = os.path.join(out_dir, build_vars['android_tool_prefix'])
   return out_dir, tool_prefix
 

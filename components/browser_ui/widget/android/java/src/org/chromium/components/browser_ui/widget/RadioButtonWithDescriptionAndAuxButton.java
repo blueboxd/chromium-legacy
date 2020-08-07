@@ -6,6 +6,7 @@ package org.chromium.components.browser_ui.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ImageButton;
 
@@ -79,6 +80,16 @@ public class RadioButtonWithDescriptionAndAuxButton extends RadioButtonWithDescr
         // Clear any end padding set by default in the parent class, since end padding
         // is built into the aux button instead.
         setPaddingRelative(getPaddingStart(), getPaddingTop(), 0, getPaddingBottom());
+
+        View radioContainer = findViewById(R.id.radio_container);
+        // Space between the radio container and the separator. The padding is added in the radio
+        // container instead of the separator, because the padding needs to be highlighted when the
+        // radio container is clicked.
+        final int radioContainerEndPadding = getResources().getDimensionPixelSize(
+                R.dimen.radio_button_with_description_and_aux_button_spacing);
+        radioContainer.setPaddingRelative(radioContainer.getPaddingStart(),
+                radioContainer.getPaddingTop(), radioContainerEndPadding,
+                radioContainer.getPaddingBottom());
     }
 
     @Override

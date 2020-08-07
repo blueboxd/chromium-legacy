@@ -35,9 +35,6 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddInvalidationToReadyToActivateDuration(
       base::TimeDelta duration,
       TreePriority priority) = 0;
-  virtual void AddReadyToActivateToWillActivateDuration(
-      base::TimeDelta duration,
-      bool pending_tree_is_impl_side) = 0;
   virtual void AddPrepareTilesDuration(base::TimeDelta duration) = 0;
   virtual void AddActivateDuration(base::TimeDelta duration) = 0;
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
@@ -333,20 +330,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         priority);
   }
 
-  void AddReadyToActivateToWillActivateDuration(
-      base::TimeDelta duration,
-      bool pending_tree_is_impl_side) override {
-    if (pending_tree_is_impl_side) {
-      UMA_HISTOGRAM_CUSTOM_TIMES_DURATION_SUFFIX(
-          "Scheduling.Renderer.ReadyToActivateToActivationDuration", ".Impl",
-          duration);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES_DURATION_SUFFIX(
-          "Scheduling.Renderer.ReadyToActivateToActivationDuration", ".Main",
-          duration);
-    }
-  }
-
   void AddPrepareTilesDuration(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Renderer.PrepareTilesDuration", duration);
@@ -403,14 +386,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         priority);
   }
 
-  void AddReadyToActivateToWillActivateDuration(
-      base::TimeDelta duration,
-      bool pending_tree_is_impl_side) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION_SUFFIX(
-        "Scheduling.Browser.ReadyToActivateToActivationDuration", ".Main",
-        duration);
-  }
-
   void AddPrepareTilesDuration(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Browser.PrepareTilesDuration", duration);
@@ -442,9 +417,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddInvalidationToReadyToActivateDuration(
       base::TimeDelta duration,
       TreePriority priority) override {}
-  void AddReadyToActivateToWillActivateDuration(
-      base::TimeDelta duration,
-      bool pending_tree_is_impl_side) override {}
   void AddPrepareTilesDuration(base::TimeDelta duration) override {}
   void AddActivateDuration(base::TimeDelta duration) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
@@ -801,16 +773,6 @@ void CompositorTimingHistory::WillActivate() {
 
   compositor_frame_reporting_controller_->WillActivate();
   activate_start_time_ = Now();
-
-  // Its possible to activate the pending tree before it is ready for
-  // activation, for instance in the case of a context loss or visibility
-  // changes.
-  if (pending_tree_ready_to_activate_time_ != base::TimeTicks()) {
-    base::TimeDelta time_since_ready =
-        activate_start_time_ - pending_tree_ready_to_activate_time_;
-    uma_reporter_->AddReadyToActivateToWillActivateDuration(
-        time_since_ready, pending_tree_is_impl_side_);
-  }
 
   pending_tree_is_impl_side_ = false;
   pending_tree_creation_time_ = base::TimeTicks();

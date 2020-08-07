@@ -28,9 +28,9 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-import parser
-from parser import (XMLParser, map_annotations, load_tsv_file, Placeholder,
-  PLACEHOLDER_STYLES)
+import generator_utils
+from generator_utils import (XMLParser, map_annotations, load_tsv_file,
+                             Placeholder, PLACEHOLDER_STYLES)
 
 # Absolute path to chrome/src.
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -167,7 +167,7 @@ class NetworkTrafficAnnotationsDoc:
       version = ".".join(line.strip().split("=")[1]
                          for line in version_file.readlines())
 
-    current_version = parser.find_chrome_browser_version(doc)
+    current_version = generator_utils.find_chrome_browser_version(doc)
     replacement = "Chrome Browser version {}".format(version)
     target = "Chrome Browser version {}".format(current_version)
 
@@ -195,8 +195,8 @@ class NetworkTrafficAnnotationsDoc:
     Return: Integer of where to start writing, i.e. the index.
     """
     print("Overwriting the destination document.")
-    first_index = parser.find_first_index(doc)
-    last_index = parser.find_last_index(doc)
+    first_index = generator_utils.find_first_index(doc)
+    last_index = generator_utils.find_last_index(doc)
 
     if self.verbose:
       print("First index, last index", first_index, last_index)
@@ -277,7 +277,7 @@ class NetworkTrafficAnnotationsDoc:
 
   def _format_text(self, start_index, end_index, placeholder_type):
     """Format the text in between |start_index| and |end_index| using the styles
-    specified by |parser.PLACEHOLDER_STYLES|.
+    specified by |generator_utils.PLACEHOLDER_STYLES|.
 
     Returns: The request to format the text in between |start_index| and
       |end_index|.
@@ -306,7 +306,7 @@ class NetworkTrafficAnnotationsDoc:
 
   def _create_group_or_sender_request(self, text, index, placeholder_type):
     """Returns the request for inserting the group or sender placeholders using
-    the styling of |parser.PLACEHOLDER_STYLES|.
+    the styling of |generator_utils.PLACEHOLDER_STYLES|.
     """
     assert placeholder_type in [Placeholder.GROUP, Placeholder.SENDER]
     text += "\n"
@@ -336,7 +336,7 @@ class NetworkTrafficAnnotationsDoc:
     the template document for a visual.
 
     Args:
-      traffic_annotation: parser.TrafficAnnotation
+      traffic_annotation: generator_utils.TrafficAnnotation
         The TrafficAnnotation object with all the relevant information, e.g.
         unique_id, description, etc.
       index: int
@@ -473,7 +473,7 @@ class NetworkTrafficAnnotationsDoc:
     doc = self._get_doc_contents(self.destination_id)
 
     # the ranges to bold using the updateTextStyle request
-    bold_ranges = parser.find_bold_ranges(doc)
+    bold_ranges = generator_utils.find_bold_ranges(doc)
     reqs = []
     for i, (start_index, end_index) in enumerate(bold_ranges):
       if end_index > start_index:

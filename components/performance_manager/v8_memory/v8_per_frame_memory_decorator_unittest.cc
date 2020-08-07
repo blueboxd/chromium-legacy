@@ -51,7 +51,7 @@ class LenientMockV8PerFrameMemoryReporter
 
   MOCK_METHOD(void,
               GetPerFrameV8MemoryUsageData,
-              (GetPerFrameV8MemoryUsageDataCallback callback),
+              (Mode mode, GetPerFrameV8MemoryUsageDataCallback callback),
               (override));
 
   void Bind(mojo::PendingReceiver<blink::mojom::V8PerFrameMemoryReporter>
@@ -142,8 +142,9 @@ class V8PerFrameMemoryDecoratorTestBase {
       base::RepeatingCallback<void(
           MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
               callback)> responder) {
-    EXPECT_CALL(*mock_reporter, GetPerFrameV8MemoryUsageData(_))
+    EXPECT_CALL(*mock_reporter, GetPerFrameV8MemoryUsageData(_, _))
         .WillOnce([this, responder](
+                      MockV8PerFrameMemoryReporter::Mode mode,
                       MockV8PerFrameMemoryReporter::
                           GetPerFrameV8MemoryUsageDataCallback callback) {
           this->last_query_time_ = base::TimeTicks::Now();
@@ -230,11 +231,14 @@ void AddPerFrameIsolateMemoryUsage(
     per_frame_data = datum.get();
     data->associated_memory.push_back(std::move(datum));
   }
-  ASSERT_FALSE(base::Contains(per_frame_data->associated_bytes, world_id));
+  for (const auto& entry : per_frame_data->associated_bytes) {
+    EXPECT_NE(world_id, entry->world_id);
+  }
 
   auto isolated_world_usage = blink::mojom::V8IsolatedWorldMemoryUsage::New();
   isolated_world_usage->bytes_used = bytes_used;
-  per_frame_data->associated_bytes[world_id] = std::move(isolated_world_usage);
+  isolated_world_usage->world_id = world_id;
+  per_frame_data->associated_bytes.push_back(std::move(isolated_world_usage));
 }
 
 }  // namespace

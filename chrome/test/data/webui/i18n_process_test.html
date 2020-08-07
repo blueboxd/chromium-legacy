@@ -67,24 +67,6 @@ function testI18nProcess_ReRun() {
   assertTrue(document.body.hasAttribute('type'));
 }
 
-function testI18nProcess_ShadowRoot() {
-  var a = document.createElement('a');
-  var outerShadow = a.createShadowRoot();
-
-  var b = document.createElement('b');
-  outerShadow.appendChild(b);
-
-  var innerShadow = b.createShadowRoot();
-  var i = document.createElement('i');
-  i.setAttribute('i18n-content', 'content');
-  innerShadow.appendChild(i);
-
-  i18nTemplate.process(i, loadTimeData);
-
-  assertTrue(i.hasAttribute('i18n-processed'));
-  assertNotEqual('', i.textContent);
-}
-
 function testI18nProcess_Templates() {
   var outerDocFrag = document.querySelector('template').content;
   var innerDocFrag = outerDocFrag.querySelector('template').content;

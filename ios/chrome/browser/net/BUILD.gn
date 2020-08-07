@@ -32,7 +32,6 @@ source_set("net") {
     "//components/update_client",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browsing_data",
     "//ios/net",
     "//ios/web/common",
     "//net",

@@ -61,7 +61,6 @@ class IncomingFramesReader : public NearbyProcessManager::Observer {
   void OnFrameDecoded(sharing::mojom::FramePtr mojo_frame);
   void OnTimeout();
   void Done(base::Optional<sharing::mojom::V1FramePtr> frame);
-  void OnConnectionClosed();
   base::Optional<sharing::mojom::V1FramePtr> GetCachedFrame(
       base::Optional<sharing::mojom::V1Frame::Tag> frame_type);
 

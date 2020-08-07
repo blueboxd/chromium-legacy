@@ -152,8 +152,8 @@ void CustomLayoutWorkTask::RunIntrinsicSizesTask(
 
   MinMaxSizesInput input(child_percentage_resolution_block_size_for_min_max,
                          MinMaxSizesType::kContent);
-  MinMaxSizesResult result =
-      ComputeMinAndMaxContentContribution(parent_style, child, input);
+  MinMaxSizesResult result = ComputeMinAndMaxContentContribution(
+      parent_style, To<NGBlockNode>(child), input);
   resolver_->Resolve(MakeGarbageCollected<CustomIntrinsicSizes>(
       child_, token_, result.sizes.min_size, result.sizes.max_size));
 

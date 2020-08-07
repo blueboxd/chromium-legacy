@@ -87,7 +87,7 @@ NGGridLayoutAlgorithm::GridItemData NGGridLayoutAlgorithm::MeasureGridItem(
                                      .InlineSize();
   } else {
     NGBoxStrut border_padding_in_child_writing_mode =
-        ComputeBorders(constraint_space, child_style) +
+        ComputeBorders(constraint_space, node) +
         ComputePadding(constraint_space, child_style);
     grid_item_data.inline_size = ComputeInlineSizeForFragment(
         constraint_space, node, border_padding_in_child_writing_mode);

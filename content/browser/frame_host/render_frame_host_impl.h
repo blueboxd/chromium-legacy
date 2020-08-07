@@ -99,6 +99,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
+#include "third_party/blink/public/mojom/font_access/font_access.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
@@ -1286,6 +1287,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetGeolocationService(
       mojo::PendingReceiver<blink::mojom::GeolocationService> receiver);
+
+  void GetFontAccessManager(
+      mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver);
 
   void GetNativeFileSystemManager(
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);

@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/account_id/account_id.h"
@@ -34,8 +35,18 @@ class UserContext;
 // policy is set.
 class InSessionPasswordSyncManager
     : public KeyedService,
-      public session_manager::SessionManagerObserver {
+      public session_manager::SessionManagerObserver,
+      public PasswordSyncTokenFetcher::Consumer {
  public:
+  enum class ReauthenticationReason {
+    kNone,
+    // Enforced by the timeout set in SAMLOfflineSigninTimeLimit policy.
+    kPolicy,
+    // Enforced by mismatch between sync token API endpoint and the local copy
+    // of the token.
+    kInvalidToken
+  };
+
   explicit InSessionPasswordSyncManager(Profile* primary_profile);
   ~InSessionPasswordSyncManager() override;
 
@@ -53,7 +64,7 @@ class InSessionPasswordSyncManager
 
   // Sets online re-auth on lock flag and changes the UI to online
   // re-auth when called on the lock screen.
-  void MaybeForceReauthOnLockScreen();
+  void MaybeForceReauthOnLockScreen(ReauthenticationReason reauth_reason);
 
   // Set special clock for testing.
   void SetClockForTesting(const base::Clock* clock);
@@ -64,17 +75,30 @@ class InSessionPasswordSyncManager
   // session_manager::SessionManagerObserver::
   void OnSessionStateChanged() override;
 
+  // PasswordSyncTokenFetcher::Consumer
+  void OnTokenCreated(const std::string& sync_token) override;
+  void OnTokenFetched(const std::string& sync_token) override;
+  void OnTokenVerified(bool is_valid) override;
+  void OnApiCallFailed(PasswordSyncTokenFetcher::ErrorType error_type) override;
+
  private:
   void UpdateOnlineAuth();
+  // Password sync token API calls.
+  void CreateTokenAsync();
+  void FetchTokenAsync();
 
   Profile* const primary_profile_;
   const base::Clock* clock_;
   const user_manager::User* const primary_user_;
-  bool enforce_reauth_on_lock_ = false;
+  ReauthenticationReason lock_screen_reauth_reason_ =
+      ReauthenticationReason::kNone;
   proximity_auth::ScreenlockBridge* screenlock_bridge_;
+  std::unique_ptr<PasswordSyncTokenFetcher> password_sync_token_fetcher_;
 
   friend class InSessionPasswordSyncManagerTest;
   friend class InSessionPasswordSyncManagerFactory;
+
+  base::WeakPtrFactory<InSessionPasswordSyncManager> weak_factory_{this};
 };
 
 }  // namespace chromeos

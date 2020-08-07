@@ -1073,11 +1073,10 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_OMNIBOX_FOCUS_TYPE:
         DCHECK(!i->is_post_param);
-        if (search_terms_args.omnibox_focus_type !=
-            SearchTermsArgs::OmniboxFocusType::DEFAULT) {
+        if (search_terms_args.focus_type != OmniboxFocusType::DEFAULT) {
           HandleReplacement("oft",
-                            base::NumberToString(static_cast<int>(
-                                search_terms_args.omnibox_focus_type)),
+                            base::NumberToString(
+                                static_cast<int>(search_terms_args.focus_type)),
                             *i, &url);
         }
         break;

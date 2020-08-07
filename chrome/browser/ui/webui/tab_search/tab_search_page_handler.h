@@ -21,6 +21,14 @@
 
 class Browser;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class TabSearchCloseAction {
+  kNoAction = 0,
+  kTabSwitch = 1,
+  kMaxValue = kTabSwitch,
+};
+
 class TabSearchPageHandler : public tab_search::mojom::PageHandler,
                              public TabStripModelObserver,
                              public BrowserTabStripTrackerDelegate {
@@ -85,6 +93,18 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   content::WebUI* const web_ui_;
   BrowserTabStripTracker browser_tab_strip_tracker_{this, this};
   std::unique_ptr<base::RetainingOneShotTimer> debounce_timer_;
+
+  // Tracks how many times |CloseTab()| has been evoked for the currently open
+  // instance of Tab Search for logging in UMA.
+  int num_tabs_closed_ = 0;
+
+  // Tracks whether or not we have sent the initial payload to the Tab Search
+  // UI for metric collection purposes.
+  bool sent_initial_payload_ = false;
+
+  // Tracks whether the user has evoked |SwitchToTab()| for metric collection
+  // purposes.
+  bool called_switch_to_tab_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TAB_SEARCH_TAB_SEARCH_PAGE_HANDLER_H_

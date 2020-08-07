@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
@@ -16,7 +15,6 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,6 +27,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
@@ -67,13 +66,11 @@ public class CustomTabTabPersistencePolicyTest {
     private AdvancedMockContext mAppContext;
     private SequencedTaskRunner mSequencedTaskRunner =
             PostTask.createSequencedTaskRunner(TaskTraits.USER_VISIBLE);
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         // CustomTabsConnection needs a true context, not the mock context set below.
-        CustomTabsConnection.getInstance();
+        TestThreadUtils.runOnUiThreadBlocking(() -> CustomTabsConnection.getInstance());
 
         mAppContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                       .getTargetContext()
@@ -184,48 +181,43 @@ public class CustomTabTabPersistencePolicyTest {
     @Test
     @Feature("TabPersistentStore")
     @SmallTest
+    @UiThreadTest
     public void testGettingTabAndTaskIds() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
+        Set<Integer> tabIds = new HashSet<>();
+        Set<Integer> taskIds = new HashSet<>();
+        CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
+        Assert.assertThat(tabIds, Matchers.emptyIterable());
+        Assert.assertThat(taskIds, Matchers.emptyIterable());
+
+        tabIds.clear();
+        taskIds.clear();
+
+        CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {4, 8, 9}, null);
+        ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
+
+        CustomTabActivity cct2 = buildTestCustomTabActivity(5, new int[] {458}, new int[] {9878});
+        ApplicationStatus.onStateChangeForTesting(cct2, ActivityState.CREATED);
+
+        // Add a tabbed mode activity to ensure that its IDs are not included in the
+        // returned CCT ID sets.
+        final TabModelSelectorImpl tabbedSelector =
+                buildTestTabModelSelector(new int[] {12121212}, new int[] {1515151515});
+        ChromeTabbedActivity tabbedActivity = new ChromeTabbedActivity() {
             @Override
-            public void run() {
-                Set<Integer> tabIds = new HashSet<>();
-                Set<Integer> taskIds = new HashSet<>();
-                CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
-                Assert.assertThat(tabIds, Matchers.emptyIterable());
-                Assert.assertThat(taskIds, Matchers.emptyIterable());
-
-                tabIds.clear();
-                taskIds.clear();
-
-                CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {4, 8, 9}, null);
-                ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
-
-                CustomTabActivity cct2 =
-                        buildTestCustomTabActivity(5, new int[] {458}, new int[] {9878});
-                ApplicationStatus.onStateChangeForTesting(cct2, ActivityState.CREATED);
-
-                // Add a tabbed mode activity to ensure that its IDs are not included in the
-                // returned CCT ID sets.
-                final TabModelSelectorImpl tabbedSelector =
-                        buildTestTabModelSelector(new int[] {12121212}, new int[] {1515151515});
-                ChromeTabbedActivity tabbedActivity = new ChromeTabbedActivity() {
-                    @Override
-                    public int getTaskId() {
-                        return 888;
-                    }
-
-                    @Override
-                    public TabModelSelector getTabModelSelector() {
-                        return tabbedSelector;
-                    }
-                };
-                ApplicationStatus.onStateChangeForTesting(tabbedActivity, ActivityState.CREATED);
-
-                CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
-                Assert.assertThat(tabIds, Matchers.containsInAnyOrder(4, 8, 9, 458, 9878));
-                Assert.assertThat(taskIds, Matchers.containsInAnyOrder(1, 5));
+            public int getTaskId() {
+                return 888;
             }
-        });
+
+            @Override
+            public TabModelSelector getTabModelSelector() {
+                return tabbedSelector;
+            }
+        };
+        ApplicationStatus.onStateChangeForTesting(tabbedActivity, ActivityState.CREATED);
+
+        CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
+        Assert.assertThat(tabIds, Matchers.containsInAnyOrder(4, 8, 9, 458, 9878));
+        Assert.assertThat(taskIds, Matchers.containsInAnyOrder(1, 5));
     }
 
     /**
@@ -265,12 +257,9 @@ public class CustomTabTabPersistencePolicyTest {
         Assert.assertThat(filesToDelete.get(), Matchers.containsInAnyOrder(tab999File.getName()));
 
         // Reference the tab state file and ensure it is no longer marked for deletion.
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {999}, null);
-                ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {999}, null);
+            ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
         });
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(2);

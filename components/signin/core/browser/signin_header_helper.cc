@@ -163,6 +163,12 @@ SigninHeaderHelper::ParseAccountConsistencyResponseHeader(
   return dictionary;
 }
 
+bool IsUrlEligibleForMirrorCookie(const GURL& url) {
+  ChromeConnectedHeaderHelper chrome_connected_helper(
+      AccountConsistencyMethod::kMirror);
+  return chrome_connected_helper.IsUrlEligibleForRequestHeader(url);
+}
+
 void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,

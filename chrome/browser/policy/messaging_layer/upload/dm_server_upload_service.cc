@@ -10,6 +10,7 @@
 
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
+#include "chrome/browser/policy/messaging_layer/upload/app_install_report_handler.h"
 #include "chrome/browser/policy/messaging_layer/util/backoff_settings.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
@@ -237,6 +238,8 @@ Status DmServerUploadService::InitRecordHandlers() {
   if (client == nullptr) {
     return Status(error::FAILED_PRECONDITION, "Client was null");
   }
+
+  record_handlers_.push_back(std::make_unique<AppInstallReportHandler>(client));
 
   return Status::StatusOK();
 }

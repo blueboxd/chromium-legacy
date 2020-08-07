@@ -187,11 +187,11 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   void OpenCacheImpl(const std::string& cache_name,
                      int64_t trace_id,
                      CacheAndErrorCallback callback);
-  void CreateCacheDidCreateCache(
-      const std::string& cache_name,
-      int64_t trace_id,
-      CacheAndErrorCallback callback,
-      std::unique_ptr<LegacyCacheStorageCache> cache);
+  void CreateCacheDidCreateCache(const std::string& cache_name,
+                                 int64_t trace_id,
+                                 CacheAndErrorCallback callback,
+                                 std::unique_ptr<LegacyCacheStorageCache> cache,
+                                 blink::mojom::CacheStorageError status);
   void CreateCacheDidWriteIndex(CacheAndErrorCallback callback,
                                 CacheStorageCacheHandle cache_handle,
                                 int64_t trace_id,

@@ -162,6 +162,11 @@ class CORE_EXPORT DisplayLockContext final
     needs_compositing_dependent_flag_update_ = true;
   }
 
+  void NotifyGraphicsLayerRebuildBlocked() {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    needs_graphics_layer_rebuild_ = true;
+  }
+
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
 
@@ -362,6 +367,8 @@ class CORE_EXPORT DisplayLockContext final
   // lifecycle. If nothing else is keeping it unlocked, then it will be locked
   // again at the start of the lifecycle.
   bool keep_unlocked_until_lifecycle_ = false;
+
+  bool needs_graphics_layer_rebuild_ = false;
 
   enum class RenderAffectingState : int {
     kLockRequested,

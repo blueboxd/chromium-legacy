@@ -42,6 +42,14 @@
 namespace feed {
 namespace {
 
+void UpdateDebugStreamData(
+    const UploadActionsTask::Result& upload_actions_result,
+    DebugStreamData& debug_data) {
+  if (upload_actions_result.last_network_response_info) {
+    debug_data.upload_info = upload_actions_result.last_network_response_info;
+  }
+}
+
 void PopulateDebugStreamData(const LoadStreamTask::Result& load_result,
                              PrefService& profile_prefs) {
   DebugStreamData debug_data = ::feed::prefs::GetDebugStreamData(profile_prefs);
@@ -49,6 +57,17 @@ void PopulateDebugStreamData(const LoadStreamTask::Result& load_result,
   ss << "Code: " << load_result.final_status;
   debug_data.load_stream_status = ss.str();
   debug_data.fetch_info = load_result.network_response_info;
+  if (load_result.upload_actions_result) {
+    UpdateDebugStreamData(*load_result.upload_actions_result, debug_data);
+  }
+  ::feed::prefs::SetDebugStreamData(debug_data, profile_prefs);
+}
+
+void PopulateDebugStreamData(
+    const UploadActionsTask::Result& upload_actions_result,
+    PrefService& profile_prefs) {
+  DebugStreamData debug_data = ::feed::prefs::GetDebugStreamData(profile_prefs);
+  UpdateDebugStreamData(upload_actions_result, debug_data);
   ::feed::prefs::SetDebugStreamData(debug_data, profile_prefs);
 }
 
@@ -339,14 +358,22 @@ void FeedStream::ProcessThereAndBackAgain(base::StringPiece data) {
   if (msg.has_action_payload()) {
     feedwire::FeedAction action_msg;
     *action_msg.mutable_action_payload() = std::move(msg.action_payload());
-    UploadAction(std::move(action_msg), /*upload_now=*/true, base::DoNothing());
+    UploadAction(std::move(action_msg), /*upload_now=*/true,
+                 base::BindOnce(&FeedStream::UploadActionsComplete,
+                                base::Unretained(this)));
   }
 }
 
 void FeedStream::ProcessViewAction(base::StringPiece data) {
   feedwire::FeedAction msg;
   msg.ParseFromArray(data.data(), data.size());
-  UploadAction(std::move(msg), /*upload_now=*/false, base::DoNothing());
+  UploadAction(std::move(msg), /*upload_now=*/false,
+               base::BindOnce(&FeedStream::UploadActionsComplete,
+                              base::Unretained(this)));
+}
+
+void FeedStream::UploadActionsComplete(UploadActionsTask::Result result) {
+  PopulateDebugStreamData(result, *profile_prefs_);
 }
 
 void FeedStream::GetPrefetchSuggestions(
@@ -592,6 +619,9 @@ void FeedStream::ReportOpenAction(const std::string& slice_id) {
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
   if (index >= 0)
     metrics_reporter_->OpenAction(index);
+}
+void FeedStream::ReportOpenVisitComplete(base::TimeDelta visit_time) {
+  metrics_reporter_->OpenVisitComplete(visit_time);
 }
 void FeedStream::ReportOpenInNewTabAction(const std::string& slice_id) {
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);

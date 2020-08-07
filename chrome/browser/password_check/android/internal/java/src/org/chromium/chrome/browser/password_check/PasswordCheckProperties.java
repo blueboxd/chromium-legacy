@@ -22,8 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 class PasswordCheckProperties {
     static final PropertyModel.ReadableObjectPropertyKey<ListModel<MVCListAdapter.ListItem>> ITEMS =
             new PropertyModel.ReadableObjectPropertyKey<>("items");
+    static final PropertyModel.WritableObjectPropertyKey<
+            PasswordCheckDeletionDialogFragment.Handler> DELETION_CONFIRMATION_HANDLER =
+            new PropertyModel.WritableObjectPropertyKey<>("deletion_confirmation_handler");
+    static final PropertyModel.WritableObjectPropertyKey<String> DELETION_ORIGIN =
+            new PropertyModel.WritableObjectPropertyKey<>("deletion_origin");
 
-    static final PropertyKey[] ALL_KEYS = {ITEMS};
+    static final PropertyKey[] ALL_KEYS = {ITEMS, DELETION_CONFIRMATION_HANDLER, DELETION_ORIGIN};
 
     static PropertyModel createDefaultModel() {
         return new PropertyModel.Builder(ALL_KEYS).with(ITEMS, new ListModel<>()).build();

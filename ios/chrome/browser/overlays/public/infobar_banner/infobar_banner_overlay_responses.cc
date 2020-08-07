@@ -9,3 +9,5 @@ OVERLAY_USER_DATA_SETUP_IMPL(InfobarBannerMainActionResponse);
 OVERLAY_USER_DATA_SETUP_IMPL(InfobarBannerShowModalResponse);
 
 OVERLAY_USER_DATA_SETUP_IMPL(InfobarBannerUserInitiatedDismissalResponse);
+
+OVERLAY_USER_DATA_SETUP_IMPL(InfobarBannerRemoveInfobarResponse);

@@ -47,7 +47,6 @@ class MockInputRouter : public InputRouter {
   mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
   void StopFling() override {}
-  void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override {}

@@ -10,9 +10,11 @@
 #include <cstdint>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/optional.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
@@ -24,6 +26,10 @@ namespace cros_healthd {
 class ServiceConnection {
  public:
   static ServiceConnection* GetInstance();
+
+  using BindNetworkHealthServiceCallback =
+      base::RepeatingCallback<mojo::PendingRemote<
+          chromeos::network_health::mojom::NetworkHealthService>()>;
 
   // Retrieve a list of available diagnostic routines. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
@@ -200,6 +206,12 @@ class ServiceConnection {
   // details.
   virtual void GetProbeService(
       mojom::CrosHealthdProbeServiceRequest service) = 0;
+
+  // Sets a callback to request bind a PendingRemote to the
+  // NetworkHealthService. This callback is invoked once when it is set, and
+  // anytime the mojo connection to CrosHealthd is disconnected.
+  virtual void SetBindNetworkHealthServiceCallback(
+      BindNetworkHealthServiceCallback callback) = 0;
 
  protected:
   ServiceConnection() = default;

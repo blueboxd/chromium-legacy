@@ -92,10 +92,6 @@ class InputRouter {
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;
 
-  // Called when a set-touch-action message is received from the renderer
-  // for a touch start event that is currently in flight.
-  virtual void OnSetTouchAction(cc::TouchAction touch_action) = 0;
-
   // In the case when a gesture event is bubbled from a child frame to the main
   // frame, we set the touch action in the main frame Auto even if there is no
   // pending touch start.

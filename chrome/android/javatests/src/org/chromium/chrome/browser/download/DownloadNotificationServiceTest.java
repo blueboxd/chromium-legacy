@@ -8,9 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
-
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -20,6 +17,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -34,6 +32,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.PendingState;
 
@@ -65,9 +64,6 @@ public class DownloadNotificationServiceTest {
 
     @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
-
-    @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
 
     private MockDownloadNotificationService mDownloadNotificationService;
     private DownloadForegroundServiceManagerTest
@@ -103,13 +99,15 @@ public class DownloadNotificationServiceTest {
         } else {
             Features.getInstance().disable(ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS);
         }
-        DownloadNotificationService.clearResumptionAttemptLeft();
-        mDownloadNotificationService = new MockDownloadNotificationService();
-        mDownloadForegroundServiceManager =
-                new DownloadForegroundServiceManagerTest.MockDownloadForegroundServiceManager();
-        mDownloadNotificationService.setDownloadForegroundServiceManager(
-                mDownloadForegroundServiceManager);
-        mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            DownloadNotificationService.clearResumptionAttemptLeft();
+            mDownloadNotificationService = new MockDownloadNotificationService();
+            mDownloadForegroundServiceManager =
+                    new DownloadForegroundServiceManagerTest.MockDownloadForegroundServiceManager();
+            mDownloadNotificationService.setDownloadForegroundServiceManager(
+                    mDownloadForegroundServiceManager);
+            mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
+        });
     }
 
     @After

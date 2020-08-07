@@ -4,14 +4,11 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.test.rule.UiThreadTestRule;
-
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -34,12 +31,9 @@ import java.util.concurrent.ExecutionException;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabModelSelectorTabObserverTest {
-    // Do not add @Rule to this, it's already added to RuleChain
-    private final TabModelSelectorObserverTestRule mTestRule =
-            new TabModelSelectorObserverTestRule();
-
     @Rule
-    public final RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
+    public final TabModelSelectorObserverTestRule mTestRule =
+            new TabModelSelectorObserverTestRule();
 
     @Test
     @SmallTest

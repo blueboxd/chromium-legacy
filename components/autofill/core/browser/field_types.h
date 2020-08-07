@@ -191,15 +191,12 @@ enum ServerFieldType {
   UPI_VPA = 102,
 
   // Just the street name of an address, no house number.
-  // Currently not used by Chrome.
-  ADDRESS_HOME_STREET = 103,
+  ADDRESS_HOME_STREET_NAME = 103,
 
   // House number of an address, may be alphanumeric.
-  // Currently not used by Chrome.
   ADDRESS_HOME_HOUSE_NUMBER = 104,
 
   // Floor within in a building, may be alphanumeric.
-  // Currently not used by Chrome.
   ADDRESS_HOME_FLOOR = 105,
 
   // A catch-all for other type of subunits (only used until something more
@@ -215,9 +212,27 @@ enum ServerFieldType {
   // Type to catch name additions like "Mr.", "Ms." or "Dr.".
   NAME_HONORIFIC_PREFIX = 110,
 
+  // Type that corresponds to the name of a place or a building below the
+  // granularity of a street.
+  ADDRESS_HOME_PREMISE_NAME = 111,
+
+  // Type that describes a crossing street as it is used in some countries to
+  // describe a location.
+  ADDRESS_HOME_DEPENDENT_STREET_NAME = 112,
+
+  // Compound type to join the street and dependent street names.
+  ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME = 113,
+
+  // The complete formatted address as it would be written on an envelope or in
+  // a clear-text field without the name.
+  ADDRESS_HOME_ADDRESS = 114,
+
+  // The complete formatted address including the name.
+  ADDRESS_HOME_ADDRESS_WITH_NAME = 115,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 111,
+  MAX_VALID_FIELD_TYPE = 116,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

@@ -16,6 +16,32 @@ const GraphEdgeColor = {
 };
 
 /**
+ * Various different display setting presets.
+ * @enum {string}
+ */
+const DisplaySettingsPreset = {
+  CUSTOM: 'Custom',
+  COLOR_ON_HOVER: 'Red-blue on hover',
+  GREY_VIEW: 'Constant grey gradient',
+};
+
+// A map from DisplaySettingsPreset to display setting objects. The keys in each
+// object should correspond to properties of NodeFilterData.
+const PRESET_SETTINGS = {
+  [DisplaySettingsPreset.CUSTOM]: {}, // Applying the custom preset is a no-op.
+  [DisplaySettingsPreset.COLOR_ON_HOVER]: {
+    'curveEdges': true,
+    'colorOnlyOnHover': true,
+    'graphEdgeColor': GraphEdgeColor.BLUE_TO_RED,
+  },
+  [DisplaySettingsPreset.GREY_VIEW]: {
+    'curveEdges': false,
+    'colorOnlyOnHover': false,
+    'graphEdgeColor': GraphEdgeColor.GREY_GRADIENT,
+  },
+};
+
+/**
  * Underlying data for node filtering. The UI shows a "filter list" that
  * displays nodes of interest, and each can be toggled on/off using a checkbox.
  * Each node is classified as:
@@ -104,6 +130,8 @@ class NodeFilterData {
 class DisplaySettingsData {
   /** Sets up default values for display settings. */
   constructor() {
+    /** @public {!DisplaySettingsPreset} */
+    this.displaySettingsPreset = DisplaySettingsPreset.CUSTOM;
     /** @public {!NodeFilterData} */
     this.nodeFilterData = new NodeFilterData();
     /** @public {number} */
@@ -119,10 +147,21 @@ class DisplaySettingsData {
   }
 
   /**
+   * Applies a preset by copying all its properties to the current display
+   * settings, overwriting existing values.
+   * @param {string} presetName The key of the preset to apply.
+   */
+  applyPreset(presetName) {
+    Object.assign(this, PRESET_SETTINGS[presetName]);
+  }
+
+  /**
    * Updates a UrlProcessor with all contained data.
    * @param {!UrlProcessor} urlProcessor The UrlProcessor to update.
    */
   updateUrlProcessor(urlProcessor) {
+    urlProcessor.append(URL_PARAM_KEYS.DISPLAY_SETTINGS_PRESET,
+        this.displaySettingsPreset);
     urlProcessor.append(URL_PARAM_KEYS.INBOUND_DEPTH, this.inboundDepth);
     urlProcessor.append(URL_PARAM_KEYS.OUTBOUND_DEPTH, this.outboundDepth);
     urlProcessor.append(URL_PARAM_KEYS.CURVE_EDGES, this.curveEdges);
@@ -143,6 +182,8 @@ class DisplaySettingsData {
    * @param {!UrlProcessor} urlProcessor The UrlProcessor to read from.
    */
   readUrlProcessor(urlProcessor) {
+    this.displaySettingsPreset = urlProcessor.getString(
+        URL_PARAM_KEYS.DISPLAY_SETTINGS_PRESET, this.displaySettingsPreset);
     this.inboundDepth = urlProcessor.getInt(
         URL_PARAM_KEYS.INBOUND_DEPTH, this.inboundDepth);
     this.outboundDepth = urlProcessor.getInt(
@@ -204,7 +245,8 @@ class ClassDisplaySettingsData extends DisplaySettingsData {
 class PackageDisplaySettingsData extends DisplaySettingsData {}
 
 export {
-  GraphEdgeColor,
   ClassDisplaySettingsData,
+  DisplaySettingsPreset,
+  GraphEdgeColor,
   PackageDisplaySettingsData,
 };

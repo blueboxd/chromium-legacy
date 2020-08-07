@@ -115,6 +115,8 @@ TEST_F(OmahaServiceTest, PingMessageTest) {
       "<ping active=\"1\" ad=\"-2\" rd=\"-2\"/></app></request>";
 
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   std::string content = service.GetPingContent(
@@ -141,6 +143,8 @@ TEST_F(OmahaServiceTest, PingMessageTestWithUnknownInstallDate) {
       "<ping active=\"1\" ad=\"-2\" rd=\"-2\"/></app></request>";
 
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   std::string content = service.GetPingContent(
@@ -171,6 +175,8 @@ TEST_F(OmahaServiceTest, InstallEventMessageTest) {
 
   // First install.
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   CleanService(&service, "");
@@ -207,6 +213,8 @@ TEST_F(OmahaServiceTest, InstallEventMessageTest) {
 TEST_F(OmahaServiceTest, SendPingSuccess) {
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -241,6 +249,8 @@ TEST_F(OmahaServiceTest, SendPingSuccess) {
 
 TEST_F(OmahaServiceTest, ParseAndEchoLastServerDate) {
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -288,6 +298,8 @@ TEST_F(OmahaServiceTest, ParseAndEchoLastServerDate) {
 TEST_F(OmahaServiceTest, SendInstallEventSuccess) {
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -320,6 +332,8 @@ TEST_F(OmahaServiceTest, SendInstallEventSuccess) {
 TEST_F(OmahaServiceTest, SendPingReceiveUpdate) {
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -365,6 +379,8 @@ TEST_F(OmahaServiceTest, SendPingReceiveUpdate) {
 TEST_F(OmahaServiceTest, SendPingFailure) {
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -416,6 +432,8 @@ TEST_F(OmahaServiceTest, PersistStatesTest) {
   std::string version_string = version_info::GetVersionNumber();
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.number_of_tries_ = 5;
@@ -426,6 +444,8 @@ TEST_F(OmahaServiceTest, PersistStatesTest) {
   service.PersistStates();
 
   OmahaService service2(false);
+  service2.StartInternal();
+
   EXPECT_EQ(service.number_of_tries_, 5);
   EXPECT_EQ(service2.last_sent_time_, now - base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(service2.next_tries_time_, now + base::TimeDelta::FromSeconds(2));
@@ -449,6 +469,8 @@ TEST_F(OmahaServiceTest, BackoffTest) {
 TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -483,6 +505,8 @@ TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
 TEST_F(OmahaServiceTest, NonSpammingTest) {
   base::Time now = base::Time::Now();
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
@@ -516,6 +540,8 @@ TEST_F(OmahaServiceTest, NonSpammingTest) {
 
 TEST_F(OmahaServiceTest, InstallRetryTest) {
   OmahaService service(false);
+  service.StartInternal();
+
   service.set_upgrade_recommended_callback(
       base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);

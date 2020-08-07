@@ -36,19 +36,35 @@ void PasswordScriptsFetcherImpl::PrewarmCache() {
     StartFetch();
 }
 
-void PasswordScriptsFetcherImpl::ReportCacheReadinessMetric() const {
+void PasswordScriptsFetcherImpl::Fetch(
+    base::OnceClosure fetch_finished_callback) {
   CacheState state = IsCacheStale()
                          ? (url_loader_ ? CacheState::kWaiting
                                         : (last_fetch_timestamp_.is_null()
                                                ? CacheState::kNeverSet
                                                : CacheState::kStale))
                          : CacheState::kReady;
-
   base::UmaHistogramEnumeration(
       "PasswordManager.PasswordScriptsFetcher.CacheState", state);
+
+  if (state == CacheState::kReady)
+    std::move(fetch_finished_callback).Run();
+  else
+    fetch_finished_callbacks_.emplace_back(std::move(fetch_finished_callback));
+
+  switch (state) {
+    case CacheState::kReady:
+    case CacheState::kWaiting:
+      // No new fetching.
+      break;
+    case CacheState::kNeverSet:
+    case CacheState::kStale:
+      StartFetch();
+      break;
+  }
 }
 
-void PasswordScriptsFetcherImpl::GetPasswordScriptAvailability(
+void PasswordScriptsFetcherImpl::FetchScriptAvailability(
     const url::Origin& origin,
     ResponseCallback callback) {
   if (IsCacheStale()) {
@@ -59,6 +75,12 @@ void PasswordScriptsFetcherImpl::GetPasswordScriptAvailability(
   }
 
   RunResponseCallback(origin, std::move(callback));
+}
+
+bool PasswordScriptsFetcherImpl::IsScriptAvailable(
+    const url::Origin& origin) const {
+  return password_change_domains_.find(origin) !=
+         password_change_domains_.end();
 }
 
 void PasswordScriptsFetcherImpl::StartFetch() {
@@ -121,6 +143,8 @@ void PasswordScriptsFetcherImpl::OnFetchComplete(
   base::UmaHistogramEnumeration(
       "PasswordManager.PasswordScriptsFetcher.ParsingResult", parsing_result);
 
+  for (auto& callback : std::exchange(fetch_finished_callbacks_, {}))
+    std::move(callback).Run();
   for (auto& callback : std::exchange(pending_callbacks_, {}))
     RunResponseCallback(std::move(callback.first), std::move(callback.second));
 }

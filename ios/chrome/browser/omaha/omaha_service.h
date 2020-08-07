@@ -172,6 +172,9 @@ class OmahaService {
       pending_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
+  // Whether the service has been started.
+  bool started_;
+
   // The timer that call this object back when needed.
   base::OneShotTimer timer_;
 

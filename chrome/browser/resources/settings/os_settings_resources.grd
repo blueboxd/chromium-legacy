@@ -1328,6 +1328,12 @@
       <structure name="IDR_OS_SETTINGS_TETHER_CONNECTION_DIALOG_JS"
                  file="chromeos/internet_page/tether_connection_dialog.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CELLULAR_SETUP_DIALOG_HTML"
+                 file="chromeos/internet_page/cellular_setup_dialog.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CELLULAR_SETUP_DIALOG_JS"
+                 file="chromeos/internet_page/cellular_setup_dialog.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PARENTAL_CONTROLS_BROWSER_PROXY_HTML"
                  file="chromeos/parental_controls_page/parental_controls_browser_proxy.html"
                  compress="false" type="chrome_html" />

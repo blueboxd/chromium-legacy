@@ -70,7 +70,8 @@ class CastWebContentsImpl : public CastWebContents,
   void BlockMediaLoading(bool blocked) override;
   void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
-  on_load_script_injector::OnLoadScriptInjectorHost* script_injector() override;
+  on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*
+  script_injector() override;
   void InjectScriptsIntoMainFrame() override;
   void PostMessageToMainFrame(
       const std::string& target_origin,
@@ -175,7 +176,8 @@ class CastWebContentsImpl : public CastWebContents,
   bool notifying_;
   int last_error_;
 
-  on_load_script_injector::OnLoadScriptInjectorHost script_injector_;
+  on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>
+      script_injector_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

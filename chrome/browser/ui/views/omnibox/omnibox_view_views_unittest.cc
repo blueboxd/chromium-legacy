@@ -2290,6 +2290,51 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
+// Tests that in the hide-on-interaction field trial, the omnibox is reset to
+// the local bounds on tab change when the new text is not eligible for
+// simplified domain elision.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       TabChangeWhenNotEligibleForEliding) {
+  SetUpSimplifiedDomainTest();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a user interaction and advance through the animation to elide the
+  // URL.
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+
+  // Change the tab and set state such that the current text is not eligible for
+  // simplified domain eliding. The omnibox should take up the full local bounds
+  // and be reset to tail-eliding behavior, just as if the above simplified
+  // domain elision had not happened.
+  omnibox_view()->model()->SetInputInProgress(true);
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  omnibox_view()->SaveStateToTab(web_contents.get());
+  omnibox_view()->OnTabChanged(web_contents.get());
+
+  EXPECT_EQ(gfx::ELIDE_TAIL, omnibox_view()->GetRenderText()->elide_behavior());
+  EXPECT_EQ(kSimplifiedDomainDisplayUrl,
+            omnibox_view()->GetRenderText()->GetDisplayText());
+}
+
 // Tests that in the hide-on-interaction field trial, when the path changes
 // while being elided, the animation is stopped.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
@@ -2633,7 +2678,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
       elide_animation->GetAnimationForTesting();
   elide_as_element->SetStartTime(base::TimeTicks());
   uint32_t step = 1;
-  int max_gradient_width = OmniboxViewViews::kSmoothingGradientMaxWidth;
+  int max_gradient_width = OmniboxViewViews::kSmoothingGradientMaxWidth - 1;
   while (omnibox_view()->elide_animation_smoothing_rect_right_.width() <
          max_gradient_width) {
     elide_as_element->Step(base::TimeTicks() +
@@ -2668,14 +2713,53 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
   int offset = elide_animation->GetCurrentOffsetForTesting();
   gfx::Rect display_rect = render_text->display_rect();
   // Check the expected size and positions for both gradients.
-  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(),
-            simplified_rect.x() + offset);
+  EXPECT_TRUE(omnibox_view()->elide_animation_smoothing_rect_left_.width() ==
+                  simplified_rect.x() + offset - 1 ||
+              omnibox_view()->elide_animation_smoothing_rect_left_.width() ==
+                  0);
   EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.x(),
             display_rect.x());
   EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.width(),
-            display_rect.right() - (simplified_rect.right() + offset));
-  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.x(),
+            display_rect.right() - (simplified_rect.right() + offset) - 1);
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.x() - 1,
             simplified_rect.right() + offset);
+}
+
+// Tests that gradient mask is reset when animation is stopped.
+TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMaskResetAfterStop) {
+  if (base::i18n::IsRTL()) {
+    // TODO(crbug.com/1101472): Re-enable this test once gradient mask is
+    // implemented for RTL UI.
+    return;
+  }
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a user interaction to begin animating to the simplified domain.
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+
+  // Advance animation so it sets the gradient mask, then stop it.
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  elide_animation->Stop();
+
+  // Both gradient mask rectangles should have a width of 0 once the animation
+  // has stopped.
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(), 0);
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.width(), 0);
 }
 
 // Tests that in the hide-on-interaction field trial, a second user interaction
@@ -2847,6 +2931,73 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_TRUE(elide_animation->IsAnimating());
+}
+
+// Tests that the last gradient mask from a previous animation is no longer
+// visible when starting a new animation.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       NoStaleGradientMask) {
+  if (base::i18n::IsRTL()) {
+    // TODO(crbug.com/1101472): Re-enable this test once gradient mask is
+    // implemented for RTL UI.
+    return;
+  }
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a user interaction to begin animating to the simplified domain.
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+
+  // Allow elide animation to finish.
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(4));
+
+  // Hover over the omnibox to trigger unelide animation.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* hover_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(hover_animation);
+  EXPECT_TRUE(hover_animation->IsAnimating());
+
+  // Allow unelide animation to finish.
+  gfx::AnimationContainerElement* unelide_as_element =
+      hover_animation->GetAnimationForTesting();
+  unelide_as_element->SetStartTime(base::TimeTicks());
+  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(4));
+
+  // Both gradient mask rectangles will be full sized at this point
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(),
+            OmniboxViewViews::kSmoothingGradientMaxWidth - 1);
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.width(),
+            OmniboxViewViews::kSmoothingGradientMaxWidth - 1);
+
+  // Select the text in the omnibox, then click on the page, this will trigger
+  // an elision with no animation.
+  omnibox_view()->SelectAll(false);
+  blink::WebMouseEvent event;
+  event.SetType(blink::WebInputEvent::Type::kMouseDown);
+  omnibox_view()->DidGetUserInteraction(event);
+
+  // Hover over the omnibox to trigger the unelide animation.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+
+  // Even though the unelide animation hasn't advanced, the gradient mask
+  // rectangles should have been reset.
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(), 0);
+  EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_right_.width(), 0);
 }
 
 // Tests that in the reveal-on-hover field trial variation (without

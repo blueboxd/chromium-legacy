@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/types.h"
-
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,8 +28,16 @@ DebugStreamData MakeDebugStreamData() {
   fetch_info.bless_nonce = "nonce";
   fetch_info.base_request_url = GURL("https://www.google.com");
 
+  NetworkResponseInfo upload_info;
+  upload_info.status_code = 200;
+  upload_info.fetch_duration = base::TimeDelta::FromSeconds(2);
+  upload_info.fetch_time =
+      base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(201);
+  upload_info.base_request_url = GURL("https://www.upload.com");
+
   DebugStreamData data;
   data.fetch_info = fetch_info;
+  data.upload_info = upload_info;
   data.load_stream_status = "loaded OK";
   return data;
 }
@@ -53,12 +60,36 @@ TEST(DebugStreamData, CanSerialize) {
   EXPECT_EQ(test_data.fetch_info->bless_nonce, result->fetch_info->bless_nonce);
   EXPECT_EQ(test_data.fetch_info->base_request_url,
             result->fetch_info->base_request_url);
+
+  ASSERT_TRUE(result->upload_info);
+  EXPECT_EQ(test_data.upload_info->status_code,
+            result->upload_info->status_code);
+  EXPECT_EQ(test_data.upload_info->fetch_duration,
+            result->upload_info->fetch_duration);
+  EXPECT_EQ(test_data.upload_info->fetch_time, result->upload_info->fetch_time);
+  EXPECT_EQ(test_data.upload_info->bless_nonce,
+            result->upload_info->bless_nonce);
+  EXPECT_EQ(test_data.upload_info->base_request_url,
+            result->upload_info->base_request_url);
+
   EXPECT_EQ(test_data.load_stream_status, result->load_stream_status);
 }
 
 TEST(DebugStreamData, CanSerializeWithoutFetchInfo) {
   DebugStreamData input = MakeDebugStreamData();
   input.fetch_info = base::nullopt;
+
+  const auto serialized = SerializeDebugStreamData(input);
+  base::Optional<DebugStreamData> result =
+      DeserializeDebugStreamData(serialized);
+  ASSERT_TRUE(result);
+
+  EXPECT_EQ(SerializeDebugStreamData(*result), serialized);
+}
+
+TEST(DebugStreamData, CanSerializeWithoutUploadInfo) {
+  DebugStreamData input = MakeDebugStreamData();
+  input.upload_info = base::nullopt;
 
   const auto serialized = SerializeDebugStreamData(input);
   base::Optional<DebugStreamData> result =

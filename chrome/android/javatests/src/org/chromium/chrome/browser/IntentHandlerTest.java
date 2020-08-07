@@ -16,8 +16,6 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.speech.RecognizerResultsIntent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
@@ -33,6 +31,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -55,9 +54,8 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class IntentHandlerTest {
     @Rule
-    public final RuleChain mChain = RuleChain.outerRule(new CommandLineInitRule(null))
-                                            .around(new ChromeBrowserTestRule())
-                                            .around(new UiThreadTestRule());
+    public final RuleChain mChain =
+            RuleChain.outerRule(new CommandLineInitRule(null)).around(new ChromeBrowserTestRule());
 
     private static final String VOICE_SEARCH_QUERY = "VOICE_QUERY";
     private static final String VOICE_SEARCH_QUERY_URL = "http://www.google.com/?q=VOICE_QUERY";

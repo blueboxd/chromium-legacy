@@ -484,6 +484,8 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
     GetDocument().GetFrame()->DidChangeThemeColor();
   } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
     GetDocument().ColorSchemeMetaChanged();
+  } else if (EqualIgnoringASCIICase(name_value, "battery-savings")) {
+    GetDocument().BatterySavingsMetaChanged();
   }
 }
 
@@ -563,6 +565,10 @@ void HTMLMetaElement::ProcessContent() {
   }
   if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
     GetDocument().ColorSchemeMetaChanged();
+    return;
+  }
+  if (EqualIgnoringASCIICase(name_value, "battery-savings")) {
+    GetDocument().BatterySavingsMetaChanged();
     return;
   }
 

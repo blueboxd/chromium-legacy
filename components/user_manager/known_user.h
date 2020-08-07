@@ -256,6 +256,14 @@ PinAutosubmitSetBackfillNotNeeded(const AccountId& account_id);
 void USER_MANAGER_EXPORT
 PinAutosubmitSetBackfillNeededForTests(const AccountId& account_id);
 
+// Setter and getter for password sync token used for syncing SAML passwords
+// across multiple user devices.
+void USER_MANAGER_EXPORT SetPasswordSyncToken(const AccountId& account_id,
+                                              const std::string& token);
+
+std::string USER_MANAGER_EXPORT
+GetPasswordSyncToken(const AccountId& account_id);
+
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
 void RemovePrefs(const AccountId& account_id);

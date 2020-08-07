@@ -179,11 +179,11 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
-  // Serve paths prefixed with _test_resources/ from chrome/test/data/pdf.
+  // Serve paths prefixed with _test_resources/ from chrome/test/data.
   base::FilePath GetTestResourcesParentDir() override {
     base::FilePath test_root_path;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
-    return test_root_path.AppendASCII("pdf");
+    return test_root_path;
   }
 
   bool PdfIsExpectedToLoad(const std::string& pdf_file) {
@@ -783,7 +783,7 @@ class PDFExtensionJSTest : public PDFExtensionTest {
     constexpr char kModuleLoaderTemplate[] =
         R"(var s = document.createElement('script');
            s.type = 'module';
-           s.src = '_test_resources/%s';
+           s.src = '_test_resources/pdf/%s';
            document.body.appendChild(s);)";
 
     ASSERT_TRUE(content::ExecuteScript(
@@ -2643,7 +2643,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
                        PdfLoadsWithExtensionThatInjectsFrame) {
   // Load the test extension.
   const extensions::Extension* test_extension = LoadExtension(
-      GetTestResourcesParentDir().AppendASCII("extension_injects_iframe"));
+      GetTestResourcesParentDir().AppendASCII("pdf/extension_injects_iframe"));
   ASSERT_TRUE(test_extension);
 
   // Load the PDF. The call to LoadPdf() will return false if the pdf extension

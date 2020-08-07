@@ -774,6 +774,9 @@ extern const char kLegacyTLSWarningsDescription[];
 extern const char kLiteVideoName[];
 extern const char kLiteVideoDescription[];
 
+extern const char kLiteVideoDownlinkBandwidthKbpsName[];
+extern const char kLiteVideoDownlinkBandwidthKbpsDescription[];
+
 extern const char kLiteVideoForceOverrideDecisionName[];
 extern const char kLiteVideoForceOverrideDecisionDescription[];
 
@@ -2622,6 +2625,11 @@ extern const char kPdfViewerUpdateDescription[];
 extern const char kWebUITabStripName[];
 extern const char kWebUITabStripDescription[];
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && defined(OS_CHROMEOS)
+extern const char kWebUITabStripTabDragIntegrationName[];
+extern const char kWebUITabStripTabDragIntegrationDescription[];
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && defined(OS_CHROMEOS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 

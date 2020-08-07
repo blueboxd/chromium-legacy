@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/animation_utils.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
@@ -443,8 +444,10 @@ bool Animation::PreCommit(
   if (should_start) {
     compositor_group_ = compositor_group;
     if (start_on_compositor) {
+      PropertyHandleSet unsupported_properties;
       CompositorAnimations::FailureReasons failure_reasons =
-          CheckCanStartAnimationOnCompositor(paint_artifact_compositor);
+          CheckCanStartAnimationOnCompositor(paint_artifact_compositor,
+                                             &unsupported_properties);
       RecordCompositorAnimationFailureReasons(failure_reasons);
 
       if (failure_reasons == CompositorAnimations::kNoFailure) {
@@ -458,7 +461,8 @@ bool Animation::PreCommit(
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
           this, "data",
-          inspector_animation_compositor_event::Data(failure_reasons));
+          inspector_animation_compositor_event::Data(failure_reasons,
+                                                     unsupported_properties));
     }
   }
 
@@ -1648,13 +1652,14 @@ void Animation::ForceServiceOnNextFrame() {
 
 CompositorAnimations::FailureReasons
 Animation::CheckCanStartAnimationOnCompositor(
-    const PaintArtifactCompositor* paint_artifact_compositor) const {
+    const PaintArtifactCompositor* paint_artifact_compositor,
+    PropertyHandleSet* unsupported_properties) const {
   CompositorAnimations::FailureReasons reasons =
       CheckCanStartAnimationOnCompositorInternal();
 
   if (auto* keyframe_effect = DynamicTo<KeyframeEffect>(content_.Get())) {
     reasons |= keyframe_effect->CheckCanStartAnimationOnCompositor(
-        paint_artifact_compositor, playback_rate_);
+        paint_artifact_compositor, playback_rate_, unsupported_properties);
   }
   return reasons;
 }
@@ -1717,8 +1722,9 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
 
 void Animation::StartAnimationOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor) {
-  DCHECK_EQ(CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
-            CompositorAnimations::kNoFailure);
+  DCHECK_EQ(
+      CheckCanStartAnimationOnCompositor(paint_artifact_compositor, nullptr),
+      CompositorAnimations::kNoFailure);
 
   bool reversed = EffectivePlaybackRate() < 0;
 

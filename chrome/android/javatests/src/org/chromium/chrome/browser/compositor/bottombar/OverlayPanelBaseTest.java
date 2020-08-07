@@ -6,21 +6,20 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests logic in the OverlayPanelBase.
@@ -33,9 +32,6 @@ public class OverlayPanelBaseTest {
     private static final float MOCK_PEEKED_HEIGHT = 200.0f;
     private static final float MOCK_EXPANDED_HEIGHT = 400.0f;
     private static final float MOCK_MAXIMIZED_HEIGHT = 600.0f;
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     MockOverlayPanel mNoExpandPanel;
     MockOverlayPanel mExpandPanel;
@@ -97,11 +93,13 @@ public class OverlayPanelBaseTest {
 
     @Before
     public void setUp() {
-        OverlayPanelManager panelManager = new OverlayPanelManager();
-        mExpandPanel =
-                new MockOverlayPanel(InstrumentationRegistry.getTargetContext(), panelManager);
-        mNoExpandPanel = new NoExpandMockOverlayPanel(
-                InstrumentationRegistry.getTargetContext(), panelManager);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            OverlayPanelManager panelManager = new OverlayPanelManager();
+            mExpandPanel =
+                    new MockOverlayPanel(InstrumentationRegistry.getTargetContext(), panelManager);
+            mNoExpandPanel = new NoExpandMockOverlayPanel(
+                    InstrumentationRegistry.getTargetContext(), panelManager);
+        });
     }
 
     // Start OverlayPanelBase test suite.

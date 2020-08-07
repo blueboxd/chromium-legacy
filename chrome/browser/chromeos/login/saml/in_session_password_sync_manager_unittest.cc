@@ -63,7 +63,7 @@ class InSessionPasswordSyncManagerTest : public testing::Test {
   void CreateInSessionSyncManager();
   void DestroyInSessionSyncManager();
 
-  bool InSessionReauthFlagSet();
+  InSessionPasswordSyncManager::ReauthenticationReason InSessionReauthReason();
   void LockScreen();
   void UnlockScreen();
 
@@ -145,8 +145,9 @@ void InSessionPasswordSyncManagerTest::UnlockScreen() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
 }
 
-bool InSessionPasswordSyncManagerTest::InSessionReauthFlagSet() {
-  return manager_->enforce_reauth_on_lock_;
+InSessionPasswordSyncManager::ReauthenticationReason
+InSessionPasswordSyncManagerTest::InSessionReauthReason() {
+  return manager_->lock_screen_reauth_reason_;
 }
 
 TEST_F(InSessionPasswordSyncManagerTest, ReauthenticateSetInSession) {
@@ -155,8 +156,25 @@ TEST_F(InSessionPasswordSyncManagerTest, ReauthenticateSetInSession) {
   CreateInSessionSyncManager();
   UnlockScreen();
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
-  manager_->MaybeForceReauthOnLockScreen();
-  EXPECT_TRUE(InSessionReauthFlagSet());
+  manager_->MaybeForceReauthOnLockScreen(
+      InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
+  EXPECT_EQ(InSessionReauthReason(),
+            InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
+}
+
+TEST_F(InSessionPasswordSyncManagerTest, ReauthenticateResetByToken) {
+  primary_profile_->GetPrefs()->SetBoolean(
+      prefs::kSamlLockScreenReauthenticationEnabled, true);
+  CreateInSessionSyncManager();
+  UnlockScreen();
+  user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
+  manager_->MaybeForceReauthOnLockScreen(
+      InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
+  manager_->MaybeForceReauthOnLockScreen(
+      InSessionPasswordSyncManager::ReauthenticationReason::kInvalidToken);
+  EXPECT_EQ(
+      InSessionReauthReason(),
+      InSessionPasswordSyncManager::ReauthenticationReason::kInvalidToken);
 }
 
 TEST_F(InSessionPasswordSyncManagerTest, ReauthenticateSetOnLock) {
@@ -170,8 +188,10 @@ TEST_F(InSessionPasswordSyncManagerTest, ReauthenticateSetOnLock) {
                           base::string16()))
       .Times(1);
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
-  manager_->MaybeForceReauthOnLockScreen();
-  EXPECT_TRUE(InSessionReauthFlagSet());
+  manager_->MaybeForceReauthOnLockScreen(
+      InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
+  EXPECT_EQ(InSessionReauthReason(),
+            InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
 }
 
 // User tries to unlock the screen using valid SAML credentials but not for the
@@ -189,12 +209,15 @@ TEST_F(InSessionPasswordSyncManagerTest, AuthenticateWithIncorrectUser) {
       .Times(1);
   EXPECT_CALL(*lock_handler_, Unlock(saml_login_account_id1_)).Times(0);
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
-  manager_->MaybeForceReauthOnLockScreen();
-  EXPECT_TRUE(InSessionReauthFlagSet());
+  manager_->MaybeForceReauthOnLockScreen(
+      InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
+  EXPECT_EQ(InSessionReauthReason(),
+            InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
   UserContext user_context(user_manager::USER_TYPE_REGULAR,
                            saml_login_account_id2_);
   manager_->OnAuthSucceeded(user_context);
-  EXPECT_TRUE(InSessionReauthFlagSet());
+  EXPECT_EQ(InSessionReauthReason(),
+            InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
   EXPECT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
 }
 
@@ -217,12 +240,15 @@ TEST_F(InSessionPasswordSyncManagerTest, AuthenticateWithCorrectUser) {
   EXPECT_CALL(*lock_handler_, Unlock(saml_login_account_id1_)).Times(1);
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
   test_environment_.FastForwardBy(kSamlOnlineShortDelay);
-  manager_->MaybeForceReauthOnLockScreen();
-  EXPECT_TRUE(InSessionReauthFlagSet());
+  manager_->MaybeForceReauthOnLockScreen(
+      InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
+  EXPECT_EQ(InSessionReauthReason(),
+            InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
   UserContext user_context(user_manager::USER_TYPE_REGULAR,
                            saml_login_account_id1_);
   manager_->OnAuthSucceeded(user_context);
-  EXPECT_FALSE(InSessionReauthFlagSet());
+  EXPECT_EQ(InSessionReauthReason(),
+            InSessionPasswordSyncManager::ReauthenticationReason::kNone);
   now = user_manager::known_user::GetLastOnlineSignin(saml_login_account_id1_);
   EXPECT_EQ(now, expected_signin_time);
 }

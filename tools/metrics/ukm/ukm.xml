@@ -5282,6 +5282,16 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="JavascriptFrameworkPageLoad" singular="True">
+  <owner>houssein@chromium.org</owner>
+  <metric name="NextJSPageLoad">
+    <summary>
+      True if the page loaded in the main frame uses the Next.js JavaScript
+      framework.
+    </summary>
+  </metric>
+</event>
+
 <event name="Layout.DisplayCutout.StateChanged">
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>

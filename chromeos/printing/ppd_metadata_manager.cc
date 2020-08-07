@@ -351,7 +351,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     const std::string metadata_name = PpdMetadataPathInServingRoot(options);
 
     if (MapHasValueFresherThan(cached_manufacturers_, metadata_name,
-                               clock_->Now() + age)) {
+                               clock_->Now() - age)) {
       OnManufacturersAvailable(metadata_name, std::move(cb));
       return;
     }
@@ -376,7 +376,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     }
 
     if (MapHasValueFresherThan(cached_printers_, metadata_name.value(),
-                               clock_->Now() + age)) {
+                               clock_->Now() - age)) {
       OnPrintersAvailable(metadata_name.value(), std::move(cb));
       return;
     }
@@ -400,7 +400,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
         PpdMetadataPathInServingRoot(reverse_index_options);
 
     if (MapHasValueFresherThan(cached_reverse_indices_, metadata_name,
-                               clock_->Now() + age)) {
+                               clock_->Now() - age)) {
       OnReverseIndexAvailable(metadata_name, effective_make_and_model,
                               std::move(cb));
       return;

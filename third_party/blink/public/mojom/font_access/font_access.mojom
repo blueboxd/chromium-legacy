@@ -1,0 +1,17 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "third_party/blink/public/mojom/permissions/permission_status.mojom";
+
+// Implemented in the browser process to pass font data to windows
+// and workers in renderer processes.
+// Provides methods related to enumerating locally installed fonts.
+interface FontAccessManager {
+  // Provides a permission request response. Used on Mac because fonts are
+  // enumerated in-renderer on that platform.
+  // TODO(crbug.com/1113876): [EnableIf=is_mac] since this only applies to Mac.
+  RequestPermission() => (PermissionStatus status);
+};

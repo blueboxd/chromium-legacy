@@ -126,6 +126,11 @@ BrailleBackground = class {
     this.displayManager_.panRight();
   }
 
+  /** @override */
+  route(displayPosition) {
+    return this.displayManager_.route(displayPosition);
+  }
+
   /**
    * @param {!NavBraille} newContent
    * @param {?string} newContentId

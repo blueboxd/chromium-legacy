@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,12 +8,16 @@
 
 from __future__ import print_function
 
+import argparse
 import multiprocessing
-import optparse
 import os
 import re
 import subprocess
 import sys
+
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), '..'))
+import gn_helpers
+
 
 def _GetTotalMemoryInBytes():
   if sys.platform in ('win32', 'cygwin'):
@@ -20,15 +25,15 @@ def _GetTotalMemoryInBytes():
 
     class MEMORYSTATUSEX(ctypes.Structure):
       _fields_ = [
-        ("dwLength", ctypes.c_ulong),
-        ("dwMemoryLoad", ctypes.c_ulong),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
+          ("dwLength", ctypes.c_ulong),
+          ("dwMemoryLoad", ctypes.c_ulong),
+          ("ullTotalPhys", ctypes.c_ulonglong),
+          ("ullAvailPhys", ctypes.c_ulonglong),
+          ("ullTotalPageFile", ctypes.c_ulonglong),
+          ("ullAvailPageFile", ctypes.c_ulonglong),
+          ("ullTotalVirtual", ctypes.c_ulonglong),
+          ("ullAvailVirtual", ctypes.c_ulonglong),
+          ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
       ]
 
     stat = MEMORYSTATUSEX(dwLength=ctypes.sizeof(MEMORYSTATUSEX))
@@ -53,34 +58,55 @@ def _GetTotalMemoryInBytes():
 
 
 def _GetDefaultConcurrentLinks(mem_per_link_gb, reserve_mem_gb):
+  explanation = []
+  explanation.append('mem_per_link_gb={} reserve_mem_gb={}'.format(
+      mem_per_link_gb, reserve_mem_gb))
   # Inherit the legacy environment variable for people that have set it in GYP.
-  pool_size = int(os.getenv('GYP_LINK_CONCURRENCY', 0))
-  if pool_size:
-    return pool_size
+  num_links = int(os.getenv('GYP_LINK_CONCURRENCY', 0))
+  if num_links:
+    reason = 'GYP_LINK_CONCURRENCY'
+  else:
+    mem_total_bytes = _GetTotalMemoryInBytes()
+    mem_total_bytes = max(0, mem_total_bytes - reserve_mem_gb * 2**30)
+    mem_cap = int(max(1, mem_total_bytes / mem_per_link_gb / 2**30))
+    hard_cap = max(1, int(os.getenv('GYP_LINK_CONCURRENCY_MAX', 2**32)))
 
-  mem_total_bytes = _GetTotalMemoryInBytes()
-  mem_total_bytes = max(0, mem_total_bytes - reserve_mem_gb * 2**30)
-  num_concurrent_links = int(max(1, mem_total_bytes / mem_per_link_gb / 2**30))
-  hard_cap = max(1, int(os.getenv('GYP_LINK_CONCURRENCY_MAX', 2**32)))
+    try:
+      cpu_cap = multiprocessing.cpu_count()
+    except:
+      cpu_cap = 1
 
-  try:
-    cpu_cap = multiprocessing.cpu_count()
-  except:
-    cpu_cap = 1
+    explanation.append('cpu_count={} mem_total_bytes={:.1f}GiB'.format(
+        cpu_cap, mem_total_bytes / 2**30))
 
-  return min(num_concurrent_links, hard_cap, cpu_cap)
+    num_links = min(mem_cap, hard_cap, cpu_cap)
+    if num_links == cpu_cap:
+      reason = 'cpu_count'
+    elif num_links == hard_cap:
+      reason = 'GYP_LINK_CONCURRENCY_MAX'
+    else:
+      reason = 'RAM'
+
+  explanation.append('concurrent_links={}  (reason: {})'.format(
+      num_links, reason))
+  return num_links, explanation
 
 
 def main():
-  parser = optparse.OptionParser()
-  parser.add_option('--mem_per_link_gb', action="store", type="int", default=8)
-  parser.add_option('--reserve_mem_gb', action="store", type="int", default=0)
-  parser.disable_interspersed_args()
-  options, _ = parser.parse_args()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--mem_per_link_gb', type=int, default=8)
+  parser.add_argument('--reserve_mem_gb', type=int, default=0)
+  options = parser.parse_args()
 
-  print(_GetDefaultConcurrentLinks(options.mem_per_link_gb,
-                                   options.reserve_mem_gb))
+  num_links, explanation = _GetDefaultConcurrentLinks(options.mem_per_link_gb,
+                                                      options.reserve_mem_gb)
+  sys.stdout.write(
+      gn_helpers.ToGNString({
+          'concurrent_links': num_links,
+          'explanation': explanation,
+      }))
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main())

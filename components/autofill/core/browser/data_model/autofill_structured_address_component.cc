@@ -119,8 +119,8 @@ void AddressComponent::SetValue(base::string16 value,
 
 void AddressComponent::UnsetValue() {
   value_.reset();
-  sorted_normalized_tokens_.clear();
   value_verification_status_ = VerificationStatus::kNoStatus;
+  sorted_normalized_tokens_.clear();
 }
 
 void AddressComponent::GetSupportedTypes(
@@ -279,7 +279,9 @@ base::string16 AddressComponent::GetValueForType(
     const std::string& type_name) const {
   base::string16 value;
   bool success = GetValueAndStatusForTypeIfPossible(type_name, &value, nullptr);
-  DCHECK(success);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  DCHECK(success ||
+         type_name == AutofillType(NAME_HONORIFIC_PREFIX).ToString());
   return value;
 }
 
@@ -293,7 +295,9 @@ VerificationStatus AddressComponent::GetVerificationStatusForType(
   VerificationStatus status = VerificationStatus::kNoStatus;
   bool success =
       GetValueAndStatusForTypeIfPossible(type_name, nullptr, &status);
-  DCHECK(success);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  DCHECK(success ||
+         type_name == AutofillType(NAME_HONORIFIC_PREFIX).ToString());
   return status;
 }
 
@@ -353,6 +357,9 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
         base::string16 field_value = base::UTF8ToUTF16(result_entry.second);
         // Do not reassign the value of this node.
         if (field_type == GetStorageTypeName())
+          continue;
+        // crbug.com(1113617): Honorifics are temporally disabled.
+        if (field_type == AutofillType(NAME_HONORIFIC_PREFIX).ToString())
           continue;
         bool success = SetValueForTypeIfPossible(field_type, field_value,
                                                  VerificationStatus::kParsed);
@@ -512,7 +519,7 @@ void AddressComponent::RecursivelyCompleteTree() {
     return;
 
   // If the value is assigned, parse the subcomponents from the value.
-  if (IsValueAssigned())
+  if (!GetValue().empty())
     ParseValueAndAssignSubcomponents();
 
   // First call completion on all subcomponents.
@@ -521,7 +528,7 @@ void AddressComponent::RecursivelyCompleteTree() {
 
   // Finally format the value from the sucomponents if it is not already
   // assigned.
-  if (!IsValueAssigned())
+  if (GetValue().empty())
     FormatValueFromSubcomponents();
 }
 
@@ -536,7 +543,8 @@ int AddressComponent::
             ->MaximumNumberOfAssignedAddressComponentsOnNodeToLeafPaths());
   }
 
-  if (IsValueAssigned())
+  // Only count non-empty nodes.
+  if (!GetValue().empty())
     ++result;
 
   return result;
@@ -571,11 +579,38 @@ void AddressComponent::UnsetParsedAndFormattedValuesInEntireTree() {
   GetRootNode().RecursivelyUnsetParsedAndFormattedValues();
 }
 
+void AddressComponent::MergeVerificationStatuses(
+    const AddressComponent& newer_component) {
+  if (IsValueAssigned() && (GetValue() == newer_component.GetValue()) &&
+      (GetVerificationStatus() < newer_component.GetVerificationStatus())) {
+    value_verification_status_ = newer_component.GetVerificationStatus();
+  }
+
+  DCHECK(newer_component.subcomponents_.size() == subcomponents_.size());
+  for (size_t i = 0; i < newer_component.subcomponents_.size(); i++) {
+    subcomponents_[i]->MergeVerificationStatuses(
+        *newer_component.subcomponents_.at(i));
+  }
+}
+
+bool AddressComponent::IsMergeableWithComponent(
+    const AddressComponent& newer_component) const {
+  // If both components are the same, there is nothing to do.
+  if (*this == newer_component)
+    return true;
+
+  return AreSortedTokensEqual(GetSortedTokens(),
+                              newer_component.GetSortedTokens());
+}
+
 bool AddressComponent::MergeWithComponent(
     const AddressComponent& newer_component) {
   // If both components are the same, there is nothing to do.
   if (*this == newer_component)
     return true;
+
+  if (!IsMergeableWithComponent(newer_component))
+    return false;
 
   // Applies the merging strategy for two token-equivalent components.
   if (AreSortedTokensEqual(GetSortedTokens(),
@@ -604,9 +639,10 @@ bool AddressComponent::MergeTokenEquivalentComponent(
   // this component or the other depending on which substructure is better in
   // terms of the number of validated tokens.
 
-  if (newer_component.GetVerificationStatus() > GetVerificationStatus())
+  if (newer_component.GetVerificationStatus() >= GetVerificationStatus()) {
     SetValue(newer_component.GetValue(),
              newer_component.GetVerificationStatus());
+  }
 
   // Now, the substructure of the node must be merged. There are three cases:
   //

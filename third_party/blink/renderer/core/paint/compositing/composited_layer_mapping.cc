@@ -719,7 +719,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
                              snapped_offset_from_composited_ancestor);
 
   UpdateMainGraphicsLayerGeometry(local_compositing_bounds);
-  UpdateOverflowControlsHostLayerGeometry(compositing_container);
   UpdateSquashingLayerGeometry(
       compositing_container, snapped_offset_from_composited_ancestor,
       non_scrolling_squashed_layers_, layers_needing_paint_invalidation);
@@ -788,20 +787,6 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
                        -layout_box.BorderTop().ToInt());
     graphics_layer_parent_location = -(scroll_origin + scroll_offset);
   }
-}
-
-void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
-    const PaintLayer* compositing_container) {
-  if (!overflow_controls_host_layer_)
-    return;
-
-  // To clip the scrollbars correctly, overflow_controls_host_layer_ should
-  // match our border box size.
-  const IntSize border_box_size =
-      owning_layer_.GetLayoutBox()->PixelSnappedBorderBoxSize(
-          PhysicalOffset(owning_layer_.SubpixelAccumulation() +
-                         owning_layer_.GetLayoutBox()->PhysicalLocation()));
-  overflow_controls_host_layer_->SetSize(gfx::Size(border_box_size));
 }
 
 void CompositedLayerMapping::UpdateMaskLayerGeometry() {
@@ -945,20 +930,12 @@ void CompositedLayerMapping::UpdateInternalHierarchy() {
   if (scrolling_contents_layer_)
     graphics_layer_->AddChild(scrolling_contents_layer_.get());
 
-  // Now constructing the subtree for the overflow controls.
-  if (overflow_controls_host_layer_) {
-    graphics_layer_->AddChild(overflow_controls_host_layer_.get());
-    if (layer_for_horizontal_scrollbar_) {
-      overflow_controls_host_layer_->AddChild(
-          layer_for_horizontal_scrollbar_.get());
-    }
-    if (layer_for_vertical_scrollbar_) {
-      overflow_controls_host_layer_->AddChild(
-          layer_for_vertical_scrollbar_.get());
-    }
-    if (layer_for_scroll_corner_)
-      overflow_controls_host_layer_->AddChild(layer_for_scroll_corner_.get());
-  }
+  if (layer_for_horizontal_scrollbar_)
+    graphics_layer_->AddChild(layer_for_horizontal_scrollbar_.get());
+  if (layer_for_vertical_scrollbar_)
+    graphics_layer_->AddChild(layer_for_vertical_scrollbar_.get());
+  if (layer_for_scroll_corner_)
+    graphics_layer_->AddChild(layer_for_scroll_corner_.get());
 
   if (decoration_outline_layer_)
     graphics_layer_->AddChild(decoration_outline_layer_.get());
@@ -1135,13 +1112,6 @@ bool CompositedLayerMapping::UpdateOverflowControlsLayers(
   bool scroll_corner_layer_changed = ToggleScrollbarLayerIfNeeded(
       layer_for_scroll_corner_, needs_scroll_corner_layer,
       CompositingReason::kLayerForScrollCorner);
-
-  bool needs_overflow_controls_host_layer = needs_horizontal_scrollbar_layer ||
-                                            needs_vertical_scrollbar_layer ||
-                                            needs_scroll_corner_layer;
-  ToggleScrollbarLayerIfNeeded(
-      overflow_controls_host_layer_, needs_overflow_controls_host_layer,
-      CompositingReason::kLayerForOverflowControlsHost);
 
   return horizontal_scrollbar_layer_changed ||
          vertical_scrollbar_layer_changed || scroll_corner_layer_changed;
@@ -1524,10 +1494,21 @@ bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
   return owning_layer_.NeedsReorderOverlayOverflowControls();
 }
 
-GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
-  if (overflow_controls_host_layer_)
-    overflow_controls_host_layer_->RemoveFromParent();
-  return overflow_controls_host_layer_.get();
+wtf_size_t CompositedLayerMapping::MoveOverflowControlLayersInto(
+    GraphicsLayerVector& vector,
+    wtf_size_t position) {
+  wtf_size_t count = 0;
+  auto move_layer = [&](GraphicsLayer* layer) {
+    if (!layer)
+      return;
+    layer->RemoveFromParent();
+    vector.insert(position++, layer);
+    count++;
+  };
+  move_layer(layer_for_horizontal_scrollbar_.get());
+  move_layer(layer_for_vertical_scrollbar_.get());
+  move_layer(layer_for_scroll_corner_.get());
+  return count;
 }
 
 GraphicsLayer* CompositedLayerMapping::ParentForSublayers() const {
@@ -1552,7 +1533,9 @@ void CompositedLayerMapping::SetSublayers(
         if (layer && layer->Parent() == parent)
           layers_needing_reattachment.push_back(layer);
       };
-  add_layer_needing_reattachment(overflow_controls_host_layer_.get());
+  add_layer_needing_reattachment(layer_for_horizontal_scrollbar_.get());
+  add_layer_needing_reattachment(layer_for_vertical_scrollbar_.get());
+  add_layer_needing_reattachment(layer_for_scroll_corner_.get());
   add_layer_needing_reattachment(decoration_outline_layer_.get());
   add_layer_needing_reattachment(mask_layer_.get());
   add_layer_needing_reattachment(non_scrolling_squashing_layer_.get());
@@ -2326,8 +2309,6 @@ String CompositedLayerMapping::DebugName(
     name = "Vertical Scrollbar Layer";
   } else if (graphics_layer == layer_for_scroll_corner_.get()) {
     name = "Scroll Corner Layer";
-  } else if (graphics_layer == overflow_controls_host_layer_.get()) {
-    name = "Overflow Controls Host Layer";
   } else if (graphics_layer == scrolling_contents_layer_.get()) {
     name = "Scrolling Contents Layer";
   } else if (graphics_layer == decoration_outline_layer_.get()) {

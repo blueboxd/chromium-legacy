@@ -15,11 +15,11 @@ NearbyConnectionImpl::NearbyConnectionImpl(
 
 NearbyConnectionImpl::~NearbyConnectionImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (disconnect_listener_)
+    std::move(disconnect_listener_).Run();
+
   if (read_callback_)
     std::move(read_callback_).Run(base::nullopt);
-
-  for (auto& disconnect_listener : disconnect_listeners_)
-    std::move(disconnect_listener).Run();
 }
 
 void NearbyConnectionImpl::Read(ReadCallback callback) {
@@ -53,10 +53,10 @@ void NearbyConnectionImpl::Close() {
   nearby_connections_manager_->Disconnect(std::string(endpoint_id_));
 }
 
-void NearbyConnectionImpl::RegisterForDisconnection(
+void NearbyConnectionImpl::SetDisconnectionListener(
     base::OnceClosure listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  disconnect_listeners_.push_back(std::move(listener));
+  disconnect_listener_ = std::move(listener);
 }
 
 void NearbyConnectionImpl::WriteMessage(std::vector<uint8_t> bytes) {

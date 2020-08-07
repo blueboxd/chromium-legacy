@@ -240,6 +240,10 @@
       status: "stable",
     },
     {
+      // https://github.com/chrishtr/battery-savings/blob/master/explainer.md
+      name: "BatterySavingsMeta",
+    },
+    {
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
       name: "BeforeMatchEvent",
       status: "experimental",
@@ -354,6 +358,7 @@
     {
       name: "ConversionMeasurement",
       origin_trial_feature_name: "ConversionMeasurement",
+      origin_trial_allows_third_party: true,
       status: "experimental",
     },
     {
@@ -949,7 +954,7 @@
       // provides a convenient way for testing legacy layout code path in blink
       // unit tests.
       name: "LayoutNG",
-      implied_by: ["LayoutNGFieldset", "LayoutNGGrid", "BidiCaretAffinity", "LayoutNGTable"],
+      implied_by: ["LayoutNGGrid", "BidiCaretAffinity", "LayoutNGTable"],
       status: "stable",
     },
     {
@@ -957,6 +962,8 @@
     },
     {
       name: "LayoutNGFieldset",
+      depends_on: ["LayoutNG"],
+      status: "experimental",
     },
     {
       name: "LayoutNGFlexBox",

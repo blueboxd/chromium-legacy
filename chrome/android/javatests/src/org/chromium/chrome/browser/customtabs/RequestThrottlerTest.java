@@ -6,18 +6,16 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /** Tests for RequestThrottler.
@@ -32,9 +30,6 @@ public class RequestThrottlerTest {
     private static final String URL2 = "https://www.chromium.org";
 
     private Context mContext;
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
     public void setUp() {

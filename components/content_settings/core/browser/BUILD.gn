@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//ppapi/buildflags/buildflags.gni")
 
 static_library("browser") {

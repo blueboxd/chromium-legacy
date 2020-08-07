@@ -6,8 +6,11 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/confirm_infobar_banner_overlay_request_config.h"
+#include "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
+#include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,6 +37,11 @@ using confirm_infobar_overlays::ConfirmBannerRequestConfig;
 
 + (const OverlayRequestSupport*)requestSupport {
   return ConfirmBannerRequestConfig::RequestSupport();
+}
+
+- (void)finishDismissal {
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             InfobarBannerRemoveInfobarResponse>()];
 }
 
 @end

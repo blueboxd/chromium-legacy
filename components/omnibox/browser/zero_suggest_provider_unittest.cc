@@ -166,8 +166,7 @@ class ZeroSuggestProviderTest : public testing::Test,
       metrics::OmniboxEventProto::PageClassification page_classification) {
     TemplateURLRef::SearchTermsArgs search_terms_args;
     search_terms_args.page_classification = page_classification;
-    search_terms_args.omnibox_focus_type =
-        TemplateURLRef::SearchTermsArgs::OmniboxFocusType::ON_FOCUS;
+    search_terms_args.focus_type = OmniboxFocusType::ON_FOCUS;
     return RemoteSuggestionsService::EndpointUrl(
         search_terms_args, client_->GetTemplateURLService());
   }

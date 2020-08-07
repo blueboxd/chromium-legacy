@@ -7,7 +7,6 @@
 # non-component build. This needs to match the GYP build which was likely an
 # attempt to make larger components to help with loading.
 
-import("//build/config/jumbo.gni")
 import("//ui/gl/features.gni")
 
 group("common") {

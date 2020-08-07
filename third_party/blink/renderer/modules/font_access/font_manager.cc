@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/font_access/font_iterator.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 namespace blink {
 
@@ -24,10 +23,8 @@ void ReturnDataFunction(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }  // namespace
 
 ScriptValue FontManager::query(ScriptState* script_state) {
-  FontCache* font_cache = FontCache::GetFontCache();
-
   auto* iterator =
-      MakeGarbageCollected<FontIterator>(font_cache->EnumerateAvailableFonts());
+      MakeGarbageCollected<FontIterator>(ExecutionContext::From(script_state));
   auto* isolate = script_state->GetIsolate();
   auto context = script_state->GetContext();
 

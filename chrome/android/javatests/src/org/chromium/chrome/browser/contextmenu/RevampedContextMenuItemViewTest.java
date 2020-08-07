@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.annotation.UiThreadTest;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -60,20 +60,20 @@ public class RevampedContextMenuItemViewTest extends DummyUiActivityTestCase {
             mShareItemView = getActivity().findViewById(android.R.id.content);
             mText = mShareItemView.findViewById(R.id.menu_row_text);
             mIcon = mShareItemView.findViewById(R.id.menu_row_share_icon);
+            mModel = new PropertyModel.Builder(RevampedContextMenuShareItemProperties.ALL_KEYS)
+                             .with(RevampedContextMenuShareItemProperties.TEXT, "")
+                             .with(RevampedContextMenuShareItemProperties.IMAGE, null)
+                             .with(RevampedContextMenuShareItemProperties.CONTENT_DESC, "")
+                             .with(RevampedContextMenuShareItemProperties.CLICK_LISTENER, null)
+                             .build();
+            mMCP = PropertyModelChangeProcessor.create(
+                    mModel, mShareItemView, RevampedContextMenuShareItemViewBinder::bind);
         });
-        mModel = new PropertyModel.Builder(RevampedContextMenuShareItemProperties.ALL_KEYS)
-                         .with(RevampedContextMenuShareItemProperties.TEXT, "")
-                         .with(RevampedContextMenuShareItemProperties.IMAGE, null)
-                         .with(RevampedContextMenuShareItemProperties.CONTENT_DESC, "")
-                         .with(RevampedContextMenuShareItemProperties.CLICK_LISTENER, null)
-                         .build();
-        mMCP = PropertyModelChangeProcessor.create(
-                mModel, mShareItemView, RevampedContextMenuShareItemViewBinder::bind);
     }
 
     @Override
     public void tearDownTest() throws Exception {
-        mMCP.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mMCP::destroy);
         super.tearDownTest();
     }
 

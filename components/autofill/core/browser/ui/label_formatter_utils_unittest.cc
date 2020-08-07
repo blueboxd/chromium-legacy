@@ -229,6 +229,7 @@ TEST(LabelFormatterUtilsTest, GetLabelName) {
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   profile.SetInfo(NAME_FULL, base::ASCIIToUTF16("Maria Margaretha Kirch"),
                   "de");
+  profile.FinalizeAfterImport();
 
   EXPECT_EQ(base::ASCIIToUTF16("Maria Margaretha Kirch"),
             GetLabelName({NAME_SUFFIX, NAME_FULL}, profile, "de"));

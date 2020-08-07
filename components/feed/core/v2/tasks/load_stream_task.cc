@@ -115,6 +115,8 @@ void LoadStreamTask::LoadFromStoreComplete(
 }
 
 void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
+  upload_actions_result_ =
+      std::make_unique<UploadActionsTask::Result>(std::move(result));
   latencies_->StepComplete(LoadLatencyTimes::kUploadActions);
   stream_->GetNetwork()->SendQueryRequest(
       CreateFeedQueryRefreshRequest(
@@ -176,6 +178,7 @@ void LoadStreamTask::Done(LoadStreamStatus status) {
   result.network_response_info = network_response_info_;
   result.loaded_new_content_from_network = loaded_new_content_from_network_;
   result.latencies = std::move(latencies_);
+  result.upload_actions_result = std::move(upload_actions_result_);
   std::move(done_callback_).Run(std::move(result));
   TaskComplete();
 }

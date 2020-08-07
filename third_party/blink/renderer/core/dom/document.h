@@ -1545,6 +1545,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Update the presentation level color-scheme property for the root element.
   void ColorSchemeMetaChanged();
 
+  // A META element with name=battery-savings was added, removed, or modified.
+  // Re-collect the META values that apply and pass to LayerTreeHost.
+  void BatterySavingsMetaChanged();
+
   // Use counter related functions.
   void CountUse(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;

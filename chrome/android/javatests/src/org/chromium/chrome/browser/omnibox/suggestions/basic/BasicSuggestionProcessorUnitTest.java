@@ -12,8 +12,6 @@ import static org.mockito.Mockito.verify;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.collection.ArrayMap;
 import androidx.test.filters.SmallTest;
@@ -30,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -97,9 +96,6 @@ public class BasicSuggestionProcessorUnitTest {
             };
 
     @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
-    @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock
@@ -114,15 +110,10 @@ public class BasicSuggestionProcessorUnitTest {
     private OmniboxSuggestion mSuggestion;
     private PropertyModel mModel;
 
-    public BasicSuggestionProcessorUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         doReturn("").when(mUrlBarText).getTextWithoutAutocomplete();
         mBitmap = Bitmap.createBitmap(1, 1, Config.ALPHA_8);
         mProcessor = new BasicSuggestionProcessor(ContextUtils.getApplicationContext(),

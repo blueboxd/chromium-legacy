@@ -118,6 +118,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Return the bounds in the local coordinates enclosing the small ripple area.
   gfx::Rect CalculateSmallRippleArea() const;
 
+  // Gets the color of the |notification_indicator_| for test usage.
+  SkColor GetNotificationIndicatorColorForTest();
+
  protected:
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

@@ -29,7 +29,7 @@ from infra_libs import luci_auth
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-from parser import load_tsv_file
+from generator_utils import load_tsv_file
 
 
 class SheetEditor():

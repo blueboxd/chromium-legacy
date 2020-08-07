@@ -15,8 +15,6 @@ import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.feed.library.api.host.logging.ScrollType;
-import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObserver;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollLogger;
@@ -30,16 +28,13 @@ public class BasicStreamScrollTrackerTest {
     private ScrollLogger mLogger;
     @Mock
     private ScrollObservable mScrollObservable;
-    private final FakeClock mClock = new FakeClock();
 
-    private final FakeMainThreadRunner mMainThreadRunner = FakeMainThreadRunner.queueAllTasks();
     private BasicStreamScrollTracker mScrollTracker;
 
     @Before
     public void setUp() {
         initMocks(this);
-        mScrollTracker =
-                new BasicStreamScrollTracker(mMainThreadRunner, mLogger, mClock, mScrollObservable);
+        mScrollTracker = new BasicStreamScrollTracker(mLogger, mScrollObservable);
         verify(mScrollObservable).addScrollObserver(any(ScrollObserver.class));
     }
 
@@ -53,7 +48,7 @@ public class BasicStreamScrollTrackerTest {
     public void onScrollEvent() {
         int scrollAmount = 10;
         long timestamp = 10L;
-        mScrollTracker.onScrollEvent(scrollAmount, timestamp);
+        mScrollTracker.onScrollEvent(scrollAmount);
         verify(mLogger).handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
     }
 }

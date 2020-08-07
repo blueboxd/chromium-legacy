@@ -6,8 +6,6 @@ package org.chromium.components.infobars;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup.LayoutParams;
@@ -16,11 +14,11 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.components.infobars.InfoBarControlLayout.ControlLayoutParams;
 
 /**
@@ -37,9 +35,6 @@ public class InfoBarControlLayoutTest {
     private static final int INFOBAR_WIDTH = 3200;
 
     private Context mContext;
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
     public void setUp() {

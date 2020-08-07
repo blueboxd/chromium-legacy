@@ -7,12 +7,10 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.scroll;
 import android.view.View;
 
 import org.chromium.chrome.browser.feed.library.api.host.logging.ScrollType;
-import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObserver;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollLogger;
-import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollTracker;
+import org.chromium.chrome.browser.feed.shared.ScrollTracker;
 
 /** A @link{ScrollTracker} used by BasicStream */
 public class BasicStreamScrollTracker extends ScrollTracker {
@@ -20,9 +18,7 @@ public class BasicStreamScrollTracker extends ScrollTracker {
     private final ScrollObserver mScrollObserver;
     private final ScrollObservable mScrollObservable;
 
-    public BasicStreamScrollTracker(MainThreadRunner mainThreadRunner, ScrollLogger scrollLogger,
-            Clock clock, ScrollObservable scrollObservable) {
-        super(mainThreadRunner, clock);
+    public BasicStreamScrollTracker(ScrollLogger scrollLogger, ScrollObservable scrollObservable) {
         this.mScrollLogger = scrollLogger;
         this.mScrollObservable = scrollObservable;
         this.mScrollObserver = new BasicStreamScrollObserver();
@@ -30,7 +26,7 @@ public class BasicStreamScrollTracker extends ScrollTracker {
     }
 
     @Override
-    protected void onScrollEvent(int scrollAmount, long timestamp) {
+    protected void onScrollEvent(int scrollAmount) {
         mScrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
     }
 

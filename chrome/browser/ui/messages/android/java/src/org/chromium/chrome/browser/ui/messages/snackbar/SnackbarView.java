@@ -205,7 +205,8 @@ public class SnackbarView {
      * the mMessageView content description is read aloud if accessibility is enabled.
      */
     public void announceforAccessibility() {
-        mMessageView.announceForAccessibility(mMessageView.getContentDescription() + " "
+        mMessageView.announceForAccessibility(mMessageView.getContentDescription() + ". "
+                + mActionButtonView.getContentDescription() + ". "
                 + mContainerView.getResources().getString(R.string.bottom_bar_screen_position));
     }
 
@@ -274,7 +275,6 @@ public class SnackbarView {
         mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : MAX_LINES);
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
-        String actionText = snackbar.getActionText();
 
         ApiCompatibilityUtils.setTextAppearance(mMessageView, getTextAppearance(snackbar));
         ApiCompatibilityUtils.setTextAppearance(
@@ -291,8 +291,9 @@ public class SnackbarView {
             mSnackbarView.setBackgroundColor(backgroundColor);
         }
 
-        if (actionText != null) {
+        if (snackbar.getActionText() != null) {
             mActionButtonView.setVisibility(View.VISIBLE);
+            mActionButtonView.setContentDescription(snackbar.getActionText());
             setViewText(mActionButtonView, snackbar.getActionText(), animate);
         } else {
             mActionButtonView.setVisibility(View.GONE);

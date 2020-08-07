@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/posix/eintr_wrapper.h"
@@ -254,6 +255,30 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
                     sandbox::policy::SandboxType::kRenderer);
   temp_file.reset();
   ASSERT_TRUE(base::DeleteFile(temp_file_path));
+}
+
+MULTIPROCESS_TEST_MAIN(BuiltinAvailable) {
+  CheckCreateSeatbeltServer();
+
+  if (__builtin_available(macOS 10.10, *)) {
+    // Can't negate a __builtin_available condition. But success!
+  } else {
+    return 10;
+  }
+
+  if (base::mac::IsAtLeastOS10_13()) {
+    if (__builtin_available(macOS 10.13, *)) {
+      // Can't negate a __builtin_available condition. But success!
+    } else {
+      return 13;
+    }
+  }
+
+  return 0;
+}
+
+TEST_F(SandboxMacTest, BuiltinAvailable) {
+  ExecuteInAllSandboxTypes("BuiltinAvailable", {});
 }
 
 }  // namespace content

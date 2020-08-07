@@ -74,19 +74,15 @@ class ServiceWatcherImplMac : public ServiceWatcher {
   void SetActivelyRefreshServices(bool actively_refresh_services) override;
   std::string GetServiceType() const override;
 
-  void StartOnDiscoveryThread(
-      ServiceWatcher::UpdatedCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
-  void DiscoverOnDiscoveryThread();
-
   // These members should only be accessed on the object creator's sequence.
   const std::string service_type_;
   ServiceWatcher::UpdatedCallback callback_;
   bool started_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner_;
-  // |browser_| lives on the |service_discovery_runner_|. It is released
-  // by move()ing it to StopServiceBrowser().
+  // |browser_| lives on the |service_discovery_runner_|, though it is
+  // initialized on the object creator's sequence. It is released by move()ing
+  // it to StopServiceBrowser().
   base::scoped_nsobject<NetServiceBrowser> browser_;
 
   base::WeakPtrFactory<ServiceWatcherImplMac> weak_factory_{this};
@@ -110,9 +106,6 @@ class ServiceResolverImplMac : public ServiceResolver {
   void OnResolveComplete(RequestStatus status,
                          const ServiceDescription& description);
 
-  void StartResolvingOnDiscoveryThread(
-      ServiceResolver::ResolveCompleteCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   void StopResolving();
 
   // These members should only be accessed on the object creator's sequence.
@@ -121,8 +114,9 @@ class ServiceResolverImplMac : public ServiceResolver {
   bool has_resolved_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner_;
-  // |resolver_| lives on the |service_discovery_runner_|. It is released
-  // by move()ing it to StopServiceResolver().
+  // |resolver_| lives on the |service_discovery_runner_|, though it is
+  // initialized on the object creator's sequence. It is released by move()ing
+  // it to StopServiceResolver().
   base::scoped_nsobject<NetServiceResolver> resolver_;
 
   base::WeakPtrFactory<ServiceResolverImplMac> weak_factory_{this};

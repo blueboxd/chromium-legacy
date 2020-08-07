@@ -107,6 +107,12 @@ Polymer({
     },
 
     /** @private */
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('updatedCellularActivationUi'),
+    },
+
+    /** @private */
     hasCompletedScanSinceLastEnabled_: {
       type: Boolean,
       value: false,
@@ -493,11 +499,15 @@ Polymer({
   },
 
   /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @param {!mojom.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
-  allowAddConnection_(globalPolicy) {
+  allowAddConnection_(deviceState, globalPolicy) {
+    if (!this.deviceIsEnabled_(deviceState)) {
+      return false;
+    }
     return globalPolicy && !globalPolicy.allowOnlyPolicyNetworksToConnect;
   },
 
@@ -507,22 +517,52 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showAddButton_(deviceState, globalPolicy) {
+  showAddWifiButton_(deviceState, globalPolicy) {
     if (!deviceState || deviceState.type != mojom.NetworkType.kWiFi) {
       return false;
     }
-    if (!this.deviceIsEnabled_(deviceState)) {
+    return this.allowAddConnection_(deviceState, globalPolicy);
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @return {boolean}
+   * @private
+   */
+  showAddCellularButton_(deviceState, globalPolicy) {
+    if (!this.isUpdatedCellularUiEnabled_) {
       return false;
     }
-    return this.allowAddConnection_(globalPolicy);
+
+    if (!deviceState || deviceState.type != mojom.NetworkType.kCellular) {
+      return false;
+    }
+    return this.allowAddConnection_(deviceState, globalPolicy);
   },
 
   /** @private */
-  onAddButtonTap_() {
-    assert(this.deviceState);
+  onAddWifiButtonTap_() {
+    assert(this.deviceState, 'Device state is falsey - Wifi expected.');
     const type = this.deviceState.type;
-    assert(type != mojom.NetworkType.kCellular);
+    assert(type === mojom.NetworkType.kWiFi, 'Wifi type expected.');
     this.fire('show-config', {type: OncMojo.getNetworkTypeString(type)});
+  },
+
+  /** @private */
+  onAddVpnButtonTap_() {
+    assert(this.deviceState, 'Device state is falsey - VPN expected.');
+    const type = this.deviceState.type;
+    assert(type === mojom.NetworkType.kVPN, 'VPN type expected.');
+    this.fire('show-config', {type: OncMojo.getNetworkTypeString(type)});
+  },
+
+  /** @private */
+  onAddCellularButtonTap_() {
+    assert(this.deviceState, 'Device state is falsey - Cellular expected.');
+    const type = this.deviceState.type;
+    assert(type === mojom.NetworkType.kCellular, 'Cellular type expected.');
+    this.fire('show-cellular-setup');
   },
 
   /**

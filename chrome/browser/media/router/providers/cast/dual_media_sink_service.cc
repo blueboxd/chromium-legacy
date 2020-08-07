@@ -89,9 +89,11 @@ DualMediaSinkService::DualMediaSinkService() {
 
 DualMediaSinkService::DualMediaSinkService(
     std::unique_ptr<CastMediaSinkService> cast_media_sink_service,
-    std::unique_ptr<DialMediaSinkService> dial_media_sink_service)
+    std::unique_ptr<DialMediaSinkService> dial_media_sink_service,
+    std::unique_ptr<CastAppDiscoveryService> cast_app_discovery_service)
     : dial_media_sink_service_(std::move(dial_media_sink_service)),
-      cast_media_sink_service_(std::move(cast_media_sink_service)) {}
+      cast_media_sink_service_(std::move(cast_media_sink_service)),
+      cast_app_discovery_service_(std::move(cast_app_discovery_service)) {}
 
 DualMediaSinkService::~DualMediaSinkService() = default;
 
@@ -116,6 +118,15 @@ void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
   mojo::PendingRemote<mojom::Logger> dial_pending_remote;
   logger_impl->Bind(dial_pending_remote.InitWithNewPipeAndPassReceiver());
   dial_media_sink_service_->BindLogger(std::move(dial_pending_remote));
+
+  mojo::PendingRemote<mojom::Logger> cast_discovery_pending_remote;
+  logger_impl->Bind(
+      cast_discovery_pending_remote.InitWithNewPipeAndPassReceiver());
+  cast_app_discovery_service_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastAppDiscoveryService::BindLogger,
+                     base::Unretained(cast_app_discovery_service_.get()),
+                     std::move(cast_discovery_pending_remote)));
 }
 
 }  // namespace media_router

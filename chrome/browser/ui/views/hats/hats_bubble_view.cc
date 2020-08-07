@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
 #include "chrome/browser/ui/views/hats/hats_web_dialog.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -70,7 +72,13 @@ void HatsBubbleView::ShowOnContentReady(Browser* browser,
   // The bubble will only show after the survey content is retrieved.
   // If it fails due to no internet connection or any other reason, the bubble
   // will not show.
-  HatsWebDialog::Create(browser, site_id);
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopMigration)) {
+    // Self deleting on close.
+    new HatsNextWebDialog(browser, site_id);
+  } else {
+    HatsWebDialog::Create(browser, site_id);
+  }
 }
 
 void HatsBubbleView::Show(Browser* browser,

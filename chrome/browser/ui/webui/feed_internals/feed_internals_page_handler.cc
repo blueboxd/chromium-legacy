@@ -175,7 +175,11 @@ void FeedInternalsPageHandler::GetFeedHistograms(
 }
 
 void FeedInternalsPageHandler::OverrideFeedHost(const GURL& host) {
-  return pref_service_->SetString(
-      feed::prefs::kHostOverrideHost,
-      host.is_valid() ? host.spec() : std::string());
+  pref_service_->SetString(feed::prefs::kHostOverrideHost,
+                           host.is_valid() ? host.spec() : std::string());
+}
+
+void FeedInternalsPageHandler::OverrideActionUploadEndpoint(
+    const GURL& endpoint_url) {
+  // Not implemented for Feed v1.
 }

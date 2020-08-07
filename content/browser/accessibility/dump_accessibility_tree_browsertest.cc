@@ -1725,7 +1725,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputEmail) {
   RunHtmlTest(FILE_PATH_LITERAL("input-email.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputFile) {
+// http://crbug.com/1114193
+#if defined(OS_ANDROID)
+#define MAYBE_AccessibilityInputFile DISABLED_AccessibilityInputFile
+#else
+#define MAYBE_AccessibilityInputFile AccessibilityInputFile
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityInputFile) {
   RunHtmlTest(FILE_PATH_LITERAL("input-file.html"));
 }
 

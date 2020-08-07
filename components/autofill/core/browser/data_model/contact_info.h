@@ -46,6 +46,25 @@ class NameInfo : public FormGroup {
   // cannot be completed.
   bool FinalizeAfterImport();
 
+  // Returns true if the structured-name information in |this| and |newer| are
+  // mergeable. Note, returns false if |newer| is variant of |this| or vice
+  // verda. A name variant is a variation that allows for abbreviations, a
+  // reordering and omission of the tokens.
+  bool IsStructuredNameMergeable(const NameInfo& newer) const;
+
+  // Merges the structured name-information of |newer| into |this|.
+  bool MergeStructuredName(const NameInfo& newer);
+
+  // Merges the validation statuses of |newer| into |this|.
+  // If two tokens of the same type have the exact same value, the validation
+  // status is updated to the higher one.
+  void MergeStructuredNameValidationStatuses(const NameInfo& newer);
+
+  // Returns a constant reference to the structured name tree.
+  const structured_address::NameFull& GetStructuredName() const {
+    return name_;
+  }
+
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;

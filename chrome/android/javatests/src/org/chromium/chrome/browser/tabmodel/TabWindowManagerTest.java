@@ -5,19 +5,17 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -27,6 +25,7 @@ import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,14 +68,13 @@ public class TabWindowManagerTest {
 
     @After
     public void tearDown() {
-        for (Activity a : mActivities) {
-            ApplicationStatus.onStateChangeForTesting(a, ActivityState.DESTROYED);
-        }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (Activity a : mActivities) {
+                ApplicationStatus.onStateChangeForTesting(a, ActivityState.DESTROYED);
+            }
+        });
         mActivities.clear();
     }
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     /**
      * Test that a single {@link Activity} can request a {@link TabModelSelector}.

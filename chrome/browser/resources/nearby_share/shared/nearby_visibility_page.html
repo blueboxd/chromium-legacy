@@ -1,0 +1,83 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="./nearby_share_settings_behavior.html">
+
+<dom-module id="nearby-visibility-page">
+  <template>
+    <style include="cr-icons cr-shared-style"></style>
+    <style>
+      :host {
+        --nearby-page-space-block: 26px;
+        --nearby-page-space-inline: 32px;
+        --nearby-page-space-large-inline: 42px;
+      }
+
+      #page-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      #header {
+        padding: 30px;
+      }
+
+      #center-content {
+        box-sizing: border-box;
+        display: flex;
+        flex-grow: 1;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #page-title {
+        font-size: 125%;
+        font-weight: normal;
+      }
+
+      #page-sub-title {
+        font-weight: normal;
+      }
+
+      #actions {
+        display: flex;
+        margin-block-end: var(--nearby-page-space-block);
+        margin-block-start: 17px;
+        margin-inline-end:  var(--nearby-page-space-inline);
+        margin-inline-start: var(--nearby-page-space-inline);
+        text-align: end;
+      }
+
+      #manage-contacts-button {
+        margin-inline-end: auto;
+      }
+    </style>
+    <div id="page-container">
+      <div id="header">
+        <h1 id="page-title">Device Visibility</h1>
+        <h4 id="page-sub-title">
+          Select who you want this device to be visible to
+        </h4>
+      </div>
+
+      <div id=center-content>
+        <!-- TODO(vecore): add scroll host and visibility component -->
+      </div>
+
+      <div id="actions">
+        <cr-button id="manage-contacts-button" on-click="onManageContactsTap_">
+          Manage Contacts
+        </cr-button>
+        <cr-button id="cancel-button" class="cancel-button"
+            on-click="onCloseTap_">
+          Cancel
+        </cr-button>
+        <cr-button id="next-button" class="action-button" on-click="onNextTap_">
+          Confirm
+        </cr-button>
+      </div>
+    </div>
+  </template>
+  <script src="nearby_visibility_page.js"></script>
+</dom-module>

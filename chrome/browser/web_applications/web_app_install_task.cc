@@ -15,7 +15,6 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
@@ -68,12 +67,10 @@ constexpr bool kAddAppsToQuickLaunchBarByDefault = true;
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
-    AppShortcutManager* shortcut_manager,
     OsIntegrationManager* os_integration_manager,
     InstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
     : data_retriever_(std::move(data_retriever)),
-      shortcut_manager_(shortcut_manager),
       os_integration_manager_(os_integration_manager),
       install_finalizer_(install_finalizer),
       profile_(profile) {}
@@ -676,11 +673,8 @@ void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
   FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
 
   install_finalizer_->FinalizeUpdate(
-      *web_app_info,
-      base::BindOnce(&WebAppInstallTask::OnUpdateFinalizedRegisterShortcutsMenu,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     web_app_info->shortcut_infos,
-                     web_app_info->shortcuts_menu_icons_bitmaps));
+      *web_app_info, base::BindOnce(&WebAppInstallTask::CallInstallCallback,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppInstallTask::OnDialogCompleted(
@@ -814,35 +808,6 @@ void WebAppInstallTask::OnRegisteredRunOnOsLogin(
     const AppId& app_id,
     bool registered_run_on_os_login) {
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
-}
-
-// TODO(https://crbug.com/1087219): Move RegisterShortcutsMenuWithOs code into
-// OsIntegrationManager when that becomes available.
-void WebAppInstallTask::OnUpdateFinalizedRegisterShortcutsMenu(
-    const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
-    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
-    const AppId& app_id,
-    InstallResultCode code) {
-  if (ShouldStopInstall())
-    return;
-
-  if (code != InstallResultCode::kSuccessAlreadyInstalled) {
-    CallInstallCallback(app_id, code);
-    return;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !shortcut_infos.empty()) {
-    shortcut_manager_->RegisterShortcutsMenuWithOs(
-        app_id, shortcut_infos, shortcuts_menu_icons_bitmaps);
-  } else {
-    // Unregister shortcuts menu when feature is disabled or shortcut_infos is
-    // empty.
-    shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
-  }
-
-  CallInstallCallback(app_id, code);
 }
 
 }  // namespace web_app

@@ -7,6 +7,7 @@ import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './log_object.js';
 import './shared_style.js';
+
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NearbyLogsBrowserProxy} from './nearby_logs_browser_proxy.js';
@@ -83,7 +84,7 @@ Polymer({
     this.addWebUIListener(
         'log-buffer-cleared', () => this.onWebUILogBufferCleared_());
     this.browserProxy_.getLogMessages().then(
-        logs => this.parseAndAddLogs_(logs));
+        logs => this.onGetLogMessages_(logs));
   },
 
   /**
@@ -132,7 +133,7 @@ Polymer({
    * @private
    */
   onLogMessageAdded_(log) {
-    this.parseAndAddLogs_([log]);
+    this.logList_.unshift(log);
   },
 
   /**
@@ -144,13 +145,13 @@ Polymer({
   },
 
   /**
-   * Parses an array of log messages and adds to the javascript list.
+   * Parses an array of log messages and adds to the javascript list sent in
+   * from the initial page load.
    * @param {!Array<!LogMessage>} logs
    * @private
    */
-  parseAndAddLogs_(logs) {
-    logs.unshift('logList_');
-    this.push.apply(this, logs);
+  onGetLogMessages_(logs) {
+    this.logList_ = logs.reverse().concat(this.logList_);
   },
 
   /**

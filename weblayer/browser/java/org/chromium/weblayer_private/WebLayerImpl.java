@@ -703,7 +703,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                     "setWebLayerRunningInSameProcess");
             setter.invoke(null);
         } catch (Exception e) {
-            Log.w(TAG, "Unable to notify WebView running in process", e);
+            Log.w(TAG, "Unable to notify WebView running in process.");
         }
     }
 

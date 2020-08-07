@@ -1639,9 +1639,7 @@ TEST_P(OverviewSessionTest, CreateLabelUnderWindow) {
 
   // Labels are located based on target_bounds, not the actual window item
   // bounds.
-  gfx::RectF label_bounds =
-      gfx::RectF(label->GetWidget()->GetWindowBoundsInScreen());
-  label_bounds.Inset(kWindowMargin, kWindowMargin);
+  gfx::RectF label_bounds(label->GetWidget()->GetWindowBoundsInScreen());
   EXPECT_EQ(label_bounds, window_item->target_bounds());
 }
 
@@ -7151,11 +7149,13 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   WindowState::Get(window.get())->Maximize();
   ToggleOverview();
   OverviewItem* item = GetOverviewItemForWindow(window.get());
-  // Verify that |item| is letter boxed.
+  // Verify that |item| is letter boxed. The bounds of |item|, minus the margin
+  // should have an aspect ratio of 2 : 1.
+  gfx::RectF item_bounds = item->target_bounds();
+  item_bounds.Inset(gfx::InsetsF(kWindowMargin));
   EXPECT_EQ(OverviewGridWindowFillMode::kLetterBoxed,
             item->GetWindowDimensionsType());
-  EXPECT_EQ(2.f,
-            item->target_bounds().width() / item->target_bounds().height());
+  EXPECT_EQ(2.f, item_bounds.width() / item_bounds.height());
   overview_session()->InitiateDrag(item, item->target_bounds().CenterPoint(),
                                    /*is_touch_dragging=*/false);
   Shell::Get()->cursor_manager()->SetDisplay(
@@ -7166,9 +7166,11 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   ASSERT_TRUE(drop_target);
   // Verify that |drop_target| is effectively pillar boxed. Avoid calling
   // |OverviewItem::GetWindowDimensionsType|, because it does not work for drop
-  // targets (and that is okay).
-  EXPECT_EQ(0.5f, drop_target->target_bounds().width() /
-                      drop_target->target_bounds().height());
+  // targets (and that is okay). The bounds of |drop_target|, minus the margin
+  // should have an aspect ratio of 1 : 2.
+  gfx::RectF drop_target_bounds = drop_target->target_bounds();
+  drop_target_bounds.Inset(gfx::InsetsF(kWindowMargin));
+  EXPECT_EQ(0.5f, drop_target_bounds.width() / drop_target_bounds.height());
 }
 
 // Verify that the drop target in each overview grid has bounds representing

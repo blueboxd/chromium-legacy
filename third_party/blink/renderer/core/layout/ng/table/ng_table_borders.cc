@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -183,23 +184,21 @@ void NGTableBorders::ComputeCollapsedTableBorderPadding(
   cached_table_border_ = borders;
 }
 
-NGBoxStrut NGTableBorders::CellBorder(wtf_size_t row,
+NGBoxStrut NGTableBorders::CellBorder(const NGBlockNode& cell,
+                                      wtf_size_t row,
                                       wtf_size_t column,
-                                      wtf_size_t rowspan,
-                                      wtf_size_t colspan,
-                                      wtf_size_t section_index,
-                                      const ComputedStyle& cell_style) const {
+                                      wtf_size_t section) const {
   if (is_collapsed_) {
     return GetCellBorders(row, column,
-                          ClampRowspan(section_index, row, rowspan),
-                          ClampColspan(column, colspan));
+                          ClampRowspan(section, row, cell.TableCellRowspan()),
+                          ClampColspan(column, cell.TableCellColspan()));
   }
   return ComputeBorders(
       NGConstraintSpaceBuilder(writing_direction_.GetWritingMode(),
                                writing_direction_.GetWritingMode(),
                                /* is_new_fc */ false)
           .ToConstraintSpace(),
-      cell_style);
+      cell);
 }
 
 // As we are determining the intrinsic size of the table at this stage,

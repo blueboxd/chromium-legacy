@@ -400,6 +400,101 @@ TEST_F(PpdMetadataManagerTest, FailsToGetManufacturersOnParseFailure) {
             PpdProvider::CallbackResultCode::INTERNAL_ERROR);
 }
 
+// Verifies that the manager fetches manufacturers metadata anew when
+// caller asks it for metadata fresher than what it has cached.
+TEST_F(PpdMetadataManagerTest, CanGetManufacturersTimeSensitive) {
+  // Bypasses mandatory call to PpdMetadataManager::GetLocale().
+  manager_->SetLocaleForTesting("en");
+
+  // Known interaction: the manager will fetch manufacturers metadata
+  // localized in English ("en").
+  GetFakeCache()->SetFetchResponseForTesting(
+      "metadata_v3/manufacturers-en.json",
+      R"({ "filesMap": {
+        "It": "Never_Ends-en.json",
+        "You Are": "Always-en.json",
+        "Playing": "Yellow_Car-en.json"
+      } })");
+
+  base::RunLoop loop;
+  auto callback = base::BindOnce(&PpdMetadataManagerTest::CatchGetManufacturers,
+                                 base::Unretained(this), loop.QuitClosure());
+
+  // t = 0s: caller requests a list of manufacturers from |manager_|,
+  // using metadata parsed within the last thirty seconds. |manager_|
+  // performs a live fetch for the manufacturers metadata.
+  manager_->GetManufacturers(base::TimeDelta::FromSeconds(30),
+                             std::move(callback));
+  loop.Run();
+
+  ASSERT_EQ(results_.get_manufacturers_code,
+            PpdProvider::CallbackResultCode::SUCCESS);
+
+  // PpdProvider::ResolveManufacturersCallback specifies that the list
+  // shall be sorted.
+  EXPECT_THAT(results_.manufacturers,
+              ElementsAre(StrEq("It"), StrEq("Playing"), StrEq("You Are")));
+
+  // Mutates the test data, ensuring that if the metadata manager
+  // attempts a live fetch from the PrinterConfigCache, it will get
+  // different data in response.
+  GetFakeCache()->SetFetchResponseForTesting(
+      "metadata_v3/manufacturers-en.json",
+      R"({ "filesMap": {
+        "It": "Never_Ends-en.json",
+        "You Are": "Always-en.json"
+      } })");
+
+  // Jams the result code to something bad to require that the
+  // |manager_| positively answer us.
+  results_.get_manufacturers_code =
+      PpdProvider::CallbackResultCode::INTERNAL_ERROR;
+
+  base::RunLoop second_loop;
+  auto second_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchGetManufacturers,
+                     base::Unretained(this), second_loop.QuitClosure());
+
+  // t = 0s: caller requests a list of manufacturers from |manager_|.
+  // |manager_| responds using the cached metadata without performing
+  // a live fetch.
+  manager_->GetManufacturers(base::TimeDelta::FromSeconds(30),
+                             std::move(second_callback));
+  second_loop.Run();
+
+  // We assert that the results are unchanged from before.
+  ASSERT_EQ(results_.get_manufacturers_code,
+            PpdProvider::CallbackResultCode::SUCCESS);
+  EXPECT_THAT(results_.manufacturers,
+              ElementsAre(StrEq("It"), StrEq("Playing"), StrEq("You Are")));
+
+  // t = 31s
+  clock_.Advance(base::TimeDelta::FromSeconds(31));
+
+  // Jams the result code to something bad to require that the
+  // |manager_| positively answer us.
+  results_.get_manufacturers_code =
+      PpdProvider::CallbackResultCode::INTERNAL_ERROR;
+
+  base::RunLoop third_loop;
+  auto third_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchGetManufacturers,
+                     base::Unretained(this), third_loop.QuitClosure());
+
+  // t = 31s: caller requests a list of manufacturers from |manager_|.
+  // |manager_| does not have sufficiently fresh metadata, so it
+  // performs a live fetch.
+  manager_->GetManufacturers(base::TimeDelta::FromSeconds(30),
+                             std::move(third_callback));
+  third_loop.Run();
+
+  // We assert that the results have changed.
+  ASSERT_EQ(results_.get_manufacturers_code,
+            PpdProvider::CallbackResultCode::SUCCESS);
+  EXPECT_THAT(results_.manufacturers,
+              ElementsAre(StrEq("It"), StrEq("You Are")));
+}
+
 // Verifies that the manager can fetch, parse, and return a map of
 // printers metadata from the Chrome OS Printing serving root.
 TEST_F(PpdMetadataManagerTest, CanGetPrinters) {
@@ -524,6 +619,114 @@ TEST_F(PpdMetadataManagerTest, FailsToGetPrintersOnParseFailure) {
   EXPECT_FALSE(results_.get_printers_succeeded);
 }
 
+// Verifies that the manager fetches printers metadata anew when caller
+// asks it for metadata fresher than what it has cached.
+TEST_F(PpdMetadataManagerTest, CanGetPrintersTimeSensitive) {
+  // Bypasses mandatory call to PpdMetadataManager::GetLocale().
+  manager_->SetLocaleForTesting("en");
+
+  // Bypasses prerequisite call to PpdMetadataManager::GetManufacturers().
+  ASSERT_TRUE(manager_->SetManufacturersForTesting(R"(
+  {
+    "filesMap": {
+      "Manufacturer A": "Manufacturer_A-en.json",
+      "Manufacturer B": "Manufacturer_B-en.json"
+    }
+  }
+  )"));
+
+  // Known interaction: the manager will fetch printers metadata named
+  // by the manufacturers map above.
+  GetFakeCache()->SetFetchResponseForTesting(
+      "metadata_v3/Manufacturer_A-en.json", R"(
+      {
+        "printers": [ {
+          "emm": "some emm a",
+          "name": "Some Printer A"
+        }, {
+          "emm": "some emm b",
+          "name": "Some Printer B"
+        } ]
+      }
+  )");
+
+  // t = 0s: caller requests the printers for "Manufacturer A."
+  // |manager_| parses and caches the metadata successfully.
+  base::RunLoop loop;
+  auto callback = base::BindOnce(&PpdMetadataManagerTest::CatchGetPrinters,
+                                 base::Unretained(this), loop.QuitClosure());
+  manager_->GetPrinters("Manufacturer A", base::TimeDelta::FromSeconds(30),
+                        std::move(callback));
+  loop.Run();
+
+  ASSERT_TRUE(results_.get_printers_succeeded);
+  EXPECT_THAT(
+      results_.printers,
+      UnorderedElementsAre(ParsedPrinterLike("Some Printer A", "some emm a"),
+                           ParsedPrinterLike("Some Printer B", "some emm b")));
+
+  // We change the data served by the PrinterConfigCache.
+  GetFakeCache()->SetFetchResponseForTesting(
+      "metadata_v3/Manufacturer_A-en.json", R"(
+      {
+        "printers": [ {
+          "emm": "some emm c",
+          "name": "Some Printer C"
+        }, {
+          "emm": "some emm d",
+          "name": "Some Printer D"
+        } ]
+      }
+  )");
+
+  // Jams the results to some bad value, requiring that the manager
+  // answer us positively.
+  results_.get_printers_succeeded = false;
+
+  base::RunLoop second_loop;
+  auto second_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchGetPrinters,
+                     base::Unretained(this), second_loop.QuitClosure());
+
+  // t = 0s: caller requests the printers for "Manufacturer A."
+  // |manager_| re-uses the cached metadata.
+  manager_->GetPrinters("Manufacturer A", base::TimeDelta::FromSeconds(30),
+                        std::move(second_callback));
+  second_loop.Run();
+
+  // We assert that the results are unchanged from before.
+  ASSERT_TRUE(results_.get_printers_succeeded);
+  EXPECT_THAT(
+      results_.printers,
+      UnorderedElementsAre(ParsedPrinterLike("Some Printer A", "some emm a"),
+                           ParsedPrinterLike("Some Printer B", "some emm b")));
+
+  // t = 31s
+  clock_.Advance(base::TimeDelta::FromSeconds(31));
+
+  // Jams the results to some bad value, requiring that the manager
+  // answer us positively.
+  results_.get_printers_succeeded = false;
+
+  // t = 31s: caller requests the printers for "Manufacturer A."
+  // |manager_| does not have sufficiently fresh metadata, so it
+  // performs a live fetch.
+  base::RunLoop third_loop;
+  auto third_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchGetPrinters,
+                     base::Unretained(this), third_loop.QuitClosure());
+  manager_->GetPrinters("Manufacturer A", base::TimeDelta::FromSeconds(30),
+                        std::move(third_callback));
+  third_loop.Run();
+
+  // We assert that the results have changed.
+  ASSERT_TRUE(results_.get_printers_succeeded);
+  EXPECT_THAT(
+      results_.printers,
+      UnorderedElementsAre(ParsedPrinterLike("Some Printer C", "some emm c"),
+                           ParsedPrinterLike("Some Printer D", "some emm d")));
+}
+
 // Verifies that the manager can split an effective-make-and-model
 // string into its constituent parts (make and model).
 TEST_F(PpdMetadataManagerTest, CanSplitMakeAndModel) {
@@ -616,6 +819,109 @@ TEST_F(PpdMetadataManagerTest, FailsToSplitMakeAndModelOnParseFailure) {
 
   ASSERT_EQ(results_.split_make_and_model_code,
             PpdProvider::CallbackResultCode::INTERNAL_ERROR);
+}
+
+// Verifies that the manager fetches reverse index metadata anew when
+// caller asks it for metadata fresher than what it has cached.
+TEST_F(PpdMetadataManagerTest, CanSplitMakeAndModelTimeSensitive) {
+  // Bypasses mandatory call to PpdMetadataManager::GetLocale().
+  manager_->SetLocaleForTesting("en");
+
+  // Known interaction: asking the manager to split the string
+  // "Hello there!" will cause it to fetch the reverse index metadata
+  // with shard number 2.
+  GetFakeCache()->SetFetchResponseForTesting(
+      "metadata_v3/reverse_index-en-02.json", R"(
+      {
+        "reverseIndex": {
+          "Hello there!": {
+            "manufacturer": "General",
+            "model": "Kenobi"
+          }
+        }
+      }
+  )");
+
+  base::RunLoop loop;
+  auto callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchSplitMakeAndModel,
+                     base::Unretained(this), loop.QuitClosure());
+
+  // t = 0s: caller requests that |manager_| split the
+  // effective-make-and-model string "Hello there!" using metadata
+  // parsed within the last thirty seconds. |manager_| fetches the
+  // appropriate reverse index metadata.
+  manager_->SplitMakeAndModel("Hello there!", base::TimeDelta::FromSeconds(30),
+                              std::move(callback));
+  loop.Run();
+
+  ASSERT_EQ(results_.split_make_and_model_code,
+            PpdProvider::CallbackResultCode::SUCCESS);
+  EXPECT_THAT(results_.split_make, StrEq("General"));
+  EXPECT_THAT(results_.split_model, StrEq("Kenobi"));
+
+  // Mutates the reverse index metadata we serve.
+  GetFakeCache()->SetFetchResponseForTesting(
+      "metadata_v3/reverse_index-en-02.json", R"(
+      {
+        "reverseIndex": {
+          "Hello there!": {
+            "manufacturer": "You are",
+            "model": "a bold one!"
+          }
+        }
+      }
+  )");
+
+  // Jams the result to a bad value, requiring that the |manager_|
+  // answer us positively.
+  results_.split_make_and_model_code =
+      PpdProvider::CallbackResultCode::INTERNAL_ERROR;
+
+  base::RunLoop second_loop;
+  auto second_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchSplitMakeAndModel,
+                     base::Unretained(this), second_loop.QuitClosure());
+
+  // t = 0s: caller requests that |manager_| split the
+  // effective-make-and-model string "Hello there!"
+  // |manager_| re-uses the cached reverse index metadata.
+  manager_->SplitMakeAndModel("Hello there!", base::TimeDelta::FromSeconds(30),
+                              std::move(second_callback));
+  second_loop.Run();
+
+  // We assert that the results are currently unchanged.
+  ASSERT_EQ(results_.split_make_and_model_code,
+            PpdProvider::CallbackResultCode::SUCCESS);
+  EXPECT_THAT(results_.split_make, StrEq("General"));
+  EXPECT_THAT(results_.split_model, StrEq("Kenobi"));
+
+  // t = 31s
+  clock_.Advance(base::TimeDelta::FromSeconds(31));
+
+  // Jams the result to a bad value, requiring that the |manager_|
+  // answer us positively.
+  results_.split_make_and_model_code =
+      PpdProvider::CallbackResultCode::INTERNAL_ERROR;
+
+  base::RunLoop third_loop;
+  auto third_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchSplitMakeAndModel,
+                     base::Unretained(this), third_loop.QuitClosure());
+
+  // t = 31s: caller requests that |manager_| split the
+  // effective-make-and-model string "Hello there!"
+  // |manager_| doesn't have sufficiently fresh metadata, so it performs
+  // a live fetch.
+  manager_->SplitMakeAndModel("Hello there!", base::TimeDelta::FromSeconds(30),
+                              std::move(third_callback));
+  third_loop.Run();
+
+  // We assert that the live fetch changed the results.
+  ASSERT_EQ(results_.split_make_and_model_code,
+            PpdProvider::CallbackResultCode::SUCCESS);
+  EXPECT_THAT(results_.split_make, StrEq("You are"));
+  EXPECT_THAT(results_.split_model, StrEq("a bold one!"));
 }
 
 }  // namespace

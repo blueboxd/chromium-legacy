@@ -1358,17 +1358,17 @@ void PrintRenderFrameHelper::PrintFrameContent(
 
   metafile.FinishFrameContent();
 
-  // Send the printed result back.
+  // Send the printed result back, if possible. Do not return early here on
+  // failure, as DispatchAfterPrintEvent() still need to be called.
   mojom::DidPrintContentParamsPtr printed_frame_params =
       mojom::DidPrintContentParams::New();
-  if (!CopyMetafileDataToReadOnlySharedMem(metafile,
-                                           printed_frame_params.get())) {
+  if (CopyMetafileDataToReadOnlySharedMem(metafile,
+                                          printed_frame_params.get())) {
+    std::move(callback).Run(params->document_cookie,
+                            std::move(printed_frame_params));
+  } else {
     DLOG(ERROR) << "CopyMetafileDataToSharedMem failed";
-    return;
   }
-
-  std::move(callback).Run(params->document_cookie,
-                          std::move(printed_frame_params));
 
   if (!render_frame_gone_)
     frame->DispatchAfterPrintEvent();

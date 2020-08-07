@@ -59,6 +59,7 @@ struct DebugStreamData {
   DebugStreamData& operator=(const DebugStreamData&);
 
   base::Optional<NetworkResponseInfo> fetch_info;
+  base::Optional<NetworkResponseInfo> upload_info;
   std::string load_stream_status;
 };
 

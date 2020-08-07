@@ -111,10 +111,6 @@ void WindowMiniView::UpdateBorderState(bool show) {
   SchedulePaint();
 }
 
-int WindowMiniView::GetMargin() const {
-  return 0;
-}
-
 gfx::Rect WindowMiniView::GetHeaderBounds() const {
   gfx::Rect header_bounds = GetContentsBounds();
   header_bounds.set_height(kHeaderHeightDp);

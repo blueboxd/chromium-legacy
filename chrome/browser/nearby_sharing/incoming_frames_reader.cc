@@ -36,9 +36,6 @@ IncomingFramesReader::IncomingFramesReader(
   DCHECK(connection_);
 
   nearby_process_observer_.Add(process_manager);
-  connection->RegisterForDisconnection(
-      base::BindOnce(&IncomingFramesReader::OnConnectionClosed,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 IncomingFramesReader::~IncomingFramesReader() = default;
@@ -178,10 +175,6 @@ void IncomingFramesReader::Done(
   if (callback_) {
     std::move(callback_).Run(std::move(frame));
   }
-}
-
-void IncomingFramesReader::OnConnectionClosed() {
-  connection_ = nullptr;
 }
 
 base::Optional<sharing::mojom::V1FramePtr> IncomingFramesReader::GetCachedFrame(

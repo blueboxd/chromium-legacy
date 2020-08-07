@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
-#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
 #include "chrome/browser/optimization_guide/prediction/remote_decision_tree_predictor.h"
@@ -28,6 +27,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/optimization_guide_util.h"
 #include "components/optimization_guide/prediction_model.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -667,12 +667,12 @@ TEST_P(PredictionManagerMLServiceTest,
                    .has_value());
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN),
       0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       0);
 }
@@ -729,7 +729,7 @@ TEST_P(PredictionManagerMLServiceTest,
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       0);
 }
@@ -789,13 +789,13 @@ TEST_P(PredictionManagerMLServiceTest, EvaluatePredictionModel) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.IsPredictionModelValid." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       true, 1);
 
@@ -804,7 +804,7 @@ TEST_P(PredictionManagerMLServiceTest, EvaluatePredictionModel) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
   histogram_tester.ExpectTotalCount(
@@ -1291,7 +1291,7 @@ TEST_P(PredictionManagerMLServiceTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kModelAvailable, 1);
 }
@@ -1346,7 +1346,7 @@ TEST_P(PredictionManagerMLServiceTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreAvailableNoModelForTarget, 1);
 }
@@ -1400,7 +1400,7 @@ TEST_P(PredictionManagerMLServiceTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreAvailableModelNotLoaded, 1);
 
@@ -1454,7 +1454,7 @@ TEST_P(PredictionManagerMLServiceTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreUnavailableModelUnknown, 1);
 }
@@ -1633,13 +1633,13 @@ TEST_P(PredictionManagerMLServiceEnabledTest,
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       0);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.IsPredictionModelValid." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       true, 1);
 }

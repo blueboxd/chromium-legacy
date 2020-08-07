@@ -39,14 +39,19 @@ class FeedStream;
 class UploadActionsTask : public offline_pages::Task {
  public:
   struct Result {
+    Result();
+    ~Result();
+    Result(Result&&);
+    Result& operator=(Result&&);
     UploadActionsStatus status;
-
     // For testing. Reports the number of actions for which upload was
     // attempted.
     size_t upload_attempt_count;
     // For testing. Reports the number of actions which were erased because of
     // staleness.
     size_t stale_count;
+    // Information about the last network request, if one was attempted.
+    base::Optional<NetworkResponseInfo> last_network_response_info;
   };
 
   // Store an action. Use |upload_now|=true to kick off an upload of all pending
@@ -109,6 +114,7 @@ class UploadActionsTask : public offline_pages::Task {
   size_t upload_attempt_count_ = 0;
   // Number of stale actions.
   size_t stale_count_ = 0;
+  base::Optional<NetworkResponseInfo> last_network_response_info_;
 
   base::WeakPtrFactory<UploadActionsTask> weak_ptr_factory_{this};
 };

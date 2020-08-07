@@ -72,9 +72,11 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
     feature_list_.InitAndDisableFeature(kDialMediaRouteProvider);
     cast_media_sink_service = std::make_unique<MockCastMediaSinkService>();
     cast_media_sink_service_ = cast_media_sink_service.get();
-    media_sink_service_ = std::unique_ptr<DualMediaSinkService>(
-        new DualMediaSinkService(std::move(cast_media_sink_service),
-                                 std::make_unique<MockDialMediaSinkService>()));
+    media_sink_service_ =
+        std::unique_ptr<DualMediaSinkService>(new DualMediaSinkService(
+            std::move(cast_media_sink_service),
+            std::make_unique<MockDialMediaSinkService>(),
+            std::make_unique<MockCastAppDiscoveryService>()));
     return std::unique_ptr<MediaRouterDesktop>(
         new MediaRouterDesktop(profile(), media_sink_service_.get()));
   }

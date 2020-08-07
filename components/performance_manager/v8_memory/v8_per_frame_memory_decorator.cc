@@ -237,6 +237,7 @@ void NodeAttachedProcessData::StartMeasurement() {
   // NodeAttachedProcessData when the last V8PerFrameMemoryRequest is deleted,
   // which could happen at any time.
   resource_usage_reporter_->GetPerFrameV8MemoryUsageData(
+      blink::mojom::V8PerFrameMemoryReporter::Mode::DEFAULT,
       base::BindOnce(&NodeAttachedProcessData::OnPerFrameV8MemoryUsageData,
                      weak_factory_.GetWeakPtr()));
 }
@@ -274,20 +275,21 @@ void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
       // No data for this node, clear any data associated with it.
       NodeAttachedFrameData::Destroy(frame_node);
     } else {
-      // There should always be data for the main isolated world for each frame.
-      DCHECK(base::Contains(it->second->associated_bytes, 0));
-
+      bool found_main_world = false;
       NodeAttachedFrameData* frame_data =
           NodeAttachedFrameData::GetOrCreate(frame_node);
-      for (const auto& kv : it->second->associated_bytes) {
-        if (kv.first == 0) {
+      for (const auto& entry : it->second->associated_bytes) {
+        if (entry->world_id ==
+            blink::mojom::V8IsolatedWorldMemoryUsage::kMainWorldId) {
           frame_data->data_available_ = true;
-          frame_data->data_.set_v8_bytes_used(kv.second->bytes_used);
+          frame_data->data_.set_v8_bytes_used(entry->bytes_used);
+          found_main_world = true;
         } else {
           // TODO(crbug.com/1080672): Where to stash the rest of the data?
         }
       }
-
+      // There should always be data for the main isolated world for each frame.
+      DCHECK(found_main_world);
       // Clear this datum as its usage has been consumed.
       associated_memory.erase(it);
     }

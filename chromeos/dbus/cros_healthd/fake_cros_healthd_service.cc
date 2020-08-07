@@ -27,6 +27,12 @@ void FakeCrosHealthdService::GetEventService(
   event_receiver_set_.Add(this, std::move(service));
 }
 
+void FakeCrosHealthdService::SendNetworkHealthService(
+    mojo::PendingRemote<chromeos::network_health::mojom::NetworkHealthService>
+        remote) {
+  network_health_remote_.Bind(std::move(remote));
+}
+
 void FakeCrosHealthdService::GetAvailableRoutines(
     GetAvailableRoutinesCallback callback) {
   std::move(callback).Run(available_routines_);
@@ -192,6 +198,12 @@ void FakeCrosHealthdService::EmitAdapterAddedEventForTesting() {
 void FakeCrosHealthdService::EmitLidClosedEventForTesting() {
   for (auto& observer : lid_observers_)
     observer->OnLidClosed();
+}
+
+void FakeCrosHealthdService::RequestNetworkHealthForTesting(
+    chromeos::network_health::mojom::NetworkHealthService::
+        GetHealthSnapshotCallback callback) {
+  network_health_remote_->GetHealthSnapshot(std::move(callback));
 }
 
 }  // namespace cros_healthd

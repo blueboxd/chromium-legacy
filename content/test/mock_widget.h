@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 
@@ -28,6 +29,7 @@ class MockWidget : public blink::mojom::Widget {
 
   const std::vector<std::pair<gfx::Rect, gfx::Rect>>& ReceivedScreenRects();
   void ClearScreenRects();
+  void SetTouchActionFromMain(cc::TouchAction touch_action);
 
   // blink::mojom::Widget overrides.
   void ForceRedraw(ForceRedrawCallback callback) override;
@@ -47,6 +49,7 @@ class MockWidget : public blink::mojom::Widget {
   std::vector<blink::VisualProperties> visual_properties_;
   std::vector<std::pair<gfx::Rect, gfx::Rect>> screen_rects_;
   std::vector<UpdateScreenRectsCallback> screen_rects_callbacks_;
+  mojo::Remote<blink::mojom::WidgetInputHandlerHost> input_handler_host_;
   mojo::AssociatedReceiver<blink::mojom::Widget> blink_widget_{this};
 };
 

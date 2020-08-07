@@ -246,6 +246,10 @@ void OmniboxViewViews::ElideAnimation::Start(
 }
 
 void OmniboxViewViews::ElideAnimation::Stop() {
+  // Reset the smoothing rectangles whenever the animation stops to prevent
+  // stale rectangles from showing at the start of the next animation.
+  view_->elide_animation_smoothing_rect_left_ = gfx::Rect();
+  view_->elide_animation_smoothing_rect_right_ = gfx::Rect();
   if (animation_)
     animation_->Stop();
 }
@@ -316,13 +320,18 @@ void OmniboxViewViews::ElideAnimation::AnimationProgressed(
   int unelided_left_bound = simplified_domain_bounds_.x() + current_offset_;
   int unelided_right_bound =
       unelided_left_bound + simplified_domain_bounds_.width();
+  // GetSubstringBounds rounds up when calculating unelided_left_bound and
+  // unelided_right_bound, we subtract 1 pixel from the gradient widths to make
+  // sure they never overlap with the always visible part of the URL.
+  // gfx::Rect() switches negative values to 0, so this doesn't affect
+  // rectangles that were originally size 0.
   int left_gradient_width = kSmoothingGradientMaxWidth < unelided_left_bound
-                                ? kSmoothingGradientMaxWidth
-                                : unelided_left_bound;
+                                ? kSmoothingGradientMaxWidth - 1
+                                : unelided_left_bound - 1;
   int right_gradient_width =
       shifted_bounds.right() - kSmoothingGradientMaxWidth > unelided_right_bound
-          ? kSmoothingGradientMaxWidth
-          : shifted_bounds.right() - unelided_right_bound;
+          ? kSmoothingGradientMaxWidth - 1
+          : shifted_bounds.right() - unelided_right_bound - 1;
 
   view_->elide_animation_smoothing_rect_left_ = gfx::Rect(
       old_bounds.x(), old_bounds.y(), left_gradient_width, old_bounds.height());
@@ -2446,8 +2455,12 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
   elide_after_web_contents_interaction_animation_.reset();
   hover_elide_or_unelide_animation_ =
       std::make_unique<OmniboxViewViews::ElideAnimation>(this, GetRenderText());
-  if (IsURLEligibleForSimplifiedDomainEliding())
+  if (IsURLEligibleForSimplifiedDomainEliding()) {
     ShowFullURLWithoutSchemeAndTrivialSubdomain();
+  } else {
+    GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+    FitToLocalBounds();
+  }
 }
 
 void OmniboxViewViews::OnShouldPreventElisionChanged() {

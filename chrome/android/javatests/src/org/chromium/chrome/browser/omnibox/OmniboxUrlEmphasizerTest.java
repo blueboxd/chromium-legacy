@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
@@ -18,10 +16,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -44,8 +42,7 @@ import java.util.Comparator;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class OmniboxUrlEmphasizerTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     private Profile mProfile;
     private ChromeAutocompleteSchemeClassifier mChromeAutocompleteSchemeClassifier;

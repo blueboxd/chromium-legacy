@@ -19,11 +19,6 @@ constexpr base::TimeDelta kTransition = base::TimeDelta::FromMilliseconds(300);
 // closest distance between adjacent windows will be twice this amount.
 constexpr int kWindowMargin = 5;
 
-// Cover the transformed window including the gaps between the windows with a
-// transparent shield to block the input events from reaching the transformed
-// window while in overview.
-ASH_EXPORT constexpr int kOverviewMargin = kWindowMargin * 2;
-
 // Height of an item header.
 constexpr int kHeaderHeightDp = WindowMiniView::kHeaderHeightDp;
 

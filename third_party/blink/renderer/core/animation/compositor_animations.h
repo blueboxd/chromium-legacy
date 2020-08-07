@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/animation/effect_model.h"
+#include "third_party/blink/renderer/core/animation/keyframe.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
@@ -108,7 +109,8 @@ class CORE_EXPORT CompositorAnimations {
       const Animation*,
       const EffectModel&,
       const PaintArtifactCompositor*,
-      double animation_playback_rate);
+      double animation_playback_rate,
+      PropertyHandleSet* unsupported_properties = nullptr);
   static void CancelIncompatibleAnimationsOnCompositor(const Element&,
                                                        const Animation&,
                                                        const EffectModel&);
@@ -170,7 +172,8 @@ class CORE_EXPORT CompositorAnimations {
       const Animation*,
       const EffectModel&,
       const PaintArtifactCompositor*,
-      double animation_playback_rate);
+      double animation_playback_rate,
+      PropertyHandleSet* unsupported_properties = nullptr);
   static FailureReasons CheckCanStartElementOnCompositor(const Element&);
 
   friend class AnimationCompositorAnimationsTest;

@@ -83,12 +83,6 @@ def FindInDirectory(directory, filename_filter='*'):
   return files
 
 
-def ReadBuildVars(path):
-  """Parses a build_vars.txt into a dict."""
-  with open(path) as f:
-    return dict(l.rstrip().split('=', 1) for l in f)
-
-
 def ParseGnList(value):
   """Converts a "GN-list" command-line parameter into a list.
 

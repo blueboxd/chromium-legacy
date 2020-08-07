@@ -596,8 +596,7 @@ int64_t MixerInputConnection::QueueData(scoped_refptr<net::IOBuffer> data) {
     queued_frames_ += frames;
     queue_.push_back(std::move(data));
 
-    if (!started_ && queued_frames_ >= start_threshold_frames_ &&
-        mixer_rendering_delay_.timestamp_microseconds != INT64_MIN) {
+    if (!started_ && queued_frames_ >= start_threshold_frames_) {
       io_task_runner_->PostTask(FROM_HERE, ready_for_playback_task_);
     }
   }

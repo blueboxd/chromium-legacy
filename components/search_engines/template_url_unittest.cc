@@ -736,18 +736,19 @@ TEST_F(TemplateURLTest, ReplaceInputType) {
 TEST_F(TemplateURLTest, ReplaceOmniboxFocusType) {
   struct TestData {
     const base::string16 search_term;
-    TemplateURLRef::SearchTermsArgs::OmniboxFocusType omnibox_focus_type;
+    OmniboxFocusType focus_type;
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
-      {ASCIIToUTF16("foo"),
-       TemplateURLRef::SearchTermsArgs::OmniboxFocusType::DEFAULT,
+      {ASCIIToUTF16("foo"), OmniboxFocusType::DEFAULT,
        "{google:baseURL}?{searchTerms}&{google:omniboxFocusType}",
        "http://www.google.com/?foo&"},
-      {ASCIIToUTF16("foo"),
-       TemplateURLRef::SearchTermsArgs::OmniboxFocusType::ON_FOCUS,
+      {ASCIIToUTF16("foo"), OmniboxFocusType::ON_FOCUS,
        "{google:baseURL}?{searchTerms}&{google:omniboxFocusType}",
        "http://www.google.com/?foo&oft=1&"},
+      {ASCIIToUTF16("foo"), OmniboxFocusType::DELETED_PERMANENT_TEXT,
+       "{google:baseURL}?{searchTerms}&{google:omniboxFocusType}",
+       "http://www.google.com/?foo&oft=2&"},
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
@@ -757,7 +758,7 @@ TEST_F(TemplateURLTest, ReplaceOmniboxFocusType) {
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
     TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
-    search_terms_args.omnibox_focus_type = test_data[i].omnibox_focus_type;
+    search_terms_args.focus_type = test_data[i].focus_type;
     GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                  search_terms_data_));
     ASSERT_TRUE(result.is_valid());

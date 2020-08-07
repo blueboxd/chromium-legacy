@@ -14,10 +14,10 @@
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
+#include "components/optimization_guide/optimization_guide_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/variations/active_field_trials.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
@@ -91,8 +91,6 @@ HintsFetcher::HintsFetcher(
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
   DCHECK(features::IsRemoteFetchingEnabled());
-  allowed_field_trial_name_hashes_ =
-      features::FieldTrialNameHashesAllowedForFetch();
 }
 
 HintsFetcher::~HintsFetcher() {
@@ -205,29 +203,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 
   get_hints_request.set_context(request_context_);
 
-  if (!allowed_field_trial_name_hashes_.empty()) {
-    std::vector<variations::ActiveGroupId> active_field_trials;
-    variations::GetFieldTrialActiveGroupIds(/*suffix=*/"",
-                                            &active_field_trials);
-    for (const auto& active_field_trial : active_field_trials) {
-      if (static_cast<size_t>(get_hints_request.active_field_trials_size()) ==
-          allowed_field_trial_name_hashes_.size()) {
-        // We've found all the field trials that we are allowed to send to the
-        // server.
-        break;
-      }
-
-      if (allowed_field_trial_name_hashes_.find(active_field_trial.name) ==
-          allowed_field_trial_name_hashes_.end()) {
-        // Continue if we are not allowed to send the field trial to the server.
-        continue;
-      }
-
-      proto::FieldTrial* ft_proto = get_hints_request.add_active_field_trials();
-      ft_proto->set_name_hash(active_field_trial.name);
-      ft_proto->set_group_hash(active_field_trial.group);
-    }
-  }
+  *get_hints_request.mutable_active_field_trials() =
+      GetActiveFieldTrialsAllowedForFetch();
 
   for (const auto& url : valid_urls)
     get_hints_request.add_urls()->set_url(url.spec());

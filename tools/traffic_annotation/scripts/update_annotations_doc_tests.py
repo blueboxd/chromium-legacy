@@ -15,7 +15,7 @@ from mock import MagicMock
 # Mock some imports which aren't necessary during testing.
 sys.modules["infra_libs"] = MagicMock()
 import update_annotations_doc
-import parser
+import generator_utils
 
 # Absolute path to chrome/src.
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -30,7 +30,7 @@ class UpdateAnnotationsDocTest(unittest.TestCase):
   def test_create_group_request(self):
     text = "TestGroup"
     req, index = self.network_doc_obj._create_group_or_sender_request(
-      text, 0, parser.Placeholder.GROUP)
+        text, 0, generator_utils.Placeholder.GROUP)
 
     self.assertEqual(len(text)+1, index)
     expected_req = [
@@ -63,7 +63,7 @@ class UpdateAnnotationsDocTest(unittest.TestCase):
     text = "TestSender"
     print(text)
     req, index = self.network_doc_obj._create_group_or_sender_request(
-        text, 0, parser.Placeholder.SENDER)
+        text, 0, generator_utils.Placeholder.SENDER)
 
     self.assertEqual(len(text)+1, index)
     expected_req = [
@@ -89,13 +89,15 @@ class UpdateAnnotationsDocTest(unittest.TestCase):
     self.assertEqual(expected_req, req)
 
   def test_create_annotation_request(self):
-    traffic_annotation = parser.TrafficAnnotation(**{
-      "unique_id": "unique_id_A",
-      "description": "description_A",
-      "trigger": "trigger_A",
-      "data": "data_A",
-      "settings": "settings_A",
-      "policy": "chrome_policy_A"})
+    traffic_annotation = generator_utils.TrafficAnnotation(
+        **{
+            "unique_id": "unique_id_A",
+            "description": "description_A",
+            "trigger": "trigger_A",
+            "data": "data_A",
+            "settings": "settings_A",
+            "policy": "chrome_policy_A"
+        })
 
     req, index = self.network_doc_obj._create_annotation_request(
       traffic_annotation, 0)

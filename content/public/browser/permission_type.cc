@@ -97,6 +97,8 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
       return PermissionType::STORAGE_ACCESS_GRANT;
     case PermissionName::WINDOW_PLACEMENT:
       return PermissionType::WINDOW_PLACEMENT;
+    case PermissionName::FONT_ACCESS:
+      return PermissionType::FONT_ACCESS;
   }
 
   NOTREACHED();

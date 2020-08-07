@@ -77,11 +77,12 @@ class PasswordCheckBridge {
         mPasswordCheckObserver.onPasswordCheckStatusChanged(state);
     }
 
+    @CalledByNative
     private static void insertCredential(CompromisedCredential[] credentials, int index,
-            String originUrl, String username, String password, boolean phished,
+            String displayOrigin, String displayUsername, String password, boolean phished,
             boolean hasScript) {
-        credentials[index] =
-                new CompromisedCredential(originUrl, username, password, phished, hasScript);
+        credentials[index] = new CompromisedCredential(
+                displayOrigin, displayUsername, password, phished, hasScript);
     }
 
     /**
@@ -96,6 +97,14 @@ class PasswordCheckBridge {
      */
     void stopCheck() {
         PasswordCheckBridgeJni.get().stopCheck(mNativePasswordCheckBridge);
+    }
+
+    /**
+     * @return The timestamp of the last completed check.
+     */
+    long getCheckTimestamp() {
+        // TODO(crbug.com/1102025): Add method to retrieve the timestamp.
+        return 0L;
     }
 
     /**

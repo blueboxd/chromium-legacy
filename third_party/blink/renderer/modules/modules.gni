@@ -7,7 +7,6 @@
 # This file is shared with all modules' BUILD files which shouldn't need access
 # to the huge and slow lists of sources. If sharing is necessary, make a
 # separate .gni.
-import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/config.gni")
 blink_modules_output_dir = "$root_gen_dir/third_party/blink/renderer/modules"
 

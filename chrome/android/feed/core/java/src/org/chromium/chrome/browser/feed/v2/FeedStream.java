@@ -215,6 +215,7 @@ public class FeedStream implements Stream {
             public void onScrolled(RecyclerView v, int dx, int dy) {
                 super.onScrolled(v, dx, dy);
                 checkScrollingForLoadMore(dy);
+                mFeedStreamSurface.streamScrolled(dx, dy);
                 for (ScrollListener listener : mScrollListeners) {
                     listener.onScrolled(dx, dy);
                 }

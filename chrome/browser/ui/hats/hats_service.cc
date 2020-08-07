@@ -51,6 +51,8 @@ constexpr char kHatsSurveyEnSiteID[] = "en_site_id";
 constexpr double kHatsSurveyProbabilityDefault = 0;
 
 constexpr char kHatsSurveyEnSiteIDDefault[] = "bhej2dndhpc33okm6xexsbyv4y";
+constexpr char kHatsNextSurveyTriggerIDDefault[] =
+    "zishSVViB0kPN8UwQ150VGjBKuBP";
 
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
     base::TimeDelta::FromDays(60);
@@ -151,12 +153,16 @@ HatsService::HatsService(Profile* profile) : profile_(profile) {
                 .Get()));
   }
   // Ensure a default survey exists (for demo purpose).
+  auto* default_survey_id =
+      base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopMigration)
+          ? kHatsNextSurveyTriggerIDDefault
+          : kHatsSurveyEnSiteIDDefault;
   if (survey_configs_by_triggers_.find(kHatsSurveyTriggerSatisfaction) ==
       survey_configs_by_triggers_.end()) {
     survey_configs_by_triggers_.emplace(
         kHatsSurveyTriggerSatisfaction,
-        SurveyConfig(kHatsSurveyProbabilityDefault,
-                     kHatsSurveyEnSiteIDDefault));
+        SurveyConfig(kHatsSurveyProbabilityDefault, default_survey_id));
   }
 }
 
@@ -421,14 +427,23 @@ void HatsService::CheckSurveyStatusAndMaybeShow(Browser* browser,
   DCHECK(survey_configs_by_triggers_.find(trigger) !=
          survey_configs_by_triggers_.end());
 
-  if (!checker_)
-    checker_ = std::make_unique<HatsSurveyStatusChecker>(profile_);
-  checker_->CheckSurveyStatus(
-      survey_configs_by_triggers_[trigger].en_site_id_,
-      base::BindOnce(&HatsService::ShowSurvey, weak_ptr_factory_.GetWeakPtr(),
-                     browser, trigger),
-      base::BindOnce(&HatsService::OnSurveyStatusError,
-                     weak_ptr_factory_.GetWeakPtr(), trigger));
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopMigration)) {
+    // Bypass the checker for showing HaTS Next surveys as the survey website
+    // itself will determine eligibility. This is communicated via updates to
+    // HatsNextWebDialog::OnSurveyStateUpdateReceived.
+    browser->window()->ShowHatsBubble(
+        survey_configs_by_triggers_[trigger].en_site_id_);
+  } else {
+    if (!checker_)
+      checker_ = std::make_unique<HatsSurveyStatusChecker>(profile_);
+    checker_->CheckSurveyStatus(
+        survey_configs_by_triggers_[trigger].en_site_id_,
+        base::BindOnce(&HatsService::ShowSurvey, weak_ptr_factory_.GetWeakPtr(),
+                       browser, trigger),
+        base::BindOnce(&HatsService::OnSurveyStatusError,
+                       weak_ptr_factory_.GetWeakPtr(), trigger));
+  }
 }
 
 void HatsService::ShowSurvey(Browser* browser, const std::string& trigger) {

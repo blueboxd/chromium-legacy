@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -43,7 +44,14 @@ TabSearchPageHandler::TabSearchPageHandler(
   browser_tab_strip_tracker_.Init();
 }
 
-TabSearchPageHandler::~TabSearchPageHandler() = default;
+TabSearchPageHandler::~TabSearchPageHandler() {
+  base::UmaHistogramCounts1000("Tabs.TabSearch.NumTabsClosedPerInstance",
+                               num_tabs_closed_);
+  base::UmaHistogramEnumeration("Tabs.TabSearch.CloseAction",
+                                called_switch_to_tab_
+                                    ? TabSearchCloseAction::kTabSwitch
+                                    : TabSearchCloseAction::kNoAction);
+}
 
 void TabSearchPageHandler::CloseTab(int32_t tab_id) {
   base::Optional<TabDetails> optional_details = GetTabDetails(tab_id);
@@ -53,6 +61,9 @@ void TabSearchPageHandler::CloseTab(int32_t tab_id) {
   const TabDetails& details = optional_details.value();
   bool tab_closed = details.tab_strip_model->CloseWebContentsAt(
       details.index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+
+  ++num_tabs_closed_;
+
   if (tab_closed)
     NotifyTabsChanged();
 }
@@ -61,9 +72,8 @@ void TabSearchPageHandler::GetProfileTabs(GetProfileTabsCallback callback) {
   auto profile_tabs = tab_search::mojom::ProfileTabs::New();
   Profile* profile = browser_->profile();
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() != profile) {
+    if (browser->profile() != profile)
       continue;
-    }
     TabStripModel* tab_strip_model = browser->tab_strip_model();
     auto window_tabs = tab_search::mojom::WindowTabs::New();
     window_tabs->active = (browser == browser_);
@@ -72,6 +82,18 @@ void TabSearchPageHandler::GetProfileTabs(GetProfileTabsCallback callback) {
           GetTabData(tab_strip_model, tab_strip_model->GetWebContentsAt(i), i));
     }
     profile_tabs->windows.push_back(std::move(window_tabs));
+  }
+
+  // On first run record the number of windows and tabs open for the given
+  // profile.
+  if (!sent_initial_payload_) {
+    sent_initial_payload_ = true;
+    int tab_count = 0;
+    for (const auto& window : profile_tabs->windows)
+      tab_count += window->tabs.size();
+    base::UmaHistogramCounts100("Tabs.TabSearch.NumWindowsOnOpen",
+                                profile_tabs->windows.size());
+    base::UmaHistogramCounts10000("Tabs.TabSearch.NumTabsOnOpen", tab_count);
   }
 
   std::move(callback).Run(std::move(profile_tabs));
@@ -109,6 +131,8 @@ void TabSearchPageHandler::SwitchToTab(
       GetTabDetails(switch_to_tab_info->tab_id);
   if (!optional_details)
     return;
+
+  called_switch_to_tab_ = true;
 
   const TabDetails& details = optional_details.value();
   details.tab_strip_model->ActivateTabAt(details.index);

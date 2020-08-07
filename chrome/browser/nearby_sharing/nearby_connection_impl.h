@@ -24,7 +24,7 @@ class NearbyConnectionImpl : public NearbyConnection {
   void Read(ReadCallback callback) override;
   void Write(std::vector<uint8_t> bytes) override;
   void Close() override;
-  void RegisterForDisconnection(base::OnceClosure listener) override;
+  void SetDisconnectionListener(base::OnceClosure listener) override;
 
   // Add |bytes| to the read queue, notifying ReadCallback.
   void WriteMessage(std::vector<uint8_t> bytes);
@@ -38,7 +38,7 @@ class NearbyConnectionImpl : public NearbyConnection {
   NearbyConnectionsManager* nearby_connections_manager_;
   std::string endpoint_id_;
   ReadCallback read_callback_;
-  std::vector<base::OnceClosure> disconnect_listeners_;
+  base::OnceClosure disconnect_listener_;
 
   // A read queue. The data that we've read from the remote device ends up here
   // until Read() is called to dequeue it.

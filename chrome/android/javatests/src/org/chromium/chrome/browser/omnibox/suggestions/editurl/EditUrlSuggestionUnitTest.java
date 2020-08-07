@@ -11,8 +11,6 @@ import static org.mockito.Mockito.when;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.view.View;
 
 import androidx.test.filters.SmallTest;
@@ -30,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -48,6 +47,7 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -75,9 +75,6 @@ public final class EditUrlSuggestionUnitTest {
             new GURL("http://www.example.com?q=" + BARBAZ_SEARCH_TERMS);
     private EditUrlSuggestionProcessor mProcessor;
     private PropertyModel mModel;
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
@@ -121,19 +118,12 @@ public final class EditUrlSuggestionUnitTest {
     // The original (real) ClipboardManager to be restored after a test run.
     private ClipboardManager mOldClipboardManager;
 
-    public EditUrlSuggestionUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
 
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
-        mOldClipboardManager =
-                Clipboard.getInstance().overrideClipboardManagerForTesting(mClipboardManager);
 
         doReturn(mTestUrl).when(mTab).getUrl();
         doReturn(TEST_TITLE).when(mTab).getTitle();
@@ -149,16 +139,23 @@ public final class EditUrlSuggestionUnitTest {
 
         doReturn(OmniboxSuggestionType.SEARCH_HISTORY).when(mOtherSuggestion).getType();
 
-        mModel = new PropertyModel.Builder(SuggestionViewProperties.ALL_KEYS).build();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mOldClipboardManager =
+                    Clipboard.getInstance().overrideClipboardManagerForTesting(mClipboardManager);
 
-        mProcessor = new EditUrlSuggestionProcessor(ContextUtils.getApplicationContext(),
-                mSuggestionHost, mUrlBarDelegate,
-                () -> mIconBridge, () -> mTab, () -> mShareDelegate);
+            mModel = new PropertyModel.Builder(SuggestionViewProperties.ALL_KEYS).build();
+
+            mProcessor = new EditUrlSuggestionProcessor(ContextUtils.getApplicationContext(),
+                    mSuggestionHost, mUrlBarDelegate,
+                    () -> mIconBridge, () -> mTab, () -> mShareDelegate);
+        });
     }
 
     @After
     public void tearDown() {
-        Clipboard.getInstance().overrideClipboardManagerForTesting(mOldClipboardManager);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Clipboard.getInstance().overrideClipboardManagerForTesting(mOldClipboardManager);
+        });
     }
 
     /** Test that the suggestion is triggered. */

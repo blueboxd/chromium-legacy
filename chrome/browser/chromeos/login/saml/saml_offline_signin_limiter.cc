@@ -178,7 +178,8 @@ void SAMLOfflineSigninLimiter::ForceOnlineLogin() {
   InSessionPasswordSyncManager* password_sync_manager =
       InSessionPasswordSyncManagerFactory::GetForProfile(profile_);
   if (password_sync_manager && password_sync_manager->IsLockReauthEnabled()) {
-    password_sync_manager->MaybeForceReauthOnLockScreen();
+    password_sync_manager->MaybeForceReauthOnLockScreen(
+        InSessionPasswordSyncManager::ReauthenticationReason::kPolicy);
   }
   RecordReauthReason(user->GetAccountId(), ReauthReason::SAML_REAUTH_POLICY);
   offline_signin_limit_timer_->Stop();

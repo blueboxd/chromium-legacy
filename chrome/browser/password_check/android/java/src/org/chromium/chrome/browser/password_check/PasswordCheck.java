@@ -71,6 +71,11 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     void removeObserver(Observer obs);
 
     /**
+     * @return The timestamp of the last completed check.
+     */
+    long getCheckTimestamp();
+
+    /**
      * @return The latest available number of compromised passwords. If this is invoked before
      * {@link Observer#onCompromisedCredentialsFetchCompleted}, the returned value is likely
      * invalid.

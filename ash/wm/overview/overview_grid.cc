@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
@@ -547,6 +548,8 @@ void OverviewGrid::AddItem(aura::Window* window,
   window_list_.insert(
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
+
+  UpdateFrameThrottling();
   auto* item = window_list_[index].get();
   item->PrepareForOverview();
 
@@ -609,6 +612,8 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
   std::unique_ptr<OverviewItem> tmp = std::move(*iter);
   window_list_.erase(std::next(iter).base());
   tmp.reset();
+
+  UpdateFrameThrottling();
 
   if (!item_destroying)
     return;
@@ -1528,7 +1533,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
         target_size = ::ash::GetTargetBoundsInScreen(dragged_window).size();
         target_size.SetToMin(gfx::SizeF(work_area_size));
       }
-      const gfx::SizeF inset_size(0, height - 2 * kWindowMargin);
+      const gfx::SizeF inset_size(0, height);
       scale = ScopedOverviewTransformWindow::GetItemScale(
           target_size, inset_size,
           dragged_window->GetProperty(aura::client::kTopViewInset),
@@ -1536,8 +1541,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
     }
   }
 
-  int width = std::max(
-      1, base::ClampFloor(target_size.width() * scale) + 2 * kWindowMargin);
+  int width = std::max(1, base::ClampFloor(target_size.width() * scale));
   switch (grid_fill_mode) {
     case OverviewGridWindowFillMode::kLetterBoxed:
       width = kExtremeWindowRatioThreshold * height;
@@ -1567,15 +1571,14 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   const float target_aspect_ratio =
       split_view_bounds->width() / split_view_bounds->height();
   const bool clip_horizontally = aspect_ratio > target_aspect_ratio;
-  const int window_height = height - 2 * kWindowMargin - kHeaderHeightDp;
+  const int window_height = height - kHeaderHeightDp;
   gfx::Size unclipped_size;
   if (clip_horizontally) {
-    unclipped_size.set_width(width - 2 * kWindowMargin);
-    unclipped_size.set_height(height - 2 * kWindowMargin);
+    unclipped_size.set_width(width);
+    unclipped_size.set_height(height);
     // For horizontal clipping, shrink |width| so that the aspect ratio matches
     // that of |split_view_bounds|.
-    width = std::max(1, base::ClampFloor(target_aspect_ratio * window_height) +
-                            2 * kWindowMargin);
+    width = std::max(1, base::ClampFloor(target_aspect_ratio * window_height));
   } else {
     // For vertical clipping, we want |height| to stay the same, so calculate
     // what the unclipped height would be based on |split_view_bounds|.
@@ -1591,9 +1594,6 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
         width * target_size.height() / target_size.width();
     unclipped_size.set_width(width);
     unclipped_size.set_height(unclipped_height + kHeaderHeightDp);
-
-    // Add some space between this item and the next one (if it exists).
-    width += (2 * kWindowMargin);
   }
 
   DCHECK(!unclipped_size.IsEmpty());
@@ -1690,8 +1690,8 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     gfx::Rect overview_mode_bounds(total_bounds);
     overview_mode_bounds.set_width(right_bound - total_bounds.x());
     bool windows_fit = FitWindowRectsInBounds(
-        overview_mode_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_items, &rects, &max_bottom, &min_right, &max_right);
+        overview_mode_bounds, std::min(kMaxHeight, height), ignored_items,
+        &rects, &max_bottom, &min_right, &max_right);
 
     if (height_fixed) {
       if (!windows_fit) {
@@ -1736,9 +1736,9 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   if (make_last_adjustment) {
     gfx::Rect overview_mode_bounds(total_bounds);
     overview_mode_bounds.set_width(right_bound - total_bounds.x());
-    FitWindowRectsInBounds(
-        overview_mode_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_items, &rects, &max_bottom, &min_right, &max_right);
+    FitWindowRectsInBounds(overview_mode_bounds, std::min(kMaxHeight, height),
+                           ignored_items, &rects, &max_bottom, &min_right,
+                           &max_right);
   }
 
   gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
@@ -1844,8 +1844,9 @@ bool OverviewGrid::FitWindowRectsInBounds(
     if (ShouldExcludeItemFromGridLayout(window_list_[i].get(), ignored_items))
       continue;
 
-    int width =
-        CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(), height);
+    int width = CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(),
+                                                         height) +
+                2 * kWindowMargin;
 
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
@@ -1865,7 +1866,7 @@ bool OverviewGrid::FitWindowRectsInBounds(
     }
 
     // Position the current rect.
-    (*out_rects)[i] = gfx::RectF(left, top, width, height);
+    (*out_rects)[i] = gfx::RectF(left, top, width, height + 2 * kWindowMargin);
 
     // Increment horizontal position using sanitized positive |width|.
     left += width;
@@ -1966,4 +1967,12 @@ void OverviewGrid::UpdateCannotSnapWarningVisibility() {
     overview_mode_item->UpdateCannotSnapWarningVisibility();
 }
 
+void OverviewGrid::UpdateFrameThrottling() {
+  std::vector<aura::Window*> windows_to_throttle(window_list_.size(), nullptr);
+  std::transform(
+      window_list_.begin(), window_list_.end(), windows_to_throttle.begin(),
+      [](std::unique_ptr<OverviewItem>& item) { return item->GetWindow(); });
+  Shell::Get()->frame_throttling_controller()->StartThrottling(
+      windows_to_throttle);
+}
 }  // namespace ash

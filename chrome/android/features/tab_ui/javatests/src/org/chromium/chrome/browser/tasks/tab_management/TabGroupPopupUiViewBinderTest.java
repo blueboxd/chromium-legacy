@@ -10,7 +10,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.annotation.UiThreadTest;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -19,9 +18,11 @@ import androidx.test.filters.SmallTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -43,19 +44,21 @@ public class TabGroupPopupUiViewBinderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
 
-        mTopAnchorView = new ToolbarPhone(getActivity(), null);
-        mTopAnchorView.setId(R.id.toolbar);
-        mBottomAnchorView = new FrameLayout(getActivity());
-        mParent = new TabGroupPopupUiParent(getActivity(), mTopAnchorView);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTopAnchorView = new ToolbarPhone(getActivity(), null);
+            mTopAnchorView.setId(R.id.toolbar);
+            mBottomAnchorView = new FrameLayout(getActivity());
+            mParent = new TabGroupPopupUiParent(getActivity(), mTopAnchorView);
 
-        mModel = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
-        mMCP = PropertyModelChangeProcessor.create(
-                mModel, mParent, TabGroupPopupUiViewBinder::bind);
+            mModel = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
+            mMCP = PropertyModelChangeProcessor.create(
+                    mModel, mParent, TabGroupPopupUiViewBinder::bind);
+        });
     }
 
     @Override
     public void tearDownTest() throws Exception {
-        mMCP.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mMCP::destroy);
         super.tearDownTest();
     }
 

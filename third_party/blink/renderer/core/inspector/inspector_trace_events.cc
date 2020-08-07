@@ -1450,9 +1450,15 @@ std::unique_ptr<TracedValue> inspector_animation_state_event::Data(
 }
 
 std::unique_ptr<TracedValue> inspector_animation_compositor_event::Data(
-    CompositorAnimations::FailureReasons failure_reasons) {
+    CompositorAnimations::FailureReasons failure_reasons,
+    const PropertyHandleSet& unsupported_properties) {
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("compositeFailed", failure_reasons);
+  value->BeginArray("unsupportedProperties");
+  for (const PropertyHandle& p : unsupported_properties) {
+    value->PushString(p.GetCSSPropertyName().ToAtomicString());
+  }
+  value->EndArray();
   return value;
 }
 

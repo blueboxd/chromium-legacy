@@ -10,6 +10,8 @@ blink_core_sources("script") {
     "classic_pending_script.h",
     "classic_script.cc",
     "classic_script.h",
+    "detect_javascript_frameworks.cc",
+    "detect_javascript_frameworks.h",
     "document_modulator_impl.cc",
     "document_modulator_impl.h",
     "document_write_intervention.cc",

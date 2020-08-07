@@ -96,6 +96,11 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     }
 
     @Override
+    public long getCheckTimestamp() {
+        return mPasswordCheckBridge.getCheckTimestamp();
+    }
+
+    @Override
     public int getCompromisedCredentialsCount() {
         return mPasswordCheckBridge.getCompromisedCredentialsCount();
     }

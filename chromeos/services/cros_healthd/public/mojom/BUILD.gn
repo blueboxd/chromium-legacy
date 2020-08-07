@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  deps = [ "//chromeos/services/network_health/public/mojom" ]
   sources = [
     "cros_healthd.mojom",
     "cros_healthd_diagnostics.mojom",

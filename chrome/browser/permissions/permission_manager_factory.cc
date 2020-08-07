@@ -31,6 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/contexts/font_access_permission_context.h"
 #include "components/permissions/contexts/webxr_permission_context.h"
 #include "components/permissions/contexts/window_placement_permission_context.h"
 #include "components/permissions/permission_manager.h"
@@ -135,6 +136,8 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<CameraPanTiltZoomPermissionContext>(profile);
   permission_contexts[ContentSettingsType::WINDOW_PLACEMENT] =
       std::make_unique<WindowPlacementPermissionContext>(profile);
+  permission_contexts[ContentSettingsType::FONT_ACCESS] =
+      std::make_unique<FontAccessPermissionContext>(profile);
   return permission_contexts;
 }
 }  // namespace

@@ -173,6 +173,27 @@ void OsIntegrationManager::SuppressOsHooksForTesting() {
   suppress_os_hooks_for_testing_ = true;
 }
 
+void OsIntegrationManager::UpdateOsHooks(
+    const AppId& app_id,
+    base::StringPiece old_name,
+    const WebApplicationInfo& web_app_info) {
+  DCHECK(shortcut_manager_);
+
+  // TODO(crbug.com/1079439): Update file handlers.
+  shortcut_manager_->UpdateShortcuts(app_id, old_name);
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      !web_app_info.shortcut_infos.empty()) {
+    shortcut_manager_->RegisterShortcutsMenuWithOs(
+        app_id, web_app_info.shortcut_infos,
+        web_app_info.shortcuts_menu_icons_bitmaps);
+  } else {
+    // Unregister shortcuts menu when feature is disabled or shortcut_infos is
+    // empty.
+    shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
+  }
+}
+
 void OsIntegrationManager::OnShortcutsCreated(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_app_info,

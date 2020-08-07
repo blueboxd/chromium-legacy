@@ -21,6 +21,7 @@ struct HashTraits<::blink::mojom::blink::PerFrameV8MemoryUsageDataPtr>
   typedef const ::blink::mojom::blink::PerFrameV8MemoryUsageDataPtr&
       PeekOutType;
 };
+
 }  // namespace WTF
 
 namespace blink {
@@ -76,9 +77,11 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         ++(result->num_unassociated_contexts);
         result->unassociated_context_bytes_used += size;
       } else {
-        mojom::blink::PerFrameV8MemoryUsageData* per_frame_resources =
-            frames.at(frame).get();
-        if (!per_frame_resources) {
+        auto it = frames.find(frame);
+        mojom::blink::PerFrameV8MemoryUsageData* per_frame_resources;
+        if (it != frames.end()) {
+          per_frame_resources = it->value.get();
+        } else {
 #if DCHECK_IS_ON()
           // Check that the frame token didn't already occur.
           for (const auto& entry : frames) {
@@ -97,19 +100,29 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         mojom::blink::V8IsolatedWorldMemoryUsagePtr isolated_world_usage =
             mojom::blink::V8IsolatedWorldMemoryUsage::New();
         isolated_world_usage->bytes_used = size;
-        int32_t world_id = frame->GetScriptContextWorldId(context);
+        isolated_world_usage->world_id =
+            frame->GetScriptContextWorldId(context);
+        static_assert(
+            DOMWrapperWorld::WorldId::kMainWorldId ==
+                mojom::blink::V8IsolatedWorldMemoryUsage::kMainWorldId,
+            "The main world IDs must match.");
 
-        if (world_id != DOMWrapperWorld::WorldId::kMainWorldId) {
+        if (isolated_world_usage->world_id !=
+            DOMWrapperWorld::WorldId::kMainWorldId) {
           isolated_world_usage->stable_id =
               blink::GetIsolatedWorldStableId(context);
           isolated_world_usage->human_readable_name =
               blink::GetIsolatedWorldHumanReadableName(context);
         }
+#if DCHECK_IS_ON()
+        // Check that the world id didn't already occur.
+        for (const auto& entry : per_frame_resources->associated_bytes) {
+          DCHECK_NE(entry->world_id, isolated_world_usage->world_id);
+        }
+#endif
 
-        DCHECK(
-            !base::Contains(per_frame_resources->associated_bytes, world_id));
-        per_frame_resources->associated_bytes.Set(
-            world_id, std::move(isolated_world_usage));
+        per_frame_resources->associated_bytes.push_back(
+            std::move(isolated_world_usage));
       }
     }
     // Move the per-frame memory values to the result.
@@ -122,6 +135,19 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
   GetPerFrameV8MemoryUsageDataCallback callback_;
 };
 
+v8::MeasureMemoryExecution ToV8MeasureMemoryExecution(
+    V8PerFrameMemoryReporterImpl::Mode mode) {
+  switch (mode) {
+    case V8PerFrameMemoryReporterImpl::Mode::DEFAULT:
+      return v8::MeasureMemoryExecution::kDefault;
+    case V8PerFrameMemoryReporterImpl::Mode::EAGER:
+      return v8::MeasureMemoryExecution::kEager;
+    case V8PerFrameMemoryReporterImpl::Mode::LAZY:
+      return v8::MeasureMemoryExecution::kLazy;
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 // static
@@ -132,6 +158,7 @@ void V8PerFrameMemoryReporterImpl::Create(
 }
 
 void V8PerFrameMemoryReporterImpl::GetPerFrameV8MemoryUsageData(
+    V8PerFrameMemoryReporterImpl::Mode mode,
     GetPerFrameV8MemoryUsageDataCallback callback) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   if (!isolate) {
@@ -141,7 +168,8 @@ void V8PerFrameMemoryReporterImpl::GetPerFrameV8MemoryUsageData(
         std::make_unique<FrameAssociatedMeasurementDelegate>(
             std::move(callback));
 
-    isolate->MeasureMemory(std::move(delegate));
+    isolate->MeasureMemory(std::move(delegate),
+                           ToV8MeasureMemoryExecution(mode));
   }
 }
 

@@ -58,9 +58,10 @@ void FeedV2InternalsPageHandler::GetGeneralProperties(
   properties->is_feed_allowed = IsFeedAllowed();
   properties->is_prefetching_enabled =
       offline_pages::prefetch_prefs::IsEnabled(pref_service_);
-  if (debug_data.fetch_info) {
+  if (debug_data.fetch_info)
     properties->feed_fetch_url = debug_data.fetch_info->base_request_url;
-  }
+  if (debug_data.upload_info)
+    properties->feed_actions_url = debug_data.upload_info->base_request_url;
 
   properties->load_stream_status = debug_data.load_stream_status;
 
@@ -80,10 +81,15 @@ void FeedV2InternalsPageHandler::GetLastFetchProperties(
   feed::DebugStreamData debug_data = feed_stream_->GetDebugStreamData();
 
   if (debug_data.fetch_info) {
-    const feed::NetworkResponseInfo& fetch_info = *debug_data.fetch_info;
-    properties->last_fetch_status = fetch_info.status_code;
-    properties->last_fetch_time = ToJsTimeDelta(fetch_info.fetch_time);
-    properties->last_bless_nonce = fetch_info.bless_nonce;
+    const feed::NetworkResponseInfo& net_info = *debug_data.fetch_info;
+    properties->last_fetch_status = net_info.status_code;
+    properties->last_fetch_time = ToJsTimeDelta(net_info.fetch_time);
+    properties->last_bless_nonce = net_info.bless_nonce;
+  }
+  if (debug_data.upload_info) {
+    const feed::NetworkResponseInfo& net_info = *debug_data.upload_info;
+    properties->last_action_upload_status = net_info.status_code;
+    properties->last_action_upload_time = ToJsTimeDelta(net_info.fetch_time);
   }
 
   std::move(callback).Run(std::move(properties));
@@ -135,4 +141,10 @@ void FeedV2InternalsPageHandler::OverrideFeedHost(const GURL& host) {
   return pref_service_->SetString(
       feed::prefs::kHostOverrideHost,
       host.is_valid() ? host.spec() : std::string());
+}
+void FeedV2InternalsPageHandler::OverrideActionUploadEndpoint(
+    const GURL& endpoint_url) {
+  return pref_service_->SetString(
+      feed::prefs::kActionsEndpointOverride,
+      endpoint_url.is_valid() ? endpoint_url.spec() : std::string());
 }

@@ -70,5 +70,11 @@ if (concurrent_links == -1) {
 
   # TODO(crbug.com/617429) Pass more build configuration info to the script
   # so that we can compute better values.
-  concurrent_links = exec_script("get_concurrent_links.py", _args, "value")
+  _command_dict = exec_script("get_concurrent_links.py", _args, "scope")
+
+  concurrent_links = _command_dict.concurrent_links
+  concurrent_links_logs = _command_dict.explanation
+} else {
+  concurrent_links_logs =
+      [ "concurrent_links set by GN arg (value=$concurrent_links)" ]
 }

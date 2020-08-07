@@ -477,7 +477,7 @@ MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
     }
   }
 
-  result.sizes += ComputeBorders(ConstraintSpace(), Style()).InlineSum();
+  result.sizes += ComputeBorders(ConstraintSpace(), Node()).InlineSum();
   return result;
 }
 

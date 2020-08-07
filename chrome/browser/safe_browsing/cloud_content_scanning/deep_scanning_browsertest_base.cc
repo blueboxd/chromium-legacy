@@ -70,10 +70,12 @@ DeepScanningBrowserTestBase::DeepScanningBrowserTestBase(
   // Enable every deep scanning features.
   if (use_legacy_policies_) {
     scoped_feature_list_.InitWithFeatures(
-        {kContentComplianceEnabled, kMalwareScanEnabled}, {});
+        {kContentComplianceEnabled, kMalwareScanEnabled},
+        {enterprise_connectors::kEnterpriseConnectorsEnabled});
   } else {
     scoped_feature_list_.InitWithFeatures(
-        {enterprise_connectors::kEnterpriseConnectorsEnabled}, {});
+        {enterprise_connectors::kEnterpriseConnectorsEnabled},
+        {kContentComplianceEnabled, kMalwareScanEnabled});
   }
 
   // Change the time values of the upload UI to smaller ones to make tests

@@ -196,7 +196,7 @@ void UpdateLegacyMultiColumnFlowThread(
 
   // Stitch the columns together.
   NGBoxStrut border_scrollbar_padding =
-      ComputeBorders(constraint_space, node.Style()) +
+      ComputeBorders(constraint_space, node) +
       ComputeScrollbars(constraint_space, node) +
       ComputePadding(constraint_space, node.Style());
   NGFragment logical_multicol_fragment(writing_mode, fragment);

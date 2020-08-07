@@ -992,7 +992,8 @@ def _WriteOutputs(options, build):
 def _CreateNormalizedManifest(options):
   with build_utils.TempDir() as tempdir:
     fixed_manifest, _ = _FixManifest(options, tempdir)
-    return manifest_utils.NormalizeManifest(fixed_manifest)
+    with open(fixed_manifest) as f:
+      return manifest_utils.NormalizeManifest(f.read())
 
 
 def _OnStaleMd5(options):

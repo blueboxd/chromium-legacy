@@ -17,6 +17,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -35,6 +36,20 @@ std::string GetDeviceModel() {
 }
 
 std::string GetOsVersion() {
+  base::FilePath os_release_file("/etc/os-release");
+  std::string release_info;
+  base::StringPairs values;
+  if (base::PathExists(os_release_file) &&
+      base::ReadFileToStringWithMaxSize(os_release_file, &release_info, 8192) &&
+      base::SplitStringIntoKeyValuePairs(release_info, '=', '\n', &values)) {
+    auto version_id = std::find_if(values.begin(), values.end(), [](auto v) {
+      return v.first == "VERSION_ID";
+    });
+    if (version_id != values.end()) {
+      return base::TrimString(version_id->second, "\"", base::TRIM_ALL)
+          .as_string();
+    }
+  }
   return base::SysInfo::OperatingSystemVersion();
 }
 

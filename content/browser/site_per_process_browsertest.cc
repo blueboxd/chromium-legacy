@@ -13395,8 +13395,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
     EXPECT_EQ(expected_touch_action, allowed_touch_action.value());
 }
 
+// Failes on Win.  https://crbug.com/1097060
+#if defined(OS_WIN)
+#define MAYBE_ChildFrameCrashMetrics_KilledWhileVisible \
+  DISABLED_ChildFrameCrashMetrics_KilledWhileVisible
+#else
+#define MAYBE_ChildFrameCrashMetrics_KilledWhileVisible \
+  ChildFrameCrashMetrics_KilledWhileVisible
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       ChildFrameCrashMetrics_KilledWhileVisible) {
+                       MAYBE_ChildFrameCrashMetrics_KilledWhileVisible) {
   // Set-up a frame tree that helps verify what the metrics tracks:
   // 1) frames (12 frames are affected if B process gets killed) or
   // 2) crashes (simply 1 crash if B process gets killed)?

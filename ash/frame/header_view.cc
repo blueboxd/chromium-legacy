@@ -325,4 +325,8 @@ void HeaderView::UpdateCaptionButtonsVisibility() {
   caption_button_container_->SetVisible(should_paint_);
 }
 
+BEGIN_METADATA(HeaderView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 }  // namespace ash

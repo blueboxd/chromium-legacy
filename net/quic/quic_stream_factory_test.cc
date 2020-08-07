@@ -1386,7 +1386,11 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  session->OnGoAway(quic::QuicGoAwayFrame());
+  if (version_.UsesHttp3()) {
+    session->OnHttp3GoAway(0);
+  } else {
+    session->OnGoAway(quic::QuicGoAwayFrame());
+  }
 
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
@@ -1396,6 +1400,11 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
 
 TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
   Initialize();
+  // GoAway in HTTP/3 doesn't contain error code. Thus the session can't do
+  // error code specific handling.
+  if (version_.UsesHttp3()) {
+    return;
+  }
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -1501,7 +1510,11 @@ TEST_P(QuicStreamFactoryTest, ServerNetworkStatsWithNetworkIsolationKey) {
     QuicChromiumClientSession* session =
         GetActiveSession(host_port_pair_, kNetworkIsolationKeys[i]);
 
-    session->OnGoAway(quic::QuicGoAwayFrame());
+    if (version_.UsesHttp3()) {
+      session->OnHttp3GoAway(0);
+    } else {
+      session->OnGoAway(quic::QuicGoAwayFrame());
+    }
 
     EXPECT_FALSE(HasActiveSession(host_port_pair_, kNetworkIsolationKeys[i]));
 

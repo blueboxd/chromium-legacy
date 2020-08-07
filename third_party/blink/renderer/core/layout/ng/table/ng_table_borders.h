@@ -16,6 +16,7 @@
 namespace blink {
 
 class ComputedStyle;
+class NGBlockNode;
 struct NGBoxStrut;
 
 // When table has collapsed borders, computing borders for table parts is
@@ -191,12 +192,10 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
                           collapsed_visual_inline_end_);
   }
 
-  NGBoxStrut CellBorder(wtf_size_t row,
+  NGBoxStrut CellBorder(const NGBlockNode& cell,
+                        wtf_size_t row,
                         wtf_size_t column,
-                        wtf_size_t rowspan,
-                        wtf_size_t colspan,
-                        wtf_size_t section_index,
-                        const ComputedStyle& cell_style) const;
+                        wtf_size_t section) const;
 
   NGBoxStrut CellPaddingForMeasure(const ComputedStyle& cell_style) const;
 

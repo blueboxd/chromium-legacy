@@ -1885,4 +1885,9 @@ void WebFrameWidgetBase::ForEachRemoteFrameControlledByWidget(
                                                callback);
 }
 
+void WebFrameWidgetBase::BatterySavingsChanged(WebBatterySavingsFlags savings) {
+  widget_base_->LayerTreeHost()->SetEnableFrameRateThrottling(
+      savings & kAllowReducedFrameRate);
+}
+
 }  // namespace blink

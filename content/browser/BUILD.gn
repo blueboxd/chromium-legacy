@@ -5,7 +5,6 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
@@ -712,6 +711,8 @@ source_set("browser") {
     "conversions/conversion_reporter_impl.cc",
     "conversions/conversion_reporter_impl.h",
     "conversions/conversion_storage.h",
+    "conversions/conversion_storage_context.cc",
+    "conversions/conversion_storage_context.h",
     "conversions/conversion_storage_delegate_impl.cc",
     "conversions/conversion_storage_delegate_impl.h",
     "conversions/conversion_storage_sql.cc",
@@ -889,6 +890,8 @@ source_set("browser") {
     "find_in_page_client.h",
     "find_request_manager.cc",
     "find_request_manager.h",
+    "font_access/font_access_manager_impl.cc",
+    "font_access/font_access_manager_impl.h",
     "font_list_async.cc",
     "frame_host/ancestor_throttle.cc",
     "frame_host/ancestor_throttle.h",

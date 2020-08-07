@@ -10,11 +10,11 @@
   <uses-feature android:name="android.software.leanback" android:required="false"/>
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
   <uses-feature android:glEsVersion="0x00020000"/>
-  <application  # DIFF-ANCHOR: 9d5595e9
+  <application
       android:extractNativeLibs="false"
       android:icon="@drawable/icon_webview"
       android:label="Trichrome Library"
       android:multiArch="true">
     <static-library android:name="$PACKAGE" android:version="$VERSION_NUMBER"/>
-  </application>  # DIFF-ANCHOR: 9d5595e9
+  </application>
 </manifest>

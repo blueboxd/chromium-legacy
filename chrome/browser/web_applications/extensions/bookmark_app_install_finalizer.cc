@@ -20,10 +20,12 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
@@ -139,10 +141,11 @@ void BookmarkAppInstallFinalizer::FinalizeUpdate(
 
   scoped_refptr<CrxInstaller> crx_installer =
       crx_installer_factory_.Run(profile_);
-  crx_installer->set_installer_callback(base::BindOnce(
-      &BookmarkAppInstallFinalizer::OnExtensionUpdated,
-      weak_ptr_factory_.GetWeakPtr(), std::move(expected_app_id),
-      existing_extension->short_name(), std::move(callback), crx_installer));
+  crx_installer->set_installer_callback(
+      base::BindOnce(&BookmarkAppInstallFinalizer::OnExtensionUpdated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(expected_app_id),
+                     existing_extension->short_name(), web_app_info,
+                     std::move(callback), crx_installer));
   crx_installer->InitializeCreationFlagsForUpdate(existing_extension,
                                                   Extension::NO_FLAGS);
   crx_installer->set_install_source(existing_extension->location());
@@ -294,6 +297,7 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     const web_app::AppId& expected_app_id,
     const std::string& old_name,
+    const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
@@ -314,9 +318,12 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     return;
   }
 
-  if (!is_legacy_finalizer())
+  if (!is_legacy_finalizer()) {
+    web_app::WebAppProviderBase::GetProviderBase(profile_)
+        ->os_integration_manager()
+        .UpdateOsHooks(extension->id(), old_name, web_app_info);
     registrar().NotifyWebAppManifestUpdated(extension->id(), old_name);
-
+  }
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessAlreadyInstalled);
 }

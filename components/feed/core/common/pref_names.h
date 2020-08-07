@@ -56,6 +56,8 @@ extern const char kRequestSchedule[];
 extern const char kMetricsData[];
 // The pref name for storing client instance id.
 extern const char kClientInstanceId[];
+// The pref name for the Actions endpoint override.
+extern const char kActionsEndpointOverride[];
 
 }  // namespace prefs
 

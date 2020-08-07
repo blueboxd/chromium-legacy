@@ -1245,4 +1245,12 @@ void ChromeClientImpl::SetDelegatedInkMetadata(
   frame->GetWidgetForLocalRoot()->SetDelegatedInkMetadata(std::move(metadata));
 }
 
+void ChromeClientImpl::BatterySavingsChanged(LocalFrame& main_frame,
+                                             WebBatterySavingsFlags savings) {
+  DCHECK(main_frame.IsMainFrame());
+  WebLocalFrameImpl::FromFrame(main_frame)
+      ->FrameWidgetImpl()
+      ->BatterySavingsChanged(savings);
+}
+
 }  // namespace blink

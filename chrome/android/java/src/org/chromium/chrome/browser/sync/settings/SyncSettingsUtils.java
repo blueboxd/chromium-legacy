@@ -55,7 +55,8 @@ public class SyncSettingsUtils {
     private static final String TAG = "SyncSettingsUtils";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
-            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
+            SyncError.PASSPHRASE_REQUIRED, SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING,
+            SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS, SyncError.CLIENT_OUT_OF_DATE,
             SyncError.SYNC_SETUP_INCOMPLETE, SyncError.OTHER_ERRORS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SyncError {
@@ -143,6 +144,30 @@ public class SyncSettingsUtils {
                 return context.getString(R.string.hint_sync_retrieve_keys);
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 return context.getString(R.string.hint_sync_settings_not_confirmed_description);
+            case SyncError.NO_ERROR:
+            default:
+                return null;
+        }
+    }
+
+    public static @Nullable String getSyncErrorCardButtonLabel(
+            Context context, @SyncError int error) {
+        switch (error) {
+            case SyncError.ANDROID_SYNC_DISABLED:
+                return context.getString(R.string.android_sync_disabled_error_card_button);
+            case SyncError.AUTH_ERROR:
+                return context.getString(R.string.auth_error_card_button);
+            case SyncError.CLIENT_OUT_OF_DATE:
+                return context.getString(R.string.client_out_of_date_error_card_button,
+                        BuildInfo.getInstance().hostPackageLabel);
+            case SyncError.PASSPHRASE_REQUIRED:
+                return context.getString(R.string.passphrase_required_error_card_button);
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
+                return context.getString(R.string.trusted_vault_error_card_button);
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                return context.getString(R.string.sync_setup_incomplete_error_card_confirm_button);
+            case SyncError.OTHER_ERRORS:
             case SyncError.NO_ERROR:
             default:
                 return null;

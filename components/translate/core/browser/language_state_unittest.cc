@@ -4,8 +4,6 @@
 
 #include "components/translate/core/browser/language_state.h"
 
-#include <memory>
-
 #include "base/macros.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
@@ -17,8 +15,8 @@ using translate::testing::MockTranslateDriver;
 namespace translate {
 
 TEST(LanguageStateTest, IsPageTranslated) {
-  std::unique_ptr<MockTranslateDriver> driver(new MockTranslateDriver);
-  LanguageState language_state(driver.get());
+  MockTranslateDriver driver;
+  LanguageState language_state(&driver);
   EXPECT_FALSE(language_state.IsPageTranslated());
 
   // Navigate to a French page.
@@ -41,36 +39,36 @@ TEST(LanguageStateTest, IsPageTranslated) {
 }
 
 TEST(LanguageStateTest, Driver) {
-  std::unique_ptr<MockTranslateDriver> driver(new MockTranslateDriver);
-  LanguageState language_state(driver.get());
+  MockTranslateDriver driver;
+  LanguageState language_state(&driver);
 
   // Enable/Disable translate.
   EXPECT_FALSE(language_state.translate_enabled());
-  EXPECT_FALSE(driver->on_translate_enabled_changed_called());
+  EXPECT_FALSE(driver.on_translate_enabled_changed_called());
   language_state.SetTranslateEnabled(true);
   EXPECT_TRUE(language_state.translate_enabled());
-  EXPECT_TRUE(driver->on_translate_enabled_changed_called());
+  EXPECT_TRUE(driver.on_translate_enabled_changed_called());
 
-  driver->Reset();
+  driver.Reset();
   language_state.SetTranslateEnabled(false);
   EXPECT_FALSE(language_state.translate_enabled());
-  EXPECT_TRUE(driver->on_translate_enabled_changed_called());
+  EXPECT_TRUE(driver.on_translate_enabled_changed_called());
 
   // Navigate to a French page.
-  driver->Reset();
+  driver.Reset();
   language_state.LanguageDetermined("fr", true);
   EXPECT_FALSE(language_state.translate_enabled());
-  EXPECT_FALSE(driver->on_is_page_translated_changed_called());
-  EXPECT_FALSE(driver->on_translate_enabled_changed_called());
+  EXPECT_FALSE(driver.on_is_page_translated_changed_called());
+  EXPECT_FALSE(driver.on_translate_enabled_changed_called());
 
   // Translate.
   language_state.SetCurrentLanguage("en");
   EXPECT_TRUE(language_state.IsPageTranslated());
-  EXPECT_TRUE(driver->on_is_page_translated_changed_called());
+  EXPECT_TRUE(driver.on_is_page_translated_changed_called());
 
   // Translate feature must be enabled after an actual translation.
   EXPECT_TRUE(language_state.translate_enabled());
-  EXPECT_TRUE(driver->on_translate_enabled_changed_called());
+  EXPECT_TRUE(driver.on_translate_enabled_changed_called());
 }
 
 }  // namespace translate

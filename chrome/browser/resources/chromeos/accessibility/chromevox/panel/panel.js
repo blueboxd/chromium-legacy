@@ -660,8 +660,24 @@ Panel = class {
       }
     };
 
+    const routeCursor = function(event) {
+      const cell = event.target;
+      if (cell.tagName == 'TD') {
+        const displayPosition = parseInt(cell.id.split('-')[0], 10);
+        if (Number.isNaN(displayPosition)) {
+          throw new Error(
+              'The display position is calculated assuming that the cell ID ' +
+              'is formatted like int-string. For example, 0-brailleCell is a ' +
+              'valid cell ID.');
+        }
+        chrome.extension.getBackgroundPage()['ChromeVox'].braille.route(
+            displayPosition);
+      }
+    };
+
     Panel.brailleContainer_.addEventListener('mouseover', addBorders);
     Panel.brailleContainer_.addEventListener('mouseout', removeBorders);
+    Panel.brailleContainer_.addEventListener('click', routeCursor);
 
     // Clear the tables.
     let rowCount = Panel.brailleTableElement_.rows.length;

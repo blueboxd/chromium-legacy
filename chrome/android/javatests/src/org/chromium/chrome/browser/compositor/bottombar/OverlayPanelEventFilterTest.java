@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -16,13 +14,14 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Class responsible for testing the OverlayPanelEventFilter.
@@ -60,9 +59,6 @@ public class OverlayPanelEventFilterTest {
     // --------------------------------------------------------------------------------------------
     // OverlayPanelEventFilterWrapper
     // --------------------------------------------------------------------------------------------
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     /**
      * Wrapper around OverlayPanelEventFilter used by tests.
@@ -213,16 +209,18 @@ public class OverlayPanelEventFilterTest {
         mDpToPx = context.getResources().getDisplayMetrics().density;
         mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;
 
-        mPanel = new MockOverlayPanel(context, new OverlayPanelManager());
-        mEventFilter = new OverlayPanelEventFilterWrapper(context, mPanel);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPanel = new MockOverlayPanel(context, new OverlayPanelManager());
+            mEventFilter = new OverlayPanelEventFilterWrapper(context, mPanel);
 
-        mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
-        mPanel.setHeightForTesting(LAYOUT_HEIGHT_DP);
-        mPanel.setIsFullWidthSizePanelForTesting(true);
+            mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
+            mPanel.setHeightForTesting(LAYOUT_HEIGHT_DP);
+            mPanel.setIsFullWidthSizePanelForTesting(true);
 
-        // NOTE(pedrosimonetti): This should be called after calling the method
-        // setIsFullWidthSizePanelForTesting(), otherwise it will crash the test.
-        mPanel.onSizeChanged(LAYOUT_WIDTH_DP, LAYOUT_HEIGHT_DP, 0, 0);
+            // NOTE(pedrosimonetti): This should be called after calling the method
+            // setIsFullWidthSizePanelForTesting(), otherwise it will crash the test.
+            mPanel.onSizeChanged(LAYOUT_WIDTH_DP, LAYOUT_HEIGHT_DP, 0, 0);
+        });
 
         setContentViewVerticalScroll(0);
 

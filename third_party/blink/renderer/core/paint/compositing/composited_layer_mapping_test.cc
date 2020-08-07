@@ -1709,13 +1709,15 @@ TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
   EXPECT_TRUE(mapping->MainGraphicsLayer()->ContentsOpaque());
 }
 
-TEST_F(CompositedLayerMappingTest, NullOverflowControlsHostLayer) {
+TEST_F(CompositedLayerMappingTest, NullOverflowControlLayers) {
   SetHtmlInnerHTML("<div id='target' style='will-change: transform'></div>");
   CompositedLayerMapping* mapping =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))
           ->Layer()
           ->GetCompositedLayerMapping();
-  EXPECT_FALSE(mapping->DetachLayerForOverflowControls());
+  EXPECT_FALSE(mapping->LayerForHorizontalScrollbar());
+  EXPECT_FALSE(mapping->LayerForVerticalScrollbar());
+  EXPECT_FALSE(mapping->LayerForScrollCorner());
 }
 
 TEST_F(CompositedLayerMappingTest, CompositedHiddenAnimatingLayer) {

@@ -6,7 +6,10 @@
 
 #include <jni.h>
 
+#include "base/android/jni_string.h"
 #include "chrome/browser/password_check/android/internal/jni_headers/PasswordCheckBridge_jni.h"
+#include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
+#include "url/android/gurl_android.h"
 
 static jlong JNI_PasswordCheckBridge_Create(
     JNIEnv* env,
@@ -38,8 +41,22 @@ jint PasswordCheckBridge::GetSavedPasswordsCount(JNIEnv* env) {
 
 void PasswordCheckBridge::GetCompromisedCredentials(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobjectArray>& credentials) {
-  // TODO(crbug.com/1102025): implement this.
+    const base::android::JavaParamRef<jobjectArray>& java_credentials) {
+  std::vector<PasswordCheckManager::CompromisedCredentialForUI> credentials =
+      check_manager_.GetCompromisedCredentials();
+
+  for (size_t i = 0; i < credentials.size(); ++i) {
+    const auto& credential = credentials[i];
+    Java_PasswordCheckBridge_insertCredential(
+        env, java_credentials, i,
+        base::android::ConvertUTF16ToJavaString(env, credential.display_origin),
+        base::android::ConvertUTF16ToJavaString(env,
+                                                credential.display_username),
+        base::android::ConvertUTF16ToJavaString(env, credential.password),
+        (credential.compromise_type ==
+         password_manager::CompromiseTypeFlags::kCredentialPhished),
+        credential.has_script);
+  }
 }
 
 void PasswordCheckBridge::RemoveCredential(

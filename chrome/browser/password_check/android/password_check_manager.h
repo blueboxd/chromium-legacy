@@ -30,6 +30,25 @@ class PasswordCheckManager
         password_manager::PasswordCheckUIStatus status) = 0;
   };
 
+  struct CompromisedCredentialForUI : password_manager::CredentialWithPassword {
+    explicit CompromisedCredentialForUI(
+        const password_manager::CredentialWithPassword& credential);
+
+    CompromisedCredentialForUI(const CompromisedCredentialForUI& other);
+    CompromisedCredentialForUI(CompromisedCredentialForUI&& other);
+    CompromisedCredentialForUI& operator=(
+        const CompromisedCredentialForUI& other);
+    CompromisedCredentialForUI& operator=(CompromisedCredentialForUI&& other);
+    ~CompromisedCredentialForUI();
+
+    base::string16 display_username;
+    base::string16 display_origin;
+    std::string package_name;
+    std::string change_password_url;
+    bool is_android_credential = false;
+    bool has_script = false;
+  };
+
   // `observer` must outlive `this`.
   PasswordCheckManager(Profile* profile, Observer* observer);
   ~PasswordCheckManager() override;
@@ -47,6 +66,9 @@ class PasswordCheckManager
   // Called by java to retrieve the number of saved passwords.
   // If the saved passwords haven't been fetched yet, this will return 0.
   int GetSavedPasswordsCount() const;
+
+  // Called by java to retrieve the compromised credentials.
+  std::vector<CompromisedCredentialForUI> GetCompromisedCredentials() const;
 
   // Not copyable or movable
   PasswordCheckManager(const PasswordCheckManager&) = delete;
@@ -70,6 +92,13 @@ class PasswordCheckManager
       password_manager::BulkLeakCheckServiceInterface::State state) override;
   void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
                         password_manager::IsLeaked is_leaked) override;
+  void OnBulkCheckServiceShutDown() override;
+
+  // Turns a `CredentialWithPassword` into a `CompromisedCredentialForUI`,
+  // getting suitable strings for all display elements (e.g. url, app name,
+  // app package, username, etc.).
+  CompromisedCredentialForUI MakeUICredential(
+      const password_manager::CredentialWithPassword& credential) const;
 
   // Converts the state retrieved from the check service into a state that
   // can be used by the UI to display appropriate messages.

@@ -2890,6 +2890,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "lite-video-default-downlink-bandwidth-kbps",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "lite-video-force-override-decision",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for debugging and development purposes, allowing users
@@ -4464,7 +4469,12 @@
   {
     "name": "webui-tab-strip",
     "owners": [ "collinbaker", "johntlee" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
+  },
+  {
+    "name": "webui-tab-strip-tab-drag-integration",
+    "owners": [ "collinbaker", "johntlee" ],
+    "expiry_milestone": 89
   },
   {
     "name": "webxr-incubations",

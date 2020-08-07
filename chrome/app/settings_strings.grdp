@@ -57,10 +57,13 @@
     Get captions for your media
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE" desc="Subtitle of the setting to enable Live Caption.">
-    Chrome automatically creates English captions using Live Caption
+    Chrome automatically creates captions using Live Caption (currently available in English only)
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_PROGRESS" desc="This message is displayed as a subtitle to the Live Caption title while the model is being downloading. It shows the download progress as a percentage and is updated dynamically.">
     Downloading speech recognition files... <ph name="PERCENT">$1<ex>17</ex></ph>%
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_COMPLETE" desc="Message displayed when the live caption files have completed downloading.">
+    Speech recognition files downloaded
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR" desc="Message displayed when there is an error downloading the live caption files.">
     The required files can't be downloaded. Try again later.

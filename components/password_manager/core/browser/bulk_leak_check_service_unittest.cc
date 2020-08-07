@@ -146,6 +146,8 @@ TEST_F(BulkLeakCheckServiceTest, StartWithZeroPasswords) {
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
       IsEmpty());
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, Running) {
@@ -169,6 +171,8 @@ TEST_F(BulkLeakCheckServiceTest, Running) {
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
       IsEmpty());
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, AppendRunning) {
@@ -193,6 +197,8 @@ TEST_F(BulkLeakCheckServiceTest, AppendRunning) {
   EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
       .WillRepeatedly(Return(20));
   EXPECT_EQ(20u, service().GetPendingChecksCount());
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheck) {
@@ -208,6 +214,8 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheck) {
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
       IsEmpty());
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheckWithError) {
@@ -232,6 +240,8 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheckWithError) {
       expected_counts);
   histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.Error",
                                         LeakDetectionError::kNotSignIn, 1);
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CancelNothing) {
@@ -245,6 +255,8 @@ TEST_F(BulkLeakCheckServiceTest, CancelNothing) {
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
       IsEmpty());
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
@@ -268,6 +280,8 @@ TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
       ::testing::SizeIs(2));
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, NotifyAboutLeak) {
@@ -293,6 +307,8 @@ TEST_F(BulkLeakCheckServiceTest, NotifyAboutLeak) {
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
       IsEmpty());
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
@@ -325,6 +341,8 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
                                         kMockElapsedTime, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.BulkCheck.TimePerCredential", kMockElapsedTime / 2, 1);
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
@@ -361,6 +379,8 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
                                         kMockElapsedTime, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.BulkCheck.TimePerCredential", kMockElapsedTime / 2, 1);
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, TwoChecksAfterEachOther) {
@@ -417,6 +437,8 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.BulkCheck.Error",
       LeakDetectionError::kInvalidServerResponse, 1);
+
+  service().RemoveObserver(&observer);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithQuotaLimit) {
@@ -443,6 +465,8 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithQuotaLimit) {
       expected_counts);
   histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.Error",
                                         LeakDetectionError::kQuotaLimit, 1);
+
+  service().RemoveObserver(&observer);
 }
 
 }  // namespace

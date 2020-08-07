@@ -840,6 +840,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     TableViewDetailTextCell* textCell =
         base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
     textCell.detailTextLabel.numberOfLines = 0;
+    textCell.detailTextLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     textCell.selectionStyle = UITableViewCellSelectionStyleNone;
     textCell.separatorInset =
         UIEdgeInsetsMake(0, tableView.bounds.size.width, 0, 0);

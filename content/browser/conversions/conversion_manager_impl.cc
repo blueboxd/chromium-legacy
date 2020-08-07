@@ -74,24 +74,29 @@ ConversionManagerImpl::ConversionManagerImpl(
     scoped_refptr<base::SequencedTaskRunner> storage_task_runner)
     : debug_mode_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kConversionsDebugMode)),
-      storage_task_runner_(std::move(storage_task_runner)),
       clock_(clock),
       reporter_(std::move(reporter)),
-      storage_(new ConversionStorageSql(
-                   user_data_directory,
-                   std::make_unique<ConversionStorageDelegateImpl>(debug_mode_),
-                   clock_),
-               base::OnTaskRunnerDeleter(storage_task_runner_)),
+      conversion_storage_context_(
+          base::MakeRefCounted<ConversionStorageContext>(
+              std::move(storage_task_runner),
+              user_data_directory,
+              std::make_unique<ConversionStorageDelegateImpl>(debug_mode_),
+              clock_)),
       conversion_policy_(std::move(policy)),
       weak_factory_(this) {
-  // Unretained is safe because any task to delete |storage_| will be posted
-  // after this one.
-  base::PostTaskAndReplyWithResult(
-      storage_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ConversionStorage::Initialize,
-                     base::Unretained(storage_.get())),
-      base::BindOnce(&ConversionManagerImpl::OnInitCompleted,
-                     weak_factory_.GetWeakPtr()));
+  // Once the database is loaded, get all reports that may have expired while
+  // Chrome was not running and handle these specially. It is safe to post tasks
+  // to the storage context as soon as it is created.
+  GetAndHandleReports(
+      base::BindOnce(&ConversionManagerImpl::HandleReportsExpiredAtStartup,
+                     weak_factory_.GetWeakPtr()),
+      clock_->Now() + kConversionManagerQueueReportsInterval);
+
+  // Start a repeating timer that will fetch reports once every
+  // |kConversionManagerQueueReportsInterval| and add them to |reporter_|.
+  get_and_queue_reports_timer_.Start(
+      FROM_HERE, kConversionManagerQueueReportsInterval, this,
+      &ConversionManagerImpl::GetAndQueueReportsForNextInterval);
 }
 
 ConversionManagerImpl::~ConversionManagerImpl() = default;
@@ -99,23 +104,15 @@ ConversionManagerImpl::~ConversionManagerImpl() = default;
 void ConversionManagerImpl::HandleImpression(
     const StorableImpression& impression) {
   // Add the impression to storage.
-  storage_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ConversionStorage::StoreImpression,
-                                base::Unretained(storage_.get()), impression));
+  conversion_storage_context_->StoreImpression(impression);
 }
 
 void ConversionManagerImpl::HandleConversion(
     const StorableConversion& conversion) {
   // TODO(https://crbug.com/1043345): Add UMA for the number of conversions we
   // are logging to storage, and the number of new reports logged to storage.
-  // Unretained is safe because any task to delete |storage_| will be posted
-  // after this one.
-  storage_task_runner_.get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::IgnoreResult(
-              &ConversionStorage::MaybeCreateAndStoreConversionReports),
-          base::Unretained(storage_.get()), conversion));
+  conversion_storage_context_->MaybeCreateAndStoreConversionReports(
+      conversion, base::DoNothing::Once<int>());
 
   // If we are running in debug mode, we should also schedule a task to
   // gather and send any new reports.
@@ -127,11 +124,7 @@ void ConversionManagerImpl::GetActiveImpressionsForWebUI(
     base::OnceCallback<void(std::vector<StorableImpression>)> callback) {
   // Unretained is safe because any task to delete |storage_| will be posted
   // after this one because |storage_| uses base::OnTaskRunnerDeleter.
-  base::PostTaskAndReplyWithResult(
-      storage_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ConversionStorage::GetActiveImpressions,
-                     base::Unretained(storage_.get())),
-      std::move(callback));
+  conversion_storage_context_->GetActiveImpressions(std::move(callback));
 }
 
 void ConversionManagerImpl::GetReportsForWebUI(
@@ -156,45 +149,15 @@ void ConversionManagerImpl::ClearData(
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter,
     base::OnceClosure done) {
-  storage_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&ConversionStorage::ClearData,
-                     base::Unretained(storage_.get()), delete_begin, delete_end,
-                     std::move(filter)),
-      std::move(done));
-}
-
-void ConversionManagerImpl::OnInitCompleted(bool success) {
-  // The storage layer is robust to initialization failures, so ignore the case
-  // where it failed to setup.
-  if (!success) {
-    // TODO(https://crbug.com/1099812): Log metrics on storage initialization
-    // success.
-    return;
-  }
-
-  // Once the database is loaded, get all reports that may have expired while
-  // Chrome was not running and handle these specially.
-  GetAndHandleReports(
-      base::BindOnce(&ConversionManagerImpl::HandleReportsExpiredAtStartup,
-                     weak_factory_.GetWeakPtr()),
-      clock_->Now() + kConversionManagerQueueReportsInterval);
-
-  // Start a repeating timer that will fetch reports once every
-  // |kConversionManagerQueueReportsInterval| and add them to |reporter_|.
-  get_and_queue_reports_timer_.Start(
-      FROM_HERE, kConversionManagerQueueReportsInterval, this,
-      &ConversionManagerImpl::GetAndQueueReportsForNextInterval);
+  conversion_storage_context_->ClearData(delete_begin, delete_end,
+                                         std::move(filter), std::move(done));
 }
 
 void ConversionManagerImpl::GetAndHandleReports(
     ReportsHandlerFunc handler_function,
     base::Time max_report_time) {
-  base::PostTaskAndReplyWithResult(
-      storage_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ConversionStorage::GetConversionsToReport,
-                     base::Unretained(storage_.get()), max_report_time),
-      std::move(handler_function));
+  conversion_storage_context_->GetConversionsToReport(
+      max_report_time, std::move(handler_function));
 }
 
 void ConversionManagerImpl::GetAndQueueReportsForNextInterval() {
@@ -263,10 +226,8 @@ void ConversionManagerImpl::HandleReportsSentFromWebUI(
 }
 
 void ConversionManagerImpl::OnReportSent(int64_t conversion_id) {
-  storage_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
-                     base::Unretained(storage_.get()), conversion_id));
+  conversion_storage_context_->DeleteConversion(conversion_id,
+                                                base::DoNothing::Once<bool>());
 }
 
 void ConversionManagerImpl::OnReportSentFromWebUI(
@@ -274,11 +235,11 @@ void ConversionManagerImpl::OnReportSentFromWebUI(
     int64_t conversion_id) {
   // |reports_sent_barrier| is a OnceClosure view of a RepeatingClosure obtained
   // by base::BarrierClosure().
-  storage_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
-                     base::Unretained(storage_.get()), conversion_id),
-      std::move(reports_sent_barrier));
+  conversion_storage_context_->DeleteConversion(
+      conversion_id,
+      base::BindOnce([](base::OnceClosure callback,
+                        bool result) { std::move(callback).Run(); },
+                     std::move(reports_sent_barrier)));
 }
 
 }  // namespace content

@@ -41,7 +41,17 @@ void MockWidget::ForceRedraw(ForceRedrawCallback callback) {}
 
 void MockWidget::GetWidgetInputHandler(
     mojo::PendingReceiver<blink::mojom::WidgetInputHandler> request,
-    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {}
+    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
+  // Some tests try to reinitialize a host against same MockWidget multiple
+  // times. We assume this happens against the same host and avoid changing the
+  // binding.
+  if (!input_handler_host_.is_bound())
+    input_handler_host_.Bind(std::move(host));
+}
+
+void MockWidget::SetTouchActionFromMain(cc::TouchAction touch_action) {
+  input_handler_host_->SetTouchActionFromMain(touch_action);
+}
 
 void MockWidget::UpdateVisualProperties(
     const blink::VisualProperties& visual_properties) {

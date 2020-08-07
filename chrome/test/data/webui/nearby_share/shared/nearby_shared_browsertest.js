@@ -56,3 +56,22 @@ var NearbyOnboardingPageTest = class extends NearbySharedBrowserTest {
 };
 
 TEST_F('NearbyOnboardingPageTest', 'All', () => mocha.run());
+
+/**
+ * @extends {NearbySharedBrowserTest}
+ */
+var NearbyVisibilityPageTest = class extends NearbySharedBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'shared/nearby_visibility_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'nearby_visibility_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('NearbyVisibilityPageTest', 'All', () => mocha.run());

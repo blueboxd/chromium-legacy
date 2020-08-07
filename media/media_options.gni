@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/args.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libaom/options.gni")
@@ -84,10 +83,8 @@ declare_args() {
   # Enable HLS with SAMPLE-AES decryption.
   enable_hls_sample_aes = proprietary_codecs && (is_chromecast || is_fuchsia)
 
-  # Enable logging override, e.g. enable DVLOGs at build time. Must not be
-  # enabled when |use_jumbo_build| is true, in which case multiple .cc files
-  # are combined and we could override more logging than expected.
-  enable_logging_override = !use_jumbo_build && is_chromecast
+  # Enable logging override, e.g. enable DVLOGs at build time.
+  enable_logging_override = is_chromecast
 
   enable_dav1d_decoder = !is_android && !is_ios
 
@@ -103,9 +100,6 @@ declare_args() {
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
 assert(enable_mse_mpeg2ts_stream_parser || !enable_hls_sample_aes)
-
-# Logging override must not be enabled in jumbo builds.
-assert(!use_jumbo_build || !enable_logging_override)
 
 if (media_use_ffmpeg) {
   media_subcomponent_deps += [ "//media/ffmpeg" ]

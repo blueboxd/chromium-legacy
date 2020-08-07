@@ -4,6 +4,7 @@
 
 """Contains common helpers for working with Android manifests."""
 
+import hashlib
 import os
 import shlex
 import xml.dom.minidom as minidom
@@ -151,7 +152,7 @@ def _SplitElement(line):
 
 
 def _CreateNodeHash(lines):
-  """Computes a hash for the first XML node found in |lines|.
+  """Computes a hash (md5) for the first XML node found in |lines|.
 
   Args:
     lines: List of strings containing pretty-printed XML.
@@ -160,12 +161,23 @@ def _CreateNodeHash(lines):
     Positive 32-bit integer hash of the node (including children).
   """
   target_indent = lines[0].find('<')
+  tag_closed = False
   for i, l in enumerate(lines[1:]):
     cur_indent = l.find('<')
     if cur_indent != -1 and cur_indent <= target_indent:
       tag_lines = lines[:i + 1]
-      return hash(tuple(tag_lines)) % 0x100000000  # Make 32-bit non-negative.
-  assert False, 'Did not find end of node:\n' + '\n'.join(lines)
+      break
+    elif not tag_closed and 'android:name="' in l:
+      # To reduce noise of node tags changing, use android:name as the
+      # basis the hash since they usually unique.
+      tag_lines = [l]
+      break
+    tag_closed = tag_closed or '>' in l
+  else:
+    assert False, 'Did not find end of node:\n' + '\n'.join(lines)
+
+  # Insecure and truncated hash as it only needs to be unique vs. its neighbors.
+  return hashlib.md5('\n'.join(tag_lines)).hexdigest()[:8]
 
 
 def _IsSelfClosing(lines):
@@ -190,23 +202,32 @@ def _AddDiffTags(lines):
   hash_stack = []
   for i, l in enumerate(lines):
     stripped = l.lstrip()
-    # If it's an indented tag that is not self-closing (unless wrapped):
-    if l[0] == ' ' and stripped[0] == '<' and l[-2:] != '/>':
-      if stripped[1] != '/':
-        cur_hash = _CreateNodeHash(lines[i:])
-        if not _IsSelfClosing(lines[i:]):
-          hash_stack.append(cur_hash)
-      else:
-        cur_hash = hash_stack.pop()
-      lines[i] += '  # DIFF-ANCHOR: {:x}'.format(cur_hash)
+    # Ignore non-indented tags and lines that are not the start/end of a node.
+    if l[0] != ' ' or stripped[0] != '<':
+      continue
+    # Ignore self-closing nodes that fit on one line.
+    if l[-2:] == '/>':
+      continue
+    # Ignore <application> since diff tag changes with basically any change.
+    if stripped.lstrip('</').startswith('application'):
+      continue
+
+    # Check for the closing tag (</foo>).
+    if stripped[1] != '/':
+      cur_hash = _CreateNodeHash(lines[i:])
+      if not _IsSelfClosing(lines[i:]):
+        hash_stack.append(cur_hash)
+    else:
+      cur_hash = hash_stack.pop()
+    lines[i] += '  # DIFF-ANCHOR: {}'.format(cur_hash)
   assert not hash_stack, 'hash_stack was not empty:\n' + '\n'.join(hash_stack)
 
 
-def NormalizeManifest(path):
-  with open(path) as f:
-    # This also strips comments and sorts node attributes alphabetically.
-    root = ElementTree.fromstring(f.read())
-    package = GetPackage(root)
+def NormalizeManifest(manifest_contents):
+  _RegisterElementTreeNamespaces()
+  # This also strips comments and sorts node attributes alphabetically.
+  root = ElementTree.fromstring(manifest_contents)
+  package = GetPackage(root)
 
   # Trichrome's static library version number is updated daily. To avoid
   # frequent manifest check failures, we remove the exact version number
@@ -242,16 +263,23 @@ def NormalizeManifest(path):
   dom = minidom.parseString(ElementTree.tostring(root))
   out_lines = []
   for l in dom.toprettyxml(indent='  ').splitlines():
-    if l.strip():
-      if len(l) > _WRAP_LINE_LENGTH and any(x in l for x in _WRAP_CANDIDATES):
-        indent = ' ' * l.find('<')
-        start_tag, attrs, end_tag = _SplitElement(l)
-        out_lines.append('{}{}'.format(indent, start_tag))
-        for attribute in attrs:
-          out_lines.append('{}    {}'.format(indent, attribute))
-        out_lines[-1] += end_tag
-      else:
-        out_lines.append(l)
+    if not l or l.isspace():
+      continue
+    if len(l) > _WRAP_LINE_LENGTH and any(x in l for x in _WRAP_CANDIDATES):
+      indent = ' ' * l.find('<')
+      start_tag, attrs, end_tag = _SplitElement(l)
+      out_lines.append('{}{}'.format(indent, start_tag))
+      for attribute in attrs:
+        out_lines.append('{}    {}'.format(indent, attribute))
+      out_lines[-1] += '>'
+      # Heuristic: Do not allow multi-line tags to be self-closing since these
+      # can generally be allowed to have nested elements. When diffing, it adds
+      # noise if the base file is self-closing and the non-base file is not
+      # self-closing.
+      if end_tag == '/>':
+        out_lines.append('{}{}>'.format(indent, start_tag.replace('<', '</')))
+    else:
+      out_lines.append(l)
 
   # Make output more diff-friendly.
   _AddDiffTags(out_lines)

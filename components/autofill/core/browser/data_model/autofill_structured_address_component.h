@@ -241,6 +241,15 @@ class AddressComponent {
   // Unassigns all nodes with parsed or formatted values.
   void RecursivelyUnsetParsedAndFormattedValues();
 
+  // Returns true if both components are mergeable.
+  virtual bool IsMergeableWithComponent(
+      const AddressComponent& newer_component) const;
+
+  // Recursively updates the verification statuses to the higher one, for nodes
+  // in |newer_component| that have the same values as the nodes in |this|.
+  virtual void MergeVerificationStatuses(
+      const AddressComponent& newer_component);
+
   // Merge |newer_component| into this AddressComponent.
   // Returns false if the merging is not possible.
   // The state of the component is not altered by a failed merging attempt.
@@ -394,15 +403,15 @@ class AddressComponent {
   // A vector of pointers to the subcomponents.
   std::vector<AddressComponent*> subcomponents_;
 
-  // A pointer to the parent node. It is set to nullptr if the node is the root
-  // node of the AddressComponent tree.
-  AddressComponent* const parent_;
-
   // A vector that contains the tokens of |value_| after normalization,
   // meaning that it was converted to lower case and diacritics have been
   // removed. |value_| is tokenized by splitting the string by white spaces and
   // commas. It is calculated when |value_| is set.
   std::vector<base::string16> sorted_normalized_tokens_;
+
+  // A pointer to the parent node. It is set to nullptr if the node is the root
+  // node of the AddressComponent tree.
+  AddressComponent* const parent_;
 };
 
 }  // namespace structured_address

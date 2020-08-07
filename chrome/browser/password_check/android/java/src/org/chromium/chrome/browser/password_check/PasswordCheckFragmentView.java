@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.preference.PreferenceFragmentCompat;
 
 /**
@@ -73,5 +74,10 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
 
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
+    }
+
+    void showDialogFragment(DialogFragment passwordCheckDeletionDialogFragment) {
+        if (passwordCheckDeletionDialogFragment == null) return;
+        passwordCheckDeletionDialogFragment.show(getParentFragmentManager(), null);
     }
 }

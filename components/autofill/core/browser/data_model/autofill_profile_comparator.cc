@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
 using base::UTF16ToUTF8;
@@ -325,6 +326,39 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   const base::string16& full_name_1 = p1.GetInfo(kFullName, app_locale_);
   const base::string16& full_name_2 = p2.GetInfo(kFullName, app_locale_);
 
+  // At this state it is already determined that the two names are mergeable.
+  // This can mean of of the following things:
+  // * One name is empty. In this scenario the non-empty name is used.
+  // * The names are token equivalent: In this scenario a merge of the tree
+  // structure should be possible.
+  // * One name is a variant of the other. In this scenario, use the non-variant
+  // name. Note, p1 is the newer profile.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    // First, set info to the original profile.
+    *name_info = p2.GetNameInfo();
+    // If the name of the |p1| is empty, just keep the state of p2.
+    if (HasOnlySkippableCharacters(full_name_1))
+      return true;
+    // Vice verse set name to the one of |p1| if |p2| has an empty name
+    if (HasOnlySkippableCharacters(full_name_2)) {
+      *name_info = p2.GetNameInfo();
+      return true;
+    }
+    // Try to apply a direct merging.
+    if (name_info->MergeStructuredName(p1.GetNameInfo()))
+      return true;
+    // If the name in |p2| is a variant of |p1| use the one in |p1|.
+    if (IsNameVariantOf(NormalizeForComparison(full_name_1),
+                        NormalizeForComparison(full_name_2))) {
+      *name_info = p1.GetNameInfo();
+      return true;
+    }
+    // The only left case is that |p1| is a variant of |p2|.
+    DCHECK(IsNameVariantOf(NormalizeForComparison(full_name_2),
+                           NormalizeForComparison(full_name_1)));
+    return true;
+  }
   const base::string16* best_name = nullptr;
   if (HasOnlySkippableCharacters(full_name_1)) {
     // p1 has no name, so use the name from p2.
@@ -977,8 +1011,9 @@ bool AutofillProfileComparator::HaveMergeableNames(
   base::string16 canon_full_name_2 = NormalizeForComparison(full_name_2);
 
   // Is it reasonable to merge the names from p1 and p2.
-  return IsNameVariantOf(canon_full_name_1, canon_full_name_2) ||
-         IsNameVariantOf(canon_full_name_2, canon_full_name_1);
+  bool result = IsNameVariantOf(canon_full_name_1, canon_full_name_2) ||
+                IsNameVariantOf(canon_full_name_2, canon_full_name_1);
+  return result;
 }
 
 bool AutofillProfileComparator::HaveMergeableEmailAddresses(

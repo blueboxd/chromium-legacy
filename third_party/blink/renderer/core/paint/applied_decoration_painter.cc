@@ -10,7 +10,7 @@ namespace blink {
 
 void AppliedDecorationPainter::Paint() {
   context_.SetStrokeStyle(decoration_info_.StrokeStyle());
-  context_.SetStrokeColor(decoration_info_.Color());
+  context_.SetStrokeColor(decoration_info_.LineColor());
 
   switch (decoration_info_.DecorationStyle()) {
     case ETextDecorationStyle::kWavy:

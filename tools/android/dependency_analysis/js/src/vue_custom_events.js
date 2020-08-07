@@ -7,6 +7,8 @@
 const CUSTOM_EVENTS = {
   DETAILS_CHECK_NODE: 'details-check-node',
   DETAILS_UNCHECK_NODE: 'details-uncheck-node',
+  DISPLAY_OPTION_CHANGED: 'display-option-changed',
+  DISPLAY_PRESET_SELECTED: 'display-preset-selected',
   FILTER_REMOVE: 'filter-remove',
   FILTER_CHECK_ALL: 'filter-check-all',
   FILTER_UNCHECK_ALL: 'filter-uncheck-all',

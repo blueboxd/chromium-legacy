@@ -42,10 +42,13 @@ struct CaptureOptions {
   // By default, a group must be either followed by a space-like character (\s)
   // or it must be the last group in the line. The separator is allowed to be
   // empty.
-  std::string separator = "\\s+|$";
+  std::string separator = ",|\\s+|$";
   // Indicates if the group is required, optional or even lazy optional.
   MatchQuantifier quantifier = MATCH_REQUIRED;
 };
+
+// Returns true if the structured names feature is enabled.
+bool StructuredNamesEnabled();
 
 // A cache for compiled RE2 regular expressions.
 class Re2RegExCache {
@@ -83,6 +86,27 @@ class Re2RegExCache {
   base::Lock lock_;
 };
 
+// Returns true if |name| has the characteristics of a Chinese, Japanese or
+// Korean name:
+// * It must only contain CJK characters with at most one separator in between.
+bool HasCjkNameCharacteristics(const std::string& name);
+
+// Returns true if |name| has one of the characteristics of an Hispanic/Latinx
+// name:
+// * Name contains a very common Hispanic/Latinx surname.
+// * Name uses a surname conjunction.
+bool HasHispanicLatinxNameCharaceristics(const std::string& name);
+
+// Returns true if |middle_name| has the characteristics of a containing only
+// initials:
+// * The string contains only upper case letters that may be preceded by a
+// point.
+// * Between each letter, there can be a space or a hyphen.
+bool HasMiddleNameInitialsCharacteristics(const std::string& middle_name);
+
+// Reduces a name to the initials in upper case.
+// Example: George walker -> GW, Hans-Peter -> HP
+base::string16 ReduceToInitials(const base::string16& value);
 // Parses |value| with an regular expression defined by |pattern|.
 // Returns true on success meaning that the expressions is fully matched.
 // The matching results are written into the supplied |result_map|, keyed by the
@@ -154,6 +178,10 @@ base::string16 NormalizeValue(const base::string16& value);
 // Returns true of both vectors contain the same tokens in the same order.
 bool AreSortedTokensEqual(const std::vector<base::string16>& first,
                           const std::vector<base::string16>& second);
+
+// Returns true if both strings contain the same tokens after normalization.
+bool AreStringTokenEquivalent(const base::string16& one,
+                              const base::string16& other);
 
 // Returns a sorted vector containing the tokens of |value| after |value| was
 // canonicalized. |value| is tokenized by splitting it by white spaces and

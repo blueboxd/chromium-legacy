@@ -208,7 +208,12 @@ NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
         [[AppStartupParameters alloc] initWithURLs:URLs];
     startupParams.launchInIncognito = YES;
     [connectionInformation setStartupParameters:startupParams];
-    return YES;
+    return [self continueUserActivityURLs:URLs
+                      applicationIsActive:applicationIsActive
+                                tabOpener:tabOpener
+                    connectionInformation:connectionInformation
+                       startupInformation:startupInformation
+                                Incognito:YES];
 
   } else {
     // Do nothing for unknown activity type.
@@ -267,6 +272,65 @@ NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
   return YES;
 }
 
++ (void)openMultipleTabsWithConnectionInformation:
+            (id<ConnectionInformation>)connectionInformation
+                                        tabOpener:(id<TabOpening>)tabOpener {
+  ApplicationModeForTabOpening mode =
+      connectionInformation.startupParameters.launchInIncognito
+          ? ApplicationModeForTabOpening::INCOGNITO
+          : ApplicationModeForTabOpening::NORMAL;
+
+  BOOL dismissOmnibox = [[connectionInformation startupParameters]
+                            postOpeningAction] != FOCUS_OMNIBOX;
+
+  // Using a weak reference to |connectionInformation| to solve a memory leak
+  // issue. |tabOpener| and |connectionInformation| are the same object in
+  // some cases (SceneController). This retains the object while the block
+  // exists. Then this block is passed around and in some cases it ends up
+  // stored in BrowserViewController. This results in a memory leak that looks
+  // like this: SceneController -> BrowserViewWrangler -> BrowserCoordinator
+  // -> BrowserViewController -> SceneController
+  __weak id<ConnectionInformation> weakConnectionInfo = connectionInformation;
+
+  [tabOpener
+      dismissModalsAndOpenMultipleTabsInMode:mode
+                                        URLs:weakConnectionInfo
+                                                 .startupParameters.URLs
+                              dismissOmnibox:dismissOmnibox
+                                  completion:^{
+                                    weakConnectionInfo.startupParameters = nil;
+                                  }];
+}
+
++ (BOOL)continueUserActivityURLs:(const std::vector<GURL>&)webpageURLs
+             applicationIsActive:(BOOL)applicationIsActive
+                       tabOpener:(id<TabOpening>)tabOpener
+           connectionInformation:
+               (id<ConnectionInformation>)connectionInformation
+              startupInformation:(id<StartupInformation>)startupInformation
+                       Incognito:(BOOL)Incognito {
+  if (applicationIsActive && ![startupInformation isPresentingFirstRunUI]) {
+    // The app is already active so the applicationDidBecomeActive: method will
+    // never be called. Open the requested URLs immediately.
+    [self openMultipleTabsWithConnectionInformation:connectionInformation
+                                          tabOpener:tabOpener];
+    return YES;
+  }
+
+  // Don't record the first action as a user action, since it will not be
+  // initiated by the user.
+  [startupInformation resetFirstUserActionRecorder];
+
+  if (![connectionInformation startupParameters]) {
+    AppStartupParameters* startupParams =
+        [[AppStartupParameters alloc] initWithURLs:webpageURLs];
+
+    startupParams.launchInIncognito = Incognito;
+    [connectionInformation setStartupParameters:startupParams];
+  }
+  return YES;
+}
+
 + (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
                    completionHandler:(void (^)(BOOL succeeded))completionHandler
                            tabOpener:(id<TabOpening>)tabOpener
@@ -315,32 +379,8 @@ NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
   }
 
   if (!connectionInformation.startupParameters.URLs.empty()) {
-    ApplicationModeForTabOpening mode =
-        connectionInformation.startupParameters.launchInIncognito
-            ? ApplicationModeForTabOpening::INCOGNITO
-            : ApplicationModeForTabOpening::NORMAL;
-
-    BOOL dismissOmnibox = [[connectionInformation startupParameters]
-                              postOpeningAction] != FOCUS_OMNIBOX;
-
-    // Using a weak reference to |connectionInformation| to solve a memory leak
-    // issue. |tabOpener| and |connectionInformation| are the same object in
-    // some cases (SceneController). This retains the object while the block
-    // exists. Then this block is passed around and in some cases it ends up
-    // stored in BrowserViewController. This results in a memory leak that looks
-    // like this: SceneController -> BrowserViewWrangler -> BrowserCoordinator
-    // -> BrowserViewController -> SceneController
-    __weak id<ConnectionInformation> weakConnectionInfo = connectionInformation;
-
-    [tabOpener
-        dismissModalsAndOpenMultipleTabsInMode:mode
-                                          URLs:weakConnectionInfo
-                                                   .startupParameters.URLs
-                                dismissOmnibox:dismissOmnibox
-                                    completion:^{
-                                      weakConnectionInfo.startupParameters =
-                                          nil;
-                                    }];
+    [self openMultipleTabsWithConnectionInformation:connectionInformation
+                                          tabOpener:tabOpener];
     return;
   }
 

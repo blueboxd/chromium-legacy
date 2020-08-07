@@ -15,11 +15,13 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/location_bar_model_util.h"
 #include "components/payments/content/icon/icon_size.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payments_experimental_features.h"
 #include "components/payments/core/url_util.h"
+#include "components/security_state/core/security_state.h"
 #include "components/vector_icons/vector_icons.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -67,6 +69,7 @@ class ReadOnlyOriginView : public views::View {
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
                      const SkBitmap* icon_bitmap,
+                     security_state::SecurityLevel security_level,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
     auto title_origin_container = std::make_unique<views::View>();
@@ -105,15 +108,15 @@ class ReadOnlyOriginView : public views::View {
                        1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
     if (PaymentsExperimentalFeatures::IsEnabled(
-            features::kPaymentHandlerLockIcon) &&
-        origin.SchemeIs(url::kHttpsScheme)) {
+            features::kPaymentHandlerSecurityIcon)) {
       // TODO(https://crbug.com/1052493):
       // Selecting the correct icon based on the SSL certificate state
       // and adding test coverage for this code path.
-      auto lock_icon = std::make_unique<views::ImageView>();
-      lock_icon->SetImage(gfx::CreateVectorIcon(vector_icons::kLockIcon, 16,
-                                                gfx::kChromeIconGrey));
-      origin_layout->AddView(std::move(lock_icon));
+      auto security_icon = std::make_unique<views::ImageView>();
+      security_icon->SetImage(gfx::CreateVectorIcon(
+          location_bar_model::GetSecurityVectorIcon(security_level), 16,
+          gfx::kChromeIconGrey));
+      origin_layout->AddView(std::move(security_icon));
     }
     auto* origin_label = origin_layout->AddView(
         std::make_unique<views::Label>(base::UTF8ToUTF16(origin.host())));
@@ -264,7 +267,10 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView(
       GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
       GetPaymentHandlerDialogTitle(web_contents()), origin,
-      state()->selected_app()->icon_bitmap(), background->get_color(), this);
+      state()->selected_app()->icon_bitmap(),
+      web_contents() ? SslValidityChecker::GetSecurityLevel(web_contents())
+                     : security_state::NONE,
+      background->get_color(), this);
 }
 
 std::unique_ptr<views::Background>
@@ -293,6 +299,7 @@ bool PaymentHandlerWebFlowViewController::
 void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
   DCHECK_EQ(source, web_contents());
+  UpdateHeaderView();
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source))
     AbortPayment();
 }

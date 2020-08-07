@@ -58,4 +58,12 @@ BrailleInterface = class {
    * Requests the braille display pan right.
    */
   panRight() {}
+
+  /**
+   * Moves the cursor to the given braille position.
+   * @param {number|undefined} braillePosition The 0-based position relative to
+   *     the start of the currently displayed text. The position is given in
+   *     braille cells, not text cells.
+   */
+  route(braillePosition) {}
 };

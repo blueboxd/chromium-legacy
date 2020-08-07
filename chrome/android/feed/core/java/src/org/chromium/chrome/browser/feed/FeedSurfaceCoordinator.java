@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -63,6 +65,9 @@ import java.util.List;
  * Provides a surface that displays an interest feed rendered list of content suggestions.
  */
 public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
+    @VisibleForTesting
+    public static final String FEED_STREAM_CREATED_TIME_MS_UMA = "FeedStreamCreatedTime";
+
     private final Activity mActivity;
     private final SnackbarManager mSnackbarManager;
     @Nullable
@@ -81,6 +86,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private FrameLayout mRootView;
     private ContextMenuManager mContextMenuManager;
     private Tracker mTracker;
+    private long mStreamCreatedTimeMs;
 
     // Homepage promo view will be not-null once we have it created, until it is destroyed.
     private @Nullable View mHomepagePromoView;
@@ -311,6 +317,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         }
 
         boolean isPlaceholderShownInV1 = mIsPlaceholderShown && !mV2Enabled;
+        mStreamCreatedTimeMs = SystemClock.elapsedRealtime();
 
         if (mV2Enabled) {
             mStream = new FeedStream(mActivity, mShowDarkBackground, mSnackbarManager,
@@ -501,6 +508,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
     public void onOverviewShownAtLaunch(long activityCreationTimeMs) {
         mMediator.onOverviewShownAtLaunch(activityCreationTimeMs, mIsPlaceholderShown);
+        StartSurfaceConfiguration.recordHistogram(FEED_STREAM_CREATED_TIME_MS_UMA,
+                mStreamCreatedTimeMs - activityCreationTimeMs, mIsPlaceholderShown);
     }
 
     Tracker getFeatureEngagementTracker() {

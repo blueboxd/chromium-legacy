@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/check_op.h"
+#include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/FeedServiceBridge_jni.h"
 #include "chrome/browser/android/feed/v2/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,6 +42,15 @@ static void JNI_FeedServiceBridge_Startup(JNIEnv* env) {
 
 static int JNI_FeedServiceBridge_GetLoadMoreTriggerLookahead(JNIEnv* env) {
   return GetFeedConfig().load_more_trigger_lookahead;
+}
+
+static void JNI_FeedServiceBridge_ReportOpenVisitComplete(JNIEnv* env,
+                                                          jlong visitTimeMs) {
+  FeedService* service = GetFeedService();
+  if (!service)
+    return;
+  service->GetStream()->ReportOpenVisitComplete(
+      base::TimeDelta::FromMilliseconds(visitTimeMs));
 }
 
 static base::android::ScopedJavaLocalRef<jstring>

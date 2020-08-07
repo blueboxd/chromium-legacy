@@ -19,28 +19,6 @@ using autofill::structured_address::AddressComponent;
 namespace autofill {
 namespace structured_address {
 
-// Returns true if |name| has the characteristics of a Chinese, Japanese or
-// Korean name:
-// * It must only contain CJK characters with at most one separator in between.
-bool HasCjkNameCharacteristics(const std::string& name);
-
-// Returns true if |name| has one of the characteristics of an Hispanic/Latinx
-// name:
-// * Name contains a very common Hispanic/Latinx surname.
-// * Name uses a surname conjunction.
-bool HasHispanicLatinxNameCharaceristics(const std::string& name);
-
-// Return true if |middle_name| has the characteristics of a containing only
-// initials:
-// * The string contains only upper case letters that may be preceded by a
-// point.
-// * Between each letter, there can be a space or a hyphen.
-bool HasMiddleNameInitialsCharacteristics(const std::string& middle_name);
-
-// Reduces a name to the initials in upper case.
-// Example: George walker -> GW, Hans-Peter -> HP
-base::string16 ReduceToInitials(const base::string16& value);
-
 // Atomic component that represents the honorific prefix of a name.
 class NameHonorific : public AddressComponent {
  public:
@@ -165,13 +143,18 @@ class NameFull : public AddressComponent {
  public:
   NameFull();
   explicit NameFull(AddressComponent* parent);
+  NameFull(const NameFull& other);
   ~NameFull() override;
 
   std::vector<const re2::RE2*> GetParseRegularExpressionsByRelevance()
       const override;
 
+  // Returns the format string to create the full name from its subcomponents.
+  base::string16 GetBestFormatString() const override;
+
  private:
-  NameHonorific name_honorific_;
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // NameHonorific name_honorific_;
   NameFirst name_first_;
   NameMiddle name_middle_;
   NameLast name_last_;

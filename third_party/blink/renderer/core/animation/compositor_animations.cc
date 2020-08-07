@@ -184,7 +184,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     const Animation* animation_to_add,
     const EffectModel& effect,
     const PaintArtifactCompositor* paint_artifact_compositor,
-    double animation_playback_rate) {
+    double animation_playback_rate,
+    PropertyHandleSet* unsupported_properties) {
   FailureReasons reasons = kNoFailure;
   const auto& keyframe_effect = To<KeyframeEffectModelBase>(effect);
 
@@ -269,8 +270,12 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             if (layout_object && layout_object->Style() &&
                 !layout_object->Style()->HasCSSPaintImagesUsingCustomProperty(
                     property.CustomPropertyName(),
-                    layout_object->GetDocument()))
+                    layout_object->GetDocument())) {
+              if (unsupported_properties) {
+                unsupported_properties->insert(property);
+              }
               reasons |= kUnsupportedCSSProperty;
+            }
             // TODO: Add support for keyframes containing different types
             if (!keyframes.front() ||
                 !keyframes.front()->GetCompositorKeyframeValue() ||
@@ -281,6 +286,9 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           } else {
             // We skip the rest of the loop in this case for the same reason as
             // unsupported CSS properties - see below.
+            if (unsupported_properties) {
+              unsupported_properties->insert(property);
+            }
             reasons |= kUnsupportedCSSProperty;
             continue;
           }
@@ -292,6 +300,9 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           //       an unsupported property.
           //   ii. GetCompositorKeyframeValue() will be false so we will
           //       accidentally count this as kInvalidAnimationOrEffect as well.
+          if (unsupported_properties) {
+            unsupported_properties->insert(property);
+          }
           reasons |= kUnsupportedCSSProperty;
           continue;
       }
@@ -391,10 +402,12 @@ CompositorAnimations::CheckCanStartAnimationOnCompositor(
     const Animation* animation_to_add,
     const EffectModel& effect,
     const PaintArtifactCompositor* paint_artifact_compositor,
-    double animation_playback_rate) {
+    double animation_playback_rate,
+    PropertyHandleSet* unsupported_properties) {
   FailureReasons reasons = CheckCanStartEffectOnCompositor(
       timing, target_element, animation_to_add, effect,
-      paint_artifact_compositor, animation_playback_rate);
+      paint_artifact_compositor, animation_playback_rate,
+      unsupported_properties);
   return reasons | CheckCanStartElementOnCompositor(target_element);
 }
 

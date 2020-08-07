@@ -54,6 +54,9 @@ class BulkLeakCheckServiceInterface : public KeyedService {
     // Called when |credential| is analyzed.
     virtual void OnCredentialDone(const LeakCheckCredential& credential,
                                   IsLeaked is_leaked) = 0;
+
+    // Called when the service is shut down.
+    virtual void OnBulkCheckServiceShutDown() {}
   };
 
   BulkLeakCheckServiceInterface();

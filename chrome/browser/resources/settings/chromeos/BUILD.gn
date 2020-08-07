@@ -37,6 +37,7 @@ if (optimize_webui) {
     excludes = [
       # TODO(calamity): Update optimize_webui to handle generated files.
       "chrome://resources/chromeos/colors/cros_colors.generated.css",
+      "chrome://resources/mojo/chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.html",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html",
       "chrome://os-settings/app-management/app_management.mojom-lite.js",
       "chrome://os-settings/app-management/file_path.mojom-lite.js",

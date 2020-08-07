@@ -48,6 +48,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
@@ -72,10 +73,11 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link FeedStreamSeSurface}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE, shadows = {ShadowPostTask.class, ShadowRecordHistogram.class})
 public class FeedStreamSurfaceTest {
     private static final String TEST_DATA = "test";
     private static final String TEST_URL = "https://www.chromium.org";
@@ -423,7 +425,7 @@ public class FeedStreamSurfaceTest {
         when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
         mFeedStreamSurface.navigateNewTab(TEST_URL);
         verify(mPageNavigationDelegate)
-                .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.NEW_FOREGROUND_TAB), any());
+                .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.NEW_BACKGROUND_TAB), any());
         assertEquals(1, actionOpenedSnippetDelta.getDelta());
     }
 
@@ -755,6 +757,30 @@ public class FeedStreamSurfaceTest {
 
         verify(mFeedStreamSurfaceJniMock)
                 .reportOpenAction(anyLong(), any(FeedStreamSurface.class), eq(""));
+    }
+
+    @Test
+    @SmallTest
+    public void testScrollIsReportedOnIdle() {
+        mFeedStreamSurface.streamScrolled(0, 100);
+        Robolectric.getForegroundThreadScheduler().advanceBy(1000, TimeUnit.MILLISECONDS);
+
+        verify(mFeedStreamSurfaceJniMock)
+                .reportStreamScrollStart(anyLong(), any(FeedStreamSurface.class));
+        verify(mFeedStreamSurfaceJniMock)
+                .reportStreamScrolled(anyLong(), any(FeedStreamSurface.class), eq(100));
+    }
+
+    @Test
+    @SmallTest
+    public void testScrollIsReportedOnClose() {
+        mFeedStreamSurface.streamScrolled(0, 100);
+        mFeedStreamSurface.surfaceClosed();
+
+        verify(mFeedStreamSurfaceJniMock)
+                .reportStreamScrollStart(anyLong(), any(FeedStreamSurface.class));
+        verify(mFeedStreamSurfaceJniMock)
+                .reportStreamScrolled(anyLong(), any(FeedStreamSurface.class), eq(100));
     }
 
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {

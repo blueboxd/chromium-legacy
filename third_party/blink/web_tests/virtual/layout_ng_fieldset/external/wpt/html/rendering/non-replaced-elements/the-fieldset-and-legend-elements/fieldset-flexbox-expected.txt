@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Flex
-PASS Inline flex
-PASS Dynamic change of flex-direction
-Harness: the test ran to completion.
-

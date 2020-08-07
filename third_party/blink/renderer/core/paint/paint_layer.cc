@@ -1055,6 +1055,11 @@ void PaintLayer::SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags) {
     MarkAncestorChainForFlagsUpdate(NeedsDescendantDependentUpdate);
 }
 
+void PaintLayer::SetNeedsGraphicsLayerRebuild() {
+  if (Compositor())
+    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+}
+
 void PaintLayer::SetNeedsCheckRasterInvalidation() {
   DCHECK_EQ(GetLayoutObject().GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kInPrePaint);

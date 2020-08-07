@@ -40,10 +40,17 @@
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"
           @[CUSTOM_EVENTS.NODE_DOUBLE_CLICKED]="graphNodeDoubleClicked"/>
       <div id="node-details-container">
-        <GraphDisplaySettings
-            :display-settings-data="displaySettingsData"/>
-        <ClassGraphHullSettings
-            :selected-hull-display.sync="displaySettingsData.hullDisplay"/>
+        <GraphDisplayPanel
+            :display-settings-data="displaySettingsData"
+            :display-settings-preset.sync="
+              displaySettingsData.displaySettingsPreset">
+          <GraphDisplaySettings
+              :display-settings-data="displaySettingsData"
+              @[CUSTOM_EVENTS.DISPLAY_OPTION_CHANGED]="displayOptionChanged"/>
+          <ClassGraphHullSettings
+              :selected-hull-display.sync="displaySettingsData.hullDisplay"
+              @[CUSTOM_EVENTS.DISPLAY_OPTION_CHANGED]="displayOptionChanged"/>
+        </GraphDisplayPanel>
         <GraphSelectedNodeDetails
             :selected-node-details-data="pageModel.selectedNodeDetailsData"
             @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
@@ -62,12 +69,16 @@ import {PagePathName, UrlProcessor} from '../url_processor.js';
 
 import {ClassNode, GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
-import {ClassDisplaySettingsData} from '../display_settings_data.js';
+import {
+  ClassDisplaySettingsData,
+  DisplaySettingsPreset,
+} from '../display_settings_data.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
 import {shortenClassNameWithPackage} from '../chrome_hooks.js';
 
 import ClassDetailsPanel from './class_details_panel.vue';
 import ClassGraphHullSettings from './class_graph_hull_settings.vue';
+import GraphDisplayPanel from './graph_display_panel.vue';
 import GraphDisplaySettings from './graph_display_settings.vue';
 import GraphFilterInput from './graph_filter_input.vue';
 import GraphFilterItems from './graph_filter_items.vue';
@@ -92,6 +103,7 @@ const ClassGraphPage = {
   components: {
     ClassDetailsPanel,
     ClassGraphHullSettings,
+    GraphDisplayPanel,
     GraphDisplaySettings,
     GraphFilterInput,
     GraphFilterItems,
@@ -163,6 +175,10 @@ const ClassGraphPage = {
     }
   },
   methods: {
+    displayOptionChanged: function() {
+      this.displaySettingsData.displaySettingsPreset =
+        DisplaySettingsPreset.CUSTOM;
+    },
     updateDocumentUrl() {
       const urlProcessor = UrlProcessor.createForOutput();
       this.displaySettingsData.updateUrlProcessor(urlProcessor);

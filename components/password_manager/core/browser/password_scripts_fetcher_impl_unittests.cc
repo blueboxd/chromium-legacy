@@ -51,7 +51,10 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
         test_shared_loader_factory_);
   }
 
-  void TearDown() override { EXPECT_EQ(0, GetNumberOfPendingRequests()); }
+  void TearDown() override {
+    EXPECT_EQ(0, GetNumberOfPendingRequests());
+    EXPECT_EQ(0u, pending_fetch_finished_callbacks_);
+  }
 
   void SimulateResponse() { SimulateResponseWithContent(kTestResponseContent); }
 
@@ -67,7 +70,10 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
   }
 
   void StartBulkCheck() {
-    fetcher()->ReportCacheReadinessMetric();
+    pending_fetch_finished_callbacks_++;
+    fetcher()->Fetch(
+        base::BindOnce(&PasswordScriptsFetcherImplTest::RecordFetchFinished,
+                       base::Unretained(this)));
     RequestSingleScriptAvailability(GetOriginWithScript1());
     RequestSingleScriptAvailability(GetOriginWithScript2());
     RequestSingleScriptAvailability(GetOriginWithoutScript());
@@ -85,8 +91,7 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
 
  private:
   void RequestSingleScriptAvailability(const url::Origin& origin) {
-    fetcher_->GetPasswordScriptAvailability(origin,
-                                            GenerateResponseCallback(origin));
+    fetcher_->FetchScriptAvailability(origin, GenerateResponseCallback(origin));
   }
 
   void RecordResponse(url::Origin origin, bool has_script) {
@@ -99,6 +104,8 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
     }
   }
 
+  void RecordFetchFinished() { pending_fetch_finished_callbacks_--; }
+
   PasswordScriptsFetcher::ResponseCallback GenerateResponseCallback(
       url::Origin origin) {
     return base::BindOnce(&PasswordScriptsFetcherImplTest::RecordResponse,
@@ -107,6 +114,7 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::flat_map<url::Origin, bool> recorded_responses_;
+  size_t pending_fetch_finished_callbacks_ = 0;
   std::unique_ptr<PasswordScriptsFetcherImpl> fetcher_;
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -244,6 +252,35 @@ TEST_F(PasswordScriptsFetcherImplTest, ServerError) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordScriptsFetcher.HttpResponseAndNetErrorCode",
       net::HttpStatusCode::HTTP_BAD_REQUEST, 1u);
+}
+
+TEST_F(PasswordScriptsFetcherImplTest, IsScriptAvailable) {
+  // |IsScriptAvailable| does not trigger any network requests and returns the
+  // default value (false).
+  EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithScript1()));
+  EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithScript2()));
+  EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithoutScript()));
+  EXPECT_EQ(0, GetNumberOfPendingRequests());
+
+  StartBulkCheck();
+  EXPECT_EQ(1, GetNumberOfPendingRequests());
+  // Bulk check restart doesn't trigger new network request if the cache's state
+  // is |kWaiting|.
+  StartBulkCheck();
+  EXPECT_EQ(1, GetNumberOfPendingRequests());
+  SimulateResponse();
+  base::RunLoop().RunUntilIdle();
+  // Cache is ready.
+  EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript1()));
+  EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript2()));
+  EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithoutScript()));
+
+  // |IsScriptAvailable| does not trigger refetching and returns stale values.
+  fetcher()->make_cache_stale_for_testing();
+  EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript1()));
+  EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript2()));
+  EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithoutScript()));
+  EXPECT_EQ(0, GetNumberOfPendingRequests());
 }
 
 }  // namespace password_manager

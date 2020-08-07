@@ -310,65 +310,6 @@ DeleteResult DeleteUserDataDir(const base::FilePath& user_data_dir) {
   return result;
 }
 
-// Moves setup to a temporary file, outside of the install folder. Also attempts
-// to change the current directory to the TMP directory. On Windows, each
-// process has a handle to its CWD. If setup.exe's CWD happens to be within the
-// install directory, deletion will fail as a result of the open handle.
-bool MoveSetupOutOfInstallFolder(const base::FilePath& setup_exe) {
-  // The list of files which setup.exe depends on at runtime. Typically this is
-  // solely setup.exe itself, but in component builds this also includes the
-  // DLLs installed by setup.exe.
-  std::vector<base::FilePath> setup_files;
-  setup_files.push_back(setup_exe);
-#if defined(COMPONENT_BUILD)
-  base::FileEnumerator file_enumerator(setup_exe.DirName(), false,
-                                       base::FileEnumerator::FILES, L"*.dll");
-  for (base::FilePath setup_dll = file_enumerator.Next(); !setup_dll.empty();
-       setup_dll = file_enumerator.Next()) {
-    setup_files.push_back(setup_dll);
-  }
-#endif  // defined(COMPONENT_BUILD)
-
-  base::FilePath tmp_dir;
-  base::FilePath temp_file;
-  if (!base::PathService::Get(base::DIR_TEMP, &tmp_dir)) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Change the current directory to the TMP directory. See method comment above
-  // for details.
-  VLOG(1) << "Changing current directory to: " << tmp_dir.value();
-  if (!base::SetCurrentDirectory(tmp_dir))
-    PLOG(ERROR) << "Failed to change the current directory.";
-
-  for (std::vector<base::FilePath>::const_iterator it = setup_files.begin();
-       it != setup_files.end(); ++it) {
-    const base::FilePath& setup_file = *it;
-    if (!base::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
-      LOG(ERROR) << "Failed to create temporary file for "
-                 << setup_file.BaseName().value();
-      return false;
-    }
-
-    VLOG(1) << "Attempting to move " << setup_file.BaseName().value()
-            << " to: " << temp_file.value();
-    if (!base::Move(setup_file, temp_file)) {
-      PLOG(ERROR) << "Failed to move " << setup_file.BaseName().value()
-                  << " to " << temp_file.value();
-      return false;
-    }
-
-    // We cannot delete the file right away, but try to delete it some other
-    // way. Either with the help of a different process or the system.
-    if (!base::DeleteFileAfterReboot(temp_file)) {
-      const uint32_t kDeleteAfterMs = 10 * 1000;
-      installer::DeleteFileFromTempProcess(temp_file, kDeleteAfterMs);
-    }
-  }
-  return true;
-}
-
 DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
                                          const base::FilePath& setup_exe) {
   const base::FilePath& target_path = installer_state.target_path();
@@ -1137,6 +1078,61 @@ void CleanUpInstallationDirectoryAfterUninstall(
   } else if (DeleteChromeDirectoriesIfEmpty(target_path) == DELETE_FAILED) {
     *uninstall_status = UNINSTALL_FAILED;
   }
+}
+
+bool MoveSetupOutOfInstallFolder(const base::FilePath& setup_exe) {
+  // The list of files which setup.exe depends on at runtime. Typically this is
+  // solely setup.exe itself, but in component builds this also includes the
+  // DLLs installed by setup.exe.
+  std::vector<base::FilePath> setup_files;
+  setup_files.push_back(setup_exe);
+#if defined(COMPONENT_BUILD)
+  base::FileEnumerator file_enumerator(setup_exe.DirName(), false,
+                                       base::FileEnumerator::FILES, L"*.dll");
+  for (base::FilePath setup_dll = file_enumerator.Next(); !setup_dll.empty();
+       setup_dll = file_enumerator.Next()) {
+    setup_files.push_back(setup_dll);
+  }
+#endif  // defined(COMPONENT_BUILD)
+
+  base::FilePath tmp_dir;
+  base::FilePath temp_file;
+  if (!base::PathService::Get(base::DIR_TEMP, &tmp_dir)) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Change the current directory to the TMP directory. See method comment
+  // for details.
+  VLOG(1) << "Changing current directory to: " << tmp_dir.value();
+  if (!base::SetCurrentDirectory(tmp_dir))
+    PLOG(ERROR) << "Failed to change the current directory.";
+
+  for (std::vector<base::FilePath>::const_iterator it = setup_files.begin();
+       it != setup_files.end(); ++it) {
+    const base::FilePath& setup_file = *it;
+    if (!base::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
+      LOG(ERROR) << "Failed to create temporary file for "
+                 << setup_file.BaseName().value();
+      return false;
+    }
+
+    VLOG(1) << "Attempting to move " << setup_file.BaseName().value()
+            << " to: " << temp_file.value();
+    if (!base::Move(setup_file, temp_file)) {
+      PLOG(ERROR) << "Failed to move " << setup_file.BaseName().value()
+                  << " to " << temp_file.value();
+      return false;
+    }
+
+    // We cannot delete the file right away, but try to delete it some other
+    // way. Either with the help of a different process or the system.
+    if (!base::DeleteFileAfterReboot(temp_file)) {
+      const uint32_t kDeleteAfterMs = 10 * 1000;
+      DeleteFileFromTempProcess(temp_file, kDeleteAfterMs);
+    }
+  }
+  return true;
 }
 
 }  // namespace installer

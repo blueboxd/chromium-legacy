@@ -5,7 +5,6 @@
 assert(!is_ios)
 
 import("//build/config/compiler/compiler.gni")
-import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//third_party/blink/renderer/config.gni")
 

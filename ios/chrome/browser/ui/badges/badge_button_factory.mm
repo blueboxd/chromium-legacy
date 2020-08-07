@@ -113,7 +113,7 @@
       [UIColor colorNamed:kTextPrimaryColor], self.incognito,
       [UIColor colorNamed:kTextPrimaryDarkColor]);
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
-  button.enabled = NO;
+  button.userInteractionEnabled = NO;
   button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;
   button.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_BADGE_INCOGNITO_HINT);

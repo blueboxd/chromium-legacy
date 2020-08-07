@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics_impl.h"
 #include "chrome/browser/chromeos/net/network_health/network_health.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 namespace network_health {
@@ -17,6 +18,9 @@ class NetworkHealthService {
 
   NetworkHealthService();
   ~NetworkHealthService() = delete;
+
+  mojo::PendingRemote<mojom::NetworkHealthService>
+  GetHealthRemoteAndBindReceiver();
 
   void BindHealthReceiver(
       mojo::PendingReceiver<mojom::NetworkHealthService> receiver);

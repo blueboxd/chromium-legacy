@@ -957,8 +957,6 @@ static_library("browser") {
     "optimization_guide/optimization_guide_session_statistic.h",
     "optimization_guide/optimization_guide_top_host_provider.cc",
     "optimization_guide/optimization_guide_top_host_provider.h",
-    "optimization_guide/optimization_guide_util.cc",
-    "optimization_guide/optimization_guide_util.h",
     "optimization_guide/optimization_guide_web_contents_observer.cc",
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "optimization_guide/prediction/prediction_manager.cc",
@@ -997,6 +995,8 @@ static_library("browser") {
     "page_load_metrics/observers/https_engagement_metrics/https_engagement_service_factory.h",
     "page_load_metrics/observers/isolated_prerender_page_load_metrics_observer.cc",
     "page_load_metrics/observers/isolated_prerender_page_load_metrics_observer.h",
+    "page_load_metrics/observers/javascript_frameworks_ukm_observer.cc",
+    "page_load_metrics/observers/javascript_frameworks_ukm_observer.h",
     "page_load_metrics/observers/live_tab_count_page_load_metrics_observer.cc",
     "page_load_metrics/observers/live_tab_count_page_load_metrics_observer.h",
     "page_load_metrics/observers/loading_predictor_page_load_metrics_observer.cc",
@@ -1174,6 +1174,8 @@ static_library("browser") {
     "policy/messaging_layer/storage/storage_module.h",
     "policy/messaging_layer/storage/storage_queue.cc",
     "policy/messaging_layer/storage/storage_queue.h",
+    "policy/messaging_layer/upload/app_install_report_handler.cc",
+    "policy/messaging_layer/upload/app_install_report_handler.h",
     "policy/messaging_layer/upload/dm_server_upload_service.cc",
     "policy/messaging_layer/upload/dm_server_upload_service.h",
     "policy/messaging_layer/util/backoff_settings.cc",
@@ -3815,6 +3817,7 @@ static_library("browser") {
   }
 
   if (is_chromeos) {
+    assert(enable_native_notifications)
     sources += [
       "apps/app_service/arc_activity_adaptive_icon_impl.cc",
       "apps/app_service/arc_activity_adaptive_icon_impl.h",
@@ -3927,6 +3930,9 @@ static_library("browser") {
       "notifications/chrome_ash_message_center_client.h",
       "notifications/extension_notifier_controller.cc",
       "notifications/extension_notifier_controller.h",
+      "notifications/notification_platform_bridge_chromeos.cc",
+      "notifications/notification_platform_bridge_chromeos.h",
+      "notifications/notification_platform_bridge_delegate.h",
       "notifications/notifier_controller.h",
       "notifications/web_page_notifier_controller.cc",
       "notifications/web_page_notifier_controller.h",
@@ -4003,13 +4009,6 @@ static_library("browser") {
       "//ui/ozone",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
-
-    if (enable_native_notifications) {
-      sources += [
-        "notifications/notification_platform_bridge_chromeos.cc",
-        "notifications/notification_platform_bridge_chromeos.h",
-      ]
-    }
   } else {  # Non - ChromeOS.
     sources += [
       "fullscreen.h",

@@ -6,6 +6,8 @@ source_set("permissions") {
   sources = [
     "chooser_context_base.cc",
     "chooser_context_base.h",
+    "contexts/font_access_permission_context.cc",
+    "contexts/font_access_permission_context.h",
     "contexts/geolocation_permission_context.cc",
     "contexts/geolocation_permission_context.h",
     "contexts/webxr_permission_context.cc",

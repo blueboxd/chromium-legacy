@@ -313,6 +313,11 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   const auto sequence_type = metrics->type();
   DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
 
+  // All video frames are compositor thread only.
+  if (sequence_type == FrameSequenceTrackerType::kVideo &&
+      thread_type == ThreadType::kMain)
+    return base::nullopt;
+
   STATIC_HISTOGRAM_POINTER_GROUP(
       GetFrameSequenceLengthHistogramName(sequence_type),
       static_cast<int>(sequence_type),

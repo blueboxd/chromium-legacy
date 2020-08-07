@@ -49,10 +49,14 @@ class LoadStreamTask : public offline_pages::Task {
     // was attempted.
     LoadStreamStatus load_from_store_status = LoadStreamStatus::kNoStatus;
     LoadType load_type;
+
     // Information about the network request, if one was made.
     base::Optional<NetworkResponseInfo> network_response_info;
     bool loaded_new_content_from_network = false;
     std::unique_ptr<LoadLatencyTimes> latencies;
+
+    // Result of the upload actions task.
+    std::unique_ptr<UploadActionsTask::Result> upload_actions_result;
   };
 
   LoadStreamTask(LoadType load_type,
@@ -87,6 +91,7 @@ class LoadStreamTask : public offline_pages::Task {
   base::TimeTicks fetch_start_time_;
   base::OnceCallback<void(Result)> done_callback_;
   std::unique_ptr<UploadActionsTask> upload_actions_task_;
+  std::unique_ptr<UploadActionsTask::Result> upload_actions_result_;
   base::WeakPtrFactory<LoadStreamTask> weak_ptr_factory_{this};
 };
 }  // namespace feed

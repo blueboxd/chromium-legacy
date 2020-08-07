@@ -16,9 +16,9 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/test/dialog_window_waiter.h"
+#include "chrome/browser/chromeos/login/test/fake_eula_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -43,32 +43,14 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using net::test_server::BasicHttpResponse;
-using net::test_server::HttpRequest;
-using net::test_server::HttpResponse;
 using ::testing::ElementsAre;
 
 namespace chromeos {
 namespace {
-
-constexpr char kFakeOnlineEulaPath[] = "/intl/en-US/chrome/eula_text.html";
-constexpr char kFakeOnlineEula[] = "No obligations at all";
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// See IDS_TERMS_HTML for the complete text.
-constexpr char kOfflineEULAWarning[] =
-    "Google Chrome and Chrome OS Additional Terms of Service";
-#else
-// Placeholder text in terms_chromium.html.
-constexpr char kOfflineEULAWarning[] =
-    "In official builds this space will show the terms of service.";
-#endif
 
 const test::UIPath kEulaWebview = {"oobe-eula-md", "crosEulaFrame"};
 const test::UIPath kAcceptEulaButton = {"oobe-eula-md", "acceptButton"};
@@ -128,33 +110,12 @@ class EulaTest : public OobeBaseTest {
   EulaTest() = default;
   ~EulaTest() override = default;
 
-  // OobeBaseTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    OobeBaseTest::SetUpCommandLine(command_line);
-    // Retrieve the URL from the embedded test server and override EULA URL.
-    std::string fake_eula_url =
-        embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath).spec();
-    command_line->AppendSwitchASCII(switches::kOobeEulaUrlForTests,
-                                    fake_eula_url);
-  }
-
-  // OobeBaseTest:
-  void RegisterAdditionalRequestHandlers() override {
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&EulaTest::HandleRequest, base::Unretained(this)));
-  }
-
   void ShowEulaScreen() {
     LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
     OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
  protected:
-  // Used for customizing the response handler of the embedded server.
-  void set_force_http_unavailable(bool force_unavailable) {
-    force_http_unavailable_ = force_unavailable;
-  }
-
   content::WebContents* FindEulaContents() {
     // Tag the Eula webview in use with a unique name.
     constexpr char kUniqueEulaWebviewName[] = "unique-eula-webview-name";
@@ -239,34 +200,9 @@ class EulaTest : public OobeBaseTest {
     return consented;
   }
 
+  FakeEulaMixin fake_eula_{&mixin_host_, embedded_test_server()};
+
  private:
-  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
-    const std::string request_path = request_url.path();
-    if (!base::EndsWith(request_path, "/eula_text.html",
-                        base::CompareCase::SENSITIVE)) {
-      return std::unique_ptr<HttpResponse>();
-    }
-
-    std::unique_ptr<BasicHttpResponse> http_response =
-        std::make_unique<BasicHttpResponse>();
-
-    if (force_http_unavailable_) {
-      http_response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
-    } else {
-      http_response->set_code(net::HTTP_OK);
-      http_response->set_content_type("text/html");
-      http_response->set_content(kFakeOnlineEula);
-    }
-
-    return std::move(http_response);
-  }
-
-  // The default behaviour for the embedded server is to service the
-  // online version properly. Offline tests may change this during construction
-  // of the class.
-  bool force_http_unavailable_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(EulaTest);
 };
 
@@ -274,7 +210,7 @@ class EulaTest : public OobeBaseTest {
 // embedded server have to be handled differently.
 class EulaOfflineTest : public EulaTest {
  public:
-  EulaOfflineTest() { set_force_http_unavailable(true); }
+  EulaOfflineTest() { fake_eula_.set_force_http_unavailable(true); }
 
   ~EulaOfflineTest() override = default;
 };
@@ -285,20 +221,13 @@ IN_PROC_BROWSER_TEST_F(EulaOfflineTest, LoadOffline) {
   ShowEulaScreen();
 
   WaitForLocalWebviewLoad();
-  EXPECT_TRUE(
-      test::GetWebViewContents(kEulaWebview).find(kOfflineEULAWarning) !=
-      std::string::npos);
+  EXPECT_TRUE(test::GetWebViewContents(kEulaWebview)
+                  .find(FakeEulaMixin::kOfflineEULAWarning) !=
+              std::string::npos);
 }
 
-#if defined(OS_CHROMEOS) && \
-    (defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER))
-// TODO(http://crbug.com/1041188): flaky on ChromeOS MSAN and LSAN.
-#define MAYBE_LoadOnline DISABLED_LoadOnline
-#else
-#define MAYBE_LoadOnline LoadOnline
-#endif
 // Tests that online version is shown when it is accessible.
-IN_PROC_BROWSER_TEST_F(EulaTest, MAYBE_LoadOnline) {
+IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
   ShowEulaScreen();
 
   // Wait until the webview has finished loading.
@@ -310,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, MAYBE_LoadOnline) {
   chromeos::test::OobeJS().CreateEnabledWaiter(true, kAcceptEulaButton)->Wait();
 
   const std::string webview_contents = test::GetWebViewContents(kEulaWebview);
-  EXPECT_TRUE(webview_contents.find(kFakeOnlineEula) != std::string::npos);
+  EXPECT_TRUE(webview_contents.find(FakeEulaMixin::kFakeOnlineEula) !=
+              std::string::npos);
 }
 
 // Tests that clicking on "System security settings" button opens a dialog

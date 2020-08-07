@@ -1602,15 +1602,12 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
   return origin;
 }
 
-GlobalObjectReusePolicy DocumentLoader::CalculateGlobalObjectReusePolicy(
-    SecurityOrigin* security_origin) {
+bool ShouldReuseDOMWindow(LocalFrame* frame, SecurityOrigin* security_origin) {
   // Secure transitions can only happen when navigating from the initial empty
   // document.
-  if (!GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument())
-    return GlobalObjectReusePolicy::kCreateNew;
-  if (!frame_->DomWindow()->GetSecurityOrigin()->CanAccess(security_origin))
-    return GlobalObjectReusePolicy::kCreateNew;
-  return GlobalObjectReusePolicy::kUseExisting;
+  if (!frame->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
+    return false;
+  return frame->DomWindow()->GetSecurityOrigin()->CanAccess(security_origin);
 }
 
 WindowAgent* GetWindowAgentForOrigin(LocalFrame* frame,
@@ -1625,52 +1622,9 @@ WindowAgent* GetWindowAgentForOrigin(LocalFrame* frame,
       V8PerIsolateData::MainThreadIsolate(), origin);
 }
 
-void DocumentLoader::CommitNavigation() {
-  CHECK_GE(state_, kCommitted);
-  DCHECK(frame_->GetPage());
-  DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
-  DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
-
-  // Prepare a DocumentInit before clearing the frame, because it may need to
-  // inherit an aliased security context.
-  Document* owner_document = nullptr;
-
-  // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
-  // origin is inherited from the document that loaded the URL.
-  if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
-    Frame* owner_frame = frame_->Tree().Parent();
-    if (!owner_frame)
-      owner_frame = frame_->Loader().Opener();
-    if (auto* owner_local_frame = DynamicTo<LocalFrame>(owner_frame))
-      owner_document = owner_local_frame->GetDocument();
-  }
-
-  // Re-validate Document Policy feature before installing the new document.
-  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(
-          owner_document ? owner_document->GetExecutionContext() : nullptr)) {
-    document_policy_ = DocumentPolicy::ParsedDocumentPolicy{};
-  }
-
-  if (document_policy_.feature_state.contains(
-          mojom::blink::DocumentPolicyFeature::kForceLoadAtTop)) {
-    navigation_scroll_allowed_ = !(
-        document_policy_
-            .feature_state[mojom::blink::DocumentPolicyFeature::kForceLoadAtTop]
-            .BoolValue());
-  }
-
+void DocumentLoader::InitializeWindow(Document* owner_document) {
   auto sandbox_flags = CalculateSandboxFlags();
   auto security_origin = CalculateOrigin(owner_document, sandbox_flags);
-
-  GlobalObjectReusePolicy global_object_reuse_policy =
-      CalculateGlobalObjectReusePolicy(security_origin.get());
-
-  if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
-    GetFrameLoader().StateMachine()->AdvanceTo(
-        FrameLoaderStateMachine::kCommittedFirstRealLoad);
-  }
-
-  LocalDOMWindow* previous_window = frame_->DomWindow();
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
@@ -1680,7 +1634,7 @@ void DocumentLoader::CommitNavigation() {
   // commits. To make that happen, we "securely transition" the existing
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
-  if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
+  if (!ShouldReuseDOMWindow(frame_.Get(), security_origin.get())) {
     auto* agent = GetWindowAgentForOrigin(frame_.Get(), security_origin.get());
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_, agent));
 
@@ -1723,17 +1677,68 @@ void DocumentLoader::CommitNavigation() {
   security_origin = security_origin->GetOriginForAgentCluster(
       frame_->DomWindow()->GetAgent()->cluster_id());
 
-  frame_->DomWindow()->GetSecurityContext().SetContentSecurityPolicy(
-      content_security_policy_.Get());
-  frame_->DomWindow()->GetSecurityContext().ApplySandboxFlags(sandbox_flags);
+  SecurityContext& security_context = frame_->DomWindow()->GetSecurityContext();
+  security_context.SetContentSecurityPolicy(content_security_policy_.Get());
+  security_context.ApplySandboxFlags(sandbox_flags);
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
   // wants to inspect sandbox flags.
-  frame_->DomWindow()->GetSecurityContext().SetSecurityOrigin(
-      std::move(security_origin));
+  security_context.SetSecurityOrigin(std::move(security_origin));
   // Requires SecurityOrigin to be initialized.
   OriginTrialContext::AddTokensFromHeader(
       frame_->DomWindow(), response_.HttpHeaderField(http_names::kOriginTrial));
+
+  if (auto* parent = frame_->Tree().Parent()) {
+    const SecurityContext* parent_context = parent->GetSecurityContext();
+    security_context.SetInsecureRequestPolicy(
+        parent_context->GetInsecureRequestPolicy());
+    for (auto to_upgrade : parent_context->InsecureNavigationsToUpgrade())
+      security_context.AddInsecureNavigationUpgrade(to_upgrade);
+  }
+  frame_->DomWindow()->SetAddressSpace(ip_address_space_);
+}
+
+void DocumentLoader::CommitNavigation() {
+  CHECK_GE(state_, kCommitted);
+  DCHECK(frame_->GetPage());
+  DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
+  DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
+
+  // Prepare a DocumentInit before clearing the frame, because it may need to
+  // inherit an aliased security context.
+  Document* owner_document = nullptr;
+
+  // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
+  // origin is inherited from the document that loaded the URL.
+  if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
+    Frame* owner_frame = frame_->Tree().Parent();
+    if (!owner_frame)
+      owner_frame = frame_->Loader().Opener();
+    if (auto* owner_local_frame = DynamicTo<LocalFrame>(owner_frame))
+      owner_document = owner_local_frame->GetDocument();
+  }
+
+  // Re-validate Document Policy feature before installing the new document.
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(
+          owner_document ? owner_document->GetExecutionContext() : nullptr)) {
+    document_policy_ = DocumentPolicy::ParsedDocumentPolicy{};
+  }
+
+  if (document_policy_.feature_state.contains(
+          mojom::blink::DocumentPolicyFeature::kForceLoadAtTop)) {
+    navigation_scroll_allowed_ = !(
+        document_policy_
+            .feature_state[mojom::blink::DocumentPolicyFeature::kForceLoadAtTop]
+            .BoolValue());
+  }
+
+  LocalDOMWindow* previous_window = frame_->DomWindow();
+  InitializeWindow(owner_document);
+
+  if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
+    GetFrameLoader().StateMachine()->AdvanceTo(
+        FrameLoaderStateMachine::kCommittedFirstRealLoad);
+  }
 
   SecurityContextInit security_init(frame_->DomWindow());
   // FeaturePolicy and DocumentPolicy require SecurityOrigin and origin trials
@@ -1752,26 +1757,16 @@ void DocumentLoader::CommitNavigation() {
       document_policy_,
       response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly));
 
-  if (auto* parent = frame_->Tree().Parent()) {
-    SecurityContext& this_context = frame_->DomWindow()->GetSecurityContext();
-    const SecurityContext* parent_context = parent->GetSecurityContext();
-    this_context.SetInsecureRequestPolicy(
-        parent_context->GetInsecureRequestPolicy());
-    for (auto to_upgrade : parent_context->InsecureNavigationsToUpgrade())
-      this_context.AddInsecureNavigationUpgrade(to_upgrade);
-  }
-  frame_->DomWindow()->SetAddressSpace(ip_address_space_);
-
   WillCommitNavigation();
 
-  DocumentInit init = DocumentInit::Create()
-                          .WithWindow(frame_->DomWindow(), owner_document)
-                          .WithURL(Url())
-                          .WithTypeFrom(MimeType())
-                          .WithSrcdocDocument(loading_srcdoc_)
-                          .WithNewRegistrationContext()
-                          .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
-  Document* document = frame_->DomWindow()->InstallNewDocument(init);
+  Document* document = frame_->DomWindow()->InstallNewDocument(
+      DocumentInit::Create()
+          .WithWindow(frame_->DomWindow(), owner_document)
+          .WithURL(Url())
+          .WithTypeFrom(MimeType())
+          .WithSrcdocDocument(loading_srcdoc_)
+          .WithNewRegistrationContext()
+          .WithWebBundleClaimedUrl(web_bundle_claimed_url_));
 
   // Clear the user activation state.
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
@@ -1898,7 +1893,7 @@ void DocumentLoader::CommitNavigation() {
     } else {
       GetLocalFrameClient().DispatchDidCommitLoad(
           history_item_.Get(), LoadTypeToCommitType(load_type_),
-          global_object_reuse_policy);
+          previous_window != frame_->DomWindow());
     }
     // TODO(dgozman): make DidCreateScriptContext notification call currently
     // triggered by installing new document happen here, after commit.

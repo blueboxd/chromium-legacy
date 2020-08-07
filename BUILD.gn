@@ -12,6 +12,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
+import("//build/gn_logs.gni")
 import("//build/util/generate_wrapper.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/media/router/features.gni")
@@ -757,8 +758,8 @@ group("gn_all") {
     }
   }
 
-  if (((is_linux || is_chromeos) && !is_chromecast) || (is_win && use_libfuzzer) ||
-      (use_libfuzzer && is_mac)) {
+  if (((is_linux || is_chromeos) && !is_chromecast) ||
+      (is_win && use_libfuzzer) || (use_libfuzzer && is_mac)) {
     deps += [
       "//chrome/services/ipp_parser/public/cpp:fuzzers",
       "//testing/libfuzzer/fuzzers",
@@ -1398,3 +1399,15 @@ assert(
                      "*\bwin/*",
                    ]) != [],
     "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
+
+# Write debug logs to gn_logs.txt.
+_lines = [
+           "Generated during 'gn gen' by //BUILD.gn.",
+           "",
+         ] + build_gn_logs
+
+# GN evaluates each .gn file once per toolchain, so restricting to default
+# toolchain will ensure write_file() is called only once.
+assert(current_toolchain == default_toolchain)
+
+write_file("$root_build_dir/gn_logs.txt", _lines)

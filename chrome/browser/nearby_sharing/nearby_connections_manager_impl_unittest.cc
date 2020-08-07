@@ -389,7 +389,7 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectClosed) {
 
   // Close should invoke disconnection callback and read callback.
   base::RunLoop close_run_loop;
-  nearby_connection->RegisterForDisconnection(
+  nearby_connection->SetDisconnectionListener(
       base::BindLambdaForTesting([&]() { close_run_loop.Quit(); }));
   base::RunLoop read_run_loop_3;
   nearby_connection->Read(base::BindLambdaForTesting(
@@ -427,7 +427,7 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectClosedByRemote) {
 
   // Remote closing should invoke disconnection callback and read callback.
   base::RunLoop close_run_loop;
-  nearby_connection->RegisterForDisconnection(
+  nearby_connection->SetDisconnectionListener(
       base::BindLambdaForTesting([&]() { close_run_loop.Quit(); }));
   base::RunLoop read_run_loop;
   nearby_connection->Read(base::BindLambdaForTesting(
@@ -458,7 +458,7 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectClosedByClient) {
 
   // Remote closing should invoke disconnection callback and read callback.
   base::RunLoop close_run_loop;
-  nearby_connection->RegisterForDisconnection(
+  nearby_connection->SetDisconnectionListener(
       base::BindLambdaForTesting([&]() { close_run_loop.Quit(); }));
   base::RunLoop read_run_loop;
   nearby_connection->Read(base::BindLambdaForTesting(

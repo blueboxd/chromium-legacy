@@ -156,7 +156,6 @@ OsIntegrationManager& WebAppProvider::os_integration_manager() {
 
 void WebAppProvider::Shutdown() {
   ui_manager_->Shutdown();
-  shortcut_manager_->Shutdown();
   pending_app_manager_->Shutdown();
   manifest_update_manager_->Shutdown();
   system_web_app_manager_->Shutdown();
@@ -257,15 +256,15 @@ void WebAppProvider::ConnectSubsystems() {
 
   install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                     registry_controller_.get());
-  install_manager_->SetSubsystems(registrar_.get(), shortcut_manager_.get(),
+  install_manager_->SetSubsystems(registrar_.get(),
                                   os_integration_manager_.get(),
                                   install_finalizer_.get());
   manifest_update_manager_->SetSubsystems(
       registrar_.get(), icon_manager_.get(), ui_manager_.get(),
       install_manager_.get(), system_web_app_manager_.get());
   pending_app_manager_->SetSubsystems(
-      registrar_.get(), shortcut_manager_.get(), os_integration_manager_.get(),
-      ui_manager_.get(), install_finalizer_.get(), install_manager_.get());
+      registrar_.get(), os_integration_manager_.get(), ui_manager_.get(),
+      install_finalizer_.get(), install_manager_.get());
   external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(
       pending_app_manager_.get(), registrar_.get(), registry_controller_.get(),
@@ -297,7 +296,6 @@ void WebAppProvider::OnRegistryControllerReady() {
   web_app_policy_manager_->Start();
   system_web_app_manager_->Start();
   manifest_update_manager_->Start();
-  shortcut_manager_->Start();
   file_handler_manager_->Start();
   os_integration_manager_->Start();
   ui_manager_->Start();

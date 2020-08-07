@@ -28,6 +28,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -48,10 +49,10 @@ constexpr int kStatusIndicatorActiveSize = 8;
 constexpr int kStatusIndicatorRunningSize = 4;
 constexpr int kStatusIndicatorThickness = 2;
 constexpr int kNotificationIndicatorRadiusDip = 7;
-constexpr SkColor kIndicatorColor = SK_ColorWHITE;
+constexpr SkColor kDefaultIndicatorColor = SK_ColorWHITE;
 
 // Slightly different colors and alpha in the new UI.
-constexpr SkColor kIndicatorColorActive = kIndicatorColor;
+constexpr SkColor kIndicatorColorActive = kDefaultIndicatorColor;
 constexpr SkColor kIndicatorColorRunning = SkColorSetA(SK_ColorWHITE, 0x7F);
 
 // The time threshold before an item can be dragged.
@@ -65,6 +66,30 @@ constexpr float kAppIconScale = 1.2f;
 
 // The drag and drop app icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionMs = 200;
+
+// Uses the icon image to calculate the light vibrant color to be used for
+// the notification indicator.
+base::Optional<SkColor> CalculateNotificationColor(gfx::ImageSkia image) {
+  const SkBitmap* source = image.bitmap();
+  if (!source || source->empty() || source->isNull())
+    return base::nullopt;
+
+  std::vector<color_utils::ColorProfile> color_profiles;
+  color_profiles.push_back(color_utils::ColorProfile(
+      color_utils::LumaRange::LIGHT, color_utils::SaturationRange::VIBRANT));
+
+  std::vector<color_utils::Swatch> best_swatches =
+      color_utils::CalculateProminentColorsOfBitmap(
+          *source, color_profiles, nullptr /* bitmap region */,
+          color_utils::ColorSwatchFilter());
+
+  // If the best swatch color is transparent, then
+  // CalculateProminentColorsOfBitmap() failed to find a suitable color.
+  if (best_swatches.empty() || best_swatches[0].color == SK_ColorTRANSPARENT)
+    return base::nullopt;
+
+  return best_swatches[0].color;
+}
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
@@ -177,8 +202,15 @@ class ShelfAppButton::AppNotificationIndicatorView : public views::View {
         flags);
   }
 
+  void SetColor(SkColor new_color) {
+    indicator_color_ = new_color;
+    SchedulePaint();
+  }
+
+  SkColor GetColorForTest() { return indicator_color_; }
+
  private:
-  const SkColor indicator_color_;
+  SkColor indicator_color_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotificationIndicatorView);
 };
@@ -343,7 +375,8 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   AddChildView(indicator_);
   AddChildView(icon_view_);
   if (is_notification_indicator_enabled_) {
-    notification_indicator_ = new AppNotificationIndicatorView(kIndicatorColor);
+    notification_indicator_ =
+        new AppNotificationIndicatorView(kDefaultIndicatorColor);
     notification_indicator_->SetPaintToLayer();
     notification_indicator_->layer()->SetFillsBoundsOpaquely(false);
     notification_indicator_->SetVisible(false);
@@ -382,6 +415,13 @@ void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
   icon_image_ = image;
+
+  if (is_notification_indicator_enabled_) {
+    base::Optional<SkColor> notification_color =
+        CalculateNotificationColor(icon_image_);
+    notification_indicator_->SetColor(
+        notification_color.value_or(kDefaultIndicatorColor));
+  }
 
   const int icon_size = shelf_view_->GetButtonIconSize() * icon_scale_;
 
@@ -916,6 +956,10 @@ void ShelfAppButton::SetInkDropAnimationStarted(bool started) {
   } else {
     ink_drop_count_.reset(nullptr);
   }
+}
+
+SkColor ShelfAppButton::GetNotificationIndicatorColorForTest() {
+  return notification_indicator_->GetColorForTest();
 }
 
 }  // namespace ash

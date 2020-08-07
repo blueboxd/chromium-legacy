@@ -489,7 +489,8 @@ std::unique_ptr<TracedValue> Data(const Animation&);
 
 namespace inspector_animation_compositor_event {
 std::unique_ptr<TracedValue> Data(
-    blink::CompositorAnimations::FailureReasons failure_reasons);
+    blink::CompositorAnimations::FailureReasons failure_reasons,
+    const blink::PropertyHandleSet& unsupported_properties);
 }
 
 namespace inspector_hit_test_event {

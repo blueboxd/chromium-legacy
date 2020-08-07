@@ -99,12 +99,6 @@ namespace mojom {
 enum class CommitResult : int32_t;
 }
 
-// Indicates whether the global object (i.e. Window instance) associated with
-// the previous document in a browsing context was replaced or reused for the
-// new Document corresponding to the just-committed navigation; effective in the
-// main world and all isolated worlds. WindowProxies are not affected.
-enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
-
 // The DocumentLoader fetches a main resource and handles the result.
 // TODO(https://crbug.com/855189). This was originally structured to have a
 // provisional load, then commit but that is no longer necessary and this class
@@ -343,7 +337,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   scoped_refptr<SecurityOrigin> CalculateOrigin(
       Document* owner_document,
       network::mojom::blink::WebSandboxFlags);
-  GlobalObjectReusePolicy CalculateGlobalObjectReusePolicy(SecurityOrigin*);
+  void InitializeWindow(Document* owner_document);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation();

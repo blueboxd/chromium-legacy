@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::chromeos::network_health::mojom::NetworkHealthService;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::StrictMock;
@@ -137,6 +138,29 @@ class MockCrosHealthdPowerObserver : public mojom::CrosHealthdPowerObserver {
 
  private:
   mojo::Receiver<mojom::CrosHealthdPowerObserver> receiver_;
+};
+
+class MockNetworkHealthService : public NetworkHealthService {
+ public:
+  MockNetworkHealthService() : receiver_{this} {}
+  MockNetworkHealthService(const MockNetworkHealthService&) = delete;
+  MockNetworkHealthService& operator=(const MockNetworkHealthService&) = delete;
+
+  MOCK_METHOD(void,
+              GetNetworkList,
+              (NetworkHealthService::GetNetworkListCallback),
+              (override));
+  MOCK_METHOD(void,
+              GetHealthSnapshot,
+              (NetworkHealthService::GetHealthSnapshotCallback),
+              (override));
+
+  mojo::PendingRemote<NetworkHealthService> pending_remote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<NetworkHealthService> receiver_;
 };
 
 class CrosHealthdServiceConnectionTest : public testing::Test {
@@ -447,6 +471,32 @@ TEST_F(CrosHealthdServiceConnectionTest, AddPowerObserver) {
     run_loop.Quit();
   }));
   FakeCrosHealthdClient::Get()->EmitAcInsertedEventForTesting();
+
+  run_loop.Run();
+}
+
+// Test that we can set the callback to get the NetworkHealthService remote and
+// request the network health state snapshot.
+TEST_F(CrosHealthdServiceConnectionTest, SetBindNetworkHealthService) {
+  MockNetworkHealthService service;
+  ServiceConnection::GetInstance()->SetBindNetworkHealthServiceCallback(
+      base::BindLambdaForTesting(
+          [&service] { return service.pending_remote(); }));
+
+  base::RunLoop run_loop;
+  auto canned_response = network_health::mojom::NetworkHealthState::New();
+  EXPECT_CALL(service, GetHealthSnapshot(_))
+      .WillOnce(
+          Invoke([&](NetworkHealthService::GetHealthSnapshotCallback callback) {
+            std::move(callback).Run(canned_response.Clone());
+          }));
+
+  FakeCrosHealthdClient::Get()->RequestNetworkHealthForTesting(
+      base::BindLambdaForTesting(
+          [&](network_health::mojom::NetworkHealthStatePtr response) {
+            EXPECT_EQ(canned_response, response);
+            run_loop.Quit();
+          }));
 
   run_loop.Run();
 }

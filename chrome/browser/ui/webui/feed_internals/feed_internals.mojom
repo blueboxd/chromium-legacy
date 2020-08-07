@@ -26,6 +26,9 @@ struct Properties {
 
   // Feed fetch URL.
   url.mojom.Url feed_fetch_url;
+
+  // Feed upload actions URL.
+  url.mojom.Url feed_actions_url;
 };
 
 struct UserClassifier {
@@ -57,6 +60,12 @@ struct LastFetchProperties {
 
   // For test server authentication.
   string last_bless_nonce;
+
+  // Last net status for actions upload.
+  int32 last_action_upload_status;
+
+  // Last action upload time.
+  mojo_base.mojom.TimeDelta last_action_upload_time;
 };
 
 // Models a single suggestion in the Feed.
@@ -113,4 +122,10 @@ interface PageHandler {
   // Empty to clear override.
   // This allows for testing the Feed against a development server.
   OverrideFeedHost(url.mojom.Url host);
+
+  // Overrides the URL used to upload actions.
+  // Empty to clear override.
+  // This allows for testing the Feed against a development server.
+  OverrideActionUploadEndpoint(url.mojom.Url endpoint_url);
+
 };

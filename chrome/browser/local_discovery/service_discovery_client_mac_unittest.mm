@@ -77,11 +77,6 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
     num_resolves_++;
   }
 
-  void StopDiscoveryThread() {
-    client_->service_discovery_thread_->FlushForTesting();
-    client_->service_discovery_thread_.reset();
-  }
-
   ServiceDiscoveryClient* client() { return client_.get(); }
 
  protected:
@@ -119,10 +114,32 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceWatcher) {
       ServiceWatcher::UPDATE_REMOVED, test_service_name);
   EXPECT_EQ(last_service_name_, test_service_name + "." + test_service_type);
   EXPECT_EQ(num_updates_, 3);
+}
 
-  // Explicitly flush and stop the thread that |watcher| is using before
-  // |watcher| goes out of scope.
-  StopDiscoveryThread();
+TEST_F(ServiceDiscoveryClientMacTest, DeleteWatcherAfterStart) {
+  const std::string test_service_type = "_testing._tcp.local";
+
+  std::unique_ptr<ServiceWatcher> watcher = client()->CreateServiceWatcher(
+      test_service_type,
+      base::BindRepeating(&ServiceDiscoveryClientMacTest::OnServiceUpdated,
+                          base::Unretained(this)));
+  watcher->Start();
+  watcher.reset();
+
+  EXPECT_EQ(0, num_updates_);
+}
+
+TEST_F(ServiceDiscoveryClientMacTest, DeleteResolverAfterStart) {
+  const std::string test_service_name = "Test.123";
+
+  std::unique_ptr<ServiceResolver> resolver = client()->CreateServiceResolver(
+      test_service_name,
+      base::BindRepeating(&ServiceDiscoveryClientMacTest::OnResolveComplete,
+                          base::Unretained(this)));
+  resolver->StartResolving();
+  resolver.reset();
+
+  EXPECT_EQ(0, num_resolves_);
 }
 
 TEST_F(ServiceDiscoveryClientMacTest, ParseServiceRecord) {

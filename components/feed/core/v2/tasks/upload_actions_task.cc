@@ -40,6 +40,12 @@ bool ShouldUpload(const StoredAction& action) {
 
 }  // namespace
 
+UploadActionsTask::Result::Result() = default;
+UploadActionsTask::Result::~Result() = default;
+UploadActionsTask::Result::Result(UploadActionsTask::Result&&) = default;
+UploadActionsTask::Result& UploadActionsTask::Result::operator=(Result&&) =
+    default;
+
 class UploadActionsTask::Batch {
  public:
   Batch()
@@ -242,6 +248,8 @@ void UploadActionsTask::OnUpdateActionsFinished(
 void UploadActionsTask::OnUploadFinished(
     std::unique_ptr<UploadActionsTask::Batch> batch,
     FeedNetwork::ActionRequestResult result) {
+  last_network_response_info_ = result.response_info;
+
   if (!result.response_body)
     return BatchComplete(UploadActionsBatchStatus::kFailedToUpload);
 
@@ -284,7 +292,14 @@ void UploadActionsTask::UpdateTokenAndFinish() {
 
 void UploadActionsTask::Done(UploadActionsStatus status) {
   MetricsReporter::OnUploadActions(status);
-  std::move(callback_).Run({status, upload_attempt_count_, stale_count_});
+  Result result;
+  result.status = status;
+  result.upload_attempt_count = upload_attempt_count_;
+  result.stale_count = stale_count_;
+  result.last_network_response_info = std::move(last_network_response_info_);
+  LOG(ERROR) << "Upload actions done with netresponse? "
+             << (result.last_network_response_info ? 1 : 0);
+  std::move(callback_).Run(std::move(result));
   TaskComplete();
 }
 

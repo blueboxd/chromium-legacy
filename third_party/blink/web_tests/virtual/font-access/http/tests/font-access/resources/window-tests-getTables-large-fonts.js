@@ -1,6 +1,7 @@
 'use strict';
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectations = getEnumerationTestSet({labelFilter: [TEST_SIZE_CATEGORY.large]});

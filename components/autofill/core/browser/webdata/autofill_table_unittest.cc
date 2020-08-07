@@ -855,9 +855,10 @@ TEST_F(AutofillTableTest,
   AutofillProfile structured_name_profile;
   structured_name_profile.set_origin(std::string());
 
-  structured_name_profile.SetRawInfoWithVerificationStatus(
-      NAME_HONORIFIC_PREFIX, ASCIIToUTF16("Dr."),
-      VerificationStatus::kObserved);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // structured_name_profile.SetRawInfoWithVerificationStatus(
+  //     NAME_HONORIFIC_PREFIX, ASCIIToUTF16("Dr."),
+  //     VerificationStatus::kObserved);
 
   structured_name_profile.SetRawInfoWithVerificationStatus(
       NAME_FIRST, ASCIIToUTF16("John"), VerificationStatus::kObserved);
@@ -878,7 +879,7 @@ TEST_F(AutofillTableTest,
       NAME_LAST, ASCIIToUTF16("Agent 007 Smith"), VerificationStatus::kParsed);
 
   structured_name_profile.SetRawInfoWithVerificationStatus(
-      NAME_FULL, ASCIIToUTF16("Dr. John Q. Agent 007 Smith"),
+      NAME_FULL, ASCIIToUTF16("John Q. Agent 007 Smith"),
       VerificationStatus::kObserved);
 
   structured_name_profile.SetRawInfo(EMAIL_ADDRESS,
@@ -940,8 +941,9 @@ TEST_F(AutofillTableTest,
 
   // And verify that state of the retrieved profile since it should only contain
   // the legacy structure.
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
   EXPECT_EQ(db_legacy_profile->GetRawInfo(NAME_FULL),
-            ASCIIToUTF16("Dr. John Q. Agent 007 Smith"));
+            ASCIIToUTF16("John Q. Agent 007 Smith"));
   EXPECT_EQ(db_legacy_profile->GetRawInfo(NAME_FIRST), ASCIIToUTF16("John"));
   EXPECT_EQ(db_legacy_profile->GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Q."));
   EXPECT_EQ(db_legacy_profile->GetRawInfo(NAME_LAST),
@@ -1000,8 +1002,9 @@ TEST_F(AutofillTableTest,
   // Verify that the legacy tokens are written correctly to the profile and that
   // all new tokens are empty and that the verification status is set to
   // |kNoStatus| for all tokens.
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
   EXPECT_EQ(db_migrated_profile->GetRawInfo(NAME_FULL),
-            ASCIIToUTF16("Dr. John Q. Agent 007 Smith"));
+            ASCIIToUTF16("John Q. Agent 007 Smith"));
   EXPECT_TRUE(db_migrated_profile->GetRawInfo(NAME_HONORIFIC_PREFIX).empty());
   EXPECT_EQ(db_migrated_profile->GetRawInfo(NAME_FIRST), ASCIIToUTF16("John"));
   EXPECT_EQ(db_migrated_profile->GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Q."));
@@ -1039,9 +1042,10 @@ TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {
   AutofillProfile home_profile;
   home_profile.set_origin(std::string());
 
-  home_profile.SetRawInfoWithVerificationStatus(NAME_HONORIFIC_PREFIX,
-                                                ASCIIToUTF16("Dr."),
-                                                VerificationStatus::kObserved);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // home_profile.SetRawInfoWithVerificationStatus(
+  // NAME_HONORIFIC_PREFIX, ASCIIToUTF16("Dr."),
+  // VerificationStatus::kObserved);
 
   home_profile.SetRawInfoWithVerificationStatus(
       NAME_FIRST, ASCIIToUTF16("John"), VerificationStatus::kObserved);
@@ -1062,7 +1066,7 @@ TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {
       NAME_LAST, ASCIIToUTF16("Agent 007 Smith"), VerificationStatus::kParsed);
 
   home_profile.SetRawInfoWithVerificationStatus(
-      NAME_FULL, ASCIIToUTF16("Dr. John Q. Agent 007 Smith"),
+      NAME_FULL, ASCIIToUTF16("John Q. Agent 007 Smith"),
       VerificationStatus::kObserved);
 
   home_profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));

@@ -594,6 +594,16 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoForeground) {
 
   [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
 
+  std::vector<GURL> URLs;
+  for (NSURL* URL in urls) {
+    URLs.push_back(net::GURLWithNSURL(URL));
+  }
+
+  AppStartupParameters* startupParams =
+      [[AppStartupParameters alloc] initWithURLs:URLs];
+  [[[connectionInformationMock stub] andReturn:startupParams]
+      startupParameters];
+
   MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   // Action.

@@ -47,7 +47,7 @@ Polymer({
    */
   attached() {
     this.addWebUIListener(
-        'contacts-updated', contact => this.onContactUpdateAdded_([contact]));
+        'contacts-updated', contact => this.onContactUpdateAdded_(contact));
     this.browserProxy_.initialize();
   },
 
@@ -81,11 +81,10 @@ Polymer({
 
   /**
    * Adds contact sent in from WebUI listener to the list of displayed contacts.
-   * @param {!Array<!ContactUpdate>} contacts
+   * @param {!ContactUpdate} contact
    * @private
    */
-  onContactUpdateAdded_(contacts) {
-    contacts.unshift('contactList_');
-    this.unshift.apply(this, contacts);
+  onContactUpdateAdded_(contact) {
+    this.contactList_.unshift(contact);
   },
 });

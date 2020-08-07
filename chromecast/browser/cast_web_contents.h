@@ -27,13 +27,14 @@ namespace blink {
 class AssociatedInterfaceProvider;
 }  // namespace blink
 
-namespace on_load_script_injector {
-class OnLoadScriptInjectorHost;
-}  // namespace on_load_script_injector
-
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace on_load_script_injector {
+template <typename>
+class OnLoadScriptInjectorHost;
+}  // namespace on_load_script_injector
 
 namespace chromecast {
 
@@ -338,7 +339,7 @@ class CastWebContents {
 
   // Returns the script injector instance, which injects scripts at page load
   // time.
-  virtual on_load_script_injector::OnLoadScriptInjectorHost*
+  virtual on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*
   script_injector() = 0;
 
   // Injects on-load scripts into the WebContents' main frame.

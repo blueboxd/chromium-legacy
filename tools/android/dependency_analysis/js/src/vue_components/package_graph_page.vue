@@ -38,8 +38,14 @@
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"
           @[CUSTOM_EVENTS.NODE_DOUBLE_CLICKED]="graphNodeDoubleClicked"/>
       <div id="node-details-container">
-        <GraphDisplaySettings
-            :display-settings-data="displaySettingsData"/>
+        <GraphDisplayPanel
+            :display-settings-data="displaySettingsData"
+            :display-settings-preset.sync="
+              displaySettingsData.displaySettingsPreset">
+          <GraphDisplaySettings
+              :display-settings-data="displaySettingsData"
+              @[CUSTOM_EVENTS.DISPLAY_OPTION_CHANGED]="displayOptionChanged"/>
+        </GraphDisplayPanel>
         <GraphSelectedNodeDetails
             :selected-node-details-data="pageModel.selectedNodeDetailsData"
             @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
@@ -57,10 +63,14 @@ import {PagePathName, UrlProcessor} from '../url_processor.js';
 
 import {GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
-import {PackageDisplaySettingsData} from '../display_settings_data.js';
+import {
+  PackageDisplaySettingsData,
+  DisplaySettingsPreset,
+} from '../display_settings_data.js';
 import {parsePackageGraphModelFromJson} from '../process_graph_json.js';
 import {shortenPackageName} from '../chrome_hooks.js';
 
+import GraphDisplayPanel from './graph_display_panel.vue';
 import GraphDisplaySettings from './graph_display_settings.vue';
 import GraphFilterInput from './graph_filter_input.vue';
 import GraphFilterItems from './graph_filter_items.vue';
@@ -72,6 +82,7 @@ import PackageDetailsPanel from './package_details_panel.vue';
 // @vue/component
 const PackageGraphPage = {
   components: {
+    GraphDisplayPanel,
     GraphDisplaySettings,
     GraphFilterInput,
     GraphFilterItems,
@@ -138,6 +149,10 @@ const PackageGraphPage = {
     }
   },
   methods: {
+    displayOptionChanged: function() {
+      this.displaySettingsData.displaySettingsPreset =
+        DisplaySettingsPreset.CUSTOM;
+    },
     updateDocumentUrl() {
       const urlProcessor = UrlProcessor.createForOutput();
       this.displaySettingsData.updateUrlProcessor(urlProcessor);

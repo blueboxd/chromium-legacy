@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.UiThreadTestRule;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -16,7 +15,6 @@ import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,9 +25,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ViewHighlighterTest {
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
     private Context mContext;
 
     @Before

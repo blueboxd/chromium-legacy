@@ -8,18 +8,23 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_policy.h"
-#include "content/browser/conversions/conversion_storage.h"
+#include "content/browser/conversions/conversion_storage_context.h"
 
 namespace base {
+
 class Clock;
+class FilePath;
+
 }  // namespace base
 
 namespace content {
@@ -111,8 +116,6 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> storage_task_runner);
 
-  void OnInitCompleted(bool success);
-
   // Retrieves reports from storage whose |report_time| <= |max_report_time|,
   // and calls |handler_function| on them.
   using ReportsHandlerFunc =
@@ -133,7 +136,7 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   void HandleReportsSentFromWebUI(base::OnceClosure done,
                                   std::vector<ConversionReport> reports);
 
-  // Notify storage to delete the given |conversion_id| when it's associated
+  // Notify storage to delete the given |conversion_id| when its associated
   // report has been sent.
   void OnReportSent(int64_t conversion_id);
 
@@ -153,10 +156,6 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   // verify functionality without mocking out any implementations.
   const bool debug_mode_;
 
-  // Task runner used to perform operations on |storage_|. Runs with
-  // base::TaskPriority::BEST_EFFORT.
-  scoped_refptr<base::SequencedTaskRunner> storage_task_runner_;
-
   const base::Clock* clock_;
 
   // Timer which administers calls to GetAndQueueReportsForNextInterval().
@@ -166,15 +165,10 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   // from |storage_| and added to |reporter_| by |get_reports_timer_|.
   std::unique_ptr<ConversionReporter> reporter_;
 
-  // ConversionStorage instance which is scoped to lifetime of
-  // |storage_task_runner_|. |storage_| should be accessed by calling
-  // base::PostTask with |storage_task_runner_|, and should not be accessed
-  // directly. |storage_| should never be nullptr.
-  //
-  // TODO(https://crbug.com/1066920): This should use base::SequenceBound to
-  // avoid having to call PostTask manually, as well as use base::Unretained on
-  // |storage_|.
-  std::unique_ptr<ConversionStorage, base::OnTaskRunnerDeleter> storage_;
+  // Cross sequence storage context that is created alongside the manager. The
+  // ref count is held for the entire lifetime of |this|, but may outlive
+  // |this|. Can be accessed at any point in |this|'s lifetime.
+  scoped_refptr<ConversionStorageContext> conversion_storage_context_;
 
   // Policy used for controlling API configurations such as reporting and
   // attribution models. Unique ptr so it can be overridden for testing.

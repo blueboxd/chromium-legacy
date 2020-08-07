@@ -34,6 +34,7 @@ enum Setting {
   kDisconnectTetherNetwork = 23,
   kWifiMetered = 24,
   kCellularMetered = 25,
+  kCellularAddNetwork = 26,
 
   // Bluetooth section.
   kBluetoothOnOff = 100,

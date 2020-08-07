@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_id.h"
@@ -75,21 +76,6 @@ class TemplateURLRef {
     explicit SearchTermsArgs(const base::string16& search_terms);
     SearchTermsArgs(const SearchTermsArgs& other);
     ~SearchTermsArgs();
-
-    // If the search request is from the omnibox, this enum may specify details
-    // about how the user last interacted with the omnibox.
-    //
-    // These values are used as HTTP GET parameter values. Entries should not be
-    // renumbered and numeric values should never be reused.
-    enum class OmniboxFocusType {
-      // The default value. This is used for any search requests without any
-      // special interaction annotation, including: normal omnibox searches,
-      // as-you-type omnibox suggestions, as well as non-omnibox searches.
-      DEFAULT = 0,
-
-      // This search request is triggered by the user focusing the omnibox.
-      ON_FOCUS = 1,
-    };
 
     struct ContextualSearchParams {
       ContextualSearchParams();
@@ -186,9 +172,8 @@ class TemplateURLRef {
     // The type the original input query was identified as.
     metrics::OmniboxInputType input_type = metrics::OmniboxInputType::EMPTY;
 
-    // If the search request is from the omnibox, this may specify how the user
-    // last interacted with the omnibox.
-    OmniboxFocusType omnibox_focus_type = OmniboxFocusType::DEFAULT;
+    // Specifies how the user last interacted with the searchbox UI element.
+    OmniboxFocusType focus_type = OmniboxFocusType::DEFAULT;
 
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown

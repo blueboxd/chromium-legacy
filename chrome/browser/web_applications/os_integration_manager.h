@@ -73,6 +73,12 @@ class OsIntegrationManager {
   virtual void UninstallOsHooks(const AppId& app_id,
                                 UninstallOsHooksCallback callback);
 
+  // Update all needed OS hooks for the web app.
+  // virtual for testing
+  virtual void UpdateOsHooks(const AppId& app_id,
+                             base::StringPiece old_name,
+                             const WebApplicationInfo& web_app_info);
+
   void SuppressOsHooksForTesting();
 
  protected:

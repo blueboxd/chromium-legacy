@@ -191,8 +191,6 @@ OverviewItemView::OverviewItemView(OverviewItem* overview_item,
     current_header_visibility_ = HeaderVisibility::kInvisible;
   }
 
-  border_ptr()->set_extra_margin(kWindowMargin);
-
   UpdateIconView();
 
   // Do not use a layout manager for the header as its elements have shadows
@@ -259,10 +257,6 @@ void OverviewItemView::RefreshPreviewView() {
   Layout();
 }
 
-int OverviewItemView::GetMargin() const {
-  return kOverviewMargin;
-}
-
 gfx::Rect OverviewItemView::GetHeaderBounds() const {
   // We want to align the edges of the image as shown below in the diagram. The
   // resource itself contains some padding, which is the distance from the edges
@@ -275,7 +269,6 @@ gfx::Rect OverviewItemView::GetHeaderBounds() const {
   const int close_button_width = close_button_->GetPreferredSize().width();
   const int right_padding =
       (close_button_width - image_width) / 2 + kCloseButtonIconMarginDp;
-  const int margin = GetMargin();
 
   // Positions the header in a way so that the right aligned close button is
   // aligned so that the edge of its icon, not the button lines up with the
@@ -294,9 +287,9 @@ gfx::Rect OverviewItemView::GetHeaderBounds() const {
   // the header so that the margin is accounted for, then shift the right bounds
   // by a bit so that the close button resource lines up with the right edge of
   // the visible region.
-  return gfx::Rect(margin, margin,
-                   GetLocalBounds().width() - (2 * margin) + right_padding,
-                   kHeaderHeightDp);
+  const gfx::Rect contents_bounds(GetContentsBounds());
+  return gfx::Rect(contents_bounds.x(), contents_bounds.y(),
+                   contents_bounds.width() + right_padding, kHeaderHeightDp);
 }
 
 gfx::Size OverviewItemView::GetPreviewViewSize() const {
@@ -336,7 +329,7 @@ void OverviewItemView::Layout() {
   // Layout the header items. The icon, if available should be aligned left, the
   // close button should be aligned right and the title should take up all the
   // space in between but the text should be aligned left.
-  gfx::Rect header_bounds = header_view()->GetLocalBounds();
+  gfx::Rect header_bounds = header_view()->bounds();
   const int width = header_bounds.width();
   const int height = header_bounds.height();
   int x = 0;
@@ -433,9 +426,8 @@ bool OverviewItemView::CanAcceptEvent(const ui::Event& event) {
   static ui::EventType press_types[] = {ui::ET_GESTURE_TAP_DOWN,
                                         ui::ET_MOUSE_PRESSED};
   if (event.IsLocatedEvent() && base::Contains(press_types, event.type())) {
-    gfx::Rect inset_bounds = GetLocalBounds();
-    inset_bounds.Inset(gfx::Insets(kOverviewMargin));
-    if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))
+    const gfx::Rect content_bounds = GetContentsBounds();
+    if (!content_bounds.Contains(event.AsLocatedEvent()->location()))
       accept_events = false;
   }
 

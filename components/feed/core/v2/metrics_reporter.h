@@ -68,6 +68,7 @@ class MetricsReporter {
 
   virtual void ContentSliceViewed(SurfaceId surface_id, int index_in_stream);
   void OpenAction(int index_in_stream);
+  void OpenVisitComplete(base::TimeDelta visit_time);
   void OpenInNewTabAction(int index_in_stream);
   void OpenInNewIncognitoTabAction();
   void SendFeedbackAction();

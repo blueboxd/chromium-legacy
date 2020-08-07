@@ -332,6 +332,8 @@ void OmahaService::Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
   }
 
   OmahaService* service = GetInstance();
+  service->StartInternal();
+
   service->set_upgrade_recommended_callback(callback);
   // This should only be called once.
   DCHECK(!service->pending_url_loader_factory_ ||
@@ -353,23 +355,22 @@ void OmahaService::Stop() {
   service->StopInternal();
 }
 
-OmahaService::OmahaService()
-    : schedule_(true),
-      application_install_date_(0),
-      sending_install_event_(false) {
-  StartInternal();
-}
+OmahaService::OmahaService() : OmahaService(/*schedule=*/true) {}
 
 OmahaService::OmahaService(bool schedule)
-    : schedule_(schedule),
+    : started_(false),
+      schedule_(schedule),
       application_install_date_(0),
-      sending_install_event_(false) {
-  StartInternal();
-}
+      sending_install_event_(false) {}
 
 OmahaService::~OmahaService() {}
 
 void OmahaService::StartInternal() {
+  if (started_) {
+    return;
+  }
+  started_ = true;
+
   // Start the provider at the same time as the rest of the service.
   ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Start();
 
@@ -432,6 +433,10 @@ void OmahaService::StartInternal() {
 }
 
 void OmahaService::StopInternal() {
+  if (!started_) {
+    return;
+  }
+
   ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Stop();
 }
 

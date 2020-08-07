@@ -23,6 +23,7 @@ import androidx.preference.PreferenceScreen;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -293,8 +294,12 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         ChromeBasePreference addAccountPreference = new ChromeBasePreference(getStyledContext());
         addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
         addAccountPreference.setIcon(
-                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_circle_40dp));
-        addAccountPreference.setTitle(R.string.account_management_add_account_title);
+                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_add_circle_40dp));
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            addAccountPreference.setTitle(R.string.signin_add_account_to_device);
+        } else {
+            addAccountPreference.setTitle(R.string.account_management_add_account_title);
+        }
         addAccountPreference.setOnPreferenceClickListener(preference -> {
             if (!isVisible() || !isResumed()) return false;
 

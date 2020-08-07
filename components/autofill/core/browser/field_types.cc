@@ -41,10 +41,15 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_STREET_ADDRESS:
     case ADDRESS_HOME_SORTING_CODE:
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
-    case ADDRESS_HOME_STREET:
+    case ADDRESS_HOME_STREET_NAME:
+    case ADDRESS_HOME_DEPENDENT_STREET_NAME:
+    case ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME:
     case ADDRESS_HOME_HOUSE_NUMBER:
+    case ADDRESS_HOME_PREMISE_NAME:
     case ADDRESS_HOME_FLOOR:
     case ADDRESS_HOME_OTHER_SUBUNIT:
+    case ADDRESS_HOME_ADDRESS:
+    case ADDRESS_HOME_ADDRESS_WITH_NAME:
       return true;
 
     // Billing address types that should not be returned by GetStorableType().
@@ -200,6 +205,10 @@ base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
       return "PHONE_FAX_CITY_AND_NUMBER";
     case PHONE_FAX_WHOLE_NUMBER:
       return "PHONE_FAX_WHOLE_NUMBER";
+    case ADDRESS_HOME_ADDRESS:
+      return "ADDRESS_HOME_ADDRESS";
+    case ADDRESS_HOME_ADDRESS_WITH_NAME:
+      return "ADDRESS_HOME_ADDRESS_WITH_NAME";
     case ADDRESS_HOME_LINE1:
       return "ADDRESS_HOME_LINE1";
     case ADDRESS_HOME_LINE2:
@@ -314,10 +323,16 @@ base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
       return "NOT_USERNAME";
     case UPI_VPA:
       return "UPI_VPA";
-    case ADDRESS_HOME_STREET:
-      return "ADDRESS_HOME_STREET";
+    case ADDRESS_HOME_STREET_NAME:
+      return "ADDRESS_HOME_STREET_NAME";
+    case ADDRESS_HOME_DEPENDENT_STREET_NAME:
+      return "ADDRESS_HOME_DEPENDENT_STREET_NAME";
     case ADDRESS_HOME_HOUSE_NUMBER:
       return "ADDRESS_HOME_HOUSE_NUMBER";
+    case ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME:
+      return "ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME";
+    case ADDRESS_HOME_PREMISE_NAME:
+      return "ADDRESS_HOME_PREMISE_NAME";
     case ADDRESS_HOME_FLOOR:
       return "ADDRESS_HOME_FLOOR";
     case ADDRESS_HOME_OTHER_SUBUNIT:

@@ -56,6 +56,8 @@
 #include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
+#include "chrome/browser/chromeos/login/saml/password_sync_token_verifier.h"
+#include "chrome/browser/chromeos/login/saml/password_sync_token_verifier_factory.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
@@ -1607,6 +1609,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
           user_context_.GetAccountId(),
           user_context_.IsUsingSamlPrincipalsApi());
     }
+    PasswordSyncTokenVerifier* password_sync_token_verifier =
+        PasswordSyncTokenVerifierFactory::GetForProfile(profile);
+    if (password_sync_token_verifier)
+      password_sync_token_verifier->CheckForPasswordNotInSync();
+
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(profile);
     if (saml_offline_signin_limiter)

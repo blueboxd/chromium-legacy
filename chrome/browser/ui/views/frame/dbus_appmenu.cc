@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/dbus_appmenu.h"
 
 #include <dlfcn.h>
-#include <glib-object.h>
 #include <stddef.h>
 
 #include <limits>

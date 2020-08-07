@@ -75,8 +75,8 @@ const char kHonorificPrefixRe[] =
 
 // Regular expression pattern for an optional last name suffix.
 const char kOptionalLastNameSuffixRe[] =
-    "(?:b\\.a|ba|d\\.d\\.s|dds|ii|iii|iv|ix|jr|m\\.a|m\\.d|md|ms|"
-    "ph\\.?d|sr|v|vi|vii|viii|x)?";
+    "(?:(?:(?:b\\.a|ba|d\\.d\\.s|dds|ii|iii|iv|ix|jr|m\\.a|m\\.d|md|ms|"
+    "ph\\.?d|sr|v|vi|vii|viii|x)\\.?)?)";
 
 // Regular expression pattern for a CJK character.
 const char kCjkCharacterRe[] =
@@ -153,8 +153,8 @@ const char kOptionalLastNamePrefixRe[] =
     "mellom|myljom|na|ned|nedre|neder|nic|ni|nin|nord|norr|ny|o|ua|"
     "ui|opp|upp|öfver|ost|öst|öster|øst|øst|østre|över|øvste|øvre|øver|öz|pour|"
     "putra|putri|setia|tor|söder|sør|sønder|sør|syd|søndre|syndre|søre|ter|ter|"
-    "tre|van|väst|väster|verch|erch|vest|vestre|vesle|vetle|von|zu|von und "
-    "zu)\\s)?";
+    "tre|van|van der|väst|väster|verch|erch|vest|vestre|vesle|vetle|von|zu|von "
+    "und zu)\\s)?";
 
 // Regular expressions to characterize if a string contains initials by
 // checking that:

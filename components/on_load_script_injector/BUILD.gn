@@ -9,6 +9,10 @@ mojom("on_load_script_injector_mojom") {
 
   public_deps = [ "//mojo/public/mojom/base" ]
   visibility = [ "./*" ]
+
+  export_define = "ON_LOAD_SCRIPT_INJECTOR_IMPLEMENTATION=1"
+  export_class_attribute = "ON_LOAD_SCRIPT_INJECTOR_EXPORT"
+  export_header = "components/on_load_script_injector/export.h"
 }
 
 source_set("export") {

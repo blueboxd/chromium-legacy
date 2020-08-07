@@ -104,12 +104,6 @@ var i18nTemplate = (function() {
 
   const prefixes = [''];
 
-  // Only look through shadow DOM when it's supported. As of April 2015, iOS
-  // Chrome doesn't support shadow DOM.
-  if (Element.prototype.createShadowRoot) {
-    prefixes.push('* /deep/ ');
-  }
-
   const attributeNames = Object.keys(handlers);
   const selector = prefixes
                        .map(function(prefix) {

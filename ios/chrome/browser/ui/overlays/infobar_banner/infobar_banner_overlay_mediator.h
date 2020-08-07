@@ -18,6 +18,10 @@
 // the new consumer.
 @property(nonatomic, weak) id<InfobarBannerConsumer> consumer;
 
+// Indicates to the mediator to do any cleanup work in response to a banner
+// dismissal.
+- (void)finishDismissal;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OVERLAYS_INFOBAR_BANNER_INFOBAR_BANNER_OVERLAY_MEDIATOR_H_

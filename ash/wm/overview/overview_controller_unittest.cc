@@ -698,6 +698,9 @@ TEST_F(OverviewControllerTest, FrameThrottling) {
   EXPECT_CALL(observer,
               OnThrottlingStarted(testing::UnorderedElementsAreArray(windows)));
   controller->StartOverview();
+
+  EXPECT_CALL(observer, OnThrottlingStarted(::testing::_))
+      .Times(::testing::AnyNumber());
   EXPECT_CALL(observer, OnThrottlingEnded());
   controller->EndOverview();
   frame_throttling_controller->RemoveObserver(&observer);

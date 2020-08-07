@@ -422,10 +422,15 @@ bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
 
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
   const ServerFieldType types[] = {
+      // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+      // NAME_HONORIFIC_PREFIX,
       NAME_FULL,
       NAME_FIRST,
       NAME_MIDDLE,
       NAME_LAST,
+      NAME_LAST_FIRST,
+      NAME_LAST_SECOND,
+      NAME_LAST_CONJUNCTION,
       COMPANY_NAME,
       ADDRESS_HOME_STREET_ADDRESS,
       ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -443,6 +448,13 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
     if (comparison != 0) {
       return comparison;
     }
+  }
+
+  for (ServerFieldType type : types) {
+    if (GetVerificationStatus(type) < profile.GetVerificationStatus(type))
+      return -1;
+    if (GetVerificationStatus(type) > profile.GetVerificationStatus(type))
+      return 1;
   }
 
   return 0;

@@ -6,13 +6,16 @@
 #define BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_WIN_H_
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
 #include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
+#include "base/win/scoped_handle.h"
 
 // To not pull in windows.h.
 typedef struct _MEMORYSTATUSEX MEMORYSTATUSEX;
@@ -20,8 +23,8 @@ typedef struct _MEMORYSTATUSEX MEMORYSTATUSEX;
 namespace util {
 namespace win {
 
-// Windows memory pressure voter. Because there is no OS provided signal this
-// polls at a low frequency, and applies internal hysteresis.
+// Windows memory pressure voter that checks the amount of RAM left at a low
+// frequency and applies internal hysteresis.
 class SystemMemoryPressureEvaluator
     : public util::SystemMemoryPressureEvaluator {
  public:
@@ -68,6 +71,26 @@ class SystemMemoryPressureEvaluator
   // Returns the critical pressure level free memory threshold, in MB.
   int critical_threshold_mb() const { return critical_threshold_mb_; }
 
+  // Create a nested evaluator that will use the signals provided by the OS to
+  // detect memory pressure. This evaluator will take ownership of |voter| and
+  // use it to cast its vote to the monitor.
+  //
+  // This evaluator will subscribe to the OS signals via a call to
+  // CreateMemoryResourceNotification and will use the following mapping:
+  //   - MEMORY_PRESSURE_LEVEL_CRITICAL: LowMemoryResourceNotification.
+  //   - MEMORY_PRESSURE_LEVEL_MODERATE: Not measured by this evaluator.
+  //   - MEMORY_PRESSURE_LEVEL_NONE: HighMemoryResourceNotification.
+  //
+  // MEMORY_PRESSURE_LEVEL_CRITICAL signals will be emitted as soon as the low
+  // memory notification is received and at regular interval until receiving a
+  // HighMemoryResourceNotification.
+  void CreateOSSignalPressureEvaluator(
+      std::unique_ptr<MemoryPressureVoter> voter);
+
+  // Testing seams for the OSSignalPressureEvaluator.
+  void ReplaceWatchedHandleForTesting(base::win::ScopedHandle handle);
+  void WaitForHighMemoryNotificationForTesting(base::OnceClosure closure);
+
  protected:
   // Internals are exposed for unittests.
 
@@ -102,6 +125,8 @@ class SystemMemoryPressureEvaluator
   virtual bool GetSystemMemoryStatus(MEMORYSTATUSEX* mem_status);
 
  private:
+  class OSSignalsMemoryPressureEvaluator;
+
   // Threshold amounts of available memory that trigger pressure levels. See
   // memory_pressure_monitor.cc for a discussion of reasonable values for these.
   int moderate_threshold_mb_;
@@ -115,6 +140,10 @@ class SystemMemoryPressureEvaluator
   // |CheckMemoryPressure| to apply hysteresis on the raw results of
   // |CalculateCurrentPressureLevel|.
   int moderate_pressure_repeat_count_;
+
+  // Optional companion evaluator that will receive the OS memory pressure
+  // notifications, created by |CreateOSSignalPressureEvaluator|.
+  std::unique_ptr<OSSignalsMemoryPressureEvaluator> os_signals_evaluator_;
 
   // Ensures that this object is used from a single sequence.
   SEQUENCE_CHECKER(sequence_checker_);

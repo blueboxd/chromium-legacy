@@ -206,13 +206,16 @@ class SigninHeaderHelper {
   static ResponseHeaderDictionary ParseAccountConsistencyResponseHeader(
       const std::string& header_value);
 
- private:
   // Returns whether the url is eligible for the request header.
   virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SigninHeaderHelper);
 };
 
+// Returns whether the url is eligible for account consistency on Google
+// domains.
+bool IsUrlEligibleForMirrorCookie(const GURL& url);
 
 // Returns the CHROME_CONNECTED cookie, or an empty string if it should not be
 // added to the request to |url|.

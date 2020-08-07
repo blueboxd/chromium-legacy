@@ -10,11 +10,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_CONFIRMATION_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
@@ -25,7 +27,10 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.E
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.IDLE;
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.RUNNING;
 
+import android.content.DialogInterface;
 import android.util.Pair;
+
+import androidx.appcompat.app.AlertDialog;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -170,8 +175,15 @@ public class PasswordCheckControllerTest {
 
     @Test
     public void testRemovingElementTriggersDelegate() {
+        // Removing sets a valid handler:
         mMediator.onRemove(ANA);
+        assertNotNull(mModel.get(DELETION_CONFIRMATION_HANDLER));
+
+        // When the handler is triggered (because the dialog was confirmed), remove the credential:
+        mModel.get(DELETION_CONFIRMATION_HANDLER)
+                .onClick(mock(DialogInterface.class), AlertDialog.BUTTON_POSITIVE);
         verify(mDelegate).removeCredential(eq(ANA));
+        assertNull(mModel.get(DELETION_CONFIRMATION_HANDLER));
     }
 
     @Test

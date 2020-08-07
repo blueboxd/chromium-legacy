@@ -287,6 +287,9 @@ class AutofillProfile : public AutofillDataModel {
   // Returns true if all calls yielded true.
   bool FinalizeAfterImport();
 
+  // Returns a constant reference to the |name_| field.
+  const NameInfo& GetNameInfo() const { return name_; }
+
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 

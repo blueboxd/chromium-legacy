@@ -5,12 +5,14 @@
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
 
 #include <windows.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
+#include "base/win/object_watcher.h"
 
 namespace util {
 namespace win {
@@ -18,6 +20,58 @@ namespace win {
 namespace {
 
 static const DWORDLONG kMBBytes = 1024 * 1024;
+
+// Implements ObjectWatcher::Delegate by forwarding to a provided callback.
+class MemoryPressureWatcherDelegate
+    : public base::win::ObjectWatcher::Delegate {
+ public:
+  MemoryPressureWatcherDelegate(base::win::ScopedHandle handle,
+                                base::OnceClosure callback);
+  ~MemoryPressureWatcherDelegate() override;
+  MemoryPressureWatcherDelegate(const MemoryPressureWatcherDelegate& other) =
+      delete;
+  MemoryPressureWatcherDelegate& operator=(
+      const MemoryPressureWatcherDelegate&) = delete;
+
+  void ReplaceWatchedHandleForTesting(base::win::ScopedHandle handle);
+  void SetCallbackForTesting(base::OnceClosure callback) {
+    callback_ = std::move(callback);
+  }
+
+ private:
+  void OnObjectSignaled(HANDLE handle) override;
+
+  base::win::ScopedHandle handle_;
+  base::win::ObjectWatcher watcher_;
+  base::OnceClosure callback_;
+};
+
+MemoryPressureWatcherDelegate::MemoryPressureWatcherDelegate(
+    base::win::ScopedHandle handle,
+    base::OnceClosure callback)
+    : handle_(std::move(handle)), callback_(std::move(callback)) {
+  DCHECK(handle_.IsValid());
+  CHECK(watcher_.StartWatchingOnce(handle_.Get(), this));
+}
+
+MemoryPressureWatcherDelegate::~MemoryPressureWatcherDelegate() {
+  if (watcher_.IsWatching())
+    watcher_.StopWatching();
+  handle_.Close();
+}
+
+void MemoryPressureWatcherDelegate::ReplaceWatchedHandleForTesting(
+    base::win::ScopedHandle handle) {
+  if (watcher_.IsWatching())
+    watcher_.StopWatching();
+  handle_.Close();
+  handle_ = std::move(handle);
+  CHECK(watcher_.StartWatchingOnce(handle_.Get(), this));
+}
+
+void MemoryPressureWatcherDelegate::OnObjectSignaled(HANDLE object) {
+  std::move(callback_).Run();
+}
 
 }  // namespace
 
@@ -53,6 +107,54 @@ const int
 const int
     SystemMemoryPressureEvaluator::kLargeMemoryDefaultCriticalThresholdMb = 400;
 
+// A memory pressure evaluator that receives memory pressure notifications from
+// the OS and forwards them to the memory pressure monitor.
+class SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator {
+ public:
+  using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
+
+  explicit OSSignalsMemoryPressureEvaluator(
+      std::unique_ptr<MemoryPressureVoter> voter);
+  ~OSSignalsMemoryPressureEvaluator();
+  OSSignalsMemoryPressureEvaluator(
+      const OSSignalsMemoryPressureEvaluator& other) = delete;
+  OSSignalsMemoryPressureEvaluator& operator=(
+      const OSSignalsMemoryPressureEvaluator&) = delete;
+
+  // Creates the watcher used to receive the low and high memory notifications.
+  void Start();
+
+  MemoryPressureWatcherDelegate* GetWatcherForTesting() const {
+    return memory_notification_watcher_.get();
+  }
+  void WaitForHighMemoryNotificationForTesting(base::OnceClosure closure);
+
+ private:
+  // Called when receiving a low/high memory notification.
+  void OnLowMemoryNotification();
+  void OnHighMemoryNotification();
+
+  void StartLowMemoryNotificationWatcher();
+  void StartHighMemoryNotificationWatcher();
+
+  // The period of the critical pressure notification timer.
+  static constexpr base::TimeDelta kHighPressureNotificationInterval =
+      base::TimeDelta::FromSeconds(2);
+
+  // The voter used to cast the votes.
+  std::unique_ptr<MemoryPressureVoter> voter_;
+
+  // The memory notification watcher.
+  std::unique_ptr<MemoryPressureWatcherDelegate> memory_notification_watcher_;
+
+  // Timer that will re-emit the critical memory pressure signal until the
+  // memory gets high again.
+  base::RepeatingTimer critical_pressure_notification_timer_;
+
+  // Ensures that this object is used from a single sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
 SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     std::unique_ptr<MemoryPressureVoter> voter)
     : util::SystemMemoryPressureEvaluator(std::move(voter)),
@@ -86,6 +188,25 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressureSoon() {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(&SystemMemoryPressureEvaluator::CheckMemoryPressure,
                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SystemMemoryPressureEvaluator::CreateOSSignalPressureEvaluator(
+    std::unique_ptr<MemoryPressureVoter> voter) {
+  os_signals_evaluator_ =
+      std::make_unique<OSSignalsMemoryPressureEvaluator>(std::move(voter));
+  os_signals_evaluator_->Start();
+}
+
+void SystemMemoryPressureEvaluator::ReplaceWatchedHandleForTesting(
+    base::win::ScopedHandle handle) {
+  os_signals_evaluator_->GetWatcherForTesting()->ReplaceWatchedHandleForTesting(
+      std::move(handle));
+}
+
+void SystemMemoryPressureEvaluator::WaitForHighMemoryNotificationForTesting(
+    base::OnceClosure closure) {
+  os_signals_evaluator_->WaitForHighMemoryNotificationForTesting(
+      std::move(closure));
 }
 
 void SystemMemoryPressureEvaluator::InferThresholds() {
@@ -199,11 +320,101 @@ SystemMemoryPressureEvaluator::CalculateCurrentPressureLevel() {
 
 bool SystemMemoryPressureEvaluator::GetSystemMemoryStatus(
     MEMORYSTATUSEX* mem_status) {
-  DCHECK(mem_status != nullptr);
+  DCHECK(mem_status);
   mem_status->dwLength = sizeof(*mem_status);
   if (!::GlobalMemoryStatusEx(mem_status))
     return false;
   return true;
+}
+
+SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    OSSignalsMemoryPressureEvaluator(std::unique_ptr<MemoryPressureVoter> voter)
+    : voter_(std::move(voter)) {}
+
+SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    ~OSSignalsMemoryPressureEvaluator() = default;
+
+void SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::Start() {
+  // Start by observing the low memory notifications. If the system is already
+  // under pressure this will run the |OnLowMemoryNotification| callback and
+  // automatically switch to waiting for the high memory notification/
+  StartLowMemoryNotificationWatcher();
+}
+
+void SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    OnLowMemoryNotification() {
+  // TODO(sebmarchand): Emit some histogram that compares the level detected by
+  // the default evaluator to this one.
+  voter_->SetVote(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
+                  /* notify = */ true);
+
+  // Start a timer to repeat the notification at regular interval until
+  // OnHighMemoryNotification gets called.
+  critical_pressure_notification_timer_.Start(
+      FROM_HERE, kHighPressureNotificationInterval,
+      base::BindRepeating(
+          &MemoryPressureVoter::SetVote, base::Unretained(voter_.get()),
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
+          /* notify = */ true));
+
+  // Start the high memory notification watcher to be notified when the system
+  // exits memory pressure.
+  StartHighMemoryNotificationWatcher();
+}
+
+void SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    OnHighMemoryNotification() {
+  critical_pressure_notification_timer_.Stop();
+  voter_->SetVote(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
+                  /* notify = */ false);
+
+  // Start the low memory notification watcher to be notified the next time the
+  // system hits memory pressure.
+  StartLowMemoryNotificationWatcher();
+}
+
+void SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    StartLowMemoryNotificationWatcher() {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  memory_notification_watcher_ =
+      std::make_unique<MemoryPressureWatcherDelegate>(
+          base::win::ScopedHandle(::CreateMemoryResourceNotification(
+              ::LowMemoryResourceNotification)),
+          base::BindOnce(
+              &SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+                  OnLowMemoryNotification,
+              base::Unretained(this)));
+}
+
+void SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    StartHighMemoryNotificationWatcher() {
+  memory_notification_watcher_ =
+      std::make_unique<MemoryPressureWatcherDelegate>(
+          base::win::ScopedHandle(::CreateMemoryResourceNotification(
+              ::HighMemoryResourceNotification)),
+          base::BindOnce(
+              &SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+                  OnHighMemoryNotification,
+              base::Unretained(this)));
+}
+
+void SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator::
+    WaitForHighMemoryNotificationForTesting(base::OnceClosure closure) {
+  // If the timer isn't running then it means that the high memory notification
+  // has already been received.
+  if (!critical_pressure_notification_timer_.IsRunning()) {
+    std::move(closure).Run();
+    return;
+  }
+
+  memory_notification_watcher_->SetCallbackForTesting(base::BindOnce(
+      [](SystemMemoryPressureEvaluator::OSSignalsMemoryPressureEvaluator*
+             evaluator,
+         base::OnceClosure closure) {
+        evaluator->OnHighMemoryNotification();
+        std::move(closure).Run();
+      },
+      base::Unretained(this), std::move(closure)));
 }
 
 }  // namespace win

@@ -29,12 +29,16 @@ Polymer({
   itemChanged_() {
     switch (this.item.severity) {
       case Severity.WARNING:
-        this.$['item'].classList.add('warning-log');
+        this.$['item'].className = 'warning-log';
         break;
       case Severity.ERROR:
-        this.$['item'].classList.add('error-log');
+        this.$['item'].className = 'error-log';
+        break;
+      case Severity.VERBOSE:
+        this.$['item'].className = 'verbose-log';
         break;
       default:
+        this.$['item'].className = 'default-log';
         break;
     }
   },

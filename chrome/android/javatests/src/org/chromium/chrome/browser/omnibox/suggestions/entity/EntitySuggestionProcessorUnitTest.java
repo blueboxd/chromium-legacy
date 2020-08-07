@@ -17,14 +17,11 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +32,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
@@ -62,9 +60,6 @@ public class EntitySuggestionProcessorUnitTest {
     private static final int DECORATION_TYPE_ICON = 0;
     private static final int DECORATION_TYPE_COLOR = 1;
     private static final int DECORATION_TYPE_IMAGE = 2;
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Mock
     SuggestionHost mSuggestionHost;
@@ -122,15 +117,10 @@ public class EntitySuggestionProcessorUnitTest {
         mProcessor.populateModel(helper.mSuggestion, helper.mModel, 0);
     }
 
-    public EntitySuggestionProcessorUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
 
         mBitmap = Bitmap.createBitmap(1, 1, Config.ALPHA_8);
 

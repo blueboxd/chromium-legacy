@@ -195,17 +195,17 @@ TEST(AutofillStructuredAddressUtils, TestGetPlaceholderToken) {
 }
 
 TEST(AutofillStructuredAddressUtils, CaptureTypeWithPattern) {
-  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))?",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:,|\\s+|$)+)?",
             CaptureTypeWithPattern(NAME_FULL, {"abs", "\\w"},
                                    {.quantifier = MATCH_OPTIONAL}));
-  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:,|\\s+|$)+)",
             CaptureTypeWithPattern(NAME_FULL, {"abs", "\\w"}));
-  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))??",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:,|\\s+|$)+)??",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w",
                                    {.quantifier = MATCH_LAZY_OPTIONAL}));
-  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:,|\\s+|$)+)",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w"));
-  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:_))",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:_)+)",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w", {.separator = "_"}));
 }
 
@@ -216,6 +216,13 @@ TEST(AutofillStructuredAddressUtils, TokenizeValue) {
 
   EXPECT_EQ(TokenizeValue(base::ASCIIToUTF16("  valUe AnD    anotherOne")),
             expected_tokens);
+
+  std::vector<base::string16> expected_cjk_tokens = {base::UTF8ToUTF16("영"),
+                                                     base::UTF8ToUTF16("이"),
+                                                     base::UTF8ToUTF16("호")};
+  EXPECT_EQ(TokenizeValue(base::UTF8ToUTF16("이영 호")), expected_cjk_tokens);
+  EXPECT_EQ(TokenizeValue(base::UTF8ToUTF16("이・영호")), expected_cjk_tokens);
+  EXPECT_EQ(TokenizeValue(base::UTF8ToUTF16("이영 호")), expected_cjk_tokens);
 }
 
 TEST(AutofillStructuredAddressUtils, NormalizeValue) {
@@ -237,5 +244,11 @@ TEST(AutofillStructuredAddressUtils, AreSortedTokensEqual) {
       {base::ASCIIToUTF16("aaa"), base::ASCIIToUTF16("bbb")}));
 }
 
+TEST(AutofillStructuredAddressUtils, AreStringTokenEquivalent) {
+  EXPECT_TRUE(AreStringTokenEquivalent(base::ASCIIToUTF16("A B C"),
+                                       base::ASCIIToUTF16("A C B")));
+  EXPECT_FALSE(AreStringTokenEquivalent(base::ASCIIToUTF16("A Bb C"),
+                                        base::ASCIIToUTF16("A C B")));
+}
 }  // namespace structured_address
 }  // namespace autofill

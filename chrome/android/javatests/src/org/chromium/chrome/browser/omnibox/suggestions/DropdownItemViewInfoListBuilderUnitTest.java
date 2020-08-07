@@ -14,8 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.util.Pair;
 import android.util.SparseArray;
 
@@ -32,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -53,9 +52,6 @@ import java.util.List;
 @Batch(Batch.UNIT_TESTS)
 public class DropdownItemViewInfoListBuilderUnitTest {
     @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
-    @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Mock
@@ -66,15 +62,10 @@ public class DropdownItemViewInfoListBuilderUnitTest {
 
     DropdownItemViewInfoListBuilder mBuilder;
 
-    public DropdownItemViewInfoListBuilderUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
 
         when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
         when(mMockSuggestionProcessor.createModel())

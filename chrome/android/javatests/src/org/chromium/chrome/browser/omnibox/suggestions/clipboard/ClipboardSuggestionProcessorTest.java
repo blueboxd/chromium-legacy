@@ -12,8 +12,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,7 +20,6 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -31,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -59,9 +57,6 @@ public class ClipboardSuggestionProcessorTest {
     private static final GURL TEST_URL = new GURL("http://url");
     private static final GURL ARABIC_URL = new GURL("http://site.com/مرحبا/123");
 
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
     @Mock
     SuggestionHost mSuggestionHost;
     @Mock
@@ -78,15 +73,10 @@ public class ClipboardSuggestionProcessorTest {
     private TextView mContentTextView;
     private int mLastSetTextDirection = -1;
 
-    public ClipboardSuggestionProcessorTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         mBitmap = Bitmap.createBitmap(10, 5, Config.ARGB_8888);
         mProcessor = new ClipboardSuggestionProcessor(
                 ContextUtils.getApplicationContext(), mSuggestionHost, () -> mIconBridge);

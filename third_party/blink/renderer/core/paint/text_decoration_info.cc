@@ -200,7 +200,7 @@ ETextDecorationStyle TextDecorationInfo::DecorationStyle() const {
   return style_.AppliedTextDecorations()[decoration_index_].Style();
 }
 
-Color TextDecorationInfo::Color() const {
+Color TextDecorationInfo::LineColor() const {
   return style_.AppliedTextDecorations()[decoration_index_].GetColor();
 }
 

@@ -190,10 +190,8 @@ void WebrtcVideoStream::SetLosslessEncode(bool want_lossless) {
 }
 
 void WebrtcVideoStream::SetLosslessColor(bool want_lossless) {
-  lossless_color_ = want_lossless;
-  if (encoder_) {
-    encoder_->SetLosslessColor(want_lossless);
-  }
+  NOTIMPLEMENTED() << "Changing lossless-color for VP9 requires SDP "
+                      "offer/answer exchange.";
 }
 
 void WebrtcVideoStream::SetObserver(Observer* observer) {
@@ -233,7 +231,6 @@ void WebrtcVideoStream::OnCaptureResult(
     encoder_selector_.SetDesktopFrame(*frame);
     encoder_ = encoder_selector_.CreateEncoder();
     encoder_->SetLosslessEncode(lossless_encode_);
-    encoder_->SetLosslessColor(lossless_color_);
 
     // TODO(zijiehe): Permanently stop the video stream if we cannot create an
     // encoder for the |frame|.

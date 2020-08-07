@@ -40,7 +40,7 @@
         padding-inline-start: var(--cr-section-padding);
       }
 
-      #addButton {
+      .add-button {
         margin-inline-end: var(--settings-control-label-spacing);
       }
 
@@ -96,11 +96,20 @@
           [[getOffOnString_(deviceState,
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>
+        <template is="dom-if"
+            if="[[showAddCellularButton_(deviceState, globalPolicy)]]">
+          <!-- The add button in this row is only shown for Mobile networks. -->
+          <cr-icon-button class="icon-add-cellular add-button"
+              aria-label="$i18n{internetAddCellular}" id="addCellularButton"
+              tabindex$="[[tabindex]]" on-click="onAddCellularButtonTap_">
+          </cr-icon-button>
+        </template>
         <!-- The add button in this row is only shown for WiFi networks. -->
-        <cr-icon-button class="icon-add-wifi" id="addButton"
-            hidden$="[[!showAddButton_(deviceState, globalPolicy)]]"
-            aria-label="$i18n{internetAddWiFi}" on-click="onAddButtonTap_"
-            tabindex$="[[tabindex]]"></cr-icon-button>
+        <cr-icon-button class="icon-add-wifi add-button"
+            hidden$="[[!showAddWifiButton_(deviceState, globalPolicy)]]"
+            aria-label="$i18n{internetAddWiFi}" on-click="onAddWifiButtonTap_"
+            tabindex$="[[tabindex]]">
+        </cr-icon-button>
         <cr-toggle id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
@@ -132,8 +141,10 @@
             </template>
             <cr-icon-button class="icon-add-circle"
                 disabled="[[!vpnIsEnabled_]]"
-                aria-label="$i18n{internetAddVPN}" on-click="onAddButtonTap_"
-                tabindex$="[[tabindex]]"></cr-icon-button>
+                aria-label="$i18n{internetAddVPN}"
+                on-click="onAddVpnButtonTap_"
+                tabindex$="[[tabindex]]">
+            </cr-icon-button>
           </div>
         </template>
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -57,7 +58,8 @@ void TestNameParsing(const base::string16& full,
   name.CompleteFullTree();
 
   EXPECT_EQ(name.GetValueForType(NAME_FULL), full);
-  EXPECT_EQ(name.GetValueForType(NAME_HONORIFIC_PREFIX), honorific);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // EXPECT_EQ(name.GetValueForType(NAME_HONORIFIC_PREFIX), honorific);
   EXPECT_EQ(name.GetValueForType(NAME_FIRST), first);
   EXPECT_EQ(name.GetValueForType(NAME_MIDDLE), middle);
   EXPECT_EQ(name.GetValueForType(NAME_LAST), last);
@@ -343,7 +345,8 @@ TEST(AutofillStructuredName, TestGetSupportedTypes) {
   NameFull full_name;
   ServerFieldTypeSet supported_types;
   full_name.GetSupportedTypes(&supported_types);
-  EXPECT_EQ(ServerFieldTypeSet({NAME_FULL, NAME_HONORIFIC_PREFIX, NAME_FIRST,
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  EXPECT_EQ(ServerFieldTypeSet({NAME_FULL, /*NAME_HONORIFIC_PREFIX*/ NAME_FIRST,
                                 NAME_MIDDLE, NAME_MIDDLE_INITIAL, NAME_LAST,
                                 NAME_LAST_FIRST, NAME_LAST_CONJUNCTION,
                                 NAME_LAST_SECOND}),
@@ -416,8 +419,10 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
   one.SetValueForTypeIfPossible(
       NAME_FULL, base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"),
       VerificationStatus::kUserVerified);
-  one.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX, base::ASCIIToUTF16("Mr"),
-                                VerificationStatus::kObserved);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // one.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX,
+  // base::ASCIIToUTF16("Mr"),
+  //                              VerificationStatus::kObserved);
   one.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Pablo Diego"),
                                 VerificationStatus::kObserved);
   one.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16(""),
@@ -433,11 +438,13 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
   two.SetValueForTypeIfPossible(
       NAME_FULL, base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"),
       VerificationStatus::kUserVerified);
-  two.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX, base::ASCIIToUTF16(""),
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // two.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX,
+  // base::ASCIIToUTF16(""),
+  //                              VerificationStatus::kParsed);
+  two.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Pablo"),
                                 VerificationStatus::kParsed);
-  two.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Mr Pablo"),
-                                VerificationStatus::kParsed);
-  two.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16("Diege"),
+  two.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16("Diego"),
                                 VerificationStatus::kParsed);
   two.SetValueForTypeIfPossible(NAME_LAST, base::ASCIIToUTF16("Ruiz y Picasso"),
                                 VerificationStatus::kParsed);
@@ -457,8 +464,9 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
 
   EXPECT_EQ(one.GetValueForType(NAME_FULL),
             base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"));
-  EXPECT_EQ(one.GetValueForType(NAME_HONORIFIC_PREFIX),
-            base::ASCIIToUTF16("Mr"));
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // EXPECT_EQ(one.GetValueForType(NAME_HONORIFIC_PREFIX),
+  //          base::ASCIIToUTF16("Mr"));
   EXPECT_EQ(one.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Pablo Diego"));
   EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16(""));
   EXPECT_EQ(one.GetValueForType(NAME_LAST),
@@ -471,8 +479,9 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
 
   EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
             VerificationStatus::kUserVerified);
-  EXPECT_EQ(one.GetVerificationStatusForType(NAME_HONORIFIC_PREFIX),
-            VerificationStatus::kObserved);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // EXPECT_EQ(one.GetVerificationStatusForType(NAME_HONORIFIC_PREFIX),
+  //          VerificationStatus::kObserved);
   EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
             VerificationStatus::kObserved);
   EXPECT_EQ(one.GetVerificationStatusForType(NAME_MIDDLE),
@@ -491,8 +500,9 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
 
   EXPECT_EQ(two.GetValueForType(NAME_FULL),
             base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"));
-  EXPECT_EQ(two.GetValueForType(NAME_HONORIFIC_PREFIX),
-            base::ASCIIToUTF16("Mr"));
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // EXPECT_EQ(two.GetValueForType(NAME_HONORIFIC_PREFIX),
+  //          base::ASCIIToUTF16("Mr"));
   EXPECT_EQ(two.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Pablo Diego"));
   EXPECT_EQ(two.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16(""));
   EXPECT_EQ(two.GetValueForType(NAME_LAST),
@@ -505,8 +515,9 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
 
   EXPECT_EQ(two.GetVerificationStatusForType(NAME_FULL),
             VerificationStatus::kUserVerified);
-  EXPECT_EQ(two.GetVerificationStatusForType(NAME_HONORIFIC_PREFIX),
-            VerificationStatus::kObserved);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+  // EXPECT_EQ(two.GetVerificationStatusForType(NAME_HONORIFIC_PREFIX),
+  //          VerificationStatus::kObserved);
   EXPECT_EQ(two.GetVerificationStatusForType(NAME_FIRST),
             VerificationStatus::kObserved);
   EXPECT_EQ(two.GetVerificationStatusForType(NAME_MIDDLE),
@@ -519,6 +530,32 @@ TEST(AutofillStructuredName, MergeNamesByCombiningSubstructureObservations) {
             VerificationStatus::kObserved);
   EXPECT_EQ(two.GetVerificationStatusForType(NAME_LAST_SECOND),
             VerificationStatus::kObserved);
+}
+
+TEST(AutofillStructuredName, TestCopyConstructuror) {
+  NameFull orginal;
+  // The first name has an incorrect componentization of the last name, but
+  // a correctly observed structure of title, first, middle, last.
+  orginal.SetValueForTypeIfPossible(
+      NAME_FULL, base::ASCIIToUTF16("Mr Pablo Diego Ruiz y Picasso"),
+      VerificationStatus::kUserVerified);
+  orginal.SetValueForTypeIfPossible(NAME_HONORIFIC_PREFIX,
+                                    base::ASCIIToUTF16("Mr"),
+                                    VerificationStatus::kObserved);
+  orginal.SetValueForTypeIfPossible(NAME_FIRST,
+                                    base::ASCIIToUTF16("Pablo Diego"),
+                                    VerificationStatus::kObserved);
+  orginal.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16(""),
+                                    VerificationStatus::kObserved);
+  orginal.SetValueForTypeIfPossible(NAME_LAST,
+                                    base::ASCIIToUTF16("Ruiz y Picasso"),
+                                    VerificationStatus::kObserved);
+  orginal.SetValueForTypeIfPossible(NAME_LAST_SECOND,
+                                    base::ASCIIToUTF16("Ruiz y Picasso"),
+                                    VerificationStatus::kParsed);
+
+  NameFull copy = orginal;
+  EXPECT_EQ(orginal, copy);
 }
 
 }  // namespace structured_address

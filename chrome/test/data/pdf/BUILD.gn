@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = default_closure_args + [
+                    "browser_resolver_prefix_replacements=\"chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/=../../chrome/test/data/\"",
                     "browser_resolver_prefix_replacements=\"chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/=../../chrome/browser/resources/pdf/\"",
                     "js_module_root=../../chrome/test/data/webui/",
                     "js_module_root=./gen/chrome/test/data/webui/",
@@ -177,6 +178,7 @@ js_library("viewer_pdf_sidenav_test") {
 
 js_library("viewer_pdf_toolbar_new_test") {
   deps = [
+    "../webui:test_util.m",
     "//chrome/browser/resources/pdf:constants",
     "//chrome/browser/resources/pdf/elements:viewer-pdf-toolbar-new",
   ]

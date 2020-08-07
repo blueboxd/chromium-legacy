@@ -4,19 +4,16 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
-
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -32,12 +29,9 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabModelSelectorTabModelObserverTest {
-    // Do not add @Rule to this, it's already added to RuleChain
-    private final TabModelSelectorObserverTestRule mTestRule =
-            new TabModelSelectorObserverTestRule();
-
     @Rule
-    public final RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
+    public final TabModelSelectorObserverTestRule mTestRule =
+            new TabModelSelectorObserverTestRule();
 
     private TabModelSelectorBase mSelector;
 

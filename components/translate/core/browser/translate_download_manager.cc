@@ -17,8 +17,8 @@ TranslateDownloadManager* TranslateDownloadManager::GetInstance() {
 }
 
 TranslateDownloadManager::TranslateDownloadManager()
-    : language_list_(new TranslateLanguageList),
-      script_(new TranslateScript) {}
+    : language_list_(std::make_unique<TranslateLanguageList>()),
+      script_(std::make_unique<TranslateScript>()) {}
 
 TranslateDownloadManager::~TranslateDownloadManager() {}
 
@@ -71,8 +71,8 @@ void TranslateDownloadManager::ClearTranslateScriptForTesting() {
 
 void TranslateDownloadManager::ResetForTesting() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  language_list_.reset(new TranslateLanguageList);
-  script_.reset(new TranslateScript);
+  language_list_ = std::make_unique<TranslateLanguageList>();
+  script_ = std::make_unique<TranslateScript>();
   url_loader_factory_ = nullptr;
 }
 

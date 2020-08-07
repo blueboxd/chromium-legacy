@@ -900,14 +900,17 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
 
   // Initialize the NetworkHealth aggregator.
-  network_health::NetworkHealthService* network_health_service =
-      network_health::NetworkHealthService::GetInstance();
-  DCHECK(network_health_service);
+  network_health::NetworkHealthService::GetInstance();
 
-  // Create the service connection to cros_healthd.
-  cros_healthd::ServiceConnection* cros_healthd =
-      cros_healthd::ServiceConnection::GetInstance();
-  DCHECK(cros_healthd);
+  // Create the service connection to CrosHealthd platform service instance.
+  auto* cros_healthd = cros_healthd::ServiceConnection::GetInstance();
+
+  // Pass a callback to the CrosHealthd service connection that binds a pending
+  // remote to service.
+  cros_healthd->SetBindNetworkHealthServiceCallback(base::BindRepeating([] {
+    return network_health::NetworkHealthService::GetInstance()
+        ->GetHealthRemoteAndBindReceiver();
+  }));
 
   // Initialize input methods.
   input_method::InputMethodManager* manager =

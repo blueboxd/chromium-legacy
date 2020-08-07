@@ -53,11 +53,16 @@ public final class FeedServiceBridge {
         return FeedServiceBridgeJni.get().getLoadMoreTriggerLookahead();
     }
 
+    public static void reportOpenVisitComplete(long visitTimeMs) {
+        FeedServiceBridgeJni.get().reportOpenVisitComplete(visitTimeMs);
+    }
+
     @NativeMethods
     interface Natives {
         boolean isEnabled();
         void startup();
         int getLoadMoreTriggerLookahead();
         String getClientInstanceId();
+        void reportOpenVisitComplete(long visitTimeMs);
     }
 }

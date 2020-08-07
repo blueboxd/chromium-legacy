@@ -24,16 +24,17 @@ void FakeNearbyConnection::Write(std::vector<uint8_t> bytes) {
 void FakeNearbyConnection::Close() {
   DCHECK(!closed_);
   closed_ = true;
+  if (disconnect_listener_)
+    std::move(disconnect_listener_).Run();
+
   if (callback_)
     std::move(callback_).Run(base::nullopt);
-  for (auto& disconnect_listener : disconnect_listeners_)
-    std::move(disconnect_listener).Run();
 }
 
-void FakeNearbyConnection::RegisterForDisconnection(
+void FakeNearbyConnection::SetDisconnectionListener(
     base::OnceClosure listener) {
   DCHECK(!closed_);
-  disconnect_listeners_.push_back(std::move(listener));
+  disconnect_listener_ = std::move(listener);
 }
 
 void FakeNearbyConnection::AppendReadableData(std::vector<uint8_t> bytes) {

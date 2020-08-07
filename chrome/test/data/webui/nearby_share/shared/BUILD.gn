@@ -10,6 +10,7 @@ js_modulizer("modulize") {
   input_files = [
     "fake_nearby_share_settings.js",
     "nearby_onboarding_page_test.js",
+    "nearby_visibility_page_test.js",
   ]
   namespace_rewrites = test_namespace_rewrites + [
                          "nearby_share.setNearbyShareSettingsForTesting|setNearbyShareSettingsForTesting",
@@ -27,6 +28,7 @@ js_type_check("closure_compile") {
   deps = [
     ":fake_nearby_share_settings.m",
     ":nearby_onboarding_page_test.m",
+    ":nearby_visibility_page_test.m",
   ]
 }
 
@@ -47,4 +49,15 @@ js_library("fake_nearby_share_settings.m") {
     "//chrome/browser/resources/nearby_share/shared:nearby_onboarding_page.m",
   ]
   extra_deps = [ ":modulize" ]
+}
+
+js_library("nearby_visibility_page_test.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_visibility_page_test.m.js" ]
+  deps = [
+    ":fake_nearby_share_settings.m",
+    "../..:chai_assert",
+    "//chrome/browser/resources/nearby_share/shared:nearby_visibility_page.m",
+  ]
+  extra_deps = [ ":modulize" ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

@@ -66,17 +66,20 @@ android_library("internal_java") {
     "//components/browser_ui/widget/android:java",
     "//components/embedder_support/android:util_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//ui/android:ui_full_java",
+    "//url:gurl_java",
     _public_target,
   ]
   sources = [
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckBridge.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckCoordinator.java",
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckDeletionDialogFragment.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckImpl.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckMediator.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckProperties.java",
@@ -100,8 +103,10 @@ android_resources("java_resources") {
   ]
 
   sources = [
+    "java/res/drawable-night/password_check_positive.xml",
     "java/res/drawable/ic_autofill_assistant_white_24dp.xml",
     "java/res/drawable/ic_check_circle_filled_green_24dp.xml",
+    "java/res/drawable/password_check_positive.xml",
     "java/res/layout/password_check_compromised_credential_item.xml",
     "java/res/layout/password_check_compromised_credential_with_script_item.xml",
     "java/res/layout/password_check_header_item.xml",

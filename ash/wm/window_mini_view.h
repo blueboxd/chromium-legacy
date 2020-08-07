@@ -68,7 +68,6 @@ class ASH_EXPORT WindowMiniView : public views::View,
 
   // Subclasses can override these functions to provide customization for
   // margins and layouts of certain elements.
-  virtual int GetMargin() const;
   virtual gfx::Rect GetHeaderBounds() const;
   virtual gfx::Size GetPreviewViewSize() const;
   // Allows subclasses to resize/add shadow to the image that will appear as the
@@ -87,7 +86,6 @@ class ASH_EXPORT WindowMiniView : public views::View,
   void OnWindowTitleChanged(aura::Window* window) override;
 
   aura::Window* source_window() const { return source_window_; }
-  WmHighlightItemBorder* border_ptr() { return border_ptr_; }
 
  private:
   // The window this class is meant to be a header for. This class also may

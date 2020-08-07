@@ -325,7 +325,7 @@ void NearbySharingServiceImpl::Reject(
                      weak_ptr_factory_.GetWeakPtr(), share_target),
       kIncomingRejectionDelay);
 
-  connection->RegisterForDisconnection(
+  connection->SetDisconnectionListener(
       base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
                      weak_ptr_factory_.GetWeakPtr(), share_target));
 
@@ -391,7 +391,7 @@ void NearbySharingServiceImpl::OnIncomingConnection(
 
   incoming_share_target_info_map_[share_target.id].set_connection(connection);
   incoming_share_target_info_map_[share_target.id].set_endpoint_id(endpoint_id);
-  connection->RegisterForDisconnection(
+  connection->SetDisconnectionListener(
       base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
                      weak_ptr_factory_.GetWeakPtr(), share_target));
 
@@ -832,7 +832,7 @@ void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
     return;
   }
 
-  // TODO(himanshujaju) - Create alarm and cancel in RegisterForDisconnection().
+  // TODO(himanshujaju) - Create alarm and cancel in SetDisconnectionListener().
 
   // Send response to remote device.
   sharing::nearby::ConnectionResponseFrame::Status response_status;
@@ -889,21 +889,20 @@ void NearbySharingServiceImpl::ReceiveIntroduction(
     return;
   }
 
-  auto frames_reader = std::make_unique<IncomingFramesReader>(
-      process_manager_, profile_, connection);
-
-  frames_reader->ReadFrame(
+  auto& share_target_info = GetIncomingShareTargetInfo(share_target);
+  share_target_info.set_frames_reader(std::make_unique<IncomingFramesReader>(
+      process_manager_, profile_, connection));
+  share_target_info.frames_reader()->ReadFrame(
       sharing::mojom::V1Frame::Tag::INTRODUCTION,
       base::BindOnce(&NearbySharingServiceImpl::OnReceivedIntroduction,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
-                     std::move(token), std::move(frames_reader)),
+                     std::move(token)),
       kReadFramesTimeout);
 }
 
 void NearbySharingServiceImpl::OnReceivedIntroduction(
     ShareTarget share_target,
     base::Optional<std::string> token,
-    std::unique_ptr<IncomingFramesReader> frames_reader,
     base::Optional<sharing::mojom::V1FramePtr> frame) {
   NearbyConnection* connection = GetIncomingConnection(share_target);
   if (!connection) {
@@ -1000,17 +999,25 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     return;
   }
 
-  connection->RegisterForDisconnection(base::BindOnce(
+  connection->SetDisconnectionListener(base::BindOnce(
       &NearbySharingServiceImpl::OnIncomingConnectionDisconnected,
       weak_ptr_factory_.GetWeakPtr(), share_target));
 
-  frames_reader->ReadFrame(base::BindOnce(
-      &NearbySharingServiceImpl::OnFrameRead, weak_ptr_factory_.GetWeakPtr(),
-      std::move(frames_reader), std::move(share_target)));
+  auto* frames_reader =
+      GetIncomingShareTargetInfo(share_target).frames_reader();
+  if (!frames_reader) {
+    NS_LOG(WARNING) << __func__
+                    << ": Stopped reading further frames, due to no connection "
+                       "established.";
+    return;
+  }
+
+  frames_reader->ReadFrame(
+      base::BindOnce(&NearbySharingServiceImpl::OnFrameRead,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(share_target)));
 }
 
 void NearbySharingServiceImpl::OnFrameRead(
-    std::unique_ptr<IncomingFramesReader> frames_reader,
     ShareTarget share_target,
     base::Optional<sharing::mojom::V1FramePtr> frame) {
   if (!frame) {
@@ -1036,9 +1043,18 @@ void NearbySharingServiceImpl::OnFrameRead(
       break;
   }
 
-  frames_reader->ReadFrame(base::BindOnce(
-      &NearbySharingServiceImpl::OnFrameRead, weak_ptr_factory_.GetWeakPtr(),
-      std::move(frames_reader), std::move(share_target)));
+  auto* frames_reader =
+      GetIncomingShareTargetInfo(share_target).frames_reader();
+  if (!frames_reader) {
+    NS_LOG(WARNING) << __func__
+                    << ": Stopped reading further frames, due to no connection "
+                       "established.";
+    return;
+  }
+
+  frames_reader->ReadFrame(
+      base::BindOnce(&NearbySharingServiceImpl::OnFrameRead,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(share_target)));
 }
 
 void NearbySharingServiceImpl::HandleCertificateInfoFrame(

@@ -100,7 +100,9 @@ WideFrameView::WideFrameView(views::Widget* target)
   params.name = "WideFrameView";
   params.parent = target->GetNativeWindow();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  // Setup Opacity Control.
+  // WideFrame should be used only when the rounded corner is not necessary.
+  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
 
   widget_->Init(std::move(params));
 

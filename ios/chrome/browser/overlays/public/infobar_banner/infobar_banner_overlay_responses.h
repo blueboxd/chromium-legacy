@@ -21,4 +21,8 @@ DEFINE_STATELESS_OVERLAY_RESPONSE_INFO(InfobarBannerShowModalResponse);
 DEFINE_STATELESS_OVERLAY_RESPONSE_INFO(
     InfobarBannerUserInitiatedDismissalResponse);
 
+// Response info used to create dispatched OverlayResponses that notify the
+// model layer that the request's Infobar should be removed.
+DEFINE_STATELESS_OVERLAY_RESPONSE_INFO(InfobarBannerRemoveInfobarResponse);
+
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_INFOBAR_BANNER_INFOBAR_BANNER_OVERLAY_RESPONSES_H_

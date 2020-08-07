@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//services/network/public/cpp/features.gni")
@@ -70,8 +69,6 @@ component("network_service") {
     "network_quality_estimator_manager.h",
     "network_sandbox_hook_linux.cc",
     "network_sandbox_hook_linux.h",
-    "network_sandbox_win.cc",
-    "network_sandbox_win.h",
     "network_service.cc",
     "network_service.h",
     "network_service_network_delegate.cc",
@@ -233,7 +230,6 @@ component("network_service") {
     "//mojo/public/cpp/system",
     "//net",
     "//net:extras",
-    "//sandbox/policy",
     "//services/network/public/cpp",
     "//services/network/public/cpp:crash_keys",
     "//services/network/public/cpp/cert_verifier:cert_verifier_creation",
@@ -260,7 +256,10 @@ component("network_service") {
   }
 
   if (is_linux || is_chromeos) {
-    deps += [ "//sandbox/linux:sandbox_services" ]
+    deps += [
+      "//sandbox/linux:sandbox_services",
+      "//sandbox/policy",
+    ]
   }
 
   if (is_android) {

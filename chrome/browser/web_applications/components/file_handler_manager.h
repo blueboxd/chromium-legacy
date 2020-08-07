@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
@@ -27,10 +25,10 @@ class WebContents;
 
 namespace web_app {
 
-class FileHandlerManager : public AppRegistrarObserver {
+class FileHandlerManager {
  public:
   explicit FileHandlerManager(Profile* profile);
-  ~FileHandlerManager() override;
+  virtual ~FileHandlerManager();
 
   // |registrar| is used to observe OnWebAppInstalled/Uninstalled events.
   void SetSubsystems(AppRegistrar* registrar);
@@ -133,11 +131,6 @@ class FileHandlerManager : public AppRegistrarObserver {
   // kFileHandlingAPI isn't enabled). Returns the number of apps that had file
   // handlers unregistered, for use in tests.
   int CleanupAfterOriginTrials();
-
-  // AppRegistrarObserver:
-  void OnAppRegistrarDestroyed() override;
-
-  ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_;
 
   base::WeakPtrFactory<FileHandlerManager> weak_ptr_factory_{this};
 

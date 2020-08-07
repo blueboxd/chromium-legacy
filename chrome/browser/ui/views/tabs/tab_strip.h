@@ -147,9 +147,9 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
-  // Returns the ideal bounds of the new tab button.
-  gfx::Rect new_tab_button_ideal_bounds() const {
-    return new_tab_button_ideal_bounds_;
+  // Returns the ideal bounds of the tab controls container.
+  gfx::Rect tab_controls_container_ideal_bounds() const {
+    return tab_controls_container_ideal_bounds_;
   }
 
   // Adds a tab at the specified index.
@@ -688,11 +688,16 @@ class TabStrip : public views::AccessiblePaneView,
   // Responsible for animating tabs in response to model changes.
   views::BoundsAnimator bounds_animator_{this};
 
-  // The "New Tab" button.
+  // Container that holds the |new_tab_button_| and the |tab_search_button_|.
+  views::View* tab_controls_container_ = nullptr;
   NewTabButton* new_tab_button_ = nullptr;
+  // |tab_search_button_| will be null if features::kTabSearch is disabled.
+  // TODO(tluk): Subclass NewTabButton and set the appropriate icon for
+  // |tab_search_button_|.
+  NewTabButton* tab_search_button_ = nullptr;
 
-  // Ideal bounds of the new tab button.
-  gfx::Rect new_tab_button_ideal_bounds_;
+  // Ideal bounds of container holding the tab controls.
+  gfx::Rect tab_controls_container_ideal_bounds_;
 
   // If this value is defined, it is used as the width to lay out tabs
   // (instead of GetTabAreaWidth()). It is defined when closing tabs with the

@@ -94,16 +94,6 @@ Polymer({
    * @private
    */
   onHttpMessageAdded_(message) {
-    this.parseAndAddMessages_([message]);
-  },
-
-  /**
-   * Parses an array of HTTP messages and adds to the javascript list.
-   * @param {!Array<!HttpMessage>} messages
-   * @private
-   */
-  parseAndAddMessages_(messages) {
-    messages.unshift('httpMessageList_');
-    this.unshift.apply(this, messages);
+    this.httpMessageList_.unshift(message);
   },
 });

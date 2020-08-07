@@ -16,8 +16,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.SmallTest;
 
@@ -36,6 +34,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -46,6 +45,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -56,9 +56,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 @EnableFeatures(ChromeFeatureList.SEARCH_ENGINE_PROMO_EXISTING_DEVICE)
 public final class StatusMediatorUnitTest {
     private static final String TEST_SEARCH_URL = "https://www.test.com";
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -85,24 +82,22 @@ public final class StatusMediatorUnitTest {
     StatusMediator mMediator;
     Bitmap mBitmap;
 
-    public StatusMediatorUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         mContext = ContextUtils.getApplicationContext();
         mResources = mContext.getResources();
 
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
-        mMediator =
-                new StatusMediator(mModel, mResources, mContext, mUrlBarEditingTextStateProvider,
-                        /* isTablet */ false, mMockForceModelViewReconciliationRunnable);
-        mMediator.setToolbarCommonPropertiesModel(mToolbarCommonPropertiesModel);
-        mMediator.setDelegateForTesting(mDelegate);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator = new StatusMediator(mModel, mResources, mContext,
+                    mUrlBarEditingTextStateProvider,
+                    /* isTablet */ false, mMockForceModelViewReconciliationRunnable);
+            mMediator.setToolbarCommonPropertiesModel(mToolbarCommonPropertiesModel);
+            mMediator.setDelegateForTesting(mDelegate);
+        });
         mBitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
 
         when(mDelegate.isUrlValid(mUrlCaptor.capture()))

@@ -7,8 +7,11 @@
   <dimen name="check_status_description_margin_top">2dp</dimen>
   <dimen name="check_status_icon_margin_horizontal">16dp</dimen>
   <dimen name="check_status_icon_size">24dp</dimen>
+  <dimen name="check_status_illustration_height">120dp</dimen>
+  <dimen name="check_status_illustration_width">360dp</dimen>
   <dimen name="check_status_restart_button_clickable_surface_size">48dp</dimen>
   <dimen name="check_status_restart_button_margin_end">4dp</dimen>
+  <dimen name="check_status_subtitle_margin">16dp</dimen>
 
   <!-- Margin for the header message, it depends on the status -->
   <dimen name="check_status_message_error_margin_vertical">24dp</dimen>

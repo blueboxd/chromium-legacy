@@ -64,9 +64,10 @@ class PasswordScriptsFetcherImpl
 
   // PasswordScriptsFetcher:
   void PrewarmCache() override;
-  void ReportCacheReadinessMetric() const override;
-  void GetPasswordScriptAvailability(const url::Origin& origin,
-                                     ResponseCallback callback) override;
+  void Fetch(base::OnceClosure fetch_finished_callback) override;
+  void FetchScriptAvailability(const url::Origin& origin,
+                               ResponseCallback callback) override;
+  bool IsScriptAvailable(const url::Origin& origin) const override;
 
 #if defined(UNIT_TEST)
   void make_cache_stale_for_testing() {
@@ -95,6 +96,8 @@ class PasswordScriptsFetcherImpl
   // Timestamp of the last finished request.
   base::TimeTicks last_fetch_timestamp_;
   // Stores the callbacks that are waiting for the request to finish.
+  std::vector<base::OnceClosure> fetch_finished_callbacks_;
+  // Stores the per-origin callbacks that are waiting for the request to finish.
   std::vector<std::pair<url::Origin, ResponseCallback>> pending_callbacks_;
   // URL loader object for the gstatic request. If |url_loader_| is not null, a
   // request is currently in flight.

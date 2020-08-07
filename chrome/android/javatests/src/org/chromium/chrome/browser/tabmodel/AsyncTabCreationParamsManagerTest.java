@@ -4,16 +4,13 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
-
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -22,9 +19,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AsyncTabCreationParamsManagerTest {
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
     @Test
     @SmallTest
     @UiThreadTest

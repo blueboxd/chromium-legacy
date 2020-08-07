@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
-#include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
+#include "chrome/browser/notifications/notification_platform_bridge_delegate.h"
 #include "chrome/browser/notifications/notifier_controller.h"
 
 // This class serves as Chrome's AshMessageCenterClient, as well as the

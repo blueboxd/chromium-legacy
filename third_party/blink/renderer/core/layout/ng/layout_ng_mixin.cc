@@ -162,7 +162,7 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
       container_node.CreatesNewFormattingContext());
 
   NGFragmentGeometry fragment_geometry;
-  fragment_geometry.border = ComputeBorders(constraint_space, *container_style);
+  fragment_geometry.border = ComputeBorders(constraint_space, container_node);
   fragment_geometry.scrollbar =
       ComputeScrollbars(constraint_space, container_node);
   fragment_geometry.padding =

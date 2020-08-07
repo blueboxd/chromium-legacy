@@ -293,7 +293,7 @@ inline LayoutUnit ResolveMainBlockLength(
 // coordinate system.
 CORE_EXPORT MinMaxSizes
 ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
-                                           const ComputedStyle&,
+                                           const NGBlockNode&,
                                            const MinMaxSizes&);
 
 // A version of ComputeMinAndMaxContentContribution that does not require you
@@ -306,7 +306,7 @@ ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
 // size of the child).
 MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
-    NGLayoutInputNode child,
+    const NGBlockNode& child,
     const MinMaxSizesInput&);
 
 // Computes the min-block-size and max-block-size values for a node.
@@ -460,7 +460,7 @@ CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
                                             NGLayoutInputNode child);
 
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
-                                      const ComputedStyle&);
+                                      const NGBlockNode&);
 
 CORE_EXPORT NGBoxStrut ComputeBordersForInline(const ComputedStyle& style);
 

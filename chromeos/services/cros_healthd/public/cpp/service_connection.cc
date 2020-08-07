@@ -112,6 +112,12 @@ class ServiceConnectionImpl : public ServiceConnection {
   void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) override;
   void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
+  void SetBindNetworkHealthServiceCallback(
+      BindNetworkHealthServiceCallback callback) override;
+
+  // Uses |bind_network_health_callback_| if set to bind a remote to the
+  // NetworkHealthService and send the PendingRemote to the CrosHealthdService.
+  void BindAndSendNetworkHealthService();
 
   // Binds the factory interface |cros_healthd_service_factory_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
@@ -143,6 +149,10 @@ class ServiceConnectionImpl : public ServiceConnection {
   mojo::Remote<mojom::CrosHealthdDiagnosticsService>
       cros_healthd_diagnostics_service_;
   mojo::Remote<mojom::CrosHealthdEventService> cros_healthd_event_service_;
+
+  // Repeating callback that binds a mojo::PendingRemote to the
+  // NetworkHealthService and returns it.
+  BindNetworkHealthServiceCallback bind_network_health_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -353,6 +363,22 @@ void ServiceConnectionImpl::GetDiagnosticsService(
   cros_healthd_service_factory_->GetDiagnosticsService(std::move(service));
 }
 
+void ServiceConnectionImpl::SetBindNetworkHealthServiceCallback(
+    BindNetworkHealthServiceCallback callback) {
+  bind_network_health_callback_ = std::move(callback);
+  BindAndSendNetworkHealthService();
+}
+
+void ServiceConnectionImpl::BindAndSendNetworkHealthService() {
+  if (bind_network_health_callback_.is_null())
+    return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
+  auto remote = bind_network_health_callback_.Run();
+  cros_healthd_service_factory_->SendNetworkHealthService(std::move(remote));
+}
+
 void ServiceConnectionImpl::GetProbeService(
     mojom::CrosHealthdProbeServiceRequest service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -428,6 +454,11 @@ void ServiceConnectionImpl::OnDisconnect() {
   cros_healthd_event_service_.reset();
 
   EnsureCrosHealthdServiceFactoryIsBound();
+  // If the cros_healthd_service_factory_ was able to be rebound, resend the
+  // Chrome services to the CrosHealthd instance.
+  if (cros_healthd_service_factory_.is_bound()) {
+    BindAndSendNetworkHealthService();
+  }
 }
 
 void ServiceConnectionImpl::OnBootstrapMojoConnectionResponse(

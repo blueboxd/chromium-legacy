@@ -52,6 +52,10 @@ found in the LICENSE file.
       <td>Feed Fetch URL</td>
       <td id="feed-fetch-url"></td>
     </tr>
+    <tr>
+      <td>Feed Actions URL</td>
+      <td id="feed-actions-url"></td>
+    </tr>
   </table>
 
   <h2>User Classifier</h2>
@@ -105,6 +109,18 @@ found in the LICENSE file.
     </tr>
   </table>
 
+  <h2>Last Action Upload</h2>
+  <table>
+    <tr>
+      <td>Status</td>
+      <td id="last-action-upload-status"></td>
+    </tr>
+    <tr>
+      <td>Last Upload Time</td>
+      <td id="last-action-upload-time"></td>
+    </tr>
+  </table>
+
   <h2>Current Content</h2>
   <div id="current-content">
     <template id="suggestion-template">
@@ -154,6 +170,10 @@ found in the LICENSE file.
   <p>Cookies will be sent along with Feed requests to this host.</p>
   <input id="feed-host-override">
   <button id="feed-host-override-apply">Apply</button>
+
+  <h2>Actions Endpoint Override (v2 only)</h2>
+  <input id="actions-endpoint-override">
+  <button id="actions-endpoint-override-apply">Apply</button>
 
 </body>
 </html>

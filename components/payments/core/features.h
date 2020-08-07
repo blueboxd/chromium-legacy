@@ -79,10 +79,10 @@ extern const base::Feature kPaymentHandlerPopUpSizeWindow;
 // Used to test icon refetch for JIT installed apps with missing icons.
 extern const base::Feature kAllowJITInstallationWhenAppIconIsMissing;
 
-// Desktop only, if enabled the lock icon would be showed next to the
+// Desktop only, if enabled the security icon would be showed next to the
 // payment handler's URL bar. It indicate that only secure content is
 // allowed inside the payment handler.
-extern const base::Feature kPaymentHandlerLockIcon;
+extern const base::Feature kPaymentHandlerSecurityIcon;
 
 // Used to reject the apps with partial delegation.
 extern const base::Feature kEnforceFullDelegation;

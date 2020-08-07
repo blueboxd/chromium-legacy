@@ -145,5 +145,6 @@ cr.define('nearby_share', function() {
   // #cr_define_end
   return {
     NearbyShareSettingsBehavior,
+    NearbySettings,
   };
 });

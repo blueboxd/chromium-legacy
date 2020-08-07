@@ -132,8 +132,6 @@ source_set("web_applications_test_support") {
     "test/test_app_registrar.h",
     "test/test_app_registry_controller.cc",
     "test/test_app_registry_controller.h",
-    "test/test_app_shortcut_manager.cc",
-    "test/test_app_shortcut_manager.h",
     "test/test_data_retriever.cc",
     "test/test_data_retriever.h",
     "test/test_file_handler_manager.cc",

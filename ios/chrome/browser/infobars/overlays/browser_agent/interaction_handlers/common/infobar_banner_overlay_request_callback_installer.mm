@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/common/infobar_banner_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
 #include "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
@@ -62,6 +64,16 @@ void InfobarBannerOverlayRequestCallbackInstaller::BannerDismissedByUser(
   interaction_handler_->BannerDismissedByUser(infobar);
 }
 
+void InfobarBannerOverlayRequestCallbackInstaller::RemoveInfobar(
+    OverlayRequest* request,
+    OverlayResponse* response) {
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
+  InfoBarManagerImpl::FromWebState(request->GetQueueWebState())
+      ->RemoveInfoBar(infobar);
+}
+
 #pragma mark - OverlayRequestCallbackInstaller
 
 const OverlayRequestSupport*
@@ -87,4 +99,9 @@ void InfobarBannerOverlayRequestCallbackInstaller::InstallCallbacksInternal(
           &InfobarBannerOverlayRequestCallbackInstaller::BannerDismissedByUser,
           weak_factory_.GetWeakPtr(), request),
       InfobarBannerUserInitiatedDismissalResponse::ResponseSupport()));
+  manager->AddDispatchCallback(OverlayDispatchCallback(
+      base::BindRepeating(
+          &InfobarBannerOverlayRequestCallbackInstaller::RemoveInfobar,
+          weak_factory_.GetWeakPtr(), request),
+      InfobarBannerRemoveInfobarResponse::ResponseSupport()));
 }

@@ -289,8 +289,8 @@ MinMaxSizesResult NGMathFractionLayoutAlgorithm::ComputeMinMaxSizes(
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned())
       continue;
-    auto child_result =
-        ComputeMinAndMaxContentContribution(Style(), child, child_input);
+    auto child_result = ComputeMinAndMaxContentContribution(
+        Style(), To<NGBlockNode>(child), child_input);
     NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
     child_result.sizes += margins.InlineSum();
 

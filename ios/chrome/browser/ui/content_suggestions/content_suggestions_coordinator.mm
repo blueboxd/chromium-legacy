@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -103,6 +104,8 @@
 @property(nonatomic, weak) id<DiscoverFeedHeaderChanging>
     discoverFeedHeaderDelegate;
 @property(nonatomic) CGFloat discoverFeedHeight;
+// Authentication Service for the user's signed-in state.
+@property(nonatomic, assign) AuthenticationService* authService;
 
 @end
 
@@ -144,14 +147,16 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
+  self.authService = AuthenticationServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
+
   self.NTPMediator = [[NTPHomeMediator alloc]
              initWithWebState:self.webState
            templateURLService:ios::TemplateURLServiceFactory::
                                   GetForBrowserState(
                                       self.browser->GetBrowserState())
                     URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
-                  authService:AuthenticationServiceFactory::GetForBrowserState(
-                                  self.browser->GetBrowserState())
+                  authService:self.authService
               identityManager:IdentityManagerFactory::GetForBrowserState(
                                   self.browser->GetBrowserState())
                    logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
@@ -410,13 +415,23 @@
                    style:UIAlertActionStyleDefault];
   }
 
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM)
-                action:^{
-                  [weakSelf.NTPMediator handleManageInterestsTapped];
-                }
-                 style:UIAlertActionStyleDefault];
+  if (self.authService->IsAuthenticated()) {
+    [self.alertCoordinator
+        addItemWithTitle:l10n_util::GetNSString(
+                             IDS_IOS_DISCOVER_FEED_MENU_MANAGE_ACTIVITY_ITEM)
+                  action:^{
+                    [weakSelf.NTPMediator handleManageActivityTapped];
+                  }
+                   style:UIAlertActionStyleDefault];
+
+    [self.alertCoordinator
+        addItemWithTitle:l10n_util::GetNSString(
+                             IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM)
+                  action:^{
+                    [weakSelf.NTPMediator handleManageInterestsTapped];
+                  }
+                   style:UIAlertActionStyleDefault];
+  }
 
   [self.alertCoordinator
       addItemWithTitle:l10n_util::GetNSString(
@@ -437,6 +452,7 @@
   self.discoverFeedViewController = [self discoverFeed];
   self.contentSuggestionsMediator.discoverFeed =
       self.discoverFeedViewController;
+  [self.alertCoordinator stop];
 }
 
 #pragma mark - ContentSuggestionsActionHandler

@@ -1374,6 +1374,8 @@ void StoragePartitionImpl::Initialize() {
     GetGeneratedCodeCacheContext()->Initialize(code_cache_path,
                                                settings.size_in_bytes());
   }
+
+  font_access_manager_ = std::make_unique<FontAccessManagerImpl>();
 }
 
 void StoragePartitionImpl::OnStorageServiceDisconnected() {
@@ -1626,6 +1628,11 @@ StoragePartitionImpl::GetNativeFileSystemManager() {
 ConversionManagerImpl* StoragePartitionImpl::GetConversionManager() {
   DCHECK(initialized_);
   return conversion_manager_.get();
+}
+
+FontAccessManagerImpl* StoragePartitionImpl::GetFontAccessManager() {
+  DCHECK(initialized_);
+  return font_access_manager_.get();
 }
 
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {

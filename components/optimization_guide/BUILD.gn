@@ -48,6 +48,8 @@ static_library("optimization_guide") {
     "optimization_guide_switches.h",
     "optimization_guide_test_util.cc",
     "optimization_guide_test_util.h",
+    "optimization_guide_util.cc",
+    "optimization_guide_util.h",
     "optimization_metadata.cc",
     "optimization_metadata.h",
     "prediction_model.cc",

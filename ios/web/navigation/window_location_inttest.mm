@@ -192,6 +192,11 @@ TEST_F(WindowLocationTest, DISABLED_Replace) {
 // Tests that calling window.location.replace() with an unresolvable URL is a
 // no-op.
 TEST_F(WindowLocationTest, WindowLocationReplaceUnresolvable) {
+  if (@available(iOS 14, *)) {
+    // This is a syntax error in WebKit in iOS14.
+    return;
+  }
+
   // Attempt to call window.location.assign() using an unresolvable URL.
   GURL unresolvable_url("http:https:not a url");
   SetWindowLocationUrl(unresolvable_url);

@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -20,9 +21,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_regex_provider.h"
 #include "components/autofill/core/browser/data_model/borrowed_transliterator.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 namespace structured_address {
+
+bool StructuredNamesEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+}
 
 Re2RegExCache::Re2RegExCache() = default;
 
@@ -68,6 +75,31 @@ std::unique_ptr<const RE2> BuildRegExFromPattern(const std::string& pattern) {
   }
 
   return regex;
+}
+
+bool HasCjkNameCharacteristics(const std::string& name) {
+  return IsPartialMatch(name, RegEx::kMatchCjkNameCharacteristics);
+}
+
+bool HasMiddleNameInitialsCharacteristics(const std::string& middle_name) {
+  return IsPartialMatch(middle_name,
+                        RegEx::kMatchMiddleNameInitialsCharacteristics);
+}
+
+bool HasHispanicLatinxNameCharaceristics(const std::string& name) {
+  // Check if the name contains one of the most common Hispanic/Latinx
+  // last names.
+  if (IsPartialMatch(name, RegEx::kMatchHispanicCommonNameCharacteristics))
+    return true;
+
+  // Check if it contains a last name conjunction.
+  if (IsPartialMatch(name,
+                     RegEx::kMatchHispanicLastNameConjuctionCharacteristics))
+    return true;
+
+  // If none of the above, there is not sufficient reason to assume this is a
+  // Hispanic/Latinx name.
+  return false;
 }
 
 bool ParseValueByRegularExpression(
@@ -189,8 +221,9 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
   }
 
   // By adding an "i" in the first group, the capturing is case insensitive.
+  // Allow multiple separators to support the ", " case.
   return base::StrCat({"(?i:(?P<", AutofillType(type).ToString(), ">", pattern,
-                       ")(?:", options.separator, "))", quantifier});
+                       ")(?:", options.separator, ")+)", quantifier});
 }
 
 std::string CaptureTypeWithPattern(const ServerFieldType& type,
@@ -201,6 +234,11 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
 base::string16 NormalizeValue(const base::string16& value) {
   return RemoveDiacriticsAndConvertToLowerCase(
       base::CollapseWhitespace(value, /*trim_sequence_with_line_breaks=*/true));
+}
+
+bool AreStringTokenEquivalent(const base::string16& one,
+                              const base::string16& other) {
+  return AreSortedTokensEqual(TokenizeValue(one), TokenizeValue(other));
 }
 
 bool AreSortedTokensEqual(const std::vector<base::string16>& first,
@@ -219,11 +257,23 @@ std::vector<base::string16> TokenizeValue(const base::string16 value) {
   // Canonicalize the value.
   base::string16 cannonicalized_value = NormalizeValue(value);
 
-  // Split it by white spaces and commas into non-empty values.
-  std::vector<base::string16> tokens =
-      base::SplitString(cannonicalized_value, base::ASCIIToUTF16(", "),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
+  // CJK names are a special case and are tokenized by character without the
+  // separators.
+  std::vector<base::string16> tokens;
+  if (HasCjkNameCharacteristics(base::UTF16ToUTF8(value))) {
+    tokens.reserve(value.size());
+    for (size_t i = 0; i < value.size(); i++) {
+      base::string16 cjk_separators = base::UTF8ToUTF16("・·　 ");
+      if (cjk_separators.find(value.substr(i, 1)) == base::string16::npos) {
+        tokens.emplace_back(value.substr(i, 1));
+      }
+    }
+  } else {
+    // Split it by white spaces and commas into non-empty values.
+    tokens =
+        base::SplitString(cannonicalized_value, base::ASCIIToUTF16(", "),
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  }
   // Sort the tokens lexicographically.
   std::sort(tokens.begin(), tokens.end());
 

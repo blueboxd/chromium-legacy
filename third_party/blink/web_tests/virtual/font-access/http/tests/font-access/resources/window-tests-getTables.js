@@ -1,6 +1,7 @@
 'use strict';
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectations = getEnumerationTestSet({labelFilter: [TEST_SIZE_CATEGORY.small]});
@@ -18,6 +19,7 @@ promise_test(async t => {
 }, 'getTables(): small sized fonts have expected non-empty tables');
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectations = getEnumerationTestSet({labelFilter: [TEST_SIZE_CATEGORY.medium]});
@@ -35,6 +37,7 @@ promise_test(async t => {
 }, 'getTables(): medium sized fonts have expected non-empty tables');
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectedFonts = await filterEnumeration(iterator,
@@ -58,6 +61,7 @@ promise_test(async t => {
 }, 'getTables([...]) returns tables');
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectedFonts = await filterEnumeration(iterator,
@@ -80,6 +84,7 @@ promise_test(async t => {
 }, 'getTables([tableName,...]) returns if a table name does not exist');
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectedFonts = await filterEnumeration(iterator,
@@ -119,6 +124,7 @@ promise_test(async t => {
 }, 'getTables([tableName,...]) rejects for invalid input');
 
 promise_test(async t => {
+  await test_driver.set_permission({name: 'font-access'}, 'granted');
   const iterator = navigator.fonts.query();
 
   const expectedFonts = await filterEnumeration(iterator,

@@ -43,11 +43,11 @@ all network traffic annotations specified within `summary/grouping.xml`.
 # update_annotations_doc_tests.py
 Unit tests for update_annotations_doc.py.
 
-# parser.py
+# generator_utils.py
 Parses the `grouping.xml` and `annotations.tsv` files to provide
 `update_annotations_doc.py` with the annotations and their relevant information,
 e.g. unique_id, data, trigger, etc. Also includes methods to parse the json
 object returned by the Google Docs API `get()` method.
 
-# parser_tests.py
-Unit tests for parser.py.
+# generator_utils_tests.py
+Unit tests for generator_utils.py.

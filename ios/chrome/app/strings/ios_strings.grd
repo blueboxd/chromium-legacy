@@ -719,6 +719,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_DISCOVER_FEED_MENU_LEARN_MORE_ITEM" desc="The 'Learn More' action for the Discover feed header menu.">
         Learn More
       </message>
+      <message name="IDS_IOS_DISCOVER_FEED_MENU_MANAGE_ACTIVITY_ITEM" desc="The 'Manage Activity' action for the Discover feed header menu.">
+        Manage Activity
+      </message>
       <message name="IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM" desc="The 'Manage Interests' action for the Discover feed header menu.">
         Manage Interests
       </message>

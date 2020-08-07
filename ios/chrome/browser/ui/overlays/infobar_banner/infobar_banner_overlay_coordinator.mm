@@ -146,6 +146,9 @@
 
 // Called when the dismissal of the banner UI is finished.
 - (void)finishDismissal {
+  InfobarBannerOverlayMediator* mediator =
+      base::mac::ObjCCast<InfobarBannerOverlayMediator>(self.mediator);
+  [mediator finishDismissal];
   self.bannerViewController = nil;
   self.mediator = nil;
   // Notify the presentation context that the dismissal has finished.  This

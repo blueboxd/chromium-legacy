@@ -444,6 +444,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   void UpdateCannotSnapWarningVisibility();
 
+  // Updates frame throttling on overview item windows.
+  void UpdateFrameThrottling();
+
   // Root window the grid is in.
   aura::Window* root_window_;
 

@@ -254,14 +254,6 @@
     "args": ["--enable-blink-features=LayoutNGFragmentTraversal"]
   },
   {
-    "prefix": "layout_ng_fieldset",
-    "bases": ["external/wpt/css/css-contain",
-              "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain",
-              "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
-              "fast/forms/fieldset"],
-    "args": ["--enable-blink-features=LayoutNGFieldset"]
-  },
-  {
     "prefix": "layout-ng-grid",
     "bases": ["fast/css-grid-layout",
               "external/wpt/css/css-grid"],

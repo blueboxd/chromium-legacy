@@ -11,19 +11,18 @@ Polymer({
   is: 'nearby-onboarding-page',
 
   properties: {
-    /** @type {Object} */
+    /** @type {?nearby_share.NearbySettings} */
     settings: {
       type: Object,
     }
   },
 
   onNextTap_() {
-    // TODO(vecore): switch to contacts page once it is added.
-    this.fire('change-page', {page: 'discovery'});
+    this.fire('change-page', {page: 'visibility'});
   },
 
   onCloseTap_() {
-    this.fire('close', {});
+    this.fire('close');
   },
 
   onDeviceNameTap_() {

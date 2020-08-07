@@ -26,15 +26,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.telephony.TelephonyManager;
 
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,6 +43,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.ConnectivityManagerDelegate;
@@ -65,9 +63,6 @@ import java.util.concurrent.FutureTask;
 @RunWith(BaseJUnit4ClassRunner.class)
 @SuppressLint("NewApi")
 public class NetworkChangeNotifierTest {
-    @Rule
-    public UiThreadTestRule mUiThreadRule = new UiThreadTestRule();
-
     /**
      * Listens for alerts fired by the NetworkChangeNotifier when network status changes.
      */
@@ -495,19 +490,16 @@ public class NetworkChangeNotifierTest {
         LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
         LibraryLoader.getInstance().ensureInitialized();
 
-        mUiThreadRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (sActivity == null) {
-                    sActivity = new Activity();
-                    if (!ApplicationStatus.isInitialized()) {
-                        ApplicationStatus.initialize(BaseJUnit4ClassRunner.getApplication());
-                    }
-                    ApplicationStatus.onStateChangeForTesting(sActivity, ActivityState.CREATED);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            if (sActivity == null) {
+                sActivity = new Activity();
+                if (!ApplicationStatus.isInitialized()) {
+                    ApplicationStatus.initialize(BaseJUnit4ClassRunner.getApplication());
                 }
-                setApplicationHasVisibleActivities(false);
-                createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
+                ApplicationStatus.onStateChangeForTesting(sActivity, ActivityState.CREATED);
             }
+            setApplicationHasVisibleActivities(false);
+            createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
         });
     }
 

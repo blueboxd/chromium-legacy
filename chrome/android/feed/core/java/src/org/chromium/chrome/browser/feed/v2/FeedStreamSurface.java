@@ -24,6 +24,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.feed.shared.ScrollTracker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.suggestions.NavigationRecorder;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -99,6 +101,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private FeedSliceViewTracker mSliceViewTracker;
     private final NativePageNavigationDelegate mPageNavigationDelegate;
     private final HelpAndFeedback mHelpAndFeedback;
+    private final ScrollReporter mScrollReporter = new ScrollReporter();
 
     private int mHeaderCount;
     private BottomSheetContent mBottomSheetContent;
@@ -597,7 +600,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                 FeedStreamSurface.this, getSliceIdFromView(actionSourceView));
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
-        openUrl(url, WindowOpenDisposition.NEW_FOREGROUND_TAB);
+        openUrl(url, WindowOpenDisposition.NEW_BACKGROUND_TAB);
 
         // Attempts to load more content if needed.
         maybeLoadMore();
@@ -793,6 +796,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (feedCount > 0) {
             mContentManager.removeContents(mHeaderCount, feedCount);
         }
+        mScrollReporter.onUnbind();
 
         untrackSurface(this);
         if (sStartupCalled) {
@@ -815,6 +819,24 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                 mNativeFeedStreamSurface, FeedStreamSurface.this);
         if (tab != null) {
             tab.addObserver(new FeedTabNavigationObserver(inNewTab));
+            NavigationRecorder.record(tab,
+                    visitData -> FeedServiceBridge.reportOpenVisitComplete(visitData.duration));
+        }
+    }
+
+    // Called when the stream is scrolled.
+    void streamScrolled(int dx, int dy) {
+        FeedStreamSurfaceJni.get().reportStreamScrollStart(
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
+        mScrollReporter.trackScroll(dx, dy);
+    }
+
+    // Ingests scroll events and reports scroll completion back to native.
+    private class ScrollReporter extends ScrollTracker {
+        @Override
+        protected void onScrollEvent(int scrollAmount) {
+            FeedStreamSurfaceJni.get().reportStreamScrolled(
+                    mNativeFeedStreamSurface, FeedStreamSurface.this, scrollAmount);
         }
     }
 
@@ -844,10 +866,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         void reportRemoveAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void reportNotInterestedInAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
 
-        // TODO(jianli): Call this function at the appropriate time.
         void reportStreamScrolled(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, int distanceDp);
-        // TODO(jianli): Call this function at the appropriate time.
         void reportStreamScrollStart(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void loadMore(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, Callback<Boolean> callback);

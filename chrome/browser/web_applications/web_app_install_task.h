@@ -37,7 +37,6 @@ class WebContents;
 
 namespace web_app {
 
-class AppShortcutManager;
 class OsIntegrationManager;
 class InstallFinalizer;
 class WebAppDataRetriever;
@@ -49,7 +48,6 @@ class WebAppInstallTask : content::WebContentsObserver {
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
 
   WebAppInstallTask(Profile* profile,
-                    AppShortcutManager* shortcut_manager,
                     OsIntegrationManager* os_integration_manager,
                     InstallFinalizer* install_finalizer,
                     std::unique_ptr<WebAppDataRetriever> data_retriever);
@@ -233,11 +231,6 @@ class WebAppInstallTask : content::WebContentsObserver {
                         const OsHooksResults os_hooks_results);
   void OnRegisteredRunOnOsLogin(const AppId& app_id,
                                 bool registered_run_on_os_login);
-  void OnUpdateFinalizedRegisterShortcutsMenu(
-      const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
-      const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
-      const AppId& app_id,
-      InstallResultCode code);
 
   // Whether we should just obtain WebApplicationInfo instead of the actual
   // installation.
@@ -260,7 +253,6 @@ class WebAppInstallTask : content::WebContentsObserver {
   std::unique_ptr<WebApplicationInfo> web_application_info_;
   std::unique_ptr<content::WebContents> web_contents_;
 
-  AppShortcutManager* shortcut_manager_;
   OsIntegrationManager* os_integration_manager_;
   InstallFinalizer* install_finalizer_;
   Profile* const profile_;

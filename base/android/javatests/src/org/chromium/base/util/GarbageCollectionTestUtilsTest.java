@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected;
 
 import android.graphics.Bitmap;
-import android.support.test.annotation.UiThreadTest;
 
 import androidx.test.filters.SmallTest;
 
@@ -20,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 
 import java.lang.ref.WeakReference;
 

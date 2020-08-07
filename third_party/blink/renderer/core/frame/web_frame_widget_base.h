@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
+#include "third_party/blink/public/platform/web_battery_savings.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -489,6 +490,10 @@ class CORE_EXPORT WebFrameWidgetBase
   // Called when a main frame widget is promoted or demoted from being the top
   // level widget in a tab/window. E.g. a portal is activated or deactivated.
   void SetIsNestedMainFrameWidget(bool is_nested);
+
+  // The value of the applied battery-savings META element in the document
+  // changed.
+  void BatterySavingsChanged(WebBatterySavingsFlags savings);
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

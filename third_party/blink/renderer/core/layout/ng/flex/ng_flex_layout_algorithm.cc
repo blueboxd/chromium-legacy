@@ -422,7 +422,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         ComputePhysicalMargins(flex_basis_space, child_style);
 
     NGBoxStrut border_padding_in_child_writing_mode =
-        ComputeBorders(flex_basis_space, child_style) +
+        ComputeBorders(flex_basis_space, child) +
         ComputePadding(flex_basis_space, child_style);
 
     NGPhysicalBoxStrut physical_border_padding(

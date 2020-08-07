@@ -145,6 +145,7 @@ class FeedStream : public FeedStreamApi,
   void ReportNavigationStarted() override;
   void ReportPageLoaded() override;
   void ReportOpenAction(const std::string& slice_id) override;
+  void ReportOpenVisitComplete(base::TimeDelta visit_time) override;
   void ReportOpenInNewTabAction(const std::string& slice_id) override;
   void ReportOpenInNewIncognitoTabAction() override;
   void ReportSendFeedbackAction() override;
@@ -272,6 +273,7 @@ class FeedStream : public FeedStreamApi,
   void InitialStreamLoadComplete(LoadStreamTask::Result result);
   void LoadMoreComplete(LoadMoreTask::Result result);
   void BackgroundRefreshComplete(LoadStreamTask::Result result);
+  void UploadActionsComplete(UploadActionsTask::Result result);
 
   void ClearAll();
 

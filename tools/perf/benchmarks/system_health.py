@@ -59,8 +59,9 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
         'reportedByPageMetric',
         'tracingMetric',
         'umaMetric',
-        # Unless --experimentatil-tbmv3-metric flag is used, this metric does
-        # nothing.
+        # Unless --experimentatil-tbmv3-metric flag is used, the following tbmv3
+        # metrics do nothing.
+        'tbmv3:accessibility_metric',
         'tbmv3:cpu_time_metric',
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)

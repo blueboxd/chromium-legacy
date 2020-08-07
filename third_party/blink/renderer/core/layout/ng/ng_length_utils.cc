@@ -254,17 +254,17 @@ namespace {
 template <typename MinMaxSizesFunc>
 MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
     WritingMode parent_writing_mode,
-    const ComputedStyle& style,
+    const NGBlockNode& child,
     const MinMaxSizesFunc& min_max_sizes_func) {
+  const ComputedStyle& style = child.Style();
   WritingMode child_writing_mode = style.GetWritingMode();
-
   // Synthesize a zero-sized constraint space for resolving sizes against.
   NGConstraintSpace space =
       NGConstraintSpaceBuilder(child_writing_mode, child_writing_mode,
                                /* is_new_fc */ false)
           .ToConstraintSpace();
   NGBoxStrut border_padding =
-      ComputeBorders(space, style) + ComputePadding(space, style);
+      ComputeBorders(space, child) + ComputePadding(space, style);
 
   MinMaxSizesResult result;
   const Length& inline_size = parent_writing_mode == WritingMode::kHorizontalTb
@@ -329,19 +329,19 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
 
 MinMaxSizes ComputeMinAndMaxContentContributionForTest(
     WritingMode parent_writing_mode,
-    const ComputedStyle& style,
+    const NGBlockNode& child,
     const MinMaxSizes& min_max_sizes) {
   auto MinMaxSizesFunc = [&](MinMaxSizesType) -> MinMaxSizesResult {
     return {min_max_sizes, false};
   };
-  return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, style,
+  return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, child,
                                                      MinMaxSizesFunc)
       .sizes;
 }
 
 MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
-    NGLayoutInputNode child,
+    const NGBlockNode& child,
     const MinMaxSizesInput& input) {
   const ComputedStyle& child_style = child.Style();
   WritingMode parent_writing_mode = parent_style.GetWritingMode();
@@ -395,8 +395,8 @@ MinMaxSizesResult ComputeMinAndMaxContentContribution(
                                     child_constraint_space);
   };
 
-  return ComputeMinAndMaxContentContributionInternal(
-      parent_writing_mode, child_style, MinMaxSizesFunc);
+  return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, child,
+                                                     MinMaxSizesFunc);
 }
 
 LayoutUnit ComputeInlineSizeFromAspectRatio(const NGConstraintSpace& space,
@@ -578,7 +578,7 @@ void ComputeReplacedSize(const NGBlockNode& node,
   const ComputedStyle& style = node.Style();
 
   NGBoxStrut border_padding =
-      ComputeBorders(space, style) + ComputePadding(space, style);
+      ComputeBorders(space, node) + ComputePadding(space, style);
   LayoutUnit inline_min = ResolveMinInlineLength(
       space, style, border_padding, child_min_max_sizes,
       style.LogicalMinWidth(), LengthResolvePhase::kLayout);
@@ -869,7 +869,7 @@ NGBoxStrut ComputeBordersInternal(const ComputedStyle& style) {
 }  // namespace
 
 NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
-                          const ComputedStyle& style) {
+                          const NGBlockNode& node) {
   // If we are producing an anonymous fragment (e.g. a column), it has no
   // borders, padding or scrollbars. Using the ones from the container can only
   // cause trouble.
@@ -881,7 +881,7 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   if (constraint_space.IsTableCell())
     return constraint_space.TableCellBorders();
 
-  return ComputeBordersInternal(style);
+  return ComputeBordersInternal(node.Style());
 }
 
 NGBoxStrut ComputeBordersForInline(const ComputedStyle& style) {
@@ -1075,7 +1075,7 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
     const NGBlockNode& node) {
   const ComputedStyle& style = node.Style();
 
-  NGBoxStrut border = ComputeBorders(constraint_space, style);
+  NGBoxStrut border = ComputeBorders(constraint_space, node);
   NGBoxStrut padding = ComputePadding(constraint_space, style);
   NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
   NGBoxStrut border_padding = border + padding;
@@ -1116,7 +1116,7 @@ NGFragmentGeometry CalculateInitialMinMaxFragmentGeometry(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode& node) {
   const ComputedStyle& style = node.Style();
-  NGBoxStrut border = ComputeBorders(constraint_space, style);
+  NGBoxStrut border = ComputeBorders(constraint_space, node);
   NGBoxStrut padding = ComputePadding(constraint_space, style);
   NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
 

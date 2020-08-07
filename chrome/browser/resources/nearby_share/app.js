@@ -10,6 +10,7 @@
 
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 import './shared/nearby_onboarding_page.m.js';
+import './shared/nearby_visibility_page.m.js';
 import './nearby_confirmation_page.js';
 import './nearby_discovery_page.js';
 
@@ -21,6 +22,7 @@ const Page = {
   CONFIRMATION: 'confirmation',
   DISCOVERY: 'discovery',
   ONBOARDING: 'onboarding',
+  VISIBILITY: 'visibility',
 };
 
 Polymer({

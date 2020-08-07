@@ -63,4 +63,11 @@ void TestOsIntegrationManager::UninstallOsHooks(
   NOTIMPLEMENTED();
 }
 
+void TestOsIntegrationManager::UpdateOsHooks(
+    const AppId& app_id,
+    base::StringPiece old_name,
+    const WebApplicationInfo& web_app_info) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace web_app

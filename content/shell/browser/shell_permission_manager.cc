@@ -55,6 +55,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::VR:
     case PermissionType::AR:
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
+    case PermissionType::FONT_ACCESS:
       return false;
   }
 

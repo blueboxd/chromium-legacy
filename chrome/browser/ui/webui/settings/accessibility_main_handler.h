@@ -64,8 +64,6 @@ class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler,
   // component_updater::ServiceObserver:
   void OnEvent(Events event, const std::string& id) override;
 
-  void SendLiveCaptionDownloadError();
-
   PrefService* prefs_;
   ScopedObserver<component_updater::ComponentUpdateService,
                  component_updater::ComponentUpdateService::Observer>

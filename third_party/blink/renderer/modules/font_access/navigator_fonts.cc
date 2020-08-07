@@ -69,13 +69,4 @@ FontManager* NavigatorFonts::fonts(ScriptState* script_state,
   return NavigatorFontsImpl<Navigator>::From(navigator).GetFontManager();
 }
 
-FontManager* NavigatorFonts::fonts(ScriptState* script_state,
-                                   WorkerNavigator& navigator,
-                                   ExceptionState& exception_state) {
-  DCHECK(ExecutionContext::From(script_state)->IsContextThread());
-  // TODO(https://crbug.com/1043348): Support FeaturePolicy when it's ready for
-  // workers.
-  return NavigatorFontsImpl<WorkerNavigator>::From(navigator).GetFontManager();
-}
-
 }  // namespace blink

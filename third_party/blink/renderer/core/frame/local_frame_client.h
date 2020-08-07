@@ -131,9 +131,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                WebHistoryCommitType,
                                                bool content_initiated) {}
   virtual void DispatchDidReceiveTitle(const String&) = 0;
-  virtual void DispatchDidCommitLoad(HistoryItem*,
-                                     WebHistoryCommitType,
-                                     GlobalObjectReusePolicy) = 0;
+  virtual void DispatchDidCommitLoad(
+      HistoryItem*,
+      WebHistoryCommitType,
+      bool should_reset_browser_interface_broker) = 0;
   virtual void DispatchDidFailLoad(const ResourceError&,
                                    WebHistoryCommitType) = 0;
   virtual void DispatchDidFinishDocumentLoad() = 0;

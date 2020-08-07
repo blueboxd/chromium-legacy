@@ -102,6 +102,8 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return vector_icons::kCookieIcon;
     case ContentSettingsType::WINDOW_PLACEMENT:
       return vector_icons::kWindowPlacementIcon;
+    case ContentSettingsType::FONT_ACCESS:
+      return vector_icons::kFontDownloadIcon;
     default:
       NOTREACHED();
       return vector_icons::kExtensionIcon;
@@ -244,6 +246,9 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
               url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
     case ContentSettingsType::WINDOW_PLACEMENT:
       message_id = IDS_WINDOW_PLACEMENT_PERMISSION_FRAGMENT;
+      break;
+    case ContentSettingsType::FONT_ACCESS:
+      message_id = IDS_FONT_ACCESS_PERMISSION_FRAGMENT;
       break;
     default:
       NOTREACHED();

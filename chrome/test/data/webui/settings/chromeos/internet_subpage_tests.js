@@ -98,6 +98,32 @@ suite('InternetSubpage', function() {
       });
     });
 
+    test('Fire show cellular setup event on add cellular clicked', () => {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular);
+      setNetworksForTest(mojom.NetworkType.kCellular, [
+        OncMojo.getDefaultNetworkState(
+            mojom.NetworkType.kCellular, 'cellular1'),
+      ]);
+      internetSubpage.deviceState = {
+        type: mojom.NetworkType.kCellular,
+        deviceState: mojom.DeviceStateType.kEnabled
+      };
+      internetSubpage.globalPolicy = {
+        allowOnlyPolicyNetworksToConnect: false,
+      };
+
+      return flushAsync().then(async () => {
+        const addCellularButton = internetSubpage.$$('#addCellularButton');
+        assertTrue(!!addCellularButton);
+
+        const showCellularSetupPromise =
+            test_util.eventToPromise('show-cellular-setup', internetSubpage);
+        addCellularButton.click();
+        await Promise.all([showCellularSetupPromise, test_util.flushTasks()]);
+      });
+    });
+
     test('Tether plus Cellular', function() {
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether);

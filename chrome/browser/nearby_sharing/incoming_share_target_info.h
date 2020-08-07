@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_INCOMING_SHARE_TARGET_INFO_H_
 #define CHROME_BROWSER_NEARBY_SHARING_INCOMING_SHARE_TARGET_INFO_H_
 
+#include <memory>
 #include <string>
 
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
+#include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
 
 class NearbyConnection;
 
@@ -50,11 +52,18 @@ class IncomingShareTargetInfo {
 
   const base::Optional<std::string>& token() const { return token_; }
 
+  IncomingFramesReader* frames_reader() { return frames_reader_.get(); }
+
+  void set_frames_reader(std::unique_ptr<IncomingFramesReader> frames_reader) {
+    frames_reader_ = std::move(frames_reader);
+  }
+
  private:
   base::Optional<std::string> endpoint_id_;
   base::Optional<NearbyShareDecryptedPublicCertificate> certificate_;
   NearbyConnection* connection_ = nullptr;
   base::Optional<std::string> token_;
+  std::unique_ptr<IncomingFramesReader> frames_reader_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_INCOMING_SHARE_TARGET_INFO_H_

@@ -91,6 +91,9 @@ const char kPinAutosubmitLength[] = "pin_autosubmit_length";
 // Key for the PIN auto submit backfill needed indicator.
 const char kPinAutosubmitBackfillNeeded[] = "pin_autosubmit_backfill_needed";
 
+// Sync token for SAML password multi-device sync
+const char kPasswordSyncToken[] = "password_sync_token";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -111,7 +114,8 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kIsEnterpriseManaged,
                                kLastInputMethod,
                                kPinAutosubmitLength,
-                               kPinAutosubmitBackfillNeeded};
+                               kPinAutosubmitBackfillNeeded,
+                               kPasswordSyncToken};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -710,6 +714,19 @@ void PinAutosubmitSetBackfillNotNeeded(const AccountId& account_id) {
 
 void PinAutosubmitSetBackfillNeededForTests(const AccountId& account_id) {
   SetBooleanPref(account_id, kPinAutosubmitBackfillNeeded, true);
+}
+
+void SetPasswordSyncToken(const AccountId& account_id,
+                          const std::string& token) {
+  SetStringPref(account_id, kPasswordSyncToken, token);
+}
+
+std::string GetPasswordSyncToken(const AccountId& account_id) {
+  std::string token;
+  if (GetStringPref(account_id, kPasswordSyncToken, &token))
+    return token;
+  // Return empty string if sync token was not set for the account yet.
+  return std::string();
 }
 
 void RemovePrefs(const AccountId& account_id) {

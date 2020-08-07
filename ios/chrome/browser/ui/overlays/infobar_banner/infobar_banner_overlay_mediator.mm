@@ -31,6 +31,10 @@
   return self;
 }
 
+- (void)finishDismissal {
+  // No-op as default.
+}
+
 #pragma mark - Accessors
 
 - (void)setConsumer:(id<InfobarBannerConsumer>)consumer {

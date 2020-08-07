@@ -24,7 +24,6 @@
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
-#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
 #include "chrome/browser/optimization_guide/prediction/remote_decision_tree_predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,6 +39,7 @@
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/optimization_guide_test_util.h"
+#include "components/optimization_guide/optimization_guide_util.h"
 #include "components/optimization_guide/prediction_model.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/store_update_data.h"
@@ -106,7 +106,8 @@ class ScopedPredictionManagerModelStatusRecorder {
 
     base::UmaHistogramEnumeration(
         "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-            GetStringNameForOptimizationTarget(optimization_target_),
+            optimization_guide::GetStringNameForOptimizationTarget(
+                optimization_target_),
         status_);
   }
 
@@ -134,7 +135,8 @@ class ScopedPredictionModelConstructionAndValidationRecorder {
                               is_valid_);
     base::UmaHistogramBoolean(
         "OptimizationGuide.IsPredictionModelValid." +
-            GetStringNameForOptimizationTarget(optimization_target_),
+            optimization_guide::GetStringNameForOptimizationTarget(
+                optimization_target_),
         is_valid_);
 
     // Only record the timing if the model is valid and was able to be
@@ -147,7 +149,8 @@ class ScopedPredictionModelConstructionAndValidationRecorder {
           validation_latency);
       base::UmaHistogramTimes(
           "OptimizationGuide.PredictionModelValidationLatency." +
-              GetStringNameForOptimizationTarget(optimization_target_),
+              optimization_guide::GetStringNameForOptimizationTarget(
+                  optimization_target_),
           validation_latency);
     }
   }
@@ -492,7 +495,8 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   if (target_decision != OptimizationTargetDecision::kUnknown) {
     UmaHistogramTimes(
         "OptimizationGuide.PredictionModelEvaluationLatency." +
-            GetStringNameForOptimizationTarget(optimization_target),
+            optimization_guide::GetStringNameForOptimizationTarget(
+                optimization_target),
         base::TimeTicks::Now() - model_evaluation_start_time);
   }
 
@@ -615,7 +619,8 @@ void PredictionManager::OnModelEvaluated(
       machine_learning::mojom::DecisionTreePredictionResult::kUnknown) {
     UmaHistogramTimes(
         "OptimizationGuide.PredictionModelEvaluationLatency." +
-            GetStringNameForOptimizationTarget(params->optimization_target),
+            optimization_guide::GetStringNameForOptimizationTarget(
+                params->optimization_target),
         base::TimeTicks::Now() - params->model_evaluation_start_time);
   }
 
@@ -823,10 +828,11 @@ void PredictionManager::UpdatePredictionModels(
     // Storing the model regardless of whether the model is valid or not. Model
     // will be removed from store if it fails to load.
     prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
-    base::UmaHistogramSparse("OptimizationGuide.PredictionModelUpdateVersion." +
-                                 GetStringNameForOptimizationTarget(
-                                     model.model_info().optimization_target()),
-                             model.model_info().version());
+    base::UmaHistogramSparse(
+        "OptimizationGuide.PredictionModelUpdateVersion." +
+            optimization_guide::GetStringNameForOptimizationTarget(
+                model.model_info().optimization_target()),
+        model.model_info().version());
     OnLoadPredictionModel(std::make_unique<proto::PredictionModel>(model));
   }
   model_and_features_store_->UpdatePredictionModels(
@@ -962,10 +968,11 @@ void PredictionManager::OnProcessOrSendPredictionModel(
     bool success) {
   SEQUENCE_CHECKER(sequence_checker_);
   if (success) {
-    base::UmaHistogramSparse("OptimizationGuide.PredictionModelLoadedVersion." +
-                                 GetStringNameForOptimizationTarget(
-                                     model->model_info().optimization_target()),
-                             model->model_info().version());
+    base::UmaHistogramSparse(
+        "OptimizationGuide.PredictionModelLoadedVersion." +
+            optimization_guide::GetStringNameForOptimizationTarget(
+                model->model_info().optimization_target()),
+        model->model_info().version());
     return;
   }
 

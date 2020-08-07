@@ -251,7 +251,8 @@ void StartAddUser() {
 
 bool DialogStateGuestAllowed(OobeDialogState state) {
   return state == OobeDialogState::GAIA_SIGNIN ||
-         state == OobeDialogState::ERROR || state == OobeDialogState::HIDDEN;
+         state == OobeDialogState::ERROR || state == OobeDialogState::HIDDEN ||
+         state == OobeDialogState::USER_CREATION;
 }
 
 bool ShutdownButtonHidden(OobeDialogState state) {
@@ -861,7 +862,8 @@ bool LoginShelfView::ShouldShowGuestButton() const {
   if (session_state != SessionState::LOGIN_PRIMARY)
     return false;
 
-  if (dialog_state_ == OobeDialogState::GAIA_SIGNIN)
+  if (dialog_state_ == OobeDialogState::USER_CREATION ||
+      dialog_state_ == OobeDialogState::GAIA_SIGNIN)
     return !login_screen_has_users_ && allow_guest_in_oobe_;
 
   return true;

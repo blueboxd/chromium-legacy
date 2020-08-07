@@ -30,7 +30,6 @@ per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
 per-file network_sandbox_hook_linux.*.cc=file://sandbox/OWNERS
-per-file network_sandbox_win.*=file://sandbox/win/OWNERS
 
 per-file network_quality*=file://net/nqe/OWNERS
 

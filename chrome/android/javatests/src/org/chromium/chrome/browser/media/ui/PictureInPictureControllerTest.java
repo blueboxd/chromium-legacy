@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.media.ui;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.MediumTest;
 
@@ -50,8 +49,6 @@ public class PictureInPictureControllerTest {
     private static final String TEST_PATH = "/chrome/test/data/media/bigbuck-player.html";
     private static final String VIDEO_ID = "video";
 
-    @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -212,8 +209,9 @@ public class PictureInPictureControllerTest {
     }
 
     private void triggerAutoPiP() throws Throwable{
-        mUiThreadTestRule.runOnUiThread(
-                () -> InstrumentationRegistry.getInstrumentation().callActivityOnUserLeaving(
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> InstrumentationRegistry.getInstrumentation().callActivityOnUserLeaving(
                                 mActivity));
     }
 

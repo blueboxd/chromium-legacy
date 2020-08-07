@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.UserManager;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.SmallTest;
 
@@ -22,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -51,9 +49,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, CustomShadowUserManager.class})
 public class AccountManagerFacadeRobolectricTest {
-    @Rule
-    public final UiThreadTestRule mRule = new UiThreadTestRule();
-
     private CustomShadowUserManager mShadowUserManager;
     private FakeAccountManagerDelegate mDelegate;
     private AccountManagerFacade mFacade;

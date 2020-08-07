@@ -7,7 +7,8 @@
     <label>Convex hull display:</label>
     <div
         v-for="hullDisplay in HullDisplay"
-        :key="hullDisplay">
+        :key="hullDisplay"
+        @change="displayOptionChanged">
       <input
           :id="hullDisplay"
           v-model="internalSelectedHullDisplay"
@@ -22,6 +23,7 @@
 </template>
 
 <script>
+import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 import {HullDisplay} from '../class_view_consts.js';
 
 // @vue/component
@@ -38,6 +40,11 @@ const ClassGraphHullSettings = {
       set: function(newValue) {
         this.$emit('update:selectedHullDisplay', newValue);
       },
+    },
+  },
+  methods: {
+    displayOptionChanged: function() {
+      this.$emit(CUSTOM_EVENTS.DISPLAY_OPTION_CHANGED);
     },
   },
 };

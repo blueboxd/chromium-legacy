@@ -32,7 +32,6 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEA
 
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
-import android.support.test.annotation.UiThreadTest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -45,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.tab_ui.R;

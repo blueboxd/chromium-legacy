@@ -12,6 +12,7 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
@@ -36,6 +37,9 @@ class FakeCrosHealthdService final
   void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) override;
   void GetEventService(mojom::CrosHealthdEventServiceRequest service) override;
+  void SendNetworkHealthService(
+      mojo::PendingRemote<chromeos::network_health::mojom::NetworkHealthService>
+          remote) override;
 
   // CrosHealthdDiagnosticsService overrides:
   void GetAvailableRoutines(GetAvailableRoutinesCallback callback) override;
@@ -128,6 +132,11 @@ class FakeCrosHealthdService final
   // Calls the lid event OnLidClosed for all registered lid observers.
   void EmitLidClosedEventForTesting();
 
+  // Requests the network health state using the network_health_remote_.
+  void RequestNetworkHealthForTesting(
+      chromeos::network_health::mojom::NetworkHealthService::
+          GetHealthSnapshotCallback callback);
+
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
@@ -148,6 +157,10 @@ class FakeCrosHealthdService final
   mojo::ReceiverSet<mojom::CrosHealthdDiagnosticsService>
       diagnostics_receiver_set_;
   mojo::ReceiverSet<mojom::CrosHealthdEventService> event_receiver_set_;
+
+  // NetworkHealthService remote.
+  mojo::Remote<chromeos::network_health::mojom::NetworkHealthService>
+      network_health_remote_;
 
   // Collection of registered Bluetooth observers.
   mojo::RemoteSet<mojom::CrosHealthdBluetoothObserver> bluetooth_observers_;

@@ -118,6 +118,12 @@ Polymer({
       value: false,
     },
 
+    /** @private {boolean} */
+    showCellularSetupDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Map<string, Element>} */
     focusConfig_: {
       type: Object,
@@ -137,6 +143,7 @@ Polymer({
   listeners: {
     'device-enabled-toggled': 'onDeviceEnabledToggled_',
     'network-connect': 'onNetworkConnect_',
+    'show-cellular-setup': 'onShowCellularSetupDialog_',
     'show-config': 'onShowConfig_',
     'show-detail': 'onShowDetail_',
     'show-known-networks': 'onShowKnownNetworks_',
@@ -263,6 +270,16 @@ Polymer({
           false /* configAndConnect */, type, event.detail.guid,
           event.detail.name);
     }
+  },
+
+  /** @private */
+  onShowCellularSetupDialog_() {
+    this.showCellularSetupDialog_ = true;
+  },
+
+  /** @private */
+  onCloseCellularSetupDialog_() {
+    this.showCellularSetupDialog_ = false;
   },
 
   /**

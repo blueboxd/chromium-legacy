@@ -138,9 +138,9 @@ void AccessibilityMainHandler::OnEvent(Events event, const std::string& id) {
       g_browser_process->component_updater()->GetComponentDetails(id, &item);
       const int progress =
           GetDownloadProgress(item.downloaded_bytes, item.total_bytes);
-      if (progress == -1) {
-        SendLiveCaptionDownloadError();
-      } else {
+      // When GetDownloadProgress returns -1, do nothing. It returns -1 when the
+      // downloaded or total bytes is unknown.
+      if (progress != -1) {
         FireWebUIListener(
             "enable-live-caption-subtitle-changed",
             base::Value(l10n_util::GetStringFUTF16Int(
@@ -153,22 +153,19 @@ void AccessibilityMainHandler::OnEvent(Events event, const std::string& id) {
       FireWebUIListener(
           "enable-live-caption-subtitle-changed",
           base::Value(l10n_util::GetStringUTF16(
-              IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE)));
+              IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_COMPLETE)));
       break;
     case Events::COMPONENT_UPDATE_ERROR:
-      SendLiveCaptionDownloadError();
+      prefs_->SetBoolean(prefs::kLiveCaptionEnabled, false);
+      FireWebUIListener(
+          "enable-live-caption-subtitle-changed",
+          base::Value(l10n_util::GetStringUTF16(
+              IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR)));
       break;
     case Events::COMPONENT_CHECKING_FOR_UPDATES:
       // Do nothing.
       break;
   }
-}
-
-void AccessibilityMainHandler::SendLiveCaptionDownloadError() {
-  prefs_->SetBoolean(prefs::kLiveCaptionEnabled, false);
-  FireWebUIListener("enable-live-caption-subtitle-changed",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR)));
 }
 #endif  // defined(OS_CHROMEOS)
 

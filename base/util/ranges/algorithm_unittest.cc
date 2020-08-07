@@ -1099,4 +1099,37 @@ TEST(RangesTest, PartitionPoint) {
   EXPECT_EQ(ints + 2, ranges::partition_point(ints, lt_2, &Int::value));
 }
 
+TEST(RangesTest, Merge) {
+  int input1[] = {0, 2, 4, 6, 8};
+  int input2[] = {1, 3, 5, 7, 9};
+  int output[10];
+  EXPECT_EQ(output + 10,
+            ranges::merge(input1, input1 + 5, input2, input2 + 5, output));
+  EXPECT_THAT(output, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  Int ints1[] = {0, 2, 4, 6, 8};
+  Int ints2[] = {1, 3, 5, 7, 9};
+  Int outs[10];
+  EXPECT_EQ(outs + 10,
+            ranges::merge(ints1, ints2, outs, {}, &Int::value, &Int::value));
+  EXPECT_THAT(outs, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  EXPECT_EQ(outs + 10, ranges::merge(input1, ints1, outs, {}, {}, &Int::value));
+  EXPECT_THAT(outs, ElementsAre(0, 0, 2, 2, 4, 4, 6, 6, 8, 8));
+
+  EXPECT_EQ(outs + 10, ranges::merge(ints2, input2, outs, {}, &Int::value, {}));
+  EXPECT_THAT(outs, ElementsAre(1, 1, 3, 3, 5, 5, 7, 7, 9, 9));
+}
+
+TEST(RangesTest, InplaceMerge) {
+  int input[] = {0, 2, 4, 6, 8, 1, 3, 5, 7, 9};
+  EXPECT_EQ(input + 10, ranges::inplace_merge(input, input + 5, input + 10));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  Int ints[] = {8, 6, 4, 2, 0, 9, 7, 5, 3, 1};
+  EXPECT_EQ(ints + 10, ranges::inplace_merge(ints, ints + 5, ranges::greater(),
+                                             &Int::value));
+  EXPECT_THAT(ints, ElementsAre(9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+}
+
 }  // namespace util

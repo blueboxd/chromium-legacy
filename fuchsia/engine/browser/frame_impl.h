@@ -268,7 +268,7 @@ class FrameImpl : public fuchsia::web::Frame,
 
   std::unique_ptr<MediaPlayerImpl> media_player_;
   std::unique_ptr<CastStreamingSessionClient> cast_streaming_session_client_;
-  on_load_script_injector::OnLoadScriptInjectorHost script_injector_;
+  on_load_script_injector::OnLoadScriptInjectorHost<uint64_t> script_injector_;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
   media_control::MediaBlocker media_blocker_;

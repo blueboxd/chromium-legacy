@@ -438,9 +438,23 @@ class InputRouterImplTestBase : public testing::Test {
   void PressAndSetTouchActionAuto() {
     PressTouchPoint(1, 1);
     SendTouchEvent();
-    input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+    input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
     GetAndResetDispatchedMessages();
     disposition_handler_->GetAndResetAckCount();
+  }
+
+  void TouchActionSetFromMainNotOverridden() {
+    input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
+    ASSERT_TRUE(input_router_->AllowedTouchAction().has_value());
+    EXPECT_EQ(input_router_->AllowedTouchAction().value(),
+              cc::TouchAction::kAuto);
+    input_router_->TouchEventHandled(
+        TouchEventWithLatencyInfo(touch_event_),
+        blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+        blink::mojom::InputEventResultState::kNoConsumerExists, nullptr,
+        blink::mojom::TouchActionOptional::New(cc::TouchAction::kPanY));
+    EXPECT_EQ(input_router_->AllowedTouchAction().value(),
+              cc::TouchAction::kAuto);
   }
 
   void ActiveTouchSequenceCountTest(
@@ -702,6 +716,12 @@ TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
       blink::mojom::InputEventResultState::kNoConsumerExists);
 }
 
+// Test that after touch action is set from the main thread, the touch action
+// won't be overridden by the call to TouchEventHandled.
+TEST_F(InputRouterImplTest, TouchActionSetFromMainNotOverridden) {
+  TouchActionSetFromMainNotOverridden();
+}
+
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
   base::Optional<cc::TouchAction> expected_touch_action;
   OnTouchEventAckWithAckState(
@@ -764,7 +784,7 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
   DispatchedMessages touch_start_event = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, touch_start_event.size());
@@ -908,7 +928,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   // Precede the TouchCancel with an appropriate TouchStart;
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
@@ -1302,7 +1322,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kNone);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kNone);
   DispatchedMessages touch_press_event3 = GetAndResetDispatchedMessages();
   ASSERT_EQ(1u, touch_press_event3.size());
   ASSERT_TRUE(touch_press_event3[0]->ToEvent());
@@ -1323,7 +1343,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   PressTouchPoint(1, 1);
   SendTouchEvent();
   ResetTouchAction();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 }
 
@@ -1616,7 +1636,7 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());

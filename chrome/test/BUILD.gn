@@ -758,6 +758,7 @@ if (!is_android) {
     data_deps = [
       "//chrome:browser_tests_pak",
       "//chrome/browser/resources/media/mei_preload:component",
+      "//chrome/test/data/webui:modulize",
 
       # TODO(thakis): Why do these need copying in browser_tests?
       # content_browsertests uses the non-copied files instead.
@@ -805,6 +806,7 @@ if (!is_android) {
       "//third_party/simplejson/",
       "//third_party/tlslite/",
       "//ui/webui/resources/",
+      "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
     ]
     data += js2gtest_js_libraries
     data += metric_integration_jsdeps
@@ -1060,6 +1062,7 @@ if (!is_android) {
       "../browser/page_load_metrics/observers/foreground_duration_ukm_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/isolated_prerender_page_load_metrics_observer_browsertest.cc",
+      "../browser/page_load_metrics/observers/javascript_frameworks_ukm_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/resource_metrics_observer_browsertest.cc",
@@ -2360,6 +2363,8 @@ if (!is_android) {
         "../browser/chromeos/login/test/enrollment_helper_mixin.h",
         "../browser/chromeos/login/test/enrollment_ui_mixin.cc",
         "../browser/chromeos/login/test/enrollment_ui_mixin.h",
+        "../browser/chromeos/login/test/fake_eula_mixin.cc",
+        "../browser/chromeos/login/test/fake_eula_mixin.h",
         "../browser/chromeos/login/test/fake_gaia_mixin.cc",
         "../browser/chromeos/login/test/fake_gaia_mixin.h",
         "../browser/chromeos/login/test/guest_session_mixin.cc",
@@ -3392,6 +3397,7 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/storage/storage_unittest.cc",
     "../browser/policy/messaging_layer/storage/test_storage_module.cc",
     "../browser/policy/messaging_layer/storage/test_storage_module.h",
+    "../browser/policy/messaging_layer/upload/app_install_report_handler_unittest.cc",
     "../browser/policy/messaging_layer/upload/dm_server_upload_service_unittest.cc",
     "../browser/policy/messaging_layer/util/shared_queue_unittest.cc",
     "../browser/policy/messaging_layer/util/status_macros_unittest.cc",

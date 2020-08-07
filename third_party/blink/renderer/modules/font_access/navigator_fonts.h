@@ -12,7 +12,6 @@ namespace blink {
 class ExceptionState;
 class FontManager;
 class Navigator;
-class WorkerNavigator;
 class ScriptState;
 
 class NavigatorFonts final {
@@ -20,7 +19,6 @@ class NavigatorFonts final {
 
  public:
   static FontManager* fonts(ScriptState*, Navigator&, ExceptionState&);
-  static FontManager* fonts(ScriptState*, WorkerNavigator&, ExceptionState&);
 };
 
 }  // namespace blink

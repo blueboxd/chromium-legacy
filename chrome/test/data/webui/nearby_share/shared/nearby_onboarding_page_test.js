@@ -23,6 +23,9 @@ suite('nearby-onboarding-page', function() {
     element.settings = {
       enabled: false,
       deviceName: deviceName,
+      dataUsage: 1,
+      visibility: 1,
+      allowedContacts: [],
     };
     document.body.appendChild(element);
   });

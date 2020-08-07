@@ -263,7 +263,7 @@ void OverviewItem::PrepareForOverview() {
 }
 
 float OverviewItem::GetItemScale(const gfx::Size& size) {
-  gfx::SizeF inset_size(size.width(), size.height() - 2 * kWindowMargin);
+  gfx::SizeF inset_size(size.width(), size.height());
   return ScopedOverviewTransformWindow::GetItemScale(
       GetTargetBoundsInScreen().size(), inset_size,
       transform_window_.GetTopInset(), kHeaderHeightDp);
@@ -306,7 +306,6 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     item_widget_->GetNativeWindow()->layer()->GetAnimator()->StopAnimating();
 
     gfx::Rect minimized_bounds = ToStableSizeRoundedRect(target_bounds);
-    minimized_bounds.Inset(-kWindowMargin, -kWindowMargin);
     OverviewAnimationType minimized_animation_type =
         is_first_update ? OVERVIEW_ANIMATION_NONE : new_animation_type;
     SetWidgetBoundsAndMaybeAnimateTransform(
@@ -394,7 +393,6 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     }
   } else {
     gfx::RectF inset_bounds(target_bounds);
-    inset_bounds.Inset(kWindowMargin, kWindowMargin);
     SetItemBounds(inset_bounds, new_animation_type, is_first_update);
     UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
                                        : new_animation_type);
@@ -734,7 +732,7 @@ void OverviewItem::SetShadowBounds(
   if (!shadow_)
     return;
 
-  if (bounds_in_screen == base::nullopt) {
+  if (!bounds_in_screen) {
     shadow_->layer()->SetVisible(false);
     return;
   }
@@ -742,11 +740,9 @@ void OverviewItem::SetShadowBounds(
   shadow_->layer()->SetVisible(true);
   gfx::Rect bounds_in_item =
       gfx::Rect(item_widget_->GetNativeWindow()->GetTargetBounds().size());
-  bounds_in_item.Inset(kOverviewMargin, kOverviewMargin);
   bounds_in_item.Inset(0, kHeaderHeightDp, 0, 0);
   bounds_in_item.ClampToCenteredSize(
       gfx::ToRoundedSize(bounds_in_screen->size()));
-
   shadow_->SetContentBounds(bounds_in_item);
 }
 
@@ -779,11 +775,12 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
            ->GetAnimator()
            ->is_animating();
   if (should_show_shadow) {
-    const gfx::RectF shadow_bounds =
-        transform_window_.IsMinimized()
-            ? gfx::RectF(
-                  overview_item_view_->preview_view()->GetBoundsInScreen())
-            : transform_window_.GetTransformedBounds();
+    // The shadow should match the size of the transformed window or preview
+    // window if unclipped. If clipped, the shadow should match the size of the
+    // item minus the border and header.
+    const gfx::RectF shadow_bounds = unclipped_size_
+                                         ? GetWindowTargetBoundsWithInsets()
+                                         : GetUnclippedShadowBounds();
     SetShadowBounds(base::make_optional(shadow_bounds));
   } else {
     SetShadowBounds(base::nullopt);
@@ -1112,6 +1109,13 @@ gfx::RectF OverviewItem::GetWindowTargetBoundsWithInsets() const {
   return window_target_bounds;
 }
 
+gfx::RectF OverviewItem::GetUnclippedShadowBounds() const {
+  return transform_window_.IsMinimized()
+             ? gfx::RectF(
+                   overview_item_view_->preview_view()->GetBoundsInScreen())
+             : transform_window_.GetTransformedBounds();
+}
+
 void OverviewItem::OnWindowCloseAnimationCompleted() {
   transform_window_.Close();
 }
@@ -1211,6 +1215,11 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
 
   const int top_view_inset = transform_window_.GetTopInset();
   gfx::RectF transformed_bounds = target_bounds;
+
+  // |target_bounds| are the bounds of the |item_widget|, which include a
+  // border.
+  transformed_bounds.Inset(kWindowMargin, kWindowMargin);
+
   // Update |transformed_bounds| to match the unclipped size of the window, so
   // we transform the window to the correct size.
   if (unclipped_size_)
@@ -1301,7 +1310,6 @@ void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
   ::wm::TranslateRectFromScreen(root_window_, &item_bounds);
   const gfx::Point origin = gfx::ToRoundedPoint(item_bounds.origin());
   item_bounds.set_origin(gfx::PointF());
-  item_bounds.Inset(-kWindowMargin, -kWindowMargin);
   widget_window->SetBounds(ToStableSizeRoundedRect(item_bounds));
 
   gfx::Transform label_transform;

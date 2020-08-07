@@ -1164,6 +1164,78 @@ TEST(AutofillStructuredAddressAddressComponent,
   EXPECT_EQ(two.GetVerificationStatus(), VerificationStatus::kUserVerified);
 }
 
+// This test verifies the merging of the verification statuses that is
+// applicable for combining variants.
+TEST(AutofillStructuredAddressAddressComponent, MergeVerificationStatuses) {
+  TestCompoundNameAddressComponent one;
+  TestCompoundNameAddressComponent two;
+
+  one.SetValueForTypeIfPossible(NAME_FULL, ASCIIToUTF16("A B C"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_FIRST, ASCIIToUTF16("A"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_MIDDLE, ASCIIToUTF16("B"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_LAST, ASCIIToUTF16("C"),
+                                VerificationStatus::kObserved);
+
+  two.SetValueForTypeIfPossible(NAME_FULL, ASCIIToUTF16("A D C"),
+                                VerificationStatus::kUserVerified);
+  two.SetValueForTypeIfPossible(NAME_FIRST, ASCIIToUTF16("A"),
+                                VerificationStatus::kUserVerified);
+  two.SetValueForTypeIfPossible(NAME_MIDDLE, ASCIIToUTF16("D"),
+                                VerificationStatus::kUserVerified);
+  two.SetValueForTypeIfPossible(NAME_LAST, ASCIIToUTF16("C"),
+                                VerificationStatus::kUserVerified);
+
+  one.MergeVerificationStatuses(two);
+
+  EXPECT_EQ(one.GetValueForType(NAME_FULL), ASCIIToUTF16("A B C"));
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), ASCIIToUTF16("A"));
+  EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), ASCIIToUTF16("B"));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST), ASCIIToUTF16("C"));
+
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kUserVerified);
+}
+
+// This tests verifies the formatted and observed values can be reset
+// correctly.
+TEST(AutofillStructuredAddressAddressComponent, ClearParsedAndFormattedValues) {
+  TestCompoundNameAddressComponent one;
+  TestCompoundNameAddressComponent two;
+
+  one.SetValueForTypeIfPossible(NAME_FULL, ASCIIToUTF16("A B C"),
+                                VerificationStatus::kFormatted);
+  one.SetValueForTypeIfPossible(NAME_FIRST, ASCIIToUTF16("A"),
+                                VerificationStatus::kObserved);
+  one.SetValueForTypeIfPossible(NAME_MIDDLE, ASCIIToUTF16("B"),
+                                VerificationStatus::kParsed);
+  one.SetValueForTypeIfPossible(NAME_LAST, ASCIIToUTF16("C"),
+                                VerificationStatus::kUserVerified);
+  one.RecursivelyUnsetParsedAndFormattedValues();
+
+  EXPECT_EQ(one.GetValueForType(NAME_FULL), ASCIIToUTF16(""));
+  EXPECT_EQ(one.GetValueForType(NAME_FIRST), ASCIIToUTF16("A"));
+  EXPECT_EQ(one.GetValueForType(NAME_MIDDLE), ASCIIToUTF16(""));
+  EXPECT_EQ(one.GetValueForType(NAME_LAST), ASCIIToUTF16("C"));
+
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kNoStatus);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kNoStatus);
+  EXPECT_EQ(one.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kUserVerified);
+}
+
 // This test verifies that if two value-equal components are merged, the higher
 // verification statuses are picked.
 TEST(AutofillStructuredAddressAddressComponent,

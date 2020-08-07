@@ -167,8 +167,4 @@ specific_include_rules = {
     "+services/network/cookie_manager.h",
     "+third_party/leveldatabase",
   ],
-  "utility_sandbox_delegate_win\.cc": [
-    # TODO(crbug.com/1049894): Remove.
-    "+services/network/network_sandbox_win.h",
-  ],
 }

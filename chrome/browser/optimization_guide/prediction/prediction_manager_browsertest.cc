@@ -33,6 +33,7 @@
 #include "components/optimization_guide/store_update_data.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/previews/core/previews_switches.h"
+#include "components/variations/hashing.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -370,6 +371,11 @@ class PredictionManagerBrowserTestBase : public InProcessBrowserTest {
         web_contents);
   }
 
+  void SetExpectedFieldTrialNames(
+      const base::flat_set<uint32_t>& expected_field_trial_name_hashes) {
+    expected_field_trial_name_hashes_ = expected_field_trial_name_hashes;
+  }
+
   bool using_ml_service() const { return using_ml_service_; }
   GURL https_url_with_content() { return https_url_with_content_; }
   GURL https_url_without_content() { return https_url_without_content_; }
@@ -395,6 +401,21 @@ class PredictionManagerBrowserTestBase : public InProcessBrowserTest {
     // POST.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
     EXPECT_NE(request.headers.end(), request.headers.find("X-Client-Data"));
+    optimization_guide::proto::GetModelsRequest models_request;
+    EXPECT_TRUE(models_request.ParseFromString(request.content));
+    // Make sure we actually filter field trials appropriately.
+    EXPECT_EQ(expected_field_trial_name_hashes_.size(),
+              static_cast<size_t>(models_request.active_field_trials_size()));
+    base::flat_set<uint32_t> seen_field_trial_name_hashes;
+    for (const auto& field_trial : models_request.active_field_trials()) {
+      EXPECT_TRUE(
+          expected_field_trial_name_hashes_.find(field_trial.name_hash()) !=
+          expected_field_trial_name_hashes_.end());
+      seen_field_trial_name_hashes.insert(field_trial.name_hash());
+    }
+    EXPECT_EQ(seen_field_trial_name_hashes.size(),
+              expected_field_trial_name_hashes_.size());
+
     response->set_code(net::HTTP_OK);
     std::unique_ptr<optimization_guide::proto::GetModelsResponse>
         get_models_response = BuildGetModelsResponse(
@@ -411,9 +432,9 @@ class PredictionManagerBrowserTestBase : public InProcessBrowserTest {
       response->set_code(net::HTTP_NOT_FOUND);
     }
 
-    std::string serialized_request;
-    get_models_response->SerializeToString(&serialized_request);
-    response->set_content(serialized_request);
+    std::string serialized_response;
+    get_models_response->SerializeToString(&serialized_response);
+    response->set_content(serialized_response);
     return std::move(response);
   }
 
@@ -425,6 +446,7 @@ class PredictionManagerBrowserTestBase : public InProcessBrowserTest {
       PredictionModelsFetcherRemoteResponseType::
           kSuccessfulWithModelsAndFeatures;
   std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
+  base::flat_set<uint32_t> expected_field_trial_name_hashes_;
 };
 
 // Parametrized on whether the ML Service path is enabled.
@@ -852,14 +874,26 @@ class PredictionManagerUsingMLServiceMetricsOnlyBrowserTest
  private:
   void InitializeFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{optimization_guide::features::kOptimizationHints, {}},
-         {optimization_guide::features::kRemoteOptimizationGuideFetching, {}},
-         {optimization_guide::features::kOptimizationTargetPrediction,
-          {{"painful_page_load_metrics_only", "true"}}},
-         {optimization_guide::features::
-              kOptimizationTargetPredictionUsingMLService,
-          {}}},
+        {
+            {optimization_guide::features::kOptimizationHints, {}},
+            {optimization_guide::features::kRemoteOptimizationGuideFetching,
+             {}},
+            {optimization_guide::features::kOptimizationTargetPrediction,
+             {{"painful_page_load_metrics_only", "true"}}},
+            {optimization_guide::features::
+                 kOptimizationTargetPredictionUsingMLService,
+             {}},
+            {optimization_guide::features::kOptimizationHintsFieldTrials,
+             {{"allowed_field_trial_names",
+               "scoped_feature_list_trial_for_OptimizationHints,scoped_feature_"
+               "list_trial_for_OptimizationHintsFetching"}}},
+        },
         {});
+    SetExpectedFieldTrialNames(base::flat_set<uint32_t>(
+        {variations::HashName(
+             "scoped_feature_list_trial_for_OptimizationHints"),
+         variations::HashName(
+             "scoped_feature_list_trial_for_OptimizationHintsFetching")}));
   }
 };
 

@@ -147,6 +147,8 @@ void BulkLeakCheckService::RemoveObserver(Observer* obs) {
 }
 
 void BulkLeakCheckService::Shutdown() {
+  for (Observer& obs : observers_)
+    obs.OnBulkCheckServiceShutDown();
   observers_.Clear();
   metrics_reporter_.reset();
   bulk_leak_check_.reset();

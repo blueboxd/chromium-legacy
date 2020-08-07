@@ -371,11 +371,11 @@ public class InstrumentationActivity extends FragmentActivity {
             }
         });
 
-        // Will be a no-op if this tab is already the active tab.
-        mBrowser.setActiveTab(mTab);
-
         // Creates and adds a new UrlBarView to |mTopContentsContainer|.
         createUrlBarView();
+
+        // Will be a no-op if this tab is already the active tab.
+        mBrowser.setActiveTab(mTab);
     }
 
     private Fragment getOrCreateBrowserFragment() {

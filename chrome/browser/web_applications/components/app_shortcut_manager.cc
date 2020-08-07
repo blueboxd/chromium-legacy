@@ -39,17 +39,8 @@ void AppShortcutManager::SetSubsystems(AppIconManager* icon_manager,
   registrar_ = registrar;
 }
 
-void AppShortcutManager::Start() {
-  DCHECK(registrar_);
-  app_registrar_observer_.Add(registrar_);
-}
-
-void AppShortcutManager::Shutdown() {
-  app_registrar_observer_.RemoveAll();
-}
-
-void AppShortcutManager::OnWebAppManifestUpdated(const AppId& app_id,
-                                                 base::StringPiece old_name) {
+void AppShortcutManager::UpdateShortcuts(const AppId& app_id,
+                                         base::StringPiece old_name) {
   if (!CanCreateShortcuts())
     return;
 

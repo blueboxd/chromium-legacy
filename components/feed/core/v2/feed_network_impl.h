@@ -73,6 +73,7 @@ class FeedNetworkImpl : public FeedNetwork {
             const std::string& request_type,
             std::string request_body,
             bool force_signed_out_request,
+            bool host_overridden,
             base::OnceCallback<void(FeedNetworkImpl::RawResponse)> callback);
 
   void SendComplete(NetworkFetch* fetch,

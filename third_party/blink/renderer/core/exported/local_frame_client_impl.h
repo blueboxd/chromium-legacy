@@ -52,7 +52,6 @@ class BrowserInterfaceBrokerProxy;
 class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
-enum class GlobalObjectReusePolicy;
 
 class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
  public:
@@ -101,9 +100,10 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
   void DispatchDidReceiveTitle(const String&) override;
-  void DispatchDidCommitLoad(HistoryItem*,
-                             WebHistoryCommitType,
-                             GlobalObjectReusePolicy) override;
+  void DispatchDidCommitLoad(
+      HistoryItem*,
+      WebHistoryCommitType,
+      bool should_reset_browser_interface_broker) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;
   void DispatchDidFinishDocumentLoad() override;
   void DispatchDidFinishLoad() override;

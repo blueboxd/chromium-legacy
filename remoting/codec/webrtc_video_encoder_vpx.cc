@@ -416,6 +416,13 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   DCHECK(use_vp9_ || !lossless_color_);
   DCHECK(use_vp9_ || !lossless_encode_);
 
+  if (use_vp9_) {
+    VLOG(0) << "Configuring VP9 encoder with lossless-color="
+            << (lossless_color_ ? "true" : "false")
+            << ", lossless-encode=" << (lossless_encode_ ? "true" : "false")
+            << ".";
+  }
+
   // Tear down |image_| if it no longer matches the size and color settings.
   // PrepareImage() will then create a new buffer of the required dimensions if
   // |image_| is not allocated.

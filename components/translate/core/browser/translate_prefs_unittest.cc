@@ -66,33 +66,32 @@ static void ExpectEqualLanguageLists(
 
 class TranslatePrefsTest : public testing::Test {
  protected:
-  TranslatePrefsTest()
-      : prefs_(new sync_preferences::TestingPrefServiceSyncable()) {
-    language::LanguagePrefs::RegisterProfilePrefs(prefs_->registry());
-    TranslatePrefs::RegisterProfilePrefs(prefs_->registry());
+  TranslatePrefsTest() {
+    language::LanguagePrefs::RegisterProfilePrefs(prefs_.registry());
+    TranslatePrefs::RegisterProfilePrefs(prefs_.registry());
     translate_prefs_ = std::make_unique<translate::TranslatePrefs>(
-        prefs_.get(), kAcceptLanguagesPref, kPreferredLanguagesPref);
+        &prefs_, kAcceptLanguagesPref, kPreferredLanguagesPref);
     now_ = base::Time::Now();
     two_days_ago_ = now_ - base::TimeDelta::FromDays(2);
   }
 
   void SetUp() override {
-    prefs_->SetString(kAcceptLanguagesPref, std::string());
+    prefs_.SetString(kAcceptLanguagesPref, std::string());
 #if defined(OS_CHROMEOS)
-    prefs_->SetString(kPreferredLanguagesPref, std::string());
+    prefs_.SetString(kPreferredLanguagesPref, std::string());
 #endif
-    prefs_->registry()->RegisterBooleanPref(
+    prefs_.registry()->RegisterBooleanPref(
         prefs::kOfferTranslateEnabled, true,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   }
 
   void SetLastDeniedTime(const std::string& language, base::Time time) {
-    DenialTimeUpdate update(prefs_.get(), language, 2);
+    DenialTimeUpdate update(&prefs_, language, 2);
     update.AddDenialTime(time);
   }
 
   base::Time GetLastDeniedTime(const std::string& language) {
-    DenialTimeUpdate update(prefs_.get(), language, 2);
+    DenialTimeUpdate update(&prefs_, language, 2);
     return update.GetOldestDenialTime();
   }
 
@@ -101,15 +100,15 @@ class TranslatePrefsTest : public testing::Test {
   void ExpectLanguagePrefs(const std::string& expected,
                            const std::string& expected_chromeos) const {
     if (expected.empty()) {
-      EXPECT_TRUE(prefs_->GetString(kAcceptLanguagesPref).empty());
+      EXPECT_TRUE(prefs_.GetString(kAcceptLanguagesPref).empty());
     } else {
-      EXPECT_EQ(expected, prefs_->GetString(kAcceptLanguagesPref));
+      EXPECT_EQ(expected, prefs_.GetString(kAcceptLanguagesPref));
     }
 #if defined(OS_CHROMEOS)
     if (expected_chromeos.empty()) {
-      EXPECT_TRUE(prefs_->GetString(kPreferredLanguagesPref).empty());
+      EXPECT_TRUE(prefs_.GetString(kPreferredLanguagesPref).empty());
     } else {
-      EXPECT_EQ(expected_chromeos, prefs_->GetString(kPreferredLanguagesPref));
+      EXPECT_EQ(expected_chromeos, prefs_.GetString(kPreferredLanguagesPref));
     }
 #endif
   }
@@ -123,7 +122,7 @@ class TranslatePrefsTest : public testing::Test {
   void ExpectBlockedLanguageListContent(
       const std::vector<std::string>& list) const {
     const base::ListValue* const blacklist =
-        prefs_->GetList(kTranslateBlockedLanguagesPref);
+        prefs_.GetList(kTranslateBlockedLanguagesPref);
     ExpectEqualLanguageLists(*blacklist, list);
   }
 
@@ -164,7 +163,7 @@ class TranslatePrefsTest : public testing::Test {
     return result;
   }
 
-  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
   // Shared time constants.
@@ -216,14 +215,14 @@ TEST_F(TranslatePrefsTest, UpdateLastDeniedTime) {
 
 // Test that the default value for non-existing entries is base::Time::Null().
 TEST_F(TranslatePrefsTest, DenialTimeUpdate_DefaultTimeIsNull) {
-  DenialTimeUpdate update(prefs_.get(), kTestLanguage, 2);
+  DenialTimeUpdate update(&prefs_, kTestLanguage, 2);
   EXPECT_TRUE(update.GetOldestDenialTime().is_null());
 }
 
 // Test that non-existing entries automatically create a ListValue.
 TEST_F(TranslatePrefsTest, DenialTimeUpdate_ForceListExistence) {
   DictionaryPrefUpdate dict_update(
-      prefs_.get(), TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
+      &prefs_, TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
   base::DictionaryValue* denial_dict = dict_update.Get();
   EXPECT_TRUE(denial_dict);
 
@@ -232,7 +231,7 @@ TEST_F(TranslatePrefsTest, DenialTimeUpdate_ForceListExistence) {
   EXPECT_FALSE(has_list);
 
   // Calling GetDenialTimes will force creation of a properly populated list.
-  DenialTimeUpdate update(prefs_.get(), kTestLanguage, 2);
+  DenialTimeUpdate update(&prefs_, kTestLanguage, 2);
   base::ListValue* time_list = update.GetDenialTimes();
   EXPECT_TRUE(time_list);
   EXPECT_EQ(0U, time_list->GetSize());
@@ -243,7 +242,7 @@ TEST_F(TranslatePrefsTest, DenialTimeUpdate_ForceListExistence) {
 TEST_F(TranslatePrefsTest, DenialTimeUpdate_Migrate) {
   translate_prefs_->ResetDenialState();
   DictionaryPrefUpdate dict_update(
-      prefs_.get(), TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
+      &prefs_, TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
   base::DictionaryValue* denial_dict = dict_update.Get();
   EXPECT_TRUE(denial_dict);
   denial_dict->SetDouble(kTestLanguage, two_days_ago_.ToJsTime());
@@ -253,7 +252,7 @@ TEST_F(TranslatePrefsTest, DenialTimeUpdate_Migrate) {
   EXPECT_FALSE(has_list);
 
   // Calling GetDenialTimes will force creation of a properly populated list.
-  DenialTimeUpdate update(prefs_.get(), kTestLanguage, 2);
+  DenialTimeUpdate update(&prefs_, kTestLanguage, 2);
   base::ListValue* time_list = update.GetDenialTimes();
   EXPECT_TRUE(time_list);
 
@@ -265,7 +264,7 @@ TEST_F(TranslatePrefsTest, DenialTimeUpdate_Migrate) {
 }
 
 TEST_F(TranslatePrefsTest, DenialTimeUpdate_SlidingWindow) {
-  DenialTimeUpdate update(prefs_.get(), kTestLanguage, 4);
+  DenialTimeUpdate update(&prefs_, kTestLanguage, 4);
 
   update.AddDenialTime(now_ - base::TimeDelta::FromMinutes(5));
   EXPECT_EQ(update.GetOldestDenialTime(),
@@ -958,12 +957,12 @@ TEST_F(TranslatePrefsTest, DefaultBlockedLanguages) {
 }
 
 TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
-  prefs_->SetString(kAcceptLanguagesPref, "en");
+  prefs_.SetString(kAcceptLanguagesPref, "en");
   TranslateDownloadManager::GetInstance()->set_application_locale("en");
 
   translate_prefs_->ResetToDefaults();
 
-  TranslateAcceptLanguages translate_accept_languages(prefs_.get(),
+  TranslateAcceptLanguages translate_accept_languages(&prefs_,
                                                       kAcceptLanguagesPref);
 
   // Unblocked language.
@@ -991,8 +990,8 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
 }
 
 TEST_F(TranslatePrefsTest, ForceTriggerOnEnglishPagesCount) {
-  prefs_->SetInteger(kForceTriggerTranslateCountPref,
-                     std::numeric_limits<int>::max() - 1);
+  prefs_.SetInteger(kForceTriggerTranslateCountPref,
+                    std::numeric_limits<int>::max() - 1);
   EXPECT_EQ(std::numeric_limits<int>::max() - 1,
             translate_prefs_->GetForceTriggerOnEnglishPagesCount());
 

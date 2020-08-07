@@ -376,7 +376,6 @@ bool AddAutofillProfilePieces(const AutofillProfile& profile,
 
   if (!AddAutofillProfilePhones(profile, db))
     return false;
-
   return true;
 }
 

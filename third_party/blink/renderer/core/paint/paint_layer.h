@@ -821,6 +821,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags = true);
 
+  // Notifies the Compositor if one exists that it should rebuild the graphics
+  // layer tree.
+  void SetNeedsGraphicsLayerRebuild();
+
   // Mark this PaintLayer as needing raster invalidation checking after the
   // next compositing update step.
   void SetNeedsCheckRasterInvalidation();

@@ -88,5 +88,14 @@ void FakeCrosHealthdClient::EmitLidClosedEventForTesting() {
   fake_service_.EmitLidClosedEventForTesting();
 }
 
+void FakeCrosHealthdClient::RequestNetworkHealthForTesting(
+    chromeos::network_health::mojom::NetworkHealthService::
+        GetHealthSnapshotCallback callback) {
+  // Flush the receiver, so any requests to send the NetworkHealthService remote
+  // are processed before the request is emitted.
+  receiver_.FlushForTesting();
+  fake_service_.RequestNetworkHealthForTesting(std::move(callback));
+}
+
 }  // namespace cros_healthd
 }  // namespace chromeos

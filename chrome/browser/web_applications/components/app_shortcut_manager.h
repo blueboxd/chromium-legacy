@@ -11,10 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
@@ -35,30 +32,27 @@ struct ShortcutInfo;
 // web_app_extension_shortcut.(h|cc) and
 // platform_apps/shortcut_manager.(h|cc) to web_app::AppShortcutManager and
 // its subclasses.
-class AppShortcutManager : public AppRegistrarObserver {
+class AppShortcutManager {
  public:
   explicit AppShortcutManager(Profile* profile);
-  ~AppShortcutManager() override;
+  virtual ~AppShortcutManager();
 
   void SetSubsystems(AppIconManager* icon_manager, AppRegistrar* registrar);
 
   void Start();
   void Shutdown();
 
-  // AppRegistrarObserver:
-  void OnWebAppManifestUpdated(const web_app::AppId& app_id,
-                               base::StringPiece old_name) override;
-
   // Tells the AppShortcutManager that no shortcuts should actually be written
   // to the disk.
   void SuppressShortcutsForTesting();
 
-  // virtual for testing.
-  virtual bool CanCreateShortcuts() const;
-  // virtual for testing.
-  virtual void CreateShortcuts(const AppId& app_id,
-                               bool add_to_desktop,
-                               CreateShortcutsCallback callback);
+  bool CanCreateShortcuts() const;
+  void CreateShortcuts(const AppId& app_id,
+                       bool add_to_desktop,
+                       CreateShortcutsCallback callback);
+  void UpdateShortcuts(const web_app::AppId& app_id,
+                       base::StringPiece old_name);
+
   virtual void RegisterRunOnOsLogin(const AppId& app_id,
                                     RegisterRunOnOsLoginCallback callback);
 
@@ -130,9 +124,6 @@ class AppShortcutManager : public AppRegistrarObserver {
       const AppId& app_id,
       RegisterShortcutsMenuCallback callback,
       ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps);
-
-  ScopedObserver<AppRegistrar, AppRegistrarObserver> app_registrar_observer_{
-      this};
 
   bool suppress_shortcuts_for_testing_ = false;
 

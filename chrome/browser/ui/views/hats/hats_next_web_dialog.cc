@@ -1,0 +1,193 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
+
+#include "chrome/browser/ui/browser_dialogs.h"
+
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/hats/hats_bubble_view.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
+#include "components/constrained_window/constrained_window_views.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
+#include "net/base/url_util.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
+#include "ui/views/layout/fill_layout.h"
+
+// A thin wrapper that forwards the reference part of the URL associated with
+// navigation events to the enclosing web dialog.
+class HatsNextWebDialog::WebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  WebContentsObserver(content::WebContents* contents, HatsNextWebDialog* dialog)
+      : content::WebContentsObserver(contents), dialog_(dialog) {}
+
+  // content::WebContentsObserver overrides.
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsSameDocument() &&
+        navigation_handle->IsRendererInitiated()) {
+      dialog_->OnSurveyStateUpdateReceived(navigation_handle->GetURL().ref());
+    }
+  }
+
+ private:
+  HatsNextWebDialog* dialog_;
+};
+
+HatsNextWebDialog::HatsNextWebDialog(Browser* browser,
+                                     const std::string& trigger_id)
+    : HatsNextWebDialog(
+          browser,
+          trigger_id,
+          GURL("https://storage.googleapis.com/chrome_hats/index.html"),
+          base::TimeDelta::FromSeconds(10)) {}
+
+ui::ModalType HatsNextWebDialog::GetDialogModalType() const {
+  return ui::MODAL_TYPE_NONE;
+}
+
+base::string16 HatsNextWebDialog::GetDialogTitle() const {
+  return base::string16();
+}
+
+GURL HatsNextWebDialog::GetDialogContentURL() const {
+  GURL param_url =
+      net::AppendQueryParameter(hats_survey_url_, "trigger_id", trigger_id_);
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopDemo)) {
+    param_url = net::AppendQueryParameter(param_url, "enable_testing", "true");
+  }
+  return param_url;
+}
+
+void HatsNextWebDialog::GetWebUIMessageHandlers(
+    std::vector<content::WebUIMessageHandler*>* handlers) const {}
+
+void HatsNextWebDialog::GetDialogSize(gfx::Size* size) const {}
+
+bool HatsNextWebDialog::CanResizeDialog() const {
+  return false;
+}
+
+std::string HatsNextWebDialog::GetDialogArgs() const {
+  return std::string();
+}
+
+void HatsNextWebDialog::OnDialogClosed(const std::string& json_retval) {}
+
+void HatsNextWebDialog::OnCloseContents(content::WebContents* source,
+                                        bool* out_close_dialog) {
+  *out_close_dialog = true;
+}
+
+bool HatsNextWebDialog::ShouldShowCloseButton() const {
+  return false;
+}
+
+bool HatsNextWebDialog::ShouldShowDialogTitle() const {
+  return false;
+}
+
+bool HatsNextWebDialog::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
+  return true;
+}
+
+gfx::Size HatsNextWebDialog::CalculatePreferredSize() const {
+  // Default width/height of the dialog in screen size, these values are derived
+  // from the size of the HaTS HTML component displayed by this dialog.
+  constexpr int kDefaultHatsDialogWidth = 363;
+  constexpr int kDefaultHatsDialogHeight = 440;
+  return gfx::Size(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
+}
+
+void HatsNextWebDialog::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile, otr_profile_);
+  otr_profile_ = nullptr;
+}
+
+HatsNextWebDialog::HatsNextWebDialog(Browser* browser,
+                                     const std::string& trigger_id,
+                                     const GURL& hats_survey_url,
+                                     const base::TimeDelta& timeout)
+    : BubbleDialogDelegateView(BrowserView::GetBrowserViewForBrowser(browser)
+                                   ->toolbar_button_provider()
+                                   ->GetAppMenuButton(),
+                               views::BubbleBorder::TOP_RIGHT),
+      otr_profile_(browser->profile()->GetOffTheRecordProfile(
+          Profile::OTRProfileID::CreateUnique("HaTSNext:WebDialog"))),
+      trigger_id_(trigger_id),
+      hats_survey_url_(hats_survey_url),
+      timeout_(timeout),
+      close_bubble_helper_(this, browser) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  otr_profile_->AddObserver(this);
+  set_close_on_deactivate(false);
+
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  auto* web_view = AddChildView(std::make_unique<views::WebDialogView>(
+      otr_profile_, this, std::make_unique<ChromeWebContentsHandler>(),
+      /* use_dialog_frame */ true));
+  widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
+
+  web_contents_observer_ =
+      std::make_unique<WebContentsObserver>(web_view->web_contents(), this);
+
+  loading_timer_.Start(FROM_HERE, timeout_,
+                       base::BindOnce(&HatsNextWebDialog::CloseWidget,
+                                      weak_factory_.GetWeakPtr()));
+}
+
+HatsNextWebDialog::~HatsNextWebDialog() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (otr_profile_) {
+    otr_profile_->RemoveObserver(this);
+    ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
+  }
+}
+
+void HatsNextWebDialog::OnSurveyStateUpdateReceived(std::string state) {
+  loading_timer_.AbandonAndStop();
+
+  if (state == "loaded") {
+    ShowWidget();
+  } else if (state == "close") {
+    CloseWidget();
+  } else {
+    LOG(ERROR) << "Unknown state provided in URL fragment by HaTS survey:"
+               << state;
+    CloseWidget();
+  }
+}
+
+void HatsNextWebDialog::SetHatsSurveyURLforTesting(GURL url) {
+  hats_survey_url_ = url;
+}
+
+void HatsNextWebDialog::ShowWidget() {
+  widget_->Show();
+}
+
+void HatsNextWebDialog::CloseWidget() {
+  widget_->Close();
+}
+
+bool HatsNextWebDialog::IsWaitingForSurveyForTesting() {
+  return loading_timer_.IsRunning();
+}

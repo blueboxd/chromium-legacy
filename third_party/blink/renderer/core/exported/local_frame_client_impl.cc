@@ -540,7 +540,7 @@ void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
 void LocalFrameClientImpl::DispatchDidCommitLoad(
     HistoryItem* item,
     WebHistoryCommitType commit_type,
-    GlobalObjectReusePolicy global_object_reuse_policy) {
+    bool should_reset_browser_interface_broker) {
   if (!web_frame_->Parent()) {
     web_frame_->ViewImpl()->DidCommitLoad(commit_type == kWebStandardCommit,
                                           false);
@@ -549,7 +549,7 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   if (web_frame_->Client()) {
     web_frame_->Client()->DidCommitNavigation(
         WebHistoryItem(item), commit_type,
-        global_object_reuse_policy == GlobalObjectReusePolicy::kCreateNew);
+        should_reset_browser_interface_broker);
     if (web_frame_->GetFrame()->IsLocalRoot()) {
       // This update should be sent as soon as loading the new document begins
       // so that the browser and compositor could reset their states. However,

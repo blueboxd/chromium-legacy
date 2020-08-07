@@ -11,14 +11,11 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -27,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.components.query_tiles.QueryTile;
@@ -46,9 +44,6 @@ public final class TileSuggestionProcessorUnitTest {
     private PropertyModel mModel;
     private TileSuggestionProcessor mProcessor;
 
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
     @Mock
     Context mContext;
 
@@ -61,15 +56,11 @@ public final class TileSuggestionProcessorUnitTest {
     @Mock
     OmniboxSuggestion mSuggestion;
 
-    public TileSuggestionProcessorUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
+
         when(mContext.getResources()).thenReturn(mResources);
 
         mModel = new PropertyModel();

@@ -4,19 +4,18 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.util.SparseArray;
 
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -34,12 +33,8 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.UNIT_TESTS)
 public class CachedZeroSuggestionsManagerUnitTest {
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
-
-    public CachedZeroSuggestionsManagerUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
+    @Before
+    public void setUp() {
         NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 

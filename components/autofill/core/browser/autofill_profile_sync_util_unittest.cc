@@ -43,9 +43,9 @@ AutofillProfile ConstructCompleteProfile() {
   profile.set_use_date(base::Time::FromTimeT(1423182152));
 
   profile.SetRawInfoWithVerificationStatus(
-      NAME_HONORIFIC_PREFIX, ASCIIToUTF16("Jr."), VerificationStatus::kParsed);
+      NAME_HONORIFIC_PREFIX, ASCIIToUTF16(""), VerificationStatus::kNoStatus);
   profile.SetRawInfoWithVerificationStatus(NAME_FULL,
-                                           ASCIIToUTF16("John K. Doe, Jr."),
+                                           ASCIIToUTF16("John K. Doe"),
                                            VerificationStatus::kUserVerified);
   profile.SetRawInfoWithVerificationStatus(NAME_FIRST, ASCIIToUTF16("John"),
                                            VerificationStatus::kObserved);
@@ -94,18 +94,18 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_use_count(7);
   specifics.set_use_date(1423182152);
 
-  specifics.add_name_honorific("Jr.");
+  specifics.add_name_honorific("");
   specifics.add_name_first("John");
   specifics.add_name_middle("K.");
   specifics.add_name_last("Doe");
   specifics.add_name_last_first("D");
   specifics.add_name_last_second("e");
   specifics.add_name_last_conjunction("o");
-  specifics.add_name_full("John K. Doe, Jr.");
+  specifics.add_name_full("John K. Doe");
 
   specifics.add_name_honorific_status(
       AutofillProfileSpecifics::VerificationStatus::
-          AutofillProfileSpecifics_VerificationStatus_PARSED);
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
   specifics.add_name_first_status(
       AutofillProfileSpecifics::VerificationStatus::
           AutofillProfileSpecifics_VerificationStatus_OBSERVED);

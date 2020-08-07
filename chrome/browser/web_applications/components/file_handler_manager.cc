@@ -37,8 +37,7 @@ const double kMaxOriginTrialExpiryTime = 9007199254740;
 bool FileHandlerManager::disable_automatic_file_handler_cleanup_for_testing_ =
     false;
 
-FileHandlerManager::FileHandlerManager(Profile* profile)
-    : profile_(profile), registrar_observer_(this) {}
+FileHandlerManager::FileHandlerManager(Profile* profile) : profile_(profile) {}
 
 FileHandlerManager::~FileHandlerManager() = default;
 
@@ -48,8 +47,6 @@ void FileHandlerManager::SetSubsystems(AppRegistrar* registrar) {
 
 void FileHandlerManager::Start() {
   DCHECK(registrar_);
-
-  registrar_observer_.Add(registrar_);
 
   if (!FileHandlerManager::
           disable_automatic_file_handler_cleanup_for_testing_) {
@@ -230,10 +227,6 @@ int FileHandlerManager::CleanupAfterOriginTrials() {
   }
 
   return cleaned_up_count;
-}
-
-void FileHandlerManager::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
 }
 
 const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(

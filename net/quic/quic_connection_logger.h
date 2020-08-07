@@ -16,6 +16,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
+#include "net/quic/quic_event_logger.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
@@ -28,14 +29,13 @@ class HistogramBase;
 
 namespace net {
 
-// This class is a debug visitor of a quic::QuicConnection which logs
-// events to |net_log|.
+// Handles both NetLog support and UMA histograms for QUIC.
 class NET_EXPORT_PRIVATE QuicConnectionLogger
     : public quic::QuicConnectionDebugVisitor,
       public quic::QuicPacketCreator::DebugDelegate {
  public:
   QuicConnectionLogger(
-      quic::QuicSpdySession* session,
+      quic::QuicSession* session,
       const char* const connection_description,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       const NetLogWithSource& net_log);
@@ -136,8 +136,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // the overall packet loss rate, and record it into a histogram.
   void RecordAggregatePacketLossRate() const;
 
-  NetLogWithSource net_log_;
-  quic::QuicSpdySession* session_;  // Unowned.
+  quic::QuicSession* session_;  // Unowned.
   // The last packet number received.
   quic::QuicPacketNumber last_received_packet_number_;
   // The size of the most recently received packet.
@@ -198,6 +197,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Receives notifications regarding the performance of the underlying socket
   // for the QUIC connection. May be null.
   const std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
+
+  QuicEventLogger event_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };

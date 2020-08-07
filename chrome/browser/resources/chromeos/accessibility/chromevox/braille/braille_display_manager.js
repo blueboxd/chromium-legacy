@@ -388,11 +388,8 @@ BrailleDisplayManager = class {
         this.panRight();
         break;
       case BrailleKeyCommand.ROUTING:
-        event.displayPosition = this.brailleToTextPosition_(
-            event.displayPosition +
-            this.panStrategy_.viewPort.firstRow *
-                this.panStrategy_.displaySize.columns);
-      // fall through
+        this.route(event.displayPosition);
+        break;
       default:
         this.commandListener_(event, this.content_);
         break;
@@ -425,6 +422,24 @@ BrailleDisplayManager = class {
       this.commandListener_(
           {command: BrailleKeyCommand.PAN_RIGHT}, this.content_);
     }
+  }
+
+  /**
+   * Moves the cursor to the given braille position.
+   * @param {number|undefined} braillePosition The 0-based position relative to
+   *     the start of the currently displayed text. The position is given in
+   *     braille cells, not text cells.
+   */
+  route(braillePosition) {
+    if (braillePosition == undefined) {
+      return;
+    }
+    const displayPosition = this.brailleToTextPosition_(
+        braillePosition +
+        this.panStrategy_.viewPort.firstRow *
+            this.panStrategy_.displaySize.columns);
+    this.commandListener_(
+        {command: BrailleKeyCommand.ROUTING, displayPosition}, this.content_);
   }
 
   /**

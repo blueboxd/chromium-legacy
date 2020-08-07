@@ -10,12 +10,30 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/policy/features.h"
 #include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "services/audio/audio_sandbox_win.h"
-#include "services/network/network_sandbox_win.h"
 
 namespace content {
+namespace {
+// Right now, this policy is essentially unsandboxed, but with default process
+// mitigations applied.
+// TODO(https://crbug.com/841001) This will be tighted up in future releases.
+bool NetworkPreSpawnTarget(sandbox::TargetPolicy* policy,
+                           const base::CommandLine& cmd_line) {
+  sandbox::ResultCode result = policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                                                     sandbox::USER_UNPROTECTED);
+  if (result != sandbox::ResultCode::SBOX_ALL_OK)
+    return false;
+  result = sandbox::policy::SandboxWin::SetJobLevel(
+      cmd_line, sandbox::JOB_UNPROTECTED, 0, policy);
+  if (result != sandbox::ResultCode::SBOX_ALL_OK)
+    return false;
+  return true;
+}
+}  // namespace
+
 bool UtilitySandboxedProcessLauncherDelegate::GetAppContainerId(
     std::string* appcontainer_id) {
   if (sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing &&
@@ -52,7 +70,7 @@ bool UtilitySandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
 bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
     sandbox::TargetPolicy* policy) {
   if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork)
-    return network::NetworkPreSpawnTarget(policy, cmd_line_);
+    return NetworkPreSpawnTarget(policy, cmd_line_);
 
   if (sandbox_type_ == sandbox::policy::SandboxType::kAudio)
     return audio::AudioPreSpawnTarget(policy);

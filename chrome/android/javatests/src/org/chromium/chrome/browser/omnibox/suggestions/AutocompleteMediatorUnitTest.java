@@ -19,8 +19,6 @@ import static org.mockito.Mockito.when;
 
 import android.os.Handler;
 import android.os.Message;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -40,6 +38,7 @@ import org.mockito.stubbing.Answer;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -66,9 +65,6 @@ public class AutocompleteMediatorUnitTest {
     private static final int MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW = 5;
     private static final int SUGGESTION_MIN_HEIGHT = 20;
     private static final int HEADER_MIN_HEIGHT = 15;
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -99,15 +95,10 @@ public class AutocompleteMediatorUnitTest {
     private List<OmniboxSuggestion> mSuggestionsList;
     private ModelList mSuggestionModels;
 
-    public AutocompleteMediatorUnitTest() {
-        // SetUp runs on the UI thread because we're using UiThreadTestRule, so do native library
-        // loading here, which happens on the Instrumentation thread.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
 
         mSuggestionModels = new ModelList();
         mListModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);

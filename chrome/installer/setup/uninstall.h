@@ -79,6 +79,13 @@ void CleanUpInstallationDirectoryAfterUninstall(
     const base::FilePath& setup_exe,
     InstallStatus* uninstall_status);
 
+// Moves |setup_exe| to a temporary file, outside of the install folder.
+// Also attempts to change the current directory to the TMP directory.
+// On Windows, each process has a handle to its CWD. If |setup.exe|'s CWD
+// happens to be within the install directory, deletion will fail as a result
+// of the open handle.
+bool MoveSetupOutOfInstallFolder(const base::FilePath& setup_exe);
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_UNINSTALL_H_

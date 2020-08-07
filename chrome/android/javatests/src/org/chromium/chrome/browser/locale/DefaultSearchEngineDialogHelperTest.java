@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.locale;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -16,10 +14,10 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.RadioButtonLayout;
@@ -104,9 +102,6 @@ public class DefaultSearchEngineDialogHelperTest {
             runCount++;
         }
     };
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     private final DismissRunnable mDismissRunnable = new DismissRunnable();
     private final List<TemplateUrl> mTemplateUrls = new ArrayList<>();

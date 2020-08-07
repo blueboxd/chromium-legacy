@@ -12,9 +12,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/tab_search_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/test/browser_test.h"
 
@@ -32,7 +30,7 @@ class TabSearchBubbleBrowserTest : public DialogBrowserTest {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
     DCHECK(browser_view);
-    views::View* anchor_view = browser_view->toolbar()->tab_search_button();
+    views::View* anchor_view = browser_view->toolbar();
     TabSearchBubbleView::CreateTabSearchBubble(browser()->profile(),
                                                anchor_view);
   }

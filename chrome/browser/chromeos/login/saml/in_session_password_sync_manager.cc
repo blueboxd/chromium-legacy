@@ -5,9 +5,8 @@
 #include "chrome/browser/chromeos/login/saml/in_session_password_sync_manager.h"
 
 #include "base/time/default_clock.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
@@ -17,6 +16,7 @@
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager_base.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace chromeos {
 
@@ -50,9 +50,17 @@ bool InSessionPasswordSyncManager::IsLockReauthEnabled() {
   return prefs->GetBoolean(prefs::kSamlLockScreenReauthenticationEnabled);
 }
 
-void InSessionPasswordSyncManager::MaybeForceReauthOnLockScreen() {
-  if (enforce_reauth_on_lock_) {
+void InSessionPasswordSyncManager::MaybeForceReauthOnLockScreen(
+    ReauthenticationReason reauth_reason) {
+  if (lock_screen_reauth_reason_ == ReauthenticationReason::kInvalidToken) {
     // Re-authentication already enforced, no other action is needed.
+    return;
+  }
+  if (lock_screen_reauth_reason_ == ReauthenticationReason::kPolicy &&
+      reauth_reason == ReauthenticationReason::kInvalidToken) {
+    // Re-authentication already enforced but need to reset it to trigger token
+    // update. No other action is needed.
+    lock_screen_reauth_reason_ = reauth_reason;
     return;
   }
   if (!primary_user_->force_online_signin()) {
@@ -65,7 +73,7 @@ void InSessionPasswordSyncManager::MaybeForceReauthOnLockScreen() {
         primary_user_->GetAccountId(),
         proximity_auth::mojom::AuthType::ONLINE_SIGN_IN, base::string16());
   }
-  enforce_reauth_on_lock_ = true;
+  lock_screen_reauth_reason_ = reauth_reason;
 }
 
 void InSessionPasswordSyncManager::OnAuthSucceeded(
@@ -80,7 +88,11 @@ void InSessionPasswordSyncManager::OnAuthSucceeded(
   }
 
   UpdateOnlineAuth();
-  enforce_reauth_on_lock_ = false;
+  if (lock_screen_reauth_reason_ == ReauthenticationReason::kInvalidToken) {
+    FetchTokenAsync();
+  } else {
+    lock_screen_reauth_reason_ = ReauthenticationReason::kNone;
+  }
   if (screenlock_bridge_->IsLocked()) {
     screenlock_bridge_->lock_handler()->Unlock(user_context.GetAccountId());
   }
@@ -98,7 +110,7 @@ void InSessionPasswordSyncManager::OnSessionStateChanged() {
     // We are unlocking the session, no further action required.
     return;
   }
-  if (!enforce_reauth_on_lock_) {
+  if (lock_screen_reauth_reason_ == ReauthenticationReason::kNone) {
     // locking the session but no re-auth flag set - show standard UI.
     return;
   }
@@ -118,6 +130,47 @@ void InSessionPasswordSyncManager::UpdateOnlineAuth() {
       primary_user_->GetAccountId(), false);
   user_manager::known_user::SetLastOnlineSignin(primary_user_->GetAccountId(),
                                                 now);
+}
+
+void InSessionPasswordSyncManager::CreateTokenAsync() {
+  password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
+      primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
+  password_sync_token_fetcher_->StartTokenCreate();
+}
+
+void InSessionPasswordSyncManager::OnTokenCreated(const std::string& token) {
+  user_manager::known_user::SetPasswordSyncToken(primary_user_->GetAccountId(),
+                                                 token);
+  lock_screen_reauth_reason_ = ReauthenticationReason::kNone;
+}
+
+void InSessionPasswordSyncManager::FetchTokenAsync() {
+  password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
+      primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
+  password_sync_token_fetcher_->StartTokenGet();
+}
+
+void InSessionPasswordSyncManager::OnTokenFetched(const std::string& token) {
+  if (!token.empty()) {
+    // Set token fetched from the endpoint.
+    user_manager::known_user::SetPasswordSyncToken(
+        primary_user_->GetAccountId(), token);
+    lock_screen_reauth_reason_ = ReauthenticationReason::kNone;
+  } else {
+    // This is the first time a sync token is created for the user: we need to
+    // initialize its value by calling the API and store it locally.
+    CreateTokenAsync();
+  }
+}
+
+void InSessionPasswordSyncManager::OnTokenVerified(bool is_valid) {
+  // InSessionPasswordSyncManager does not verify the sync token.
+}
+
+void InSessionPasswordSyncManager::OnApiCallFailed(
+    PasswordSyncTokenFetcher::ErrorType error_type) {
+  // Ignore API errors since they are logged by TokenFetcher and will be
+  // re-tried after the next verify interval.
 }
 
 }  // namespace chromeos

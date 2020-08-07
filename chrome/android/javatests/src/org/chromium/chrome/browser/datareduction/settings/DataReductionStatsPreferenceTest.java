@@ -9,8 +9,6 @@ import static org.chromium.third_party.android.datausagechart.ChartDataUsageView
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.text.format.DateUtils;
 
 import androidx.test.filters.SmallTest;
@@ -19,11 +17,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -37,8 +35,7 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DataReductionStatsPreferenceTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     /**
      * Key used to save the date that the site breakdown should be shown. If the user has historical

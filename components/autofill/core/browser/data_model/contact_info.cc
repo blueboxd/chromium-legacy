@@ -59,6 +59,21 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
+bool NameInfo::MergeStructuredName(const NameInfo& newer) {
+  return name_.MergeWithComponent(newer.GetStructuredName());
+}
+
+void NameInfo::MergeStructuredNameValidationStatuses(const NameInfo& newer) {
+  name_.MergeVerificationStatuses(newer.GetStructuredName());
+}
+
+bool NameInfo::IsStructuredNameMergeable(const NameInfo& newer) const {
+  if (!StructuredAddressesEnabled())
+    NOTREACHED();
+
+  return name_.IsMergeableWithComponent(newer.GetStructuredName());
+}
+
 bool NameInfo::FinalizeAfterImport() {
   if (StructuredAddressesEnabled())
     return name_.CompleteFullTree();
@@ -84,27 +99,29 @@ base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
   // TODO(crbug.com/1103421): Clean legacy implementation once structured names
   // are fully launched.
   if (StructuredAddressesEnabled()) {
+    // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+    if (type == NAME_HONORIFIC_PREFIX)
+      return base::string16();
     return name_.GetValueForType(type);
-  } else {
-    switch (type) {
-      case NAME_FIRST:
-        return given_;
+  }
+  switch (type) {
+    case NAME_FIRST:
+      return given_;
 
-      case NAME_MIDDLE:
-        return middle_;
+    case NAME_MIDDLE:
+      return middle_;
 
-      case NAME_LAST:
-        return family_;
+    case NAME_LAST:
+      return family_;
 
-      case NAME_MIDDLE_INITIAL:
-        return MiddleInitial();
+    case NAME_MIDDLE_INITIAL:
+      return MiddleInitial();
 
-      case NAME_FULL:
-        return full_;
+    case NAME_FULL:
+      return full_;
 
-      default:
-        return base::string16();
-    }
+    default:
+      return base::string16();
   }
 }
 
@@ -115,36 +132,39 @@ void NameInfo::SetRawInfoWithVerificationStatus(ServerFieldType type,
   // TODO(crbug.com/1103421): Clean legacy implementation once structured names
   // are fully launched.
   if (StructuredAddressesEnabled()) {
+    // TODO(crbug.com/1113617): Honorifics are temporally disabled.
+    if (type == NAME_HONORIFIC_PREFIX)
+      return;
     bool success = name_.SetValueForTypeIfPossible(type, value, status);
     DCHECK(success);
-  } else {
-    switch (type) {
-      case NAME_FIRST:
-        given_ = value;
-        break;
+    return;
+  }
+  switch (type) {
+    case NAME_FIRST:
+      given_ = value;
+      break;
 
-      case NAME_MIDDLE:
-      case NAME_MIDDLE_INITIAL:
-        middle_ = value;
-        break;
+    case NAME_MIDDLE:
+    case NAME_MIDDLE_INITIAL:
+      middle_ = value;
+      break;
 
-      case NAME_LAST:
-        family_ = value;
-        break;
+    case NAME_LAST:
+      family_ = value;
+      break;
 
-      case NAME_FULL:
-        full_ = value;
-        break;
+    case NAME_FULL:
+      full_ = value;
+      break;
 
-      case NAME_LAST_FIRST:
-      case NAME_LAST_SECOND:
-      case NAME_LAST_CONJUNCTION:
-      case NAME_HONORIFIC_PREFIX:
-        break;
+    case NAME_LAST_FIRST:
+    case NAME_LAST_SECOND:
+    case NAME_LAST_CONJUNCTION:
+    case NAME_HONORIFIC_PREFIX:
+      break;
 
-      default:
-        NOTREACHED();
-    }
+    default:
+      NOTREACHED();
   }
 }
 
@@ -183,7 +203,6 @@ bool NameInfo::SetInfoWithVerificationStatusImpl(const AutofillType& type,
     return FormGroup::SetInfoWithVerificationStatusImpl(type, value, app_locale,
                                                         status);
   }
-
   // Always clear out the full name if we're making a change.
   if (value != GetInfo(type, app_locale))
     full_.clear();
@@ -192,23 +211,22 @@ bool NameInfo::SetInfoWithVerificationStatusImpl(const AutofillType& type,
     SetFullName(value);
     return true;
   }
-
   return FormGroup::SetInfoWithVerificationStatusImpl(type, value, app_locale,
                                                       status);
 }
 
 VerificationStatus NameInfo::GetVerificationStatusImpl(
     ServerFieldType type) const {
-  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
-  // are fully launched.
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured
+  // names are fully launched.
   if (StructuredAddressesEnabled())
     return name_.GetVerificationStatusForType(type);
   return VerificationStatus::kNoStatus;
 }
 
 base::string16 NameInfo::FullName() const {
-  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
-  // are fully launched.
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured
+  // names are fully launched.
   if (StructuredAddressesEnabled())
     NOTREACHED();
   if (!full_.empty())
@@ -218,16 +236,16 @@ base::string16 NameInfo::FullName() const {
 }
 
 base::string16 NameInfo::MiddleInitial() const {
-  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
-  // are fully launched.
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured
+  // names are fully launched.
   if (StructuredAddressesEnabled())
     NOTREACHED();
   return middle_.empty() ? base::string16() : middle_.substr(0U, 1U);
 }
 
 void NameInfo::SetFullName(const base::string16& full) {
-  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
-  // are fully launched.
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured
+  // names are fully launched.
   if (StructuredAddressesEnabled())
     NOTREACHED();
   full_ = full;

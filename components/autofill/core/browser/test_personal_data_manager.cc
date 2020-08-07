@@ -53,6 +53,7 @@ void TestPersonalDataManager::AddUpiId(const std::string& profile) {
 void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
   std::unique_ptr<AutofillProfile> profile_ptr =
       std::make_unique<AutofillProfile>(profile);
+  profile_ptr->FinalizeAfterImport();
   web_profiles_.push_back(std::move(profile_ptr));
   NotifyPersonalDataObserver();
 }

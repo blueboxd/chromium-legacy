@@ -14,6 +14,7 @@ const PagePathName = {
 // Keys for identifying URL params.
 const URL_PARAM_KEYS = {
   // Common keys:
+  DISPLAY_SETTINGS_PRESET: 'dsp',
   FILTER_NAMES: 'fn',
   FILTER_CHECKED: 'fc',
   INBOUND_DEPTH: 'ibd',

@@ -151,7 +151,7 @@ class FeedNetworkImpl::NetworkFetch {
                network::SharedURLLoaderFactory* loader_factory,
                const std::string& api_key,
                const base::TickClock* tick_clock,
-               PrefService* pref_service)
+               bool allow_bless_auth)
       : url_(url),
         request_type_(request_type),
         request_body_(std::move(request_body)),
@@ -161,22 +161,7 @@ class FeedNetworkImpl::NetworkFetch {
         api_key_(api_key),
         tick_clock_(tick_clock),
         entire_send_start_ticks_(tick_clock_->NowTicks()),
-        pref_service_(pref_service) {
-    // Apply the host override (from snippets-internals).
-    std::string host_override =
-        pref_service_->GetString(feed::prefs::kHostOverrideHost);
-    if (!host_override.empty()) {
-      GURL override_host_url(host_override);
-      if (override_host_url.is_valid()) {
-        GURL::Replacements replacements;
-        replacements.SetSchemeStr(override_host_url.scheme_piece());
-        replacements.SetHostStr(override_host_url.host_piece());
-        replacements.SetPortStr(override_host_url.port_piece());
-        url_ = url_.ReplaceComponents(replacements);
-        host_overridden_ = true;
-      }
-    }
-  }
+        allow_bless_auth_(allow_bless_auth) {}
   ~NetworkFetch() = default;
   NetworkFetch(const NetworkFetch&) = delete;
   NetworkFetch& operator=(const NetworkFetch&) = delete;
@@ -270,7 +255,7 @@ class FeedNetworkImpl::NetworkFetch {
     // Include credentials ONLY if the user has overridden the feed host through
     // the internals page. This allows for some authentication workflows we need
     // for testing.
-    if (host_overridden_) {
+    if (allow_bless_auth_) {
       resource_request->credentials_mode =
           network::mojom::CredentialsMode::kInclude;
       resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
@@ -323,7 +308,7 @@ class FeedNetworkImpl::NetworkFetch {
 
     // If overriding the feed host, try to grab the Bless nonce. This is
     // strictly informational, and only displayed in snippets-internals.
-    if (host_overridden_ && simple_loader_->ResponseInfo()) {
+    if (allow_bless_auth_ && simple_loader_->ResponseInfo()) {
       size_t iter = 0;
       std::string value;
       while (simple_loader_->ResponseInfo()->headers->EnumerateHeader(
@@ -398,8 +383,7 @@ class FeedNetworkImpl::NetworkFetch {
   // Should be set right before the article fetch, and after the token fetch if
   // there is one.
   base::TimeTicks loader_only_start_ticks_;
-  PrefService* pref_service_;
-  bool host_overridden_ = false;
+  bool allow_bless_auth_ = false;
 };
 
 FeedNetworkImpl::FeedNetworkImpl(
@@ -428,15 +412,30 @@ void FeedNetworkImpl::SendQueryRequest(
   base::Base64UrlEncode(
       binary_proto, base::Base64UrlEncodePolicy::INCLUDE_PADDING, &base64proto);
 
-  // TODO(harringtond): Decide how we want to override these URLs for testing.
-  // Should probably add a command-line flag.
   GURL url = GetFeedQueryURL(request.feed_request().feed_query().reason());
   if (url.is_empty())
     return std::move(callback).Run({});
 
+  // Override url if requested from internals page.
+  bool host_overridden = false;
+  std::string host_override =
+      pref_service_->GetString(feed::prefs::kHostOverrideHost);
+  if (!host_override.empty()) {
+    GURL override_host_url(host_override);
+    if (override_host_url.is_valid()) {
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr(override_host_url.scheme_piece());
+      replacements.SetHostStr(override_host_url.host_piece());
+      replacements.SetPortStr(override_host_url.port_piece());
+      url = url.ReplaceComponents(replacements);
+      host_overridden = true;
+    }
+  }
+
   AddMothershipPayloadQueryParams(base64proto, delegate_->GetLanguageTag(),
                                   url);
   Send(url, "GET", /*request_body=*/{}, force_signed_out_request,
+       /*allow_bless_auth=*/host_overridden,
        base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
                                                NetworkRequestType::kFeedQuery>,
                       std::move(callback)));
@@ -448,8 +447,20 @@ void FeedNetworkImpl::SendActionRequest(
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
 
-  Send(GURL(kUploadActionUrl), "POST", std::move(binary_proto),
+  GURL url(kUploadActionUrl);
+
+  // Override url if requested.
+  std::string host_override =
+      pref_service_->GetString(feed::prefs::kActionsEndpointOverride);
+  if (!host_override.empty()) {
+    GURL override_url(host_override);
+    if (override_url.is_valid())
+      url = override_url;
+  }
+
+  Send(url, "POST", std::move(binary_proto),
        /*force_signed_out_request=*/false,
+       /*allow_bless_auth=*/false,
        base::BindOnce(
            &ParseAndForwardResponse<ActionRequestResult,
                                     NetworkRequestType::kUploadActions>,
@@ -464,11 +475,12 @@ void FeedNetworkImpl::Send(const GURL& url,
                            const std::string& request_type,
                            std::string request_body,
                            bool force_signed_out_request,
+                           bool allow_bless_auth,
                            base::OnceCallback<void(RawResponse)> callback) {
   auto fetch = std::make_unique<NetworkFetch>(
       url, request_type, std::move(request_body), force_signed_out_request,
       identity_manager_, loader_factory_.get(), api_key_, tick_clock_,
-      pref_service_);
+      allow_bless_auth);
   NetworkFetch* fetch_unowned = fetch.get();
   pending_requests_.emplace(std::move(fetch));
 

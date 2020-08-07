@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
@@ -179,6 +178,9 @@ source_set("blink_unittests_sources") {
       "oom_intervention_impl_test.cc",
       "user_level_memory_pressure_signal_generator_test.cc",
     ]
+  } else {
+    sources +=
+        [ "performance_manager/v8_per_frame_memory_reporter_impl_test.cc" ]
   }
 
   if (is_linux || is_chromeos || is_android || is_mac || is_win) {

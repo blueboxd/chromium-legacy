@@ -282,6 +282,10 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // insets.
   gfx::RectF GetWindowTargetBoundsWithInsets() const;
 
+  // The shadow should match the size of the transformed window or preview
+  // window if unclipped.
+  gfx::RectF GetUnclippedShadowBounds() const;
+
   // Functions to be called back when their associated animations complete.
   void OnWindowCloseAnimationCompleted();
   void OnItemSpawnedAnimationCompleted();

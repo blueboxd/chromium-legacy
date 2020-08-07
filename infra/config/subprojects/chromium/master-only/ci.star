@@ -1516,6 +1516,10 @@ ci.fyi_builder(
                     "gcs_bucket": "ash-chromium-on-linux-prebuilts",
                     "gcs_path": "x86_64/{%position%}/ash-chromium.zip",
                     "archive_type": "ARCHIVE_TYPE_ZIP",
+                    "latest_upload": {
+                        "gcs_path": "x86_64/latest/ash-chromium.txt",
+                        "gcs_file_content": "{%position%}",
+                    },
                 },
             ],
         },

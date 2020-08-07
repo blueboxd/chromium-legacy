@@ -33,6 +33,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
@@ -52,6 +53,7 @@
 #include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -294,14 +296,24 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
+    net::CookieDeletionInfo::TimeRange deletion_time_range =
+        net::CookieDeletionInfo::TimeRange(delete_begin, delete_end);
     base::PostTask(
         FROM_HERE, task_traits,
         base::BindOnce(
-            &ClearCookies, context_getter_,
-            net::CookieDeletionInfo::TimeRange(delete_begin, delete_end),
+            &ClearCookies, context_getter_, deletion_time_range,
             base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
                            current_task_runner, FROM_HERE,
                            CreatePendingTaskCompletionClosure())));
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kSafeBrowsingAvailableOnIOS) &&
+        !browser_state_->IsOffTheRecord()) {
+      GetApplicationContext()->GetSafeBrowsingService()->ClearCookies(
+          deletion_time_range,
+          base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                         current_task_runner, FROM_HERE,
+                         CreatePendingTaskCompletionClosure()));
+    }
   }
 
   // There is no need to clean the remaining types of data for off-the-record

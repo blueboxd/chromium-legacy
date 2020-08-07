@@ -84,6 +84,19 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
 @implementation ARQuickLookEGTest
 
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+// TODO(crbug.com/1114202): The XCUIElement queries in this test are broken on
+// Xcode 12 beta 4 when running on the iOS 12 simulator.  Disable until Xcode
+// is fixed.
++ (NSArray*)testInvocations {
+  if (@available(iOS 13, *)) {
+    return [super testInvocations];
+  } else {
+    return @[];
+  }
+}
+#endif
+
 - (void)setUp {
   [super setUp];
 

@@ -92,6 +92,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "CameraPanTiltZoom";
     case PermissionRequestType::PERMISSION_WINDOW_PLACEMENT:
       return "WindowPlacement";
+    case PermissionRequestType::PERMISSION_FONT_ACCESS:
+      return "FontAccess";
     default:
       NOTREACHED();
       return "";
@@ -558,6 +560,10 @@ void PermissionUmaUtil::RecordPermissionAction(
     case ContentSettingsType::WINDOW_PLACEMENT:
       base::UmaHistogramEnumeration("Permissions.Action.WindowPlacement",
                                     action, PermissionAction::NUM);
+      break;
+    case ContentSettingsType::FONT_ACCESS:
+      base::UmaHistogramEnumeration("Permissions.Action.FontAccess", action,
+                                    PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.

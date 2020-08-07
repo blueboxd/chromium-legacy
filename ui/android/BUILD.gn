@@ -182,6 +182,7 @@ android_resources("ui_java_resources") {
     "java/res/values/attrs.xml",
     "java/res/values/color_palette.xml",
     "java/res/values/dimens.xml",
+    "java/res/values/font_certs.xml",
     "java/res/values/ids.xml",
     "java/res/values/one_off_colors.xml",
     "java/res/values/semantic_colors_adaptive.xml",

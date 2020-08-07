@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.get('trigger_id') == "load_for_testing") {
+        history.pushState('', '', '#loaded');
+      }
+
+      if (params.get('trigger_id') == "close_for_testing") {
+        history.pushState('', '', '#close');
+      }
+
+      if (params.get('trigger_id') == "invalid_url_fragment_for_testing") {
+        history.pushState('', '', '#foo');
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+</html>

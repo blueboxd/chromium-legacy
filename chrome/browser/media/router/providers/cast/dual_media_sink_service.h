@@ -77,7 +77,8 @@ class DualMediaSinkService {
   // |dial_media_sink_service_|.
   // The binding should be done once and the method is a no-op after the first
   // call.
-  void BindLogger(LoggerImpl* logger_impl);
+  // Marked virtual for testing.
+  virtual void BindLogger(LoggerImpl* logger_impl);
 
   virtual void OnUserGesture();
 
@@ -89,7 +90,8 @@ class DualMediaSinkService {
   // Used by tests.
   DualMediaSinkService(
       std::unique_ptr<CastMediaSinkService> cast_media_sink_service,
-      std::unique_ptr<DialMediaSinkService> dial_media_sink_service);
+      std::unique_ptr<DialMediaSinkService> dial_media_sink_service,
+      std::unique_ptr<CastAppDiscoveryService> cast_app_discovery_service);
   virtual ~DualMediaSinkService();
 
  private:

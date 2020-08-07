@@ -15,7 +15,6 @@ import android.graphics.Color;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.test.annotation.UiThreadTest;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -27,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
@@ -63,22 +63,23 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainer = getActivity().findViewById(R.id.status_indicator);
             mStatusTextView = mContainer.findViewById(R.id.status_text);
+
+            mSceneLayer = new MockStatusIndicatorSceneLayer(mContainer);
+            mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
+                             .with(StatusIndicatorProperties.STATUS_TEXT, "")
+                             .with(StatusIndicatorProperties.STATUS_ICON, null)
+                             .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
+                             .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
+                             .build();
+            mMCP = PropertyModelChangeProcessor.create(mModel,
+                    new StatusIndicatorViewBinder.ViewHolder(mContainer, mSceneLayer),
+                    StatusIndicatorViewBinder::bind);
         });
-        mSceneLayer = new MockStatusIndicatorSceneLayer(mContainer);
-        mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
-                         .with(StatusIndicatorProperties.STATUS_TEXT, "")
-                         .with(StatusIndicatorProperties.STATUS_ICON, null)
-                         .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
-                         .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
-                         .build();
-        mMCP = PropertyModelChangeProcessor.create(mModel,
-                new StatusIndicatorViewBinder.ViewHolder(mContainer, mSceneLayer),
-                StatusIndicatorViewBinder::bind);
     }
 
     @Override
     public void tearDownTest() throws Exception {
-        mMCP.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mMCP::destroy);
         super.tearDownTest();
     }
 

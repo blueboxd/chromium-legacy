@@ -73,7 +73,7 @@ class CORE_EXPORT TextDecorationInfo {
 
   // SetDecorationIndex must be called before using these methods.
   ETextDecorationStyle DecorationStyle() const;
-  Color Color() const;
+  Color LineColor() const;
   float ResolvedThickness() const {
     return applied_decorations_thickness_[decoration_index_];
   }

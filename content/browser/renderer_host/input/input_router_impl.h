@@ -85,7 +85,6 @@ class CONTENT_EXPORT InputRouterImpl
   mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
   void StopFling() override;
-  void OnSetTouchAction(cc::TouchAction touch_action) override;
   void ForceSetTouchActionAuto() override;
 
   // InputHandlerHost impl

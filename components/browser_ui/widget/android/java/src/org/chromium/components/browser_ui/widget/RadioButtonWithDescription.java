@@ -102,7 +102,19 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
             TypedValue background = new TypedValue();
             getContext().getTheme().resolveAttribute(
                     android.R.attr.selectableItemBackground, background, true);
-            setBackgroundResource(background.resourceId);
+            if (getEndStubLayoutResourceId() != NO_LAYOUT_ID) {
+                // If the end view stub is replaced with a custom view, only set background in the
+                // button container, so the end view is not highlighted when the button is clicked.
+                View radioContainer = findViewById(R.id.radio_container);
+                radioContainer.setBackgroundResource(background.resourceId);
+                // Move the start padding into radio container, so it can be highlighted.
+                int paddingStart = getPaddingStart();
+                radioContainer.setPaddingRelative(paddingStart, radioContainer.getPaddingTop(),
+                        radioContainer.getPaddingEnd(), radioContainer.getPaddingBottom());
+                setPaddingRelative(0, getPaddingTop(), getPaddingEnd(), getPaddingBottom());
+            } else {
+                setBackgroundResource(background.resourceId);
+            }
         }
 
         // We want RadioButtonWithDescription to handle the clicks itself.

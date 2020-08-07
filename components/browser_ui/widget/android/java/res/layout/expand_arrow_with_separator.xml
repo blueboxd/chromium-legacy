@@ -17,10 +17,7 @@
         android:id="@+id/separator"
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:layout_marginStart="@dimen/radio_button_with_description_and_aux_button_spacing"
         style="@style/VerticalDivider" />
-<!-- TODO(crbug.com/1097310): Follow up with UX to see if the aux button should be highlighted when
-                              the rest of the view is touched.  -->
     <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/expand_arrow"
         android:layout_height="match_parent"

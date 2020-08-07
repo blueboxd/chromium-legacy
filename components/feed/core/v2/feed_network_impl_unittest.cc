@@ -143,6 +143,15 @@ class FeedNetworkTest : public testing::Test {
     return result;
   }
 
+  GURL GetPendingRequestURL() {
+    task_environment_.RunUntilIdle();
+    network::TestURLLoaderFactory::PendingRequest* pending_request =
+        test_factory()->GetPendingRequest(0);
+    if (!pending_request)
+      return GURL();
+    return pending_request->request.url;
+  }
+
   network::ResourceRequest RespondToQueryRequest(
       const std::string& response_string,
       net::HttpStatusCode code) {
@@ -407,6 +416,8 @@ TEST_F(FeedNetworkTest, TestHostOverrideWithAuthHeader) {
   feed_network()->SendQueryRequest(GetTestFeedRequest(), false,
                                    receiver.Bind());
 
+  ASSERT_EQ("www.newhost.com", GetPendingRequestURL().host());
+
   response_headers_ = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(
           "HTTP/1.1 401 Unauthorized\nwww-authenticate: Foo "
@@ -461,6 +472,23 @@ TEST_F(FeedNetworkTest, SendActionRequestSendsValidRequest) {
   std::string expected_body;
   ASSERT_TRUE(GetTestActionRequest().SerializeToString(&expected_body));
   EXPECT_EQ(expected_body, sent_body_uncompressed);
+}
+
+TEST_F(FeedNetworkTest, TestOverrideHostDoesNotAffectActionUpload) {
+  profile_prefs().SetString(feed::prefs::kHostOverrideHost,
+                            "http://www.newhost.com/");
+  feed_network()->SendActionRequest(GetTestActionRequest(), base::DoNothing());
+
+  EXPECT_EQ(GURL("https://discover-pa.googleapis.com/v1/actions:upload"),
+            GetPendingRequestURL());
+}
+
+TEST_F(FeedNetworkTest, TestOverrideActionsEndpoint) {
+  profile_prefs().SetString(feed::prefs::kActionsEndpointOverride,
+                            "http://www.newhost.com/");
+  feed_network()->SendActionRequest(GetTestActionRequest(), base::DoNothing());
+
+  EXPECT_EQ(GURL("http://www.newhost.com/"), GetPendingRequestURL());
 }
 
 }  // namespace

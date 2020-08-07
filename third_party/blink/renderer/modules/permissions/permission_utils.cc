@@ -235,6 +235,13 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     }
     return CreatePermissionDescriptor(PermissionName::WINDOW_PLACEMENT);
   }
+  if (name == "font-access") {
+    if (!RuntimeEnabledFeatures::FontAccessEnabled()) {
+      exception_state.ThrowTypeError("Font Access is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::FONT_ACCESS);
+  }
   return nullptr;
 }
 

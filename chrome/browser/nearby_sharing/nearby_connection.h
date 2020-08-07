@@ -32,12 +32,13 @@ class NearbyConnection {
   virtual void Write(std::vector<uint8_t> bytes) = 0;
 
   // Closes the socket and disconnects from the remote device. This object will
-  // be invalidated after |callback| in RegisterForDisconnection is invoked.
+  // be invalidated after |callback| in SetDisconnectionListener is invoked.
   virtual void Close() = 0;
 
   // Listens to the socket being closed. Invoke |callback| when the socket is
   // closed. This object will be invalidated after |listener| is invoked.
-  virtual void RegisterForDisconnection(base::OnceClosure listener) = 0;
+  // Previously set listener will be replaced by |listener|.
+  virtual void SetDisconnectionListener(base::OnceClosure listener) = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_CONNECTION_H_

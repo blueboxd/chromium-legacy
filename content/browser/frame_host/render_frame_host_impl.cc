@@ -7552,6 +7552,15 @@ void RenderFrameHostImpl::GetGeolocationService(
   geolocation_service_->Bind(std::move(receiver));
 }
 
+void RenderFrameHostImpl::GetFontAccessManager(
+    mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver) {
+  static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
+      ->GetFontAccessManager()
+      ->BindReceiver(FontAccessManagerImpl::BindingContext(
+                         GetLastCommittedOrigin(), GetGlobalFrameRoutingId()),
+                     std::move(receiver));
+}
+
 void RenderFrameHostImpl::GetNativeFileSystemManager(
     mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

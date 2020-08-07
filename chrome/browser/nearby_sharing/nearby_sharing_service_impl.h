@@ -151,10 +151,8 @@ class NearbySharingServiceImpl
   void OnReceivedIntroduction(
       ShareTarget share_target,
       base::Optional<std::string> token,
-      std::unique_ptr<IncomingFramesReader> frames_reader,
       base::Optional<sharing::mojom::V1FramePtr> frame);
-  void OnFrameRead(std::unique_ptr<IncomingFramesReader> frames_reader,
-                   ShareTarget share_target,
+  void OnFrameRead(ShareTarget share_target,
                    base::Optional<sharing::mojom::V1FramePtr> frame);
   void HandleCertificateInfoFrame(
       const sharing::mojom::CertificateInfoFramePtr& certificate_frame);

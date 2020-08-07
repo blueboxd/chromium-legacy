@@ -65,6 +65,9 @@
 #endif
 
 namespace {
+// URL for 'Manage Activity' item in the Discover feed menu.
+const char kFeedManageActivityURL[] =
+    "https://myactivity.google.com/myactivity?product=50";
 // URL for 'Manage Interests' item in the Discover feed menu.
 const char kFeedManageInterestsURL[] =
     "https://google.com/preferences/interests";
@@ -390,22 +393,26 @@ const char kNTPHelpURL[] =
   NOTREACHED() << "Promo type is neither URL or command.";
 }
 
-- (void)handleManageInterestsTapped {
+// Opens web page for a menu item in the NTP.
+- (void)openMenuItemWebPage:(GURL)URL {
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(self.webState);
   if (NTPHelper && NTPHelper->IgnoreLoadRequests())
     return;
-  _URLLoader->Load(UrlLoadParams::InCurrentTab(GURL(kFeedManageInterestsURL)));
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(URL));
   // TODO(crbug.com/1085419): Add metrics.
 }
 
+- (void)handleManageActivityTapped {
+  [self openMenuItemWebPage:GURL(kFeedManageActivityURL)];
+}
+
+- (void)handleManageInterestsTapped {
+  [self openMenuItemWebPage:GURL(kFeedManageInterestsURL)];
+}
+
 - (void)handleLearnMoreTapped {
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(self.webState);
-  if (NTPHelper && NTPHelper->IgnoreLoadRequests())
-    return;
-  _URLLoader->Load(UrlLoadParams::InCurrentTab(GURL(kNTPHelpURL)));
-  [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
+  [self openMenuItemWebPage:GURL(kNTPHelpURL)];
 }
 
 #pragma mark - ContentSuggestionsGestureCommands

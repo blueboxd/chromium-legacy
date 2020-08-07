@@ -89,9 +89,8 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     colspan_cell_tabulator->FindNextFreeColumn();
     const ComputedStyle& cell_style = cell.Style();
     const NGBoxStrut cell_borders = table_borders.CellBorder(
-        row_index, colspan_cell_tabulator->CurrentColumn(),
-        cell.TableCellRowspan(), cell.TableCellColspan(), section_index,
-        cell_style);
+        cell, row_index, colspan_cell_tabulator->CurrentColumn(),
+        section_index);
     const NGConstraintSpace cell_constraint_space = CreateCellConstraintSpace(
         cell, colspan_cell_tabulator->CurrentColumn(), cell_borders);
     scoped_refptr<const NGLayoutResult> layout_result =
@@ -293,8 +292,8 @@ void NGTableAlgorithmUtils::ComputeSectionInlineConstraints(
         cell_inline_constraints->Grow(max_column);
       if (!ignore_because_of_fixed_layout) {
         NGBoxStrut cell_border = table_borders.CellBorder(
-            *row_index, colspan_cell_tabulator.CurrentColumn(),
-            cell.TableCellRowspan(), colspan, section_index, cell.Style());
+            cell, *row_index, colspan_cell_tabulator.CurrentColumn(),
+            section_index);
         NGBoxStrut cell_padding =
             table_borders.CellPaddingForMeasure(cell.Style());
         NGTableTypes::CellInlineConstraint cell_constraint =

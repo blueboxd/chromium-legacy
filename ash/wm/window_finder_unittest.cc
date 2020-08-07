@@ -28,7 +28,7 @@ TEST_F(WindowFinderTest, RealTopmostCanBeNullptr) {
   EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
 }
 
-TEST_F(WindowFinderTest, ToplevelanBeNotDrawn) {
+TEST_F(WindowFinderTest, ToplevelCanBeNotDrawn) {
   aura::test::TestWindowDelegate delegate;
   auto window = std::make_unique<aura::Window>(&delegate,
                                                aura::client::WINDOW_TYPE_POPUP);

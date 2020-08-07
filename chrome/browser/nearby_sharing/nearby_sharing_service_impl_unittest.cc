@@ -748,6 +748,28 @@ TEST_F(NearbySharingServiceImplTest, UnregisterReceiveSurfaceNeverRegistered) {
 }
 
 TEST_F(NearbySharingServiceImplTest,
+       IncomingConnection_ClosedReadingIntroduction) {
+  FakeNearbyConnection connection;
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  NiceMock<MockTransferUpdateCallback> callback;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_)).Times(0);
+
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  service_->OnIncomingConnection(kEndpointId, {}, &connection);
+  connection.Close();
+
+  // Introduction is ignored without any side effect.
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
+}
+
+TEST_F(NearbySharingServiceImplTest,
        IncomingConnection_EmptyIntroductionFrame) {
   std::string intro = "introduction_frame";
   std::vector<uint8_t> bytes(intro.begin(), intro.end());
@@ -844,6 +866,59 @@ TEST_F(NearbySharingServiceImplTest,
 
   service_->OnIncomingConnection(kEndpointId, {}, &connection);
   run_loop.Run();
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       IncomingConnection_ClosedWaitingLocalConfirmation) {
+  std::string intro = "introduction_frame";
+  std::vector<uint8_t> bytes(intro.begin(), intro.end());
+  NiceMock<MockNearbySharingDecoder> mock_decoder;
+  EXPECT_CALL(mock_decoder, DecodeFrame(testing::Eq(bytes), testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            std::move(callback).Run(GetValidIntroductionFrame());
+          }));
+
+  EXPECT_CALL(mock_nearby_process_manager(),
+              GetOrStartNearbySharingDecoder(testing::_))
+      .WillRepeatedly(testing::Return(&mock_decoder));
+
+  FakeNearbyConnection connection;
+  connection.AppendReadableData(bytes);
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  NiceMock<MockTransferUpdateCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke([&run_loop](const ShareTarget& share_target,
+                                            TransferMetadata metadata) {
+        EXPECT_EQ(TransferMetadata::Status::kAwaitingLocalConfirmation,
+                  metadata.status());
+        run_loop.Quit();
+      }));
+
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  service_->OnIncomingConnection(kEndpointId, {}, &connection);
+  run_loop.Run();
+
+  base::RunLoop run_loop_2;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke([&run_loop_2](const ShareTarget& share_target,
+                                              TransferMetadata metadata) {
+        EXPECT_EQ(TransferMetadata::Status::kFailed, metadata.status());
+        run_loop_2.Quit();
+      }));
+
+  connection.Close();
+  run_loop_2.Run();
 
   // To avoid UAF in OnIncomingTransferUpdate().
   service_->UnregisterReceiveSurface(&callback);

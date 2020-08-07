@@ -43,6 +43,7 @@ const NearbySharedV3Test = class extends PolymerTest {
 };
 
 [['OnboardingPage', 'nearby_onboarding_page_test.m.js'],
+ ['VisibilityPage', 'nearby_visibility_page_test.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

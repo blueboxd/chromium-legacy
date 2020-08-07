@@ -49,6 +49,9 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
       const GURL& url,
       const content_settings::CookieSettings* cookie_settings) override;
 
+  // SigninHeaderHelper implementation:
+  bool IsUrlEligibleForRequestHeader(const GURL& url) override;
+
  private:
   // Whether mirror account consistency should be used.
   AccountConsistencyMethod account_consistency_;
@@ -58,9 +61,6 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
 
   // Returns whether the URL has a Google Drive origin.
   bool IsDriveOrigin(const GURL& url);
-
-  // SigninHeaderHelper implementation:
-  bool IsUrlEligibleForRequestHeader(const GURL& url) override;
 };
 
 }  // namespace signin

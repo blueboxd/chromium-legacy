@@ -501,6 +501,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
+  // Make sure the same-site navigation below will not create a new
+  // RenderFrameHost, otherwise the unload handler of the old RenderFrameHost
+  // will run after the new RenderFrameHost gets rendered.
+  // TODO(crbug.com/1110744): Support running unload handlers before the new
+  // RenderFrameHost renders on same-site cross-RenderFrameHost navigations.
+  DisableProactiveBrowsingInstanceSwapFor(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
 
   NavigateAndCheckPopupShown(embedded_test_server()->GetURL("/popup_blocker/"),
                              kExpectPopup);

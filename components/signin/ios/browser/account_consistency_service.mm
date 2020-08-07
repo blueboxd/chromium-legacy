@@ -100,9 +100,9 @@ void AccountConsistencyHandler::ShouldAllowResponse(
   }
 
   GURL url = net::GURLWithNSURL(http_response.URL);
-  if (google_util::IsGoogleDomainUrl(
-          url, google_util::ALLOW_SUBDOMAIN,
-          google_util::DISALLOW_NON_STANDARD_PORTS)) {
+  // Logged-in user is showing intent to navigate to a Google domain where we
+  // will need to set a CHROME_CONNECTED cookie if it is not already set.
+  if (signin::IsUrlEligibleForMirrorCookie(url)) {
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
         url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
     account_consistency_service_->SetChromeConnectedCookieWithDomain(domain);
